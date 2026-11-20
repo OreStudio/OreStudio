@@ -18,8 +18,8 @@
  *
  */
 #include "ores.logging/lifecycle_manager.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.logging/logging_options_validator.hpp"
-#include "ores.logging/make_logger.hpp"
 #include "ores.platform/process/pid.hpp"
 #include <boost/core/null_deleter.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -71,7 +71,7 @@ build_filename(const std::string& filename, std::optional<int> replica_index, bo
 }
 
 boost::shared_ptr<lifecycle_manager::file_sink_type> lifecycle_manager::make_file_sink(
-    std::filesystem::path path, const boost_severity severity, std::string tag) {
+    std::filesystem::path path, const detail::boost_severity severity, std::string tag) {
 
     const std::string extension(".log");
     if (path.extension() != extension)
@@ -108,7 +108,7 @@ boost::shared_ptr<lifecycle_manager::file_sink_type> lifecycle_manager::make_fil
 }
 
 boost::shared_ptr<lifecycle_manager::console_sink_type>
-lifecycle_manager::make_console_sink(const boost_severity severity, std::string tag) {
+lifecycle_manager::make_console_sink(const detail::boost_severity severity, std::string tag) {
     boost::shared_ptr<std::ostream> os(&std::cout, boost::null_deleter());
     auto backend(boost::make_shared<sinks::text_ostream_backend>());
     backend->add_stream(os);
@@ -170,7 +170,7 @@ lifecycle_manager::lifecycle_manager(std::optional<logging_options> ocfg) {
     }
 
     if (cfg.replica_index)
-        BOOST_LOG_SEV(lg(), ores::logging::info) << "Replica index: " << *cfg.replica_index;
+        ORES_LOG_SEV(lg(), ores::logging::info) << "Replica index: " << *cfg.replica_index;
 
     const std::string time_stamp_attr("TimeStamp");
     core.add_global_attribute(time_stamp_attr, boost::log::attributes::local_clock());

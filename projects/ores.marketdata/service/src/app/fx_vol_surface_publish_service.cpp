@@ -19,7 +19,7 @@
 #include "ores.marketdata.service/app/fx_vol_surface_publish_service.hpp"
 #include "ores.database/repository/unit_of_work.hpp"
 #include "ores.inbox.core/service/approval_lifecycle.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.core/repository/fx_vol_surface_calibration_repository.hpp"
 #include "ores.marketdata.core/repository/fx_vol_surface_publish_repository.hpp"
@@ -156,7 +156,7 @@ domain::fx_vol_surface_publish record_publication(const context& ctx,
                 static_cast<std::uint32_t>(record.version)});
     uow.commit();
     record.version += 1;
-    BOOST_LOG_SEV(publish_log(), ores::logging::info)
+    ORES_LOG_SEV(publish_log(), ores::logging::info)
         << "Published the surface of series " << record.output_series_id << " as of "
         << datetime::to_iso8601_utc(record.as_of) << " under request " << record.request_id;
 
@@ -409,7 +409,7 @@ msg::get_published_fx_vol_surface_response fx_vol_surface_publish_service::read_
             const auto named = datum::oresmd_uri_codec::read(obs.oresmd_uri);
             const auto value = ores::platform::numeric::parse_double(obs.value);
             if (!named || !value) {
-                BOOST_LOG_SEV(publish_log(), ores::logging::warn)
+                ORES_LOG_SEV(publish_log(), ores::logging::warn)
                     << "Skipping a point of the published surface of " << blueprint.name
                     << " that does not read: " << obs.oresmd_uri;
                 continue;

@@ -19,7 +19,7 @@
  */
 #include "ores.http.api/domain/http_response.hpp"
 #include "ores.http.api/net/http_server.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "test_suite.hpp"
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
@@ -212,7 +212,7 @@ get_status_within(std::uint16_t port, const std::string& target, std::chrono::mi
 
 TEST_CASE("a_body_past_the_default_limit_is_refused_with_413", "[http_body_limit]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that a route refuses a body past the default limit";
+    ORES_LOG_SEV(lg, info) << "Testing that a route refuses a body past the default limit";
 
     http_server_options options;
     options.address = "127.0.0.1";
@@ -239,7 +239,7 @@ TEST_CASE("a_body_past_the_default_limit_is_refused_with_413", "[http_body_limit
 
 TEST_CASE("a_route_that_raises_its_limit_accepts_the_body", "[http_body_limit]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that a route's own limit is the one applied";
+    ORES_LOG_SEV(lg, info) << "Testing that a route's own limit is the one applied";
 
     http_server_options options;
     options.address = "127.0.0.1";
@@ -266,7 +266,7 @@ TEST_CASE("a_route_that_raises_its_limit_accepts_the_body", "[http_body_limit]")
 
 TEST_CASE("a_body_past_a_routes_own_limit_is_refused", "[http_body_limit]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that a route's own limit is enforced downward";
+    ORES_LOG_SEV(lg, info) << "Testing that a route's own limit is enforced downward";
 
     http_server_options options;
     options.address = "127.0.0.1";
@@ -291,7 +291,7 @@ TEST_CASE("a_body_past_a_routes_own_limit_is_refused", "[http_body_limit]") {
 
 TEST_CASE("a_body_past_the_ceiling_is_refused", "[http_body_limit]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that the ceiling caps the route's stated limit";
+    ORES_LOG_SEV(lg, info) << "Testing that the ceiling caps the route's stated limit";
 
     http_server_options options;
     options.address = "127.0.0.1";
@@ -322,7 +322,7 @@ TEST_CASE("a_body_past_the_ceiling_is_refused", "[http_body_limit]") {
 
 TEST_CASE("a_body_under_the_ceiling_is_taken_on_a_route_that_states_more", "[http_body_limit]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that the ceiling leaves what it does not cap";
+    ORES_LOG_SEV(lg, info) << "Testing that the ceiling leaves what it does not cap";
 
     http_server_options options;
     options.address = "127.0.0.1";
@@ -350,7 +350,7 @@ TEST_CASE("a_body_under_the_ceiling_is_taken_on_a_route_that_states_more", "[htt
 
 TEST_CASE("a_body_past_a_megabyte_is_taken_on_a_route_that_states_it", "[http_body_limit]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that a large stated limit outlives the header read";
+    ORES_LOG_SEV(lg, info) << "Testing that a large stated limit outlives the header read";
 
     http_server_options options;
     options.address = "127.0.0.1";
@@ -375,7 +375,7 @@ TEST_CASE("a_body_past_a_megabyte_is_taken_on_a_route_that_states_it", "[http_bo
 
 TEST_CASE("a_declaration_past_a_stated_limit_is_refused_before_the_body", "[http_body_limit]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that a stated limit is checked before the body";
+    ORES_LOG_SEV(lg, info) << "Testing that a stated limit is checked before the body";
 
     http_server_options options;
     options.address = "127.0.0.1";
@@ -404,7 +404,7 @@ TEST_CASE("a_declaration_past_a_stated_limit_is_refused_before_the_body", "[http
 
 TEST_CASE("an_expect_continue_is_answered_before_the_body", "[http_body_limit]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that the server tells a client to send, or not";
+    ORES_LOG_SEV(lg, info) << "Testing that the server tells a client to send, or not";
 
     http_server_options options;
     options.address = "127.0.0.1";
@@ -426,7 +426,7 @@ TEST_CASE("an_expect_continue_is_answered_before_the_body", "[http_body_limit]")
 
 TEST_CASE("an_over_limit_expect_is_refused_without_inviting_the_body", "[http_body_limit]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that a client is not told to send a body that is refused";
+    ORES_LOG_SEV(lg, info) << "Testing that a client is not told to send a body that is refused";
 
     http_server_options options;
     options.address = "127.0.0.1";
@@ -448,7 +448,7 @@ TEST_CASE("an_over_limit_expect_is_refused_without_inviting_the_body", "[http_bo
 
 TEST_CASE("a_saturated_pool_refuses_with_503", "[http_body_limit][worker_pool]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that a full pool refuses rather than queueing";
+    ORES_LOG_SEV(lg, info) << "Testing that a full pool refuses rather than queueing";
 
     http_server_options options;
     options.address = "127.0.0.1";

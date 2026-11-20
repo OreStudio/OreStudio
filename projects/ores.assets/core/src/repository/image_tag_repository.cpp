@@ -29,9 +29,7 @@
 #include "ores.assets.core/repository/image_tag_mapper.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -185,8 +183,8 @@ void image_tag_repository::write(const std::vector<domain::image_tag>& image_tag
 
 void image_tag_repository::write(const domain::image_tag& image_tag,
                                  const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing image tag to database: " << image_tag.image_id << "/"
-                               << image_tag.tag_id;
+    ORES_LOG_SEV(lg(), debug) << "Writing image tag to database: " << image_tag.image_id << "/"
+                              << image_tag.tag_id;
     const auto current = claim.kind == ores::utility::domain::precondition_kind::any ?
                              read_latest(image_tag.image_id, image_tag.tag_id) :
                              std::vector<domain::image_tag>{};
@@ -197,7 +195,7 @@ void image_tag_repository::write(const domain::image_tag& image_tag,
 
 void image_tag_repository::write(const std::vector<domain::image_tag>& image_tags,
                                  const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing image tags to database. Count: " << image_tags.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing image tags to database. Count: " << image_tags.size();
     if (claims.size() != image_tags.size())
         throw std::invalid_argument(
             "image_tag_repository::write: one claim is needed for each row");
@@ -233,8 +231,8 @@ std::vector<domain::image_tag> image_tag_repository::read_latest() {
 
 std::vector<domain::image_tag> image_tag_repository::read_latest(std::uint32_t offset,
                                                                  std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest image tags with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest image tags with offset: " << offset
+                              << " and limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<image_tag_entity>> |
@@ -252,7 +250,7 @@ std::vector<domain::image_tag> image_tag_repository::read_latest(std::uint32_t o
 
 std::vector<domain::image_tag> image_tag_repository::read_latest(const boost::uuids::uuid& image_id,
                                                                  const boost::uuids::uuid& tag_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest image tag. " << image_id << "/" << tag_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest image tag. " << image_id << "/" << tag_id;
 
     static constexpr auto max = db_timestamp::max();
     const auto image_id_str = boost::uuids::to_string(image_id);
@@ -271,7 +269,7 @@ std::vector<domain::image_tag> image_tag_repository::read_latest(const boost::uu
 }
 
 std::uint32_t image_tag_repository::get_total_image_tag_count() {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active image tags count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active image tags count";
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
@@ -280,13 +278,13 @@ std::uint32_t image_tag_repository::get_total_image_tag_count() {
 
     const auto count = query_builder::execute_count_query<image_tag_entity>(
         ctx_, query, std::nullopt, lg(), "Counting image tags");
-    BOOST_LOG_SEV(lg(), debug) << "Total active image tags count: " << count;
+    ORES_LOG_SEV(lg(), debug) << "Total active image tags count: " << count;
     return count;
 }
 
 std::vector<domain::image_tag>
 image_tag_repository::read_latest_by_image(const boost::uuids::uuid& image_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest image tags. Image: " << image_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest image tags. Image: " << image_id;
 
     static constexpr auto max = db_timestamp::max();
     const auto image_id_str = boost::uuids::to_string(image_id);
@@ -308,7 +306,7 @@ image_tag_repository::read_latest_by_image(const boost::uuids::uuid& image_id) {
 
 std::vector<domain::image_tag>
 image_tag_repository::read_latest_by_tag(const boost::uuids::uuid& tag_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest image tags. Tag: " << tag_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest image tags. Tag: " << tag_id;
 
     static constexpr auto max = db_timestamp::max();
     const auto tag_id_str = boost::uuids::to_string(tag_id);
@@ -331,8 +329,8 @@ image_tag_repository::read_latest_by_tag(const boost::uuids::uuid& tag_id) {
 std::vector<domain::image_tag> image_tag_repository::read_latest_by_image(
     const boost::uuids::uuid& image_id, std::uint32_t offset, std::uint32_t limit) {
     const auto image_id_str = boost::uuids::to_string(image_id);
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest image tags. Image: " << image_id
-                               << " offset: " << offset << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest image tags. Image: " << image_id
+                              << " offset: " << offset << " limit: " << limit;
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
@@ -355,7 +353,7 @@ std::vector<domain::image_tag> image_tag_repository::read_latest_by_image(
 std::uint32_t
 image_tag_repository::get_total_image_tag_count_by_image(const boost::uuids::uuid& image_id) {
     const auto image_id_str = boost::uuids::to_string(image_id);
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active image tags count. Image: " << image_id;
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active image tags count. Image: " << image_id;
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
@@ -365,14 +363,14 @@ image_tag_repository::get_total_image_tag_count_by_image(const boost::uuids::uui
 
     const auto count = query_builder::execute_count_query<image_tag_entity>(
         ctx_, query, std::nullopt, lg(), "Counting image tags");
-    BOOST_LOG_SEV(lg(), debug) << "Total active image tags count by image: " << count;
+    ORES_LOG_SEV(lg(), debug) << "Total active image tags count by image: " << count;
     return count;
 }
 
 std::uint32_t
 image_tag_repository::get_total_image_tag_count_by_tag(const boost::uuids::uuid& tag_id) {
     const auto tag_id_str = boost::uuids::to_string(tag_id);
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active image tags count. Tag: " << tag_id;
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active image tags count. Tag: " << tag_id;
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
@@ -382,7 +380,7 @@ image_tag_repository::get_total_image_tag_count_by_tag(const boost::uuids::uuid&
 
     const auto count = query_builder::execute_count_query<image_tag_entity>(
         ctx_, query, std::nullopt, lg(), "Counting image tags");
-    BOOST_LOG_SEV(lg(), debug) << "Total active image tags count by tag: " << count;
+    ORES_LOG_SEV(lg(), debug) << "Total active image tags count by tag: " << count;
     return count;
 }
 
@@ -395,7 +393,7 @@ image_tag_repository::remove_status
 image_tag_repository::remove(const boost::uuids::uuid& image_id,
                              const boost::uuids::uuid& tag_id,
                              std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing image tag from database: " << image_id << "/" << tag_id;
+    ORES_LOG_SEV(lg(), debug) << "Removing image tag from database: " << image_id << "/" << tag_id;
 
     const auto current = read_latest(image_id, tag_id);
     if (current.empty())
@@ -440,7 +438,7 @@ void image_tag_repository::remove(const std::vector<boost::uuids::uuid>& image_i
 }
 
 void image_tag_repository::remove_by_image(const boost::uuids::uuid& image_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing all image tags from database: " << image_id;
+    ORES_LOG_SEV(lg(), debug) << "Removing all image tags from database: " << image_id;
 
     const auto image_id_str = boost::uuids::to_string(image_id);
     const auto tid = ctx_.tenant_id().to_string();

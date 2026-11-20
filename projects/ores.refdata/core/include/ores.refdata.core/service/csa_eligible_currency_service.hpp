@@ -26,7 +26,7 @@
 #define ORES_REFDATA_CORE_SERVICE_CSA_ELIGIBLE_CURRENCY_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/csa_eligible_currency.hpp"
 #include "ores.refdata.api/messaging/csa_eligible_currency_protocol.hpp"
 #include "ores.refdata.core/export.hpp"

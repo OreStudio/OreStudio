@@ -28,7 +28,7 @@
 #include "ores.iam.api/domain/account_contact_information.hpp"
 #include "ores.iam.core/export.hpp"
 #include "ores.iam.core/repository/account_contact_information_entity.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 
 namespace ores::iam::repository {
 

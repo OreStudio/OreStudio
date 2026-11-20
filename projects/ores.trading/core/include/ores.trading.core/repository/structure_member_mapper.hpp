@@ -25,7 +25,7 @@
 #ifndef ORES_TRADING_CORE_REPOSITORY_STRUCTURE_MEMBER_MAPPER_HPP
 #define ORES_TRADING_CORE_REPOSITORY_STRUCTURE_MEMBER_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.trading.api/domain/structure_member.hpp"
 #include "ores.trading.core/export.hpp"
 #include "ores.trading.core/repository/structure_member_entity.hpp"

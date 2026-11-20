@@ -26,7 +26,6 @@
 #include "ores.refdata.api/domain/ir_curve_bootstrap_pillar.hpp"
 #include "ores.refdata.api/messaging/ir_curve_bootstrap_pillar_protocol.hpp"
 #include "ores.refdata.core/repository/ir_curve_bootstrap_pillar_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -480,12 +478,12 @@ ores::utility::domain::result ir_curve_bootstrap_pillar_service::prepare_change(
 
 std::vector<domain::ir_curve_bootstrap_pillar>
 ir_curve_bootstrap_pillar_service::list_pillars(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all IR curve bootstrap pillars";
+    ORES_LOG_SEV(lg(), debug) << "Listing all IR curve bootstrap pillars";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t ir_curve_bootstrap_pillar_service::count_pillars() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total IR curve bootstrap pillars count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total IR curve bootstrap pillars count";
     return repo_.get_total_pillar_count(ctx_);
 }
 
@@ -493,14 +491,14 @@ std::uint32_t ir_curve_bootstrap_pillar_service::count_pillars() {
 std::optional<domain::ir_curve_bootstrap_pillar>
 ir_curve_bootstrap_pillar_service::get_pillar_at_version(const boost::uuids::uuid& id,
                                                          std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting IR curve bootstrap pillar at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting IR curve bootstrap pillar at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::ir_curve_bootstrap_pillar>
 ir_curve_bootstrap_pillar_service::get_pillar(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting IR curve bootstrap pillar. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting IR curve bootstrap pillar. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -515,11 +513,11 @@ ir_curve_bootstrap_pillar_service::get_pillars(const std::vector<std::string>& i
 void ir_curve_bootstrap_pillar_service::save_pillar(const domain::ir_curve_bootstrap_pillar& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("IR Curve Bootstrap Pillar id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving IR curve bootstrap pillar. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving IR curve bootstrap pillar. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved IR curve bootstrap pillar. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved IR curve bootstrap pillar. " << "id: " << v.id;
 }
 
 void ir_curve_bootstrap_pillar_service::save_pillars(
@@ -528,7 +526,7 @@ void ir_curve_bootstrap_pillar_service::save_pillars(
         if (e.id.is_nil())
             throw std::invalid_argument("IR Curve Bootstrap Pillar id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << pillars.size() << " IR curve bootstrap pillars";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << pillars.size() << " IR curve bootstrap pillars";
     auto ts = pillars;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -537,9 +535,9 @@ void ir_curve_bootstrap_pillar_service::save_pillars(
 }
 
 void ir_curve_bootstrap_pillar_service::delete_pillar(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing IR curve bootstrap pillar. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing IR curve bootstrap pillar. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed IR curve bootstrap pillar. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed IR curve bootstrap pillar. " << "id: " << id;
 }
 
 void ir_curve_bootstrap_pillar_service::delete_pillars(const std::vector<std::string>& ids) {
@@ -548,7 +546,7 @@ void ir_curve_bootstrap_pillar_service::delete_pillars(const std::vector<std::st
 
 std::vector<domain::ir_curve_bootstrap_pillar>
 ir_curve_bootstrap_pillar_service::get_pillar_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for IR curve bootstrap pillar. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for IR curve bootstrap pillar. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

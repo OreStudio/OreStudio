@@ -19,7 +19,7 @@
  */
 #include "ores.http.api/net/session_bytes_accumulator.hpp"
 #include "ores.http.api/net/worker_pool.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "test_suite.hpp"
 #include <boost/asio/io_context.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -69,7 +69,7 @@ struct sink_record final {
 
 TEST_CASE("session_bytes_accumulator_writes_the_running_total", "[session_bytes]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that the sink sees the total, not the last request";
+    ORES_LOG_SEV(lg, info) << "Testing that the sink sees the total, not the last request";
 
     sink_record record;
     boost::asio::io_context io;
@@ -98,7 +98,7 @@ TEST_CASE("session_bytes_accumulator_writes_the_running_total", "[session_bytes]
 
 TEST_CASE("session_bytes_accumulator_writes_on_a_worker_thread", "[session_bytes]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that the write leaves the calling thread";
+    ORES_LOG_SEV(lg, info) << "Testing that the write leaves the calling thread";
 
     sink_record record;
     boost::asio::io_context io;
@@ -132,7 +132,7 @@ TEST_CASE("session_bytes_accumulator_writes_on_a_worker_thread", "[session_bytes
 
 TEST_CASE("session_bytes_accumulator_does_not_write_a_quiet_session", "[session_bytes]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that an idle session costs nothing";
+    ORES_LOG_SEV(lg, info) << "Testing that an idle session costs nothing";
 
     sink_record record;
     boost::asio::io_context io;
@@ -165,7 +165,7 @@ TEST_CASE("session_bytes_accumulator_does_not_write_a_quiet_session", "[session_
 
 TEST_CASE("session_bytes_accumulator_keeps_the_total_when_the_sink_fails", "[session_bytes]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that a failed write costs nothing";
+    ORES_LOG_SEV(lg, info) << "Testing that a failed write costs nothing";
 
     auto attempts = 0;
     auto received_total = std::uint64_t{0};
@@ -197,7 +197,7 @@ TEST_CASE("session_bytes_accumulator_keeps_the_total_when_the_sink_fails", "[ses
 
 TEST_CASE("session_bytes_accumulator_writes_what_is_pending_on_stop", "[session_bytes]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that shutdown flushes the totals";
+    ORES_LOG_SEV(lg, info) << "Testing that shutdown flushes the totals";
 
     sink_record record;
     boost::asio::io_context io;

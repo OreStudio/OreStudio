@@ -25,7 +25,7 @@
 #ifndef ORES_MARKETDATA_CORE_REPOSITORY_FX_FORWARD_PUBLISH_SPOT_MAPPER_HPP
 #define ORES_MARKETDATA_CORE_REPOSITORY_FX_FORWARD_PUBLISH_SPOT_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/domain/fx_forward_publish_spot.hpp"
 #include "ores.marketdata.core/export.hpp"
 #include "ores.marketdata.core/repository/fx_forward_publish_spot_entity.hpp"

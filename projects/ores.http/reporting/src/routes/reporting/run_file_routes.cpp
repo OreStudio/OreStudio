@@ -29,7 +29,7 @@
 #include "ores.http.core/routes/storage_file_source.hpp"
 #include "ores.http.nats/forwarding.hpp"
 #include "ores.http/routes/reporting/run_lookup.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.ore.core/results/output_manifest.hpp"
 #include "ores.reporting.api/messaging/file_type_protocol.hpp"
 #include "ores.reporting.api/messaging/ore_file_category_protocol.hpp"
@@ -152,13 +152,13 @@ std::vector<catalogue_pattern> read_catalogue(const http_request& req, nats_clie
             } catch (const std::regex_error& e) {
                 // A row whose expression does not compile must not leave every
                 // other file unidentified.
-                BOOST_LOG_SEV(file_lg(), ores::logging::warn)
+                ORES_LOG_SEV(file_lg(), ores::logging::warn)
                     << "The ORE file " << file.code
                     << " states an expression that does not compile: " << e.what();
             }
         }
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(file_lg(), ores::logging::warn)
+        ORES_LOG_SEV(file_lg(), ores::logging::warn)
             << "The ORE file catalogue could not be read: " << e.what();
     }
     return patterns;
@@ -194,7 +194,7 @@ std::optional<std::string> engine_version_of(const http_request& req,
             return std::nullopt;
         return answered.app_version->engine_version;
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(file_lg(), ores::logging::warn)
+        ORES_LOG_SEV(file_lg(), ores::logging::warn)
             << "The engine version of job " << *workunit_id << " could not be read: " << e.what();
         return std::nullopt;
     }
@@ -212,7 +212,7 @@ parameters_of(const http_request& req, nats_client& session, const std::string& 
     } catch (const std::exception& e) {
         // The parameters annotate the file, so a catalogue that cannot answer
         // them must not cost the reader the file.
-        BOOST_LOG_SEV(file_lg(), ores::logging::warn)
+        ORES_LOG_SEV(file_lg(), ores::logging::warn)
             << "The parameters of " << ore_file_code << " could not be read: " << e.what();
         return {};
     }
@@ -241,7 +241,7 @@ bool schema_is_stored(const http_request& req,
                     file.file.typical_filename == typical_filename)
                     return true;
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(file_lg(), ores::logging::warn)
+        ORES_LOG_SEV(file_lg(), ores::logging::warn)
             << "The stored schemas of ORE " << engine_version << " could not be read: " << e.what();
     }
     return false;
@@ -342,7 +342,7 @@ outputs_of(const ores::storage::filesystem::local_store& store, const std::strin
         return ore_results::located_files(
             ore_results::manifest_from_json(std::string_view(text.data(), text.size())), key);
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(file_lg(), ores::logging::warn)
+        ORES_LOG_SEV(file_lg(), ores::logging::warn)
             << "The output manifest of result " << result_id << " could not be read: " << e.what();
         return std::nullopt;
     }

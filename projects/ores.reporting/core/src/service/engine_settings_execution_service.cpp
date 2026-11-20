@@ -26,7 +26,6 @@
 #include "ores.reporting.api/domain/engine_settings_execution.hpp"
 #include "ores.reporting.api/messaging/engine_settings_execution_protocol.hpp"
 #include "ores.reporting.core/repository/engine_settings_execution_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <chrono>
@@ -45,7 +44,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -517,12 +515,12 @@ ores::utility::domain::result engine_settings_execution_service::prepare_change(
 std::vector<domain::engine_settings_execution>
 engine_settings_execution_service::list_engine_settings_execution(std::uint32_t offset,
                                                                   std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all engine settings execution";
+    ORES_LOG_SEV(lg(), debug) << "Listing all engine settings execution";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t engine_settings_execution_service::count_engine_settings_execution() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total engine settings execution count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total engine settings execution count";
     return repo_.get_total_engine_settings_execution_count(ctx_);
 }
 
@@ -530,15 +528,15 @@ std::uint32_t engine_settings_execution_service::count_engine_settings_execution
 std::vector<domain::engine_settings_execution>
 engine_settings_execution_service::list_engine_settings_execution_by_engine_settings_id(
     const std::string& engine_settings_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing engine settings execution by engine_settings_id: "
-                               << engine_settings_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing engine settings execution by engine_settings_id: "
+                              << engine_settings_id;
     return repo_.read_latest_by_engine_settings_id(ctx_, engine_settings_id, offset, limit);
 }
 
 std::uint32_t
 engine_settings_execution_service::count_engine_settings_execution_by_engine_settings_id(
     const std::string& engine_settings_id) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Getting total engine settings execution count by engine_settings_id: "
         << engine_settings_id;
     return repo_.get_total_engine_settings_execution_count_by_engine_settings_id(
@@ -548,8 +546,8 @@ engine_settings_execution_service::count_engine_settings_execution_by_engine_set
 std::vector<domain::engine_settings_execution>
 engine_settings_execution_service::list_engine_settings_execution_by_engine_settings_id(
     const boost::uuids::uuid& engine_settings_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing engine settings execution by engine_settings_id: "
-                               << engine_settings_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing engine settings execution by engine_settings_id: "
+                              << engine_settings_id;
     return repo_.read_latest_by_engine_settings_id(
         ctx_, boost::uuids::to_string(engine_settings_id), offset, limit);
 }
@@ -557,7 +555,7 @@ engine_settings_execution_service::list_engine_settings_execution_by_engine_sett
 std::uint32_t
 engine_settings_execution_service::count_engine_settings_execution_by_engine_settings_id(
     const boost::uuids::uuid& engine_settings_id) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Getting total engine settings execution count by engine_settings_id: "
         << engine_settings_id;
     return repo_.get_total_engine_settings_execution_count_by_engine_settings_id(
@@ -570,7 +568,7 @@ engine_settings_execution_service::list_engine_settings_execution_by_engine_sett
     const std::string& engine_settings_id,
     std::chrono::system_clock::time_point valid_from_bound,
     std::chrono::system_clock::time_point valid_to_bound) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Listing engine settings execution by engine_settings_id as of window: "
         << engine_settings_id;
     return repo_.read_by_engine_settings_id_as_of(
@@ -580,14 +578,14 @@ engine_settings_execution_service::list_engine_settings_execution_by_engine_sett
 std::optional<domain::engine_settings_execution>
 engine_settings_execution_service::get_engine_settings_execution_at_version(
     const boost::uuids::uuid& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting engine settings execution at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting engine settings execution at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::engine_settings_execution>
 engine_settings_execution_service::get_engine_settings_execution(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting engine settings execution. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting engine settings execution. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -604,11 +602,11 @@ void engine_settings_execution_service::save_engine_settings_execution(
     const domain::engine_settings_execution& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Engine Settings Execution id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving engine settings execution. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving engine settings execution. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved engine settings execution. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved engine settings execution. " << "id: " << v.id;
 }
 
 void engine_settings_execution_service::save_engine_settings_execution(
@@ -617,8 +615,8 @@ void engine_settings_execution_service::save_engine_settings_execution(
         if (e.id.is_nil())
             throw std::invalid_argument("Engine Settings Execution id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << engine_settings_execution.size()
-                               << " engine settings execution";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << engine_settings_execution.size()
+                              << " engine settings execution";
     auto ts = engine_settings_execution;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -628,9 +626,9 @@ void engine_settings_execution_service::save_engine_settings_execution(
 
 void engine_settings_execution_service::delete_engine_settings_execution(
     const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing engine settings execution. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing engine settings execution. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed engine settings execution. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed engine settings execution. " << "id: " << id;
 }
 
 void engine_settings_execution_service::delete_engine_settings_execution(
@@ -640,7 +638,7 @@ void engine_settings_execution_service::delete_engine_settings_execution(
 
 std::vector<domain::engine_settings_execution>
 engine_settings_execution_service::get_engine_settings_execution_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for engine settings execution. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for engine settings execution. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

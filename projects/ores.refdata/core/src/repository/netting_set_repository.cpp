@@ -26,14 +26,12 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/netting_set.hpp"
 #include "ores.refdata.api/domain/netting_set_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/messaging/netting_set_protocol.hpp"
 #include "ores.refdata.core/repository/netting_set_entity.hpp"
 #include "ores.refdata.core/repository/netting_set_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -233,7 +231,7 @@ void netting_set_repository::write(const context& ctx, const std::vector<domain:
 void netting_set_repository::write(const context& ctx,
                                    const domain::netting_set& v,
                                    const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing netting set. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Writing netting set. " << "id: " << v.id;
     const auto t = netting_set_apply_claim(v,
                                            claim,
                                            netting_set_claim_reads_current(claim) ?
@@ -246,7 +244,7 @@ void netting_set_repository::write(const context& ctx,
 void netting_set_repository::write(const context& ctx,
                                    const std::vector<domain::netting_set>& v,
                                    const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing netting sets. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing netting sets. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "netting_set_repository::write: one claim is needed for each row");
@@ -282,7 +280,7 @@ std::vector<domain::netting_set> netting_set_repository::read_latest(const conte
 
 std::vector<domain::netting_set> netting_set_repository::read_latest(const context& ctx,
                                                                      const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest netting set. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest netting set. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -299,7 +297,7 @@ std::vector<domain::netting_set> netting_set_repository::read_latest(const conte
 
 std::vector<domain::netting_set>
 netting_set_repository::read_latest_by_code(const context& ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest netting set by code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest netting set by code: " << code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -340,7 +338,7 @@ netting_set_repository::read_latest_by_code(const context& ctx,
         }
         return all;
     }
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest netting sets by code. Count: " << codes.size();
+    ORES_LOG_SEV(lg(), debug) << "Reading latest netting sets by code. Count: " << codes.size();
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -360,7 +358,7 @@ netting_set_repository::read_latest_by_code(const context& ctx,
 
 std::vector<domain::netting_set> netting_set_repository::read_any_by_code(const context& ctx,
                                                                           const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading any netting set by code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Reading any netting set by code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<netting_set_entity>> |
                        query_builder::where("tenant_id"_c == tid && "code"_c == code) |
@@ -387,7 +385,7 @@ std::vector<domain::netting_set> netting_set_repository::read_any_by_code(const 
 
 std::vector<domain::netting_set> netting_set_repository::read_all(const context& ctx,
                                                                   const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all netting set versions. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading all netting set versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<netting_set_entity>> |
                        query_builder::where("tenant_id"_c == tid && "id"_c == id) |
@@ -404,8 +402,8 @@ std::vector<domain::netting_set> netting_set_repository::read_all(const context&
 std::optional<domain::netting_set> netting_set_repository::read_at_version(const context& ctx,
                                                                            const std::string& id,
                                                                            std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading netting set at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading netting set at version. " << "id: " << id
+                              << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<netting_set_entity>> |
@@ -432,9 +430,9 @@ std::vector<domain::netting_set> netting_set_repository::read_latest_by_netting_
     std::uint32_t limit,
     const ores::utility::domain::order& order,
     const std::optional<messaging::netting_sets_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest netting sets. netting_agreement_id: "
-                               << netting_agreement_id << " offset: " << offset
-                               << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest netting sets. netting_agreement_id: "
+                              << netting_agreement_id << " offset: " << offset
+                              << " limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<netting_set_entity>> |
@@ -457,7 +455,7 @@ std::uint32_t netting_set_repository::get_total_netting_set_count_by_netting_agr
     const context& ctx,
     const std::string& netting_agreement_id,
     const std::optional<messaging::netting_sets_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Retrieving total active netting sets count. netting_agreement_id: "
         << netting_agreement_id;
     static constexpr auto max = db_timestamp::max();
@@ -484,8 +482,8 @@ std::vector<domain::netting_set> netting_set_repository::read_latest_by_credit_l
     std::uint32_t limit,
     const ores::utility::domain::order& order,
     const std::optional<messaging::netting_sets_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest netting sets. credit_limit_id: "
-                               << credit_limit_id << " offset: " << offset << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest netting sets. credit_limit_id: " << credit_limit_id
+                              << " offset: " << offset << " limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -508,8 +506,8 @@ std::uint32_t netting_set_repository::get_total_netting_set_count_by_credit_limi
     const context& ctx,
     const std::string& credit_limit_id,
     const std::optional<messaging::netting_sets_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active netting sets count. credit_limit_id: "
-                               << credit_limit_id;
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active netting sets count. credit_limit_id: "
+                              << credit_limit_id;
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx.tenant_id().to_string();
@@ -529,7 +527,7 @@ std::uint32_t netting_set_repository::get_total_netting_set_count_by_credit_limi
 
 netting_set_repository::remove_status netting_set_repository::remove(
     const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing netting set. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing netting set. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
         return remove_status::missing;
@@ -567,8 +565,8 @@ netting_set_repository::read_latest(const context& ctx,
                                     const ores::utility::domain::order& order,
                                     const std::optional<messaging::netting_sets_filter>& filter,
                                     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest netting sets with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest netting sets with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<netting_set_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -589,7 +587,7 @@ std::uint32_t netting_set_repository::get_total_netting_set_count(
     const context& ctx,
     const std::optional<messaging::netting_sets_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active netting set count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active netting set count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<netting_set_entity>> |

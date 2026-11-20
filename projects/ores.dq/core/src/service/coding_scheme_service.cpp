@@ -29,10 +29,8 @@
 #include "ores.dq.api/domain/coding_scheme.hpp"
 #include "ores.dq.api/messaging/coding_scheme_protocol.hpp"
 #include "ores.dq.core/repository/coding_scheme_repository.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -445,25 +443,25 @@ coding_scheme_service::prepare_change(const messaging::coding_scheme_change& cha
 
 std::vector<domain::coding_scheme> coding_scheme_service::list_schemes(std::uint32_t offset,
                                                                        std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all coding schemes";
+    ORES_LOG_SEV(lg(), debug) << "Listing all coding schemes";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t coding_scheme_service::count_schemes() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total coding schemes count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total coding schemes count";
     return repo_.get_total_scheme_count(ctx_);
 }
 
 
 std::optional<domain::coding_scheme>
 coding_scheme_service::get_scheme_at_version(const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting coding scheme at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting coding scheme at version. " << "code: " << code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::coding_scheme> coding_scheme_service::get_scheme(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting coding scheme. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting coding scheme. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -478,11 +476,11 @@ coding_scheme_service::get_schemes(const std::vector<std::string>& codes) {
 void coding_scheme_service::save_scheme(const domain::coding_scheme& v) {
     if (v.code.empty())
         throw std::invalid_argument("Coding Scheme code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving coding scheme. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving coding scheme. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved coding scheme. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved coding scheme. " << "code: " << v.code;
 }
 
 void coding_scheme_service::save_schemes(const std::vector<domain::coding_scheme>& schemes) {
@@ -490,7 +488,7 @@ void coding_scheme_service::save_schemes(const std::vector<domain::coding_scheme
         if (e.code.empty())
             throw std::invalid_argument("Coding Scheme code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << schemes.size() << " coding schemes";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << schemes.size() << " coding schemes";
     auto ts = schemes;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -499,9 +497,9 @@ void coding_scheme_service::save_schemes(const std::vector<domain::coding_scheme
 }
 
 void coding_scheme_service::delete_scheme(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing coding scheme. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing coding scheme. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed coding scheme. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed coding scheme. " << "code: " << code;
 }
 
 void coding_scheme_service::delete_schemes(const std::vector<std::string>& codes) {
@@ -510,7 +508,7 @@ void coding_scheme_service::delete_schemes(const std::vector<std::string>& codes
 
 std::vector<domain::coding_scheme>
 coding_scheme_service::get_scheme_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for coding scheme. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for coding scheme. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

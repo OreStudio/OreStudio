@@ -24,11 +24,9 @@
  */
 #include "ores.trading.core/repository/long_short_type_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.trading.api/domain/long_short_type.hpp"
 #include "ores.trading.api/domain/long_short_type_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/long_short_type_entity.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <optional>
 #include <vector>
 
@@ -38,7 +36,7 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 
 domain::long_short_type long_short_type_mapper::map(const long_short_type_entity& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::long_short_type r;
     r.version = v.version;
@@ -51,12 +49,12 @@ domain::long_short_type long_short_type_mapper::map(const long_short_type_entity
     r.change_commentary = v.change_commentary;
     r.recorded_at = v.valid_from;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
 }
 
 long_short_type_entity long_short_type_mapper::map(const domain::long_short_type& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     long_short_type_entity r;
     r.code = v.code;
@@ -68,7 +66,7 @@ long_short_type_entity long_short_type_mapper::map(const domain::long_short_type
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;
 }
 

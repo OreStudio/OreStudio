@@ -26,7 +26,6 @@
 #include "ores.refdata.api/domain/commodity_curve_interpolation.hpp"
 #include "ores.refdata.api/messaging/commodity_curve_interpolation_protocol.hpp"
 #include "ores.refdata.core/repository/commodity_curve_interpolation_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -475,12 +473,12 @@ ores::utility::domain::result commodity_curve_interpolation_service::prepare_cha
 std::vector<domain::commodity_curve_interpolation>
 commodity_curve_interpolation_service::list_interpolations(std::uint32_t offset,
                                                            std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all commodity curve interpolations";
+    ORES_LOG_SEV(lg(), debug) << "Listing all commodity curve interpolations";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t commodity_curve_interpolation_service::count_interpolations() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total commodity curve interpolations count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total commodity curve interpolations count";
     return repo_.get_total_interpolation_count(ctx_);
 }
 
@@ -488,14 +486,14 @@ std::uint32_t commodity_curve_interpolation_service::count_interpolations() {
 std::optional<domain::commodity_curve_interpolation>
 commodity_curve_interpolation_service::get_interpolation_at_version(const boost::uuids::uuid& id,
                                                                     std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting commodity curve interpolation at version. "
-                               << "id: " << id << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting commodity curve interpolation at version. "
+                              << "id: " << id << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::commodity_curve_interpolation>
 commodity_curve_interpolation_service::get_interpolation(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting commodity curve interpolation. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting commodity curve interpolation. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -511,11 +509,11 @@ void commodity_curve_interpolation_service::save_interpolation(
     const domain::commodity_curve_interpolation& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Commodity Curve Interpolation id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving commodity curve interpolation. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving commodity curve interpolation. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved commodity curve interpolation. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved commodity curve interpolation. " << "id: " << v.id;
 }
 
 void commodity_curve_interpolation_service::save_interpolations(
@@ -524,8 +522,8 @@ void commodity_curve_interpolation_service::save_interpolations(
         if (e.id.is_nil())
             throw std::invalid_argument("Commodity Curve Interpolation id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << interpolations.size()
-                               << " commodity curve interpolations";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << interpolations.size()
+                              << " commodity curve interpolations";
     auto ts = interpolations;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -534,9 +532,9 @@ void commodity_curve_interpolation_service::save_interpolations(
 }
 
 void commodity_curve_interpolation_service::delete_interpolation(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing commodity curve interpolation. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing commodity curve interpolation. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed commodity curve interpolation. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed commodity curve interpolation. " << "id: " << id;
 }
 
 void commodity_curve_interpolation_service::delete_interpolations(
@@ -546,8 +544,8 @@ void commodity_curve_interpolation_service::delete_interpolations(
 
 std::vector<domain::commodity_curve_interpolation>
 commodity_curve_interpolation_service::get_interpolation_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for commodity curve interpolation. "
-                               << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for commodity curve interpolation. "
+                              << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

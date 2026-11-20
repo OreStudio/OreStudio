@@ -19,7 +19,7 @@
  */
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.trading.api/domain/bond_leg_amount_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/bond_leg_amount_entity.hpp"
@@ -129,7 +129,7 @@ TEST_CASE("bond_leg_amount_decimal_round_trips_exactly", "[repository][bond_leg_
 
     bond_leg_amount_repository repo;
     for (int i = 0; i < probe_count; ++i) {
-        BOOST_LOG_SEV(lg, debug) << "Writing amount: " << probes[i].text;
+        ORES_LOG_SEV(lg, debug) << "Writing amount: " << probes[i].text;
         CHECK_NOTHROW(repo.write(ctx, make_amount(h, trade_id, i + 1, probes[i].text)));
     }
 
@@ -137,14 +137,14 @@ TEST_CASE("bond_leg_amount_decimal_round_trips_exactly", "[repository][bond_leg_
         const auto read =
             repo.read_latest(ctx, id_str, "trs_funding", "1", "notional", std::to_string(i + 1));
         REQUIRE(read.size() == 1);
-        BOOST_LOG_SEV(lg, debug) << "Read back: " << read[0].value.to_string();
+        ORES_LOG_SEV(lg, debug) << "Read back: " << read[0].value.to_string();
         CHECK(read[0].value.to_string() == probes[i].canonical);
     }
 
     const auto entities = read_entities(ctx, id_str);
     REQUIRE(entities.size() == static_cast<std::size_t>(probe_count));
     for (int i = 0; i < probe_count; ++i) {
-        BOOST_LOG_SEV(lg, info) << "Stored value: " << entities[i].value.to_string();
+        ORES_LOG_SEV(lg, info) << "Stored value: " << entities[i].value.to_string();
         // The row holds the decimal, not its fixed-scale text, so the value is
         // compared with the one the probe states, not with the column's scale.
         CHECK(entities[i].value.to_string() == probes[i].canonical);
@@ -208,7 +208,7 @@ TEST_CASE("bond_leg_amount_refuses_a_value_wider_than_the_column",
         message = e.what();
     }
 
-    BOOST_LOG_SEV(lg, info) << "Refused: " << message;
+    ORES_LOG_SEV(lg, info) << "Refused: " << message;
     CHECK(refused);
     CHECK(message.find("numeric") != std::string::npos);
 }

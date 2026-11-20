@@ -34,7 +34,7 @@
 #include "ores.http.core/routes/ore_value_sets.hpp"
 #include "ores.http.nats/forwarding.hpp"
 #include "ores.http/routes/reporting/ore_value_set_rows.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/messaging/instrument_code_protocol.hpp"
 #include "ores.refdata.api/messaging/tenor_protocol.hpp"
 #include "ores.reporting.api/messaging/ore_parameter_protocol.hpp"
@@ -92,7 +92,7 @@ const ore_parameter* documented_of(const documentation& documented,
 }
 
 /// One field of a documentation row, or nothing when the guide never lists it.
-std::string documented_field(const ore_parameter* doc, std::string ore_parameter::*field) {
+std::string documented_field(const ore_parameter* doc, std::string ore_parameter::* field) {
     return doc == nullptr ? std::string() : doc->*field;
 }
 
@@ -393,7 +393,7 @@ std::string vocabulary_json(const http_request& req, nats_client& session) {
         tenors.push_back(object({member("code", json::write(tenor.code)),
                                  member("displayName", json::write(tenor.display_name))}));
 
-    BOOST_LOG_SEV(pricing_vocabulary_lg(), ores::logging::debug)
+    ORES_LOG_SEV(pricing_vocabulary_lg(), ores::logging::debug)
         << "Stating the vocabulary: " << types.size() << " types, " << pairs.size() << " pairs, "
         << settings.size() << " settings, " << globals.size() << " globals, " << models.size()
         << " models, " << methods.size() << " methods, " << templates.size() << " templates, "

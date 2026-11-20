@@ -18,7 +18,7 @@
  *
  */
 #include "ores.http/routes/refdata/curve_amend_rules.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <optional>
@@ -32,7 +32,7 @@ using namespace ores::logging;
 
 TEST_CASE("a_curve_leaf_refuses_a_value_outside_its_set", "[curve_amend_rules]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the refusal of a curve leaf's value";
+    ORES_LOG_SEV(lg, info) << "Testing the refusal of a curve leaf's value";
 
     auto enumerated = value_fields{};
     enumerated.value_set = "curve_day_counters";
@@ -68,7 +68,7 @@ TEST_CASE("a_curve_leaf_refuses_a_value_outside_its_set", "[curve_amend_rules]")
 
 TEST_CASE("a_curve_amendment_reads_the_version_its_service_refused", "[curve_amend_rules]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the words a stale save is refused with";
+    ORES_LOG_SEV(lg, info) << "Testing the words a stale save is refused with";
 
     CHECK(is_stale("version conflict: the row moved on"));
     CHECK(is_stale("A version_conflict stopped the save"));

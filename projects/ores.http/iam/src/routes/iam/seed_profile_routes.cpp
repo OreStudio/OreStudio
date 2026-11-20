@@ -334,7 +334,7 @@ void seed_profile_routes::register_routes(
     std::shared_ptr<ores::http::net::router> router,
     std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
     nats_client& session) {
-    BOOST_LOG_SEV(lg(), info) << "Registering seed_profiles routes";
+    ORES_LOG_SEV(lg(), info) << "Registering seed_profiles routes";
 
     auto list_route =
         router->get("/api/v1/tenancy/seed_profiles")
@@ -479,7 +479,7 @@ void seed_profile_routes::register_routes(
     router->add_route(version_built);
     registry->register_route(version_built);
 
-    BOOST_LOG_SEV(lg(), info) << "seed_profiles routes registered: " << 10 << " endpoint(s)";
+    ORES_LOG_SEV(lg(), info) << "seed_profiles routes registered: " << 10 << " endpoint(s)";
 }
 
 }

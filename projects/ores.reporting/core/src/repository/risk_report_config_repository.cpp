@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.reporting.api/domain/risk_report_config.hpp"
 #include "ores.reporting.api/domain/risk_report_config_json_io.hpp" // IWYU pragma: keep.
 #include "ores.reporting.core/repository/risk_report_config_entity.hpp"
 #include "ores.reporting.core/repository/risk_report_config_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -197,7 +195,7 @@ void risk_report_config_repository::write(const context& ctx,
 void risk_report_config_repository::write(const context& ctx,
                                           const domain::risk_report_config& v,
                                           const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing risk report config. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Writing risk report config. " << "id: " << v.id;
     const auto t =
         risk_report_config_apply_claim(v,
                                        claim,
@@ -212,7 +210,7 @@ void risk_report_config_repository::write(
     const context& ctx,
     const std::vector<domain::risk_report_config>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing risk report configs. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing risk report configs. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "risk_report_config_repository::write: one claim is needed for each row");
@@ -251,7 +249,7 @@ risk_report_config_repository::read_latest(const context& ctx) {
 
 std::vector<domain::risk_report_config>
 risk_report_config_repository::read_latest(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest risk report config. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest risk report config. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -269,7 +267,7 @@ risk_report_config_repository::read_latest(const context& ctx, const std::string
 
 std::vector<domain::risk_report_config>
 risk_report_config_repository::read_all(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all risk report config versions. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading all risk report config versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<risk_report_config_entity>> |
                        query_builder::where("tenant_id"_c == tid && "id"_c == id) |
@@ -285,8 +283,8 @@ risk_report_config_repository::read_all(const context& ctx, const std::string& i
 
 std::optional<domain::risk_report_config> risk_report_config_repository::read_at_version(
     const context& ctx, const std::string& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading risk report config at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading risk report config at version. " << "id: " << id
+                              << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<risk_report_config_entity>> |
@@ -313,8 +311,8 @@ risk_report_config_repository::read_latest_by_configuration_id(
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest risk report configs. configuration_id: "
-                               << configuration_id << " offset: " << offset << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest risk report configs. configuration_id: "
+                              << configuration_id << " offset: " << offset << " limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -336,7 +334,7 @@ risk_report_config_repository::read_latest_by_configuration_id(
 
 std::uint32_t risk_report_config_repository::get_total_config_count_by_configuration_id(
     const context& ctx, const std::string& configuration_id) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Retrieving total active risk report configs count. configuration_id: "
         << configuration_id;
     static constexpr auto max = db_timestamp::max();
@@ -354,7 +352,7 @@ std::uint32_t risk_report_config_repository::get_total_config_count_by_configura
 
 risk_report_config_repository::remove_status risk_report_config_repository::remove(
     const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing risk report config. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing risk report config. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
         return remove_status::missing;
@@ -392,8 +390,8 @@ risk_report_config_repository::read_latest(const context& ctx,
                                            std::uint32_t limit,
                                            const ores::utility::domain::order& order,
                                            const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest risk report configs with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest risk report configs with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<risk_report_config_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -413,7 +411,7 @@ risk_report_config_repository::read_latest(const context& ctx,
 std::uint32_t
 risk_report_config_repository::get_total_config_count(const context& ctx,
                                                       const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active risk report config count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active risk report config count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<risk_report_config_entity>> |
@@ -551,7 +549,7 @@ std::optional<domain::risk_report_config>
 risk_report_config_repository::find_by_definition_id(const context& ctx,
                                                      const std::string& definition_id) {
 
-    BOOST_LOG_SEV(lg(), debug) << "Finding risk_report_config by definition_id: " << definition_id;
+    ORES_LOG_SEV(lg(), debug) << "Finding risk_report_config by definition_id: " << definition_id;
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -592,8 +590,8 @@ risk_report_config_repository::find_by_definition_id(const context& ctx,
 std::vector<std::string> risk_report_config_repository::resolve_book_ids(
     const context& ctx, const std::string& config_id, const std::string& definition_id) {
 
-    BOOST_LOG_SEV(lg(), debug) << "Resolving book IDs for config: " << config_id
-                               << " definition: " << definition_id;
+    ORES_LOG_SEV(lg(), debug) << "Resolving book IDs for config: " << config_id
+                              << " definition: " << definition_id;
 
     const auto tid = ctx.tenant_id().to_string();
     const std::string sql =
@@ -625,7 +623,7 @@ risk_report_config_repository::regulatory_book_type_of(const context& ctx,
 std::vector<std::string>
 risk_report_config_repository::get_book_scope(const context& ctx, const std::string& config_id) {
 
-    BOOST_LOG_SEV(lg(), debug) << "Reading book scope for config: " << config_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading book scope for config: " << config_id;
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -642,7 +640,7 @@ risk_report_config_repository::get_book_scope(const context& ctx, const std::str
     for (const auto& row : rows)
         book_ids.push_back(row.book_id);
 
-    BOOST_LOG_SEV(lg(), debug) << "Found " << book_ids.size() << " book(s) in scope";
+    ORES_LOG_SEV(lg(), debug) << "Found " << book_ids.size() << " book(s) in scope";
     return book_ids;
 }
 
@@ -650,7 +648,7 @@ std::vector<std::string>
 risk_report_config_repository::get_portfolio_scope(const context& ctx,
                                                    const std::string& config_id) {
 
-    BOOST_LOG_SEV(lg(), debug) << "Reading portfolio scope for config: " << config_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading portfolio scope for config: " << config_id;
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -667,7 +665,7 @@ risk_report_config_repository::get_portfolio_scope(const context& ctx,
     for (const auto& row : rows)
         portfolio_ids.push_back(row.portfolio_id);
 
-    BOOST_LOG_SEV(lg(), debug) << "Found " << portfolio_ids.size() << " portfolio(s) in scope";
+    ORES_LOG_SEV(lg(), debug) << "Found " << portfolio_ids.size() << " portfolio(s) in scope";
     return portfolio_ids;
 }
 

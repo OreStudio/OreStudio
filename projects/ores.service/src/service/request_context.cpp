@@ -18,7 +18,7 @@
  *
  */
 #include "ores.service/service/request_context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.security/jwt/jwt_claims.hpp"
 #include "ores.security/jwt/jwt_error.hpp"
@@ -89,7 +89,7 @@ make_context_from_jwt(const ores::database::context& base_ctx,
                 *tid_result, party_id, std::move(visible_ids), claims->username.value_or(""))
             .with_roles(claims->roles);
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to parse party UUIDs from JWT: " << e.what();
+        ORES_LOG_SEV(lg(), warn) << "Failed to parse party UUIDs from JWT: " << e.what();
         return base_ctx.with_tenant(*tid_result, claims->username.value_or(""))
             .with_roles(claims->roles);
     }

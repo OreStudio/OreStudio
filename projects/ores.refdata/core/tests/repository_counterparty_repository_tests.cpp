@@ -17,8 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/boost_severity.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/counterparty.hpp"         // IWYU pragma: keep.
 #include "ores.refdata.api/domain/counterparty_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/generators/counterparty_generator.hpp"
@@ -27,7 +26,6 @@
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "test_suite.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -48,7 +46,7 @@ TEST_CASE("write_single_counterparty", "[repository]") {
     auto ctx = ores::testing::make_generation_context(h);
     auto cp = generate_synthetic_counterparty(ctx);
     cp.change_reason_code = "system.test";
-    BOOST_LOG_SEV(lg, debug) << "Counterparty: " << cp;
+    ORES_LOG_SEV(lg, debug) << "Counterparty: " << cp;
 
     counterparty_repository repo;
     repo.write(h.context(), cp);
@@ -67,7 +65,7 @@ TEST_CASE("write_multiple_counterparties", "[repository]") {
     for (auto& cp : counterparties) {
         cp.change_reason_code = "system.test";
     }
-    BOOST_LOG_SEV(lg, debug) << "Counterparties: " << counterparties;
+    ORES_LOG_SEV(lg, debug) << "Counterparties: " << counterparties;
 
     counterparty_repository repo;
     repo.write(h.context(), counterparties);
@@ -90,13 +88,13 @@ TEST_CASE("read_latest_counterparties", "[repository]") {
     for (auto& cp : written_counterparties) {
         cp.change_reason_code = "system.test";
     }
-    BOOST_LOG_SEV(lg, debug) << "Written counterparties: " << written_counterparties;
+    ORES_LOG_SEV(lg, debug) << "Written counterparties: " << written_counterparties;
 
     counterparty_repository repo;
     repo.write(h.context(), written_counterparties);
 
     auto read_counterparties = repo.read_latest(h.context());
-    BOOST_LOG_SEV(lg, debug) << "Read counterparties: " << read_counterparties;
+    ORES_LOG_SEV(lg, debug) << "Read counterparties: " << read_counterparties;
 
     for (const auto& written : written_counterparties) {
         const auto it = std::ranges::find_if(
@@ -114,7 +112,7 @@ TEST_CASE("read_latest_counterparty_by_id", "[repository]") {
     auto cp = generate_synthetic_counterparty(ctx);
     cp.change_reason_code = "system.test";
     const auto original_full_name = cp.full_name;
-    BOOST_LOG_SEV(lg, debug) << "Counterparty: " << cp;
+    ORES_LOG_SEV(lg, debug) << "Counterparty: " << cp;
 
     counterparty_repository repo;
     repo.write(h.context(), cp);
@@ -123,7 +121,7 @@ TEST_CASE("read_latest_counterparty_by_id", "[repository]") {
     repo.write(h.context(), cp);
 
     auto read_counterparties = repo.read_latest(h.context(), boost::uuids::to_string(cp.id));
-    BOOST_LOG_SEV(lg, debug) << "Read counterparties: " << read_counterparties;
+    ORES_LOG_SEV(lg, debug) << "Read counterparties: " << read_counterparties;
 
     REQUIRE(read_counterparties.size() == 1);
     CHECK(read_counterparties[0].id == cp.id);
@@ -144,11 +142,11 @@ TEST_CASE("read_nonexistent_counterparty_id", "[repository]") {
     repo.write(h.context(), keeper);
 
     const auto nonexistent_id = boost::uuids::random_generator()();
-    BOOST_LOG_SEV(lg, debug) << "Non-existent ID: " << nonexistent_id;
+    ORES_LOG_SEV(lg, debug) << "Non-existent ID: " << nonexistent_id;
 
     auto read_counterparties =
         repo.read_latest(h.context(), boost::uuids::to_string(nonexistent_id));
-    BOOST_LOG_SEV(lg, debug) << "Read counterparties: " << read_counterparties;
+    ORES_LOG_SEV(lg, debug) << "Read counterparties: " << read_counterparties;
 
     const auto answered_with_another_key = std::ranges::any_of(
         read_counterparties, [&](const counterparty& c) { return c.id == nonexistent_id; });

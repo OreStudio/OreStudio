@@ -26,14 +26,12 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/crm_enabled_derived_pair.hpp"
 #include "ores.refdata.api/domain/crm_enabled_derived_pair_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/messaging/crm_enabled_derived_pair_protocol.hpp"
 #include "ores.refdata.core/repository/crm_enabled_derived_pair_entity.hpp"
 #include "ores.refdata.core/repository/crm_enabled_derived_pair_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -220,7 +218,7 @@ void crm_enabled_derived_pair_repository::write(
 void crm_enabled_derived_pair_repository::write(const context& ctx,
                                                 const domain::crm_enabled_derived_pair& v,
                                                 const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing CRM enabled derived pair. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Writing CRM enabled derived pair. " << "id: " << v.id;
     const auto t =
         crm_enabled_derived_pair_apply_claim(v,
                                              claim,
@@ -237,7 +235,7 @@ void crm_enabled_derived_pair_repository::write(
     const context& ctx,
     const std::vector<domain::crm_enabled_derived_pair>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing CRM enabled derived pairs. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing CRM enabled derived pairs. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "crm_enabled_derived_pair_repository::write: one claim is needed for each row");
@@ -277,7 +275,7 @@ crm_enabled_derived_pair_repository::read_latest(const context& ctx) {
 
 std::vector<domain::crm_enabled_derived_pair>
 crm_enabled_derived_pair_repository::read_latest(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest CRM enabled derived pair. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest CRM enabled derived pair. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -296,7 +294,7 @@ crm_enabled_derived_pair_repository::read_latest(const context& ctx, const std::
 
 std::vector<domain::crm_enabled_derived_pair>
 crm_enabled_derived_pair_repository::read_all(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all CRM enabled derived pair versions. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading all CRM enabled derived pair versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<crm_enabled_derived_pair_entity>> |
                        query_builder::where("tenant_id"_c == tid && "id"_c == id) |
@@ -315,8 +313,8 @@ std::optional<domain::crm_enabled_derived_pair>
 crm_enabled_derived_pair_repository::read_at_version(const context& ctx,
                                                      const std::string& id,
                                                      std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading CRM enabled derived pair at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading CRM enabled derived pair at version. " << "id: " << id
+                              << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<crm_enabled_derived_pair_entity>> |
@@ -339,7 +337,7 @@ crm_enabled_derived_pair_repository::read_at_version(const context& ctx,
 
 crm_enabled_derived_pair_repository::remove_status crm_enabled_derived_pair_repository::remove(
     const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing CRM enabled derived pair. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing CRM enabled derived pair. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
         return remove_status::missing;
@@ -378,8 +376,8 @@ std::vector<domain::crm_enabled_derived_pair> crm_enabled_derived_pair_repositor
     const ores::utility::domain::order& order,
     const std::optional<messaging::crm_enabled_derived_pairs_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest CRM enabled derived pairs with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest CRM enabled derived pairs with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<crm_enabled_derived_pair_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -401,7 +399,7 @@ std::uint32_t crm_enabled_derived_pair_repository::get_total_crm_enabled_derived
     const context& ctx,
     const std::optional<messaging::crm_enabled_derived_pairs_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active CRM enabled derived pair count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active CRM enabled derived pair count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<crm_enabled_derived_pair_entity>> |

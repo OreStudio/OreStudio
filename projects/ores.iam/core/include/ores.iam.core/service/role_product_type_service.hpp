@@ -30,7 +30,7 @@
 #include "ores.iam.api/messaging/role_product_type_protocol.hpp"
 #include "ores.iam.core/export.hpp"
 #include "ores.iam.core/repository/role_product_type_repository.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstdint>
 #include <optional>

@@ -20,11 +20,9 @@
 #include "ores.database/service/health_monitor.hpp"
 #include "ores.database/domain/database_options.hpp"
 #include "ores.database/pq/connection.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include <boost/asio/bind_cancellation_slot.hpp>
 #include <boost/asio/steady_timer.hpp>
 #include <boost/asio/use_awaitable.hpp>
-#include <boost/log/sources/severity_feature.hpp>
 
 namespace ores::database {
 
@@ -49,7 +47,7 @@ std::string health_monitor::last_error() const {
 }
 
 void health_monitor::stop() {
-    BOOST_LOG_SEV(lg(), info) << "Stopping database health monitor";
+    ORES_LOG_SEV(lg(), info) << "Stopping database health monitor";
     running_ = false;
     stop_signal_.emit(boost::asio::cancellation_type::all);
 }
@@ -58,7 +56,7 @@ bool health_monitor::check_health() {
     const bool was_available = available_.load();
 
     try {
-        BOOST_LOG_SEV(lg(), debug) << "Checking database connectivity...";
+        ORES_LOG_SEV(lg(), debug) << "Checking database connectivity...";
 
         // A probe that cannot connect throws, and the catch below reports it.
         const pq::connection probe(to_connection_options(options_));
@@ -71,7 +69,7 @@ bool health_monitor::check_health() {
             }
 
             if (!was_available) {
-                BOOST_LOG_SEV(lg(), info)
+                ORES_LOG_SEV(lg(), info)
                     << "Database connection restored - database is now available";
 
                 status_change_callback callback;
@@ -83,7 +81,7 @@ bool health_monitor::check_health() {
                     callback(true, "");
                 }
             } else {
-                BOOST_LOG_SEV(lg(), debug) << "Database connectivity check passed";
+                ORES_LOG_SEV(lg(), debug) << "Database connectivity check passed";
             }
             return true;
         }
@@ -96,7 +94,7 @@ bool health_monitor::check_health() {
         }
 
         if (was_available) {
-            BOOST_LOG_SEV(lg(), error) << "Database connection lost: " << error_msg;
+            ORES_LOG_SEV(lg(), error) << "Database connection lost: " << error_msg;
 
             status_change_callback callback;
             {
@@ -107,27 +105,27 @@ bool health_monitor::check_health() {
                 callback(false, error_msg);
             }
         } else {
-            BOOST_LOG_SEV(lg(), warn) << "Database still unavailable: " << error_msg;
+            ORES_LOG_SEV(lg(), warn) << "Database still unavailable: " << error_msg;
         }
         return false;
     }
 }
 
 boost::asio::awaitable<void> health_monitor::run() {
-    BOOST_LOG_SEV(lg(), info) << "Starting database health monitor with poll interval of "
-                              << poll_interval_.count() << " seconds";
+    ORES_LOG_SEV(lg(), info) << "Starting database health monitor with poll interval of "
+                             << poll_interval_.count() << " seconds";
 
     running_ = true;
 
     // Perform initial health check
-    BOOST_LOG_SEV(lg(), info) << "Performing initial database connectivity check...";
+    ORES_LOG_SEV(lg(), info) << "Performing initial database connectivity check...";
     const bool initial_available = check_health();
 
     if (initial_available) {
-        BOOST_LOG_SEV(lg(), info) << "Initial database connectivity check PASSED";
+        ORES_LOG_SEV(lg(), info) << "Initial database connectivity check PASSED";
     } else {
-        BOOST_LOG_SEV(lg(), warn) << "Initial database connectivity check FAILED";
-        BOOST_LOG_SEV(lg(), warn) << "Database is currently unavailable - clients will be notified";
+        ORES_LOG_SEV(lg(), warn) << "Initial database connectivity check FAILED";
+        ORES_LOG_SEV(lg(), warn) << "Database is currently unavailable - clients will be notified";
     }
 
     // Continue polling
@@ -147,14 +145,14 @@ boost::asio::awaitable<void> health_monitor::run() {
 
         } catch (const boost::system::system_error& e) {
             if (e.code() == boost::asio::error::operation_aborted) {
-                BOOST_LOG_SEV(lg(), debug) << "Health monitor timer cancelled";
+                ORES_LOG_SEV(lg(), debug) << "Health monitor timer cancelled";
                 break;
             }
-            BOOST_LOG_SEV(lg(), error) << "Health monitor error: " << e.what();
+            ORES_LOG_SEV(lg(), error) << "Health monitor error: " << e.what();
         }
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Database health monitor stopped";
+    ORES_LOG_SEV(lg(), info) << "Database health monitor stopped";
 }
 
 }

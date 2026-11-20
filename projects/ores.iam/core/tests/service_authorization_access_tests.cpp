@@ -33,7 +33,7 @@
 #include "ores.iam.core/repository/role_permission_repository.hpp"
 #include "ores.iam.core/repository/role_repository.hpp"
 #include "ores.iam.core/service/authorization_service.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.utility/domain/protocol.hpp"
@@ -149,7 +149,7 @@ TEST_CASE("read_own_access_returns_roles_with_permissions_and_assignment_tail", 
     authorization_service svc(h.context());
     const auto access = assigned(svc.read_own_access(caller.id));
 
-    BOOST_LOG_SEV(lg, debug) << "Own access rows: " << access.roles.size();
+    ORES_LOG_SEV(lg, debug) << "Own access rows: " << access.roles.size();
 
     REQUIRE(access.result.outcome == outcome::ok);
     REQUIRE(access.roles.size() == 1);
@@ -185,7 +185,7 @@ TEST_CASE("read_account_access_is_denied_for_a_caller_holding_only_member", "[au
     authorization_service svc(h.context());
     const auto access = assigned(svc.read_account_access(caller.id, other.id));
 
-    BOOST_LOG_SEV(lg, debug) << "Denied access rows: " << access.roles.size();
+    ORES_LOG_SEV(lg, debug) << "Denied access rows: " << access.roles.size();
 
     CHECK(access.result.outcome == outcome::denied);
     CHECK(access.result.code == permissions::roles_read);
@@ -214,7 +214,7 @@ TEST_CASE("read_account_access_is_denied_without_the_read_permission", "[authori
     authorization_service svc(h.context());
     const auto access = assigned(svc.read_account_access(caller.id, other.id));
 
-    BOOST_LOG_SEV(lg, debug) << "Denied access rows: " << access.roles.size();
+    ORES_LOG_SEV(lg, debug) << "Denied access rows: " << access.roles.size();
 
     CHECK(access.result.outcome == outcome::denied);
     CHECK(access.result.code == permissions::roles_read);
@@ -240,7 +240,7 @@ TEST_CASE("read_account_access_returns_the_composed_shape_with_the_read_permissi
     authorization_service svc(h.context());
     const auto access = assigned(svc.read_account_access(caller.id, other.id));
 
-    BOOST_LOG_SEV(lg, debug) << "Privileged access rows: " << access.roles.size();
+    ORES_LOG_SEV(lg, debug) << "Privileged access rows: " << access.roles.size();
 
     REQUIRE(access.result.outcome == outcome::ok);
     REQUIRE(access.roles.size() == 1);
@@ -264,7 +264,7 @@ TEST_CASE("read_own_access_for_an_account_holding_nothing_is_ok_and_empty", "[au
     authorization_service svc(h.context());
     const auto access = assigned(svc.read_own_access(caller.id));
 
-    BOOST_LOG_SEV(lg, debug) << "Empty own access rows: " << access.roles.size();
+    ORES_LOG_SEV(lg, debug) << "Empty own access rows: " << access.roles.size();
 
     CHECK(access.result.outcome == outcome::ok);
     CHECK(access.roles.empty());
@@ -287,8 +287,8 @@ TEST_CASE("caller_account_resolves_the_context_actor_to_their_account", "[author
     authorization_service svc(h.context().with_tenant(h.tenant_id(), caller.username));
     const auto resolved = svc.caller_account();
 
-    BOOST_LOG_SEV(lg, debug) << "Actor '" << caller.username
-                             << "' resolved: " << resolved.has_value();
+    ORES_LOG_SEV(lg, debug) << "Actor '" << caller.username
+                            << "' resolved: " << resolved.has_value();
 
     REQUIRE(resolved.has_value());
     CHECK(*resolved == caller.id);
@@ -339,7 +339,7 @@ TEST_CASE("replace_role_permissions_adds_and_removes_in_one_call", "[authorizati
                                                      "common.rectification",
                                                      "The role was too broad");
 
-    BOOST_LOG_SEV(lg, debug) << "Bundle after replace: " << answer.permission_codes.size();
+    ORES_LOG_SEV(lg, debug) << "Bundle after replace: " << answer.permission_codes.size();
 
     REQUIRE(answer.result.outcome == outcome::ok);
     REQUIRE(answer.permission_codes.size() == 1);

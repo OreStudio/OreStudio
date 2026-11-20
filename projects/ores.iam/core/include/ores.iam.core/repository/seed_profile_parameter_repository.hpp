@@ -29,7 +29,7 @@
 #include "ores.iam.api/domain/seed_profile_parameter.hpp"
 #include "ores.iam.api/messaging/seed_profile_parameter_protocol.hpp"
 #include "ores.iam.core/export.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <chrono>
 #include <cstdint>

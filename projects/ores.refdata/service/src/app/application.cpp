@@ -24,8 +24,7 @@
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.eventing.api/service/event_bus.hpp"
 #include "ores.eventing.core/service/postgres_event_source.hpp"
-#include "ores.logging/boost_severity.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.refdata.core/messaging/registrar.hpp"
 #include "ores.refdata.core/service/calendar_materialisation_service.hpp"
@@ -41,7 +40,6 @@
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
 #include <boost/asio/io_context.hpp>
-#include <boost/log/sources/severity_feature.hpp>
 #include <chrono>
 #include <cstddef>
 #include <exception>
@@ -90,10 +88,10 @@ void build_system_calendars(const ores::database::context& ctx) {
             ores::refdata::messaging::provisioning_step_handler::last_generated_holiday_year});
         const auto took = std::chrono::duration_cast<std::chrono::milliseconds>(
             std::chrono::steady_clock::now() - started);
-        BOOST_LOG_SEV(log, info) << "Built the system tenant's calendars: wrote " << rows
-                                 << " day(s) in " << took.count() << " ms.";
+        ORES_LOG_SEV(log, info) << "Built the system tenant's calendars: wrote " << rows
+                                << " day(s) in " << took.count() << " ms.";
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(log, error) << "The system tenant's calendars were not built: " << e.what();
+        ORES_LOG_SEV(log, error) << "The system tenant's calendars were not built: " << e.what();
     }
 }
 
@@ -102,7 +100,7 @@ void build_system_calendars(const ores::database::context& ctx) {
 boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                                               const config::options& cfg) const {
 
-    BOOST_LOG_SEV(lg(), info) << ores::utility::version::format_startup_message(
+    ORES_LOG_SEV(lg(), info) << ores::utility::version::format_startup_message(
         "ores.refdata.service", 0, 1);
 
     ores::nats::service::client nats(cfg.nats);
@@ -119,7 +117,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         messaging::event_registrar::register_event_mappings(event_source, event_bus, nats);
 
     event_source.start();
-    BOOST_LOG_SEV(lg(), info) << "Entity change event pipeline started.";
+    ORES_LOG_SEV(lg(), info) << "Entity change event pipeline started.";
 
     build_system_calendars(make_context(cfg.database));
 

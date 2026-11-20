@@ -20,7 +20,7 @@
 #ifndef ORES_INBOX_SERVICE_APP_APPROVAL_EXPIRY_SCHEDULE_HPP
 #define ORES_INBOX_SERVICE_APP_APPROVAL_EXPIRY_SCHEDULE_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include <boost/asio/awaitable.hpp>
 #include <expected>

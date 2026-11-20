@@ -38,7 +38,17 @@ namespace ores::logging {
  * @note This is an implementation detail and should not be used directly
  * by client code.
  */
+namespace detail {
+
+/**
+ * @brief The severity type Boost.Log's severity feature carries.
+ *
+ * It sits in =detail= because its enumerators spell the same words as the
+ * constants a call site writes, and both cannot live in =ores::logging=.
+ */
 enum boost_severity { trace, debug, info, warn, error };
+
+}
 
 /**
  * @brief Converts a string to boost_severity.
@@ -47,7 +57,7 @@ enum boost_severity { trace, debug, info, warn, error };
  * @return Corresponding boost_severity value.
  * @throws std::invalid_argument if the string is not a valid severity.
  */
-ORES_LOGGING_EXPORT boost_severity to_boost_severity(const std::string& s);
+ORES_LOGGING_EXPORT detail::boost_severity to_boost_severity(const std::string& s);
 
 /**
  * @brief Converts domain severity_level to internal boost_severity.
@@ -55,7 +65,7 @@ ORES_LOGGING_EXPORT boost_severity to_boost_severity(const std::string& s);
  * @param level The domain severity level.
  * @return Corresponding boost_severity value.
  */
-ORES_LOGGING_EXPORT boost_severity to_boost_severity(severity_level level);
+ORES_LOGGING_EXPORT detail::boost_severity to_boost_severity(severity_level level);
 
 /**
  * @brief Converts internal boost_severity to domain severity_level.
@@ -63,7 +73,7 @@ ORES_LOGGING_EXPORT boost_severity to_boost_severity(severity_level level);
  * @param sev The boost severity.
  * @return Corresponding domain severity_level value.
  */
-ORES_LOGGING_EXPORT severity_level to_domain_severity(boost_severity sev);
+ORES_LOGGING_EXPORT severity_level to_domain_severity(detail::boost_severity sev);
 
 /**
  * @brief Inserter for boost_severity enum.
@@ -72,21 +82,21 @@ ORES_LOGGING_EXPORT severity_level to_domain_severity(boost_severity sev);
  */
 template <typename CharT, typename TraitsT>
 inline std::basic_ostream<CharT, TraitsT>& operator<<(std::basic_ostream<CharT, TraitsT>& stream,
-                                                      boost_severity level) {
+                                                      detail::boost_severity level) {
     switch (level) {
-        case boost_severity::trace:
+        case detail::boost_severity::trace:
             stream << "TRACE";
             break;
-        case boost_severity::debug:
+        case detail::boost_severity::debug:
             stream << "DEBUG";
             break;
-        case boost_severity::info:
+        case detail::boost_severity::info:
             stream << "INFO";
             break;
-        case boost_severity::warn:
+        case detail::boost_severity::warn:
             stream << "WARN";
             break;
-        case boost_severity::error:
+        case detail::boost_severity::error:
             stream << "ERROR";
             break;
         default:

@@ -26,14 +26,12 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/book_change.hpp"
 #include "ores.refdata.api/domain/book_change_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/messaging/book_change_protocol.hpp"
 #include "ores.refdata.core/repository/book_change_entity.hpp"
 #include "ores.refdata.core/repository/book_change_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -218,7 +216,7 @@ void book_change_repository::write(const context& ctx, const std::vector<domain:
 void book_change_repository::write(const context& ctx,
                                    const domain::book_change& v,
                                    const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing book change. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Writing book change. " << "id: " << v.id;
     const auto t = book_change_apply_claim(v,
                                            claim,
                                            book_change_claim_reads_current(claim) ?
@@ -231,7 +229,7 @@ void book_change_repository::write(const context& ctx,
 void book_change_repository::write(const context& ctx,
                                    const std::vector<domain::book_change>& v,
                                    const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing book changes. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing book changes. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "book_change_repository::write: one claim is needed for each row");
@@ -267,7 +265,7 @@ std::vector<domain::book_change> book_change_repository::read_latest(const conte
 
 std::vector<domain::book_change> book_change_repository::read_latest(const context& ctx,
                                                                      const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest book change. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest book change. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -285,7 +283,7 @@ std::vector<domain::book_change> book_change_repository::read_latest(const conte
 
 std::vector<domain::book_change> book_change_repository::read_all(const context& ctx,
                                                                   const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all book change versions. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading all book change versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<book_change_entity>> |
                        query_builder::where("tenant_id"_c == tid && "id"_c == id) |
@@ -302,8 +300,8 @@ std::vector<domain::book_change> book_change_repository::read_all(const context&
 std::optional<domain::book_change> book_change_repository::read_at_version(const context& ctx,
                                                                            const std::string& id,
                                                                            std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading book change at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading book change at version. " << "id: " << id
+                              << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<book_change_entity>> |
@@ -330,8 +328,8 @@ std::vector<domain::book_change> book_change_repository::read_latest_by_request_
     std::uint32_t limit,
     const ores::utility::domain::order& order,
     const std::optional<messaging::book_changes_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest book changes. request_id: " << request_id
-                               << " offset: " << offset << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest book changes. request_id: " << request_id
+                              << " offset: " << offset << " limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<book_change_entity>> |
@@ -353,8 +351,8 @@ std::uint32_t book_change_repository::get_total_book_change_count_by_request_id(
     const context& ctx,
     const std::string& request_id,
     const std::optional<messaging::book_changes_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active book changes count. request_id: "
-                               << request_id;
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active book changes count. request_id: "
+                              << request_id;
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx.tenant_id().to_string();
@@ -373,7 +371,7 @@ std::uint32_t book_change_repository::get_total_book_change_count_by_request_id(
 
 book_change_repository::remove_status book_change_repository::remove(
     const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing book change. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing book change. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
         return remove_status::missing;
@@ -411,8 +409,8 @@ book_change_repository::read_latest(const context& ctx,
                                     const ores::utility::domain::order& order,
                                     const std::optional<messaging::book_changes_filter>& filter,
                                     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest book changes with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest book changes with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<book_change_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -433,7 +431,7 @@ std::uint32_t book_change_repository::get_total_book_change_count(
     const context& ctx,
     const std::optional<messaging::book_changes_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active book change count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active book change count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<book_change_entity>> |

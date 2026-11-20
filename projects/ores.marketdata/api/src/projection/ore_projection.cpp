@@ -17,7 +17,7 @@
  *
  */
 #include "ores.marketdata.api/projection/ore_projection.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/datum/ore_index_codec.hpp"
 #include "ores.marketdata.api/datum/ore_key_codec.hpp"
 #include <format>
@@ -78,15 +78,15 @@ std::string ore_projection::ore_name_or_stored(std::string_view stored) const {
     const auto reference = datum::market_reference::parse(stored);
     if (!reference) {
         if (looks_like_an_address(stored)) {
-            BOOST_LOG_SEV(lg(), error) << "A stored reference is spelled as an oresmd address and "
-                                          "the grammar refuses it: '"
-                                       << stored << "': " << reference.error();
+            ORES_LOG_SEV(lg(), error) << "A stored reference is spelled as an oresmd address and "
+                                         "the grammar refuses it: '"
+                                      << stored << "': " << reference.error();
             throw ore_projection_error(
                 projection_refusal{projection_refusal_kind::address_the_grammar_refuses,
                                    std::string(stored),
                                    reference.error()});
         }
-        BOOST_LOG_SEV(lg(), debug)
+        ORES_LOG_SEV(lg(), debug)
             << "A stored reference is not an oresmd address, so it is written as stored: '"
             << stored << "'";
         return std::string(stored);
@@ -98,15 +98,15 @@ std::string ore_projection::ore_name_or_stored(std::string_view stored) const {
 
     const auto& refusal = name.error();
     if (refusal.kind == projection_refusal_kind::configuration_names_no_curve) {
-        BOOST_LOG_SEV(lg(), warn)
+        ORES_LOG_SEV(lg(), warn)
             << "A stored curve series is written as the trade holds it, because this run's market "
                "configuration gives it no ORE name: '"
             << refusal.reference << "'";
         return std::string(stored);
     }
 
-    BOOST_LOG_SEV(lg(), error) << "A stored reference has no ORE name: '" << refusal.reference
-                               << "': " << refusal.reason;
+    ORES_LOG_SEV(lg(), error) << "A stored reference has no ORE name: '" << refusal.reference
+                              << "': " << refusal.reason;
     throw ore_projection_error(refusal);
 }
 

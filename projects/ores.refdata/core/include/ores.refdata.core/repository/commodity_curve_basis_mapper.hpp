@@ -25,7 +25,7 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_COMMODITY_CURVE_BASIS_MAPPER_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_COMMODITY_CURVE_BASIS_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/commodity_curve_basis.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/commodity_curve_basis_entity.hpp"

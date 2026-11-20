@@ -25,7 +25,7 @@
 #ifndef ORES_SYNTHETIC_CORE_REPOSITORY_MARKET_DATA_GENERATION_CONFIG_MAPPER_HPP
 #define ORES_SYNTHETIC_CORE_REPOSITORY_MARKET_DATA_GENERATION_CONFIG_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.synthetic.api/domain/market_data_generation_config.hpp"
 #include "ores.synthetic.core/export.hpp"
 #include "ores.synthetic.core/repository/market_data_generation_config_entity.hpp"

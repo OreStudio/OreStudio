@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/domain/market_series.hpp"
 #include "ores.marketdata.api/domain/market_series_identity.hpp"
 #include "ores.marketdata.api/domain/market_series_json_io.hpp" // IWYU pragma: keep.
@@ -78,7 +78,7 @@ TEST_CASE("write_single_market_series", "[repository]") {
     market_series_repository repo;
     auto s = generate_synthetic_market_series(ctx);
 
-    BOOST_LOG_SEV(lg, debug) << "Market series: " << s;
+    ORES_LOG_SEV(lg, debug) << "Market series: " << s;
     CHECK_NOTHROW(repo.write(h.context(), s));
 }
 
@@ -90,7 +90,7 @@ TEST_CASE("write_multiple_market_series", "[repository]") {
 
     market_series_repository repo;
     auto series = generate_synthetic_market_series(5, ctx);
-    BOOST_LOG_SEV(lg, debug) << "Market series: " << series;
+    ORES_LOG_SEV(lg, debug) << "Market series: " << series;
 
     CHECK_NOTHROW(repo.write(h.context(), series));
 }
@@ -103,11 +103,11 @@ TEST_CASE("read_latest_market_series", "[repository]") {
 
     market_series_repository repo;
     auto written = generate_synthetic_market_series(3, ctx);
-    BOOST_LOG_SEV(lg, debug) << "Written market series: " << written;
+    ORES_LOG_SEV(lg, debug) << "Written market series: " << written;
     repo.write(h.context(), written);
 
     auto read = repo.read_latest(h.context());
-    BOOST_LOG_SEV(lg, debug) << "Read market series: " << read;
+    ORES_LOG_SEV(lg, debug) << "Read market series: " << read;
 
     CHECK(!read.empty());
     CHECK(read.size() >= written.size());
@@ -125,7 +125,7 @@ TEST_CASE("read_latest_market_series_by_id", "[repository]") {
     repo.write(h.context(), series);
 
     auto read = repo.read_latest(h.context(), boost::uuids::to_string(target.id));
-    BOOST_LOG_SEV(lg, debug) << "Read market series: " << read;
+    ORES_LOG_SEV(lg, debug) << "Read market series: " << read;
 
     REQUIRE(read.size() == 1);
     CHECK(read[0].oresmd_uri == target.oresmd_uri);
@@ -146,7 +146,7 @@ TEST_CASE("read_latest_market_series_by_identity", "[repository]") {
     // identity can name a series in each of several parties.
     auto read = repo.read_latest_by_key(
         h.context(), s.oresmd_uri, s.provider_code, boost::uuids::to_string(s.party_id));
-    BOOST_LOG_SEV(lg, debug) << "Read by identity: " << read;
+    ORES_LOG_SEV(lg, debug) << "Read by identity: " << read;
 
     REQUIRE(read.size() == 1);
     CHECK(read[0].oresmd_uri == s.oresmd_uri);
@@ -166,7 +166,7 @@ TEST_CASE("read_all_versions_of_market_series", "[repository]") {
     repo.write(h.context(), s);
 
     auto all = repo.read_all(h.context(), boost::uuids::to_string(s.id));
-    BOOST_LOG_SEV(lg, debug) << "All versions: " << all;
+    ORES_LOG_SEV(lg, debug) << "All versions: " << all;
 
     CHECK(all.size() >= 2);
 }
@@ -187,7 +187,7 @@ TEST_CASE("remove_market_series", "[repository]") {
     CHECK_NOTHROW(repo.remove(h.context(), boost::uuids::to_string(s.id)));
 
     auto after = repo.read_latest(h.context(), boost::uuids::to_string(s.id));
-    BOOST_LOG_SEV(lg, debug) << "After remove count: " << after.size();
+    ORES_LOG_SEV(lg, debug) << "After remove count: " << after.size();
     CHECK(after.empty());
 }
 
@@ -582,12 +582,12 @@ TEST_CASE("a_batch_write_states_the_current_version_of_every_row_it_replaces", "
     market_series_repository repo;
     auto series = generate_synthetic_market_series(3, ctx);
     repo.write(h.context(), series);
-    BOOST_LOG_SEV(lg, info) << "Replacing " << series.size() << " market series without a claim.";
+    ORES_LOG_SEV(lg, info) << "Replacing " << series.size() << " market series without a claim.";
     CHECK_NOTHROW(repo.write(h.context(), series));
 
     const std::vector<ores::utility::domain::precondition> nothing(
         series.size(), {ores::utility::domain::precondition_kind::any, std::nullopt});
-    BOOST_LOG_SEV(lg, info) << "Replacing " << series.size() << " market series claiming nothing.";
+    ORES_LOG_SEV(lg, info) << "Replacing " << series.size() << " market series claiming nothing.";
     CHECK_NOTHROW(repo.write(h.context(), series, nothing));
 
     std::vector<std::string> ids;

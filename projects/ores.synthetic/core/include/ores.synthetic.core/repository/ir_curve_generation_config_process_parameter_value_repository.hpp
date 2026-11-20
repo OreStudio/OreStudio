@@ -26,7 +26,7 @@
 #define ORES_SYNTHETIC_CORE_REPOSITORY_IR_CURVE_GENERATION_CONFIG_PROCESS_PARAMETER_VALUE_REPOSITORY_HPP
 
 #include "ores.database/domain/context_fwd.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.synthetic.api/domain/ir_curve_generation_config_process_parameter_value.hpp"
 #include "ores.synthetic.api/messaging/ir_curve_generation_config_process_parameter_value_protocol.hpp"
 #include "ores.synthetic.core/export.hpp"

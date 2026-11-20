@@ -21,7 +21,6 @@
 #include "ores.analytics.quant/domain/calendar_rule.hpp"
 #include "ores.analytics.quant/domain/calendar_ruleset.hpp"
 #include "ores.analytics.quant/service/calendar_rule_engine.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/calendar.hpp"
 #include "ores.refdata.api/domain/calendar_date.hpp"
 #include "ores.refdata.api/domain/calendar_exception.hpp"
@@ -35,7 +34,6 @@
 #include "ores.refdata.core/repository/currency_pair_convention_calendar_repository.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include "ores.variability.core/service/system_settings_service.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <array>
 #include <bitset>
@@ -287,8 +285,8 @@ calendar_materialisation_service::regenerate(const std::string& calendar_code,
     }
 
     if (!to_write.empty()) {
-        BOOST_LOG_SEV(lg(), info) << "Materialising " << to_write.size()
-                                  << " calendar_date rows for " << calendar_code;
+        ORES_LOG_SEV(lg(), info) << "Materialising " << to_write.size()
+                                 << " calendar_date rows for " << calendar_code;
         // The read above found none of these days, so each is claimed as new without a read of
         // its own. A materialisation that ran since that read is refused with already_exists,
         // and none of this batch lands; a run that follows skips the days that exist.
@@ -311,7 +309,7 @@ calendar_materialisation_service::regenerate_all(std::optional<std::chrono::year
         try {
             total += regenerate(c.code, end_year);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), error)
+            ORES_LOG_SEV(lg(), error)
                 << "Failed to materialise calendar " << c.code << ": " << e.what();
         }
     }

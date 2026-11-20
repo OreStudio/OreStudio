@@ -19,7 +19,7 @@
  */
 #include "ores.http.api/domain/http_request.hpp"
 #include "ores.http/routes/compute/compute_routes.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.security/jwt/jwt_claims.hpp"
 #include "route_answer.hpp"
 #include "test_suite.hpp"
@@ -71,7 +71,7 @@ std::string note_body(const std::string& note, const std::string& version) {
 
 TEST_CASE("an_app_version_page_is_read_by_its_identifier", "[grid_app_versions]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the identifier an app version page names";
+    ORES_LOG_SEV(lg, info) << "Testing the identifier an app version page names";
 
     CHECK(answer_at<compute_routes>(http_method::get,
                                     "/api/operations/grid/app-versions/not-an-id",
@@ -85,7 +85,7 @@ TEST_CASE("an_app_version_page_is_read_by_its_identifier", "[grid_app_versions]"
 
 TEST_CASE("an_app_version_page_is_written_by_the_system_tenant_alone", "[grid_app_versions]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the caller a note may be written by";
+    ORES_LOG_SEV(lg, info) << "Testing the caller a note may be written by";
 
     http_request write = as(a_tenant);
     write.body = note_body("a note", "0");
@@ -107,7 +107,7 @@ TEST_CASE("an_app_version_page_is_written_by_the_system_tenant_alone", "[grid_ap
 
 TEST_CASE("a_note_write_refuses_a_body_that_is_not_the_shape_it_takes", "[grid_app_versions]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the body a note write takes";
+    ORES_LOG_SEV(lg, info) << "Testing the body a note write takes";
 
     for (const auto& body : {std::string(R"({"release_note":"a note"})"),
                              note_body("a note", "-1"),
@@ -124,7 +124,7 @@ TEST_CASE("a_note_write_refuses_a_body_that_is_not_the_shape_it_takes", "[grid_a
 
 TEST_CASE("a_note_write_takes_the_version_it_read_and_its_commentary", "[grid_app_versions]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the body a note write takes";
+    ORES_LOG_SEV(lg, info) << "Testing the body a note write takes";
 
     http_request write = as(system_tenant);
     write.body = R"({"release_note":"a note","version":3,"commentary":"typo"})";
@@ -134,7 +134,7 @@ TEST_CASE("a_note_write_takes_the_version_it_read_and_its_commentary", "[grid_ap
 
 TEST_CASE("an_app_version_route_refuses_a_parameter_it_does_not_take", "[grid_app_versions]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a parameter an app version route does not name";
+    ORES_LOG_SEV(lg, info) << "Testing a parameter an app version route does not name";
 
     http_request req;
     req.query_params["version"] = "3";

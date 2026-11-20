@@ -184,8 +184,8 @@ std::optional<boost::uuids::uuid> find_fsm_state_id(const ores::database::contex
     const auto rows = ores::database::query_builder::execute_parameterized_string_query(
         ctx, sql, {}, log, "Looking up report_definition_lifecycle " + state_name + " state");
     if (rows.empty() || rows.front().empty()) {
-        BOOST_LOG_SEV(log, warn) << "report_definition_lifecycle " << state_name
-                                 << " FSM state not found";
+        ORES_LOG_SEV(log, warn) << "report_definition_lifecycle " << state_name
+                                << " FSM state not found";
         return std::nullopt;
     }
     return boost::lexical_cast<boost::uuids::uuid>(rows.front());
@@ -207,8 +207,8 @@ report_scheduling_service::build_job_change(const domain::report_definition& def
 
     auto cron = ores::scheduler::domain::cron_expression::from_string(def.schedule_expression);
     if (!cron) {
-        BOOST_LOG_SEV(lg(), warn) << "Invalid cron expression for definition " << def.id << ": "
-                                  << cron.error();
+        ORES_LOG_SEV(lg(), warn) << "Invalid cron expression for definition " << def.id << ": "
+                                 << cron.error();
         return std::nullopt;
     }
 
@@ -258,19 +258,19 @@ report_scheduling_service::send_schedule_request(const domain::report_definition
         if (!resp) {
             const std::string err = "Scheduler returned unparseable response for definition " +
                                     boost::uuids::to_string(def.id);
-            BOOST_LOG_SEV(lg(), error) << err;
+            ORES_LOG_SEV(lg(), error) << err;
             return std::unexpected(err);
         }
         if (resp->result.outcome != ores::utility::domain::outcome::ok) {
             const std::string err = "Scheduler rejected job for definition " +
                                     boost::uuids::to_string(def.id) + ": " + resp->result.message;
-            BOOST_LOG_SEV(lg(), error) << err;
+            ORES_LOG_SEV(lg(), error) << err;
             return std::unexpected(err);
         }
     } catch (const std::exception& e) {
         const std::string err = std::string("Scheduler NATS call failed: ") + e.what();
-        BOOST_LOG_SEV(lg(), error)
-            << "Failed to call scheduler for definition " << def.id << ": " << e.what();
+        ORES_LOG_SEV(lg(), error) << "Failed to call scheduler for definition " << def.id << ": "
+                                  << e.what();
         return std::unexpected(err);
     }
     return {};
@@ -350,7 +350,7 @@ report_scheduling_service::schedule_one(const domain::report_definition& def,
                                         const std::string& actor) {
 
     if (def.scheduler_job_id.has_value()) {
-        BOOST_LOG_SEV(lg(), debug) << "Definition already scheduled: " << def.id;
+        ORES_LOG_SEV(lg(), debug) << "Definition already scheduled: " << def.id;
         return false;
     }
 
@@ -371,7 +371,7 @@ report_scheduling_service::schedule_one(const domain::report_definition& def,
 
     const auto withdraw_grant = [&] {
         if (const auto revoked = revoke_runs(*grant_id); !revoked)
-            BOOST_LOG_SEV(lg(), warn)
+            ORES_LOG_SEV(lg(), warn)
                 << "Run grant " << *grant_id << " of definition " << def.id
                 << " stays active after a failed schedule: " << revoked.error();
     };
@@ -400,12 +400,12 @@ report_scheduling_service::schedule_one(const domain::report_definition& def,
         svc.save_definition(updated);
     } catch (const std::exception& e) {
         if (const auto deleted = send_delete_request(job_id, "Schedule not recorded"); !deleted)
-            BOOST_LOG_SEV(lg(), warn) << deleted.error();
+            ORES_LOG_SEV(lg(), warn) << deleted.error();
         withdraw_grant();
         return std::unexpected(std::string("Could not record the schedule: ") + e.what());
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Scheduled definition " << def.id << " as job " << job_id;
+    ORES_LOG_SEV(lg(), info) << "Scheduled definition " << def.id << " as job " << job_id;
     return true;
 }
 
@@ -414,14 +414,14 @@ report_scheduling_service::unschedule_one(const domain::report_definition& def,
                                           const std::string& actor) {
 
     if (!def.scheduler_job_id.has_value()) {
-        BOOST_LOG_SEV(lg(), debug) << "Definition not scheduled: " << def.id;
+        ORES_LOG_SEV(lg(), debug) << "Definition not scheduled: " << def.id;
         return false;
     }
 
     if (const auto deleted =
             send_delete_request(*def.scheduler_job_id, "Unscheduled by reporting service");
         !deleted) {
-        BOOST_LOG_SEV(lg(), error) << deleted.error();
+        ORES_LOG_SEV(lg(), error) << deleted.error();
         return std::unexpected(deleted.error());
     }
 
@@ -449,16 +449,16 @@ report_scheduling_service::unschedule_one(const domain::report_definition& def,
     report_definition_service svc(tenant_ctx);
     svc.save_definition(updated);
 
-    BOOST_LOG_SEV(lg(), info) << "Unscheduled definition " << def.id;
+    ORES_LOG_SEV(lg(), info) << "Unscheduled definition " << def.id;
     return true;
 }
 
 boost::asio::awaitable<void> report_scheduling_service::reconcile() {
-    BOOST_LOG_SEV(lg(), info) << "Starting scheduler reconciliation for report definitions.";
+    ORES_LOG_SEV(lg(), info) << "Starting scheduler reconciliation for report definitions.";
 
     // Step 1: ask the IAM service for all active tenants, paging until the
     // server-reported total is exhausted.
-    BOOST_LOG_SEV(lg(), debug) << "Requesting active tenant list from IAM.";
+    ORES_LOG_SEV(lg(), debug) << "Requesting active tenant list from IAM.";
     std::vector<ores::iam::domain::tenant> tenants;
     const auto& codec = ores::nats::default_wire_codec();
     constexpr std::uint32_t page_size = 100;
@@ -475,13 +475,13 @@ boost::asio::awaitable<void> report_scheduling_service::reconcile() {
 
             auto resp = codec.decode<ores::iam::messaging::list_tenants_response>(reply_msg.data);
             if (!resp) {
-                BOOST_LOG_SEV(lg(), error)
+                ORES_LOG_SEV(lg(), error)
                     << "Failed to parse tenant list response; aborting reconciliation.";
                 co_return;
             }
             if (resp->result.outcome != ores::utility::domain::outcome::ok) {
-                BOOST_LOG_SEV(lg(), error) << "IAM failed to list tenants: " << resp->result.message
-                                           << "; aborting reconciliation.";
+                ORES_LOG_SEV(lg(), error) << "IAM failed to list tenants: " << resp->result.message
+                                          << "; aborting reconciliation.";
                 co_return;
             }
 
@@ -496,14 +496,14 @@ boost::asio::awaitable<void> report_scheduling_service::reconcile() {
                 break;
         }
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to retrieve tenant list from IAM: " << e.what();
+        ORES_LOG_SEV(lg(), error) << "Failed to retrieve tenant list from IAM: " << e.what();
         co_return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Received " << tenants.size() << " active tenant(s) from IAM.";
+    ORES_LOG_SEV(lg(), debug) << "Received " << tenants.size() << " active tenant(s) from IAM.";
 
     if (tenants.empty()) {
-        BOOST_LOG_SEV(lg(), info) << "Reconciliation complete. No active tenants.";
+        ORES_LOG_SEV(lg(), info) << "Reconciliation complete. No active tenants.";
         co_return;
     }
 
@@ -519,15 +519,15 @@ boost::asio::awaitable<void> report_scheduling_service::reconcile() {
     for (const auto& tenant : tenants) {
         const auto tenant_id_result = utility::uuid::tenant_id::from_uuid(tenant.id);
         if (!tenant_id_result) {
-            BOOST_LOG_SEV(lg(), error) << "Skipping tenant '" << tenant.name
-                                       << "': invalid UUID: " << tenant_id_result.error();
+            ORES_LOG_SEV(lg(), error) << "Skipping tenant '" << tenant.name
+                                      << "': invalid UUID: " << tenant_id_result.error();
             ++total_failed;
             continue;
         }
         const auto& tenant_id = *tenant_id_result;
         const auto tenant_id_str = tenant_id.to_string();
-        BOOST_LOG_SEV(lg(), debug)
-            << "Reconciling tenant: " << tenant_id_str << " [" << tenant.name << "]";
+        ORES_LOG_SEV(lg(), debug) << "Reconciling tenant: " << tenant_id_str << " [" << tenant.name
+                                  << "]";
 
         const auto tenant_ctx = ctx_.with_tenant(tenant_id, ctx_.service_account());
 
@@ -536,7 +536,7 @@ boost::asio::awaitable<void> report_scheduling_service::reconcile() {
         try {
             all = repo.read_latest(tenant_ctx);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), error)
+            ORES_LOG_SEV(lg(), error)
                 << "Failed to read definitions for tenant " << tenant_id_str << ": " << e.what();
             ++total_failed;
             continue;
@@ -564,11 +564,11 @@ boost::asio::awaitable<void> report_scheduling_service::reconcile() {
                 report_definition_service svc(tenant_ctx);
                 svc.save_definition(updated);
                 ++total_cleared;
-                BOOST_LOG_SEV(lg(), info)
+                ORES_LOG_SEV(lg(), info)
                     << "Cleared the ungranted schedule of definition " << def.id;
             } catch (const std::exception& e) {
                 ++total_failed;
-                BOOST_LOG_SEV(lg(), error)
+                ORES_LOG_SEV(lg(), error)
                     << "Could not clear the schedule of definition " << def.id << ": " << e.what();
             }
         }
@@ -592,11 +592,11 @@ boost::asio::awaitable<void> report_scheduling_service::reconcile() {
             for (const auto& existing : parsed->definitions)
                 if (is_report_definition_job_name(existing.job_name))
                     report_jobs.emplace(existing.job_name, existing.id);
-            BOOST_LOG_SEV(lg(), debug)
+            ORES_LOG_SEV(lg(), debug)
                 << "Scheduler holds " << report_jobs.size() << " report job(s)";
         }
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn) << "Could not read the scheduler's jobs: " << e.what();
+        ORES_LOG_SEV(lg(), warn) << "Could not read the scheduler's jobs: " << e.what();
     }
 
     // A name that holds an accounted job is a definition's live schedule. Any
@@ -615,10 +615,10 @@ boost::asio::awaitable<void> report_scheduling_service::reconcile() {
             if (const auto deleted = send_delete_request(job_id, "No run grant behind the job");
                 deleted) {
                 ++total_removed;
-                BOOST_LOG_SEV(lg(), info) << "Removed the unaccounted scheduler job " << job_id;
+                ORES_LOG_SEV(lg(), info) << "Removed the unaccounted scheduler job " << job_id;
             } else {
                 ++total_failed;
-                BOOST_LOG_SEV(lg(), error) << deleted.error();
+                ORES_LOG_SEV(lg(), error) << deleted.error();
             }
         }
 
@@ -630,20 +630,20 @@ boost::asio::awaitable<void> report_scheduling_service::reconcile() {
                 continue;
             if (const auto sent = send_schedule_request(def, *def.scheduler_job_id); sent) {
                 ++total_restored;
-                BOOST_LOG_SEV(lg(), info) << "Restored scheduler job " << *def.scheduler_job_id
-                                          << " for definition " << def.id;
+                ORES_LOG_SEV(lg(), info) << "Restored scheduler job " << *def.scheduler_job_id
+                                         << " for definition " << def.id;
             } else {
                 ++total_failed;
-                BOOST_LOG_SEV(lg(), error) << "Could not restore the job for definition " << def.id
-                                           << ": " << sent.error();
+                ORES_LOG_SEV(lg(), error) << "Could not restore the job for definition " << def.id
+                                          << ": " << sent.error();
             }
         }
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Reconciliation complete. Tenants: " << tenants.size()
-                              << ", removed: " << total_removed << ", restored: " << total_restored
-                              << ", cleared: " << total_cleared << ", failed: " << total_failed
-                              << ".";
+    ORES_LOG_SEV(lg(), info) << "Reconciliation complete. Tenants: " << tenants.size()
+                             << ", removed: " << total_removed << ", restored: " << total_restored
+                             << ", cleared: " << total_cleared << ", failed: " << total_failed
+                             << ".";
     co_return;
 }
 
@@ -684,8 +684,8 @@ messaging::get_next_fire_response report_scheduling_service::next_fire_for_defin
         response.result.outcome = failure.outcome;
         response.result.code = failure.code;
         response.result.message = failure.message;
-        BOOST_LOG_SEV(lg(), warn) << "Next fire times unavailable (" << failure.code
-                                  << "): " << failure.message;
+        ORES_LOG_SEV(lg(), warn) << "Next fire times unavailable (" << failure.code
+                                 << "): " << failure.message;
         return response;
     }
 

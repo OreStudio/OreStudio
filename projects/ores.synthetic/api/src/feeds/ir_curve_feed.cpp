@@ -21,7 +21,7 @@
 #include "ores.analytics.quant/domain/process_parameter_validation.hpp"
 #include "ores.analytics.quant/service/curve_instrument_pricer.hpp"
 #include "ores.analytics.quant/service/process_factory.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.api/domain/tick_subjects.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
@@ -241,7 +241,7 @@ std::string ir_curve_feed::tick(const ores::analytics::quant::service::tick_cont
         // target rather than from the producer subject the feed does not use for it. The log is
         // what a person reads to find out where the feed's ticks are, so it names the family the
         // ticks actually travelled on.
-        BOOST_LOG_SEV(ir_curve_feed_lg(), info)
+        ORES_LOG_SEV(ir_curve_feed_lg(), info)
             << "SYNTHETIC CURVE PUBLISH: source='" << source_name_ << "' batch=" << n
             << " points=" << entries_.size() << " subject='" << published_subject() << "'";
     }
@@ -346,7 +346,7 @@ ir_curve_start resolve_ir_start(ores::nats::service::nats_client& auth_nats,
         // Every adapter stores the decimal of a published percent; a rate above one in size is
         // a percent stored by mistake, which would start the curve a hundred times too high.
         if (std::abs(*rate) > 1.0)
-            BOOST_LOG_SEV(ir_curve_feed_lg(), ores::logging::warn)
+            ORES_LOG_SEV(ir_curve_feed_lg(), ores::logging::warn)
                 << "Curve " << cfg.source_name << " starts from " << latest->value << " of "
                 << item.item << ", which is above one in size: is it a percent?";
         out.rate = *rate;
@@ -441,7 +441,7 @@ std::shared_ptr<ir_curve_feed> make_ir_curve_feed(
                                 ores::utility::decimal::decimal::from_double(v.parameter_value))
                             record.value = *kept;
     }
-    BOOST_LOG_SEV(ir_curve_feed_lg(), info)
+    ORES_LOG_SEV(ir_curve_feed_lg(), info)
         << "Curve " << cfg.source_name << " starts at "
         << (record.from_fixing ? record.value.to_string() + " from " + record.item + " (" +
                                      record.provider_code + ")" :

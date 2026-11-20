@@ -24,7 +24,7 @@
 #include "ores.database/export.hpp"
 #include "ores.database/pq/connection_fwd.hpp"
 #include "ores.database/pq/options.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include <atomic>
 #include <condition_variable>
 #include <functional>

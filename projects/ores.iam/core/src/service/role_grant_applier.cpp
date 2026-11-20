@@ -67,8 +67,8 @@ int role_grant_applier::apply() {
                                  "Approved request " + request_id,
                                  "access.role_change");
                 ++granted;
-                BOOST_LOG_SEV(lg(), info) << "Granted role " << role_id << " to account "
-                                          << account_id << " for request " << request_id;
+                ORES_LOG_SEV(lg(), info) << "Granted role " << role_id << " to account "
+                                         << account_id << " for request " << request_id;
             }
 
             ores::database::query_builder::execute_parameterized_command(
@@ -85,7 +85,7 @@ int role_grant_applier::apply() {
                 lg(),
                 "Marking a request role applied");
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), error)
+            ORES_LOG_SEV(lg(), error)
                 << "Applying role " << role_id << " for request " << request_id
                 << " failed; the next run tries again: " << e.what();
         }

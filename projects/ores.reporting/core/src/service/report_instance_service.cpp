@@ -26,7 +26,6 @@
 #include "ores.reporting.api/domain/report_instance.hpp"
 #include "ores.reporting.api/messaging/report_instance_protocol.hpp"
 #include "ores.reporting.core/repository/report_instance_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.reporting.api/messaging/report_definition_protocol.hpp"
 #include "ores.reporting.core/service/report_definition_service.hpp"
 #include "ores.reporting.core/service/report_health.hpp"
@@ -537,12 +535,12 @@ report_instance_service::prepare_change(const messaging::report_instance_change&
 
 std::vector<domain::report_instance> report_instance_service::list_instances(std::uint32_t offset,
                                                                              std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all report instances";
+    ORES_LOG_SEV(lg(), debug) << "Listing all report instances";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t report_instance_service::count_instances() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total report instances count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total report instances count";
     return repo_.get_total_instance_count(ctx_);
 }
 
@@ -550,14 +548,14 @@ std::uint32_t report_instance_service::count_instances() {
 std::optional<domain::report_instance>
 report_instance_service::get_instance_at_version(const boost::uuids::uuid& id,
                                                  std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting report instance at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting report instance at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::report_instance>
 report_instance_service::get_instance(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting report instance. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting report instance. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -566,7 +564,7 @@ report_instance_service::get_instance(const boost::uuids::uuid& id) {
 
 std::optional<domain::report_instance>
 report_instance_service::get_instance_by_name(const std::string& name) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting report instance by name: " << name;
+    ORES_LOG_SEV(lg(), debug) << "Getting report instance by name: " << name;
     messaging::report_instance_key k;
     k.name = name;
     auto found = report_instance_read_one(repo_, ctx_, k);
@@ -583,11 +581,11 @@ report_instance_service::get_instances(const std::vector<std::string>& ids) {
 void report_instance_service::save_instance(const domain::report_instance& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Report Instance id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving report instance. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving report instance. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved report instance. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved report instance. " << "id: " << v.id;
 }
 
 void report_instance_service::save_instances(
@@ -596,7 +594,7 @@ void report_instance_service::save_instances(
         if (e.id.is_nil())
             throw std::invalid_argument("Report Instance id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << instances.size() << " report instances";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << instances.size() << " report instances";
     auto ts = instances;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -605,9 +603,9 @@ void report_instance_service::save_instances(
 }
 
 void report_instance_service::delete_instance(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing report instance. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing report instance. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed report instance. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed report instance. " << "id: " << id;
 }
 
 void report_instance_service::delete_instances(const std::vector<std::string>& ids) {
@@ -616,7 +614,7 @@ void report_instance_service::delete_instances(const std::vector<std::string>& i
 
 std::vector<domain::report_instance>
 report_instance_service::get_instance_history(const std::string& key) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for report instance. key: " << key;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for report instance. key: " << key;
     // The caller holds the key the model declares and this reads by the
     // storage key, so the two are joined here exactly as they are for any
     // other read. Without this step a provider looks the versions up under a

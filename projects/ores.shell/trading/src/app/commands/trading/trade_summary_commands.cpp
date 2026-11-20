@@ -140,7 +140,7 @@ void trade_summary_commands::register_commands(cli::Menu& root_menu, nats_client
 void trade_summary_commands::process_list(std::ostream& out,
                                           nats_client& session,
                                           const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating list request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating list request.";
 
     using request_type = messaging::list_trade_summaries_request;
     if constexpr (request_type::requires_session) {
@@ -190,7 +190,7 @@ void trade_summary_commands::process_list(std::ostream& out,
 void trade_summary_commands::process_get(std::ostream& out,
                                          nats_client& session,
                                          const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating get request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating get request.";
 
     using request_type = messaging::get_trade_summary_request;
     if constexpr (request_type::requires_session) {
@@ -235,7 +235,7 @@ void trade_summary_commands::process_get(std::ostream& out,
 void trade_summary_commands::process_get_many(std::ostream& out,
                                               nats_client& session,
                                               const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating get-many request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating get-many request.";
 
     using request_type = messaging::get_many_trade_summaries_request;
     if constexpr (request_type::requires_session) {

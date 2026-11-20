@@ -28,7 +28,7 @@
 #include "ores.inbox.api/domain/hold_reason.hpp"
 #include "ores.inbox.core/export.hpp"
 #include "ores.inbox.core/repository/hold_reason_entity.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 
 namespace ores::inbox::repository {
 

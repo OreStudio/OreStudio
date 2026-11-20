@@ -25,7 +25,7 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_CAP_FLOOR_PROXY_CONFIG_MAPPER_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_CAP_FLOOR_PROXY_CONFIG_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/cap_floor_proxy_config.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/cap_floor_proxy_config_entity.hpp"

@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.platform/numeric/floating_point.hpp"
 #include "test_suite.hpp"
 #include <array>
@@ -106,7 +106,7 @@ TEST_CASE("every_formatted_double_parses_back_to_itself", "[numeric][floating_po
         REQUIRE(written.ec == std::errc{});
         const std::string text(buffer.data(), written.ptr);
         const auto parsed = parse_double(text);
-        BOOST_LOG_SEV(lg, info) << "Round tripped " << text;
+        ORES_LOG_SEV(lg, info) << "Round tripped " << text;
         REQUIRE(parsed.has_value());
         CHECK(*parsed == value);
     }

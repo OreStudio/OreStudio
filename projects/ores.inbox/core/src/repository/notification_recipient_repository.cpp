@@ -30,9 +30,7 @@
 #include "ores.inbox.api/domain/notification_recipient_json_io.hpp" // IWYU pragma: keep.
 #include "ores.inbox.core/repository/notification_recipient_entity.hpp"
 #include "ores.inbox.core/repository/notification_recipient_mapper.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -193,8 +191,8 @@ void notification_recipient_repository::write(
 
 void notification_recipient_repository::write(const domain::notification_recipient& recipient,
                                               const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing notification recipient to database: "
-                               << recipient.notification_id << "/" << recipient.account_id;
+    ORES_LOG_SEV(lg(), debug) << "Writing notification recipient to database: "
+                              << recipient.notification_id << "/" << recipient.account_id;
     const auto current = claim.kind == ores::utility::domain::precondition_kind::any ?
                              read_latest(recipient.notification_id, recipient.account_id) :
                              std::vector<domain::notification_recipient>{};
@@ -208,8 +206,8 @@ void notification_recipient_repository::write(const domain::notification_recipie
 void notification_recipient_repository::write(
     const std::vector<domain::notification_recipient>& recipients,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing notification recipients to database. Count: "
-                               << recipients.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing notification recipients to database. Count: "
+                              << recipients.size();
     if (claims.size() != recipients.size())
         throw std::invalid_argument(
             "notification_recipient_repository::write: one claim is needed for each row");
@@ -248,8 +246,8 @@ std::vector<domain::notification_recipient> notification_recipient_repository::r
 
 std::vector<domain::notification_recipient>
 notification_recipient_repository::read_latest(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest notification recipients with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest notification recipients with offset: " << offset
+                              << " and limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<notification_recipient_entity>> |
@@ -269,8 +267,8 @@ notification_recipient_repository::read_latest(std::uint32_t offset, std::uint32
 std::vector<domain::notification_recipient>
 notification_recipient_repository::read_latest(const boost::uuids::uuid& notification_id,
                                                const boost::uuids::uuid& account_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest notification recipient. " << notification_id
-                               << "/" << account_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest notification recipient. " << notification_id << "/"
+                              << account_id;
 
     static constexpr auto max = db_timestamp::max();
     const auto notification_id_str = boost::uuids::to_string(notification_id);
@@ -291,7 +289,7 @@ notification_recipient_repository::read_latest(const boost::uuids::uuid& notific
 }
 
 std::uint32_t notification_recipient_repository::get_total_recipient_count() {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active notification recipients count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active notification recipients count";
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
@@ -300,15 +298,15 @@ std::uint32_t notification_recipient_repository::get_total_recipient_count() {
 
     const auto count = query_builder::execute_count_query<notification_recipient_entity>(
         ctx_, query, std::nullopt, lg(), "Counting notification recipients");
-    BOOST_LOG_SEV(lg(), debug) << "Total active notification recipients count: " << count;
+    ORES_LOG_SEV(lg(), debug) << "Total active notification recipients count: " << count;
     return count;
 }
 
 std::vector<domain::notification_recipient>
 notification_recipient_repository::read_latest_by_notification(
     const boost::uuids::uuid& notification_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest notification recipients. Notification: "
-                               << notification_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest notification recipients. Notification: "
+                              << notification_id;
 
     static constexpr auto max = db_timestamp::max();
     const auto notification_id_str = boost::uuids::to_string(notification_id);
@@ -332,7 +330,7 @@ notification_recipient_repository::read_latest_by_notification(
 
 std::vector<domain::notification_recipient>
 notification_recipient_repository::read_latest_by_account(const boost::uuids::uuid& account_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest notification recipients. Account: " << account_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest notification recipients. Account: " << account_id;
 
     static constexpr auto max = db_timestamp::max();
     const auto account_id_str = boost::uuids::to_string(account_id);
@@ -357,7 +355,7 @@ notification_recipient_repository::read_latest_by_account(const boost::uuids::uu
 std::uint32_t notification_recipient_repository::get_total_recipient_count_by_notification(
     const boost::uuids::uuid& notification_id) {
     const auto notification_id_str = boost::uuids::to_string(notification_id);
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Retrieving total active notification recipients count. Notification: "
         << notification_id;
     static constexpr auto max = db_timestamp::max();
@@ -370,8 +368,8 @@ std::uint32_t notification_recipient_repository::get_total_recipient_count_by_no
 
     const auto count = query_builder::execute_count_query<notification_recipient_entity>(
         ctx_, query, std::nullopt, lg(), "Counting notification recipients");
-    BOOST_LOG_SEV(lg(), debug) << "Total active notification recipients count by notification: "
-                               << count;
+    ORES_LOG_SEV(lg(), debug) << "Total active notification recipients count by notification: "
+                              << count;
     return count;
 }
 
@@ -380,8 +378,8 @@ notification_recipient_repository::read_latest_by_account(const boost::uuids::uu
                                                           std::uint32_t offset,
                                                           std::uint32_t limit) {
     const auto account_id_str = boost::uuids::to_string(account_id);
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest notification recipients. Account: " << account_id
-                               << " offset: " << offset << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest notification recipients. Account: " << account_id
+                              << " offset: " << offset << " limit: " << limit;
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
@@ -406,8 +404,8 @@ notification_recipient_repository::read_latest_by_account(const boost::uuids::uu
 std::uint32_t notification_recipient_repository::get_total_recipient_count_by_account(
     const boost::uuids::uuid& account_id) {
     const auto account_id_str = boost::uuids::to_string(account_id);
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active notification recipients count. Account: "
-                               << account_id;
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active notification recipients count. Account: "
+                              << account_id;
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
@@ -418,15 +416,14 @@ std::uint32_t notification_recipient_repository::get_total_recipient_count_by_ac
 
     const auto count = query_builder::execute_count_query<notification_recipient_entity>(
         ctx_, query, std::nullopt, lg(), "Counting notification recipients");
-    BOOST_LOG_SEV(lg(), debug) << "Total active notification recipients count by account: "
-                               << count;
+    ORES_LOG_SEV(lg(), debug) << "Total active notification recipients count by account: " << count;
     return count;
 }
 
 std::vector<notification_recipient_history_row>
 notification_recipient_repository::read_all_by_account(const boost::uuids::uuid& account_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading every version of the notification recipients. Account: "
-                               << account_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading every version of the notification recipients. Account: "
+                              << account_id;
 
     const auto account_id_str = boost::uuids::to_string(account_id);
     const auto tid = ctx_.tenant_id().to_string();
@@ -478,8 +475,8 @@ notification_recipient_repository::remove_status
 notification_recipient_repository::remove(const boost::uuids::uuid& notification_id,
                                           const boost::uuids::uuid& account_id,
                                           std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing notification recipient from database: "
-                               << notification_id << "/" << account_id;
+    ORES_LOG_SEV(lg(), debug) << "Removing notification recipient from database: "
+                              << notification_id << "/" << account_id;
 
     const auto current = read_latest(notification_id, account_id);
     if (current.empty())
@@ -528,8 +525,8 @@ void notification_recipient_repository::remove(
 
 void notification_recipient_repository::remove_by_notification(
     const boost::uuids::uuid& notification_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing all notification recipients from database: "
-                               << notification_id;
+    ORES_LOG_SEV(lg(), debug) << "Removing all notification recipients from database: "
+                              << notification_id;
 
     const auto notification_id_str = boost::uuids::to_string(notification_id);
     const auto tid = ctx_.tenant_id().to_string();

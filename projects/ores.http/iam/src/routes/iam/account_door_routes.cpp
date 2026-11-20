@@ -53,8 +53,8 @@ rr::refusal account_door_routes::signup_refusal(const std::string& code,
     const auto found = known.find(code);
     using namespace ores::logging;
     if (found == known.end())
-        BOOST_LOG_SEV(lg(), warn) << "A registration was refused with a code this build does not "
-                                  << "map, answered as signup-refused: " << code;
+        ORES_LOG_SEV(lg(), warn) << "A registration was refused with a code this build does not "
+                                 << "map, answered as signup-refused: " << code;
     const auto& [status, api_code] =
         found != known.end() ? found->second :
                                std::pair{http_status::forbidden, std::string("signup-refused")};

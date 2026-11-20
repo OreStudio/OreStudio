@@ -23,7 +23,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.iam.core/export.hpp"
 #include "ores.iam.core/repository/auth_event_entity.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include <chrono>
 #include <cstdint>
 #include <optional>

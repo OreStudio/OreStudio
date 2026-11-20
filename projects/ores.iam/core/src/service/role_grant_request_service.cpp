@@ -26,7 +26,6 @@
 #include "ores.iam.api/domain/role_grant_request.hpp"
 #include "ores.iam.api/messaging/role_grant_request_protocol.hpp"
 #include "ores.iam.core/repository/role_grant_request_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -502,12 +500,12 @@ role_grant_request_service::prepare_change(const messaging::role_grant_request_c
 
 std::vector<domain::role_grant_request>
 role_grant_request_service::list_role_grant_requests(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all role grant requests";
+    ORES_LOG_SEV(lg(), debug) << "Listing all role grant requests";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t role_grant_request_service::count_role_grant_requests() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total role grant requests count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total role grant requests count";
     return repo_.get_total_role_grant_request_count(ctx_);
 }
 
@@ -516,14 +514,14 @@ std::vector<domain::role_grant_request>
 role_grant_request_service::list_role_grant_requests_by_account_id(const std::string& account_id,
                                                                    std::uint32_t offset,
                                                                    std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing role grant requests by account_id: " << account_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing role grant requests by account_id: " << account_id;
     return repo_.read_latest_by_account_id(ctx_, account_id, offset, limit);
 }
 
 std::uint32_t
 role_grant_request_service::count_role_grant_requests_by_account_id(const std::string& account_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total role grant requests count by account_id: "
-                               << account_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting total role grant requests count by account_id: "
+                              << account_id;
     return repo_.get_total_role_grant_request_count_by_account_id(ctx_, account_id);
 }
 
@@ -531,14 +529,14 @@ role_grant_request_service::count_role_grant_requests_by_account_id(const std::s
 std::optional<domain::role_grant_request>
 role_grant_request_service::get_role_grant_request_at_version(const boost::uuids::uuid& request_id,
                                                               std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting role grant request at version. "
-                               << "request_id: " << request_id << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting role grant request at version. "
+                              << "request_id: " << request_id << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(request_id), version);
 }
 
 std::optional<domain::role_grant_request>
 role_grant_request_service::get_role_grant_request(const boost::uuids::uuid& request_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting role grant request. " << "request_id: " << request_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting role grant request. " << "request_id: " << request_id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(request_id));
     if (results.empty())
         return std::nullopt;
@@ -553,11 +551,11 @@ role_grant_request_service::get_role_grant_requests(const std::vector<std::strin
 void role_grant_request_service::save_role_grant_request(const domain::role_grant_request& v) {
     if (v.request_id.is_nil())
         throw std::invalid_argument("Role Grant Request request_id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving role grant request. " << "request_id: " << v.request_id;
+    ORES_LOG_SEV(lg(), debug) << "Saving role grant request. " << "request_id: " << v.request_id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved role grant request. " << "request_id: " << v.request_id;
+    ORES_LOG_SEV(lg(), info) << "Saved role grant request. " << "request_id: " << v.request_id;
 }
 
 void role_grant_request_service::save_role_grant_requests(
@@ -566,7 +564,7 @@ void role_grant_request_service::save_role_grant_requests(
         if (e.request_id.is_nil())
             throw std::invalid_argument("Role Grant Request request_id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << role_grant_requests.size() << " role grant requests";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << role_grant_requests.size() << " role grant requests";
     auto ts = role_grant_requests;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -575,9 +573,9 @@ void role_grant_request_service::save_role_grant_requests(
 }
 
 void role_grant_request_service::delete_role_grant_request(const boost::uuids::uuid& request_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing role grant request. " << "request_id: " << request_id;
+    ORES_LOG_SEV(lg(), debug) << "Removing role grant request. " << "request_id: " << request_id;
     repo_.remove(ctx_, boost::uuids::to_string(request_id));
-    BOOST_LOG_SEV(lg(), info) << "Removed role grant request. " << "request_id: " << request_id;
+    ORES_LOG_SEV(lg(), info) << "Removed role grant request. " << "request_id: " << request_id;
 }
 
 void role_grant_request_service::delete_role_grant_requests(
@@ -587,8 +585,8 @@ void role_grant_request_service::delete_role_grant_requests(
 
 std::vector<domain::role_grant_request>
 role_grant_request_service::get_role_grant_request_history(const std::string& request_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for role grant request. "
-                               << "request_id: " << request_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for role grant request. "
+                              << "request_id: " << request_id;
     return repo_.read_all(ctx_, request_id);
 }
 

@@ -20,7 +20,7 @@
 #ifndef ORES_TESTING_DATABASE_LIFECYCLE_LISTENER_HPP
 #define ORES_TESTING_DATABASE_LIFECYCLE_LISTENER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.testing/export.hpp"
 #include <catch2/reporters/catch_reporter_event_listener.hpp>
 #include <string>

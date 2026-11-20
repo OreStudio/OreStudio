@@ -26,7 +26,6 @@
 #include "ores.trading.api/domain/bond_instrument.hpp"
 #include "ores.trading.api/messaging/bond_instrument_protocol.hpp"
 #include "ores.trading.core/repository/bond_instrument_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -464,12 +462,12 @@ bond_instrument_service::prepare_change(const messaging::bond_instrument_change&
 
 std::vector<domain::bond_instrument>
 bond_instrument_service::list_bond_instruments(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all bond instruments";
+    ORES_LOG_SEV(lg(), debug) << "Listing all bond instruments";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t bond_instrument_service::count_bond_instruments() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total bond instruments count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total bond instruments count";
     return repo_.get_total_bond_instrument_count(ctx_);
 }
 
@@ -477,14 +475,14 @@ std::uint32_t bond_instrument_service::count_bond_instruments() {
 std::optional<domain::bond_instrument>
 bond_instrument_service::get_bond_instrument_at_version(const boost::uuids::uuid& trade_id,
                                                         std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting bond instrument at version. " << "trade_id: " << trade_id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting bond instrument at version. " << "trade_id: " << trade_id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(trade_id), version);
 }
 
 std::optional<domain::bond_instrument>
 bond_instrument_service::get_bond_instrument(const boost::uuids::uuid& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting bond instrument. " << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting bond instrument. " << "trade_id: " << trade_id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(trade_id));
     if (results.empty())
         return std::nullopt;
@@ -499,11 +497,11 @@ bond_instrument_service::get_bond_instruments(const std::vector<std::string>& tr
 void bond_instrument_service::save_bond_instrument(const domain::bond_instrument& v) {
     if (v.identity.trade_id.is_nil())
         throw std::invalid_argument("Bond Instrument trade_id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving bond instrument. " << "trade_id: " << v.identity.trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Saving bond instrument. " << "trade_id: " << v.identity.trade_id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved bond instrument. " << "trade_id: " << v.identity.trade_id;
+    ORES_LOG_SEV(lg(), info) << "Saved bond instrument. " << "trade_id: " << v.identity.trade_id;
 }
 
 void bond_instrument_service::save_bond_instruments(
@@ -512,7 +510,7 @@ void bond_instrument_service::save_bond_instruments(
         if (e.identity.trade_id.is_nil())
             throw std::invalid_argument("Bond Instrument trade_id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << bond_instruments.size() << " bond instruments";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << bond_instruments.size() << " bond instruments";
     auto ts = bond_instruments;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -521,9 +519,9 @@ void bond_instrument_service::save_bond_instruments(
 }
 
 void bond_instrument_service::delete_bond_instrument(const boost::uuids::uuid& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing bond instrument. " << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Removing bond instrument. " << "trade_id: " << trade_id;
     repo_.remove(ctx_, boost::uuids::to_string(trade_id));
-    BOOST_LOG_SEV(lg(), info) << "Removed bond instrument. " << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), info) << "Removed bond instrument. " << "trade_id: " << trade_id;
 }
 
 void bond_instrument_service::delete_bond_instruments(const std::vector<std::string>& trade_ids) {
@@ -532,8 +530,8 @@ void bond_instrument_service::delete_bond_instruments(const std::vector<std::str
 
 std::vector<domain::bond_instrument>
 bond_instrument_service::get_bond_instrument_history(const std::string& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for bond instrument. "
-                               << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for bond instrument. "
+                              << "trade_id: " << trade_id;
     return repo_.read_all(ctx_, trade_id);
 }
 

@@ -27,9 +27,7 @@
 #include "ores.dq.api/domain/fsm_transition.hpp"
 #include "ores.dq.api/domain/fsm_transition_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.core/repository/fsm_transition_entity.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include <boost/lexical_cast.hpp>
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <vector>
@@ -40,7 +38,7 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 
 domain::fsm_transition fsm_transition_mapper::map(const fsm_transition_entity& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::fsm_transition r;
     r.version = v.version;
@@ -57,12 +55,12 @@ domain::fsm_transition fsm_transition_mapper::map(const fsm_transition_entity& v
     r.change_commentary = v.change_commentary;
     r.recorded_at = v.valid_from;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
 }
 
 fsm_transition_entity fsm_transition_mapper::map(const domain::fsm_transition& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     fsm_transition_entity r;
     r.id = v.id;
@@ -78,7 +76,7 @@ fsm_transition_entity fsm_transition_mapper::map(const domain::fsm_transition& v
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;
 }
 

@@ -94,8 +94,8 @@ void navigation_commands::process_next(std::ostream& out, pagination_context& pa
     }
 
     state.current_offset += pagination.page_size();
-    BOOST_LOG_SEV(lg(), debug) << "Navigating to next page for " << entity
-                               << ", offset=" << state.current_offset;
+    ORES_LOG_SEV(lg(), debug) << "Navigating to next page for " << entity
+                              << ", offset=" << state.current_offset;
 
     const auto* callback = pagination.get_list_callback(entity);
     if (callback) {
@@ -124,8 +124,8 @@ void navigation_commands::process_prev(std::ostream& out, pagination_context& pa
         state.current_offset -= pagination.page_size();
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Navigating to previous page for " << entity
-                               << ", offset=" << state.current_offset;
+    ORES_LOG_SEV(lg(), debug) << "Navigating to previous page for " << entity
+                              << ", offset=" << state.current_offset;
 
     const auto* callback = pagination.get_list_callback(entity);
     if (callback) {
@@ -149,7 +149,7 @@ void navigation_commands::process_first(std::ostream& out, pagination_context& p
     }
 
     state.current_offset = 0;
-    BOOST_LOG_SEV(lg(), debug) << "Navigating to first page for " << entity;
+    ORES_LOG_SEV(lg(), debug) << "Navigating to first page for " << entity;
 
     const auto* callback = pagination.get_list_callback(entity);
     if (callback) {
@@ -186,8 +186,8 @@ void navigation_commands::process_last(std::ostream& out, pagination_context& pa
     }
 
     state.current_offset = last_page_offset;
-    BOOST_LOG_SEV(lg(), debug) << "Navigating to last page for " << entity
-                               << ", offset=" << state.current_offset;
+    ORES_LOG_SEV(lg(), debug) << "Navigating to last page for " << entity
+                              << ", offset=" << state.current_offset;
 
     const auto* callback = pagination.get_list_callback(entity);
     if (callback) {
@@ -206,7 +206,7 @@ void navigation_commands::process_page_size(std::ostream& out,
     }
 
     pagination.set_page_size(size);
-    BOOST_LOG_SEV(lg(), info) << "Page size set to " << size;
+    ORES_LOG_SEV(lg(), info) << "Page size set to " << size;
     out << "Page size set to " << size << std::endl;
 }
 

@@ -28,7 +28,6 @@
 #include "ores.refdata.core/repository/counterparty_identifier_change_repository.hpp"
 #include "ores.refdata.core/repository/counterparty_identifier_repository.hpp"
 #include "ores.service/messaging/approval_gate.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <chrono>
@@ -48,7 +47,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -698,12 +696,12 @@ std::optional<ores::utility::domain::result> counterparty_identifier_service::ga
 std::vector<domain::counterparty_identifier>
 counterparty_identifier_service::list_counterparty_identifiers(std::uint32_t offset,
                                                                std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all counterparty identifiers";
+    ORES_LOG_SEV(lg(), debug) << "Listing all counterparty identifiers";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t counterparty_identifier_service::count_counterparty_identifiers() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total counterparty identifiers count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total counterparty identifiers count";
     return repo_.get_total_counterparty_identifier_count(ctx_);
 }
 
@@ -711,31 +709,31 @@ std::uint32_t counterparty_identifier_service::count_counterparty_identifiers() 
 std::vector<domain::counterparty_identifier>
 counterparty_identifier_service::list_counterparty_identifiers_by_counterparty_id(
     const std::string& counterparty_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing counterparty identifiers by counterparty_id: "
-                               << counterparty_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing counterparty identifiers by counterparty_id: "
+                              << counterparty_id;
     return repo_.read_latest_by_counterparty_id(ctx_, counterparty_id, offset, limit);
 }
 
 std::uint32_t counterparty_identifier_service::count_counterparty_identifiers_by_counterparty_id(
     const std::string& counterparty_id) {
-    BOOST_LOG_SEV(lg(), debug)
-        << "Getting total counterparty identifiers count by counterparty_id: " << counterparty_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting total counterparty identifiers count by counterparty_id: "
+                              << counterparty_id;
     return repo_.get_total_counterparty_identifier_count_by_counterparty_id(ctx_, counterparty_id);
 }
 
 std::vector<domain::counterparty_identifier>
 counterparty_identifier_service::list_counterparty_identifiers_by_counterparty_id(
     const boost::uuids::uuid& counterparty_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing counterparty identifiers by counterparty_id: "
-                               << counterparty_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing counterparty identifiers by counterparty_id: "
+                              << counterparty_id;
     return repo_.read_latest_by_counterparty_id(
         ctx_, boost::uuids::to_string(counterparty_id), offset, limit);
 }
 
 std::uint32_t counterparty_identifier_service::count_counterparty_identifiers_by_counterparty_id(
     const boost::uuids::uuid& counterparty_id) {
-    BOOST_LOG_SEV(lg(), debug)
-        << "Getting total counterparty identifiers count by counterparty_id: " << counterparty_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting total counterparty identifiers count by counterparty_id: "
+                              << counterparty_id;
     return repo_.get_total_counterparty_identifier_count_by_counterparty_id(
         ctx_, boost::uuids::to_string(counterparty_id));
 }
@@ -746,7 +744,7 @@ counterparty_identifier_service::list_counterparty_identifiers_by_counterparty_i
     const std::string& counterparty_id,
     std::chrono::system_clock::time_point valid_from_bound,
     std::chrono::system_clock::time_point valid_to_bound) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Listing counterparty identifiers by counterparty_id as of window: " << counterparty_id;
     return repo_.read_by_counterparty_id_as_of(
         ctx_, counterparty_id, valid_from_bound, valid_to_bound);
@@ -755,14 +753,14 @@ counterparty_identifier_service::list_counterparty_identifiers_by_counterparty_i
 std::optional<domain::counterparty_identifier>
 counterparty_identifier_service::get_counterparty_identifier_at_version(
     const boost::uuids::uuid& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting counterparty identifier at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting counterparty identifier at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::counterparty_identifier>
 counterparty_identifier_service::get_counterparty_identifier(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting counterparty identifier. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting counterparty identifier. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -772,7 +770,7 @@ counterparty_identifier_service::get_counterparty_identifier(const boost::uuids:
 std::optional<domain::counterparty_identifier>
 counterparty_identifier_service::get_counterparty_identifier_by_id_value(
     const std::string& id_value) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting counterparty identifier by id_value: " << id_value;
+    ORES_LOG_SEV(lg(), debug) << "Getting counterparty identifier by id_value: " << id_value;
     messaging::counterparty_identifier_key k;
     k.id_value = id_value;
     auto found = counterparty_identifier_read_one(repo_, ctx_, k);
@@ -783,7 +781,7 @@ counterparty_identifier_service::get_counterparty_identifier_by_id_value(
 
 std::optional<domain::counterparty_identifier>
 counterparty_identifier_service::find_counterparty_identifier(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding counterparty identifier. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Finding counterparty identifier. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -793,8 +791,8 @@ counterparty_identifier_service::find_counterparty_identifier(const boost::uuids
 std::optional<domain::counterparty_identifier>
 counterparty_identifier_service::find_counterparty_identifier_by_code(
     const boost::uuids::uuid& counterparty_id, const std::string& id_scheme) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding counterparty identifier by counterparty_id/id_scheme: "
-                               << counterparty_id << "/" << id_scheme;
+    ORES_LOG_SEV(lg(), debug) << "Finding counterparty identifier by counterparty_id/id_scheme: "
+                              << counterparty_id << "/" << id_scheme;
     auto results =
         repo_.read_latest_by_code(ctx_, boost::uuids::to_string(counterparty_id), id_scheme);
     if (results.empty())
@@ -832,7 +830,7 @@ void counterparty_identifier_service::delete_counterparty_identifiers(
 
 std::vector<domain::counterparty_identifier>
 counterparty_identifier_service::get_counterparty_identifier_history(const std::string& key) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for counterparty identifier. key: " << key;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for counterparty identifier. key: " << key;
     // The caller holds the key the model declares and this reads by the
     // storage key, so the two are joined here exactly as they are for any
     // other read. Without this step a provider looks the versions up under a
@@ -854,7 +852,7 @@ counterparty_identifier_service::get_counterparty_identifier_history(const std::
 
 std::vector<domain::counterparty_identifier>
 counterparty_identifier_service::get_counterparty_identifier_history(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for counterparty identifier. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for counterparty identifier. " << "id: " << id;
     return repo_.read_all(ctx_, boost::uuids::to_string(id));
 }
 

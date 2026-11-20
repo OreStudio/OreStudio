@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/cds_convention.hpp"
 #include "ores.refdata.api/messaging/cds_convention_protocol.hpp"
 #include "ores.refdata.core/repository/cds_convention_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -452,12 +450,12 @@ cds_convention_service::prepare_change(const messaging::cds_convention_change& c
 
 std::vector<domain::cds_convention>
 cds_convention_service::list_cds_conventions(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all CDS conventions";
+    ORES_LOG_SEV(lg(), debug) << "Listing all CDS conventions";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t cds_convention_service::count_cds_conventions() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total CDS conventions count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total CDS conventions count";
     return repo_.get_total_cds_convention_count(ctx_);
 }
 
@@ -465,14 +463,14 @@ std::uint32_t cds_convention_service::count_cds_conventions() {
 std::optional<domain::cds_convention>
 cds_convention_service::get_cds_convention_at_version(const std::string& id,
                                                       std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting CDS convention at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting CDS convention at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, id, version);
 }
 
 std::optional<domain::cds_convention>
 cds_convention_service::get_cds_convention(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting CDS convention. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting CDS convention. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, id);
     if (results.empty())
         return std::nullopt;
@@ -487,11 +485,11 @@ cds_convention_service::get_cds_conventions(const std::vector<std::string>& ids)
 void cds_convention_service::save_cds_convention(const domain::cds_convention& v) {
     if (v.id.empty())
         throw std::invalid_argument("CDS Convention id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving CDS convention. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving CDS convention. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved CDS convention. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved CDS convention. " << "id: " << v.id;
 }
 
 void cds_convention_service::save_cds_conventions(
@@ -500,7 +498,7 @@ void cds_convention_service::save_cds_conventions(
         if (e.id.empty())
             throw std::invalid_argument("CDS Convention id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << cds_conventions.size() << " CDS conventions";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << cds_conventions.size() << " CDS conventions";
     auto ts = cds_conventions;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -509,9 +507,9 @@ void cds_convention_service::save_cds_conventions(
 }
 
 void cds_convention_service::delete_cds_convention(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing CDS convention. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing CDS convention. " << "id: " << id;
     repo_.remove(ctx_, id);
-    BOOST_LOG_SEV(lg(), info) << "Removed CDS convention. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed CDS convention. " << "id: " << id;
 }
 
 void cds_convention_service::delete_cds_conventions(const std::vector<std::string>& ids) {
@@ -520,7 +518,7 @@ void cds_convention_service::delete_cds_conventions(const std::vector<std::strin
 
 std::vector<domain::cds_convention>
 cds_convention_service::get_cds_convention_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for CDS convention. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for CDS convention. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

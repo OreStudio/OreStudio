@@ -21,7 +21,7 @@
 #define ORES_REPORTING_CORE_SERVICE_CUT_READ_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.reporting.api/domain/cut.hpp"
 #include "ores.reporting.api/domain/cut_approval_detail.hpp"
 #include "ores.reporting.api/domain/cut_gap.hpp"

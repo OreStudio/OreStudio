@@ -28,7 +28,7 @@ using namespace ores::logging;
 using namespace conventions_fields;
 
 refdata::domain::swap_convention conventions_mapper::map_swap(const record_reader& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping swap convention: " << text_of(v, "Id");
+    ORES_LOG_SEV(lg(), trace) << "Mapping swap convention: " << text_of(v, "Id");
 
     refdata::domain::swap_convention r;
     r.id = text_of(v, "Id");

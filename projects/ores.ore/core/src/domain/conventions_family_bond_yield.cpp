@@ -37,7 +37,7 @@ std::optional<double> opt_real(const record_reader& v, std::string_view name) {
 }
 
 refdata::domain::bond_yield_convention conventions_mapper::map_bond_yield(const record_reader& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping bond yield convention: " << text_of(v, "Id");
+    ORES_LOG_SEV(lg(), trace) << "Mapping bond yield convention: " << text_of(v, "Id");
 
     refdata::domain::bond_yield_convention r;
     r.id = text_of(v, "Id");

@@ -22,7 +22,7 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.platform/time/datetime.hpp"
@@ -114,7 +114,7 @@ public:
      * run writes are gated by.
      */
     void record_run_pricing(ores::nats::message msg) {
-        BOOST_LOG_SEV(report_run_pricing_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(report_run_pricing_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -129,7 +129,7 @@ public:
         }
         auto req = decode<record_run_pricing_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(report_run_pricing_handler_lg(), warn)
+            ORES_LOG_SEV(report_run_pricing_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -138,10 +138,10 @@ public:
         service::report_instance_service svc(req_ctx);
         try {
             auto response = apply_run_pricing(svc, *req);
-            BOOST_LOG_SEV(report_run_pricing_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(report_run_pricing_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(report_run_pricing_handler_lg(), error)
+            ORES_LOG_SEV(report_run_pricing_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             record_run_pricing_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;

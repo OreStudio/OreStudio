@@ -21,7 +21,7 @@
 #include "ores.analytics.core/repository/todays_market_config_repository.hpp"
 #include "ores.analytics.core/service/todays_market_document_service.hpp"
 #include "ores.database/domain/party_scope.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.ore.core/domain/todays_market_projection.hpp"
 #include "ores.ore.core/xml/record_diff.hpp"
 #include "ores.platform/filesystem/file.hpp"
@@ -55,7 +55,7 @@ using namespace ores::logging;
  */
 TEST_CASE("todays_market_roundtrip_through_the_database", "[todaysmarket][database][roundtrip]") {
     auto lg(ores::logging::make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "todays_market_roundtrip_through_the_database";
+    ORES_LOG_SEV(lg, info) << "todays_market_roundtrip_through_the_database";
     scoped_database_helper h;
 
     // The largest document of the kind in the corpus, so the path carries many
@@ -117,7 +117,7 @@ TEST_CASE("todays_market_roundtrip_through_the_database", "[todaysmarket][databa
 TEST_CASE("a collection naming a kind ORE does not have is refused",
           "[todaysmarket][database][roundtrip]") {
     auto lg(ores::logging::make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "a collection naming a kind ORE does not have is refused";
+    ORES_LOG_SEV(lg, info) << "a collection naming a kind ORE does not have is refused";
     scoped_database_helper h;
 
     const auto f = ore_path("examples/Products/Input/todaysmarket.xml");
@@ -136,7 +136,7 @@ TEST_CASE("a collection naming a kind ORE does not have is refused",
 TEST_CASE("a party sees only its own today's market configuration",
           "[todaysmarket][database][roundtrip]") {
     auto lg(ores::logging::make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "a party sees only its own today's market configuration";
+    ORES_LOG_SEV(lg, info) << "a party sees only its own today's market configuration";
     scoped_database_helper h;
     auto parties = ores::testing::make_two_parties(h);
     auto mapped = todays_market_projection::map(todays_market_projection::read(

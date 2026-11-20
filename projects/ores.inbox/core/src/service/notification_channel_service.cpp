@@ -29,10 +29,8 @@
 #include "ores.inbox.api/domain/notification_channel.hpp"
 #include "ores.inbox.api/messaging/notification_channel_protocol.hpp"
 #include "ores.inbox.core/repository/notification_channel_repository.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -455,12 +453,12 @@ ores::utility::domain::result notification_channel_service::prepare_change(
 
 std::vector<domain::notification_channel>
 notification_channel_service::list_channels(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all notification channels";
+    ORES_LOG_SEV(lg(), debug) << "Listing all notification channels";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t notification_channel_service::count_channels() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total notification channels count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total notification channels count";
     return repo_.get_total_channel_count(ctx_);
 }
 
@@ -468,14 +466,14 @@ std::uint32_t notification_channel_service::count_channels() {
 std::optional<domain::notification_channel>
 notification_channel_service::get_channel_at_version(const std::string& code,
                                                      std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting notification channel at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting notification channel at version. " << "code: " << code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::notification_channel>
 notification_channel_service::find_channel(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding notification channel. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Finding notification channel. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -490,11 +488,11 @@ notification_channel_service::get_channels(const std::vector<std::string>& codes
 void notification_channel_service::save_channel(const domain::notification_channel& v) {
     if (v.code.empty())
         throw std::invalid_argument("Notification Channel code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving notification channel. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving notification channel. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved notification channel. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved notification channel. " << "code: " << v.code;
 }
 
 void notification_channel_service::save_channels(
@@ -503,7 +501,7 @@ void notification_channel_service::save_channels(
         if (e.code.empty())
             throw std::invalid_argument("Notification Channel code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << channels.size() << " notification channels";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << channels.size() << " notification channels";
     auto ts = channels;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -512,9 +510,9 @@ void notification_channel_service::save_channels(
 }
 
 void notification_channel_service::delete_channel(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing notification channel. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing notification channel. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed notification channel. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed notification channel. " << "code: " << code;
 }
 
 void notification_channel_service::delete_channels(const std::vector<std::string>& codes) {
@@ -523,7 +521,7 @@ void notification_channel_service::delete_channels(const std::vector<std::string
 
 std::vector<domain::notification_channel>
 notification_channel_service::get_channel_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for notification channel. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for notification channel. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

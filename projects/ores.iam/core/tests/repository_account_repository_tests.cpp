@@ -23,7 +23,7 @@
 #include "ores.iam.api/domain/account_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.api/generators/account_generator.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
@@ -56,7 +56,7 @@ TEST_CASE("write_single_account", "[repository]") {
     account_repository repo;
     auto account = generate_synthetic_account(ctx);
 
-    BOOST_LOG_SEV(lg, debug) << "Account: " << account;
+    ORES_LOG_SEV(lg, debug) << "Account: " << account;
     CHECK_NOTHROW(repo.write(h.context(), account));
 }
 
@@ -68,7 +68,7 @@ TEST_CASE("write_multiple_accounts", "[repository]") {
 
     account_repository repo;
     auto accounts = generate_synthetic_accounts(5, ctx);
-    BOOST_LOG_SEV(lg, debug) << "Accounts: " << accounts;
+    ORES_LOG_SEV(lg, debug) << "Accounts: " << accounts;
 
     CHECK_NOTHROW(repo.write(h.context(), accounts));
 }
@@ -81,12 +81,12 @@ TEST_CASE("read_latest_accounts", "[repository]") {
 
     account_repository repo;
     auto written_accounts = generate_synthetic_accounts(3, ctx);
-    BOOST_LOG_SEV(lg, debug) << "Written accounts: " << written_accounts;
+    ORES_LOG_SEV(lg, debug) << "Written accounts: " << written_accounts;
 
     repo.write(h.context(), written_accounts);
 
     auto read_accounts = repo.read_latest(h.context());
-    BOOST_LOG_SEV(lg, debug) << "Read accounts: " << read_accounts;
+    ORES_LOG_SEV(lg, debug) << "Read accounts: " << read_accounts;
 
     CHECK(!read_accounts.empty());
     CHECK(read_accounts.size() >= written_accounts.size());
@@ -102,13 +102,13 @@ TEST_CASE("read_latest_account_by_id", "[repository]") {
     auto accounts = generate_synthetic_accounts(5, ctx);
 
     const auto target = accounts.front();
-    BOOST_LOG_SEV(lg, debug) << "Write accounts: " << accounts;
+    ORES_LOG_SEV(lg, debug) << "Write accounts: " << accounts;
     repo.write(h.context(), accounts);
 
-    BOOST_LOG_SEV(lg, debug) << "target account: " << target;
+    ORES_LOG_SEV(lg, debug) << "target account: " << target;
 
     auto read_accounts = repo.read_latest(h.context(), boost::uuids::to_string(target.id));
-    BOOST_LOG_SEV(lg, debug) << "Read accounts: " << read_accounts;
+    ORES_LOG_SEV(lg, debug) << "Read accounts: " << read_accounts;
 
     REQUIRE(read_accounts.size() == 1);
     CHECK(read_accounts[0].id == target.id);
@@ -124,12 +124,12 @@ TEST_CASE("read_all_accounts", "[repository]") {
 
     account_repository repo;
     auto written_accounts = generate_synthetic_accounts(5, ctx);
-    BOOST_LOG_SEV(lg, debug) << "Generated accounts: " << written_accounts;
+    ORES_LOG_SEV(lg, debug) << "Generated accounts: " << written_accounts;
 
     repo.write(h.context(), written_accounts);
 
     auto read_accounts = repo.read_all(h.context());
-    BOOST_LOG_SEV(lg, debug) << "Read accounts: " << read_accounts;
+    ORES_LOG_SEV(lg, debug) << "Read accounts: " << read_accounts;
 
     CHECK(!read_accounts.empty());
     CHECK(read_accounts.size() >= written_accounts.size());
@@ -146,19 +146,19 @@ TEST_CASE("read_all_accounts_by_id", "[repository]") {
     // Write multiple versions of the same account
     auto acc1 = generate_synthetic_account(ctx);
     const auto test_id = acc1.id;
-    BOOST_LOG_SEV(lg, debug) << "Account 1: " << acc1;
+    ORES_LOG_SEV(lg, debug) << "Account 1: " << acc1;
 
     auto acc2 = acc1;
     acc2.version = 1;
     acc2.email = "test.versions.v2@test.com";
-    BOOST_LOG_SEV(lg, debug) << "Account 2: " << acc2;
+    ORES_LOG_SEV(lg, debug) << "Account 2: " << acc2;
 
     repo.write(h.context(), {acc1});
     repo.write(h.context(), {acc2});
 
     // Read all versions
     auto read_accounts = repo.read_all(h.context(), boost::uuids::to_string(test_id));
-    BOOST_LOG_SEV(lg, debug) << "Read accounts: " << read_accounts;
+    ORES_LOG_SEV(lg, debug) << "Read accounts: " << read_accounts;
 
     CHECK(read_accounts.size() >= 2);
 
@@ -183,16 +183,16 @@ TEST_CASE("read_latest_by_username", "[repository]") {
 
     account_repository repo;
     auto accounts = generate_synthetic_accounts(5, ctx);
-    BOOST_LOG_SEV(lg, debug) << "Generated accounts: " << accounts;
+    ORES_LOG_SEV(lg, debug) << "Generated accounts: " << accounts;
 
     repo.write(h.context(), accounts);
 
     auto acc = accounts.front();
-    BOOST_LOG_SEV(lg, debug) << "Target account: " << acc;
+    ORES_LOG_SEV(lg, debug) << "Target account: " << acc;
 
     // Read by username
     auto read_accounts = repo.read_latest_by_username(h.context(), acc.username);
-    BOOST_LOG_SEV(lg, debug) << "Read accounts: " << read_accounts;
+    ORES_LOG_SEV(lg, debug) << "Read accounts: " << read_accounts;
 
     REQUIRE(read_accounts.size() == 1);
     CHECK(read_accounts[0].username == acc.username);
@@ -208,10 +208,10 @@ TEST_CASE("read_nonexistent_account_by_id", "[repository]") {
 
     // Generate a random UUID that doesn't exist in database.
     const auto nonexistent_id = boost::uuids::random_generator()();
-    BOOST_LOG_SEV(lg, debug) << "Non-existent ID: " << nonexistent_id;
+    ORES_LOG_SEV(lg, debug) << "Non-existent ID: " << nonexistent_id;
 
     auto read_accounts = repo.read_latest(h.context(), boost::uuids::to_string(nonexistent_id));
-    BOOST_LOG_SEV(lg, debug) << "Read accounts: " << read_accounts;
+    ORES_LOG_SEV(lg, debug) << "Read accounts: " << read_accounts;
 
     CHECK(read_accounts.size() == 0);
 }
@@ -224,10 +224,10 @@ TEST_CASE("read_nonexistent_username", "[repository]") {
     account_repository repo;
 
     const std::string nonexistent_username = "nonexistent.user.12345";
-    BOOST_LOG_SEV(lg, debug) << "Non-existent username: " << nonexistent_username;
+    ORES_LOG_SEV(lg, debug) << "Non-existent username: " << nonexistent_username;
 
     auto read_accounts = repo.read_latest_by_username(h.context(), nonexistent_username);
-    BOOST_LOG_SEV(lg, debug) << "Read accounts: " << read_accounts;
+    ORES_LOG_SEV(lg, debug) << "Read accounts: " << read_accounts;
 
     CHECK(read_accounts.size() == 0);
 }
@@ -242,14 +242,14 @@ TEST_CASE("write_and_read_account_by_id", "[repository]") {
 
     // Note: Admin privileges are now managed via RBAC role assignments
     auto acc = generate_synthetic_account(ctx);
-    BOOST_LOG_SEV(lg, debug) << "Account: " << acc;
+    ORES_LOG_SEV(lg, debug) << "Account: " << acc;
 
     const auto acc_id = acc.id;
     repo.write(h.context(), {acc});
 
     // Read back and verify data
     auto read_accounts = repo.read_latest(h.context(), boost::uuids::to_string(acc_id));
-    BOOST_LOG_SEV(lg, debug) << "Read accounts: " << read_accounts;
+    ORES_LOG_SEV(lg, debug) << "Read accounts: " << read_accounts;
 
     REQUIRE(read_accounts.size() == 1);
     CHECK(read_accounts[0].username == acc.username);
@@ -271,12 +271,12 @@ TEST_CASE("write_and_read_account_with_image_id", "[repository]") {
     account_repository repo;
     auto acc = generate_synthetic_account(ctx);
     acc.image_id = image.id;
-    BOOST_LOG_SEV(lg, debug) << "Account: " << acc;
+    ORES_LOG_SEV(lg, debug) << "Account: " << acc;
 
     repo.write(h.context(), acc);
 
     auto read_accounts = repo.read_latest(h.context(), boost::uuids::to_string(acc.id));
-    BOOST_LOG_SEV(lg, debug) << "Read accounts: " << read_accounts;
+    ORES_LOG_SEV(lg, debug) << "Read accounts: " << read_accounts;
 
     REQUIRE(read_accounts.size() == 1);
     CHECK(read_accounts[0].image_id == image.id);
@@ -291,7 +291,7 @@ TEST_CASE("write_account_with_nonexistent_image_id_throws", "[repository]") {
     account_repository repo;
     auto acc = generate_synthetic_account(ctx);
     acc.image_id = boost::uuids::random_generator()();
-    BOOST_LOG_SEV(lg, debug) << "Account with nonexistent image_id: " << acc;
+    ORES_LOG_SEV(lg, debug) << "Account with nonexistent image_id: " << acc;
 
     CHECK_THROWS(repo.write(h.context(), acc));
 }
@@ -313,8 +313,8 @@ TEST_CASE("write_account_with_itself_as_modified_by", "[repository]") {
     // retires the account it replaces. A tenant whose accounts all retire
     // falls back to bootstrap, and bootstrap accepts any actor.
     auto keeper = generate_synthetic_account(ctx);
-    BOOST_LOG_SEV(lg, debug) << "First version: " << first;
-    BOOST_LOG_SEV(lg, debug) << "Keeper account: " << keeper;
+    ORES_LOG_SEV(lg, debug) << "First version: " << first;
+    ORES_LOG_SEV(lg, debug) << "Keeper account: " << keeper;
     repo.write(h.context(), {first, keeper});
 
     // The revision names the account written as its own actor, so the
@@ -324,11 +324,11 @@ TEST_CASE("write_account_with_itself_as_modified_by", "[repository]") {
     second.version = 1;
     second.modified_by = first.username;
     second.full_name = "Self write revision";
-    BOOST_LOG_SEV(lg, debug) << "Self write revision: " << second;
+    ORES_LOG_SEV(lg, debug) << "Self write revision: " << second;
     CHECK_NOTHROW(repo.write(h.context(), {second}));
 
     auto read_accounts = repo.read_latest(h.context(), boost::uuids::to_string(first.id));
-    BOOST_LOG_SEV(lg, debug) << "Read accounts: " << read_accounts;
+    ORES_LOG_SEV(lg, debug) << "Read accounts: " << read_accounts;
 
     REQUIRE(read_accounts.size() == 1);
     CHECK(read_accounts[0].version == 2);

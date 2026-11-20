@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/asset_measure.hpp"
 #include "ores.refdata.api/messaging/asset_measure_protocol.hpp"
 #include "ores.refdata.core/repository/asset_measure_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -448,28 +446,28 @@ asset_measure_service::prepare_change(const messaging::asset_measure_change& cha
 
 std::vector<domain::asset_measure> asset_measure_service::list_measures(std::uint32_t offset,
                                                                         std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all asset measures";
+    ORES_LOG_SEV(lg(), debug) << "Listing all asset measures";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t asset_measure_service::count_measures() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total asset measures count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total asset measures count";
     return repo_.get_total_measure_count(ctx_);
 }
 
 
 std::optional<domain::asset_measure> asset_measure_service::get_measure_at_version(
     const std::string& code, const std::string& coding_scheme_code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting asset measure at version. " << "code: " << code
-                               << " coding_scheme_code: " << coding_scheme_code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting asset measure at version. " << "code: " << code
+                              << " coding_scheme_code: " << coding_scheme_code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, coding_scheme_code, version);
 }
 
 std::optional<domain::asset_measure>
 asset_measure_service::get_measure(const std::string& code, const std::string& coding_scheme_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting asset measure. " << "code: " << code
-                               << " coding_scheme_code: " << coding_scheme_code;
+    ORES_LOG_SEV(lg(), debug) << "Getting asset measure. " << "code: " << code
+                              << " coding_scheme_code: " << coding_scheme_code;
     auto results = repo_.read_latest(ctx_, code, coding_scheme_code);
     if (results.empty())
         return std::nullopt;
@@ -487,13 +485,13 @@ void asset_measure_service::save_measure(const domain::asset_measure& v) {
         throw std::invalid_argument("Asset Measure code cannot be empty.");
     if (v.coding_scheme_code.empty())
         throw std::invalid_argument("Asset Measure coding_scheme_code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving asset measure. " << "code: " << v.code
-                               << " coding_scheme_code: " << v.coding_scheme_code;
+    ORES_LOG_SEV(lg(), debug) << "Saving asset measure. " << "code: " << v.code
+                              << " coding_scheme_code: " << v.coding_scheme_code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved asset measure. " << "code: " << v.code
-                              << " coding_scheme_code: " << v.coding_scheme_code;
+    ORES_LOG_SEV(lg(), info) << "Saved asset measure. " << "code: " << v.code
+                             << " coding_scheme_code: " << v.coding_scheme_code;
 }
 
 void asset_measure_service::save_measures(const std::vector<domain::asset_measure>& measures) {
@@ -503,7 +501,7 @@ void asset_measure_service::save_measures(const std::vector<domain::asset_measur
         if (e.coding_scheme_code.empty())
             throw std::invalid_argument("Asset Measure coding_scheme_code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << measures.size() << " asset measures";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << measures.size() << " asset measures";
     auto ts = measures;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -513,11 +511,11 @@ void asset_measure_service::save_measures(const std::vector<domain::asset_measur
 
 void asset_measure_service::delete_measure(const std::string& code,
                                            const std::string& coding_scheme_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing asset measure. " << "code: " << code
-                               << " coding_scheme_code: " << coding_scheme_code;
-    repo_.remove(ctx_, code, coding_scheme_code);
-    BOOST_LOG_SEV(lg(), info) << "Removed asset measure. " << "code: " << code
+    ORES_LOG_SEV(lg(), debug) << "Removing asset measure. " << "code: " << code
                               << " coding_scheme_code: " << coding_scheme_code;
+    repo_.remove(ctx_, code, coding_scheme_code);
+    ORES_LOG_SEV(lg(), info) << "Removed asset measure. " << "code: " << code
+                             << " coding_scheme_code: " << coding_scheme_code;
 }
 
 void asset_measure_service::delete_measures(const std::vector<std::string>& codes,
@@ -528,8 +526,8 @@ void asset_measure_service::delete_measures(const std::vector<std::string>& code
 std::vector<domain::asset_measure>
 asset_measure_service::get_measure_history(const std::string& code,
                                            const std::string& coding_scheme_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for asset measure. " << "code: " << code
-                               << " coding_scheme_code: " << coding_scheme_code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for asset measure. " << "code: " << code
+                              << " coding_scheme_code: " << coding_scheme_code;
     return repo_.read_all(ctx_, code, coding_scheme_code);
 }
 

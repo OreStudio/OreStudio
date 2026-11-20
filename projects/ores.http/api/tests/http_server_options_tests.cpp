@@ -18,7 +18,7 @@
  *
  */
 #include "ores.http.api/net/http_server_options.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <sstream>
@@ -28,7 +28,7 @@ using namespace ores::logging;
 
 TEST_CASE("http_server_options_default_construction", "[http_server_options]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing http_server_options default construction";
+    ORES_LOG_SEV(lg, info) << "Testing http_server_options default construction";
 
     http_server_options sut;
 
@@ -49,7 +49,7 @@ TEST_CASE("http_server_options_default_construction", "[http_server_options]") {
 
 TEST_CASE("http_server_options_custom_values", "[http_server_options]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing http_server_options with custom values";
+    ORES_LOG_SEV(lg, info) << "Testing http_server_options with custom values";
 
     http_server_options sut;
     sut.address = "127.0.0.1";
@@ -77,7 +77,7 @@ TEST_CASE("http_server_options_custom_values", "[http_server_options]") {
 
 TEST_CASE("http_server_options_streaming", "[http_server_options]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing http_server_options streaming operator";
+    ORES_LOG_SEV(lg, info) << "Testing http_server_options streaming operator";
 
     http_server_options sut;
     sut.address = "192.168.1.1";
@@ -88,7 +88,7 @@ TEST_CASE("http_server_options_streaming", "[http_server_options]") {
     os << sut;
     const std::string output = os.str();
 
-    BOOST_LOG_SEV(lg, debug) << "Output: " << output;
+    ORES_LOG_SEV(lg, debug) << "Output: " << output;
 
     CHECK(!output.empty());
     CHECK(output.find("192.168.1.1") != std::string::npos);
@@ -98,7 +98,7 @@ TEST_CASE("http_server_options_streaming", "[http_server_options]") {
 
 TEST_CASE("http_server_options_streaming_contains_all_fields", "[http_server_options]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing http_server_options streaming contains all fields";
+    ORES_LOG_SEV(lg, info) << "Testing http_server_options streaming contains all fields";
 
     http_server_options sut;
 

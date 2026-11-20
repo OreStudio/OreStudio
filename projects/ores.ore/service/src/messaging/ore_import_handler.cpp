@@ -51,13 +51,13 @@ void ore_import_handler::ore_import(ores::nats::message msg) {
     using ores::workflow::messaging::start_workflow_message;
 
     const auto correlation_id = ores::nats::extract_or_generate_correlation_id(msg);
-    BOOST_LOG_SEV(lg(), info) << "ore.import received | corr=" << correlation_id;
+    ORES_LOG_SEV(lg(), info) << "ore.import received | corr=" << correlation_id;
 
     // Authenticate JWT and build per-request DB context.
     auto ctx_expected = ores::service::service::make_request_context(
         ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>(signer_));
     if (!ctx_expected) {
-        BOOST_LOG_SEV(lg(), warn) << "ore.import auth failed | corr=" << correlation_id;
+        ORES_LOG_SEV(lg(), warn) << "ore.import auth failed | corr=" << correlation_id;
         error_reply(nats_, msg, ctx_expected.error());
         return;
     }
@@ -66,7 +66,7 @@ void ore_import_handler::ore_import(ores::nats::message msg) {
     // Decode request payload.
     auto req = decode<ore_import_request>(msg);
     if (!req) {
-        BOOST_LOG_SEV(lg(), warn) << "ore.import bad payload | corr=" << correlation_id;
+        ORES_LOG_SEV(lg(), warn) << "ore.import bad payload | corr=" << correlation_id;
         reply(nats_,
               msg,
               ore_import_response{.success = false,
@@ -98,8 +98,8 @@ void ore_import_handler::ore_import(ores::nats::message msg) {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "ore.import dispatching workflow | corr=" << correlation_id
-                              << " request_id=" << req->request_id;
+    ORES_LOG_SEV(lg(), info) << "ore.import dispatching workflow | corr=" << correlation_id
+                             << " request_id=" << req->request_id;
 
     // Pre-generate the workflow instance UUID so we can return it immediately.
     const auto instance_uuid = boost::uuids::random_generator()();
@@ -134,8 +134,8 @@ void ore_import_handler::ore_import(ores::nats::message msg) {
                          ores::nats::headers::with_publish_identity(
                              ores::nats::service::forwarded_caller_headers(msg), swm.instance_id));
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error)
-            << "ore.import dispatch failed | corr=" << correlation_id << " error=" << e.what();
+        ORES_LOG_SEV(lg(), error) << "ore.import dispatch failed | corr=" << correlation_id
+                                  << " error=" << e.what();
         reply(nats_,
               msg,
               ore_import_response{.success = false,
@@ -144,8 +144,8 @@ void ore_import_handler::ore_import(ores::nats::message msg) {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "ore.import workflow dispatched | corr=" << correlation_id
-                              << " instance_id=" << instance_id_str;
+    ORES_LOG_SEV(lg(), info) << "ore.import workflow dispatched | corr=" << correlation_id
+                             << " instance_id=" << instance_id_str;
 
     reply(nats_,
           msg,

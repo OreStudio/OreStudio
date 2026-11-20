@@ -30,7 +30,7 @@
 #include "ores.http/routes/reporting/engine_settings_rows.hpp"
 #include "ores.http/routes/reporting/ore_value_set_rows.hpp"
 #include "ores.http/routes/reporting/reporting_configuration_rows.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/messaging/currency_protocol.hpp"
 #include "ores.refdata.api/messaging/tenor_protocol.hpp"
 #include "ores.reporting.api/messaging/engine_settings_building_protocol.hpp"
@@ -96,7 +96,7 @@ std::string setting_json_of(const engine_setting_row& setting,
                             const value_fields& fields,
                             const ores::reporting::domain::ore_parameter* documented) {
     const auto of_parameter =
-        [documented](std::string ores::reporting::domain::ore_parameter::*field) {
+        [documented](std::string ores::reporting::domain::ore_parameter::* field) {
             return documented == nullptr ? std::string() : documented->*field;
         };
     auto members = std::vector<std::string>{
@@ -305,7 +305,7 @@ http_response document_answer(const http_request& req,
     } catch (const std::exception&) {
         // A binding that cannot be read must not hide the settings, so the page
         // states it as unknown rather than refusing.
-        BOOST_LOG_SEV(engine_settings_lg(), ores::logging::debug)
+        ORES_LOG_SEV(engine_settings_lg(), ores::logging::debug)
             << "The reports that bind configuration "
             << boost::uuids::to_string(row.configuration_id)
             << " could not be read, so the page states them as unknown.";

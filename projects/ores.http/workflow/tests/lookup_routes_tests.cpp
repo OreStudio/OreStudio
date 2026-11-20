@@ -19,7 +19,7 @@
  */
 #include "ores.http.api/domain/http_request.hpp"
 #include "ores.http/routes/workflow/workflow_routes.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "route_answer.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
@@ -45,7 +45,7 @@ bool lookup_holds(const std::string& body, const std::string& part) {
 
 TEST_CASE("the_approvals_mode_reaches_the_service", "[workflow_lookups]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the approvals mode with no service behind it";
+    ORES_LOG_SEV(lg, info) << "Testing the approvals mode with no service behind it";
 
     CHECK(answer_at<workflow_routes>(http_method::get, mode_pattern, http_request{}, mode_pattern)
               .status == http_status::bad_gateway);
@@ -53,7 +53,7 @@ TEST_CASE("the_approvals_mode_reaches_the_service", "[workflow_lookups]") {
 
 TEST_CASE("the_approvals_mode_refuses_a_parameter_it_does_not_take", "[workflow_lookups]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a parameter the approvals mode does not name";
+    ORES_LOG_SEV(lg, info) << "Testing a parameter the approvals mode does not name";
 
     http_request req;
     req.query_params["tenant"] = "acme";
@@ -65,7 +65,7 @@ TEST_CASE("the_approvals_mode_refuses_a_parameter_it_does_not_take", "[workflow_
 
 TEST_CASE("the_hold_reasons_reach_the_service", "[workflow_lookups]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the hold reasons with no service behind it";
+    ORES_LOG_SEV(lg, info) << "Testing the hold reasons with no service behind it";
 
     CHECK(answer_at<workflow_routes>(
               http_method::get, reasons_pattern, http_request{}, reasons_pattern)
@@ -74,7 +74,7 @@ TEST_CASE("the_hold_reasons_reach_the_service", "[workflow_lookups]") {
 
 TEST_CASE("the_hold_reasons_refuse_a_parameter_they_do_not_take", "[workflow_lookups]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a parameter the hold reasons do not name";
+    ORES_LOG_SEV(lg, info) << "Testing a parameter the hold reasons do not name";
 
     http_request req;
     req.query_params["kind"] = "trading.book_change";

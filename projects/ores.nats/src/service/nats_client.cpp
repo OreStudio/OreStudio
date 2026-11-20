@@ -50,7 +50,7 @@ void nats_client::disconnect() {
     // disconnect that kept it would keep a password alive after the session
     // it belongs to has ended.
     session_renewer_ = nullptr;
-    BOOST_LOG_SEV(lg(), info) << "Disconnected from NATS";
+    ORES_LOG_SEV(lg(), info) << "Disconnected from NATS";
 }
 
 bool nats_client::is_connected() const noexcept {
@@ -138,7 +138,7 @@ message nats_client::do_authenticated_request(std::string_view subject,
         auto reply = active_client().request_sync(subject, body, make_headers(), timeout);
         const auto x_err = reply.headers.find(std::string(headers::x_error));
         if (x_err != reply.headers.end() && x_err->second == "token_expired") {
-            BOOST_LOG_SEV(lg(), info)
+            ORES_LOG_SEV(lg(), info)
                 << "Service token expired on " << subject << "; re-authenticating";
             reply = active_client().request_sync(subject, body, make_headers(true), timeout);
         }
@@ -177,8 +177,8 @@ message nats_client::do_authenticated_request(std::string_view subject,
         // The server refuses an expired token before it acts on the request, so
         // the work was not done and sending it again is not a second attempt at
         // something that may already have happened.
-        BOOST_LOG_SEV(lg(), info) << "Session expired on " << subject
-                                  << "; signing in again and retrying once";
+        ORES_LOG_SEV(lg(), info) << "Session expired on " << subject
+                                 << "; signing in again and retrying once";
         /*
          * Signing in is itself made of requests, and the party selection among
          * them can be refused too. The guard keeps that refusal from calling

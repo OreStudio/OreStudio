@@ -19,7 +19,7 @@
 #include "ores.database/pq/pool.hpp"
 #include "ores.database/pq/connection.hpp"
 #include "ores.database/pq/store_error.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include <algorithm>
 #include <thread>
 
@@ -67,7 +67,7 @@ pool::pool(connection_options options,
             const auto wait = policy.shape == backoff::linear ?
                                   policy.wait * attempt :
                                   policy.wait * (std::size_t{1} << (attempt - 1));
-            BOOST_LOG_SEV(pool_lg(), warn)
+            ORES_LOG_SEV(pool_lg(), warn)
                 << "Opening the database pool failed (attempt " << attempt << " of " << attempts
                 << "), retrying in " << wait.count() << "s: " << e.what();
             std::this_thread::sleep_for(wait);

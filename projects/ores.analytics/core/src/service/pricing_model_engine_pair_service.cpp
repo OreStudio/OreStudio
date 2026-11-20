@@ -29,10 +29,8 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -465,12 +463,12 @@ ores::utility::domain::result pricing_model_engine_pair_service::prepare_change(
 
 std::vector<domain::pricing_model_engine_pair>
 pricing_model_engine_pair_service::list_pairs(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all pricing model engine pairs";
+    ORES_LOG_SEV(lg(), debug) << "Listing all pricing model engine pairs";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t pricing_model_engine_pair_service::count_pairs() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total pricing model engine pairs count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total pricing model engine pairs count";
     return repo_.get_total_pair_count(ctx_);
 }
 
@@ -478,14 +476,14 @@ std::uint32_t pricing_model_engine_pair_service::count_pairs() {
 std::optional<domain::pricing_model_engine_pair>
 pricing_model_engine_pair_service::get_pair_at_version(const std::string& code,
                                                        std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting pricing model engine pair at version. "
-                               << "code: " << code << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting pricing model engine pair at version. "
+                              << "code: " << code << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::pricing_model_engine_pair>
 pricing_model_engine_pair_service::find_pair(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding pricing model engine pair. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Finding pricing model engine pair. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -500,11 +498,11 @@ pricing_model_engine_pair_service::get_pairs(const std::vector<std::string>& cod
 void pricing_model_engine_pair_service::save_pair(const domain::pricing_model_engine_pair& v) {
     if (v.code.empty())
         throw std::invalid_argument("Pricing Model Engine Pair code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving pricing model engine pair. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving pricing model engine pair. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved pricing model engine pair. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved pricing model engine pair. " << "code: " << v.code;
 }
 
 void pricing_model_engine_pair_service::save_pairs(
@@ -513,7 +511,7 @@ void pricing_model_engine_pair_service::save_pairs(
         if (e.code.empty())
             throw std::invalid_argument("Pricing Model Engine Pair code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << pairs.size() << " pricing model engine pairs";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << pairs.size() << " pricing model engine pairs";
     auto ts = pairs;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -522,9 +520,9 @@ void pricing_model_engine_pair_service::save_pairs(
 }
 
 void pricing_model_engine_pair_service::delete_pair(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing pricing model engine pair. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing pricing model engine pair. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed pricing model engine pair. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed pricing model engine pair. " << "code: " << code;
 }
 
 void pricing_model_engine_pair_service::delete_pairs(const std::vector<std::string>& codes) {
@@ -533,8 +531,8 @@ void pricing_model_engine_pair_service::delete_pairs(const std::vector<std::stri
 
 std::vector<domain::pricing_model_engine_pair>
 pricing_model_engine_pair_service::get_pair_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for pricing model engine pair. "
-                               << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for pricing model engine pair. "
+                              << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

@@ -25,29 +25,29 @@ using namespace ores::logging;
 
 fx_quote_convention_checker::fx_quote_convention_checker(std::set<currency_pair> known_pairs)
     : known_pairs_(std::move(known_pairs)) {
-    BOOST_LOG_SEV(lg(), debug) << "Constructed with " << known_pairs_.size() << " known pair(s).";
+    ORES_LOG_SEV(lg(), debug) << "Constructed with " << known_pairs_.size() << " known pair(s).";
 }
 
 fx_quote_check_result fx_quote_convention_checker::check(const std::string& base,
                                                          const std::string& quote) const {
-    BOOST_LOG_SEV(lg(), debug) << "Checking quote " << base << "/" << quote << " against "
-                               << known_pairs_.size() << " known pair(s).";
+    ORES_LOG_SEV(lg(), debug) << "Checking quote " << base << "/" << quote << " against "
+                              << known_pairs_.size() << " known pair(s).";
 
     if (known_pairs_.contains({base, quote})) {
-        BOOST_LOG_SEV(lg(), debug)
-            << base << "/" << quote << " matches known canonical order — " << "unchanged.";
+        ORES_LOG_SEV(lg(), debug) << base << "/" << quote << " matches known canonical order — "
+                                  << "unchanged.";
         return {base, quote, fx_quote_status::unchanged};
     }
 
     if (known_pairs_.contains({quote, base})) {
-        BOOST_LOG_SEV(lg(), debug)
-            << base << "/" << quote << " is reversed relative to known pair " << quote << "/"
-            << base << " — swapping qualifier, value untouched.";
+        ORES_LOG_SEV(lg(), debug) << base << "/" << quote << " is reversed relative to known pair "
+                                  << quote << "/" << base
+                                  << " — swapping qualifier, value untouched.";
         return {quote, base, fx_quote_status::key_swapped};
     }
 
-    BOOST_LOG_SEV(lg(), debug) << base << "/" << quote
-                               << " is not a known pair in either order — unchanged.";
+    ORES_LOG_SEV(lg(), debug) << base << "/" << quote
+                              << " is not a known pair in either order — unchanged.";
     return {base, quote, fx_quote_status::unknown_pair};
 }
 

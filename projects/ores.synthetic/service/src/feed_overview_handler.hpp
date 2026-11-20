@@ -24,7 +24,7 @@
 #include "generator_fleet.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
@@ -105,7 +105,7 @@ public:
         const auto req = decode<list_feed_folders_request>(msg);
         if (!req) {
             resp.message = "Failed to decode the folder request.";
-            BOOST_LOG_SEV(feed_overview_handler_lg(), warn)
+            ORES_LOG_SEV(feed_overview_handler_lg(), warn)
                 << "list_feed_folders refused: the request did not decode";
             reply(nats_, msg, resp);
             return;
@@ -117,7 +117,7 @@ public:
             resp.success = true;
         } catch (const std::exception& e) {
             resp.message = "The request failed. The service log says why.";
-            BOOST_LOG_SEV(feed_overview_handler_lg(), error)
+            ORES_LOG_SEV(feed_overview_handler_lg(), error)
                 << "list_feed_folders failed: " << e.what();
         }
         reply(nats_, msg, resp);
@@ -148,7 +148,7 @@ public:
         const auto req = decode<list_folder_feeds_request>(msg);
         if (!req) {
             resp.message = "Failed to decode the feed request.";
-            BOOST_LOG_SEV(feed_overview_handler_lg(), warn)
+            ORES_LOG_SEV(feed_overview_handler_lg(), warn)
                 << "list_folder_feeds refused: the request did not decode";
             reply(nats_, msg, resp);
             return;
@@ -170,7 +170,7 @@ public:
             resp.success = true;
         } catch (const std::exception& e) {
             resp.message = "The request failed. The service log says why.";
-            BOOST_LOG_SEV(feed_overview_handler_lg(), error)
+            ORES_LOG_SEV(feed_overview_handler_lg(), error)
                 << "list_folder_feeds failed: " << e.what();
         }
         reply(nats_, msg, resp);

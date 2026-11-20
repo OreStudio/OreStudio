@@ -25,7 +25,7 @@
 #ifndef ORES_TRADING_CORE_REPOSITORY_COMMODITY_BASKET_CONSTITUENT_MAPPER_HPP
 #define ORES_TRADING_CORE_REPOSITORY_COMMODITY_BASKET_CONSTITUENT_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.trading.api/domain/commodity_basket_constituent.hpp"
 #include "ores.trading.core/export.hpp"
 #include "ores.trading.core/repository/commodity_basket_constituent_entity.hpp"

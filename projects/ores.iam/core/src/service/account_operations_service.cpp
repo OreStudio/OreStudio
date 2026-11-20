@@ -54,9 +54,9 @@ namespace validation = ores::security::validation;
 using error_code = ores::utility::serialization::error_code;
 
 void account_operations_service::throw_if_empty(const std::string& name, const std::string& value) {
-    BOOST_LOG_SEV(lg(), debug) << name << ": '" << value << "'";
+    ORES_LOG_SEV(lg(), debug) << name << ": '" << value << "'";
     if (value.empty()) {
-        BOOST_LOG_SEV(lg(), error) << name << " cannot be empty.";
+        ORES_LOG_SEV(lg(), error) << name << " cannot be empty.";
         throw std::invalid_argument(name + " cannot be empty.");
     }
 }
@@ -64,9 +64,9 @@ void account_operations_service::throw_if_empty(const std::string& name, const s
 account_operations_service::account_operations_service(const database::context& ctx)
     : ctx_(ctx) {
 
-    BOOST_LOG_SEV(lg(), debug) << "DML for account: " << account_repo_.sql();
-    BOOST_LOG_SEV(lg(), debug) << "DML for account_credential: " << credential_repo_.sql();
-    BOOST_LOG_SEV(lg(), debug) << "DML for login_info: " << login_info_repo_.sql();
+    ORES_LOG_SEV(lg(), debug) << "DML for account: " << account_repo_.sql();
+    ORES_LOG_SEV(lg(), debug) << "DML for account_credential: " << credential_repo_.sql();
+    ORES_LOG_SEV(lg(), debug) << "DML for login_info: " << login_info_repo_.sql();
 }
 
 std::optional<domain::account_credential>
@@ -86,7 +86,7 @@ void account_operations_service::write_credential(domain::account_credential cre
 std::optional<boost::uuids::uuid>
 account_operations_service::verify_service_credentials(const std::string& username,
                                                        const std::string& password) {
-    BOOST_LOG_SEV(lg(), debug) << "Checking service credentials for: " << username;
+    ORES_LOG_SEV(lg(), debug) << "Checking service credentials for: " << username;
 
     const auto accounts = account_repo_.read_latest_by_username(ctx_, username);
     if (accounts.empty())
@@ -94,7 +94,7 @@ account_operations_service::verify_service_credentials(const std::string& userna
 
     const auto& account = accounts.front();
     if (account.account_type == "user") {
-        BOOST_LOG_SEV(lg(), debug) << "Rejecting user account for service login: " << username;
+        ORES_LOG_SEV(lg(), debug) << "Rejecting user account for service login: " << username;
         return std::nullopt;
     }
 
@@ -103,13 +103,13 @@ account_operations_service::verify_service_credentials(const std::string& userna
         // The account is a service account with no credential row at all,
         // which is a data fault and not a rejected password. Say which, so
         // the two are not read as one another.
-        BOOST_LOG_SEV(lg(), warn)
+        ORES_LOG_SEV(lg(), warn)
             << "Service account holds no credential row, so it cannot authenticate: " << username;
         return std::nullopt;
     }
 
     if (credential->service_password_hash.empty()) {
-        BOOST_LOG_SEV(lg(), warn)
+        ORES_LOG_SEV(lg(), warn)
             << "Service account's credential holds no password hash, so it cannot authenticate: "
             << username;
         return std::nullopt;
@@ -125,7 +125,7 @@ account_operations_service::verify_service_credentials(const std::string& userna
         computed_hash += std::format("{:02x}", digest[i]);
 
     if (computed_hash != credential->service_password_hash) {
-        BOOST_LOG_SEV(lg(), debug) << "Password mismatch for service account: " << username;
+        ORES_LOG_SEV(lg(), debug) << "Password mismatch for service account: " << username;
         return std::nullopt;
     }
 
@@ -147,7 +147,7 @@ domain::account account_operations_service::create_account(const std::string& us
     // Generate a new UUID for the account
     boost::uuids::random_generator gen;
     auto id = uuid_generator_();
-    BOOST_LOG_SEV(lg(), debug) << "ID for new account: " << id;
+    ORES_LOG_SEV(lg(), debug) << "ID for new account: " << id;
 
     // Hash the password
     auto password_hash = crypto::password_hasher::hash(password);
@@ -209,20 +209,20 @@ account_operations_service::create_service_account(const std::string& username,
 
     // Validate account type is not 'user'
     if (account_type == "user") {
-        BOOST_LOG_SEV(lg(), error) << "Cannot create user account via create_service_account. "
-                                   << "Use create_account() instead.";
+        ORES_LOG_SEV(lg(), error) << "Cannot create user account via create_service_account. "
+                                  << "Use create_account() instead.";
         throw std::invalid_argument("Use create_account() for user accounts");
     }
 
     // Validate account type is one of the valid service account types
     if (account_type != "service" && account_type != "algorithm" && account_type != "llm") {
-        BOOST_LOG_SEV(lg(), error) << "Invalid account type for service account: " << account_type;
+        ORES_LOG_SEV(lg(), error) << "Invalid account type for service account: " << account_type;
         throw std::invalid_argument("Account type must be 'service', 'algorithm', or 'llm'");
     }
 
     // Generate a new UUID for the account
     auto id = uuid_generator_();
-    BOOST_LOG_SEV(lg(), debug) << "ID for new service account: " << id;
+    ORES_LOG_SEV(lg(), debug) << "ID for new service account: " << id;
 
     // Create the service account - no password required
     domain::account new_account;
@@ -264,8 +264,8 @@ account_operations_service::create_service_account(const std::string& username,
     std::vector<domain::login_info> login_infos{li};
     login_info_repo_.write(ctx_, login_infos);
 
-    BOOST_LOG_SEV(lg(), info) << "Created service account: " << username
-                              << " (type: " << account_type << ")";
+    ORES_LOG_SEV(lg(), info) << "Created service account: " << username
+                             << " (type: " << account_type << ")";
 
     return new_account;
 }
@@ -297,21 +297,21 @@ std::vector<domain::login_info> account_operations_service::list_login_info() {
 }
 
 void account_operations_service::delete_account(const boost::uuids::uuid& account_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Deleting account: " << boost::uuids::to_string(account_id);
+    ORES_LOG_SEV(lg(), debug) << "Deleting account: " << boost::uuids::to_string(account_id);
 
     // Verify account exists before attempting deletion
     auto accounts = account_repo_.read_latest(ctx_, boost::uuids::to_string(account_id));
     if (accounts.empty()) {
-        BOOST_LOG_SEV(lg(), warn) << "Attempted to delete non-existent account: "
-                                  << boost::uuids::to_string(account_id);
+        ORES_LOG_SEV(lg(), warn) << "Attempted to delete non-existent account: "
+                                 << boost::uuids::to_string(account_id);
         throw std::invalid_argument("Account does not exist");
     }
 
     // Perform bitemporal soft delete (sets valid_to = current_timestamp)
     account_repo_.remove(ctx_, boost::uuids::to_string(account_id));
 
-    BOOST_LOG_SEV(lg(), info) << "Successfully deleted account: "
-                              << boost::uuids::to_string(account_id);
+    ORES_LOG_SEV(lg(), info) << "Successfully deleted account: "
+                             << boost::uuids::to_string(account_id);
 }
 
 authenticated_login account_operations_service::login(const std::string& username,
@@ -322,13 +322,13 @@ authenticated_login account_operations_service::login(const std::string& usernam
     // FIXME: do not log
     throw_if_empty("Password", password);
 
-    BOOST_LOG_SEV(lg(), debug) << "Login attempt for username: " << username
-                               << " from IP: " << ip_address;
+    ORES_LOG_SEV(lg(), debug) << "Login attempt for username: " << username
+                              << " from IP: " << ip_address;
 
     // Read the account by username
     auto accounts = account_repo_.read_latest_by_username(ctx_, username);
     if (accounts.empty()) {
-        BOOST_LOG_SEV(lg(), warn) << "Login failed: account not found for username: " << username;
+        ORES_LOG_SEV(lg(), warn) << "Login failed: account not found for username: " << username;
         throw login_error(error_code::invalid_credentials, "Invalid username or password");
     }
 
@@ -342,42 +342,42 @@ authenticated_login account_operations_service::login(const std::string& usernam
     // on the handler's system-tenant context, which is always active.
     const auto tenants = repository::read_active_tenant_by_id(ctx_, account.tenant_id.to_uuid());
     if (tenants.empty()) {
-        BOOST_LOG_SEV(lg(), warn) << "Login failed: tenant not found for username: " << username;
+        ORES_LOG_SEV(lg(), warn) << "Login failed: tenant not found for username: " << username;
         throw login_error(error_code::invalid_credentials, "Invalid username or password");
     }
     const auto& tenant_status = tenants.front().status;
     if (!repository::admits_sign_in(tenant_status)) {
-        BOOST_LOG_SEV(lg(), warn) << "Login refused for a tenant in status '" << tenant_status
-                                  << "' for username: " << username;
+        ORES_LOG_SEV(lg(), warn) << "Login refused for a tenant in status '" << tenant_status
+                                 << "' for username: " << username;
         throw login_error(error_code::tenant_inactive, "Tenant is not active");
     }
 
     // Only user accounts can login with password
     if (account.account_type != "user") {
-        BOOST_LOG_SEV(lg(), warn) << "Login attempt for non-user account type '"
-                                  << account.account_type << "' for username: " << username;
+        ORES_LOG_SEV(lg(), warn) << "Login attempt for non-user account type '"
+                                 << account.account_type << "' for username: " << username;
         throw std::runtime_error("Password login is only available for user accounts");
     }
 
     auto login_info_vec = login_info_repo_.read_latest(ctx_, boost::uuids::to_string(account.id));
     if (login_info_vec.empty()) {
-        BOOST_LOG_SEV(lg(), error)
-            << "Login tracking not found for account: " << boost::uuids::to_string(account.id);
+        ORES_LOG_SEV(lg(), error) << "Login tracking not found for account: "
+                                  << boost::uuids::to_string(account.id);
         throw std::runtime_error("Login tracking information missing");
     }
 
     auto login_info = login_info_vec[0];
 
     if (login_info.locked) {
-        BOOST_LOG_SEV(lg(), warn) << "Login attempt for locked account: " << username;
+        ORES_LOG_SEV(lg(), warn) << "Login attempt for locked account: " << username;
         throw login_error(error_code::account_locked,
                           "Account is locked due to too many failed attempts");
     }
 
     const auto credential = read_credential(account.id);
     if (!credential || credential->password_hash.empty()) {
-        BOOST_LOG_SEV(lg(), warn) << "Login refused: account holds no password credential: "
-                                  << username;
+        ORES_LOG_SEV(lg(), warn) << "Login refused: account holds no password credential: "
+                                 << username;
         throw login_error(error_code::invalid_credentials, "Invalid username or password");
     }
 
@@ -387,8 +387,8 @@ authenticated_login account_operations_service::login(const std::string& usernam
 
     if (!password_valid) {
         login_info.failed_logins++;
-        BOOST_LOG_SEV(lg(), warn) << "Failed login attempt for username: " << username
-                                  << ". Attempt: " << login_info.failed_logins;
+        ORES_LOG_SEV(lg(), warn) << "Failed login attempt for username: " << username
+                                 << ". Attempt: " << login_info.failed_logins;
 
         login_info_repo_.write(ctx_, login_info);
 
@@ -396,7 +396,7 @@ authenticated_login account_operations_service::login(const std::string& usernam
         if (login_info.failed_logins >= max_failed_attempts) {
             lock_account(account.id,
                          std::format("{} failed login attempts", login_info.failed_logins));
-            BOOST_LOG_SEV(lg(), warn)
+            ORES_LOG_SEV(lg(), warn)
                 << "Account locked due to too many failed attempts: " << username;
         }
 
@@ -409,8 +409,8 @@ authenticated_login account_operations_service::login(const std::string& usernam
     login_info.failed_logins = 0;
     login_info.online = true;
 
-    BOOST_LOG_SEV(lg(), info) << "Successful login for username: " << username
-                              << " from IP: " << ip_address;
+    ORES_LOG_SEV(lg(), info) << "Successful login for username: " << username
+                             << " from IP: " << ip_address;
 
     login_info_repo_.write(ctx_, login_info);
 
@@ -433,40 +433,40 @@ void account_operations_service::record_lock_event(bool locked,
             events.record_account_unlocked(now, tenant, id, account.username, detail);
         }
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to record the "
-                                  << (locked ? "account_locked" : "account_unlocked")
-                                  << " event for " << account.username << ": " << e.what();
+        ORES_LOG_SEV(lg(), warn) << "Failed to record the "
+                                 << (locked ? "account_locked" : "account_unlocked")
+                                 << " event for " << account.username << ": " << e.what();
     }
 }
 
 bool account_operations_service::lock_account(const boost::uuids::uuid& account_id,
                                               const std::string& detail) {
-    BOOST_LOG_SEV(lg(), debug) << "Locking account: " << boost::uuids::to_string(account_id);
+    ORES_LOG_SEV(lg(), debug) << "Locking account: " << boost::uuids::to_string(account_id);
 
     auto accounts = account_repo_.read_latest(ctx_, boost::uuids::to_string(account_id));
     if (accounts.empty()) {
-        BOOST_LOG_SEV(lg(), warn) << "Attempted to lock non-existent account: "
-                                  << boost::uuids::to_string(account_id);
+        ORES_LOG_SEV(lg(), warn) << "Attempted to lock non-existent account: "
+                                 << boost::uuids::to_string(account_id);
         return false;
     }
 
     auto login_info_vec = login_info_repo_.read_latest(ctx_, boost::uuids::to_string(account_id));
     if (login_info_vec.empty()) {
-        BOOST_LOG_SEV(lg(), error)
-            << "Login tracking not found for account: " << boost::uuids::to_string(account_id);
+        ORES_LOG_SEV(lg(), error) << "Login tracking not found for account: "
+                                  << boost::uuids::to_string(account_id);
         return false;
     }
 
     auto login_info = login_info_vec[0];
 
     if (login_info.locked == true) {
-        BOOST_LOG_SEV(lg(), warn) << "Account is already locked.";
+        ORES_LOG_SEV(lg(), warn) << "Account is already locked.";
         return true;
     }
 
     login_info.locked = true;
 
-    BOOST_LOG_SEV(lg(), info) << "Account locked: " << boost::uuids::to_string(account_id);
+    ORES_LOG_SEV(lg(), info) << "Account locked: " << boost::uuids::to_string(account_id);
 
     login_info_repo_.write(ctx_, login_info);
     record_lock_event(true, accounts.front(), detail);
@@ -475,26 +475,26 @@ bool account_operations_service::lock_account(const boost::uuids::uuid& account_
 
 bool account_operations_service::unlock_account(const boost::uuids::uuid& account_id,
                                                 const std::string& detail) {
-    BOOST_LOG_SEV(lg(), debug) << "Unlocking account: " << boost::uuids::to_string(account_id);
+    ORES_LOG_SEV(lg(), debug) << "Unlocking account: " << boost::uuids::to_string(account_id);
 
     auto accounts = account_repo_.read_latest(ctx_, boost::uuids::to_string(account_id));
     if (accounts.empty()) {
-        BOOST_LOG_SEV(lg(), warn) << "Attempted to unlock non-existent account: "
-                                  << boost::uuids::to_string(account_id);
+        ORES_LOG_SEV(lg(), warn) << "Attempted to unlock non-existent account: "
+                                 << boost::uuids::to_string(account_id);
         return false;
     }
 
     auto login_info_vec = login_info_repo_.read_latest(ctx_, boost::uuids::to_string(account_id));
     if (login_info_vec.empty()) {
-        BOOST_LOG_SEV(lg(), error)
-            << "Login tracking not found for account: " << boost::uuids::to_string(account_id);
+        ORES_LOG_SEV(lg(), error) << "Login tracking not found for account: "
+                                  << boost::uuids::to_string(account_id);
         return false;
     }
 
     auto login_info = login_info_vec[0];
 
     if (login_info.locked == false) {
-        BOOST_LOG_SEV(lg(), warn) << "Account is not locked.";
+        ORES_LOG_SEV(lg(), warn) << "Account is not locked.";
         return true;
     }
 
@@ -502,7 +502,7 @@ bool account_operations_service::unlock_account(const boost::uuids::uuid& accoun
     login_info.locked = false;
     login_info.failed_logins = 0;
 
-    BOOST_LOG_SEV(lg(), info) << "Account unlocked: " << boost::uuids::to_string(account_id);
+    ORES_LOG_SEV(lg(), info) << "Account unlocked: " << boost::uuids::to_string(account_id);
 
     login_info_repo_.write(ctx_, login_info);
     const auto cleared = failed_before == 0 ?
@@ -515,26 +515,26 @@ bool account_operations_service::unlock_account(const boost::uuids::uuid& accoun
 }
 
 void account_operations_service::logout(const boost::uuids::uuid& account_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Logging out account: " << boost::uuids::to_string(account_id);
+    ORES_LOG_SEV(lg(), debug) << "Logging out account: " << boost::uuids::to_string(account_id);
 
     auto accounts = account_repo_.read_latest(ctx_, boost::uuids::to_string(account_id));
     if (accounts.empty()) {
-        BOOST_LOG_SEV(lg(), warn) << "Attempted to logout non-existent account: "
-                                  << boost::uuids::to_string(account_id);
+        ORES_LOG_SEV(lg(), warn) << "Attempted to logout non-existent account: "
+                                 << boost::uuids::to_string(account_id);
         throw std::invalid_argument("Account does not exist");
     }
 
     auto login_info_vec = login_info_repo_.read_latest(ctx_, boost::uuids::to_string(account_id));
     if (login_info_vec.empty()) {
-        BOOST_LOG_SEV(lg(), error)
-            << "Login tracking not found for account: " << boost::uuids::to_string(account_id);
+        ORES_LOG_SEV(lg(), error) << "Login tracking not found for account: "
+                                  << boost::uuids::to_string(account_id);
         throw std::runtime_error("Login tracking information missing");
     }
 
     auto login_info = login_info_vec[0];
     login_info.online = false;
 
-    BOOST_LOG_SEV(lg(), info) << "Account logged out: " << boost::uuids::to_string(account_id);
+    ORES_LOG_SEV(lg(), info) << "Account logged out: " << boost::uuids::to_string(account_id);
 
     login_info_repo_.write(ctx_, login_info);
 }
@@ -550,13 +550,13 @@ bool account_operations_service::update_account(
     const std::string& modified_by,
     const std::string& change_reason_code,
     const std::string& change_commentary) {
-    BOOST_LOG_SEV(lg(), debug) << "Updating account: " << boost::uuids::to_string(account_id);
+    ORES_LOG_SEV(lg(), debug) << "Updating account: " << boost::uuids::to_string(account_id);
 
     // Verify account exists
     auto accounts = account_repo_.read_latest(ctx_, boost::uuids::to_string(account_id));
     if (accounts.empty()) {
-        BOOST_LOG_SEV(lg(), warn) << "Attempted to update non-existent account: "
-                                  << boost::uuids::to_string(account_id);
+        ORES_LOG_SEV(lg(), warn) << "Attempted to update non-existent account: "
+                                 << boost::uuids::to_string(account_id);
         throw std::invalid_argument("Account does not exist");
     }
 
@@ -578,16 +578,16 @@ bool account_operations_service::update_account(
     // Write the updated account (creates new temporal version)
     account_repo_.write(ctx_, account);
 
-    BOOST_LOG_SEV(lg(), info) << "Successfully updated account: "
-                              << boost::uuids::to_string(account_id)
-                              << ", new version: " << account.version;
+    ORES_LOG_SEV(lg(), info) << "Successfully updated account: "
+                             << boost::uuids::to_string(account_id)
+                             << ", new version: " << account.version;
 
     return true;
 }
 
 messaging::update_self_account_response account_operations_service::update_self_account(
     const messaging::update_self_account_request& request, const boost::uuids::uuid& account_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Updating own account: " << boost::uuids::to_string(account_id);
+    ORES_LOG_SEV(lg(), debug) << "Updating own account: " << boost::uuids::to_string(account_id);
     messaging::update_self_account_response response;
 
     // The three fields only an administrator owns are declared on the request
@@ -645,7 +645,7 @@ messaging::update_self_account_response account_operations_service::update_self_
     if (!written.empty())
         response.account = written.front();
 
-    BOOST_LOG_SEV(lg(), info) << "Updated own account: " << boost::uuids::to_string(account_id);
+    ORES_LOG_SEV(lg(), info) << "Updated own account: " << boost::uuids::to_string(account_id);
     return response;
 }
 
@@ -653,8 +653,8 @@ messaging::update_self_account_contact_information_response
 account_operations_service::update_self_account_contact_information(
     const messaging::update_self_account_contact_information_request& request,
     const boost::uuids::uuid& account_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Updating own account contact information: "
-                               << boost::uuids::to_string(account_id);
+    ORES_LOG_SEV(lg(), debug) << "Updating own account contact information: "
+                              << boost::uuids::to_string(account_id);
     messaging::update_self_account_contact_information_response response;
 
     // A stated value must be one the record can hold: a contact email that is a
@@ -710,7 +710,7 @@ account_operations_service::update_self_account_contact_information(
     if (!written.empty())
         response.account_contact_information = written.front();
 
-    BOOST_LOG_SEV(lg(), info) << "Updated own account contact information: " << account_id_text;
+    ORES_LOG_SEV(lg(), info) << "Updated own account contact information: " << account_id_text;
     return response;
 }
 
@@ -718,7 +718,7 @@ messaging::get_my_account_contact_information_response
 account_operations_service::get_my_account_contact_information(
     const boost::uuids::uuid& account_id) {
     const auto account_id_text = boost::uuids::to_string(account_id);
-    BOOST_LOG_SEV(lg(), debug) << "Reading own account contact information: " << account_id_text;
+    ORES_LOG_SEV(lg(), debug) << "Reading own account contact information: " << account_id_text;
     messaging::get_my_account_contact_information_response response;
     auto records = contact_repo_.read_latest_by_account_id(ctx_, account_id_text, 0, 1);
     if (!records.empty())
@@ -728,7 +728,7 @@ account_operations_service::get_my_account_contact_information(
 
 messaging::get_my_account_response
 account_operations_service::get_my_account(const boost::uuids::uuid& account_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading own account: " << boost::uuids::to_string(account_id);
+    ORES_LOG_SEV(lg(), debug) << "Reading own account: " << boost::uuids::to_string(account_id);
     messaging::get_my_account_response response;
     response.account = find_account_by_id(account_id);
     return response;
@@ -736,8 +736,8 @@ account_operations_service::get_my_account(const boost::uuids::uuid& account_id)
 
 messaging::get_my_login_info_response
 account_operations_service::get_my_login_info(const boost::uuids::uuid& account_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading own sign-in state: "
-                               << boost::uuids::to_string(account_id);
+    ORES_LOG_SEV(lg(), debug) << "Reading own sign-in state: "
+                              << boost::uuids::to_string(account_id);
     messaging::get_my_login_info_response response;
     auto rows = login_info_repo_.read_latest(ctx_, boost::uuids::to_string(account_id));
     if (!rows.empty())
@@ -747,7 +747,7 @@ account_operations_service::get_my_login_info(const boost::uuids::uuid& account_
 
 messaging::get_my_sessions_response
 account_operations_service::get_my_sessions(const boost::uuids::uuid& account_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading own sessions: " << boost::uuids::to_string(account_id);
+    ORES_LOG_SEV(lg(), debug) << "Reading own sessions: " << boost::uuids::to_string(account_id);
     messaging::get_my_sessions_response response;
     response.sessions = repository::session_repository{}.read_active_by_account(ctx_, account_id);
     std::sort(response.sessions.begin(),
@@ -760,11 +760,11 @@ account_operations_service::get_my_sessions(const boost::uuids::uuid& account_id
 
 std::optional<domain::account>
 account_operations_service::find_account_by_username(const std::string& username) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding account by username: " << username;
+    ORES_LOG_SEV(lg(), debug) << "Finding account by username: " << username;
 
     auto accounts = account_repo_.read_latest_by_username(ctx_, username);
     if (accounts.empty()) {
-        BOOST_LOG_SEV(lg(), debug) << "No account found for username: " << username;
+        ORES_LOG_SEV(lg(), debug) << "No account found for username: " << username;
         return std::nullopt;
     }
     return accounts.front();
@@ -772,39 +772,39 @@ account_operations_service::find_account_by_username(const std::string& username
 
 std::optional<domain::account>
 account_operations_service::find_account_by_id(const boost::uuids::uuid& account_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding account by id: " << boost::uuids::to_string(account_id);
+    ORES_LOG_SEV(lg(), debug) << "Finding account by id: " << boost::uuids::to_string(account_id);
 
     auto accounts = account_repo_.read_latest(ctx_, boost::uuids::to_string(account_id));
     if (accounts.empty()) {
-        BOOST_LOG_SEV(lg(), debug)
-            << "No account found for id: " << boost::uuids::to_string(account_id);
+        ORES_LOG_SEV(lg(), debug) << "No account found for id: "
+                                  << boost::uuids::to_string(account_id);
         return std::nullopt;
     }
     return accounts.front();
 }
 
 bool account_operations_service::set_password_reset_required(const boost::uuids::uuid& account_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Setting password_reset_required for account: "
-                               << boost::uuids::to_string(account_id);
+    ORES_LOG_SEV(lg(), debug) << "Setting password_reset_required for account: "
+                              << boost::uuids::to_string(account_id);
 
     auto login_info_vec = login_info_repo_.read_latest(ctx_, boost::uuids::to_string(account_id));
     if (login_info_vec.empty()) {
-        BOOST_LOG_SEV(lg(), warn) << "Account or login tracking not found for account: "
-                                  << boost::uuids::to_string(account_id);
+        ORES_LOG_SEV(lg(), warn) << "Account or login tracking not found for account: "
+                                 << boost::uuids::to_string(account_id);
         return false;
     }
 
     auto login_info = login_info_vec[0];
 
     if (login_info.password_reset_required) {
-        BOOST_LOG_SEV(lg(), debug) << "Password reset is already required for account.";
+        ORES_LOG_SEV(lg(), debug) << "Password reset is already required for account.";
         return true;
     }
 
     login_info.password_reset_required = true;
 
-    BOOST_LOG_SEV(lg(), info) << "Password reset required set for account: "
-                              << boost::uuids::to_string(account_id);
+    ORES_LOG_SEV(lg(), info) << "Password reset required set for account: "
+                             << boost::uuids::to_string(account_id);
 
     login_info_repo_.write(ctx_, login_info);
     return true;
@@ -815,7 +815,7 @@ std::string account_operations_service::change_password(const boost::uuids::uuid
                                                         const std::string& new_password) {
 
     if (current_password.empty()) {
-        BOOST_LOG_SEV(lg(), warn)
+        ORES_LOG_SEV(lg(), warn)
             << "Password change refused: no current password supplied for account: "
             << boost::uuids::to_string(account_id);
         return "Current password is required";
@@ -823,21 +823,21 @@ std::string account_operations_service::change_password(const boost::uuids::uuid
 
     auto accounts = account_repo_.read_latest(ctx_, boost::uuids::to_string(account_id));
     if (accounts.empty()) {
-        BOOST_LOG_SEV(lg(), warn) << "Attempted to change password for non-existent account: "
-                                  << boost::uuids::to_string(account_id);
+        ORES_LOG_SEV(lg(), warn) << "Attempted to change password for non-existent account: "
+                                 << boost::uuids::to_string(account_id);
         return "Account does not exist";
     }
 
     const auto credential = read_credential(account_id);
     if (!credential || credential->password_hash.empty()) {
-        BOOST_LOG_SEV(lg(), warn)
+        ORES_LOG_SEV(lg(), warn)
             << "Password change refused: account holds no password credential: "
             << boost::uuids::to_string(account_id);
         return "Current password is incorrect";
     }
 
     if (!crypto::password_hasher::verify(current_password, credential->password_hash)) {
-        BOOST_LOG_SEV(lg(), warn)
+        ORES_LOG_SEV(lg(), warn)
             << "Password change refused: current password does not match for account: "
             << boost::uuids::to_string(account_id);
         return "Current password is incorrect";
@@ -848,8 +848,8 @@ std::string account_operations_service::change_password(const boost::uuids::uuid
 
 std::string account_operations_service::reset_password(const boost::uuids::uuid& account_id,
                                                        const std::string& new_password) {
-    BOOST_LOG_SEV(lg(), debug) << "Changing password for account: "
-                               << boost::uuids::to_string(account_id);
+    ORES_LOG_SEV(lg(), debug) << "Changing password for account: "
+                              << boost::uuids::to_string(account_id);
 
     // Validate password strength using policy validator
     auto pass_validation = validation::password_validator::validate(new_password);
@@ -860,8 +860,8 @@ std::string account_operations_service::reset_password(const boost::uuids::uuid&
     // Verify account exists
     auto accounts = account_repo_.read_latest(ctx_, boost::uuids::to_string(account_id));
     if (accounts.empty()) {
-        BOOST_LOG_SEV(lg(), warn) << "Attempted to change password for non-existent account: "
-                                  << boost::uuids::to_string(account_id);
+        ORES_LOG_SEV(lg(), warn) << "Attempted to change password for non-existent account: "
+                                 << boost::uuids::to_string(account_id);
         return "Account does not exist";
     }
 
@@ -870,7 +870,7 @@ std::string account_operations_service::reset_password(const boost::uuids::uuid&
     // Check that new password is different from current password
     if (existing && !existing->password_hash.empty() &&
         crypto::password_hasher::verify(new_password, existing->password_hash)) {
-        BOOST_LOG_SEV(lg(), debug) << "New password matches current password";
+        ORES_LOG_SEV(lg(), debug) << "New password matches current password";
         return std::string(password_unchanged_message);
     }
 
@@ -896,12 +896,12 @@ std::string account_operations_service::reset_password(const boost::uuids::uuid&
         if (login_info.password_reset_required) {
             login_info.password_reset_required = false;
             login_info_repo_.write(ctx_, login_info);
-            BOOST_LOG_SEV(lg(), debug) << "Cleared password_reset_required flag";
+            ORES_LOG_SEV(lg(), debug) << "Cleared password_reset_required flag";
         }
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Successfully changed password for account: "
-                              << boost::uuids::to_string(account_id);
+    ORES_LOG_SEV(lg(), info) << "Successfully changed password for account: "
+                             << boost::uuids::to_string(account_id);
 
     // An empty string indicates success.
     return "";
@@ -909,13 +909,13 @@ std::string account_operations_service::reset_password(const boost::uuids::uuid&
 
 domain::login_info
 account_operations_service::get_login_info(const boost::uuids::uuid& account_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting login_info for account: "
-                               << boost::uuids::to_string(account_id);
+    ORES_LOG_SEV(lg(), debug) << "Getting login_info for account: "
+                              << boost::uuids::to_string(account_id);
 
     auto login_info_vec = login_info_repo_.read_latest(ctx_, boost::uuids::to_string(account_id));
     if (login_info_vec.empty()) {
-        BOOST_LOG_SEV(lg(), error)
-            << "Login tracking not found for account: " << boost::uuids::to_string(account_id);
+        ORES_LOG_SEV(lg(), error) << "Login tracking not found for account: "
+                                  << boost::uuids::to_string(account_id);
         throw std::runtime_error("Login tracking information missing");
     }
 
@@ -924,8 +924,8 @@ account_operations_service::get_login_info(const boost::uuids::uuid& account_id)
 
 std::string account_operations_service::update_my_email(const boost::uuids::uuid& account_id,
                                                         const std::string& new_email) {
-    BOOST_LOG_SEV(lg(), debug) << "Updating email for account: "
-                               << boost::uuids::to_string(account_id);
+    ORES_LOG_SEV(lg(), debug) << "Updating email for account: "
+                              << boost::uuids::to_string(account_id);
 
     // Validate email format
     auto email_validation = validation::email_validator::validate(new_email);
@@ -936,8 +936,8 @@ std::string account_operations_service::update_my_email(const boost::uuids::uuid
     // Verify account exists
     auto accounts = account_repo_.read_latest(ctx_, boost::uuids::to_string(account_id));
     if (accounts.empty()) {
-        BOOST_LOG_SEV(lg(), warn) << "Attempted to update email for non-existent account: "
-                                  << boost::uuids::to_string(account_id);
+        ORES_LOG_SEV(lg(), warn) << "Attempted to update email for non-existent account: "
+                                 << boost::uuids::to_string(account_id);
         return "Account does not exist";
     }
 
@@ -956,8 +956,8 @@ std::string account_operations_service::update_my_email(const boost::uuids::uuid
     // Write the updated account (creates new temporal version)
     account_repo_.write(ctx_, account);
 
-    BOOST_LOG_SEV(lg(), info) << "Successfully updated email for account: "
-                              << boost::uuids::to_string(account_id);
+    ORES_LOG_SEV(lg(), info) << "Successfully updated email for account: "
+                             << boost::uuids::to_string(account_id);
 
     // An empty string indicates success.
     return "";
@@ -965,13 +965,13 @@ std::string account_operations_service::update_my_email(const boost::uuids::uuid
 
 std::string account_operations_service::set_my_default_party(
     const boost::uuids::uuid& account_id, const std::optional<boost::uuids::uuid>& party_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Setting default party for account: "
-                               << boost::uuids::to_string(account_id);
+    ORES_LOG_SEV(lg(), debug) << "Setting default party for account: "
+                              << boost::uuids::to_string(account_id);
 
     auto accounts = account_repo_.read_latest(ctx_, boost::uuids::to_string(account_id));
     if (accounts.empty()) {
-        BOOST_LOG_SEV(lg(), warn) << "Attempted to set default party for non-existent account: "
-                                  << boost::uuids::to_string(account_id);
+        ORES_LOG_SEV(lg(), warn) << "Attempted to set default party for non-existent account: "
+                                 << boost::uuids::to_string(account_id);
         return "Account does not exist";
     }
 
@@ -981,8 +981,8 @@ std::string account_operations_service::set_my_default_party(
         // provisioning scripts and the shell command may legitimately repeat
         // this call against an already-provisioned system. The same holds for
         // clearing a default that is not set.
-        BOOST_LOG_SEV(lg(), debug)
-            << "Default party unchanged for account: " << boost::uuids::to_string(account_id);
+        ORES_LOG_SEV(lg(), debug) << "Default party unchanged for account: "
+                                  << boost::uuids::to_string(account_id);
         return "";
     }
 
@@ -994,8 +994,8 @@ std::string account_operations_service::set_my_default_party(
 
     account_repo_.write(ctx_, account);
 
-    BOOST_LOG_SEV(lg(), info) << "Successfully set default party for account: "
-                              << boost::uuids::to_string(account_id);
+    ORES_LOG_SEV(lg(), info) << "Successfully set default party for account: "
+                             << boost::uuids::to_string(account_id);
 
     // An empty string indicates success.
     return "";
@@ -1003,7 +1003,7 @@ std::string account_operations_service::set_my_default_party(
 
 messaging::set_reporting_line_response account_operations_service::set_reporting_line(
     const messaging::set_reporting_line_request& request) {
-    BOOST_LOG_SEV(lg(), debug) << "Setting the reporting line for account: " << request.account_id;
+    ORES_LOG_SEV(lg(), debug) << "Setting the reporting line for account: " << request.account_id;
 
     messaging::set_reporting_line_response response;
 
@@ -1083,7 +1083,7 @@ messaging::set_reporting_line_response account_operations_service::set_reporting
                                          std::optional<domain::account>{written.front()};
     response.result.outcome = ores::utility::domain::outcome::ok;
 
-    BOOST_LOG_SEV(lg(), info) << "Set the reporting line for account: " << request.account_id;
+    ORES_LOG_SEV(lg(), info) << "Set the reporting line for account: " << request.account_id;
     return response;
 }
 

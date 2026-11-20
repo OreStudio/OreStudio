@@ -28,7 +28,7 @@ using namespace ores::logging;
 using namespace conventions_fields;
 
 refdata::domain::future_convention conventions_mapper::map_future(const record_reader& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping future convention: " << text_of(v, "Id");
+    ORES_LOG_SEV(lg(), trace) << "Mapping future convention: " << text_of(v, "Id");
 
     refdata::domain::future_convention r;
     r.id = text_of(v, "Id");

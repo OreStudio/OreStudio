@@ -26,7 +26,6 @@
 #include "ores.refdata.api/domain/cds_volatility_config.hpp"
 #include "ores.refdata.api/messaging/cds_volatility_config_protocol.hpp"
 #include "ores.refdata.core/repository/cds_volatility_config_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -471,12 +469,12 @@ ores::utility::domain::result cds_volatility_config_service::prepare_change(
 std::vector<domain::cds_volatility_config>
 cds_volatility_config_service::list_cds_volatility_configs(std::uint32_t offset,
                                                            std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all CDS volatility configs";
+    ORES_LOG_SEV(lg(), debug) << "Listing all CDS volatility configs";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t cds_volatility_config_service::count_cds_volatility_configs() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total CDS volatility configs count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total CDS volatility configs count";
     return repo_.get_total_cds_volatility_config_count(ctx_);
 }
 
@@ -484,14 +482,14 @@ std::uint32_t cds_volatility_config_service::count_cds_volatility_configs() {
 std::optional<domain::cds_volatility_config>
 cds_volatility_config_service::get_cds_volatility_config_at_version(const boost::uuids::uuid& id,
                                                                     std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting CDS volatility config at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting CDS volatility config at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::cds_volatility_config>
 cds_volatility_config_service::get_cds_volatility_config(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting CDS volatility config. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting CDS volatility config. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -507,11 +505,11 @@ void cds_volatility_config_service::save_cds_volatility_config(
     const domain::cds_volatility_config& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("CDS Volatility Config id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving CDS volatility config. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving CDS volatility config. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved CDS volatility config. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved CDS volatility config. " << "id: " << v.id;
 }
 
 void cds_volatility_config_service::save_cds_volatility_configs(
@@ -520,8 +518,8 @@ void cds_volatility_config_service::save_cds_volatility_configs(
         if (e.id.is_nil())
             throw std::invalid_argument("CDS Volatility Config id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << cds_volatility_configs.size()
-                               << " CDS volatility configs";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << cds_volatility_configs.size()
+                              << " CDS volatility configs";
     auto ts = cds_volatility_configs;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -530,9 +528,9 @@ void cds_volatility_config_service::save_cds_volatility_configs(
 }
 
 void cds_volatility_config_service::delete_cds_volatility_config(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing CDS volatility config. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing CDS volatility config. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed CDS volatility config. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed CDS volatility config. " << "id: " << id;
 }
 
 void cds_volatility_config_service::delete_cds_volatility_configs(
@@ -542,7 +540,7 @@ void cds_volatility_config_service::delete_cds_volatility_configs(
 
 std::vector<domain::cds_volatility_config>
 cds_volatility_config_service::get_cds_volatility_config_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for CDS volatility config. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for CDS volatility config. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

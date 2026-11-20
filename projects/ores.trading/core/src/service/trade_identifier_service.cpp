@@ -26,7 +26,6 @@
 #include "ores.trading.api/domain/trade_identifier.hpp"
 #include "ores.trading.api/messaging/trade_identifier_protocol.hpp"
 #include "ores.trading.core/repository/trade_identifier_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -43,7 +42,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -499,40 +497,39 @@ trade_identifier_service::prepare_change(const messaging::trade_identifier_chang
 
 std::vector<domain::trade_identifier>
 trade_identifier_service::list_identifiers(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all trade identifiers";
+    ORES_LOG_SEV(lg(), debug) << "Listing all trade identifiers";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t trade_identifier_service::count_identifiers() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total trade identifiers count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total trade identifiers count";
     return repo_.get_total_identifier_count(ctx_);
 }
 
 
 std::vector<domain::trade_identifier> trade_identifier_service::list_identifiers_by_trade_id(
     const std::string& trade_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing trade identifiers by trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing trade identifiers by trade_id: " << trade_id;
     return repo_.read_latest_by_trade_id(ctx_, trade_id, offset, limit);
 }
 
 std::uint32_t trade_identifier_service::count_identifiers_by_trade_id(const std::string& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total trade identifiers count by trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting total trade identifiers count by trade_id: " << trade_id;
     return repo_.get_total_identifier_count_by_trade_id(ctx_, trade_id);
 }
 
 
 std::optional<domain::trade_identifier> trade_identifier_service::get_identifier_at_version(
     const std::string& trade_id, const std::string& id_type, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting trade identifier at version. "
-                               << "trade_id: " << trade_id << " id_type: " << id_type
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting trade identifier at version. " << "trade_id: " << trade_id
+                              << " id_type: " << id_type << " version: " << version;
     return repo_.read_at_version(ctx_, trade_id, id_type, version);
 }
 
 std::optional<domain::trade_identifier>
 trade_identifier_service::get_identifier(const std::string& trade_id, const std::string& id_type) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting trade identifier. " << "trade_id: " << trade_id
-                               << " id_type: " << id_type;
+    ORES_LOG_SEV(lg(), debug) << "Getting trade identifier. " << "trade_id: " << trade_id
+                              << " id_type: " << id_type;
     auto results = repo_.read_latest(ctx_, trade_id, id_type);
     if (results.empty())
         return std::nullopt;
@@ -550,13 +547,13 @@ void trade_identifier_service::save_identifier(const domain::trade_identifier& v
         throw std::invalid_argument("Trade Identifier trade_id cannot be empty.");
     if (v.id_type.empty())
         throw std::invalid_argument("Trade Identifier id_type cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving trade identifier. " << "trade_id: " << v.trade_id
-                               << " id_type: " << v.id_type;
+    ORES_LOG_SEV(lg(), debug) << "Saving trade identifier. " << "trade_id: " << v.trade_id
+                              << " id_type: " << v.id_type;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved trade identifier. " << "trade_id: " << v.trade_id
-                              << " id_type: " << v.id_type;
+    ORES_LOG_SEV(lg(), info) << "Saved trade identifier. " << "trade_id: " << v.trade_id
+                             << " id_type: " << v.id_type;
 }
 
 void trade_identifier_service::save_identifiers(
@@ -567,7 +564,7 @@ void trade_identifier_service::save_identifiers(
         if (e.id_type.empty())
             throw std::invalid_argument("Trade Identifier id_type cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << identifiers.size() << " trade identifiers";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << identifiers.size() << " trade identifiers";
     auto ts = identifiers;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -577,11 +574,11 @@ void trade_identifier_service::save_identifiers(
 
 void trade_identifier_service::delete_identifier(const std::string& trade_id,
                                                  const std::string& id_type) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing trade identifier. " << "trade_id: " << trade_id
-                               << " id_type: " << id_type;
-    repo_.remove(ctx_, trade_id, id_type);
-    BOOST_LOG_SEV(lg(), info) << "Removed trade identifier. " << "trade_id: " << trade_id
+    ORES_LOG_SEV(lg(), debug) << "Removing trade identifier. " << "trade_id: " << trade_id
                               << " id_type: " << id_type;
+    repo_.remove(ctx_, trade_id, id_type);
+    ORES_LOG_SEV(lg(), info) << "Removed trade identifier. " << "trade_id: " << trade_id
+                             << " id_type: " << id_type;
 }
 
 void trade_identifier_service::delete_identifiers(const std::vector<std::string>& trade_ids,
@@ -592,8 +589,8 @@ void trade_identifier_service::delete_identifiers(const std::vector<std::string>
 std::vector<domain::trade_identifier>
 trade_identifier_service::get_identifier_history(const std::string& trade_id,
                                                  const std::string& id_type) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for trade identifier. "
-                               << "trade_id: " << trade_id << " id_type: " << id_type;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for trade identifier. "
+                              << "trade_id: " << trade_id << " id_type: " << id_type;
     return repo_.read_all(ctx_, trade_id, id_type);
 }
 

@@ -18,7 +18,7 @@
  *
  */
 #include "ores.iam.core/service/internal_impersonation_service.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "test_helpers.hpp"
 #include "test_suite.hpp"

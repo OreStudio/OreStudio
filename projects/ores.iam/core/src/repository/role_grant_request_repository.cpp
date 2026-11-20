@@ -31,9 +31,7 @@
 #include "ores.iam.api/messaging/role_grant_request_protocol.hpp"
 #include "ores.iam.core/repository/role_grant_request_entity.hpp"
 #include "ores.iam.core/repository/role_grant_request_mapper.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -229,7 +227,7 @@ void role_grant_request_repository::write(const context& ctx,
 void role_grant_request_repository::write(const context& ctx,
                                           const domain::role_grant_request& v,
                                           const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing role grant request. " << "request_id: " << v.request_id;
+    ORES_LOG_SEV(lg(), debug) << "Writing role grant request. " << "request_id: " << v.request_id;
     const auto t =
         role_grant_request_apply_claim(v,
                                        claim,
@@ -244,7 +242,7 @@ void role_grant_request_repository::write(
     const context& ctx,
     const std::vector<domain::role_grant_request>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing role grant requests. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing role grant requests. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "role_grant_request_repository::write: one claim is needed for each row");
@@ -283,8 +281,8 @@ role_grant_request_repository::read_latest(const context& ctx) {
 
 std::vector<domain::role_grant_request>
 role_grant_request_repository::read_latest(const context& ctx, const std::string& request_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest role grant request. "
-                               << "request_id: " << request_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest role grant request. "
+                              << "request_id: " << request_id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<role_grant_request_entity>> |
@@ -302,8 +300,8 @@ role_grant_request_repository::read_latest(const context& ctx, const std::string
 
 std::vector<domain::role_grant_request>
 role_grant_request_repository::read_all(const context& ctx, const std::string& request_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all role grant request versions. "
-                               << "request_id: " << request_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading all role grant request versions. "
+                              << "request_id: " << request_id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<role_grant_request_entity>> |
                        query_builder::where("tenant_id"_c == tid && "request_id"_c == request_id) |
@@ -319,8 +317,8 @@ role_grant_request_repository::read_all(const context& ctx, const std::string& r
 
 std::optional<domain::role_grant_request> role_grant_request_repository::read_at_version(
     const context& ctx, const std::string& request_id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading role grant request at version. "
-                               << "request_id: " << request_id << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading role grant request at version. "
+                              << "request_id: " << request_id << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<role_grant_request_entity>> |
                        query_builder::where("tenant_id"_c == tid && "request_id"_c == request_id &&
@@ -348,8 +346,8 @@ std::vector<domain::role_grant_request> role_grant_request_repository::read_late
     std::uint32_t limit,
     const ores::utility::domain::order& order,
     const std::optional<messaging::role_grant_requests_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest role grant requests. account_id: " << account_id
-                               << " offset: " << offset << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest role grant requests. account_id: " << account_id
+                              << " offset: " << offset << " limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<role_grant_request_entity>> |
@@ -372,8 +370,8 @@ std::uint32_t role_grant_request_repository::get_total_role_grant_request_count_
     const context& ctx,
     const std::string& account_id,
     const std::optional<messaging::role_grant_requests_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active role grant requests count. account_id: "
-                               << account_id;
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active role grant requests count. account_id: "
+                              << account_id;
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx.tenant_id().to_string();
@@ -392,7 +390,7 @@ std::uint32_t role_grant_request_repository::get_total_role_grant_request_count_
 
 role_grant_request_repository::remove_status role_grant_request_repository::remove(
     const context& ctx, const std::string& request_id, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing role grant request. " << "request_id: " << request_id;
+    ORES_LOG_SEV(lg(), debug) << "Removing role grant request. " << "request_id: " << request_id;
     const auto current = read_latest(ctx, request_id);
     if (current.empty())
         return remove_status::missing;
@@ -431,8 +429,8 @@ std::vector<domain::role_grant_request> role_grant_request_repository::read_late
     const ores::utility::domain::order& order,
     const std::optional<messaging::role_grant_requests_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest role grant requests with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest role grant requests with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<role_grant_request_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -454,7 +452,7 @@ std::uint32_t role_grant_request_repository::get_total_role_grant_request_count(
     const context& ctx,
     const std::optional<messaging::role_grant_requests_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active role grant request count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active role grant request count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<role_grant_request_entity>> |

@@ -25,7 +25,7 @@
 #ifndef ORES_TRADING_CORE_REPOSITORY_DOUBLE_DIGITAL_OPTION_INSTRUMENT_MAPPER_HPP
 #define ORES_TRADING_CORE_REPOSITORY_DOUBLE_DIGITAL_OPTION_INSTRUMENT_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.trading.api/domain/double_digital_option_instrument.hpp"
 #include "ores.trading.core/export.hpp"
 #include "ores.trading.core/repository/double_digital_option_instrument_entity.hpp"

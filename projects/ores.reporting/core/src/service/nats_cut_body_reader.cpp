@@ -19,7 +19,6 @@
  */
 #include "ores.reporting.core/service/nats_cut_body_reader.hpp"
 #include "ores.compute.api/messaging/app_version_protocol.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.marketdata.api/messaging/published_curves_operations_protocol.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
@@ -27,7 +26,6 @@
 #include "ores.reporting.core/repository/configuration_repository.hpp"
 #include "ores.reporting.core/repository/engine_settings_repository.hpp"
 #include "ores.trading.api/messaging/trade_protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <format>
@@ -150,7 +148,7 @@ cut_body_facts nats_cut_body_reader::read(const cut_body_query& query) {
         } else {
             facts.deal_count = static_cast<int>(reply->total);
         }
-        BOOST_LOG_SEV(lg(), debug) << "The deals part answered " << reply.has_value();
+        ORES_LOG_SEV(lg(), debug) << "The deals part answered " << reply.has_value();
     }
 
     // The market data: the published sets in use at the instant, and the

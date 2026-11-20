@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.reporting.api/domain/ore_file.hpp"
 #include "ores.reporting.api/messaging/ore_file_protocol.hpp"
 #include "ores.reporting.core/repository/ore_file_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -628,69 +626,69 @@ ore_file_service::prepare_change(const messaging::ore_file_change& change,
 
 std::vector<domain::ore_file> ore_file_service::list_files(std::uint32_t offset,
                                                            std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all ORE files";
+    ORES_LOG_SEV(lg(), debug) << "Listing all ORE files";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t ore_file_service::count_files() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total ORE files count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total ORE files count";
     return repo_.get_total_file_count(ctx_);
 }
 
 
 std::vector<domain::ore_file> ore_file_service::list_files_by_category_code(
     const std::string& category_code, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing ORE files by category_code: " << category_code;
+    ORES_LOG_SEV(lg(), debug) << "Listing ORE files by category_code: " << category_code;
     return repo_.read_latest_by_category_code(ctx_, category_code, offset, limit);
 }
 
 std::uint32_t ore_file_service::count_files_by_category_code(const std::string& category_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total ORE files count by category_code: "
-                               << category_code;
+    ORES_LOG_SEV(lg(), debug) << "Getting total ORE files count by category_code: "
+                              << category_code;
     return repo_.get_total_file_count_by_category_code(ctx_, category_code);
 }
 
 
 std::vector<domain::ore_file> ore_file_service::list_files_by_configuration_type_code(
     const std::string& configuration_type_code, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing ORE files by configuration_type_code: "
-                               << configuration_type_code;
+    ORES_LOG_SEV(lg(), debug) << "Listing ORE files by configuration_type_code: "
+                              << configuration_type_code;
     return repo_.read_latest_by_configuration_type_code(
         ctx_, configuration_type_code, offset, limit);
 }
 
 std::uint32_t ore_file_service::count_files_by_configuration_type_code(
     const std::string& configuration_type_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total ORE files count by configuration_type_code: "
-                               << configuration_type_code;
+    ORES_LOG_SEV(lg(), debug) << "Getting total ORE files count by configuration_type_code: "
+                              << configuration_type_code;
     return repo_.get_total_file_count_by_configuration_type_code(ctx_, configuration_type_code);
 }
 
 
 std::vector<domain::ore_file> ore_file_service::list_files_by_schema_ore_file_code(
     const std::string& schema_ore_file_code, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing ORE files by schema_ore_file_code: "
-                               << schema_ore_file_code;
+    ORES_LOG_SEV(lg(), debug) << "Listing ORE files by schema_ore_file_code: "
+                              << schema_ore_file_code;
     return repo_.read_latest_by_schema_ore_file_code(ctx_, schema_ore_file_code, offset, limit);
 }
 
 std::uint32_t
 ore_file_service::count_files_by_schema_ore_file_code(const std::string& schema_ore_file_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total ORE files count by schema_ore_file_code: "
-                               << schema_ore_file_code;
+    ORES_LOG_SEV(lg(), debug) << "Getting total ORE files count by schema_ore_file_code: "
+                              << schema_ore_file_code;
     return repo_.get_total_file_count_by_schema_ore_file_code(ctx_, schema_ore_file_code);
 }
 
 
 std::optional<domain::ore_file> ore_file_service::get_file_at_version(const std::string& code,
                                                                       std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting ORE file at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting ORE file at version. " << "code: " << code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::ore_file> ore_file_service::get_file(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting ORE file. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting ORE file. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -704,11 +702,11 @@ std::vector<domain::ore_file> ore_file_service::get_files(const std::vector<std:
 void ore_file_service::save_file(const domain::ore_file& v) {
     if (v.code.empty())
         throw std::invalid_argument("ORE File code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving ORE file. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving ORE file. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved ORE file. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved ORE file. " << "code: " << v.code;
 }
 
 void ore_file_service::save_files(const std::vector<domain::ore_file>& files) {
@@ -716,7 +714,7 @@ void ore_file_service::save_files(const std::vector<domain::ore_file>& files) {
         if (e.code.empty())
             throw std::invalid_argument("ORE File code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << files.size() << " ORE files";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << files.size() << " ORE files";
     auto ts = files;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -725,9 +723,9 @@ void ore_file_service::save_files(const std::vector<domain::ore_file>& files) {
 }
 
 void ore_file_service::delete_file(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing ORE file. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing ORE file. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed ORE file. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed ORE file. " << "code: " << code;
 }
 
 void ore_file_service::delete_files(const std::vector<std::string>& codes) {
@@ -735,7 +733,7 @@ void ore_file_service::delete_files(const std::vector<std::string>& codes) {
 }
 
 std::vector<domain::ore_file> ore_file_service::get_file_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for ORE file. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for ORE file. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

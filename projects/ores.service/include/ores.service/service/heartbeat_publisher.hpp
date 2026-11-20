@@ -20,7 +20,7 @@
 #ifndef ORES_SERVICE_SERVICE_HEARTBEAT_PUBLISHER_HPP
 #define ORES_SERVICE_SERVICE_HEARTBEAT_PUBLISHER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.telemetry.core/messaging/service_samples_protocol.hpp"
@@ -83,7 +83,7 @@ public:
      * interval_seconds.  Exits cleanly when the io_context shuts down.
      */
     boost::asio::awaitable<void> run() {
-        BOOST_LOG_SEV(lg(), ores::logging::info)
+        ORES_LOG_SEV(lg(), ores::logging::info)
             << "Heartbeat publisher started for '" << service_name_ << "' instance=" << instance_id_
             << " interval=" << interval_seconds_ << "s";
 
@@ -98,11 +98,11 @@ public:
             }
         } catch (const boost::system::system_error& e) {
             if (e.code() != boost::asio::error::operation_aborted) {
-                BOOST_LOG_SEV(lg(), ores::logging::warn) << "Heartbeat timer error: " << e.what();
+                ORES_LOG_SEV(lg(), ores::logging::warn) << "Heartbeat timer error: " << e.what();
             }
         }
 
-        BOOST_LOG_SEV(lg(), ores::logging::info)
+        ORES_LOG_SEV(lg(), ores::logging::info)
             << "Heartbeat publisher stopped for '" << service_name_ << "'";
     }
 
@@ -118,9 +118,9 @@ private:
             auto data = ores::nats::default_wire_codec().encode(hb);
             nats_.publish(telemetry::messaging::service_heartbeat_message::nats_subject,
                           std::move(data));
-            BOOST_LOG_SEV(lg(), ores::logging::trace) << "Heartbeat published: " << service_name_;
+            ORES_LOG_SEV(lg(), ores::logging::trace) << "Heartbeat published: " << service_name_;
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), ores::logging::warn) << "Failed to publish heartbeat: " << e.what();
+            ORES_LOG_SEV(lg(), ores::logging::warn) << "Failed to publish heartbeat: " << e.what();
         }
     }
 

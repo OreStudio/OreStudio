@@ -33,8 +33,8 @@ std::optional<int> step_claim_repository::claim(const context& ctx,
                                                 const boost::uuids::uuid& work_tenant_id,
                                                 const std::string& owner,
                                                 std::chrono::seconds lease) {
-    BOOST_LOG_SEV(lg(), debug) << "Claiming step " << boost::uuids::to_string(step_id) << " as "
-                               << owner;
+    ORES_LOG_SEV(lg(), debug) << "Claiming step " << boost::uuids::to_string(step_id) << " as "
+                              << owner;
     // The insert is the first claim, and the conditional update is every claim
     // after it. The WHERE belongs to the update alone: it is what makes a
     // takeover conditional on the lease having ended, so an insert that loses

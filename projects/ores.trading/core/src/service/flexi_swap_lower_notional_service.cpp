@@ -26,7 +26,6 @@
 #include "ores.trading.api/domain/flexi_swap_lower_notional.hpp"
 #include "ores.trading.api/messaging/flexi_swap_lower_notional_protocol.hpp"
 #include "ores.trading.core/repository/flexi_swap_lower_notional_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -43,7 +42,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -521,12 +519,12 @@ ores::utility::domain::result flexi_swap_lower_notional_service::prepare_change(
 std::vector<domain::flexi_swap_lower_notional>
 flexi_swap_lower_notional_service::list_flexi_swap_lower_notionals(std::uint32_t offset,
                                                                    std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all flexi swap lower notionals";
+    ORES_LOG_SEV(lg(), debug) << "Listing all flexi swap lower notionals";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t flexi_swap_lower_notional_service::count_flexi_swap_lower_notionals() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total flexi swap lower notionals count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total flexi swap lower notionals count";
     return repo_.get_total_flexi_swap_lower_notional_count(ctx_);
 }
 
@@ -534,14 +532,14 @@ std::uint32_t flexi_swap_lower_notional_service::count_flexi_swap_lower_notional
 std::vector<domain::flexi_swap_lower_notional>
 flexi_swap_lower_notional_service::list_flexi_swap_lower_notionals_by_trade_id(
     const std::string& trade_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing flexi swap lower notionals by trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing flexi swap lower notionals by trade_id: " << trade_id;
     return repo_.read_latest_by_trade_id(ctx_, trade_id, offset, limit);
 }
 
 std::uint32_t flexi_swap_lower_notional_service::count_flexi_swap_lower_notionals_by_trade_id(
     const std::string& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total flexi swap lower notionals count by trade_id: "
-                               << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting total flexi swap lower notionals count by trade_id: "
+                              << trade_id;
     return repo_.get_total_flexi_swap_lower_notional_count_by_trade_id(ctx_, trade_id);
 }
 
@@ -549,18 +547,17 @@ std::uint32_t flexi_swap_lower_notional_service::count_flexi_swap_lower_notional
 std::optional<domain::flexi_swap_lower_notional>
 flexi_swap_lower_notional_service::get_flexi_swap_lower_notional_at_version(
     const std::string& trade_id, const std::string& sequence_number, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting flexi swap lower notional at version. "
-                               << "trade_id: " << trade_id
-                               << " sequence_number: " << sequence_number
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting flexi swap lower notional at version. "
+                              << "trade_id: " << trade_id << " sequence_number: " << sequence_number
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, trade_id, sequence_number, version);
 }
 
 std::optional<domain::flexi_swap_lower_notional>
 flexi_swap_lower_notional_service::get_flexi_swap_lower_notional(
     const std::string& trade_id, const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting flexi swap lower notional. " << "trade_id: " << trade_id
-                               << " sequence_number: " << sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Getting flexi swap lower notional. " << "trade_id: " << trade_id
+                              << " sequence_number: " << sequence_number;
     auto results = repo_.read_latest(ctx_, trade_id, sequence_number);
     if (results.empty())
         return std::nullopt;
@@ -577,13 +574,13 @@ void flexi_swap_lower_notional_service::save_flexi_swap_lower_notional(
     const domain::flexi_swap_lower_notional& v) {
     if (v.trade_id.is_nil())
         throw std::invalid_argument("Flexi Swap Lower Notional trade_id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving flexi swap lower notional. " << "trade_id: " << v.trade_id
-                               << " sequence_number: " << v.sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Saving flexi swap lower notional. " << "trade_id: " << v.trade_id
+                              << " sequence_number: " << v.sequence_number;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved flexi swap lower notional. " << "trade_id: " << v.trade_id
-                              << " sequence_number: " << v.sequence_number;
+    ORES_LOG_SEV(lg(), info) << "Saved flexi swap lower notional. " << "trade_id: " << v.trade_id
+                             << " sequence_number: " << v.sequence_number;
 }
 
 void flexi_swap_lower_notional_service::save_flexi_swap_lower_notionals(
@@ -592,8 +589,8 @@ void flexi_swap_lower_notional_service::save_flexi_swap_lower_notionals(
         if (e.trade_id.is_nil())
             throw std::invalid_argument("Flexi Swap Lower Notional trade_id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << flexi_swap_lower_notionals.size()
-                               << " flexi swap lower notionals";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << flexi_swap_lower_notionals.size()
+                              << " flexi swap lower notionals";
     auto ts = flexi_swap_lower_notionals;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -603,11 +600,11 @@ void flexi_swap_lower_notional_service::save_flexi_swap_lower_notionals(
 
 void flexi_swap_lower_notional_service::delete_flexi_swap_lower_notional(
     const std::string& trade_id, const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing flexi swap lower notional. " << "trade_id: " << trade_id
-                               << " sequence_number: " << sequence_number;
-    repo_.remove(ctx_, trade_id, sequence_number);
-    BOOST_LOG_SEV(lg(), info) << "Removed flexi swap lower notional. " << "trade_id: " << trade_id
+    ORES_LOG_SEV(lg(), debug) << "Removing flexi swap lower notional. " << "trade_id: " << trade_id
                               << " sequence_number: " << sequence_number;
+    repo_.remove(ctx_, trade_id, sequence_number);
+    ORES_LOG_SEV(lg(), info) << "Removed flexi swap lower notional. " << "trade_id: " << trade_id
+                             << " sequence_number: " << sequence_number;
 }
 
 void flexi_swap_lower_notional_service::delete_flexi_swap_lower_notionals(
@@ -618,9 +615,9 @@ void flexi_swap_lower_notional_service::delete_flexi_swap_lower_notionals(
 std::vector<domain::flexi_swap_lower_notional>
 flexi_swap_lower_notional_service::get_flexi_swap_lower_notional_history(
     const std::string& trade_id, const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for flexi swap lower notional. "
-                               << "trade_id: " << trade_id
-                               << " sequence_number: " << sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for flexi swap lower notional. "
+                              << "trade_id: " << trade_id
+                              << " sequence_number: " << sequence_number;
     return repo_.read_all(ctx_, trade_id, sequence_number);
 }
 

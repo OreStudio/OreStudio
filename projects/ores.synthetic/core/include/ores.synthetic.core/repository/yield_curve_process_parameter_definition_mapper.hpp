@@ -25,7 +25,7 @@
 #ifndef ORES_SYNTHETIC_CORE_REPOSITORY_YIELD_CURVE_PROCESS_PARAMETER_DEFINITION_MAPPER_HPP
 #define ORES_SYNTHETIC_CORE_REPOSITORY_YIELD_CURVE_PROCESS_PARAMETER_DEFINITION_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.synthetic.api/domain/yield_curve_process_parameter_definition.hpp"
 #include "ores.synthetic.core/export.hpp"
 #include "ores.synthetic.core/repository/yield_curve_process_parameter_definition_entity.hpp"

@@ -26,14 +26,12 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.synthetic.api/domain/trade_generation_trade_type.hpp"
 #include "ores.synthetic.api/domain/trade_generation_trade_type_json_io.hpp" // IWYU pragma: keep.
 #include "ores.synthetic.api/messaging/trade_generation_trade_type_protocol.hpp"
 #include "ores.synthetic.core/repository/trade_generation_trade_type_entity.hpp"
 #include "ores.synthetic.core/repository/trade_generation_trade_type_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -231,7 +229,7 @@ void trade_generation_trade_type_repository::write(
     const context& ctx,
     const domain::trade_generation_trade_type& v,
     const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing trade generation trade type. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Writing trade generation trade type. " << "id: " << v.id;
     const auto t = trade_generation_trade_type_apply_claim(
         v,
         claim,
@@ -248,7 +246,7 @@ void trade_generation_trade_type_repository::write(
     const context& ctx,
     const std::vector<domain::trade_generation_trade_type>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing trade generation trade types. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing trade generation trade types. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "trade_generation_trade_type_repository::write: one claim is needed for each row");
@@ -288,7 +286,7 @@ trade_generation_trade_type_repository::read_latest(const context& ctx) {
 
 std::vector<domain::trade_generation_trade_type>
 trade_generation_trade_type_repository::read_latest(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest trade generation trade type. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest trade generation trade type. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -307,8 +305,8 @@ trade_generation_trade_type_repository::read_latest(const context& ctx, const st
 
 std::vector<domain::trade_generation_trade_type>
 trade_generation_trade_type_repository::read_all(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all trade generation trade type versions. "
-                               << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading all trade generation trade type versions. "
+                              << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<trade_generation_trade_type_entity>> |
                        query_builder::where("tenant_id"_c == tid && "id"_c == id) |
@@ -327,8 +325,8 @@ std::optional<domain::trade_generation_trade_type>
 trade_generation_trade_type_repository::read_at_version(const context& ctx,
                                                         const std::string& id,
                                                         std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading trade generation trade type at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading trade generation trade type at version. " << "id: " << id
+                              << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<trade_generation_trade_type_entity>> |
@@ -353,7 +351,7 @@ trade_generation_trade_type_repository::remove_status
 trade_generation_trade_type_repository::remove(const context& ctx,
                                                const std::string& id,
                                                std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing trade generation trade type. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing trade generation trade type. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
         return remove_status::missing;
@@ -393,8 +391,8 @@ trade_generation_trade_type_repository::read_latest(
     const ores::utility::domain::order& order,
     const std::optional<messaging::trade_generation_trade_types_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest trade generation trade types with offset: "
-                               << offset << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest trade generation trade types with offset: "
+                              << offset << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<trade_generation_trade_type_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -416,7 +414,7 @@ std::uint32_t trade_generation_trade_type_repository::get_total_trade_generation
     const context& ctx,
     const std::optional<messaging::trade_generation_trade_types_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active trade generation trade type count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active trade generation trade type count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<trade_generation_trade_type_entity>> |

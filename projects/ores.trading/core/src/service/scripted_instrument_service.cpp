@@ -26,7 +26,6 @@
 #include "ores.trading.api/domain/scripted_instrument.hpp"
 #include "ores.trading.api/messaging/scripted_instrument_protocol.hpp"
 #include "ores.trading.core/repository/scripted_instrument_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -476,12 +474,12 @@ scripted_instrument_service::prepare_change(const messaging::scripted_instrument
 
 std::vector<domain::scripted_instrument>
 scripted_instrument_service::list_scripted_instruments(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all scripted instruments";
+    ORES_LOG_SEV(lg(), debug) << "Listing all scripted instruments";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t scripted_instrument_service::count_scripted_instruments() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total scripted instruments count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total scripted instruments count";
     return repo_.get_total_scripted_instrument_count(ctx_);
 }
 
@@ -489,14 +487,14 @@ std::uint32_t scripted_instrument_service::count_scripted_instruments() {
 std::optional<domain::scripted_instrument>
 scripted_instrument_service::get_scripted_instrument_at_version(const boost::uuids::uuid& trade_id,
                                                                 std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting scripted instrument at version. "
-                               << "trade_id: " << trade_id << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting scripted instrument at version. "
+                              << "trade_id: " << trade_id << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(trade_id), version);
 }
 
 std::optional<domain::scripted_instrument>
 scripted_instrument_service::get_scripted_instrument(const boost::uuids::uuid& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting scripted instrument. " << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting scripted instrument. " << "trade_id: " << trade_id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(trade_id));
     if (results.empty())
         return std::nullopt;
@@ -511,13 +509,13 @@ scripted_instrument_service::get_scripted_instruments(const std::vector<std::str
 void scripted_instrument_service::save_scripted_instrument(const domain::scripted_instrument& v) {
     if (v.identity.trade_id.is_nil())
         throw std::invalid_argument("Scripted Instrument trade_id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving scripted instrument. "
-                               << "trade_id: " << v.identity.trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Saving scripted instrument. "
+                              << "trade_id: " << v.identity.trade_id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved scripted instrument. "
-                              << "trade_id: " << v.identity.trade_id;
+    ORES_LOG_SEV(lg(), info) << "Saved scripted instrument. "
+                             << "trade_id: " << v.identity.trade_id;
 }
 
 void scripted_instrument_service::save_scripted_instruments(
@@ -526,8 +524,8 @@ void scripted_instrument_service::save_scripted_instruments(
         if (e.identity.trade_id.is_nil())
             throw std::invalid_argument("Scripted Instrument trade_id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << scripted_instruments.size()
-                               << " scripted instruments";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << scripted_instruments.size()
+                              << " scripted instruments";
     auto ts = scripted_instruments;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -536,9 +534,9 @@ void scripted_instrument_service::save_scripted_instruments(
 }
 
 void scripted_instrument_service::delete_scripted_instrument(const boost::uuids::uuid& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing scripted instrument. " << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Removing scripted instrument. " << "trade_id: " << trade_id;
     repo_.remove(ctx_, boost::uuids::to_string(trade_id));
-    BOOST_LOG_SEV(lg(), info) << "Removed scripted instrument. " << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), info) << "Removed scripted instrument. " << "trade_id: " << trade_id;
 }
 
 void scripted_instrument_service::delete_scripted_instruments(
@@ -548,8 +546,8 @@ void scripted_instrument_service::delete_scripted_instruments(
 
 std::vector<domain::scripted_instrument>
 scripted_instrument_service::get_scripted_instrument_history(const std::string& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for scripted instrument. "
-                               << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for scripted instrument. "
+                              << "trade_id: " << trade_id;
     return repo_.read_all(ctx_, trade_id);
 }
 

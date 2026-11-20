@@ -21,7 +21,7 @@
 #define ORES_MARKETDATA_SERVICE_MESSAGING_FX_FORWARD_PUBLISH_OPERATIONS_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/messaging/fx_forward_operation_protocol.hpp"
 #include "ores.marketdata.service/app/curve_publish_gate.hpp"
 #include "ores.marketdata.service/app/fx_forward_publish_service.hpp"
@@ -72,7 +72,7 @@ public:
             maker_permission = ores::marketdata::service::app::raise_permission_of(
                 *req_ctx, ores::marketdata::service::app::fx_forward_publish_kind_code);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(fx_forward_publish_operations_handler_lg(), error)
+            ORES_LOG_SEV(fx_forward_publish_operations_handler_lg(), error)
                 << msg.subject << " refused: " << e.what();
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -88,7 +88,7 @@ public:
         }
         const auto resp =
             ores::marketdata::service::app::fx_forward_publish_service::publish(*req_ctx, *req);
-        BOOST_LOG_SEV(fx_forward_publish_operations_handler_lg(), info)
+        ORES_LOG_SEV(fx_forward_publish_operations_handler_lg(), info)
             << "FX forward publish of " << req->pair_code << ": "
             << (resp.success ? resp.state_code : "refused: " + resp.message);
         reply(nats_, msg, resp);

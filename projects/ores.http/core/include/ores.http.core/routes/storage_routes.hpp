@@ -24,7 +24,7 @@
 #include "ores.http.api/openapi/endpoint_registry.hpp"
 #include "ores.http.core/export.hpp"
 #include "ores.iam.core/service/authorization_service.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.storage.core/filesystem/local_store.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <expected>

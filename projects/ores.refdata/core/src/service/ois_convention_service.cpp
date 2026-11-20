@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/ois_convention.hpp"
 #include "ores.refdata.api/messaging/ois_convention_protocol.hpp"
 #include "ores.refdata.core/repository/ois_convention_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -454,12 +452,12 @@ ois_convention_service::prepare_change(const messaging::ois_convention_change& c
 
 std::vector<domain::ois_convention>
 ois_convention_service::list_ois_conventions(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all OIS conventions";
+    ORES_LOG_SEV(lg(), debug) << "Listing all OIS conventions";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t ois_convention_service::count_ois_conventions() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total OIS conventions count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total OIS conventions count";
     return repo_.get_total_ois_convention_count(ctx_);
 }
 
@@ -467,14 +465,14 @@ std::uint32_t ois_convention_service::count_ois_conventions() {
 std::optional<domain::ois_convention>
 ois_convention_service::get_ois_convention_at_version(const std::string& id,
                                                       std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting OIS convention at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting OIS convention at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, id, version);
 }
 
 std::optional<domain::ois_convention>
 ois_convention_service::get_ois_convention(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting OIS convention. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting OIS convention. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, id);
     if (results.empty())
         return std::nullopt;
@@ -489,11 +487,11 @@ ois_convention_service::get_ois_conventions(const std::vector<std::string>& ids)
 void ois_convention_service::save_ois_convention(const domain::ois_convention& v) {
     if (v.id.empty())
         throw std::invalid_argument("OIS Convention id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving OIS convention. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving OIS convention. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved OIS convention. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved OIS convention. " << "id: " << v.id;
 }
 
 void ois_convention_service::save_ois_conventions(
@@ -502,7 +500,7 @@ void ois_convention_service::save_ois_conventions(
         if (e.id.empty())
             throw std::invalid_argument("OIS Convention id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << ois_conventions.size() << " OIS conventions";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << ois_conventions.size() << " OIS conventions";
     auto ts = ois_conventions;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -511,9 +509,9 @@ void ois_convention_service::save_ois_conventions(
 }
 
 void ois_convention_service::delete_ois_convention(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing OIS convention. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing OIS convention. " << "id: " << id;
     repo_.remove(ctx_, id);
-    BOOST_LOG_SEV(lg(), info) << "Removed OIS convention. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed OIS convention. " << "id: " << id;
 }
 
 void ois_convention_service::delete_ois_conventions(const std::vector<std::string>& ids) {
@@ -522,7 +520,7 @@ void ois_convention_service::delete_ois_conventions(const std::vector<std::strin
 
 std::vector<domain::ois_convention>
 ois_convention_service::get_ois_convention_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for OIS convention. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for OIS convention. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

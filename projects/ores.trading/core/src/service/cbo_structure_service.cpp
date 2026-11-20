@@ -26,7 +26,6 @@
 #include "ores.trading.api/domain/cbo_structure.hpp"
 #include "ores.trading.api/messaging/cbo_structure_protocol.hpp"
 #include "ores.trading.core/repository/cbo_structure_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -484,24 +482,24 @@ cbo_structure_service::prepare_change(const messaging::cbo_structure_change& cha
 
 std::vector<domain::cbo_structure> cbo_structure_service::list_cbo_structures(std::uint32_t offset,
                                                                               std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all cbo structures";
+    ORES_LOG_SEV(lg(), debug) << "Listing all cbo structures";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t cbo_structure_service::count_cbo_structures() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total cbo structures count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total cbo structures count";
     return repo_.get_total_cbo_structure_count(ctx_);
 }
 
 
 std::vector<domain::cbo_structure> cbo_structure_service::list_cbo_structures_by_trade_id(
     const std::string& trade_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing cbo structures by trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing cbo structures by trade_id: " << trade_id;
     return repo_.read_latest_by_trade_id(ctx_, trade_id, offset, limit);
 }
 
 std::uint32_t cbo_structure_service::count_cbo_structures_by_trade_id(const std::string& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total cbo structures count by trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting total cbo structures count by trade_id: " << trade_id;
     return repo_.get_total_cbo_structure_count_by_trade_id(ctx_, trade_id);
 }
 
@@ -509,14 +507,14 @@ std::uint32_t cbo_structure_service::count_cbo_structures_by_trade_id(const std:
 std::optional<domain::cbo_structure>
 cbo_structure_service::get_cbo_structure_at_version(const boost::uuids::uuid& trade_id,
                                                     std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting cbo structure at version. " << "trade_id: " << trade_id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting cbo structure at version. " << "trade_id: " << trade_id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(trade_id), version);
 }
 
 std::optional<domain::cbo_structure>
 cbo_structure_service::get_cbo_structure(const boost::uuids::uuid& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting cbo structure. " << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting cbo structure. " << "trade_id: " << trade_id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(trade_id));
     if (results.empty())
         return std::nullopt;
@@ -531,11 +529,11 @@ cbo_structure_service::get_cbo_structures(const std::vector<std::string>& trade_
 void cbo_structure_service::save_cbo_structure(const domain::cbo_structure& v) {
     if (v.trade_id.is_nil())
         throw std::invalid_argument("CBO Structure trade_id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving cbo structure. " << "trade_id: " << v.trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Saving cbo structure. " << "trade_id: " << v.trade_id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved cbo structure. " << "trade_id: " << v.trade_id;
+    ORES_LOG_SEV(lg(), info) << "Saved cbo structure. " << "trade_id: " << v.trade_id;
 }
 
 void cbo_structure_service::save_cbo_structures(
@@ -544,7 +542,7 @@ void cbo_structure_service::save_cbo_structures(
         if (e.trade_id.is_nil())
             throw std::invalid_argument("CBO Structure trade_id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << cbo_structures.size() << " cbo structures";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << cbo_structures.size() << " cbo structures";
     auto ts = cbo_structures;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -553,9 +551,9 @@ void cbo_structure_service::save_cbo_structures(
 }
 
 void cbo_structure_service::delete_cbo_structure(const boost::uuids::uuid& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing cbo structure. " << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Removing cbo structure. " << "trade_id: " << trade_id;
     repo_.remove(ctx_, boost::uuids::to_string(trade_id));
-    BOOST_LOG_SEV(lg(), info) << "Removed cbo structure. " << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), info) << "Removed cbo structure. " << "trade_id: " << trade_id;
 }
 
 void cbo_structure_service::delete_cbo_structures(const std::vector<std::string>& trade_ids) {
@@ -564,7 +562,7 @@ void cbo_structure_service::delete_cbo_structures(const std::vector<std::string>
 
 std::vector<domain::cbo_structure>
 cbo_structure_service::get_cbo_structure_history(const std::string& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for cbo structure. " << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for cbo structure. " << "trade_id: " << trade_id;
     return repo_.read_all(ctx_, trade_id);
 }
 

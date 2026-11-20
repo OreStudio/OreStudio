@@ -26,7 +26,7 @@
 #define ORES_REPORTING_SERVICE_REPORT_TYPE_CONFIGURATION_TYPE_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.reporting.api/domain/report_type_configuration_type.hpp"
 #include "ores.reporting.api/messaging/report_type_configuration_type_protocol.hpp"
 #include "ores.reporting.core/export.hpp"

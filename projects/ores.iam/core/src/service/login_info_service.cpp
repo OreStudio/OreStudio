@@ -26,7 +26,6 @@
 #include "ores.iam.api/domain/login_info.hpp"
 #include "ores.iam.api/messaging/login_info_protocol.hpp"
 #include "ores.iam.core/repository/login_info_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -41,7 +40,6 @@
 // does not count as a use.
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -183,19 +181,19 @@ login_info_service::get_many_login_info(const messaging::get_many_login_info_req
 
 std::vector<domain::login_info> login_info_service::list_login_info(std::uint32_t offset,
                                                                     std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all login info";
+    ORES_LOG_SEV(lg(), debug) << "Listing all login info";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t login_info_service::count_login_info() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total login info count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total login info count";
     return repo_.get_total_login_info_count(ctx_);
 }
 
 
 std::optional<domain::login_info>
 login_info_service::get_login_info(const boost::uuids::uuid& account_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting login info. " << "account_id: " << account_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting login info. " << "account_id: " << account_id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(account_id));
     if (results.empty())
         return std::nullopt;
@@ -210,11 +208,11 @@ login_info_service::get_login_info(const std::vector<std::string>& account_ids) 
 void login_info_service::save_login_info(const domain::login_info& v) {
     if (v.account_id.is_nil())
         throw std::invalid_argument("Login Info account_id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving login info. " << "account_id: " << v.account_id;
+    ORES_LOG_SEV(lg(), debug) << "Saving login info. " << "account_id: " << v.account_id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved login info. " << "account_id: " << v.account_id;
+    ORES_LOG_SEV(lg(), info) << "Saved login info. " << "account_id: " << v.account_id;
 }
 
 void login_info_service::save_login_info(const std::vector<domain::login_info>& login_info) {
@@ -222,7 +220,7 @@ void login_info_service::save_login_info(const std::vector<domain::login_info>& 
         if (e.account_id.is_nil())
             throw std::invalid_argument("Login Info account_id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << login_info.size() << " login info";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << login_info.size() << " login info";
     auto ts = login_info;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -231,9 +229,9 @@ void login_info_service::save_login_info(const std::vector<domain::login_info>& 
 }
 
 void login_info_service::delete_login_info(const boost::uuids::uuid& account_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing login info. " << "account_id: " << account_id;
+    ORES_LOG_SEV(lg(), debug) << "Removing login info. " << "account_id: " << account_id;
     repo_.remove(ctx_, boost::uuids::to_string(account_id));
-    BOOST_LOG_SEV(lg(), info) << "Removed login info. " << "account_id: " << account_id;
+    ORES_LOG_SEV(lg(), info) << "Removed login info. " << "account_id: " << account_id;
 }
 
 void login_info_service::delete_login_info(const std::vector<std::string>& account_ids) {

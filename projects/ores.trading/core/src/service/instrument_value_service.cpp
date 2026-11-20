@@ -26,7 +26,6 @@
 #include "ores.trading.api/domain/instrument_value.hpp"
 #include "ores.trading.api/messaging/instrument_value_protocol.hpp"
 #include "ores.trading.core/repository/instrument_value_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -43,7 +42,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -518,25 +516,25 @@ instrument_value_service::prepare_change(const messaging::instrument_value_chang
 
 std::vector<domain::instrument_value>
 instrument_value_service::list_instrument_values(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all instrument values";
+    ORES_LOG_SEV(lg(), debug) << "Listing all instrument values";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t instrument_value_service::count_instrument_values() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total instrument values count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total instrument values count";
     return repo_.get_total_instrument_value_count(ctx_);
 }
 
 
 std::vector<domain::instrument_value> instrument_value_service::list_instrument_values_by_trade_id(
     const std::string& trade_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing instrument values by trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing instrument values by trade_id: " << trade_id;
     return repo_.read_latest_by_trade_id(ctx_, trade_id, offset, limit);
 }
 
 std::uint32_t
 instrument_value_service::count_instrument_values_by_trade_id(const std::string& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total instrument values count by trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting total instrument values count by trade_id: " << trade_id;
     return repo_.get_total_instrument_value_count_by_trade_id(ctx_, trade_id);
 }
 
@@ -546,10 +544,9 @@ instrument_value_service::get_instrument_value_at_version(const std::string& tra
                                                           const std::string& value_role,
                                                           const std::string& sequence_number,
                                                           std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting instrument value at version. "
-                               << "trade_id: " << trade_id << " value_role: " << value_role
-                               << " sequence_number: " << sequence_number
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting instrument value at version. " << "trade_id: " << trade_id
+                              << " value_role: " << value_role
+                              << " sequence_number: " << sequence_number << " version: " << version;
     return repo_.read_at_version(ctx_, trade_id, value_role, sequence_number, version);
 }
 
@@ -557,9 +554,9 @@ std::optional<domain::instrument_value>
 instrument_value_service::get_instrument_value(const std::string& trade_id,
                                                const std::string& value_role,
                                                const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting instrument value. " << "trade_id: " << trade_id
-                               << " value_role: " << value_role
-                               << " sequence_number: " << sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Getting instrument value. " << "trade_id: " << trade_id
+                              << " value_role: " << value_role
+                              << " sequence_number: " << sequence_number;
     auto results = repo_.read_latest(ctx_, trade_id, value_role, sequence_number);
     if (results.empty())
         return std::nullopt;
@@ -578,15 +575,15 @@ void instrument_value_service::save_instrument_value(const domain::instrument_va
         throw std::invalid_argument("Instrument Value trade_id cannot be empty.");
     if (v.value_role.empty())
         throw std::invalid_argument("Instrument Value value_role cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving instrument value. " << "trade_id: " << v.trade_id
-                               << " value_role: " << v.value_role
-                               << " sequence_number: " << v.sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Saving instrument value. " << "trade_id: " << v.trade_id
+                              << " value_role: " << v.value_role
+                              << " sequence_number: " << v.sequence_number;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved instrument value. " << "trade_id: " << v.trade_id
-                              << " value_role: " << v.value_role
-                              << " sequence_number: " << v.sequence_number;
+    ORES_LOG_SEV(lg(), info) << "Saved instrument value. " << "trade_id: " << v.trade_id
+                             << " value_role: " << v.value_role
+                             << " sequence_number: " << v.sequence_number;
 }
 
 void instrument_value_service::save_instrument_values(
@@ -597,7 +594,7 @@ void instrument_value_service::save_instrument_values(
         if (e.value_role.empty())
             throw std::invalid_argument("Instrument Value value_role cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << instrument_values.size() << " instrument values";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << instrument_values.size() << " instrument values";
     auto ts = instrument_values;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -608,13 +605,13 @@ void instrument_value_service::save_instrument_values(
 void instrument_value_service::delete_instrument_value(const std::string& trade_id,
                                                        const std::string& value_role,
                                                        const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing instrument value. " << "trade_id: " << trade_id
-                               << " value_role: " << value_role
-                               << " sequence_number: " << sequence_number;
-    repo_.remove(ctx_, trade_id, value_role, sequence_number);
-    BOOST_LOG_SEV(lg(), info) << "Removed instrument value. " << "trade_id: " << trade_id
+    ORES_LOG_SEV(lg(), debug) << "Removing instrument value. " << "trade_id: " << trade_id
                               << " value_role: " << value_role
                               << " sequence_number: " << sequence_number;
+    repo_.remove(ctx_, trade_id, value_role, sequence_number);
+    ORES_LOG_SEV(lg(), info) << "Removed instrument value. " << "trade_id: " << trade_id
+                             << " value_role: " << value_role
+                             << " sequence_number: " << sequence_number;
 }
 
 void instrument_value_service::delete_instrument_values(
@@ -628,9 +625,9 @@ std::vector<domain::instrument_value>
 instrument_value_service::get_instrument_value_history(const std::string& trade_id,
                                                        const std::string& value_role,
                                                        const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for instrument value. "
-                               << "trade_id: " << trade_id << " value_role: " << value_role
-                               << " sequence_number: " << sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for instrument value. "
+                              << "trade_id: " << trade_id << " value_role: " << value_role
+                              << " sequence_number: " << sequence_number;
     return repo_.read_all(ctx_, trade_id, value_role, sequence_number);
 }
 

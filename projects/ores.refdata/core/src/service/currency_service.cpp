@@ -26,7 +26,6 @@
 #include "ores.refdata.api/domain/currency.hpp"
 #include "ores.refdata.api/messaging/currency_protocol.hpp"
 #include "ores.refdata.core/repository/currency_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -464,25 +462,25 @@ currency_service::prepare_change(const messaging::currency_change& change,
 
 std::vector<domain::currency> currency_service::list_currencies(std::uint32_t offset,
                                                                 std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all currencies";
+    ORES_LOG_SEV(lg(), debug) << "Listing all currencies";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t currency_service::count_currencies() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total currencies count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total currencies count";
     return repo_.get_total_currency_count(ctx_);
 }
 
 
 std::optional<domain::currency>
 currency_service::get_currency_at_version(const std::string& iso_code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting currency at version. " << "iso_code: " << iso_code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting currency at version. " << "iso_code: " << iso_code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, iso_code, version);
 }
 
 std::optional<domain::currency> currency_service::get_currency(const std::string& iso_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting currency. " << "iso_code: " << iso_code;
+    ORES_LOG_SEV(lg(), debug) << "Getting currency. " << "iso_code: " << iso_code;
     auto results = repo_.read_latest(ctx_, iso_code);
     if (results.empty())
         return std::nullopt;
@@ -497,11 +495,11 @@ currency_service::get_currencies(const std::vector<std::string>& iso_codes) {
 void currency_service::save_currency(const domain::currency& v) {
     if (v.iso_code.empty())
         throw std::invalid_argument("Currency iso_code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving currency. " << "iso_code: " << v.iso_code;
+    ORES_LOG_SEV(lg(), debug) << "Saving currency. " << "iso_code: " << v.iso_code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved currency. " << "iso_code: " << v.iso_code;
+    ORES_LOG_SEV(lg(), info) << "Saved currency. " << "iso_code: " << v.iso_code;
 }
 
 void currency_service::save_currencies(const std::vector<domain::currency>& currencies) {
@@ -509,7 +507,7 @@ void currency_service::save_currencies(const std::vector<domain::currency>& curr
         if (e.iso_code.empty())
             throw std::invalid_argument("Currency iso_code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << currencies.size() << " currencies";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << currencies.size() << " currencies";
     auto ts = currencies;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -518,9 +516,9 @@ void currency_service::save_currencies(const std::vector<domain::currency>& curr
 }
 
 void currency_service::delete_currency(const std::string& iso_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing currency. " << "iso_code: " << iso_code;
+    ORES_LOG_SEV(lg(), debug) << "Removing currency. " << "iso_code: " << iso_code;
     repo_.remove(ctx_, iso_code);
-    BOOST_LOG_SEV(lg(), info) << "Removed currency. " << "iso_code: " << iso_code;
+    ORES_LOG_SEV(lg(), info) << "Removed currency. " << "iso_code: " << iso_code;
 }
 
 void currency_service::delete_currencies(const std::vector<std::string>& iso_codes) {
@@ -528,14 +526,14 @@ void currency_service::delete_currencies(const std::vector<std::string>& iso_cod
 }
 
 std::vector<domain::currency> currency_service::get_currency_history(const std::string& iso_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for currency. " << "iso_code: " << iso_code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for currency. " << "iso_code: " << iso_code;
     return repo_.read_all(ctx_, iso_code);
 }
 
 std::vector<domain::currency> currency_service::list_currencies_for_party(
     const boost::uuids::uuid& party_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing currencies for party: " << party_id
-                               << " offset=" << offset << " limit=" << limit;
+    ORES_LOG_SEV(lg(), debug) << "Listing currencies for party: " << party_id
+                              << " offset=" << offset << " limit=" << limit;
 
     const auto junctions = junction_repo_.read_latest_by_party(party_id);
     std::unordered_set<std::string> visible;
@@ -558,7 +556,7 @@ std::vector<domain::currency> currency_service::list_currencies_for_party(
 }
 
 std::uint32_t currency_service::count_currencies_for_party(const boost::uuids::uuid& party_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Counting currencies for party: " << party_id;
+    ORES_LOG_SEV(lg(), debug) << "Counting currencies for party: " << party_id;
     const auto junctions = junction_repo_.read_latest_by_party(party_id);
     return static_cast<std::uint32_t>(junctions.size());
 }

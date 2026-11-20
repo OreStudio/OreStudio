@@ -334,7 +334,7 @@ void party_id_scheme_routes::register_routes(
     std::shared_ptr<ores::http::net::router> router,
     std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
     nats_client& session) {
-    BOOST_LOG_SEV(lg(), info) << "Registering party_id_schemes routes";
+    ORES_LOG_SEV(lg(), info) << "Registering party_id_schemes routes";
 
     auto list_route =
         router->get("/api/v1/reference-data/party_id_schemes")
@@ -479,7 +479,7 @@ void party_id_scheme_routes::register_routes(
     router->add_route(version_built);
     registry->register_route(version_built);
 
-    BOOST_LOG_SEV(lg(), info) << "party_id_schemes routes registered: " << 10 << " endpoint(s)";
+    ORES_LOG_SEV(lg(), info) << "party_id_schemes routes registered: " << 10 << " endpoint(s)";
 }
 
 }

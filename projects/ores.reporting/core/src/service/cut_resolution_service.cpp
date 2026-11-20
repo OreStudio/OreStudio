@@ -18,11 +18,9 @@
  *
  */
 #include "ores.reporting.core/service/cut_resolution_service.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.reporting.core/repository/cut_kind_repository.hpp"
 #include "ores.reporting.core/repository/cut_repository.hpp"
 #include "ores.reporting.core/service/cut_take_plan.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -80,9 +78,9 @@ cut_resolution cut_resolution_service::run(const cut_selection& selection,
     auto context = ctx;
     context.preview = preview_only;
 
-    BOOST_LOG_SEV(lg(), debug) << "Resolving the selection of kind " << selection.kind_code
-                               << " for scope " << context.scope_code << " over "
-                               << candidates.size() << " candidate cuts.";
+    ORES_LOG_SEV(lg(), debug) << "Resolving the selection of kind " << selection.kind_code
+                              << " for scope " << context.scope_code << " over "
+                              << candidates.size() << " candidate cuts.";
 
     auto resolution = resolve_cut_selection(selection, kinds, candidates, context);
     if (!resolution.mint || preview_only || !resolution.mint_kind)
@@ -116,8 +114,8 @@ domain::cut cut_resolution_service::mint(const cut_take_plan& plan, const domain
     const auto cut = plan_take(plan, kind, rg(), next_take_ordinal(same_occasion));
     cuts_repo.write(ctx_, cut);
 
-    BOOST_LOG_SEV(lg(), info) << "Minted cut " << boost::uuids::to_string(cut.id) << " of kind "
-                              << cut.kind_code << " for scope " << cut.scope_code << ".";
+    ORES_LOG_SEV(lg(), info) << "Minted cut " << boost::uuids::to_string(cut.id) << " of kind "
+                             << cut.kind_code << " for scope " << cut.scope_code << ".";
     return cut;
 }
 

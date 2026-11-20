@@ -18,7 +18,7 @@
  *
  */
 #include "ores.marketdata.core/repository/market_series_identity_projector.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/datum/market_datum.hpp"
 #include "ores.marketdata.api/datum/market_index.hpp"
 #include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
@@ -438,7 +438,7 @@ market_series_identity_projector::project_missing(const ores::database::context&
             // refused series is not projected, so it is not counted as unguarded too,
             // and the same warning comes again on the next run because the row is
             // still there: this is a repair an operator asks for, not a sweep.
-            BOOST_LOG_SEV(projector_lg(), warn) << e.what();
+            ORES_LOG_SEV(projector_lg(), warn) << e.what();
             ++result.refused;
             continue;
         }

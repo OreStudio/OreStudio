@@ -26,14 +26,12 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.trading.api/domain/origin_type.hpp"
 #include "ores.trading.api/domain/origin_type_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.api/messaging/origin_type_protocol.hpp"
 #include "ores.trading.core/repository/origin_type_entity.hpp"
 #include "ores.trading.core/repository/origin_type_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -208,7 +206,7 @@ void origin_type_repository::write(const context& ctx, const std::vector<domain:
 void origin_type_repository::write(const context& ctx,
                                    const domain::origin_type& v,
                                    const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing origin type. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Writing origin type. " << "code: " << v.code;
     const auto t = origin_type_apply_claim(v,
                                            claim,
                                            origin_type_claim_reads_current(claim) ?
@@ -221,7 +219,7 @@ void origin_type_repository::write(const context& ctx,
 void origin_type_repository::write(const context& ctx,
                                    const std::vector<domain::origin_type>& v,
                                    const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing origin types. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing origin types. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "origin_type_repository::write: one claim is needed for each row");
@@ -256,7 +254,7 @@ std::vector<domain::origin_type> origin_type_repository::read_latest(const conte
 
 std::vector<domain::origin_type> origin_type_repository::read_latest(const context& ctx,
                                                                      const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest origin type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest origin type. " << "code: " << code;
     static constexpr auto max = db_timestamp::max();
     const auto query = query_builder::read<std::vector<origin_type_entity>> |
                        query_builder::where("code"_c == code && "valid_to"_c == max);
@@ -272,7 +270,7 @@ std::vector<domain::origin_type> origin_type_repository::read_latest(const conte
 
 std::vector<domain::origin_type> origin_type_repository::read_all(const context& ctx,
                                                                   const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all origin type versions. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Reading all origin type versions. " << "code: " << code;
     const auto query = query_builder::read<std::vector<origin_type_entity>> |
                        query_builder::where("code"_c == code) |
                        query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
@@ -288,8 +286,8 @@ std::vector<domain::origin_type> origin_type_repository::read_all(const context&
 std::optional<domain::origin_type> origin_type_repository::read_at_version(const context& ctx,
                                                                            const std::string& code,
                                                                            std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading origin type at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading origin type at version. " << "code: " << code
+                              << " version: " << version;
     const auto query = query_builder::read<std::vector<origin_type_entity>> |
                        query_builder::where("code"_c == code && "version"_c == version) |
                        query_builder::limit(1);
@@ -309,7 +307,7 @@ std::optional<domain::origin_type> origin_type_repository::read_at_version(const
 
 origin_type_repository::remove_status origin_type_repository::remove(
     const context& ctx, const std::string& code, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing origin type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing origin type. " << "code: " << code;
     const auto current = read_latest(ctx, code);
     if (current.empty())
         return remove_status::missing;
@@ -346,8 +344,8 @@ origin_type_repository::read_latest(const context& ctx,
                                     const ores::utility::domain::order& order,
                                     const std::optional<messaging::origin_types_filter>& filter,
                                     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest origin types with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest origin types with offset: " << offset
+                              << " and limit: " << limit;
     const auto query = query_builder::read<std::vector<origin_type_entity>> |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
@@ -366,7 +364,7 @@ std::uint32_t origin_type_repository::get_total_origin_type_count(
     const context& ctx,
     const std::optional<messaging::origin_types_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active origin type count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active origin type count";
 
     const auto query = query_builder::read<std::vector<origin_type_entity>>;
 

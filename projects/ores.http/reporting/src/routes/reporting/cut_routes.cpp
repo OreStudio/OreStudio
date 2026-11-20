@@ -23,7 +23,7 @@
 #include "ores.http.api/net/record_routes.hpp"
 #include "ores.http.nats/forwarding.hpp"
 #include "ores.http/routes/reporting/cut_kind_rows.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.reporting.api/messaging/report_instance_protocol.hpp"
 #include "ores.reporting.api/messaging/report_operations_protocol.hpp"
 #include "ores.utility/codec/json_codec.hpp"
@@ -224,7 +224,7 @@ std::string runs_of_cut(const http_request& req, nats_client& session, const std
                 state_of.emplace(boost::uuids::to_string(entry.report_instance_id),
                                  std::pair{entry.state_name, entry.health});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(cuts_lg(), ores::logging::warn)
+            ORES_LOG_SEV(cuts_lg(), ores::logging::warn)
                 << "The states of a cut's runs could not be read: " << e.what();
         }
     }
@@ -415,7 +415,7 @@ void cut_routes::register_routes(std::shared_ptr<ores::http::net::router> router
                                 !answered.label.empty())
                                 superseded_by_label = json::write(answered.label);
                         } catch (const std::exception& e) {
-                            BOOST_LOG_SEV(cuts_lg(), ores::logging::warn)
+                            ORES_LOG_SEV(cuts_lg(), ores::logging::warn)
                                 << "The label of the cut that holds this one's place could not be "
                                    "read: "
                                 << e.what();

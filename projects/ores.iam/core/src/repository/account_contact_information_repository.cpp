@@ -31,10 +31,8 @@
 #include "ores.iam.api/messaging/account_contact_information_protocol.hpp"
 #include "ores.iam.core/repository/account_contact_information_entity.hpp"
 #include "ores.iam.core/repository/account_contact_information_mapper.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <chrono>
@@ -233,7 +231,7 @@ void account_contact_information_repository::write(
     const context& ctx,
     const domain::account_contact_information& v,
     const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing account contact information. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Writing account contact information. " << "id: " << v.id;
     const auto t = account_contact_information_apply_claim(
         v,
         claim,
@@ -250,7 +248,7 @@ void account_contact_information_repository::write(
     const context& ctx,
     const std::vector<domain::account_contact_information>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing account contact informations. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing account contact informations. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "account_contact_information_repository::write: one claim is needed for each row");
@@ -290,7 +288,7 @@ account_contact_information_repository::read_latest(const context& ctx) {
 
 std::vector<domain::account_contact_information>
 account_contact_information_repository::read_latest(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest account contact information. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest account contact information. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -309,7 +307,7 @@ account_contact_information_repository::read_latest(const context& ctx, const st
 std::vector<domain::account_contact_information>
 account_contact_information_repository::read_latest_by_email(const context& ctx,
                                                              const std::string& email) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest account contact information by email: " << email;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest account contact information by email: " << email;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -345,8 +343,8 @@ account_contact_information_repository::read_latest_by_email(
         }
         return all;
     }
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest account contact informations by email. Count: "
-                               << emails.size();
+    ORES_LOG_SEV(lg(), debug) << "Reading latest account contact informations by email. Count: "
+                              << emails.size();
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -365,7 +363,7 @@ account_contact_information_repository::read_latest_by_email(
 std::vector<domain::account_contact_information>
 account_contact_information_repository::read_any_by_email(const context& ctx,
                                                           const std::string& email) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading any account contact information by email: " << email;
+    ORES_LOG_SEV(lg(), debug) << "Reading any account contact information by email: " << email;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<account_contact_information_entity>> |
                        query_builder::where("tenant_id"_c == tid && "email"_c == email) |
@@ -383,8 +381,8 @@ account_contact_information_repository::read_any_by_email(const context& ctx,
 
 std::vector<domain::account_contact_information>
 account_contact_information_repository::read_all(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all account contact information versions. "
-                               << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading all account contact information versions. "
+                              << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<account_contact_information_entity>> |
                        query_builder::where("tenant_id"_c == tid && "id"_c == id) |
@@ -403,8 +401,8 @@ std::optional<domain::account_contact_information>
 account_contact_information_repository::read_at_version(const context& ctx,
                                                         const std::string& id,
                                                         std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading account contact information at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading account contact information at version. " << "id: " << id
+                              << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<account_contact_information_entity>> |
@@ -432,8 +430,8 @@ account_contact_information_repository::read_latest_by_account_id(
     std::uint32_t limit,
     const ores::utility::domain::order& order,
     const std::optional<messaging::account_contact_informations_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest account contact informations. account_id: "
-                               << account_id << " offset: " << offset << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest account contact informations. account_id: "
+                              << account_id << " offset: " << offset << " limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<account_contact_information_entity>> |
@@ -457,7 +455,7 @@ account_contact_information_repository::get_total_account_contact_information_co
     const context& ctx,
     const std::string& account_id,
     const std::optional<messaging::account_contact_informations_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Retrieving total active account contact informations count. account_id: " << account_id;
     static constexpr auto max = db_timestamp::max();
 
@@ -481,8 +479,8 @@ account_contact_information_repository::read_by_account_id_as_of(
     const std::string& account_id,
     std::chrono::system_clock::time_point valid_from_bound,
     std::chrono::system_clock::time_point valid_to_bound) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading account contact informations as of window. account_id: "
-                               << account_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading account contact informations as of window. account_id: "
+                              << account_id;
 
     const auto vf(valid_from_bound);
     const auto vt(valid_to_bound);
@@ -505,7 +503,7 @@ account_contact_information_repository::remove_status
 account_contact_information_repository::remove(const context& ctx,
                                                const std::string& id,
                                                std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing account contact information. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing account contact information. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
         return remove_status::missing;
@@ -545,8 +543,8 @@ account_contact_information_repository::read_latest(
     const ores::utility::domain::order& order,
     const std::optional<messaging::account_contact_informations_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest account contact informations with offset: "
-                               << offset << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest account contact informations with offset: "
+                              << offset << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<account_contact_information_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -568,7 +566,7 @@ std::uint32_t account_contact_information_repository::get_total_account_contact_
     const context& ctx,
     const std::optional<messaging::account_contact_informations_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active account contact information count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active account contact information count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<account_contact_information_entity>> |

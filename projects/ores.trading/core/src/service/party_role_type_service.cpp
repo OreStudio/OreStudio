@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.trading.api/domain/party_role_type.hpp"
 #include "ores.trading.api/messaging/party_role_type_protocol.hpp"
 #include "ores.trading.core/repository/party_role_type_repository.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -445,26 +443,26 @@ party_role_type_service::prepare_change(const messaging::party_role_type_change&
 
 std::vector<domain::party_role_type> party_role_type_service::list_role_types(std::uint32_t offset,
                                                                               std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all party role types";
+    ORES_LOG_SEV(lg(), debug) << "Listing all party role types";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t party_role_type_service::count_role_types() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total party role types count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total party role types count";
     return repo_.get_total_role_type_count(ctx_);
 }
 
 
 std::optional<domain::party_role_type>
 party_role_type_service::get_role_type_at_version(const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting party role type at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting party role type at version. " << "code: " << code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::party_role_type>
 party_role_type_service::get_role_type(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting party role type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting party role type. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -479,11 +477,11 @@ party_role_type_service::get_role_types(const std::vector<std::string>& codes) {
 void party_role_type_service::save_role_type(const domain::party_role_type& v) {
     if (v.code.empty())
         throw std::invalid_argument("Party Role Type code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving party role type. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving party role type. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved party role type. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved party role type. " << "code: " << v.code;
 }
 
 void party_role_type_service::save_role_types(
@@ -492,7 +490,7 @@ void party_role_type_service::save_role_types(
         if (e.code.empty())
             throw std::invalid_argument("Party Role Type code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << role_types.size() << " party role types";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << role_types.size() << " party role types";
     auto ts = role_types;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -501,9 +499,9 @@ void party_role_type_service::save_role_types(
 }
 
 void party_role_type_service::delete_role_type(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing party role type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing party role type. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed party role type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed party role type. " << "code: " << code;
 }
 
 void party_role_type_service::delete_role_types(const std::vector<std::string>& codes) {
@@ -512,7 +510,7 @@ void party_role_type_service::delete_role_types(const std::vector<std::string>& 
 
 std::vector<domain::party_role_type>
 party_role_type_service::get_role_type_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for party role type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for party role type. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

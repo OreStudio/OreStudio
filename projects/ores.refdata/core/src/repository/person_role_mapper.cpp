@@ -24,11 +24,9 @@
  */
 #include "ores.refdata.core/repository/person_role_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/person_role.hpp"
 #include "ores.refdata.api/domain/person_role_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/person_role_entity.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <optional>
 #include <vector>
 
@@ -38,7 +36,7 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 
 domain::person_role person_role_mapper::map(const person_role_entity& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::person_role r;
     r.version = v.version;
@@ -53,12 +51,12 @@ domain::person_role person_role_mapper::map(const person_role_entity& v) {
     r.change_commentary = v.change_commentary;
     r.recorded_at = v.valid_from;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
 }
 
 person_role_entity person_role_mapper::map(const domain::person_role& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     person_role_entity r;
     r.code = v.code;
@@ -72,7 +70,7 @@ person_role_entity person_role_mapper::map(const domain::person_role& v) {
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;
 }
 

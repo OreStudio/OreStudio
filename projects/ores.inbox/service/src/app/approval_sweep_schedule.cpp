@@ -108,8 +108,8 @@ boost::asio::awaitable<void> approval_sweep_schedule::register_job() {
 
     for (int attempt = 1;; ++attempt) {
         if (auto attempt_result = try_register_once(); attempt_result) {
-            BOOST_LOG_SEV(lg(), info) << "Registered the sweep job '" << described_.job_name
-                                      << "' from " << described_.setting_name << ".";
+            ORES_LOG_SEV(lg(), info) << "Registered the sweep job '" << described_.job_name
+                                     << "' from " << described_.setting_name << ".";
             co_return;
         } else if (!attempt_result.error().retryable) {
             throw application_exception(attempt_result.error().message);
@@ -118,7 +118,7 @@ boost::asio::awaitable<void> approval_sweep_schedule::register_job() {
                                         std::to_string(max_attempts) +
                                         " attempts: " + attempt_result.error().message);
         } else {
-            BOOST_LOG_SEV(lg(), warn)
+            ORES_LOG_SEV(lg(), warn)
                 << "Could not register the sweep job (attempt " << attempt << " of " << max_attempts
                 << "): " << attempt_result.error().message;
         }

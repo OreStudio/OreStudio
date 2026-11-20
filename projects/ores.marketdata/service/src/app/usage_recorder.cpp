@@ -52,8 +52,8 @@ usage_recorder::~usage_recorder() {
         flusher_.join();
     flush(std::chrono::system_clock::now());
     if (meter_ && meter_->pending() > 0)
-        BOOST_LOG_SEV(lg(), warn) << meter_->pending()
-                                  << " delivery count(s) were not written at stop and are lost";
+        ORES_LOG_SEV(lg(), warn) << meter_->pending()
+                                 << " delivery count(s) were not written at stop and are lost";
 }
 
 void usage_recorder::start() {
@@ -75,8 +75,8 @@ void usage_recorder::sync(const demand_catalogue& catalogue,
         const auto subscription_plan = plan_subscription_intervals(
             subscription_states(catalogue), open_subscriptions, now, ctx_.service_account());
         const auto refused = [](const auto& i, const std::exception& e) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to record a usage interval of tenant "
-                                       << i.tenant_id << ": " << e.what();
+            ORES_LOG_SEV(lg(), error) << "Failed to record a usage interval of tenant "
+                                      << i.tenant_id << ": " << e.what();
         };
         const auto subscriptions = write_plan(
             subscription_plan,
@@ -105,14 +105,14 @@ void usage_recorder::sync(const demand_catalogue& catalogue,
             },
             refused);
 
-        BOOST_LOG_SEV(lg(), info) << "Usage intervals: " << subscriptions.opened
-                                  << " subscription opened, " << subscriptions.closed << " closed; "
-                                  << demand.opened << " demand opened, " << demand.closed
-                                  << " closed; " << subscriptions.failed + demand.failed
-                                  << " refused, " << subscriptions.held + demand.held
-                                  << " held for the next sync";
+        ORES_LOG_SEV(lg(), info) << "Usage intervals: " << subscriptions.opened
+                                 << " subscription opened, " << subscriptions.closed << " closed; "
+                                 << demand.opened << " demand opened, " << demand.closed
+                                 << " closed; " << subscriptions.failed + demand.failed
+                                 << " refused, " << subscriptions.held + demand.held
+                                 << " held for the next sync";
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to record the usage intervals: " << e.what();
+        ORES_LOG_SEV(lg(), error) << "Failed to record the usage intervals: " << e.what();
     }
 }
 
@@ -152,13 +152,13 @@ void usage_recorder::flush(std::chrono::system_clock::time_point now) {
                 ctx_.with_tenant(rows.front().tenant_id, usage_recorder_service_name);
             repository::delivery_count_repository{}.write(tenant_ctx, rows);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), error)
+            ORES_LOG_SEV(lg(), error)
                 << "Failed to write " << rows.size() << " delivery count(s): " << e.what();
             meter_->add_many(entries_by_tenant[tenant]);
             if (meter_->pending() > pending_warning_limit)
-                BOOST_LOG_SEV(lg(), warn) << meter_->pending()
-                                          << " delivery count(s) wait for a store that does not "
-                                             "answer: memory grows until it does";
+                ORES_LOG_SEV(lg(), warn) << meter_->pending()
+                                         << " delivery count(s) wait for a store that does not "
+                                            "answer: memory grows until it does";
         }
     }
 }

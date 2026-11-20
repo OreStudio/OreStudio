@@ -28,7 +28,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.iam.api/domain/role_grant_request_role.hpp"
 #include "ores.iam.core/export.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>

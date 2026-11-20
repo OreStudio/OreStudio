@@ -26,7 +26,7 @@
 #define ORES_REFDATA_CORE_MESSAGING_LEGAL_ENTITY_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.refdata.api/messaging/legal_entity_protocol.hpp"
@@ -74,7 +74,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void list_legal_entities(ores::nats::message msg) {
-        BOOST_LOG_SEV(legal_entity_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(legal_entity_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -89,20 +89,20 @@ public:
         }
         auto req = decode<list_legal_entities_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(legal_entity_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(legal_entity_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::legal_entity_service svc(req_ctx);
         try {
             auto response = svc.list_legal_entities(*req);
-            BOOST_LOG_SEV(legal_entity_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(legal_entity_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(legal_entity_handler_lg(), error)
+            ORES_LOG_SEV(legal_entity_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             list_legal_entities_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -122,7 +122,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void get_legal_entity(ores::nats::message msg) {
-        BOOST_LOG_SEV(legal_entity_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(legal_entity_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -137,20 +137,20 @@ public:
         }
         auto req = decode<get_legal_entity_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(legal_entity_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(legal_entity_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::legal_entity_service svc(req_ctx);
         try {
             auto response = svc.get_legal_entity(*req);
-            BOOST_LOG_SEV(legal_entity_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(legal_entity_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(legal_entity_handler_lg(), error)
+            ORES_LOG_SEV(legal_entity_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             get_legal_entity_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -170,7 +170,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void get_many_legal_entities(ores::nats::message msg) {
-        BOOST_LOG_SEV(legal_entity_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(legal_entity_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -185,20 +185,20 @@ public:
         }
         auto req = decode<get_many_legal_entities_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(legal_entity_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(legal_entity_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::legal_entity_service svc(req_ctx);
         try {
             auto response = svc.get_many_legal_entities(*req);
-            BOOST_LOG_SEV(legal_entity_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(legal_entity_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(legal_entity_handler_lg(), error)
+            ORES_LOG_SEV(legal_entity_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             get_many_legal_entities_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -218,7 +218,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void put_legal_entity(ores::nats::message msg) {
-        BOOST_LOG_SEV(legal_entity_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(legal_entity_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -233,20 +233,20 @@ public:
         }
         auto req = decode<put_legal_entity_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(legal_entity_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(legal_entity_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::legal_entity_service svc(req_ctx);
         try {
             auto response = svc.put_legal_entity(*req);
-            BOOST_LOG_SEV(legal_entity_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(legal_entity_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(legal_entity_handler_lg(), error)
+            ORES_LOG_SEV(legal_entity_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             put_legal_entity_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -266,7 +266,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void put_many_legal_entities(ores::nats::message msg) {
-        BOOST_LOG_SEV(legal_entity_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(legal_entity_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -281,20 +281,20 @@ public:
         }
         auto req = decode<put_many_legal_entities_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(legal_entity_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(legal_entity_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::legal_entity_service svc(req_ctx);
         try {
             auto response = svc.put_many_legal_entities(*req);
-            BOOST_LOG_SEV(legal_entity_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(legal_entity_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(legal_entity_handler_lg(), error)
+            ORES_LOG_SEV(legal_entity_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             put_many_legal_entities_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -314,7 +314,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void delete_legal_entity(ores::nats::message msg) {
-        BOOST_LOG_SEV(legal_entity_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(legal_entity_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -329,20 +329,20 @@ public:
         }
         auto req = decode<delete_legal_entity_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(legal_entity_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(legal_entity_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::legal_entity_service svc(req_ctx);
         try {
             auto response = svc.delete_legal_entity(*req);
-            BOOST_LOG_SEV(legal_entity_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(legal_entity_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(legal_entity_handler_lg(), error)
+            ORES_LOG_SEV(legal_entity_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             delete_legal_entity_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -362,7 +362,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void delete_many_legal_entities(ores::nats::message msg) {
-        BOOST_LOG_SEV(legal_entity_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(legal_entity_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -377,20 +377,20 @@ public:
         }
         auto req = decode<delete_many_legal_entities_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(legal_entity_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(legal_entity_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::legal_entity_service svc(req_ctx);
         try {
             auto response = svc.delete_many_legal_entities(*req);
-            BOOST_LOG_SEV(legal_entity_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(legal_entity_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(legal_entity_handler_lg(), error)
+            ORES_LOG_SEV(legal_entity_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             delete_many_legal_entities_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -410,7 +410,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void list_legal_entity_versions(ores::nats::message msg) {
-        BOOST_LOG_SEV(legal_entity_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(legal_entity_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -425,20 +425,20 @@ public:
         }
         auto req = decode<list_legal_entity_versions_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(legal_entity_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(legal_entity_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::legal_entity_service svc(req_ctx);
         try {
             auto response = svc.list_legal_entity_versions(*req);
-            BOOST_LOG_SEV(legal_entity_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(legal_entity_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(legal_entity_handler_lg(), error)
+            ORES_LOG_SEV(legal_entity_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             list_legal_entity_versions_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -458,7 +458,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void get_legal_entity_version(ores::nats::message msg) {
-        BOOST_LOG_SEV(legal_entity_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(legal_entity_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -473,20 +473,20 @@ public:
         }
         auto req = decode<get_legal_entity_version_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(legal_entity_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(legal_entity_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::legal_entity_service svc(req_ctx);
         try {
             auto response = svc.get_legal_entity_version(*req);
-            BOOST_LOG_SEV(legal_entity_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(legal_entity_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(legal_entity_handler_lg(), error)
+            ORES_LOG_SEV(legal_entity_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             get_legal_entity_version_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;

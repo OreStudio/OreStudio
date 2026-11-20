@@ -27,9 +27,7 @@
 #include "ores.iam.api/domain/auth_event.hpp"
 #include "ores.iam.api/domain/auth_event_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.core/repository/auth_event_entity.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.platform/time/datetime.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <chrono>
 #include <string_view>
 #include <vector>
@@ -40,7 +38,7 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 
 domain::auth_event auth_event_mapper::map(const auth_event_entity& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::auth_event r;
     r.id = v.id;
@@ -53,12 +51,12 @@ domain::auth_event auth_event_mapper::map(const auth_event_entity& v) {
     r.party_id = v.party_id;
     r.error_detail = v.error_detail;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
 }
 
 auth_event_entity auth_event_mapper::map(const domain::auth_event& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     auth_event_entity r;
     r.id = v.id;
@@ -71,7 +69,7 @@ auth_event_entity auth_event_mapper::map(const domain::auth_event& v) {
     r.party_id = v.party_id;
     r.error_detail = v.error_detail;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;
 }
 

@@ -26,7 +26,6 @@
 #include "ores.trading.api/domain/bond_issue_leg_amortization.hpp"
 #include "ores.trading.api/messaging/bond_issue_leg_amortization_protocol.hpp"
 #include "ores.trading.core/repository/bond_issue_leg_amortization_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -43,7 +42,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -504,12 +502,12 @@ ores::utility::domain::result bond_issue_leg_amortization_service::prepare_chang
 std::vector<domain::bond_issue_leg_amortization>
 bond_issue_leg_amortization_service::list_bond_issue_leg_amortizations(std::uint32_t offset,
                                                                        std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all bond issue leg amortizations";
+    ORES_LOG_SEV(lg(), debug) << "Listing all bond issue leg amortizations";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t bond_issue_leg_amortization_service::count_bond_issue_leg_amortizations() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total bond issue leg amortizations count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total bond issue leg amortizations count";
     return repo_.get_total_bond_issue_leg_amortization_count(ctx_);
 }
 
@@ -520,10 +518,9 @@ bond_issue_leg_amortization_service::get_bond_issue_leg_amortization_at_version(
     const std::string& leg_number,
     const std::string& sequence_number,
     std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting bond issue leg amortization at version. "
-                               << "issue_id: " << issue_id << " leg_number: " << leg_number
-                               << " sequence_number: " << sequence_number
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting bond issue leg amortization at version. "
+                              << "issue_id: " << issue_id << " leg_number: " << leg_number
+                              << " sequence_number: " << sequence_number << " version: " << version;
     return repo_.read_at_version(ctx_, issue_id, leg_number, sequence_number, version);
 }
 
@@ -532,9 +529,9 @@ bond_issue_leg_amortization_service::get_bond_issue_leg_amortization(
     const std::string& issue_id,
     const std::string& leg_number,
     const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting bond issue leg amortization. "
-                               << "issue_id: " << issue_id << " leg_number: " << leg_number
-                               << " sequence_number: " << sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Getting bond issue leg amortization. " << "issue_id: " << issue_id
+                              << " leg_number: " << leg_number
+                              << " sequence_number: " << sequence_number;
     auto results = repo_.read_latest(ctx_, issue_id, leg_number, sequence_number);
     if (results.empty())
         return std::nullopt;
@@ -553,15 +550,15 @@ void bond_issue_leg_amortization_service::save_bond_issue_leg_amortization(
     const domain::bond_issue_leg_amortization& v) {
     if (v.issue_id.is_nil())
         throw std::invalid_argument("Bond Issue Leg Amortization issue_id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving bond issue leg amortization. "
-                               << "issue_id: " << v.issue_id << " leg_number: " << v.leg_number
-                               << " sequence_number: " << v.sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Saving bond issue leg amortization. "
+                              << "issue_id: " << v.issue_id << " leg_number: " << v.leg_number
+                              << " sequence_number: " << v.sequence_number;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved bond issue leg amortization. " << "issue_id: " << v.issue_id
-                              << " leg_number: " << v.leg_number
-                              << " sequence_number: " << v.sequence_number;
+    ORES_LOG_SEV(lg(), info) << "Saved bond issue leg amortization. " << "issue_id: " << v.issue_id
+                             << " leg_number: " << v.leg_number
+                             << " sequence_number: " << v.sequence_number;
 }
 
 void bond_issue_leg_amortization_service::save_bond_issue_leg_amortizations(
@@ -570,8 +567,8 @@ void bond_issue_leg_amortization_service::save_bond_issue_leg_amortizations(
         if (e.issue_id.is_nil())
             throw std::invalid_argument("Bond Issue Leg Amortization issue_id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << bond_issue_leg_amortizations.size()
-                               << " bond issue leg amortizations";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << bond_issue_leg_amortizations.size()
+                              << " bond issue leg amortizations";
     auto ts = bond_issue_leg_amortizations;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -583,13 +580,13 @@ void bond_issue_leg_amortization_service::delete_bond_issue_leg_amortization(
     const std::string& issue_id,
     const std::string& leg_number,
     const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing bond issue leg amortization. "
-                               << "issue_id: " << issue_id << " leg_number: " << leg_number
-                               << " sequence_number: " << sequence_number;
-    repo_.remove(ctx_, issue_id, leg_number, sequence_number);
-    BOOST_LOG_SEV(lg(), info) << "Removed bond issue leg amortization. " << "issue_id: " << issue_id
-                              << " leg_number: " << leg_number
+    ORES_LOG_SEV(lg(), debug) << "Removing bond issue leg amortization. "
+                              << "issue_id: " << issue_id << " leg_number: " << leg_number
                               << " sequence_number: " << sequence_number;
+    repo_.remove(ctx_, issue_id, leg_number, sequence_number);
+    ORES_LOG_SEV(lg(), info) << "Removed bond issue leg amortization. " << "issue_id: " << issue_id
+                             << " leg_number: " << leg_number
+                             << " sequence_number: " << sequence_number;
 }
 
 void bond_issue_leg_amortization_service::delete_bond_issue_leg_amortizations(
@@ -604,9 +601,9 @@ bond_issue_leg_amortization_service::get_bond_issue_leg_amortization_history(
     const std::string& issue_id,
     const std::string& leg_number,
     const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for bond issue leg amortization. "
-                               << "issue_id: " << issue_id << " leg_number: " << leg_number
-                               << " sequence_number: " << sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for bond issue leg amortization. "
+                              << "issue_id: " << issue_id << " leg_number: " << leg_number
+                              << " sequence_number: " << sequence_number;
     return repo_.read_all(ctx_, issue_id, leg_number, sequence_number);
 }
 

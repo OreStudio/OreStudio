@@ -20,7 +20,7 @@
 #include "ores.http.api/domain/http_request.hpp"
 #include "ores.http.api/domain/http_response.hpp"
 #include "ores.http/routes/reporting/choice_routes.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "route_answer.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
@@ -35,7 +35,7 @@ using namespace ores::logging;
 
 TEST_CASE("choices_state_the_codes_a_report_form_offers", "[choice]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the codes a report's edit form reads";
+    ORES_LOG_SEV(lg, info) << "Testing the codes a report's edit form reads";
 
     const auto answer = choice_routes::choices_json({"risk"}, {"replace"}, {"Banking", "Trading"});
 
@@ -47,7 +47,7 @@ TEST_CASE("choices_state_the_codes_a_report_form_offers", "[choice]") {
 
 TEST_CASE("choices_refuse_a_read_without_a_service", "[choice]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the choices' refusal when the service does not answer";
+    ORES_LOG_SEV(lg, info) << "Testing the choices' refusal when the service does not answer";
 
     CHECK(answer_at<choice_routes>(
               http_method::get, "/api/reporting/choices", http_request{}, "/api/reporting/choices")
@@ -56,7 +56,7 @@ TEST_CASE("choices_refuse_a_read_without_a_service", "[choice]") {
 
 TEST_CASE("choices_refuse_a_query_they_do_not_read", "[choice]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a query the choices read does not name";
+    ORES_LOG_SEV(lg, info) << "Testing a query the choices read does not name";
 
     http_request req;
     req.query_params["party"] = "00000000-0000-0000-0000-0000000000a1";

@@ -26,7 +26,6 @@
 #include "ores.trading.api/domain/performance_option_instrument.hpp"
 #include "ores.trading.api/messaging/performance_option_instrument_protocol.hpp"
 #include "ores.trading.core/repository/performance_option_instrument_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -494,12 +492,12 @@ ores::utility::domain::result performance_option_instrument_service::prepare_cha
 std::vector<domain::performance_option_instrument>
 performance_option_instrument_service::list_performance_option_instruments(std::uint32_t offset,
                                                                            std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all performance option instruments";
+    ORES_LOG_SEV(lg(), debug) << "Listing all performance option instruments";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t performance_option_instrument_service::count_performance_option_instruments() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total performance option instruments count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total performance option instruments count";
     return repo_.get_total_performance_option_instrument_count(ctx_);
 }
 
@@ -507,16 +505,16 @@ std::uint32_t performance_option_instrument_service::count_performance_option_in
 std::optional<domain::performance_option_instrument>
 performance_option_instrument_service::get_performance_option_instrument_at_version(
     const boost::uuids::uuid& trade_id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting performance option instrument at version. "
-                               << "trade_id: " << trade_id << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting performance option instrument at version. "
+                              << "trade_id: " << trade_id << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(trade_id), version);
 }
 
 std::optional<domain::performance_option_instrument>
 performance_option_instrument_service::get_performance_option_instrument(
     const boost::uuids::uuid& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting performance option instrument. "
-                               << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting performance option instrument. "
+                              << "trade_id: " << trade_id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(trade_id));
     if (results.empty())
         return std::nullopt;
@@ -533,13 +531,13 @@ void performance_option_instrument_service::save_performance_option_instrument(
     const domain::performance_option_instrument& v) {
     if (v.identity.trade_id.is_nil())
         throw std::invalid_argument("Performance Option Instrument trade_id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving performance option instrument. "
-                               << "trade_id: " << v.identity.trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Saving performance option instrument. "
+                              << "trade_id: " << v.identity.trade_id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved performance option instrument. "
-                              << "trade_id: " << v.identity.trade_id;
+    ORES_LOG_SEV(lg(), info) << "Saved performance option instrument. "
+                             << "trade_id: " << v.identity.trade_id;
 }
 
 void performance_option_instrument_service::save_performance_option_instruments(
@@ -548,8 +546,8 @@ void performance_option_instrument_service::save_performance_option_instruments(
         if (e.identity.trade_id.is_nil())
             throw std::invalid_argument("Performance Option Instrument trade_id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << performance_option_instruments.size()
-                               << " performance option instruments";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << performance_option_instruments.size()
+                              << " performance option instruments";
     auto ts = performance_option_instruments;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -559,11 +557,11 @@ void performance_option_instrument_service::save_performance_option_instruments(
 
 void performance_option_instrument_service::delete_performance_option_instrument(
     const boost::uuids::uuid& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing performance option instrument. "
-                               << "trade_id: " << trade_id;
-    repo_.remove(ctx_, boost::uuids::to_string(trade_id));
-    BOOST_LOG_SEV(lg(), info) << "Removed performance option instrument. "
+    ORES_LOG_SEV(lg(), debug) << "Removing performance option instrument. "
                               << "trade_id: " << trade_id;
+    repo_.remove(ctx_, boost::uuids::to_string(trade_id));
+    ORES_LOG_SEV(lg(), info) << "Removed performance option instrument. "
+                             << "trade_id: " << trade_id;
 }
 
 void performance_option_instrument_service::delete_performance_option_instruments(
@@ -574,8 +572,8 @@ void performance_option_instrument_service::delete_performance_option_instrument
 std::vector<domain::performance_option_instrument>
 performance_option_instrument_service::get_performance_option_instrument_history(
     const std::string& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for performance option instrument. "
-                               << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for performance option instrument. "
+                              << "trade_id: " << trade_id;
     return repo_.read_all(ctx_, trade_id);
 }
 

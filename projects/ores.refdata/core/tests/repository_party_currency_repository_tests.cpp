@@ -18,8 +18,7 @@
  *
  */
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/boost_severity.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/party_currency.hpp"
 #include "ores.refdata.api/domain/party_currency_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/generators/currency_generator.hpp"
@@ -32,7 +31,6 @@
 #include "ores.utility/uuid/tenant_id.hpp"
 #include "test_helpers.hpp"
 #include "test_suite.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
@@ -87,7 +85,7 @@ TEST_CASE("write_single_party_currency", "[repository][party_currency]") {
     const auto& iso_code = test_currency.iso_code;
 
     auto pc = make_party_currency(h, party_id, iso_code);
-    BOOST_LOG_SEV(lg, debug) << "Party currency: " << pc;
+    ORES_LOG_SEV(lg, debug) << "Party currency: " << pc;
     repo.write(pc);
 
     const auto read_pcs = repo.read_latest(pc.party_id, pc.currency_iso_code);
@@ -118,7 +116,7 @@ TEST_CASE("write_multiple_party_currencies", "[repository][party_currency]") {
         pcs.push_back(make_party_currency(h, system_party_id, c.iso_code));
     }
 
-    BOOST_LOG_SEV(lg, debug) << "Party currencies: " << pcs;
+    ORES_LOG_SEV(lg, debug) << "Party currencies: " << pcs;
     repo.write(pcs);
 
     const auto read_pcs = repo.read_latest_by_party(system_party_id);
@@ -153,7 +151,7 @@ TEST_CASE("read_latest_party_currencies_by_party", "[repository][party_currency]
     repo.write(pc);
 
     auto read_pcs = repo.read_latest_by_party(system_party_id);
-    BOOST_LOG_SEV(lg, debug) << "Read party currencies: " << read_pcs;
+    ORES_LOG_SEV(lg, debug) << "Read party currencies: " << read_pcs;
 
     REQUIRE(!read_pcs.empty());
     bool found = false;
@@ -187,7 +185,7 @@ TEST_CASE("read_latest_party_currencies_by_currency", "[repository][party_curren
     repo.write(pc);
 
     auto read_pcs = repo.read_latest_by_currency(iso_code);
-    BOOST_LOG_SEV(lg, debug) << "Read party currencies: " << read_pcs;
+    ORES_LOG_SEV(lg, debug) << "Read party currencies: " << read_pcs;
 
     REQUIRE(read_pcs.size() >= 1);
     CHECK(read_pcs[0].party_id == system_party_id);
@@ -249,10 +247,10 @@ TEST_CASE("read_nonexistent_party_currency", "[repository][party_currency]") {
     repo.write(keeper);
 
     const auto nonexistent_id = boost::uuids::random_generator()();
-    BOOST_LOG_SEV(lg, debug) << "Non-existent party ID: " << nonexistent_id;
+    ORES_LOG_SEV(lg, debug) << "Non-existent party ID: " << nonexistent_id;
 
     auto read_pcs = repo.read_latest(nonexistent_id, keeper.currency_iso_code);
-    BOOST_LOG_SEV(lg, debug) << "Read party currencies: " << read_pcs;
+    ORES_LOG_SEV(lg, debug) << "Read party currencies: " << read_pcs;
 
     const auto answered_with_another_key = std::ranges::any_of(
         read_pcs, [&](const party_currency& r) { return r.party_id == nonexistent_id; });

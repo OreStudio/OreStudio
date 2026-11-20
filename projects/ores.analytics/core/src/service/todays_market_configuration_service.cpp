@@ -26,7 +26,6 @@
 #include "ores.analytics.api/domain/todays_market_configuration.hpp"
 #include "ores.analytics.api/messaging/todays_market_configuration_protocol.hpp"
 #include "ores.analytics.core/repository/todays_market_configuration_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -553,12 +551,12 @@ ores::utility::domain::result todays_market_configuration_service::prepare_chang
 std::vector<domain::todays_market_configuration>
 todays_market_configuration_service::list_configurations(std::uint32_t offset,
                                                          std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all today's market configuration blocks";
+    ORES_LOG_SEV(lg(), debug) << "Listing all today's market configuration blocks";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t todays_market_configuration_service::count_configurations() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total today's market configuration blocks count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total today's market configuration blocks count";
     return repo_.get_total_configuration_count(ctx_);
 }
 
@@ -566,7 +564,7 @@ std::uint32_t todays_market_configuration_service::count_configurations() {
 std::vector<domain::todays_market_configuration>
 todays_market_configuration_service::list_configurations_by_todays_market_config_id(
     const std::string& todays_market_config_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Listing today's market configuration blocks by todays_market_config_id: "
         << todays_market_config_id;
     return repo_.read_latest_by_todays_market_config_id(
@@ -575,7 +573,7 @@ todays_market_configuration_service::list_configurations_by_todays_market_config
 
 std::uint32_t todays_market_configuration_service::count_configurations_by_todays_market_config_id(
     const std::string& todays_market_config_id) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Getting total today's market configuration blocks count by todays_market_config_id: "
         << todays_market_config_id;
     return repo_.get_total_configuration_count_by_todays_market_config_id(ctx_,
@@ -586,14 +584,14 @@ std::uint32_t todays_market_configuration_service::count_configurations_by_today
 std::optional<domain::todays_market_configuration>
 todays_market_configuration_service::get_configuration_at_version(const boost::uuids::uuid& id,
                                                                   std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting today's market configuration block at version. "
-                               << "id: " << id << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting today's market configuration block at version. "
+                              << "id: " << id << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::todays_market_configuration>
 todays_market_configuration_service::get_configuration(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting today's market configuration block. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting today's market configuration block. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -603,8 +601,8 @@ todays_market_configuration_service::get_configuration(const boost::uuids::uuid&
 std::optional<domain::todays_market_configuration>
 todays_market_configuration_service::get_configuration_by_configuration_id(
     const std::string& configuration_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting today's market configuration block by configuration_id: "
-                               << configuration_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting today's market configuration block by configuration_id: "
+                              << configuration_id;
     messaging::todays_market_configuration_key k;
     k.configuration_id = configuration_id;
     auto found = todays_market_configuration_read_one(repo_, ctx_, k);
@@ -615,7 +613,7 @@ todays_market_configuration_service::get_configuration_by_configuration_id(
 
 std::optional<domain::todays_market_configuration>
 todays_market_configuration_service::find_configuration(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding today's market configuration block. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Finding today's market configuration block. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -631,11 +629,11 @@ void todays_market_configuration_service::save_configuration(
     const domain::todays_market_configuration& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Todays Market Configuration id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving today's market configuration block. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving today's market configuration block. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved today's market configuration block. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved today's market configuration block. " << "id: " << v.id;
 }
 
 void todays_market_configuration_service::save_configurations(
@@ -644,8 +642,8 @@ void todays_market_configuration_service::save_configurations(
         if (e.id.is_nil())
             throw std::invalid_argument("Todays Market Configuration id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << configurations.size()
-                               << " today's market configuration blocks";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << configurations.size()
+                              << " today's market configuration blocks";
     auto ts = configurations;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -654,15 +652,15 @@ void todays_market_configuration_service::save_configurations(
 }
 
 void todays_market_configuration_service::delete_configuration(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing today's market configuration block. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing today's market configuration block. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed today's market configuration block. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed today's market configuration block. " << "id: " << id;
 }
 
 void todays_market_configuration_service::remove_configuration(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing today's market configuration block. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing today's market configuration block. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed today's market configuration block. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed today's market configuration block. " << "id: " << id;
 }
 
 void todays_market_configuration_service::delete_configurations(
@@ -672,8 +670,8 @@ void todays_market_configuration_service::delete_configurations(
 
 std::vector<domain::todays_market_configuration>
 todays_market_configuration_service::get_configuration_history(const std::string& key) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for today's market configuration block. key: "
-                               << key;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for today's market configuration block. key: "
+                              << key;
     // The caller holds the key the model declares and this reads by the
     // storage key, so the two are joined here exactly as they are for any
     // other read. Without this step a provider looks the versions up under a
@@ -695,8 +693,8 @@ todays_market_configuration_service::get_configuration_history(const std::string
 
 std::vector<domain::todays_market_configuration>
 todays_market_configuration_service::get_configuration_history(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for today's market configuration block. "
-                               << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for today's market configuration block. "
+                              << "id: " << id;
     return repo_.read_all(ctx_, boost::uuids::to_string(id));
 }
 

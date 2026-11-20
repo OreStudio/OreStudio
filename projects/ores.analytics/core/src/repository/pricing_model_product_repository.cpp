@@ -31,9 +31,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -219,7 +217,7 @@ void pricing_model_product_repository::write(const context& ctx,
 void pricing_model_product_repository::write(const context& ctx,
                                              const domain::pricing_model_product& v,
                                              const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing pricing model product. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Writing pricing model product. " << "id: " << v.id;
     const auto t =
         pricing_model_product_apply_claim(v,
                                           claim,
@@ -236,7 +234,7 @@ void pricing_model_product_repository::write(
     const context& ctx,
     const std::vector<domain::pricing_model_product>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing pricing model products. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing pricing model products. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "pricing_model_product_repository::write: one claim is needed for each row");
@@ -276,7 +274,7 @@ pricing_model_product_repository::read_latest(const context& ctx) {
 
 std::vector<domain::pricing_model_product>
 pricing_model_product_repository::read_latest(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest pricing model product. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest pricing model product. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -295,7 +293,7 @@ pricing_model_product_repository::read_latest(const context& ctx, const std::str
 std::vector<domain::pricing_model_product>
 pricing_model_product_repository::read_latest_by_pricing_engine_type_code(
     const context& ctx, const std::string& pricing_engine_type_code) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Reading latest pricing model product by pricing_engine_type_code: "
         << pricing_engine_type_code;
     static constexpr auto max = db_timestamp::max();
@@ -343,7 +341,7 @@ pricing_model_product_repository::read_latest_by_pricing_engine_type_code(
         }
         return all;
     }
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Reading latest pricing model products by pricing_engine_type_code. Count: "
         << pricing_engine_type_codes.size();
     static constexpr auto max = db_timestamp::max();
@@ -369,8 +367,8 @@ pricing_model_product_repository::read_latest_by_pricing_engine_type_code(
 std::vector<domain::pricing_model_product>
 pricing_model_product_repository::read_any_by_pricing_engine_type_code(
     const context& ctx, const std::string& pricing_engine_type_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading any pricing model product by pricing_engine_type_code: "
-                               << pricing_engine_type_code;
+    ORES_LOG_SEV(lg(), debug) << "Reading any pricing model product by pricing_engine_type_code: "
+                              << pricing_engine_type_code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<pricing_model_product_entity>> |
                        query_builder::where("tenant_id"_c == tid && "pricing_engine_type_code"_c ==
@@ -399,7 +397,7 @@ pricing_model_product_repository::read_any_by_pricing_engine_type_code(
 
 std::vector<domain::pricing_model_product>
 pricing_model_product_repository::read_all(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all pricing model product versions. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading all pricing model product versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<pricing_model_product_entity>> |
                        query_builder::where("tenant_id"_c == tid && "id"_c == id) |
@@ -416,8 +414,8 @@ pricing_model_product_repository::read_all(const context& ctx, const std::string
 
 std::optional<domain::pricing_model_product> pricing_model_product_repository::read_at_version(
     const context& ctx, const std::string& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading pricing model product at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading pricing model product at version. " << "id: " << id
+                              << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<pricing_model_product_entity>> |
@@ -439,7 +437,7 @@ std::optional<domain::pricing_model_product> pricing_model_product_repository::r
 
 pricing_model_product_repository::remove_status pricing_model_product_repository::remove(
     const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing pricing model product. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing pricing model product. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
         return remove_status::missing;
@@ -478,8 +476,8 @@ std::vector<domain::pricing_model_product> pricing_model_product_repository::rea
     const ores::utility::domain::order& order,
     const std::optional<messaging::pricing_model_products_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest pricing model products with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest pricing model products with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<pricing_model_product_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -501,7 +499,7 @@ std::uint32_t pricing_model_product_repository::get_total_product_count(
     const context& ctx,
     const std::optional<messaging::pricing_model_products_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active pricing model product count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active pricing model product count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<pricing_model_product_entity>> |

@@ -26,7 +26,6 @@
 #include "ores.compute.api/domain/app.hpp"
 #include "ores.compute.api/messaging/app_protocol.hpp"
 #include "ores.compute.core/repository/app_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -469,25 +467,25 @@ app_service::prepare_change(const messaging::app_change& change,
 
 
 std::vector<domain::app> app_service::list_apps(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all compute apps";
+    ORES_LOG_SEV(lg(), debug) << "Listing all compute apps";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t app_service::count_apps() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total compute apps count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total compute apps count";
     return repo_.get_total_app_count(ctx_);
 }
 
 
 std::optional<domain::app> app_service::get_app_at_version(const boost::uuids::uuid& id,
                                                            std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting compute app at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting compute app at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::app> app_service::get_app(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting compute app. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting compute app. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -495,7 +493,7 @@ std::optional<domain::app> app_service::get_app(const boost::uuids::uuid& id) {
 }
 
 std::optional<domain::app> app_service::get_app_by_name(const std::string& name) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting compute app by name: " << name;
+    ORES_LOG_SEV(lg(), debug) << "Getting compute app by name: " << name;
     messaging::app_key k;
     k.name = name;
     auto found = app_read_one(repo_, ctx_, k);
@@ -511,11 +509,11 @@ std::vector<domain::app> app_service::get_apps(const std::vector<std::string>& i
 void app_service::save_app(const domain::app& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("App id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving compute app. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving compute app. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved compute app. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved compute app. " << "id: " << v.id;
 }
 
 void app_service::save_apps(const std::vector<domain::app>& apps) {
@@ -523,7 +521,7 @@ void app_service::save_apps(const std::vector<domain::app>& apps) {
         if (e.id.is_nil())
             throw std::invalid_argument("App id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << apps.size() << " compute apps";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << apps.size() << " compute apps";
     auto ts = apps;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -532,9 +530,9 @@ void app_service::save_apps(const std::vector<domain::app>& apps) {
 }
 
 void app_service::delete_app(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing compute app. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing compute app. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed compute app. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed compute app. " << "id: " << id;
 }
 
 void app_service::delete_apps(const std::vector<std::string>& ids) {
@@ -542,7 +540,7 @@ void app_service::delete_apps(const std::vector<std::string>& ids) {
 }
 
 std::vector<domain::app> app_service::get_app_history(const std::string& key) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for compute app. key: " << key;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for compute app. key: " << key;
     // The caller holds the key the model declares and this reads by the
     // storage key, so the two are joined here exactly as they are for any
     // other read. Without this step a provider looks the versions up under a

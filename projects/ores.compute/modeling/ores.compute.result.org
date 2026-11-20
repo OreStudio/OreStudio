@@ -297,7 +297,7 @@ method beyond it.
 
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 std::vector<domain::result> result_repository::read_by_state(const context& ctx, int server_state) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading results by state: " << server_state;
+    ORES_LOG_SEV(lg(), debug) << "Reading results by state: " << server_state;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<result_entity>> |
@@ -332,7 +332,7 @@ forwarding method below is carried as a paste block.
 
 #+begin_src cpp :name implementation :implements D3E7A5F2-8B4C-4D1E-9A6F-2E1C7B4D8A3F
 std::vector<domain::result> result_service::list_by_state(int server_state) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing results by state: " << server_state;
+    ORES_LOG_SEV(lg(), debug) << "Listing results by state: " << server_state;
     return repo_.read_by_state(ctx_, server_state);
 }
 #+end_src

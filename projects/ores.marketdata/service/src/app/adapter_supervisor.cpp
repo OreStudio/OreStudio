@@ -79,8 +79,8 @@ void adapter_supervisor::start() {
     refresh();
     const auto announce = domain::adapter_announce_subject();
     const auto heartbeat = domain::adapter_heartbeat_subject_all();
-    BOOST_LOG_SEV(lg(), info) << "Starting adapter supervisor: '" << announce << "' and '"
-                              << heartbeat << "'";
+    ORES_LOG_SEV(lg(), info) << "Starting adapter supervisor: '" << announce << "' and '"
+                             << heartbeat << "'";
     announce_sub_ =
         nats_.subscribe(announce, [this](ores::nats::message msg) { announce_message(msg); });
     heartbeat_sub_ =
@@ -167,7 +167,7 @@ adapter_supervisor::on_announce(const messaging::adapter_announce_request& reque
         return snap->ids.contains({provider, id.id_scheme, id.external_id, id.field});
     };
     const auto response = registry_.announce(request, check, now);
-    BOOST_LOG_SEV(lg(), response.success ? info : warn)
+    ORES_LOG_SEV(lg(), response.success ? info : warn)
         << "Adapter '" << request.adapter_id << "' of provider '" << request.provider_code
         << "' announced: " << (response.success ? "ready" : response.message) << " ("
         << response.served_count << " served, " << response.unknown_count << " unknown)";
@@ -181,7 +181,7 @@ void adapter_supervisor::on_heartbeat(const std::string& adapter_id,
                                       std::chrono::system_clock::time_point now) {
     const auto outcome = registry_.heartbeat(adapter_id, counter, now);
     if (outcome.recovered) {
-        BOOST_LOG_SEV(lg(), info) << "Adapter '" << adapter_id << "' recovered: sending its demand";
+        ORES_LOG_SEV(lg(), info) << "Adapter '" << adapter_id << "' recovered: sending its demand";
         owe_demand(adapter_id);
     } else if (!outcome.known) {
         bool first = false;
@@ -190,7 +190,7 @@ void adapter_supervisor::on_heartbeat(const std::string& adapter_id,
             first = unknown_reported_.insert(adapter_id).second;
         }
         if (first)
-            BOOST_LOG_SEV(lg(), warn)
+            ORES_LOG_SEV(lg(), warn)
                 << "Heartbeat of adapter '" << adapter_id
                 << "' that has not announced itself: ignored until it announces";
     }
@@ -200,8 +200,8 @@ void adapter_supervisor::announce_message(const ores::nats::message& msg) {
     auto request =
         ores::nats::default_wire_codec().decode<messaging::adapter_announce_request>(msg.data);
     if (!request) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to decode an announce on '" << msg.subject
-                                  << "': " << request.error().what();
+        ORES_LOG_SEV(lg(), warn) << "Failed to decode an announce on '" << msg.subject
+                                 << "': " << request.error().what();
         return;
     }
     const auto response = on_announce(*request, std::chrono::system_clock::now());
@@ -211,14 +211,14 @@ void adapter_supervisor::announce_message(const ores::nats::message& msg) {
 void adapter_supervisor::heartbeat_message(const ores::nats::message& msg) {
     const auto adapter = domain::adapter_heartbeat_subject_adapter(msg.subject);
     if (!adapter) {
-        BOOST_LOG_SEV(lg(), warn) << "Dropping a heartbeat on '" << msg.subject
-                                  << "': not a heartbeat subject of an adapter";
+        ORES_LOG_SEV(lg(), warn) << "Dropping a heartbeat on '" << msg.subject
+                                 << "': not a heartbeat subject of an adapter";
         return;
     }
     auto beat = ores::nats::default_wire_codec().decode<messaging::adapter_heartbeat>(msg.data);
     if (!beat) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to decode a heartbeat on '" << msg.subject
-                                  << "': " << beat.error().what();
+        ORES_LOG_SEV(lg(), warn) << "Failed to decode a heartbeat on '" << msg.subject
+                                 << "': " << beat.error().what();
         return;
     }
     on_heartbeat(*adapter, beat->counter, std::chrono::system_clock::now());
@@ -229,7 +229,7 @@ bool adapter_supervisor::send_demand(const std::string& adapter_id) {
     const auto result = compute_demand(snap->catalogue, std::chrono::system_clock::now());
     for (const auto& refused : result.refused) {
         if (refused.adapter_id == adapter_id)
-            BOOST_LOG_SEV(lg(), warn)
+            ORES_LOG_SEV(lg(), warn)
                 << "Party " << boost::uuids::to_string(refused.party_id) << " is routed to '"
                 << adapter_id << "' with no right to its provider: " << refused.reason;
     }
@@ -255,8 +255,8 @@ bool adapter_supervisor::send_demand(const std::string& adapter_id) {
         auto response =
             ores::nats::default_wire_codec().decode<messaging::adapter_demand_response>(reply.data);
         if (!response) {
-            BOOST_LOG_SEV(lg(), warn) << "Failed to decode the demand reply of '" << adapter_id
-                                      << "': " << response.error().what();
+            ORES_LOG_SEV(lg(), warn) << "Failed to decode the demand reply of '" << adapter_id
+                                     << "': " << response.error().what();
             return false;
         }
         registry_.demand_replied(adapter_id, request.ids.size(), *response);
@@ -264,10 +264,10 @@ bool adapter_supervisor::send_demand(const std::string& adapter_id) {
             std::lock_guard lock(mu_);
             served_[adapter_id] = served_after(served_now, response->rejected);
         }
-        BOOST_LOG_SEV(lg(), info) << "Adapter '" << adapter_id << "' accepted "
-                                  << response->accepted.size() << " and rejected "
-                                  << response->rejected.size() << " of " << request.ids.size()
-                                  << " id(s)";
+        ORES_LOG_SEV(lg(), info) << "Adapter '" << adapter_id << "' accepted "
+                                 << response->accepted.size() << " and rejected "
+                                 << response->rejected.size() << " of " << request.ids.size()
+                                 << " id(s)";
         // An adapter that is up, that routes name, and that is sent nothing is the
         // shape of the 2026-10-23 failure. Say it once, not once a minute.
         const auto routes = routes_for(adapter_id);
@@ -280,13 +280,13 @@ bool adapter_supervisor::send_demand(const std::string& adapter_id) {
                 no_demand_warned_.erase(adapter_id);
         }
         if (warned_now)
-            BOOST_LOG_SEV(lg(), warn)
+            ORES_LOG_SEV(lg(), warn)
                 << "Adapter '" << adapter_id << "' is up with " << routes
                 << " route(s) naming it and no demand: no routed party's ids reached it";
         return true;
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to send the demand to '" << adapter_id
-                                  << "': " << e.what();
+        ORES_LOG_SEV(lg(), warn) << "Failed to send the demand to '" << adapter_id
+                                 << "': " << e.what();
         return false;
     }
 }
@@ -299,7 +299,7 @@ void adapter_supervisor::monitor_loop() {
         std::this_thread::sleep_for(slice);
 
         for (const auto& id : registry_.expire(system_clock::now()))
-            BOOST_LOG_SEV(lg(), warn) << "Adapter '" << id << "' missed its heartbeat: stale";
+            ORES_LOG_SEV(lg(), warn) << "Adapter '" << id << "' missed its heartbeat: stale";
 
         // Re-read the catalogue on a timer as well as on events, so a missed event
         // delays a demand set by one interval instead of losing it.
@@ -309,7 +309,7 @@ void adapter_supervisor::monitor_loop() {
             try {
                 refresh();
             } catch (const std::exception& e) {
-                BOOST_LOG_SEV(lg(), warn) << "Periodic catalogue refresh failed: " << e.what();
+                ORES_LOG_SEV(lg(), warn) << "Periodic catalogue refresh failed: " << e.what();
             }
         }
 

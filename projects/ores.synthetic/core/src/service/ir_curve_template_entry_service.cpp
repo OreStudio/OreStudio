@@ -26,7 +26,6 @@
 #include "ores.synthetic.api/domain/ir_curve_template_entry.hpp"
 #include "ores.synthetic.api/messaging/ir_curve_template_entry_protocol.hpp"
 #include "ores.synthetic.core/repository/ir_curve_template_entry_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -477,12 +475,12 @@ ores::utility::domain::result ir_curve_template_entry_service::prepare_change(
 std::vector<domain::ir_curve_template_entry>
 ir_curve_template_entry_service::list_ir_curve_template_entries(std::uint32_t offset,
                                                                 std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all IR curve template entries";
+    ORES_LOG_SEV(lg(), debug) << "Listing all IR curve template entries";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t ir_curve_template_entry_service::count_ir_curve_template_entries() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total IR curve template entries count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total IR curve template entries count";
     return repo_.get_total_ir_curve_template_entry_count(ctx_);
 }
 
@@ -490,14 +488,14 @@ std::uint32_t ir_curve_template_entry_service::count_ir_curve_template_entries()
 std::optional<domain::ir_curve_template_entry>
 ir_curve_template_entry_service::get_ir_curve_template_entry_at_version(
     const boost::uuids::uuid& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting IR curve template entry at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting IR curve template entry at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::ir_curve_template_entry>
 ir_curve_template_entry_service::get_ir_curve_template_entry(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting IR curve template entry. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting IR curve template entry. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -514,11 +512,11 @@ void ir_curve_template_entry_service::save_ir_curve_template_entry(
     const domain::ir_curve_template_entry& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("IR Curve Template Entry id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving IR curve template entry. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving IR curve template entry. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved IR curve template entry. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved IR curve template entry. " << "id: " << v.id;
 }
 
 void ir_curve_template_entry_service::save_ir_curve_template_entries(
@@ -527,8 +525,8 @@ void ir_curve_template_entry_service::save_ir_curve_template_entries(
         if (e.id.is_nil())
             throw std::invalid_argument("IR Curve Template Entry id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << ir_curve_template_entries.size()
-                               << " IR curve template entries";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << ir_curve_template_entries.size()
+                              << " IR curve template entries";
     auto ts = ir_curve_template_entries;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -537,9 +535,9 @@ void ir_curve_template_entry_service::save_ir_curve_template_entries(
 }
 
 void ir_curve_template_entry_service::delete_ir_curve_template_entry(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing IR curve template entry. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing IR curve template entry. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed IR curve template entry. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed IR curve template entry. " << "id: " << id;
 }
 
 void ir_curve_template_entry_service::delete_ir_curve_template_entries(
@@ -549,7 +547,7 @@ void ir_curve_template_entry_service::delete_ir_curve_template_entries(
 
 std::vector<domain::ir_curve_template_entry>
 ir_curve_template_entry_service::get_ir_curve_template_entry_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for IR curve template entry. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for IR curve template entry. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

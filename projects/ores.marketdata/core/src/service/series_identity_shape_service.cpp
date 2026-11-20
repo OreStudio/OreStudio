@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.marketdata.api/domain/series_identity_shape.hpp"
 #include "ores.marketdata.api/messaging/series_identity_shape_protocol.hpp"
 #include "ores.marketdata.core/repository/series_identity_shape_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -467,12 +465,12 @@ ores::utility::domain::result series_identity_shape_service::prepare_change(
 
 std::vector<domain::series_identity_shape>
 series_identity_shape_service::list_shapes(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all series identity shapes";
+    ORES_LOG_SEV(lg(), debug) << "Listing all series identity shapes";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t series_identity_shape_service::count_shapes() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total series identity shapes count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total series identity shapes count";
     return repo_.get_total_shape_count(ctx_);
 }
 
@@ -480,14 +478,14 @@ std::uint32_t series_identity_shape_service::count_shapes() {
 std::optional<domain::series_identity_shape>
 series_identity_shape_service::get_shape_at_version(const std::string& code,
                                                     std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting series identity shape at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting series identity shape at version. " << "code: " << code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::series_identity_shape>
 series_identity_shape_service::get_shape(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting series identity shape. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting series identity shape. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -502,11 +500,11 @@ series_identity_shape_service::get_shapes(const std::vector<std::string>& codes)
 void series_identity_shape_service::save_shape(const domain::series_identity_shape& v) {
     if (v.code.empty())
         throw std::invalid_argument("Series Identity Shape code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving series identity shape. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving series identity shape. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved series identity shape. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved series identity shape. " << "code: " << v.code;
 }
 
 void series_identity_shape_service::save_shapes(
@@ -515,7 +513,7 @@ void series_identity_shape_service::save_shapes(
         if (e.code.empty())
             throw std::invalid_argument("Series Identity Shape code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << shapes.size() << " series identity shapes";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << shapes.size() << " series identity shapes";
     auto ts = shapes;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -524,9 +522,9 @@ void series_identity_shape_service::save_shapes(
 }
 
 void series_identity_shape_service::delete_shape(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing series identity shape. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing series identity shape. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed series identity shape. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed series identity shape. " << "code: " << code;
 }
 
 void series_identity_shape_service::delete_shapes(const std::vector<std::string>& codes) {
@@ -535,7 +533,7 @@ void series_identity_shape_service::delete_shapes(const std::vector<std::string>
 
 std::vector<domain::series_identity_shape>
 series_identity_shape_service::get_shape_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for series identity shape. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for series identity shape. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

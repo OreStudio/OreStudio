@@ -19,7 +19,7 @@
  */
 #include "ores.http.api/domain/http_request.hpp"
 #include "ores.http/routes/reporting/schedule_routes.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "route_answer.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
@@ -59,7 +59,7 @@ std::string a_schedule(const std::string& ids, const std::string& expression = "
 
 TEST_CASE("a_schedule_refuses_the_definitions_it_does_not_name", "[schedule]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the schedule body's definitions";
+    ORES_LOG_SEV(lg, info) << "Testing the schedule body's definitions";
 
     // A schedule names at least one definition, and names it by its id.
     CHECK(post_of(schedule_address, "{\"ids\":[]}") == http_status::bad_request);
@@ -71,7 +71,7 @@ TEST_CASE("a_schedule_refuses_the_definitions_it_does_not_name", "[schedule]") {
 
 TEST_CASE("a_schedule_expression_names_one_definition", "[schedule]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that an expression and a list do not mix";
+    ORES_LOG_SEV(lg, info) << "Testing that an expression and a list do not mix";
 
     // The expression is written onto one definition, so a body that states one
     // names a single id and no other.
@@ -84,7 +84,7 @@ TEST_CASE("a_schedule_expression_names_one_definition", "[schedule]") {
 
 TEST_CASE("a_schedule_expression_is_one_of_1_to_200_characters", "[schedule]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the expression's length";
+    ORES_LOG_SEV(lg, info) << "Testing the expression's length";
 
     CHECK(post_of(schedule_address, a_schedule("\"" + an_id + "\"", "   ")) ==
           http_status::bad_request);
@@ -95,7 +95,7 @@ TEST_CASE("a_schedule_expression_is_one_of_1_to_200_characters", "[schedule]") {
 
 TEST_CASE("a_schedule_with_no_service_is_refused_as_upstream", "[schedule]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a schedule with no service behind it";
+    ORES_LOG_SEV(lg, info) << "Testing a schedule with no service behind it";
 
     CHECK(post_of(schedule_address, a_schedule("\"" + an_id + "\"")) == http_status::bad_gateway);
     CHECK(post_of(unschedule_address, a_schedule("\"" + an_id + "\"")) == http_status::bad_gateway);

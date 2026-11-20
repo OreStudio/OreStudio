@@ -84,7 +84,7 @@ void check_bootstrap_status(ores::nats::service::nats_client& session, std::ostr
                    "to create admin.\n\n";
         }
     } catch (...) {
-        BOOST_LOG_SEV(anon_lg(), debug) << "Bootstrap status check failed";
+        ORES_LOG_SEV(anon_lg(), debug) << "Bootstrap status check failed";
     }
 }
 
@@ -130,7 +130,7 @@ bool auto_login(ores::nats::service::nats_client& session,
 } // anonymous namespace
 
 void application::run() {
-    BOOST_LOG_SEV(lg(), info) << utility::version::format_startup_message("ORE Studio Shell");
+    ORES_LOG_SEV(lg(), info) << utility::version::format_startup_message("ORE Studio Shell");
 
     try {
         ores::nats::service::nats_client session;
@@ -150,7 +150,7 @@ void application::run() {
         if (script_path_) {
             // Non-interactive batch mode: drive the file through the REPL's
             // `load` command (skips # comments, expands $VAR/${VAR}) and exit.
-            BOOST_LOG_SEV(lg(), info) << "Running script: " << *script_path_;
+            ORES_LOG_SEV(lg(), info) << "Running script: " << *script_path_;
             std::istringstream in("load " + *script_path_ + "\nexit\n");
             client_repl.run(in, std::cout);
             // A script that aborted marked the failure flag and the REPL read
@@ -163,7 +163,7 @@ void application::run() {
             client_repl.run();
         }
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Shell error: " << e.what();
+        ORES_LOG_SEV(lg(), error) << "Shell error: " << e.what();
         throw;
     }
 }

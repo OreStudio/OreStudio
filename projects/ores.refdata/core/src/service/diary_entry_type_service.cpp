@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/diary_entry_type.hpp"
 #include "ores.refdata.api/messaging/diary_entry_type_protocol.hpp"
 #include "ores.refdata.core/repository/diary_entry_type_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -449,12 +447,12 @@ diary_entry_type_service::prepare_change(const messaging::diary_entry_type_chang
 
 std::vector<domain::diary_entry_type>
 diary_entry_type_service::list_entry_types(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all diary entry types";
+    ORES_LOG_SEV(lg(), debug) << "Listing all diary entry types";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t diary_entry_type_service::count_entry_types() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total diary entry types count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total diary entry types count";
     return repo_.get_total_entry_type_count(ctx_);
 }
 
@@ -462,14 +460,14 @@ std::uint32_t diary_entry_type_service::count_entry_types() {
 std::optional<domain::diary_entry_type>
 diary_entry_type_service::get_entry_type_at_version(const std::string& code,
                                                     std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting diary entry type at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting diary entry type at version. " << "code: " << code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::diary_entry_type>
 diary_entry_type_service::get_entry_type(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting diary entry type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting diary entry type. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -484,11 +482,11 @@ diary_entry_type_service::get_entry_types(const std::vector<std::string>& codes)
 void diary_entry_type_service::save_entry_type(const domain::diary_entry_type& v) {
     if (v.code.empty())
         throw std::invalid_argument("Diary Entry Type code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving diary entry type. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving diary entry type. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved diary entry type. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved diary entry type. " << "code: " << v.code;
 }
 
 void diary_entry_type_service::save_entry_types(
@@ -497,7 +495,7 @@ void diary_entry_type_service::save_entry_types(
         if (e.code.empty())
             throw std::invalid_argument("Diary Entry Type code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << entry_types.size() << " diary entry types";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << entry_types.size() << " diary entry types";
     auto ts = entry_types;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -506,9 +504,9 @@ void diary_entry_type_service::save_entry_types(
 }
 
 void diary_entry_type_service::delete_entry_type(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing diary entry type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing diary entry type. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed diary entry type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed diary entry type. " << "code: " << code;
 }
 
 void diary_entry_type_service::delete_entry_types(const std::vector<std::string>& codes) {
@@ -517,7 +515,7 @@ void diary_entry_type_service::delete_entry_types(const std::vector<std::string>
 
 std::vector<domain::diary_entry_type>
 diary_entry_type_service::get_entry_type_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for diary entry type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for diary entry type. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

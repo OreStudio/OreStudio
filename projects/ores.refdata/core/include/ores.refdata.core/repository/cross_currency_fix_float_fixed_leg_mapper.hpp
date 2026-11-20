@@ -25,7 +25,7 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_CROSS_CURRENCY_FIX_FLOAT_FIXED_LEG_MAPPER_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_CROSS_CURRENCY_FIX_FLOAT_FIXED_LEG_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/cross_currency_fix_float_fixed_leg.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/cross_currency_fix_float_fixed_leg_entity.hpp"

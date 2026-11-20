@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.trading.api/domain/fpml_event_type.hpp"
 #include "ores.trading.api/domain/fpml_event_type_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.api/domain/fpml_event_type_table.hpp"
@@ -55,7 +55,7 @@ TEST_CASE("create_fpml_event_type_with_valid_fields", "[domain]") {
     auto sut = make_fpml_event_type("New", "New trade creation event");
     sut.modified_by = "admin";
     sut.performed_by = "admin";
-    BOOST_LOG_SEV(lg, info) << "FpML event type: " << sut;
+    ORES_LOG_SEV(lg, info) << "FpML event type: " << sut;
 
     CHECK(sut.version == 1);
     CHECK(sut.code == "New");
@@ -68,7 +68,7 @@ TEST_CASE("fpml_event_type_insertion_operator", "[domain]") {
     auto lg(make_logger(test_suite));
 
     auto sut = make_fpml_event_type("Amendment", "Trade amendment event");
-    BOOST_LOG_SEV(lg, info) << "FpML event type: " << sut;
+    ORES_LOG_SEV(lg, info) << "FpML event type: " << sut;
 
     std::ostringstream os;
     os << sut;
@@ -90,7 +90,7 @@ TEST_CASE("create_fpml_event_type_with_faker", "[domain]") {
     sut.change_reason_code = "system.new";
     sut.change_commentary = "Synthetic test data";
     sut.recorded_at = std::chrono::system_clock::now();
-    BOOST_LOG_SEV(lg, info) << "FpML event type: " << sut;
+    ORES_LOG_SEV(lg, info) << "FpML event type: " << sut;
 
     CHECK(sut.version >= 1);
     CHECK(!sut.code.empty());
@@ -104,7 +104,7 @@ TEST_CASE("create_multiple_random_fpml_event_types", "[domain]") {
         "New", "Amendment", "Novation", "PartialTermination", "FullTermination"};
     for (const auto& code : codes) {
         auto sut = make_fpml_event_type(code);
-        BOOST_LOG_SEV(lg, info) << "FpML event type: " << sut;
+        ORES_LOG_SEV(lg, info) << "FpML event type: " << sut;
         CHECK(sut.code == code);
     }
 }
@@ -115,7 +115,7 @@ TEST_CASE("fpml_event_type_convert_single_to_table", "[domain]") {
     std::vector<fpml_event_type> items = {make_fpml_event_type("Novation", "Trade novation event")};
     auto table = convert_to_table(items);
 
-    BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
+    ORES_LOG_SEV(lg, info) << "Table output:\n" << table;
 
     CHECK(!table.empty());
     CHECK(table.find("Novation") != std::string::npos);
@@ -130,7 +130,7 @@ TEST_CASE("fpml_event_type_convert_multiple_to_table", "[domain]") {
 
     auto table = convert_to_table(items);
 
-    BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
+    ORES_LOG_SEV(lg, info) << "Table output:\n" << table;
 
     CHECK(!table.empty());
     CHECK(table.find("Event0") != std::string::npos);
@@ -144,7 +144,7 @@ TEST_CASE("fpml_event_type_convert_empty_vector_to_table", "[domain]") {
     std::vector<fpml_event_type> items;
     auto table = convert_to_table(items);
 
-    BOOST_LOG_SEV(lg, info) << "Empty table output:\n" << table;
+    ORES_LOG_SEV(lg, info) << "Empty table output:\n" << table;
 
     CHECK(table.find("Version") != std::string::npos);
 }
@@ -168,7 +168,7 @@ TEST_CASE("fpml_event_type_table_with_faker_data", "[domain]") {
 
     auto table = convert_to_table(items);
 
-    BOOST_LOG_SEV(lg, info) << "Faker table output:\n" << table;
+    ORES_LOG_SEV(lg, info) << "Faker table output:\n" << table;
 
     CHECK(!table.empty());
     for (const auto& item : items)

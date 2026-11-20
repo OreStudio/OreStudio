@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.trading.api/domain/average_type.hpp"
 #include "ores.trading.api/messaging/average_type_protocol.hpp"
 #include "ores.trading.core/repository/average_type_repository.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -440,26 +438,26 @@ average_type_service::prepare_change(const messaging::average_type_change& chang
 
 std::vector<domain::average_type> average_type_service::list_average_types(std::uint32_t offset,
                                                                            std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all average types";
+    ORES_LOG_SEV(lg(), debug) << "Listing all average types";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t average_type_service::count_average_types() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total average types count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total average types count";
     return repo_.get_total_average_type_count(ctx_);
 }
 
 
 std::optional<domain::average_type>
 average_type_service::get_average_type_at_version(const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting average type at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting average type at version. " << "code: " << code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::average_type>
 average_type_service::get_average_type(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting average type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting average type. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -474,11 +472,11 @@ average_type_service::get_average_types(const std::vector<std::string>& codes) {
 void average_type_service::save_average_type(const domain::average_type& v) {
     if (v.code.empty())
         throw std::invalid_argument("Average Type code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving average type. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving average type. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved average type. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved average type. " << "code: " << v.code;
 }
 
 void average_type_service::save_average_types(
@@ -487,7 +485,7 @@ void average_type_service::save_average_types(
         if (e.code.empty())
             throw std::invalid_argument("Average Type code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << average_types.size() << " average types";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << average_types.size() << " average types";
     auto ts = average_types;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -496,9 +494,9 @@ void average_type_service::save_average_types(
 }
 
 void average_type_service::delete_average_type(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing average type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing average type. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed average type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed average type. " << "code: " << code;
 }
 
 void average_type_service::delete_average_types(const std::vector<std::string>& codes) {
@@ -507,7 +505,7 @@ void average_type_service::delete_average_types(const std::vector<std::string>& 
 
 std::vector<domain::average_type>
 average_type_service::get_average_type_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for average type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for average type. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

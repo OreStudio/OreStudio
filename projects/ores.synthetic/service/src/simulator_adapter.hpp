@@ -21,7 +21,7 @@
 #define ORES_SYNTHETIC_SERVICE_SIMULATOR_ADAPTER_HPP
 
 #include "generator_runner.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/messaging/adapter_operation_protocol.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"

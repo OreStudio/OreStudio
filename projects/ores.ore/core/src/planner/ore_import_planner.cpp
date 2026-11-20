@@ -151,11 +151,11 @@ ore_import_plan ore_import_planner::plan() {
         for (auto& c : currencies) {
             if (choices_.currency_mode == currency_import_mode::missing_only &&
                 existing_iso_codes_.count(c.iso_code) > 0) {
-                BOOST_LOG_SEV(lg(), debug) << "Skipping existing currency: " << c.iso_code;
+                ORES_LOG_SEV(lg(), debug) << "Skipping existing currency: " << c.iso_code;
                 continue;
             }
             if (!planned_iso.insert(c.iso_code).second) {
-                BOOST_LOG_SEV(lg(), debug) << "Skipping duplicate currency: " << c.iso_code;
+                ORES_LOG_SEV(lg(), debug) << "Skipping duplicate currency: " << c.iso_code;
                 continue;
             }
             c.change_reason_code = std::string(reason::codes::new_record);
@@ -164,7 +164,7 @@ ore_import_plan ore_import_planner::plan() {
         }
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Planned " << result.currencies.size() << " currencies";
+    ORES_LOG_SEV(lg(), info) << "Planned " << result.currencies.size() << " currencies";
 
     // =========================================================================
     // Step 2: Portfolio / Book hierarchy (or existing-book fast path)
@@ -200,9 +200,9 @@ ore_import_plan ore_import_planner::plan() {
             }
         }
 
-        BOOST_LOG_SEV(lg(), info) << "Import plan (existing book): " << result.currencies.size()
-                                  << " currencies, " << result.trades.size()
-                                  << " trades into existing book";
+        ORES_LOG_SEV(lg(), info) << "Import plan (existing book): " << result.currencies.size()
+                                 << " currencies, " << result.trades.size()
+                                 << " trades into existing book";
         return result;
     }
 
@@ -328,15 +328,15 @@ ore_import_plan ore_import_planner::plan() {
 
         if (result.trades.size() == trades_before) {
             // No trades found — skip this book to avoid empty book nodes.
-            BOOST_LOG_SEV(lg(), debug) << "Skipping empty book: " << node.name;
+            ORES_LOG_SEV(lg(), debug) << "Skipping empty book: " << node.name;
             continue;
         }
         result.books.push_back(b);
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Import plan: " << result.currencies.size() << " currencies, "
-                              << result.portfolios.size() << " portfolios, " << result.books.size()
-                              << " books, " << result.trades.size() << " trades";
+    ORES_LOG_SEV(lg(), info) << "Import plan: " << result.currencies.size() << " currencies, "
+                             << result.portfolios.size() << " portfolios, " << result.books.size()
+                             << " books, " << result.trades.size() << " trades";
     return result;
 }
 

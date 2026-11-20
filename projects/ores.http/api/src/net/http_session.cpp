@@ -180,12 +180,12 @@ http_session::http_session(asio::ip::tcp::socket socket,
     auto endpoint = stream_.socket().remote_endpoint();
     peer_ = endpoint.address();
     remote_address_ = peer_.to_string();
-    BOOST_LOG_SEV(lg(), debug) << "HTTP session created for: " << remote_address_ << ":"
-                               << endpoint.port();
+    ORES_LOG_SEV(lg(), debug) << "HTTP session created for: " << remote_address_ << ":"
+                              << endpoint.port();
 }
 
 asio::awaitable<void> http_session::run() {
-    BOOST_LOG_SEV(lg(), info) << "Starting HTTP session for: " << remote_address_;
+    ORES_LOG_SEV(lg(), info) << "Starting HTTP session for: " << remote_address_;
 
     beast::error_code ec;
     stream_.expires_after(options_.request_timeout);
@@ -220,8 +220,8 @@ asio::awaitable<void> http_session::run() {
             const auto keep_alive = parser.get().keep_alive();
             const auto subject = std::string(parser.get().target());
 
-            BOOST_LOG_SEV(lg(), debug) << "Received request: " << parser.get().method_string()
-                                       << " " << subject << " from " << remote_address_;
+            ORES_LOG_SEV(lg(), debug) << "Received request: " << parser.get().method_string() << " "
+                                      << subject << " from " << remote_address_;
 
             /*
              * The route is resolved before the body, because the limit and the
@@ -341,26 +341,25 @@ asio::awaitable<void> http_session::run() {
             co_await handle_request(
                 std::move(domain_req), std::move(route), keep_alive, std::move(note));
             if (sink != nullptr && !sink->published())
-                BOOST_LOG_SEV(lg(), warn)
+                ORES_LOG_SEV(lg(), warn)
                     << "The handler for " << subject << " answered without publishing its body";
 
             if (!keep_alive) {
-                BOOST_LOG_SEV(lg(), debug) << "Client requested connection close";
+                ORES_LOG_SEV(lg(), debug) << "Client requested connection close";
                 break;
             }
         }
     } catch (const boost::system::system_error& e) {
         if (e.code() != beast::errc::not_connected && e.code() != asio::error::eof &&
             e.code() != asio::error::operation_aborted) {
-            BOOST_LOG_SEV(lg(), warn)
-                << "Session error for " << remote_address_ << ": " << e.what();
+            ORES_LOG_SEV(lg(), warn) << "Session error for " << remote_address_ << ": " << e.what();
         } else {
-            BOOST_LOG_SEV(lg(), debug)
+            ORES_LOG_SEV(lg(), debug)
                 << "Session ended for " << remote_address_ << ": " << e.what();
         }
     }
 
-    BOOST_LOG_SEV(lg(), info) << "HTTP session ended for: " << remote_address_;
+    ORES_LOG_SEV(lg(), info) << "HTTP session ended for: " << remote_address_;
 
     // Graceful shutdown
     stream_.socket().shutdown(asio::ip::tcp::socket::shutdown_send, ec);
@@ -371,7 +370,7 @@ asio::awaitable<void> http_session::refuse(unsigned version,
                                            domain::http_status status,
                                            std::string_view reason,
                                            std::string_view note) {
-    BOOST_LOG_SEV(lg(), warn) << "Refusing " << subject << ": " << note;
+    ORES_LOG_SEV(lg(), warn) << "Refusing " << subject << ": " << note;
     auto response = domain::http_response::error(status, std::string(reason));
     co_await write_response(response, version, false, true);
 }
@@ -385,12 +384,12 @@ asio::awaitable<void> http_session::refuse_rate_limited(unsigned version,
     if (counters_ != nullptr)
         counters_->record_rate_limited(policy.name);
     if (limits_->may_warn())
-        BOOST_LOG_SEV(lg(), warn) << "Refusing " << subject << " for " << caller
-                                  << " under the rate policy " << policy.name
-                                  << "; further refusals are logged at debug for ten seconds";
+        ORES_LOG_SEV(lg(), warn) << "Refusing " << subject << " for " << caller
+                                 << " under the rate policy " << policy.name
+                                 << "; further refusals are logged at debug for ten seconds";
     else
-        BOOST_LOG_SEV(lg(), debug) << "Refusing " << subject << " for " << caller
-                                   << " under the rate policy " << policy.name;
+        ORES_LOG_SEV(lg(), debug) << "Refusing " << subject << " for " << caller
+                                  << " under the rate policy " << policy.name;
     co_await write_response(rate_limited(policy, decision), version, keep_alive, true);
 }
 
@@ -418,12 +417,12 @@ asio::awaitable<bool> http_session::renew_if_due(const std::string& identifier,
         renewal = workers_ != nullptr ? co_await workers_->run(run_token_renewal{renewer_, token}) :
                                         renewer_(token);
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn) << "A session's token was not renewed: " << e.what();
+        ORES_LOG_SEV(lg(), warn) << "A session's token was not renewed: " << e.what();
     }
 
     using outcome = domain::token_renewal::outcome;
     if (renewal.result == outcome::refused) {
-        BOOST_LOG_SEV(lg(), info) << "IAM refused to renew a session's token; the session ends";
+        ORES_LOG_SEV(lg(), info) << "IAM refused to renew a session's token; the session ends";
         claim.failed = false;
         sessions_->close(identifier);
         co_return false;
@@ -549,8 +548,8 @@ asio::awaitable<void> http_session::handle_request(domain::http_request domain_r
     const auto version =
         static_cast<unsigned>(domain_req.http_version_major * 10 + domain_req.http_version_minor);
 
-    BOOST_LOG_SEV(lg(), trace) << "Processing request path: " << path
-                               << " method: " << static_cast<int>(domain_req.method);
+    ORES_LOG_SEV(lg(), trace) << "Processing request path: " << path
+                              << " method: " << static_cast<int>(domain_req.method);
 
     // Handle CORS preflight
     if (options_.enable_cors && domain_req.method == domain::http_method::options) {
@@ -570,8 +569,8 @@ asio::awaitable<void> http_session::handle_request(domain::http_request domain_r
     auto matched = std::move(route);
 
     if (!matched) {
-        BOOST_LOG_SEV(lg(), debug)
-            << "No route matched for: " << static_cast<int>(domain_req.method) << " " << path;
+        ORES_LOG_SEV(lg(), debug) << "No route matched for: " << static_cast<int>(domain_req.method)
+                                  << " " << path;
         auto not_found = domain::http_response::not_found("Endpoint not found");
         if (note)
             state_rate_limit(not_found, *note->policy, note->decision);
@@ -579,7 +578,7 @@ asio::awaitable<void> http_session::handle_request(domain::http_request domain_r
         co_return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Route matched: " << matched->pattern;
+    ORES_LOG_SEV(lg(), debug) << "Route matched: " << matched->pattern;
 
     /*
      * One identity, two proofs. A machine client presents a bearer token. A browser
@@ -602,7 +601,7 @@ asio::awaitable<void> http_session::handle_request(domain::http_request domain_r
              */
             auto* effective = verifier_.get();
             if (effective == nullptr || !effective->is_configured()) {
-                BOOST_LOG_SEV(lg(), error)
+                ORES_LOG_SEV(lg(), error)
                     << "Route requires authentication but no JWT verifier is "
                     << "configured; refusing " << matched->pattern << " from " << remote_address_;
                 auto unauthorized = domain::http_response::unauthorized(
@@ -613,7 +612,7 @@ asio::awaitable<void> http_session::handle_request(domain::http_request domain_r
 
             auto claims_result = effective->validate(*token);
             if (!claims_result) {
-                BOOST_LOG_SEV(lg(), warn)
+                ORES_LOG_SEV(lg(), warn)
                     << "Invalid token for " << matched->pattern << " from " << remote_address_
                     << ": " << ores::security::jwt::to_string(claims_result.error());
                 if (co_await refused_failed_credential(version, matched->pattern, keep_alive))
@@ -645,7 +644,7 @@ asio::awaitable<void> http_session::handle_request(domain::http_request domain_r
         }
 
         if (!claims.has_value()) {
-            BOOST_LOG_SEV(lg(), warn)
+            ORES_LOG_SEV(lg(), warn)
                 << "No usable credential for " << matched->pattern << " from " << remote_address_;
             if (co_await refused_failed_credential(version, matched->pattern, keep_alive))
                 co_return;
@@ -658,8 +657,8 @@ asio::awaitable<void> http_session::handle_request(domain::http_request domain_r
         }
 
         domain_req.authenticated_user = std::move(*claims);
-        BOOST_LOG_SEV(lg(), debug)
-            << "Authenticated user: " << domain_req.authenticated_user->subject;
+        ORES_LOG_SEV(lg(), debug) << "Authenticated user: "
+                                  << domain_req.authenticated_user->subject;
 
         /*
          * A bearer token is proof enough of intent: a browser did not attach it by
@@ -668,8 +667,8 @@ asio::awaitable<void> http_session::handle_request(domain::http_request domain_r
          */
         if (session_proof && changes_something(domain_req.method)) {
             if (const auto refusal = csrf_refusal(domain_req); refusal.has_value()) {
-                BOOST_LOG_SEV(lg(), warn) << "Refusing " << matched->pattern << " from "
-                                          << remote_address_ << ": " << *refusal;
+                ORES_LOG_SEV(lg(), warn) << "Refusing " << matched->pattern << " from "
+                                         << remote_address_ << ": " << *refusal;
                 auto forbidden = domain::http_response::forbidden(*refusal);
                 co_await write_response(forbidden, version, keep_alive, true);
                 co_return;
@@ -690,8 +689,8 @@ asio::awaitable<void> http_session::handle_request(domain::http_request domain_r
             }
 
             if (!has_required_role) {
-                BOOST_LOG_SEV(lg(), warn) << "User " << domain_req.authenticated_user->subject
-                                          << " lacks required role for " << matched->pattern;
+                ORES_LOG_SEV(lg(), warn) << "User " << domain_req.authenticated_user->subject
+                                         << " lacks required role for " << matched->pattern;
                 auto forbidden = domain::http_response::forbidden("Insufficient permissions");
                 co_await write_response(forbidden, version, keep_alive, true);
                 co_return;
@@ -738,23 +737,23 @@ asio::awaitable<void> http_session::handle_request(domain::http_request domain_r
      */
     domain::http_response response;
     if (workers_ != nullptr && workers_->saturated()) {
-        BOOST_LOG_SEV(lg(), warn) << "Refusing " << matched->pattern << ": the handler pool holds "
-                                  << workers_->inflight() << " requests already";
+        ORES_LOG_SEV(lg(), warn) << "Refusing " << matched->pattern << ": the handler pool holds "
+                                 << workers_->inflight() << " requests already";
         response = domain::http_response::error(domain::http_status::service_unavailable,
                                                 "The server is saturated. Try again shortly.");
     } else {
         try {
-            BOOST_LOG_SEV(lg(), trace) << "Executing handler for: " << matched->pattern;
+            ORES_LOG_SEV(lg(), trace) << "Executing handler for: " << matched->pattern;
             if (workers_ != nullptr) {
                 const auto handler = matched->handler;
                 response = co_await workers_->run(run_route_handler{handler, domain_req});
             } else {
                 response = co_await matched->handler(domain_req);
             }
-            BOOST_LOG_SEV(lg(), debug)
+            ORES_LOG_SEV(lg(), debug)
                 << "Handler completed with status: " << static_cast<int>(response.status);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), error)
+            ORES_LOG_SEV(lg(), error)
                 << "Handler exception for " << matched->pattern << ": " << e.what();
             response = domain::http_response::internal_error(e.what());
         }
@@ -785,7 +784,7 @@ asio::awaitable<void> http_session::handle_request(domain::http_request domain_r
                             domain_req.sink != nullptr ? domain_req.body_bytes :
                                                          domain_req.body.size());
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), warn) << "Failed to update session bytes: " << e.what();
+            ORES_LOG_SEV(lg(), warn) << "Failed to update session bytes: " << e.what();
         }
     }
 }
@@ -961,7 +960,7 @@ void http_session::parse_query_params(const std::string& target, domain::http_re
 
     auto result = boost::urls::parse_uri_reference(target);
     if (!result) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to parse URI: " << target;
+        ORES_LOG_SEV(lg(), warn) << "Failed to parse URI: " << target;
         return;
     }
 

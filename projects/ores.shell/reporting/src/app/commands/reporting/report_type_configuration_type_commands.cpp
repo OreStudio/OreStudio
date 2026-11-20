@@ -187,7 +187,7 @@ void report_type_configuration_type_commands::register_commands(cli::Menu& root_
 void report_type_configuration_type_commands::process_list(std::ostream& out,
                                                            nats_client& session,
                                                            const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating list request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating list request.";
 
     using request_type = messaging::list_report_type_configuration_types_request;
     if constexpr (request_type::requires_session) {
@@ -237,7 +237,7 @@ void report_type_configuration_type_commands::process_list(std::ostream& out,
 void report_type_configuration_type_commands::process_get(std::ostream& out,
                                                           nats_client& session,
                                                           const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating get request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating get request.";
 
     using request_type = messaging::get_report_type_configuration_type_request;
     if constexpr (request_type::requires_session) {
@@ -285,7 +285,7 @@ void report_type_configuration_type_commands::process_get(std::ostream& out,
 
 void report_type_configuration_type_commands::process_get_many(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating get-many request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating get-many request.";
 
     using request_type = messaging::get_many_report_type_configuration_types_request;
     if constexpr (request_type::requires_session) {
@@ -337,7 +337,7 @@ void report_type_configuration_type_commands::process_get_many(
 void report_type_configuration_type_commands::process_add(std::ostream& out,
                                                           nats_client& session,
                                                           const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating add request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating add request.";
 
     using request_type = messaging::put_report_type_configuration_type_request;
     if constexpr (request_type::requires_session) {
@@ -389,7 +389,7 @@ void report_type_configuration_type_commands::process_add(std::ostream& out,
 void report_type_configuration_type_commands::process_set(std::ostream& out,
                                                           nats_client& session,
                                                           const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating set request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating set request.";
 
     using request_type = messaging::put_report_type_configuration_type_request;
     if constexpr (request_type::requires_session) {
@@ -448,7 +448,7 @@ void report_type_configuration_type_commands::process_set(std::ostream& out,
 
 void report_type_configuration_type_commands::process_put_many(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating put-many request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating put-many request.";
 
     using request_type = messaging::put_many_report_type_configuration_types_request;
     if constexpr (request_type::requires_session) {
@@ -512,7 +512,7 @@ void report_type_configuration_type_commands::process_put_many(
 void report_type_configuration_type_commands::process_delete(std::ostream& out,
                                                              nats_client& session,
                                                              const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating delete request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating delete request.";
 
     using request_type = messaging::delete_report_type_configuration_type_request;
     if constexpr (request_type::requires_session) {
@@ -570,7 +570,7 @@ void report_type_configuration_type_commands::process_delete(std::ostream& out,
 
 void report_type_configuration_type_commands::process_delete_many(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating delete-many request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating delete-many request.";
 
     using request_type = messaging::delete_many_report_type_configuration_types_request;
     if constexpr (request_type::requires_session) {
@@ -626,7 +626,7 @@ void report_type_configuration_type_commands::process_delete_many(
 
 void report_type_configuration_type_commands::process_by_report_type_code(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating by-report-type-code request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating by-report-type-code request.";
 
     using request_type =
         messaging::list_by_report_type_code_report_type_configuration_types_request;

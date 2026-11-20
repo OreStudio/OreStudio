@@ -26,7 +26,6 @@
 #include "ores.marketdata.api/domain/market_data_vendor_instrument.hpp"
 #include "ores.marketdata.api/messaging/market_data_vendor_instrument_protocol.hpp"
 #include "ores.marketdata.core/repository/market_data_vendor_instrument_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -545,12 +543,12 @@ ores::utility::domain::result market_data_vendor_instrument_service::prepare_cha
 std::vector<domain::market_data_vendor_instrument>
 market_data_vendor_instrument_service::list_vendor_instruments(std::uint32_t offset,
                                                                std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all market data vendor instruments";
+    ORES_LOG_SEV(lg(), debug) << "Listing all market data vendor instruments";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t market_data_vendor_instrument_service::count_vendor_instruments() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total market data vendor instruments count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total market data vendor instruments count";
     return repo_.get_total_vendor_instrument_count(ctx_);
 }
 
@@ -558,14 +556,14 @@ std::uint32_t market_data_vendor_instrument_service::count_vendor_instruments() 
 std::optional<domain::market_data_vendor_instrument>
 market_data_vendor_instrument_service::get_vendor_instrument_at_version(
     const boost::uuids::uuid& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting market data vendor instrument at version. "
-                               << "id: " << id << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting market data vendor instrument at version. "
+                              << "id: " << id << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::market_data_vendor_instrument>
 market_data_vendor_instrument_service::get_vendor_instrument(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting market data vendor instrument. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting market data vendor instrument. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -575,8 +573,8 @@ market_data_vendor_instrument_service::get_vendor_instrument(const boost::uuids:
 std::optional<domain::market_data_vendor_instrument>
 market_data_vendor_instrument_service::get_vendor_instrument_by_external_id(
     const std::string& external_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting market data vendor instrument by external_id: "
-                               << external_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting market data vendor instrument by external_id: "
+                              << external_id;
     messaging::market_data_vendor_instrument_key k;
     k.external_id = external_id;
     auto found = market_data_vendor_instrument_read_one(repo_, ctx_, k);
@@ -594,11 +592,11 @@ void market_data_vendor_instrument_service::save_vendor_instrument(
     const domain::market_data_vendor_instrument& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Market Data Vendor Instrument id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving market data vendor instrument. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving market data vendor instrument. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved market data vendor instrument. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved market data vendor instrument. " << "id: " << v.id;
 }
 
 void market_data_vendor_instrument_service::save_vendor_instruments(
@@ -607,8 +605,8 @@ void market_data_vendor_instrument_service::save_vendor_instruments(
         if (e.id.is_nil())
             throw std::invalid_argument("Market Data Vendor Instrument id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << vendor_instruments.size()
-                               << " market data vendor instruments";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << vendor_instruments.size()
+                              << " market data vendor instruments";
     auto ts = vendor_instruments;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -617,9 +615,9 @@ void market_data_vendor_instrument_service::save_vendor_instruments(
 }
 
 void market_data_vendor_instrument_service::delete_vendor_instrument(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing market data vendor instrument. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing market data vendor instrument. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed market data vendor instrument. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed market data vendor instrument. " << "id: " << id;
 }
 
 void market_data_vendor_instrument_service::delete_vendor_instruments(
@@ -629,7 +627,7 @@ void market_data_vendor_instrument_service::delete_vendor_instruments(
 
 std::vector<domain::market_data_vendor_instrument>
 market_data_vendor_instrument_service::get_vendor_instrument_history(const std::string& key) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for market data vendor instrument. key: " << key;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for market data vendor instrument. key: " << key;
     // The caller holds the key the model declares and this reads by the
     // storage key, so the two are joined here exactly as they are for any
     // other read. Without this step a provider looks the versions up under a

@@ -27,7 +27,7 @@
 #include "ores.http.api/net/router.hpp"
 #include "ores.http.api/openapi/endpoint_registry.hpp"
 #include "ores.http/routes/synthetic/yield_curve_process_type_routes.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "test_suite.hpp"
 #include <boost/asio/co_spawn.hpp>
@@ -160,7 +160,7 @@ TEST_CASE("yield_curve_process_type_routes_registers_every_derived_route", "[rou
         CHECK(found != routes.end());
     }
 
-    BOOST_LOG_SEV(lg, debug) << "Registered 10 route(s).";
+    ORES_LOG_SEV(lg, debug) << "Registered 10 route(s).";
 }
 
 TEST_CASE("yield_curve_process_type_routes_requires_a_session_where_the_operation_does",
@@ -227,7 +227,7 @@ TEST_CASE("yield_curve_process_type_routes_requires_a_session_where_the_operatio
         CHECK(found->auth_declared);
     }
 
-    BOOST_LOG_SEV(lg, debug) << "Checked the auth flag of 10 route(s).";
+    ORES_LOG_SEV(lg, debug) << "Checked the auth flag of 10 route(s).";
 }
 
 // The client below is not connected. A request the route accepts therefore
@@ -243,7 +243,7 @@ TEST_CASE("yield_curve_process_type_routes_list_accepts_a_page_and_an_order", "[
         session));
 
     CHECK(response.status == http_status::bad_gateway);
-    BOOST_LOG_SEV(lg, debug) << "Response: " << response.body;
+    ORES_LOG_SEV(lg, debug) << "Response: " << response.body;
 }
 
 TEST_CASE("yield_curve_process_type_routes_list_accepts_every_filter_it_declares", "[routes]") {
@@ -262,7 +262,7 @@ TEST_CASE("yield_curve_process_type_routes_list_accepts_every_filter_it_declares
         INFO(name);
         CHECK(response.status == http_status::bad_gateway);
     }
-    BOOST_LOG_SEV(lg, debug) << "Checked " << names.size() << " declared filter(s).";
+    ORES_LOG_SEV(lg, debug) << "Checked " << names.size() << " declared filter(s).";
 }
 
 TEST_CASE("yield_curve_process_type_routes_list_refuses_an_undeclared_filter", "[routes]") {
@@ -274,7 +274,7 @@ TEST_CASE("yield_curve_process_type_routes_list_refuses_an_undeclared_filter", "
 
     CHECK(response.status == http_status::bad_request);
     CHECK(response.body.find("no_such_column") != std::string::npos);
-    BOOST_LOG_SEV(lg, debug) << "Response: " << response.body;
+    ORES_LOG_SEV(lg, debug) << "Response: " << response.body;
 }
 
 TEST_CASE("yield_curve_process_type_routes_list_refuses_an_empty_item_in_f_code_one_of",
@@ -287,5 +287,5 @@ TEST_CASE("yield_curve_process_type_routes_list_refuses_an_empty_item_in_f_code_
 
     CHECK(response.status == http_status::bad_request);
     CHECK(response.body.find("f.code_one_of") != std::string::npos);
-    BOOST_LOG_SEV(lg, debug) << "Response: " << response.body;
+    ORES_LOG_SEV(lg, debug) << "Response: " << response.body;
 }

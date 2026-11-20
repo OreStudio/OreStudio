@@ -27,7 +27,6 @@
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/range_bound.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/trade_summary.hpp"
 #include "ores.trading.api/domain/trade_summary_json_io.hpp" // IWYU pragma: keep.
@@ -35,7 +34,6 @@
 #include "ores.trading.core/repository/trade_summary_entity.hpp"
 #include "ores.trading.core/repository/trade_summary_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -325,7 +323,7 @@ void trade_summary_repository::write(const context& ctx,
 void trade_summary_repository::write(const context& ctx,
                                      const domain::trade_summary& v,
                                      const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing trade summary. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Writing trade summary. " << "id: " << v.id;
     const auto t = trade_summary_apply_claim(v,
                                              claim,
                                              trade_summary_claim_reads_current(claim) ?
@@ -341,7 +339,7 @@ void trade_summary_repository::write(
     const context& ctx,
     const std::vector<domain::trade_summary>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing trade summaries. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing trade summaries. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "trade_summary_repository::write: one claim is needed for each row");
@@ -378,7 +376,7 @@ std::vector<domain::trade_summary> trade_summary_repository::read_latest(const c
 
 std::vector<domain::trade_summary> trade_summary_repository::read_latest(const context& ctx,
                                                                          const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest trade summary. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest trade summary. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<trade_summary_entity>> |
                        query_builder::where("tenant_id"_c == tid && "id"_c == id);
@@ -394,7 +392,7 @@ std::vector<domain::trade_summary> trade_summary_repository::read_latest(const c
 
 std::vector<domain::trade_summary> trade_summary_repository::read_all(const context& ctx,
                                                                       const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all trade summary versions. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading all trade summary versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<trade_summary_entity>> |
                        query_builder::where("tenant_id"_c == tid && "id"_c == id) |
@@ -411,7 +409,7 @@ std::vector<domain::trade_summary> trade_summary_repository::read_all(const cont
 
 trade_summary_repository::remove_status trade_summary_repository::remove(
     const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing trade summary. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing trade summary. " << "id: " << id;
     // The store keeps no version column, so a caller that stated a version
     // asked a question this table cannot answer.
     if (version)
@@ -437,8 +435,8 @@ std::vector<domain::trade_summary> trade_summary_repository::read_latest(
     std::uint32_t limit,
     const ores::utility::domain::order& order,
     const std::optional<messaging::trade_summaries_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest trade summaries with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest trade summaries with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<trade_summary_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -456,7 +454,7 @@ std::vector<domain::trade_summary> trade_summary_repository::read_latest(
 
 std::uint32_t trade_summary_repository::get_total_trade_summary_count(
     const context& ctx, const std::optional<messaging::trade_summaries_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active trade summary count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active trade summary count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<trade_summary_entity>> |

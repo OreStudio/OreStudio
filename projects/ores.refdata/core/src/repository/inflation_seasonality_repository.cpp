@@ -26,14 +26,12 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/inflation_seasonality.hpp"
 #include "ores.refdata.api/domain/inflation_seasonality_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/messaging/inflation_seasonality_protocol.hpp"
 #include "ores.refdata.core/repository/inflation_seasonality_entity.hpp"
 #include "ores.refdata.core/repository/inflation_seasonality_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -219,7 +217,7 @@ void inflation_seasonality_repository::write(const context& ctx,
 void inflation_seasonality_repository::write(const context& ctx,
                                              const domain::inflation_seasonality& v,
                                              const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing inflation seasonality. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Writing inflation seasonality. " << "id: " << v.id;
     const auto t =
         inflation_seasonality_apply_claim(v,
                                           claim,
@@ -236,7 +234,7 @@ void inflation_seasonality_repository::write(
     const context& ctx,
     const std::vector<domain::inflation_seasonality>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing inflation seasonalities. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing inflation seasonalities. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "inflation_seasonality_repository::write: one claim is needed for each row");
@@ -276,7 +274,7 @@ inflation_seasonality_repository::read_latest(const context& ctx) {
 
 std::vector<domain::inflation_seasonality>
 inflation_seasonality_repository::read_latest(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest inflation seasonality. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest inflation seasonality. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -295,7 +293,7 @@ inflation_seasonality_repository::read_latest(const context& ctx, const std::str
 
 std::vector<domain::inflation_seasonality>
 inflation_seasonality_repository::read_all(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all inflation seasonality versions. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading all inflation seasonality versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<inflation_seasonality_entity>> |
                        query_builder::where("tenant_id"_c == tid && "id"_c == id) |
@@ -312,8 +310,8 @@ inflation_seasonality_repository::read_all(const context& ctx, const std::string
 
 std::optional<domain::inflation_seasonality> inflation_seasonality_repository::read_at_version(
     const context& ctx, const std::string& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading inflation seasonality at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading inflation seasonality at version. " << "id: " << id
+                              << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<inflation_seasonality_entity>> |
@@ -336,7 +334,7 @@ std::optional<domain::inflation_seasonality> inflation_seasonality_repository::r
 
 inflation_seasonality_repository::remove_status inflation_seasonality_repository::remove(
     const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing inflation seasonality. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing inflation seasonality. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
         return remove_status::missing;
@@ -375,8 +373,8 @@ std::vector<domain::inflation_seasonality> inflation_seasonality_repository::rea
     const ores::utility::domain::order& order,
     const std::optional<messaging::inflation_seasonalities_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest inflation seasonalities with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest inflation seasonalities with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<inflation_seasonality_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -398,7 +396,7 @@ std::uint32_t inflation_seasonality_repository::get_total_inflation_seasonality_
     const context& ctx,
     const std::optional<messaging::inflation_seasonalities_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active inflation seasonality count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active inflation seasonality count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<inflation_seasonality_entity>> |

@@ -29,10 +29,8 @@
 #include "ores.dq.api/domain/badge_definition.hpp"
 #include "ores.dq.api/messaging/badge_definition_protocol.hpp"
 #include "ores.dq.core/repository/badge_definition_repository.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -453,12 +451,12 @@ badge_definition_service::prepare_change(const messaging::badge_definition_chang
 
 std::vector<domain::badge_definition>
 badge_definition_service::list_definitions(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all badge definitions";
+    ORES_LOG_SEV(lg(), debug) << "Listing all badge definitions";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t badge_definition_service::count_definitions() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total badge definitions count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total badge definitions count";
     return repo_.get_total_definition_count(ctx_);
 }
 
@@ -466,14 +464,14 @@ std::uint32_t badge_definition_service::count_definitions() {
 std::optional<domain::badge_definition>
 badge_definition_service::get_definition_at_version(const std::string& code,
                                                     std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting badge definition at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting badge definition at version. " << "code: " << code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::badge_definition>
 badge_definition_service::get_definition(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting badge definition. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting badge definition. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -488,11 +486,11 @@ badge_definition_service::get_definitions(const std::vector<std::string>& codes)
 void badge_definition_service::save_definition(const domain::badge_definition& v) {
     if (v.code.empty())
         throw std::invalid_argument("Badge Definition code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving badge definition. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving badge definition. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved badge definition. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved badge definition. " << "code: " << v.code;
 }
 
 void badge_definition_service::save_definitions(
@@ -501,7 +499,7 @@ void badge_definition_service::save_definitions(
         if (e.code.empty())
             throw std::invalid_argument("Badge Definition code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << definitions.size() << " badge definitions";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << definitions.size() << " badge definitions";
     auto ts = definitions;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -510,9 +508,9 @@ void badge_definition_service::save_definitions(
 }
 
 void badge_definition_service::delete_definition(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing badge definition. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing badge definition. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed badge definition. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed badge definition. " << "code: " << code;
 }
 
 void badge_definition_service::delete_definitions(const std::vector<std::string>& codes) {
@@ -521,7 +519,7 @@ void badge_definition_service::delete_definitions(const std::vector<std::string>
 
 std::vector<domain::badge_definition>
 badge_definition_service::get_definition_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for badge definition. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for badge definition. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

@@ -31,9 +31,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -230,7 +228,7 @@ void todays_market_collection_repository::write(
 void todays_market_collection_repository::write(const context& ctx,
                                                 const domain::todays_market_collection& v,
                                                 const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing today's market collection. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Writing today's market collection. " << "id: " << v.id;
     const auto t =
         todays_market_collection_apply_claim(v,
                                              claim,
@@ -247,7 +245,7 @@ void todays_market_collection_repository::write(
     const context& ctx,
     const std::vector<domain::todays_market_collection>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing today's market collections. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing today's market collections. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "todays_market_collection_repository::write: one claim is needed for each row");
@@ -287,7 +285,7 @@ todays_market_collection_repository::read_latest(const context& ctx) {
 
 std::vector<domain::todays_market_collection>
 todays_market_collection_repository::read_latest(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest today's market collection. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest today's market collection. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -306,8 +304,8 @@ todays_market_collection_repository::read_latest(const context& ctx, const std::
 std::vector<domain::todays_market_collection>
 todays_market_collection_repository::read_latest_by_collection(const context& ctx,
                                                                const std::string& collection) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest today's market collection by collection: "
-                               << collection;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest today's market collection by collection: "
+                              << collection;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<todays_market_collection_entity>> |
@@ -350,8 +348,8 @@ todays_market_collection_repository::read_latest_by_collection(
         }
         return all;
     }
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest today's market collections by collection. Count: "
-                               << collections.size();
+    ORES_LOG_SEV(lg(), debug) << "Reading latest today's market collections by collection. Count: "
+                              << collections.size();
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<todays_market_collection_entity>> |
@@ -373,8 +371,8 @@ todays_market_collection_repository::read_latest_by_collection(
 std::vector<domain::todays_market_collection>
 todays_market_collection_repository::read_any_by_collection(const context& ctx,
                                                             const std::string& collection) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading any today's market collection by collection: "
-                               << collection;
+    ORES_LOG_SEV(lg(), debug) << "Reading any today's market collection by collection: "
+                              << collection;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<todays_market_collection_entity>> |
                        query_builder::where("tenant_id"_c == tid && "collection"_c == collection) |
@@ -402,8 +400,7 @@ todays_market_collection_repository::read_any_by_collection(const context& ctx,
 
 std::vector<domain::todays_market_collection>
 todays_market_collection_repository::read_all(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all today's market collection versions. "
-                               << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading all today's market collection versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<todays_market_collection_entity>> |
                        query_builder::where("tenant_id"_c == tid && "id"_c == id) |
@@ -422,8 +419,8 @@ std::optional<domain::todays_market_collection>
 todays_market_collection_repository::read_at_version(const context& ctx,
                                                      const std::string& id,
                                                      std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading today's market collection at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading today's market collection at version. " << "id: " << id
+                              << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<todays_market_collection_entity>> |
@@ -452,7 +449,7 @@ todays_market_collection_repository::read_latest_by_todays_market_config_id(
     std::uint32_t limit,
     const ores::utility::domain::order& order,
     const std::optional<messaging::todays_market_collections_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Reading latest today's market collections. todays_market_config_id: "
         << todays_market_config_id << " offset: " << offset << " limit: " << limit;
     static constexpr auto max = db_timestamp::max();
@@ -480,7 +477,7 @@ todays_market_collection_repository::get_total_collection_count_by_todays_market
     const context& ctx,
     const std::string& todays_market_config_id,
     const std::optional<messaging::todays_market_collections_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Retrieving total active today's market collections count. todays_market_config_id: "
         << todays_market_config_id;
     static constexpr auto max = db_timestamp::max();
@@ -503,7 +500,7 @@ todays_market_collection_repository::get_total_collection_count_by_todays_market
 
 todays_market_collection_repository::remove_status todays_market_collection_repository::remove(
     const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing today's market collection. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing today's market collection. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
         return remove_status::missing;
@@ -542,8 +539,8 @@ std::vector<domain::todays_market_collection> todays_market_collection_repositor
     const ores::utility::domain::order& order,
     const std::optional<messaging::todays_market_collections_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest today's market collections with offset: "
-                               << offset << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest today's market collections with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<todays_market_collection_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -565,7 +562,7 @@ std::uint32_t todays_market_collection_repository::get_total_collection_count(
     const context& ctx,
     const std::optional<messaging::todays_market_collections_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active today's market collection count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active today's market collection count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<todays_market_collection_entity>> |

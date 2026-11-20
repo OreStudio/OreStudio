@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/party_status.hpp"
 #include "ores.refdata.api/messaging/party_status_protocol.hpp"
 #include "ores.refdata.core/repository/party_status_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -441,25 +439,25 @@ party_status_service::prepare_change(const messaging::party_status_change& chang
 
 std::vector<domain::party_status> party_status_service::list_statuses(std::uint32_t offset,
                                                                       std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all party statuses";
+    ORES_LOG_SEV(lg(), debug) << "Listing all party statuses";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t party_status_service::count_statuses() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total party statuses count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total party statuses count";
     return repo_.get_total_status_count(ctx_);
 }
 
 
 std::optional<domain::party_status>
 party_status_service::get_status_at_version(const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting party status at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting party status at version. " << "code: " << code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::party_status> party_status_service::find_status(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding party status. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Finding party status. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -474,11 +472,11 @@ party_status_service::get_statuses(const std::vector<std::string>& codes) {
 void party_status_service::save_status(const domain::party_status& v) {
     if (v.code.empty())
         throw std::invalid_argument("Party Status code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving party status. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving party status. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved party status. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved party status. " << "code: " << v.code;
 }
 
 void party_status_service::save_statuses(const std::vector<domain::party_status>& statuses) {
@@ -486,7 +484,7 @@ void party_status_service::save_statuses(const std::vector<domain::party_status>
         if (e.code.empty())
             throw std::invalid_argument("Party Status code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << statuses.size() << " party statuses";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << statuses.size() << " party statuses";
     auto ts = statuses;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -495,9 +493,9 @@ void party_status_service::save_statuses(const std::vector<domain::party_status>
 }
 
 void party_status_service::delete_status(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing party status. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing party status. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed party status. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed party status. " << "code: " << code;
 }
 
 void party_status_service::delete_statuses(const std::vector<std::string>& codes) {
@@ -506,7 +504,7 @@ void party_status_service::delete_statuses(const std::vector<std::string>& codes
 
 std::vector<domain::party_status>
 party_status_service::get_status_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for party status. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for party status. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

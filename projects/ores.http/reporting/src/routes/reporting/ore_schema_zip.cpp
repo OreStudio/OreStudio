@@ -23,7 +23,7 @@
 #include "ores.http.api/domain/http_status.hpp"
 #include "ores.http.api/net/record_routes.hpp"
 #include "ores.http.nats/forwarding.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.reporting.api/messaging/ore_file_protocol.hpp"
 #include "ores.reporting.api/messaging/ore_file_version_protocol.hpp"
 #include <boost/uuid/random_generator.hpp>
@@ -260,7 +260,7 @@ void ore_schema_zip::register_routes(
                     answer.set_header("content-disposition",
                                       disposition_of(code + "-" + version + ".zip"));
                     answer.set_header("cache-control", "private, no-store");
-                    BOOST_LOG_SEV(schema_zip_lg(), ores::logging::debug)
+                    ORES_LOG_SEV(schema_zip_lg(), ores::logging::debug)
                         << "Answering " << bundle.files.size() << " schema file(s) for " << code
                         << " at " << version << ".";
                     return answer;

@@ -28,7 +28,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.dq.api/domain/badge_mapping.hpp"
 #include "ores.dq.core/export.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <chrono>
 #include <cstdint>

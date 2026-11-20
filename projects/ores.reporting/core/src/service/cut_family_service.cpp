@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.reporting.api/domain/cut_family.hpp"
 #include "ores.reporting.api/messaging/cut_family_protocol.hpp"
 #include "ores.reporting.core/repository/cut_family_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -439,25 +437,25 @@ cut_family_service::prepare_change(const messaging::cut_family_change& change,
 
 std::vector<domain::cut_family> cut_family_service::list_families(std::uint32_t offset,
                                                                   std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all cut families";
+    ORES_LOG_SEV(lg(), debug) << "Listing all cut families";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t cut_family_service::count_families() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total cut families count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total cut families count";
     return repo_.get_total_family_count(ctx_);
 }
 
 
 std::optional<domain::cut_family> cut_family_service::get_family_at_version(const std::string& code,
                                                                             std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting cut family at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting cut family at version. " << "code: " << code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::cut_family> cut_family_service::get_family(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting cut family. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting cut family. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -472,11 +470,11 @@ cut_family_service::get_families(const std::vector<std::string>& codes) {
 void cut_family_service::save_family(const domain::cut_family& v) {
     if (v.code.empty())
         throw std::invalid_argument("Cut Family code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving cut family. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving cut family. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved cut family. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved cut family. " << "code: " << v.code;
 }
 
 void cut_family_service::save_families(const std::vector<domain::cut_family>& families) {
@@ -484,7 +482,7 @@ void cut_family_service::save_families(const std::vector<domain::cut_family>& fa
         if (e.code.empty())
             throw std::invalid_argument("Cut Family code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << families.size() << " cut families";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << families.size() << " cut families";
     auto ts = families;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -493,9 +491,9 @@ void cut_family_service::save_families(const std::vector<domain::cut_family>& fa
 }
 
 void cut_family_service::delete_family(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing cut family. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing cut family. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed cut family. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed cut family. " << "code: " << code;
 }
 
 void cut_family_service::delete_families(const std::vector<std::string>& codes) {
@@ -503,7 +501,7 @@ void cut_family_service::delete_families(const std::vector<std::string>& codes) 
 }
 
 std::vector<domain::cut_family> cut_family_service::get_family_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for cut family. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for cut family. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

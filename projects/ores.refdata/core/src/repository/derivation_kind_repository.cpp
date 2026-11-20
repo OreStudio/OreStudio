@@ -27,14 +27,12 @@
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/service/tenant_context.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/derivation_kind.hpp"
 #include "ores.refdata.api/domain/derivation_kind_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/messaging/derivation_kind_protocol.hpp"
 #include "ores.refdata.core/repository/derivation_kind_entity.hpp"
 #include "ores.refdata.core/repository/derivation_kind_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -232,7 +230,7 @@ void derivation_kind_repository::write(const context& ctx,
 void derivation_kind_repository::write(const context& ctx,
                                        const domain::derivation_kind& v,
                                        const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing derivation kind. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Writing derivation kind. " << "code: " << v.code;
     const auto t =
         derivation_kind_apply_claim(v,
                                     claim,
@@ -247,7 +245,7 @@ void derivation_kind_repository::write(
     const context& ctx,
     const std::vector<domain::derivation_kind>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing derivation kinds. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing derivation kinds. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "derivation_kind_repository::write: one claim is needed for each row");
@@ -285,7 +283,7 @@ std::vector<domain::derivation_kind> derivation_kind_repository::read_latest(con
 
 std::vector<domain::derivation_kind>
 derivation_kind_repository::read_latest(const context& ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest derivation kind. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest derivation kind. " << "code: " << code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
@@ -304,7 +302,7 @@ derivation_kind_repository::read_latest(const context& ctx, const std::string& c
 
 std::vector<domain::derivation_kind> derivation_kind_repository::read_all(const context& ctx,
                                                                           const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all derivation kind versions. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Reading all derivation kind versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
@@ -322,8 +320,8 @@ std::vector<domain::derivation_kind> derivation_kind_repository::read_all(const 
 
 std::optional<domain::derivation_kind> derivation_kind_repository::read_at_version(
     const context& ctx, const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading derivation kind at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading derivation kind at version. " << "code: " << code
+                              << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<derivation_kind_entity>> |
@@ -346,7 +344,7 @@ std::optional<domain::derivation_kind> derivation_kind_repository::read_at_versi
 
 derivation_kind_repository::remove_status derivation_kind_repository::remove(
     const context& ctx, const std::string& code, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing derivation kind. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing derivation kind. " << "code: " << code;
     const auto current = read_latest(ctx, code);
     if (current.empty())
         return remove_status::missing;
@@ -385,8 +383,8 @@ std::vector<domain::derivation_kind> derivation_kind_repository::read_latest(
     const ores::utility::domain::order& order,
     const std::optional<messaging::derivation_kinds_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest derivation kinds with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest derivation kinds with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<derivation_kind_entity>> |
@@ -409,7 +407,7 @@ std::uint32_t derivation_kind_repository::get_total_kind_count(
     const context& ctx,
     const std::optional<messaging::derivation_kinds_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active derivation kind count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active derivation kind count";
 
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);

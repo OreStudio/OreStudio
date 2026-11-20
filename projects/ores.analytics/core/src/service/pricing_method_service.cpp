@@ -29,10 +29,8 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -443,25 +441,25 @@ pricing_method_service::prepare_change(const messaging::pricing_method_change& c
 
 std::vector<domain::pricing_method> pricing_method_service::list_methods(std::uint32_t offset,
                                                                          std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all pricing methods";
+    ORES_LOG_SEV(lg(), debug) << "Listing all pricing methods";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t pricing_method_service::count_methods() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total pricing methods count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total pricing methods count";
     return repo_.get_total_method_count(ctx_);
 }
 
 
 std::optional<domain::pricing_method>
 pricing_method_service::get_method_at_version(const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting pricing method at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting pricing method at version. " << "code: " << code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::pricing_method> pricing_method_service::find_method(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding pricing method. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Finding pricing method. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -476,11 +474,11 @@ pricing_method_service::get_methods(const std::vector<std::string>& codes) {
 void pricing_method_service::save_method(const domain::pricing_method& v) {
     if (v.code.empty())
         throw std::invalid_argument("Pricing Method code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving pricing method. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving pricing method. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved pricing method. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved pricing method. " << "code: " << v.code;
 }
 
 void pricing_method_service::save_methods(const std::vector<domain::pricing_method>& methods) {
@@ -488,7 +486,7 @@ void pricing_method_service::save_methods(const std::vector<domain::pricing_meth
         if (e.code.empty())
             throw std::invalid_argument("Pricing Method code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << methods.size() << " pricing methods";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << methods.size() << " pricing methods";
     auto ts = methods;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -497,9 +495,9 @@ void pricing_method_service::save_methods(const std::vector<domain::pricing_meth
 }
 
 void pricing_method_service::delete_method(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing pricing method. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing pricing method. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed pricing method. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed pricing method. " << "code: " << code;
 }
 
 void pricing_method_service::delete_methods(const std::vector<std::string>& codes) {
@@ -508,7 +506,7 @@ void pricing_method_service::delete_methods(const std::vector<std::string>& code
 
 std::vector<domain::pricing_method>
 pricing_method_service::get_method_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for pricing method. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for pricing method. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

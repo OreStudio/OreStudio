@@ -27,13 +27,11 @@
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/service/tenant_context.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.trading.api/domain/script_calibration_strike.hpp"
 #include "ores.trading.api/domain/script_calibration_strike_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/script_calibration_strike_entity.hpp"
 #include "ores.trading.core/repository/script_calibration_strike_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -248,10 +246,10 @@ void script_calibration_strike_repository::write(
 void script_calibration_strike_repository::write(const context& ctx,
                                                  const domain::script_calibration_strike& v,
                                                  const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing script calibration strike. "
-                               << "script_name: " << v.script_name << " purpose: " << v.purpose
-                               << " calibration_number: " << v.calibration_number
-                               << " sequence_number: " << v.sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Writing script calibration strike. "
+                              << "script_name: " << v.script_name << " purpose: " << v.purpose
+                              << " calibration_number: " << v.calibration_number
+                              << " sequence_number: " << v.sequence_number;
     const auto t = script_calibration_strike_apply_claim(
         v,
         claim,
@@ -273,7 +271,7 @@ void script_calibration_strike_repository::write(
     const context& ctx,
     const std::vector<domain::script_calibration_strike>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing script calibration strikes. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing script calibration strikes. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "script_calibration_strike_repository::write: one claim is needed for each row");
@@ -321,10 +319,10 @@ script_calibration_strike_repository::read_latest(const context& ctx,
                                                   const std::string& purpose,
                                                   const std::string& calibration_number,
                                                   const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest script calibration strike. "
-                               << "script_name: " << script_name << " purpose: " << purpose
-                               << " calibration_number: " << calibration_number
-                               << " sequence_number: " << sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest script calibration strike. "
+                              << "script_name: " << script_name << " purpose: " << purpose
+                              << " calibration_number: " << calibration_number
+                              << " sequence_number: " << sequence_number;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
@@ -351,10 +349,10 @@ script_calibration_strike_repository::read_all(const context& ctx,
                                                const std::string& purpose,
                                                const std::string& calibration_number,
                                                const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all script calibration strike versions. "
-                               << "script_name: " << script_name << " purpose: " << purpose
-                               << " calibration_number: " << calibration_number
-                               << " sequence_number: " << sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Reading all script calibration strike versions. "
+                              << "script_name: " << script_name << " purpose: " << purpose
+                              << " calibration_number: " << calibration_number
+                              << " sequence_number: " << sequence_number;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
@@ -381,11 +379,10 @@ script_calibration_strike_repository::read_at_version(const context& ctx,
                                                       const std::string& calibration_number,
                                                       const std::string& sequence_number,
                                                       std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading script calibration strike at version. "
-                               << "script_name: " << script_name << " purpose: " << purpose
-                               << " calibration_number: " << calibration_number
-                               << " sequence_number: " << sequence_number
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading script calibration strike at version. "
+                              << "script_name: " << script_name << " purpose: " << purpose
+                              << " calibration_number: " << calibration_number
+                              << " sequence_number: " << sequence_number << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
@@ -417,10 +414,10 @@ script_calibration_strike_repository::remove(const context& ctx,
                                              const std::string& calibration_number,
                                              const std::string& sequence_number,
                                              std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing script calibration strike. "
-                               << "script_name: " << script_name << " purpose: " << purpose
-                               << " calibration_number: " << calibration_number
-                               << " sequence_number: " << sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Removing script calibration strike. "
+                              << "script_name: " << script_name << " purpose: " << purpose
+                              << " calibration_number: " << calibration_number
+                              << " sequence_number: " << sequence_number;
     const auto current =
         read_latest(ctx, script_name, purpose, calibration_number, sequence_number);
     if (current.empty())
@@ -467,8 +464,8 @@ script_calibration_strike_repository::read_latest(const context& ctx,
                                                   std::uint32_t limit,
                                                   const ores::utility::domain::order& order,
                                                   const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest script calibration strikes with offset: "
-                               << offset << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest script calibration strikes with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<script_calibration_strike_entity>> |
@@ -489,7 +486,7 @@ script_calibration_strike_repository::read_latest(const context& ctx,
 
 std::uint32_t script_calibration_strike_repository::get_total_strike_count(
     const context& ctx, const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active script calibration strike count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active script calibration strike count";
 
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);

@@ -21,7 +21,7 @@
 #define ORES_MARKETDATA_CORE_MESSAGING_SERIES_TICKS_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.marketdata.core/service/series_tick_reader.hpp"
 #include "ores.nats/domain/message.hpp"
@@ -64,7 +64,7 @@ public:
         , verifier_(verifier) {}
 
     void get_ticks(ores::nats::message msg) {
-        BOOST_LOG_SEV(series_ticks_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(series_ticks_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -83,14 +83,14 @@ public:
             try {
                 resp = service::series_tick_reader::read(req_ctx, *req);
             } catch (const std::exception& e) {
-                BOOST_LOG_SEV(series_ticks_handler_lg(), error)
+                ORES_LOG_SEV(series_ticks_handler_lg(), error)
                     << msg.subject << " failed: " << e.what();
                 resp = {};
                 resp.result.outcome = ores::utility::domain::outcome::failed;
                 resp.result.code = "internal_error";
                 resp.result.message = e.what();
             }
-            BOOST_LOG_SEV(series_ticks_handler_lg(), debug)
+            ORES_LOG_SEV(series_ticks_handler_lg(), debug)
                 << "Completed " << msg.subject << " tenant=" << req_ctx.tenant_id().to_string()
                 << " visible_parties=" << req_ctx.visible_party_ids().size()
                 << " identity=" << req->identity.asset << '/' << req->identity.scope << '/'
@@ -101,12 +101,12 @@ public:
             reply(nats_, msg, resp);
             return;
         }
-        BOOST_LOG_SEV(series_ticks_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+        ORES_LOG_SEV(series_ticks_handler_lg(), warn) << "Failed to decode: " << msg.subject;
         error_reply(nats_, msg, ores::service::error_code::bad_request);
     }
 
     void get_provider_ticks(ores::nats::message msg) {
-        BOOST_LOG_SEV(series_ticks_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(series_ticks_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -120,7 +120,7 @@ public:
         }
         const auto req = decode<get_provider_ticks_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(series_ticks_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(series_ticks_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
@@ -128,14 +128,14 @@ public:
         try {
             resp = service::series_tick_reader::read(req_ctx, *req);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(series_ticks_handler_lg(), error)
+            ORES_LOG_SEV(series_ticks_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             resp = {};
             resp.result.outcome = ores::utility::domain::outcome::failed;
             resp.result.code = "internal_error";
             resp.result.message = e.what();
         }
-        BOOST_LOG_SEV(series_ticks_handler_lg(), debug)
+        ORES_LOG_SEV(series_ticks_handler_lg(), debug)
             << "Completed " << msg.subject << " tenant=" << req_ctx.tenant_id().to_string()
             << " provider=" << req->provider_code << " series=" << req->series_uri
             << " for_display=" << req->for_display

@@ -23,7 +23,7 @@
 #include "feed_kind_registry.hpp"
 #include "generator_fleet.hpp"
 #include "ores.database/domain/context_fwd.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include <functional>
 #include <map>
@@ -84,7 +84,7 @@ inline start_outcome start_feeds(const feed_kind_registry& registry,
         auto& counts = out.by_kind.at(target.row.kind->kind);
         const auto skip = [&](const std::string& reason) {
             ++counts.skipped;
-            BOOST_LOG_SEV(feed_run_control_lg(), warn)
+            ORES_LOG_SEV(feed_run_control_lg(), warn)
                 << "Skipping " << c.display_name << " under " << scope_label << " — " << reason;
         };
         // A system feed runs once for every tenant, so only the system tenant starts it.

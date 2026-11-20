@@ -26,7 +26,7 @@
 #define ORES_TRADING_CORE_REPOSITORY_STRUCTURE_REPOSITORY_HPP
 
 #include "ores.database/domain/context_fwd.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.trading.api/domain/structure.hpp"
 #include "ores.trading.api/messaging/structure_protocol.hpp"
 #include "ores.trading.core/export.hpp"

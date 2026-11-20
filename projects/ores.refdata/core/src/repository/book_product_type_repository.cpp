@@ -26,13 +26,11 @@
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/book_product_type.hpp"
 #include "ores.refdata.api/domain/book_product_type_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/book_product_type_entity.hpp"
 #include "ores.refdata.core/repository/book_product_type_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -192,9 +190,9 @@ void book_product_type_repository::write(
 
 void book_product_type_repository::write(const domain::book_product_type& book_product_type,
                                          const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing allowed product type to database: "
-                               << book_product_type.book_id << "/"
-                               << book_product_type.product_type_code;
+    ORES_LOG_SEV(lg(), debug) << "Writing allowed product type to database: "
+                              << book_product_type.book_id << "/"
+                              << book_product_type.product_type_code;
     const auto current =
         claim.kind == ores::utility::domain::precondition_kind::any ?
             read_latest(book_product_type.book_id, book_product_type.product_type_code) :
@@ -207,8 +205,8 @@ void book_product_type_repository::write(const domain::book_product_type& book_p
 void book_product_type_repository::write(
     const std::vector<domain::book_product_type>& book_product_types,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing allowed product types to database. Count: "
-                               << book_product_types.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing allowed product types to database. Count: "
+                              << book_product_types.size();
     if (claims.size() != book_product_types.size())
         throw std::invalid_argument(
             "book_product_type_repository::write: one claim is needed for each row");
@@ -248,8 +246,8 @@ std::vector<domain::book_product_type> book_product_type_repository::read_latest
 
 std::vector<domain::book_product_type>
 book_product_type_repository::read_latest(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest allowed product types with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest allowed product types with offset: " << offset
+                              << " and limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<book_product_type_entity>> |
@@ -268,8 +266,8 @@ book_product_type_repository::read_latest(std::uint32_t offset, std::uint32_t li
 std::vector<domain::book_product_type>
 book_product_type_repository::read_latest(const boost::uuids::uuid& book_id,
                                           const std::string& product_type_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest allowed product type. " << book_id << "/"
-                               << product_type_code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest allowed product type. " << book_id << "/"
+                              << product_type_code;
 
     static constexpr auto max = db_timestamp::max();
     const auto book_id_str = boost::uuids::to_string(book_id);
@@ -289,7 +287,7 @@ book_product_type_repository::read_latest(const boost::uuids::uuid& book_id,
 }
 
 std::uint32_t book_product_type_repository::get_total_book_product_type_count() {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active allowed product types count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active allowed product types count";
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
@@ -298,13 +296,13 @@ std::uint32_t book_product_type_repository::get_total_book_product_type_count() 
 
     const auto count = query_builder::execute_count_query<book_product_type_entity>(
         ctx_, query, std::nullopt, lg(), "Counting allowed product types");
-    BOOST_LOG_SEV(lg(), debug) << "Total active allowed product types count: " << count;
+    ORES_LOG_SEV(lg(), debug) << "Total active allowed product types count: " << count;
     return count;
 }
 
 std::vector<domain::book_product_type>
 book_product_type_repository::read_latest_by_book(const boost::uuids::uuid& book_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest allowed product types. Book: " << book_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest allowed product types. Book: " << book_id;
 
     static constexpr auto max = db_timestamp::max();
     const auto book_id_str = boost::uuids::to_string(book_id);
@@ -327,8 +325,8 @@ book_product_type_repository::read_latest_by_book(const boost::uuids::uuid& book
 
 std::vector<domain::book_product_type>
 book_product_type_repository::read_latest_by_product_type(const std::string& product_type_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest allowed product types. Product Type: "
-                               << product_type_code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest allowed product types. Product Type: "
+                              << product_type_code;
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
@@ -352,8 +350,8 @@ book_product_type_repository::read_latest_by_product_type(const std::string& pro
 std::vector<domain::book_product_type> book_product_type_repository::read_latest_by_book(
     const boost::uuids::uuid& book_id, std::uint32_t offset, std::uint32_t limit) {
     const auto book_id_str = boost::uuids::to_string(book_id);
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest allowed product types. Book: " << book_id
-                               << " offset: " << offset << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest allowed product types. Book: " << book_id
+                              << " offset: " << offset << " limit: " << limit;
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
@@ -377,8 +375,8 @@ std::vector<domain::book_product_type> book_product_type_repository::read_latest
 std::uint32_t book_product_type_repository::get_total_book_product_type_count_by_book(
     const boost::uuids::uuid& book_id) {
     const auto book_id_str = boost::uuids::to_string(book_id);
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active allowed product types count. Book: "
-                               << book_id;
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active allowed product types count. Book: "
+                              << book_id;
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
@@ -388,14 +386,14 @@ std::uint32_t book_product_type_repository::get_total_book_product_type_count_by
 
     const auto count = query_builder::execute_count_query<book_product_type_entity>(
         ctx_, query, std::nullopt, lg(), "Counting allowed product types");
-    BOOST_LOG_SEV(lg(), debug) << "Total active allowed product types count by book: " << count;
+    ORES_LOG_SEV(lg(), debug) << "Total active allowed product types count by book: " << count;
     return count;
 }
 
 std::vector<domain::book_product_type> book_product_type_repository::read_latest_by_product_type(
     const std::string& product_type_code, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest allowed product types. Product Type: "
-                               << product_type_code << " offset: " << offset << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest allowed product types. Product Type: "
+                              << product_type_code << " offset: " << offset << " limit: " << limit;
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
@@ -419,7 +417,7 @@ std::vector<domain::book_product_type> book_product_type_repository::read_latest
 
 std::uint32_t book_product_type_repository::get_total_book_product_type_count_by_product_type(
     const std::string& product_type_code) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Retrieving total active allowed product types count. Product Type: "
         << product_type_code;
     static constexpr auto max = db_timestamp::max();
@@ -432,15 +430,15 @@ std::uint32_t book_product_type_repository::get_total_book_product_type_count_by
 
     const auto count = query_builder::execute_count_query<book_product_type_entity>(
         ctx_, query, std::nullopt, lg(), "Counting allowed product types");
-    BOOST_LOG_SEV(lg(), debug) << "Total active allowed product types count by product_type: "
-                               << count;
+    ORES_LOG_SEV(lg(), debug) << "Total active allowed product types count by product_type: "
+                              << count;
     return count;
 }
 
 std::vector<book_product_type_history_row>
 book_product_type_repository::read_all_by_book(const boost::uuids::uuid& book_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading every version of the allowed product types. Book: "
-                               << book_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading every version of the allowed product types. Book: "
+                              << book_id;
 
     const auto book_id_str = boost::uuids::to_string(book_id);
     const auto tid = ctx_.tenant_id().to_string();
@@ -492,8 +490,8 @@ book_product_type_repository::remove_status
 book_product_type_repository::remove(const boost::uuids::uuid& book_id,
                                      const std::string& product_type_code,
                                      std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing allowed product type from database: " << book_id << "/"
-                               << product_type_code;
+    ORES_LOG_SEV(lg(), debug) << "Removing allowed product type from database: " << book_id << "/"
+                              << product_type_code;
 
     const auto current = read_latest(book_id, product_type_code);
     if (current.empty())
@@ -539,7 +537,7 @@ void book_product_type_repository::remove(const std::vector<boost::uuids::uuid>&
 }
 
 void book_product_type_repository::remove_by_book(const boost::uuids::uuid& book_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing all allowed product types from database: " << book_id;
+    ORES_LOG_SEV(lg(), debug) << "Removing all allowed product types from database: " << book_id;
 
     const auto book_id_str = boost::uuids::to_string(book_id);
     const auto tid = ctx_.tenant_id().to_string();

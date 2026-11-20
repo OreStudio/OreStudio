@@ -26,7 +26,6 @@
 #include "ores.refdata.api/domain/cds_volatility_term.hpp"
 #include "ores.refdata.api/messaging/cds_volatility_term_protocol.hpp"
 #include "ores.refdata.core/repository/cds_volatility_term_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -461,12 +459,12 @@ cds_volatility_term_service::prepare_change(const messaging::cds_volatility_term
 
 std::vector<domain::cds_volatility_term>
 cds_volatility_term_service::list_terms(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all CDS volatility terms";
+    ORES_LOG_SEV(lg(), debug) << "Listing all CDS volatility terms";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t cds_volatility_term_service::count_terms() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total CDS volatility terms count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total CDS volatility terms count";
     return repo_.get_total_term_count(ctx_);
 }
 
@@ -474,14 +472,14 @@ std::uint32_t cds_volatility_term_service::count_terms() {
 std::optional<domain::cds_volatility_term>
 cds_volatility_term_service::get_term_at_version(const boost::uuids::uuid& id,
                                                  std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting CDS volatility term at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting CDS volatility term at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::cds_volatility_term>
 cds_volatility_term_service::get_term(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting CDS volatility term. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting CDS volatility term. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -496,11 +494,11 @@ cds_volatility_term_service::get_terms(const std::vector<std::string>& ids) {
 void cds_volatility_term_service::save_term(const domain::cds_volatility_term& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("CDS Volatility Term id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving CDS volatility term. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving CDS volatility term. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved CDS volatility term. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved CDS volatility term. " << "id: " << v.id;
 }
 
 void cds_volatility_term_service::save_terms(
@@ -509,7 +507,7 @@ void cds_volatility_term_service::save_terms(
         if (e.id.is_nil())
             throw std::invalid_argument("CDS Volatility Term id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << terms.size() << " CDS volatility terms";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << terms.size() << " CDS volatility terms";
     auto ts = terms;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -518,9 +516,9 @@ void cds_volatility_term_service::save_terms(
 }
 
 void cds_volatility_term_service::delete_term(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing CDS volatility term. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing CDS volatility term. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed CDS volatility term. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed CDS volatility term. " << "id: " << id;
 }
 
 void cds_volatility_term_service::delete_terms(const std::vector<std::string>& ids) {
@@ -529,7 +527,7 @@ void cds_volatility_term_service::delete_terms(const std::vector<std::string>& i
 
 std::vector<domain::cds_volatility_term>
 cds_volatility_term_service::get_term_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for CDS volatility term. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for CDS volatility term. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

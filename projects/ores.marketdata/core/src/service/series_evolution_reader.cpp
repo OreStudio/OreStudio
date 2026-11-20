@@ -18,7 +18,7 @@
  *
  */
 #include "ores.marketdata.core/service/series_evolution_reader.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/datum/market_datum.hpp"
 #include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.api/datum/schema.hpp"
@@ -156,7 +156,7 @@ series_evolution_reader::read(const ores::database::context& ctx,
             status = status_intermittent;
     }
 
-    BOOST_LOG_SEV(series_evolution_reader_lg(), debug)
+    ORES_LOG_SEV(series_evolution_reader_lg(), debug)
         << "Read the evolution of series " << series_id << ": " << response.instants.size()
         << " instants by " << node_count << " nodes over " << declared.axes.size() << " axes";
     response.success = true;

@@ -19,7 +19,7 @@
  */
 #include "ores.assets.api/domain/tag.hpp"
 #include "ores.assets.api/domain/tag_json_io.hpp" // IWYU pragma: keep.
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <sstream>
@@ -34,7 +34,7 @@ TEST_CASE("create_tag_with_name_and_description", "[domain][tag]") {
     sut.name = "flag";
     sut.description = "National flags for country codes";
     sut.modified_by = "admin";
-    BOOST_LOG_SEV(lg, info) << "Tag name: " << sut.name;
+    ORES_LOG_SEV(lg, info) << "Tag name: " << sut.name;
 
     CHECK(sut.name == "flag");
     CHECK(sut.description == "National flags for country codes");
@@ -45,7 +45,7 @@ TEST_CASE("default_constructed_tag_has_zero_version", "[domain][tag]") {
     auto lg(make_logger(test_suite));
 
     const tag sut;
-    BOOST_LOG_SEV(lg, info) << "Default tag version: " << sut.version;
+    ORES_LOG_SEV(lg, info) << "Default tag version: " << sut.version;
 
     CHECK(sut.version == 0);
     CHECK(sut.name.empty());
@@ -64,7 +64,7 @@ TEST_CASE("tag_provenance_fields_can_be_set", "[domain][tag]") {
     sut.change_reason_code = "INITIAL_LOAD";
     sut.change_commentary = "Initial data load";
     sut.performed_by = "system";
-    BOOST_LOG_SEV(lg, info) << "Tag name: " << sut.name;
+    ORES_LOG_SEV(lg, info) << "Tag name: " << sut.name;
 
     CHECK(sut.change_reason_code == "INITIAL_LOAD");
     CHECK(sut.change_commentary == "Initial data load");
@@ -84,7 +84,7 @@ TEST_CASE("tag_json_output_contains_name", "[domain][tag]") {
     os << sut;
     const std::string json_output = os.str();
 
-    BOOST_LOG_SEV(lg, info) << "JSON output: " << json_output;
+    ORES_LOG_SEV(lg, info) << "JSON output: " << json_output;
 
     CHECK(!json_output.empty());
     CHECK(json_output.find("\"name\":\"commodity\"") != std::string::npos);

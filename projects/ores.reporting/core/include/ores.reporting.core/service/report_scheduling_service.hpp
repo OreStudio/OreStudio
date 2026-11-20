@@ -21,7 +21,7 @@
 #define ORES_REPORTING_SERVICE_REPORT_SCHEDULING_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.reporting.api/domain/report_definition.hpp"
 #include "ores.reporting.api/messaging/report_operations_protocol.hpp"

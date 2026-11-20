@@ -21,7 +21,6 @@
 #include "ores.testing/uuid_of.hpp"
 #include "party_blueprint_fixture.hpp"
 #include "test_suite.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <string>
 

@@ -24,11 +24,9 @@
  */
 #include "ores.refdata.core/repository/curve_segment_type_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/curve_segment_type.hpp"
 #include "ores.refdata.api/domain/curve_segment_type_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/curve_segment_type_entity.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <optional>
 #include <vector>
 
@@ -38,7 +36,7 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 
 domain::curve_segment_type curve_segment_type_mapper::map(const curve_segment_type_entity& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::curve_segment_type r;
     r.version = v.version;
@@ -52,12 +50,12 @@ domain::curve_segment_type curve_segment_type_mapper::map(const curve_segment_ty
     r.change_commentary = v.change_commentary;
     r.recorded_at = v.valid_from;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
 }
 
 curve_segment_type_entity curve_segment_type_mapper::map(const domain::curve_segment_type& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     curve_segment_type_entity r;
     r.code = v.code;
@@ -70,7 +68,7 @@ curve_segment_type_entity curve_segment_type_mapper::map(const domain::curve_seg
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;
 }
 

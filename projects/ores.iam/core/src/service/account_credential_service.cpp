@@ -26,7 +26,6 @@
 #include "ores.iam.api/domain/account_credential.hpp"
 #include "ores.iam.api/messaging/account_credential_protocol.hpp"
 #include "ores.iam.core/repository/account_credential_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -281,12 +279,12 @@ account_credential_service::get_account_credential_version(
 
 std::vector<domain::account_credential>
 account_credential_service::list_account_credentials(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all account credentials";
+    ORES_LOG_SEV(lg(), debug) << "Listing all account credentials";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t account_credential_service::count_account_credentials() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total account credentials count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total account credentials count";
     return repo_.get_total_account_credential_count(ctx_);
 }
 
@@ -295,14 +293,14 @@ std::vector<domain::account_credential>
 account_credential_service::list_account_credentials_by_account_id(const std::string& account_id,
                                                                    std::uint32_t offset,
                                                                    std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing account credentials by account_id: " << account_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing account credentials by account_id: " << account_id;
     return repo_.read_latest_by_account_id(ctx_, account_id, offset, limit);
 }
 
 std::uint32_t
 account_credential_service::count_account_credentials_by_account_id(const std::string& account_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total account credentials count by account_id: "
-                               << account_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting total account credentials count by account_id: "
+                              << account_id;
     return repo_.get_total_account_credential_count_by_account_id(ctx_, account_id);
 }
 
@@ -310,14 +308,14 @@ account_credential_service::count_account_credentials_by_account_id(const std::s
 std::optional<domain::account_credential>
 account_credential_service::get_account_credential_at_version(const boost::uuids::uuid& id,
                                                               std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting account credential at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting account credential at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::account_credential>
 account_credential_service::get_account_credential(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting account credential. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting account credential. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -332,11 +330,11 @@ account_credential_service::get_account_credentials(const std::vector<std::strin
 void account_credential_service::save_account_credential(const domain::account_credential& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Account Credential id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving account credential. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving account credential. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved account credential. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved account credential. " << "id: " << v.id;
 }
 
 void account_credential_service::save_account_credentials(
@@ -345,7 +343,7 @@ void account_credential_service::save_account_credentials(
         if (e.id.is_nil())
             throw std::invalid_argument("Account Credential id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << account_credentials.size() << " account credentials";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << account_credentials.size() << " account credentials";
     auto ts = account_credentials;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -354,9 +352,9 @@ void account_credential_service::save_account_credentials(
 }
 
 void account_credential_service::delete_account_credential(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing account credential. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing account credential. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed account credential. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed account credential. " << "id: " << id;
 }
 
 void account_credential_service::delete_account_credentials(const std::vector<std::string>& ids) {
@@ -365,7 +363,7 @@ void account_credential_service::delete_account_credentials(const std::vector<st
 
 std::vector<domain::account_credential>
 account_credential_service::get_account_credential_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for account credential. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for account credential. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

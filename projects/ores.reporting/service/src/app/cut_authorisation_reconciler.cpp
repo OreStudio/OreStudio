@@ -39,7 +39,7 @@ int cut_authorisation_reconciler::sweep() {
     try {
         return applier_->apply();
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn)
+        ORES_LOG_SEV(lg(), warn)
             << "The cut authorisation reconciliation failed; the next sweep tries again: "
             << e.what();
         return 0;
@@ -47,8 +47,8 @@ int cut_authorisation_reconciler::sweep() {
 }
 
 boost::asio::awaitable<void> cut_authorisation_reconciler::run() {
-    BOOST_LOG_SEV(lg(), info) << "Cut authorisation reconciliation started. Sweeping every "
-                              << interval_seconds_ << "s";
+    ORES_LOG_SEV(lg(), info) << "Cut authorisation reconciliation started. Sweeping every "
+                             << interval_seconds_ << "s";
 
     auto executor = co_await boost::asio::this_coro::executor;
     boost::asio::steady_timer timer(executor);
@@ -62,11 +62,11 @@ boost::asio::awaitable<void> cut_authorisation_reconciler::run() {
         }
     } catch (const boost::system::system_error& e) {
         if (e.code() != boost::asio::error::operation_aborted)
-            BOOST_LOG_SEV(lg(), warn)
+            ORES_LOG_SEV(lg(), warn)
                 << "Cut authorisation reconciliation timer error: " << e.what();
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Cut authorisation reconciliation stopped.";
+    ORES_LOG_SEV(lg(), info) << "Cut authorisation reconciliation stopped.";
 }
 
 }

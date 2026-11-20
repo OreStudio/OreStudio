@@ -20,7 +20,7 @@
 #include "ores.dq.api/domain/change_reason_category_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.api/generators/change_reason_category_generator.hpp"
 #include "ores.dq.core/repository/change_reason_category_repository.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
@@ -48,11 +48,11 @@ TEST_CASE("write_single_change_reason_category", "[repository]") {
     category.tenant_id = h.tenant_id();
     category.code = category.code + "_" + std::string(faker::string::alphanumeric(8));
 
-    BOOST_LOG_SEV(lg, debug) << "Change reason category: " << category;
+    ORES_LOG_SEV(lg, debug) << "Change reason category: " << category;
     repo.write(h.context(), category);
 
     auto read_categories = repo.read_latest(h.context(), category.code);
-    BOOST_LOG_SEV(lg, debug) << "Read categories: " << read_categories;
+    ORES_LOG_SEV(lg, debug) << "Read categories: " << read_categories;
 
     REQUIRE(read_categories.size() == 1);
     CHECK(read_categories[0].code == category.code);
@@ -71,12 +71,12 @@ TEST_CASE("write_multiple_change_reason_categories", "[repository]") {
         c.tenant_id = h.tenant_id();
         c.code = c.code + "_" + std::string(faker::string::alphanumeric(8));
     }
-    BOOST_LOG_SEV(lg, debug) << "Change reason categories: " << categories;
+    ORES_LOG_SEV(lg, debug) << "Change reason categories: " << categories;
 
     repo.write(h.context(), categories);
 
     auto read_categories = repo.read_latest(h.context());
-    BOOST_LOG_SEV(lg, debug) << "Read categories: " << read_categories;
+    ORES_LOG_SEV(lg, debug) << "Read categories: " << read_categories;
 
     for (const auto& written : categories) {
         bool found = false;
@@ -102,12 +102,12 @@ TEST_CASE("read_latest_change_reason_categories", "[repository]") {
         c.tenant_id = h.tenant_id();
         c.code = c.code + "_" + std::string(faker::string::alphanumeric(8));
     }
-    BOOST_LOG_SEV(lg, debug) << "Written categories: " << written_categories;
+    ORES_LOG_SEV(lg, debug) << "Written categories: " << written_categories;
 
     repo.write(h.context(), written_categories);
 
     auto read_categories = repo.read_latest(h.context());
-    BOOST_LOG_SEV(lg, debug) << "Read categories: " << read_categories;
+    ORES_LOG_SEV(lg, debug) << "Read categories: " << read_categories;
 
     for (const auto& written : written_categories) {
         bool found = false;
@@ -135,13 +135,13 @@ TEST_CASE("read_latest_change_reason_category_by_code", "[repository]") {
     }
 
     const auto target = categories.front();
-    BOOST_LOG_SEV(lg, debug) << "Write categories: " << categories;
+    ORES_LOG_SEV(lg, debug) << "Write categories: " << categories;
     repo.write(h.context(), categories);
 
-    BOOST_LOG_SEV(lg, debug) << "Target category: " << target;
+    ORES_LOG_SEV(lg, debug) << "Target category: " << target;
 
     auto read_categories = repo.read_latest(h.context(), target.code);
-    BOOST_LOG_SEV(lg, debug) << "Read categories: " << read_categories;
+    ORES_LOG_SEV(lg, debug) << "Read categories: " << read_categories;
 
     REQUIRE(read_categories.size() == 1);
     CHECK(read_categories[0].code == target.code);

@@ -51,7 +51,7 @@ The full template source. Edit here and re-tangle with
 #ifndef ORES_SHELL_APP_COMMANDS_{{component_upper}}_{{component_upper}}_COMMANDS_HPP
 #define ORES_SHELL_APP_COMMANDS_{{component_upper}}_{{component_upper}}_COMMANDS_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
 
 namespace cli {

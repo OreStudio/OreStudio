@@ -19,7 +19,7 @@
  */
 #include "ores.scheduler.core/service/sql_action_handler.hpp"
 #include "ores.database/query_builder/execute.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 
 namespace ores::scheduler::service {
 
@@ -37,16 +37,16 @@ auto& sql_action_handler_lg() {
 
 boost::asio::awaitable<std::expected<void, std::string>>
 sql_action_handler::execute(const action_context& ctx) {
-    BOOST_LOG_SEV(sql_action_handler_lg(), debug)
+    ORES_LOG_SEV(sql_action_handler_lg(), debug)
         << "Executing SQL action for job: " << ctx.job.job_name;
     try {
         ores::database::query_builder::execute_parameterized_command(
             ctx.db_ctx, ctx.job.command, {}, sql_action_handler_lg(), "executing scheduled SQL");
-        BOOST_LOG_SEV(sql_action_handler_lg(), info)
+        ORES_LOG_SEV(sql_action_handler_lg(), info)
             << "SQL action succeeded for job: " << ctx.job.job_name;
         co_return std::expected<void, std::string>{};
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(sql_action_handler_lg(), error)
+        ORES_LOG_SEV(sql_action_handler_lg(), error)
             << "SQL action failed for job: " << ctx.job.job_name << ": " << e.what();
         co_return std::unexpected(std::string(e.what()));
     }

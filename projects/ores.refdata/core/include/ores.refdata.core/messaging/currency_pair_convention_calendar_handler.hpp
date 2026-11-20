@@ -26,7 +26,7 @@
 #define ORES_REFDATA_CORE_MESSAGING_CURRENCY_PAIR_CONVENTION_CALENDAR_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.refdata.api/messaging/currency_pair_convention_calendar_protocol.hpp"
@@ -75,7 +75,7 @@ public:
      * @brief Serves refdata.v1.currency_pair_convention_calendars.list.
      */
     void list_currency_pair_convention_calendars(ores::nats::message msg) {
-        BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), debug)
+        ORES_LOG_SEV(currency_pair_convention_calendar_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -91,7 +91,7 @@ public:
         }
         auto req = decode<list_currency_pair_convention_calendars_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), warn)
+            ORES_LOG_SEV(currency_pair_convention_calendar_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -99,14 +99,14 @@ public:
         service::currency_pair_convention_calendar_service svc(req_ctx);
         try {
             auto response = svc.list_currency_pair_convention_calendars(*req);
-            BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), debug)
+            ORES_LOG_SEV(currency_pair_convention_calendar_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), error)
+            ORES_LOG_SEV(currency_pair_convention_calendar_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             list_currency_pair_convention_calendars_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -120,7 +120,7 @@ public:
      * @brief Serves refdata.v1.currency_pair_convention_calendars.get.
      */
     void get_currency_pair_convention_calendar(ores::nats::message msg) {
-        BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), debug)
+        ORES_LOG_SEV(currency_pair_convention_calendar_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -136,7 +136,7 @@ public:
         }
         auto req = decode<get_currency_pair_convention_calendar_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), warn)
+            ORES_LOG_SEV(currency_pair_convention_calendar_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -144,14 +144,14 @@ public:
         service::currency_pair_convention_calendar_service svc(req_ctx);
         try {
             auto response = svc.get_currency_pair_convention_calendar(*req);
-            BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), debug)
+            ORES_LOG_SEV(currency_pair_convention_calendar_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), error)
+            ORES_LOG_SEV(currency_pair_convention_calendar_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             get_currency_pair_convention_calendar_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -165,7 +165,7 @@ public:
      * @brief Serves refdata.v1.currency_pair_convention_calendars.get_many.
      */
     void get_many_currency_pair_convention_calendars(ores::nats::message msg) {
-        BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), debug)
+        ORES_LOG_SEV(currency_pair_convention_calendar_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -181,7 +181,7 @@ public:
         }
         auto req = decode<get_many_currency_pair_convention_calendars_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), warn)
+            ORES_LOG_SEV(currency_pair_convention_calendar_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -189,14 +189,14 @@ public:
         service::currency_pair_convention_calendar_service svc(req_ctx);
         try {
             auto response = svc.get_many_currency_pair_convention_calendars(*req);
-            BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), debug)
+            ORES_LOG_SEV(currency_pair_convention_calendar_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), error)
+            ORES_LOG_SEV(currency_pair_convention_calendar_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             get_many_currency_pair_convention_calendars_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -210,7 +210,7 @@ public:
      * @brief Serves refdata.v1.currency_pair_convention_calendars.put.
      */
     void put_currency_pair_convention_calendar(ores::nats::message msg) {
-        BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), debug)
+        ORES_LOG_SEV(currency_pair_convention_calendar_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -226,7 +226,7 @@ public:
         }
         auto req = decode<put_currency_pair_convention_calendar_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), warn)
+            ORES_LOG_SEV(currency_pair_convention_calendar_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -234,14 +234,14 @@ public:
         service::currency_pair_convention_calendar_service svc(req_ctx);
         try {
             auto response = svc.put_currency_pair_convention_calendar(*req);
-            BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), debug)
+            ORES_LOG_SEV(currency_pair_convention_calendar_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), error)
+            ORES_LOG_SEV(currency_pair_convention_calendar_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             put_currency_pair_convention_calendar_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -255,7 +255,7 @@ public:
      * @brief Serves refdata.v1.currency_pair_convention_calendars.put_many.
      */
     void put_many_currency_pair_convention_calendars(ores::nats::message msg) {
-        BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), debug)
+        ORES_LOG_SEV(currency_pair_convention_calendar_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -271,7 +271,7 @@ public:
         }
         auto req = decode<put_many_currency_pair_convention_calendars_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), warn)
+            ORES_LOG_SEV(currency_pair_convention_calendar_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -279,14 +279,14 @@ public:
         service::currency_pair_convention_calendar_service svc(req_ctx);
         try {
             auto response = svc.put_many_currency_pair_convention_calendars(*req);
-            BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), debug)
+            ORES_LOG_SEV(currency_pair_convention_calendar_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), error)
+            ORES_LOG_SEV(currency_pair_convention_calendar_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             put_many_currency_pair_convention_calendars_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -300,7 +300,7 @@ public:
      * @brief Serves refdata.v1.currency_pair_convention_calendars.delete.
      */
     void delete_currency_pair_convention_calendar(ores::nats::message msg) {
-        BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), debug)
+        ORES_LOG_SEV(currency_pair_convention_calendar_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -316,7 +316,7 @@ public:
         }
         auto req = decode<delete_currency_pair_convention_calendar_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), warn)
+            ORES_LOG_SEV(currency_pair_convention_calendar_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -324,14 +324,14 @@ public:
         service::currency_pair_convention_calendar_service svc(req_ctx);
         try {
             auto response = svc.delete_currency_pair_convention_calendar(*req);
-            BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), debug)
+            ORES_LOG_SEV(currency_pair_convention_calendar_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), error)
+            ORES_LOG_SEV(currency_pair_convention_calendar_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             delete_currency_pair_convention_calendar_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -345,7 +345,7 @@ public:
      * @brief Serves refdata.v1.currency_pair_convention_calendars.delete_many.
      */
     void delete_many_currency_pair_convention_calendars(ores::nats::message msg) {
-        BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), debug)
+        ORES_LOG_SEV(currency_pair_convention_calendar_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -361,7 +361,7 @@ public:
         }
         auto req = decode<delete_many_currency_pair_convention_calendars_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), warn)
+            ORES_LOG_SEV(currency_pair_convention_calendar_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -369,14 +369,14 @@ public:
         service::currency_pair_convention_calendar_service svc(req_ctx);
         try {
             auto response = svc.delete_many_currency_pair_convention_calendars(*req);
-            BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), debug)
+            ORES_LOG_SEV(currency_pair_convention_calendar_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), error)
+            ORES_LOG_SEV(currency_pair_convention_calendar_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             delete_many_currency_pair_convention_calendars_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -390,7 +390,7 @@ public:
      * @brief Serves refdata.v1.currency_pair_convention_calendars.list_by_pair_code.
      */
     void list_by_pair_code_currency_pair_convention_calendars(ores::nats::message msg) {
-        BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), debug)
+        ORES_LOG_SEV(currency_pair_convention_calendar_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -406,7 +406,7 @@ public:
         }
         auto req = decode<list_by_pair_code_currency_pair_convention_calendars_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), warn)
+            ORES_LOG_SEV(currency_pair_convention_calendar_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -414,14 +414,14 @@ public:
         service::currency_pair_convention_calendar_service svc(req_ctx);
         try {
             auto response = svc.list_by_pair_code_currency_pair_convention_calendars(*req);
-            BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), debug)
+            ORES_LOG_SEV(currency_pair_convention_calendar_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(currency_pair_convention_calendar_handler_lg(), error)
+            ORES_LOG_SEV(currency_pair_convention_calendar_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             list_by_pair_code_currency_pair_convention_calendars_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;

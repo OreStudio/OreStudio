@@ -29,7 +29,7 @@
 #include "ores.inbox.api/domain/approval_request_state.hpp"
 #include "ores.inbox.api/messaging/approval_request_state_protocol.hpp"
 #include "ores.inbox.core/export.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <chrono>
 #include <cstdint>

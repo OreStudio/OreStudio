@@ -27,14 +27,12 @@
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/service/tenant_context.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.marketdata.api/domain/series_identity_shape.hpp"
 #include "ores.marketdata.api/domain/series_identity_shape_json_io.hpp" // IWYU pragma: keep.
 #include "ores.marketdata.api/messaging/series_identity_shape_protocol.hpp"
 #include "ores.marketdata.core/repository/series_identity_shape_entity.hpp"
 #include "ores.marketdata.core/repository/series_identity_shape_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -243,7 +241,7 @@ void series_identity_shape_repository::write(const context& ctx,
 void series_identity_shape_repository::write(const context& ctx,
                                              const domain::series_identity_shape& v,
                                              const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing series identity shape. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Writing series identity shape. " << "code: " << v.code;
     const auto t = series_identity_shape_apply_claim(
         v,
         claim,
@@ -260,7 +258,7 @@ void series_identity_shape_repository::write(
     const context& ctx,
     const std::vector<domain::series_identity_shape>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing series identity shapes. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing series identity shapes. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "series_identity_shape_repository::write: one claim is needed for each row");
@@ -302,7 +300,7 @@ series_identity_shape_repository::read_latest(const context& ctx) {
 
 std::vector<domain::series_identity_shape>
 series_identity_shape_repository::read_latest(const context& ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest series identity shape. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest series identity shape. " << "code: " << code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
@@ -322,8 +320,7 @@ series_identity_shape_repository::read_latest(const context& ctx, const std::str
 
 std::vector<domain::series_identity_shape>
 series_identity_shape_repository::read_all(const context& ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all series identity shape versions. "
-                               << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Reading all series identity shape versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
@@ -342,8 +339,8 @@ series_identity_shape_repository::read_all(const context& ctx, const std::string
 
 std::optional<domain::series_identity_shape> series_identity_shape_repository::read_at_version(
     const context& ctx, const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading series identity shape at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading series identity shape at version. " << "code: " << code
+                              << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<series_identity_shape_entity>> |
@@ -366,7 +363,7 @@ std::optional<domain::series_identity_shape> series_identity_shape_repository::r
 
 series_identity_shape_repository::remove_status series_identity_shape_repository::remove(
     const context& ctx, const std::string& code, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing series identity shape. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing series identity shape. " << "code: " << code;
     const auto current = read_latest(ctx, code);
     if (current.empty())
         return remove_status::missing;
@@ -405,8 +402,8 @@ std::vector<domain::series_identity_shape> series_identity_shape_repository::rea
     const ores::utility::domain::order& order,
     const std::optional<messaging::series_identity_shapes_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest series identity shapes with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest series identity shapes with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<series_identity_shape_entity>> |
@@ -429,7 +426,7 @@ std::uint32_t series_identity_shape_repository::get_total_shape_count(
     const context& ctx,
     const std::optional<messaging::series_identity_shapes_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active series identity shape count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active series identity shape count";
 
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);

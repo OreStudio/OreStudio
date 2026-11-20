@@ -121,8 +121,8 @@ void nats_poller::poll_server() {
     sample.slow_consumers = parsed.slow_consumers;
 
     repo_.insert_server_sample(ctx_, sample);
-    BOOST_LOG_SEV(lg(), trace) << "Stored NATS server sample: " << sample.connections
-                               << " connection(s), " << sample.in_msgs << " in_msgs";
+    ORES_LOG_SEV(lg(), trace) << "Stored NATS server sample: " << sample.connections
+                              << " connection(s), " << sample.in_msgs << " in_msgs";
 }
 
 void nats_poller::poll_streams() {
@@ -144,12 +144,12 @@ void nats_poller::poll_streams() {
     }
 
     if (samples.empty()) {
-        BOOST_LOG_SEV(lg(), trace) << "No JetStream streams found";
+        ORES_LOG_SEV(lg(), trace) << "No JetStream streams found";
         return;
     }
 
     repo_.insert_stream_samples(ctx_, samples);
-    BOOST_LOG_SEV(lg(), trace) << "Stored " << samples.size() << " NATS stream sample(s)";
+    ORES_LOG_SEV(lg(), trace) << "Stored " << samples.size() << " NATS stream sample(s)";
 }
 
 void nats_poller::poll_once() {
@@ -160,9 +160,9 @@ void nats_poller::poll_once() {
         any_ok = true;
     } catch (const std::exception& e) {
         if (consecutive_failures_ == 0)
-            BOOST_LOG_SEV(lg(), warn) << "NATS server poll failed: " << e.what();
+            ORES_LOG_SEV(lg(), warn) << "NATS server poll failed: " << e.what();
         else
-            BOOST_LOG_SEV(lg(), debug) << "NATS server poll failed: " << e.what();
+            ORES_LOG_SEV(lg(), debug) << "NATS server poll failed: " << e.what();
     }
 
     try {
@@ -170,9 +170,9 @@ void nats_poller::poll_once() {
         any_ok = true;
     } catch (const std::exception& e) {
         if (consecutive_failures_ == 0)
-            BOOST_LOG_SEV(lg(), warn) << "NATS stream poll failed: " << e.what();
+            ORES_LOG_SEV(lg(), warn) << "NATS stream poll failed: " << e.what();
         else
-            BOOST_LOG_SEV(lg(), debug) << "NATS stream poll failed: " << e.what();
+            ORES_LOG_SEV(lg(), debug) << "NATS stream poll failed: " << e.what();
     }
 
     if (any_ok)
@@ -186,8 +186,8 @@ void nats_poller::poll_once() {
 // ============================================================================
 
 boost::asio::awaitable<void> nats_poller::run() {
-    BOOST_LOG_SEV(lg(), info) << "NATS poller started. Monitoring " << monitor_host_ << ":"
-                              << monitor_port_ << " every " << interval_seconds_ << "s";
+    ORES_LOG_SEV(lg(), info) << "NATS poller started. Monitoring " << monitor_host_ << ":"
+                             << monitor_port_ << " every " << interval_seconds_ << "s";
 
     auto executor = co_await boost::asio::this_coro::executor;
     boost::asio::steady_timer timer(executor);
@@ -201,11 +201,11 @@ boost::asio::awaitable<void> nats_poller::run() {
         }
     } catch (const boost::system::system_error& e) {
         if (e.code() != boost::asio::error::operation_aborted) {
-            BOOST_LOG_SEV(lg(), warn) << "NATS poller timer error: " << e.what();
+            ORES_LOG_SEV(lg(), warn) << "NATS poller timer error: " << e.what();
         }
     }
 
-    BOOST_LOG_SEV(lg(), info) << "NATS poller stopped.";
+    ORES_LOG_SEV(lg(), info) << "NATS poller stopped.";
 }
 
 }

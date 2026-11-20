@@ -25,7 +25,7 @@
 #include "ores.http.nats/forwarding.hpp"
 #include "ores.http/routes/reporting/report_health.hpp"
 #include "ores.iam.api/messaging/account_operations_protocol.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.reporting.api/messaging/report_definition_protocol.hpp"
 #include "ores.reporting.api/messaging/report_error_event_protocol.hpp"
 #include "ores.reporting.api/messaging/report_instance_protocol.hpp"
@@ -194,10 +194,10 @@ batch_of(const http_request& req, nats_client& session, const std::string& id) {
             if (batch.external_ref == id)
                 return rr::as_text(batch.id);
     } catch (const rr::refusal& r) {
-        BOOST_LOG_SEV(run_lg(), ores::logging::warn)
+        ORES_LOG_SEV(run_lg(), ores::logging::warn)
             << "The batch of the run was refused: " << r.message;
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(run_lg(), ores::logging::warn)
+        ORES_LOG_SEV(run_lg(), ores::logging::warn)
             << "The batch of the run was not read: " << e.what();
     }
     return std::nullopt;
@@ -216,10 +216,10 @@ definition_name_of(const http_request& req, nats_client& session, const boost::u
         if (!reply.definitions.empty())
             return reply.definitions.front().name;
     } catch (const rr::refusal& r) {
-        BOOST_LOG_SEV(run_lg(), ores::logging::warn)
+        ORES_LOG_SEV(run_lg(), ores::logging::warn)
             << "The name of the report's definition was refused: " << r.message;
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(run_lg(), ores::logging::warn)
+        ORES_LOG_SEV(run_lg(), ores::logging::warn)
             << "The name of the report's definition was not read: " << e.what();
     }
     return std::nullopt;
@@ -236,10 +236,10 @@ party_name_of(const http_request& req, nats_client& session, const boost::uuids:
             if (party.party_id == rr::as_text(id))
                 return party.name;
     } catch (const rr::refusal& r) {
-        BOOST_LOG_SEV(run_lg(), ores::logging::warn)
+        ORES_LOG_SEV(run_lg(), ores::logging::warn)
             << "The name of the run's party was refused: " << r.message;
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(run_lg(), ores::logging::warn)
+        ORES_LOG_SEV(run_lg(), ores::logging::warn)
             << "The name of the run's party was not read: " << e.what();
     }
     return std::nullopt;
@@ -257,10 +257,10 @@ health_of_run(const http_request& req, nats_client& session, const boost::uuids:
             if (entry.report_instance_id == id)
                 return entry;
     } catch (const rr::refusal& r) {
-        BOOST_LOG_SEV(run_lg(), ores::logging::warn)
+        ORES_LOG_SEV(run_lg(), ores::logging::warn)
             << "The state of the run was refused: " << r.message;
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(run_lg(), ores::logging::warn)
+        ORES_LOG_SEV(run_lg(), ores::logging::warn)
             << "The state of the run was not read: " << e.what();
     }
     return std::nullopt;

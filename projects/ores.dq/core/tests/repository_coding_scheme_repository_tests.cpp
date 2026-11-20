@@ -20,7 +20,7 @@
 #include "ores.dq.api/domain/coding_scheme_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.api/generators/coding_scheme_generator.hpp"
 #include "ores.dq.core/repository/coding_scheme_repository.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
@@ -47,11 +47,11 @@ TEST_CASE("write_single_coding_scheme", "[repository]") {
     auto coding_scheme = generate_synthetic_coding_scheme(ctx);
     coding_scheme.tenant_id = h.tenant_id();
 
-    BOOST_LOG_SEV(lg, debug) << "Coding scheme: " << coding_scheme;
+    ORES_LOG_SEV(lg, debug) << "Coding scheme: " << coding_scheme;
     repo.write(h.context(), coding_scheme);
 
     auto read_coding_schemes = repo.read_latest(h.context(), coding_scheme.code);
-    BOOST_LOG_SEV(lg, debug) << "Read coding schemes: " << read_coding_schemes;
+    ORES_LOG_SEV(lg, debug) << "Read coding schemes: " << read_coding_schemes;
 
     REQUIRE(read_coding_schemes.size() == 1);
     CHECK(read_coding_schemes[0].code == coding_scheme.code);
@@ -69,12 +69,12 @@ TEST_CASE("write_multiple_coding_schemes", "[repository]") {
     auto coding_schemes = generate_synthetic_coding_schemes(3, ctx);
     for (auto& c : coding_schemes)
         c.tenant_id = h.tenant_id();
-    BOOST_LOG_SEV(lg, debug) << "Coding schemes: " << coding_schemes;
+    ORES_LOG_SEV(lg, debug) << "Coding schemes: " << coding_schemes;
 
     repo.write(h.context(), coding_schemes);
 
     auto read_coding_schemes = repo.read_latest(h.context());
-    BOOST_LOG_SEV(lg, debug) << "Read coding schemes: " << read_coding_schemes;
+    ORES_LOG_SEV(lg, debug) << "Read coding schemes: " << read_coding_schemes;
 
     for (const auto& written : coding_schemes) {
         bool found = false;
@@ -99,12 +99,12 @@ TEST_CASE("read_latest_coding_schemes", "[repository]") {
     auto written_coding_schemes = generate_synthetic_coding_schemes(3, ctx);
     for (auto& c : written_coding_schemes)
         c.tenant_id = h.tenant_id();
-    BOOST_LOG_SEV(lg, debug) << "Written coding schemes: " << written_coding_schemes;
+    ORES_LOG_SEV(lg, debug) << "Written coding schemes: " << written_coding_schemes;
 
     repo.write(h.context(), written_coding_schemes);
 
     auto read_coding_schemes = repo.read_latest(h.context());
-    BOOST_LOG_SEV(lg, debug) << "Read coding schemes: " << read_coding_schemes;
+    ORES_LOG_SEV(lg, debug) << "Read coding schemes: " << read_coding_schemes;
 
     for (const auto& written : written_coding_schemes) {
         bool found = false;
@@ -131,13 +131,13 @@ TEST_CASE("read_latest_coding_scheme_by_code", "[repository]") {
         c.tenant_id = h.tenant_id();
 
     const auto target = coding_schemes.front();
-    BOOST_LOG_SEV(lg, debug) << "Write coding schemes: " << coding_schemes;
+    ORES_LOG_SEV(lg, debug) << "Write coding schemes: " << coding_schemes;
     repo.write(h.context(), coding_schemes);
 
-    BOOST_LOG_SEV(lg, debug) << "Target coding scheme: " << target;
+    ORES_LOG_SEV(lg, debug) << "Target coding scheme: " << target;
 
     auto read_coding_schemes = repo.read_latest(h.context(), target.code);
-    BOOST_LOG_SEV(lg, debug) << "Read coding schemes: " << read_coding_schemes;
+    ORES_LOG_SEV(lg, debug) << "Read coding schemes: " << read_coding_schemes;
 
     REQUIRE(read_coding_schemes.size() == 1);
     CHECK(read_coding_schemes[0].code == target.code);
@@ -158,15 +158,15 @@ TEST_CASE("read_nonexistent_coding_scheme", "[repository]") {
     repo.write(h.context(), coding_scheme);
 
     auto read_written = repo.read_latest(h.context(), coding_scheme.code);
-    BOOST_LOG_SEV(lg, debug) << "Read coding schemes: " << read_written;
+    ORES_LOG_SEV(lg, debug) << "Read coding schemes: " << read_written;
     REQUIRE(read_written.size() == 1);
     CHECK(read_written[0].name == coding_scheme.name);
 
     const std::string nonexistent_code = "nonexistent.coding_scheme.12345";
-    BOOST_LOG_SEV(lg, debug) << "Non-existent code: " << nonexistent_code;
+    ORES_LOG_SEV(lg, debug) << "Non-existent code: " << nonexistent_code;
 
     auto read_coding_schemes = repo.read_latest(h.context(), nonexistent_code);
-    BOOST_LOG_SEV(lg, debug) << "Read coding schemes: " << read_coding_schemes;
+    ORES_LOG_SEV(lg, debug) << "Read coding schemes: " << read_coding_schemes;
 
     CHECK(read_coding_schemes.size() == 0);
 }

@@ -26,7 +26,6 @@
 #include "ores.trading.api/domain/balance_guaranteed_swap_tranche.hpp"
 #include "ores.trading.api/messaging/balance_guaranteed_swap_tranche_protocol.hpp"
 #include "ores.trading.core/repository/balance_guaranteed_swap_tranche_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -43,7 +42,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -526,12 +524,12 @@ ores::utility::domain::result balance_guaranteed_swap_tranche_service::prepare_c
 std::vector<domain::balance_guaranteed_swap_tranche>
 balance_guaranteed_swap_tranche_service::list_balance_guaranteed_swap_tranches(
     std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all balance guaranteed swap tranches";
+    ORES_LOG_SEV(lg(), debug) << "Listing all balance guaranteed swap tranches";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t balance_guaranteed_swap_tranche_service::count_balance_guaranteed_swap_tranches() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total balance guaranteed swap tranches count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total balance guaranteed swap tranches count";
     return repo_.get_total_balance_guaranteed_swap_tranche_count(ctx_);
 }
 
@@ -539,15 +537,15 @@ std::uint32_t balance_guaranteed_swap_tranche_service::count_balance_guaranteed_
 std::vector<domain::balance_guaranteed_swap_tranche>
 balance_guaranteed_swap_tranche_service::list_balance_guaranteed_swap_tranches_by_trade_id(
     const std::string& trade_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing balance guaranteed swap tranches by trade_id: "
-                               << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing balance guaranteed swap tranches by trade_id: "
+                              << trade_id;
     return repo_.read_latest_by_trade_id(ctx_, trade_id, offset, limit);
 }
 
 std::uint32_t
 balance_guaranteed_swap_tranche_service::count_balance_guaranteed_swap_tranches_by_trade_id(
     const std::string& trade_id) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Getting total balance guaranteed swap tranches count by trade_id: " << trade_id;
     return repo_.get_total_balance_guaranteed_swap_tranche_count_by_trade_id(ctx_, trade_id);
 }
@@ -556,19 +554,18 @@ balance_guaranteed_swap_tranche_service::count_balance_guaranteed_swap_tranches_
 std::optional<domain::balance_guaranteed_swap_tranche>
 balance_guaranteed_swap_tranche_service::get_balance_guaranteed_swap_tranche_at_version(
     const std::string& trade_id, const std::string& sequence_number, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting balance guaranteed swap tranche at version. "
-                               << "trade_id: " << trade_id
-                               << " sequence_number: " << sequence_number
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting balance guaranteed swap tranche at version. "
+                              << "trade_id: " << trade_id << " sequence_number: " << sequence_number
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, trade_id, sequence_number, version);
 }
 
 std::optional<domain::balance_guaranteed_swap_tranche>
 balance_guaranteed_swap_tranche_service::get_balance_guaranteed_swap_tranche(
     const std::string& trade_id, const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting balance guaranteed swap tranche. "
-                               << "trade_id: " << trade_id
-                               << " sequence_number: " << sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Getting balance guaranteed swap tranche. "
+                              << "trade_id: " << trade_id
+                              << " sequence_number: " << sequence_number;
     auto results = repo_.read_latest(ctx_, trade_id, sequence_number);
     if (results.empty())
         return std::nullopt;
@@ -585,15 +582,15 @@ void balance_guaranteed_swap_tranche_service::save_balance_guaranteed_swap_tranc
     const domain::balance_guaranteed_swap_tranche& v) {
     if (v.trade_id.is_nil())
         throw std::invalid_argument("Balance Guaranteed Swap Tranche trade_id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving balance guaranteed swap tranche. "
-                               << "trade_id: " << v.trade_id
-                               << " sequence_number: " << v.sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Saving balance guaranteed swap tranche. "
+                              << "trade_id: " << v.trade_id
+                              << " sequence_number: " << v.sequence_number;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved balance guaranteed swap tranche. "
-                              << "trade_id: " << v.trade_id
-                              << " sequence_number: " << v.sequence_number;
+    ORES_LOG_SEV(lg(), info) << "Saved balance guaranteed swap tranche. "
+                             << "trade_id: " << v.trade_id
+                             << " sequence_number: " << v.sequence_number;
 }
 
 void balance_guaranteed_swap_tranche_service::save_balance_guaranteed_swap_tranches(
@@ -603,8 +600,8 @@ void balance_guaranteed_swap_tranche_service::save_balance_guaranteed_swap_tranc
             throw std::invalid_argument(
                 "Balance Guaranteed Swap Tranche trade_id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << balance_guaranteed_swap_tranches.size()
-                               << " balance guaranteed swap tranches";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << balance_guaranteed_swap_tranches.size()
+                              << " balance guaranteed swap tranches";
     auto ts = balance_guaranteed_swap_tranches;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -614,13 +611,12 @@ void balance_guaranteed_swap_tranche_service::save_balance_guaranteed_swap_tranc
 
 void balance_guaranteed_swap_tranche_service::delete_balance_guaranteed_swap_tranche(
     const std::string& trade_id, const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing balance guaranteed swap tranche. "
-                               << "trade_id: " << trade_id
-                               << " sequence_number: " << sequence_number;
-    repo_.remove(ctx_, trade_id, sequence_number);
-    BOOST_LOG_SEV(lg(), info) << "Removed balance guaranteed swap tranche. "
+    ORES_LOG_SEV(lg(), debug) << "Removing balance guaranteed swap tranche. "
                               << "trade_id: " << trade_id
                               << " sequence_number: " << sequence_number;
+    repo_.remove(ctx_, trade_id, sequence_number);
+    ORES_LOG_SEV(lg(), info) << "Removed balance guaranteed swap tranche. "
+                             << "trade_id: " << trade_id << " sequence_number: " << sequence_number;
 }
 
 void balance_guaranteed_swap_tranche_service::delete_balance_guaranteed_swap_tranches(
@@ -631,9 +627,9 @@ void balance_guaranteed_swap_tranche_service::delete_balance_guaranteed_swap_tra
 std::vector<domain::balance_guaranteed_swap_tranche>
 balance_guaranteed_swap_tranche_service::get_balance_guaranteed_swap_tranche_history(
     const std::string& trade_id, const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for balance guaranteed swap tranche. "
-                               << "trade_id: " << trade_id
-                               << " sequence_number: " << sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for balance guaranteed swap tranche. "
+                              << "trade_id: " << trade_id
+                              << " sequence_number: " << sequence_number;
     return repo_.read_all(ctx_, trade_id, sequence_number);
 }
 

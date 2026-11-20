@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.trading.api/domain/activity_type.hpp"
 #include "ores.trading.api/messaging/activity_type_protocol.hpp"
 #include "ores.trading.core/repository/activity_type_repository.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -448,12 +446,12 @@ activity_type_service::prepare_change(const messaging::activity_type_change& cha
 
 std::vector<domain::activity_type> activity_type_service::list_activity_types(std::uint32_t offset,
                                                                               std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all activity types";
+    ORES_LOG_SEV(lg(), debug) << "Listing all activity types";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t activity_type_service::count_activity_types() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total activity types count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total activity types count";
     return repo_.get_total_activity_type_count(ctx_);
 }
 
@@ -461,14 +459,14 @@ std::uint32_t activity_type_service::count_activity_types() {
 std::optional<domain::activity_type>
 activity_type_service::get_activity_type_at_version(const std::string& code,
                                                     std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting activity type at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting activity type at version. " << "code: " << code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::activity_type>
 activity_type_service::get_activity_type(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting activity type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting activity type. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -483,11 +481,11 @@ activity_type_service::get_activity_types(const std::vector<std::string>& codes)
 void activity_type_service::save_activity_type(const domain::activity_type& v) {
     if (v.code.empty())
         throw std::invalid_argument("Activity Type code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving activity type. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving activity type. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved activity type. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved activity type. " << "code: " << v.code;
 }
 
 void activity_type_service::save_activity_types(
@@ -496,7 +494,7 @@ void activity_type_service::save_activity_types(
         if (e.code.empty())
             throw std::invalid_argument("Activity Type code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << activity_types.size() << " activity types";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << activity_types.size() << " activity types";
     auto ts = activity_types;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -505,9 +503,9 @@ void activity_type_service::save_activity_types(
 }
 
 void activity_type_service::delete_activity_type(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing activity type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing activity type. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed activity type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed activity type. " << "code: " << code;
 }
 
 void activity_type_service::delete_activity_types(const std::vector<std::string>& codes) {
@@ -516,7 +514,7 @@ void activity_type_service::delete_activity_types(const std::vector<std::string>
 
 std::vector<domain::activity_type>
 activity_type_service::get_activity_type_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for activity type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for activity type. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

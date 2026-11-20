@@ -21,7 +21,7 @@
 #define ORES_TELEMETRY_SERVICE_APP_NATS_POLLER_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.telemetry.database/repository/telemetry_repository.hpp"
 #include <boost/asio/awaitable.hpp>
 #include <cstdint>

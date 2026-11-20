@@ -29,10 +29,8 @@
 #include "ores.inbox.api/domain/approval_decision_type.hpp"
 #include "ores.inbox.api/messaging/approval_decision_type_protocol.hpp"
 #include "ores.inbox.core/repository/approval_decision_type_repository.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -463,12 +461,12 @@ ores::utility::domain::result approval_decision_type_service::prepare_change(
 
 std::vector<domain::approval_decision_type>
 approval_decision_type_service::list_decision_types(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all approval decision types";
+    ORES_LOG_SEV(lg(), debug) << "Listing all approval decision types";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t approval_decision_type_service::count_decision_types() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total approval decision types count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total approval decision types count";
     return repo_.get_total_decision_type_count(ctx_);
 }
 
@@ -476,14 +474,14 @@ std::uint32_t approval_decision_type_service::count_decision_types() {
 std::optional<domain::approval_decision_type>
 approval_decision_type_service::get_decision_type_at_version(const std::string& code,
                                                              std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting approval decision type at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting approval decision type at version. " << "code: " << code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::approval_decision_type>
 approval_decision_type_service::find_decision_type(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding approval decision type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Finding approval decision type. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -498,11 +496,11 @@ approval_decision_type_service::get_decision_types(const std::vector<std::string
 void approval_decision_type_service::save_decision_type(const domain::approval_decision_type& v) {
     if (v.code.empty())
         throw std::invalid_argument("Approval Decision Type code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving approval decision type. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving approval decision type. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved approval decision type. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved approval decision type. " << "code: " << v.code;
 }
 
 void approval_decision_type_service::save_decision_types(
@@ -511,7 +509,7 @@ void approval_decision_type_service::save_decision_types(
         if (e.code.empty())
             throw std::invalid_argument("Approval Decision Type code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << decision_types.size() << " approval decision types";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << decision_types.size() << " approval decision types";
     auto ts = decision_types;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -520,9 +518,9 @@ void approval_decision_type_service::save_decision_types(
 }
 
 void approval_decision_type_service::delete_decision_type(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing approval decision type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing approval decision type. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed approval decision type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed approval decision type. " << "code: " << code;
 }
 
 void approval_decision_type_service::delete_decision_types(const std::vector<std::string>& codes) {
@@ -531,8 +529,7 @@ void approval_decision_type_service::delete_decision_types(const std::vector<std
 
 std::vector<domain::approval_decision_type>
 approval_decision_type_service::get_decision_type_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for approval decision type. "
-                               << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for approval decision type. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

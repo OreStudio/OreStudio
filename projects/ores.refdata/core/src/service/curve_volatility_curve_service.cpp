@@ -26,7 +26,6 @@
 #include "ores.refdata.api/domain/curve_volatility_curve.hpp"
 #include "ores.refdata.api/messaging/curve_volatility_curve_protocol.hpp"
 #include "ores.refdata.core/repository/curve_volatility_curve_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -468,12 +466,12 @@ ores::utility::domain::result curve_volatility_curve_service::prepare_change(
 std::vector<domain::curve_volatility_curve>
 curve_volatility_curve_service::list_curve_volatility_curves(std::uint32_t offset,
                                                              std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all curve volatility curves";
+    ORES_LOG_SEV(lg(), debug) << "Listing all curve volatility curves";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t curve_volatility_curve_service::count_curve_volatility_curves() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total curve volatility curves count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total curve volatility curves count";
     return repo_.get_total_curve_volatility_curve_count(ctx_);
 }
 
@@ -481,14 +479,14 @@ std::uint32_t curve_volatility_curve_service::count_curve_volatility_curves() {
 std::optional<domain::curve_volatility_curve>
 curve_volatility_curve_service::get_curve_volatility_curve_at_version(const boost::uuids::uuid& id,
                                                                       std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting curve volatility curve at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting curve volatility curve at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::curve_volatility_curve>
 curve_volatility_curve_service::get_curve_volatility_curve(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting curve volatility curve. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting curve volatility curve. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -504,11 +502,11 @@ void curve_volatility_curve_service::save_curve_volatility_curve(
     const domain::curve_volatility_curve& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Curve Volatility Curve id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving curve volatility curve. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving curve volatility curve. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved curve volatility curve. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved curve volatility curve. " << "id: " << v.id;
 }
 
 void curve_volatility_curve_service::save_curve_volatility_curves(
@@ -517,8 +515,8 @@ void curve_volatility_curve_service::save_curve_volatility_curves(
         if (e.id.is_nil())
             throw std::invalid_argument("Curve Volatility Curve id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << curve_volatility_curves.size()
-                               << " curve volatility curves";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << curve_volatility_curves.size()
+                              << " curve volatility curves";
     auto ts = curve_volatility_curves;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -527,9 +525,9 @@ void curve_volatility_curve_service::save_curve_volatility_curves(
 }
 
 void curve_volatility_curve_service::delete_curve_volatility_curve(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing curve volatility curve. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing curve volatility curve. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed curve volatility curve. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed curve volatility curve. " << "id: " << id;
 }
 
 void curve_volatility_curve_service::delete_curve_volatility_curves(
@@ -539,7 +537,7 @@ void curve_volatility_curve_service::delete_curve_volatility_curves(
 
 std::vector<domain::curve_volatility_curve>
 curve_volatility_curve_service::get_curve_volatility_curve_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for curve volatility curve. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for curve volatility curve. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

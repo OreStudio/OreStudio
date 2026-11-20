@@ -26,7 +26,6 @@
 #include "ores.trading.api/domain/bond_option.hpp"
 #include "ores.trading.api/messaging/bond_option_protocol.hpp"
 #include "ores.trading.core/repository/bond_option_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -450,12 +448,12 @@ bond_option_service::prepare_change(const messaging::bond_option_change& change,
 
 std::vector<domain::bond_option> bond_option_service::list_options(std::uint32_t offset,
                                                                    std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all bond options";
+    ORES_LOG_SEV(lg(), debug) << "Listing all bond options";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t bond_option_service::count_options() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total bond options count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total bond options count";
     return repo_.get_total_option_count(ctx_);
 }
 
@@ -463,14 +461,14 @@ std::uint32_t bond_option_service::count_options() {
 std::optional<domain::bond_option>
 bond_option_service::get_option_at_version(const boost::uuids::uuid& trade_id,
                                            std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting bond option at version. " << "trade_id: " << trade_id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting bond option at version. " << "trade_id: " << trade_id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(trade_id), version);
 }
 
 std::optional<domain::bond_option>
 bond_option_service::get_option(const boost::uuids::uuid& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting bond option. " << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting bond option. " << "trade_id: " << trade_id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(trade_id));
     if (results.empty())
         return std::nullopt;
@@ -485,11 +483,11 @@ bond_option_service::get_options(const std::vector<std::string>& trade_ids) {
 void bond_option_service::save_option(const domain::bond_option& v) {
     if (v.trade_id.is_nil())
         throw std::invalid_argument("Bond Option trade_id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving bond option. " << "trade_id: " << v.trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Saving bond option. " << "trade_id: " << v.trade_id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved bond option. " << "trade_id: " << v.trade_id;
+    ORES_LOG_SEV(lg(), info) << "Saved bond option. " << "trade_id: " << v.trade_id;
 }
 
 void bond_option_service::save_options(const std::vector<domain::bond_option>& options) {
@@ -497,7 +495,7 @@ void bond_option_service::save_options(const std::vector<domain::bond_option>& o
         if (e.trade_id.is_nil())
             throw std::invalid_argument("Bond Option trade_id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << options.size() << " bond options";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << options.size() << " bond options";
     auto ts = options;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -506,9 +504,9 @@ void bond_option_service::save_options(const std::vector<domain::bond_option>& o
 }
 
 void bond_option_service::delete_option(const boost::uuids::uuid& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing bond option. " << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Removing bond option. " << "trade_id: " << trade_id;
     repo_.remove(ctx_, boost::uuids::to_string(trade_id));
-    BOOST_LOG_SEV(lg(), info) << "Removed bond option. " << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), info) << "Removed bond option. " << "trade_id: " << trade_id;
 }
 
 void bond_option_service::delete_options(const std::vector<std::string>& trade_ids) {
@@ -517,7 +515,7 @@ void bond_option_service::delete_options(const std::vector<std::string>& trade_i
 
 std::vector<domain::bond_option>
 bond_option_service::get_option_history(const std::string& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for bond option. " << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for bond option. " << "trade_id: " << trade_id;
     return repo_.read_all(ctx_, trade_id);
 }
 

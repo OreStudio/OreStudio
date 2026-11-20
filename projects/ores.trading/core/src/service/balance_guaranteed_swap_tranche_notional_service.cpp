@@ -26,7 +26,6 @@
 #include "ores.trading.api/domain/balance_guaranteed_swap_tranche_notional.hpp"
 #include "ores.trading.api/messaging/balance_guaranteed_swap_tranche_notional_protocol.hpp"
 #include "ores.trading.core/repository/balance_guaranteed_swap_tranche_notional_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -43,7 +42,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -560,13 +558,13 @@ ores::utility::domain::result balance_guaranteed_swap_tranche_notional_service::
 std::vector<domain::balance_guaranteed_swap_tranche_notional>
 balance_guaranteed_swap_tranche_notional_service::list_balance_guaranteed_swap_tranche_notionals(
     std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all balance guaranteed swap tranche notionals";
+    ORES_LOG_SEV(lg(), debug) << "Listing all balance guaranteed swap tranche notionals";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t balance_guaranteed_swap_tranche_notional_service::
     count_balance_guaranteed_swap_tranche_notionals() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total balance guaranteed swap tranche notionals count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total balance guaranteed swap tranche notionals count";
     return repo_.get_total_balance_guaranteed_swap_tranche_notional_count(ctx_);
 }
 
@@ -576,14 +574,14 @@ balance_guaranteed_swap_tranche_notional_service::
     list_balance_guaranteed_swap_tranche_notionals_by_trade_id(const std::string& trade_id,
                                                                std::uint32_t offset,
                                                                std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing balance guaranteed swap tranche notionals by trade_id: "
-                               << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing balance guaranteed swap tranche notionals by trade_id: "
+                              << trade_id;
     return repo_.read_latest_by_trade_id(ctx_, trade_id, offset, limit);
 }
 
 std::uint32_t balance_guaranteed_swap_tranche_notional_service::
     count_balance_guaranteed_swap_tranche_notionals_by_trade_id(const std::string& trade_id) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Getting total balance guaranteed swap tranche notionals count by trade_id: "
         << trade_id;
     return repo_.get_total_balance_guaranteed_swap_tranche_notional_count_by_trade_id(ctx_,
@@ -597,10 +595,9 @@ balance_guaranteed_swap_tranche_notional_service::
                                                             const std::string& tranche_number,
                                                             const std::string& sequence_number,
                                                             std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting balance guaranteed swap tranche notional at version. "
-                               << "trade_id: " << trade_id << " tranche_number: " << tranche_number
-                               << " sequence_number: " << sequence_number
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting balance guaranteed swap tranche notional at version. "
+                              << "trade_id: " << trade_id << " tranche_number: " << tranche_number
+                              << " sequence_number: " << sequence_number << " version: " << version;
     return repo_.read_at_version(ctx_, trade_id, tranche_number, sequence_number, version);
 }
 
@@ -609,9 +606,9 @@ balance_guaranteed_swap_tranche_notional_service::get_balance_guaranteed_swap_tr
     const std::string& trade_id,
     const std::string& tranche_number,
     const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting balance guaranteed swap tranche notional. "
-                               << "trade_id: " << trade_id << " tranche_number: " << tranche_number
-                               << " sequence_number: " << sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Getting balance guaranteed swap tranche notional. "
+                              << "trade_id: " << trade_id << " tranche_number: " << tranche_number
+                              << " sequence_number: " << sequence_number;
     auto results = repo_.read_latest(ctx_, trade_id, tranche_number, sequence_number);
     if (results.empty())
         return std::nullopt;
@@ -632,17 +629,17 @@ void balance_guaranteed_swap_tranche_notional_service::
     if (v.trade_id.is_nil())
         throw std::invalid_argument(
             "Balance Guaranteed Swap Tranche Notional trade_id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving balance guaranteed swap tranche notional. "
-                               << "trade_id: " << v.trade_id
-                               << " tranche_number: " << v.tranche_number
-                               << " sequence_number: " << v.sequence_number;
-    auto t = v;
-    stamp(t, ctx_);
-    repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved balance guaranteed swap tranche notional. "
+    ORES_LOG_SEV(lg(), debug) << "Saving balance guaranteed swap tranche notional. "
                               << "trade_id: " << v.trade_id
                               << " tranche_number: " << v.tranche_number
                               << " sequence_number: " << v.sequence_number;
+    auto t = v;
+    stamp(t, ctx_);
+    repo_.write(ctx_, t);
+    ORES_LOG_SEV(lg(), info) << "Saved balance guaranteed swap tranche notional. "
+                             << "trade_id: " << v.trade_id
+                             << " tranche_number: " << v.tranche_number
+                             << " sequence_number: " << v.sequence_number;
 }
 
 void balance_guaranteed_swap_tranche_notional_service::
@@ -654,8 +651,8 @@ void balance_guaranteed_swap_tranche_notional_service::
             throw std::invalid_argument(
                 "Balance Guaranteed Swap Tranche Notional trade_id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << balance_guaranteed_swap_tranche_notionals.size()
-                               << " balance guaranteed swap tranche notionals";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << balance_guaranteed_swap_tranche_notionals.size()
+                              << " balance guaranteed swap tranche notionals";
     auto ts = balance_guaranteed_swap_tranche_notionals;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -667,13 +664,13 @@ void balance_guaranteed_swap_tranche_notional_service::
     delete_balance_guaranteed_swap_tranche_notional(const std::string& trade_id,
                                                     const std::string& tranche_number,
                                                     const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing balance guaranteed swap tranche notional. "
-                               << "trade_id: " << trade_id << " tranche_number: " << tranche_number
-                               << " sequence_number: " << sequence_number;
-    repo_.remove(ctx_, trade_id, tranche_number, sequence_number);
-    BOOST_LOG_SEV(lg(), info) << "Removed balance guaranteed swap tranche notional. "
+    ORES_LOG_SEV(lg(), debug) << "Removing balance guaranteed swap tranche notional. "
                               << "trade_id: " << trade_id << " tranche_number: " << tranche_number
                               << " sequence_number: " << sequence_number;
+    repo_.remove(ctx_, trade_id, tranche_number, sequence_number);
+    ORES_LOG_SEV(lg(), info) << "Removed balance guaranteed swap tranche notional. "
+                             << "trade_id: " << trade_id << " tranche_number: " << tranche_number
+                             << " sequence_number: " << sequence_number;
 }
 
 void balance_guaranteed_swap_tranche_notional_service::
@@ -689,9 +686,9 @@ balance_guaranteed_swap_tranche_notional_service::
     get_balance_guaranteed_swap_tranche_notional_history(const std::string& trade_id,
                                                          const std::string& tranche_number,
                                                          const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for balance guaranteed swap tranche notional. "
-                               << "trade_id: " << trade_id << " tranche_number: " << tranche_number
-                               << " sequence_number: " << sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for balance guaranteed swap tranche notional. "
+                              << "trade_id: " << trade_id << " tranche_number: " << tranche_number
+                              << " sequence_number: " << sequence_number;
     return repo_.read_all(ctx_, trade_id, tranche_number, sequence_number);
 }
 

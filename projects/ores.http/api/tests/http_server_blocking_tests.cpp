@@ -19,7 +19,7 @@
  */
 #include "ores.http.api/domain/http_response.hpp"
 #include "ores.http.api/net/http_server.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "test_suite.hpp"
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
@@ -90,7 +90,7 @@ get_within(std::uint16_t port, const std::string& target, std::chrono::milliseco
  */
 TEST_CASE("a_blocked_handler_does_not_stop_health_answering", "[http_server][worker_pool]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that a blocked handler leaves the server answering";
+    ORES_LOG_SEV(lg, info) << "Testing that a blocked handler leaves the server answering";
 
     http_server_options options;
     options.address = "127.0.0.1";

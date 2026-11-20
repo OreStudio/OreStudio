@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.platform/environment/environment.hpp"
 #include "ores.platform/net/network_info.hpp"
 #include "test_suite.hpp"
@@ -110,7 +110,7 @@ TEST_CASE("get_hostname_matches_the_operating_system", "[net]") {
     REQUIRE(!expected.empty());
 
     const auto hostname = get_hostname();
-    BOOST_LOG_SEV(lg, info) << "Hostname: " << hostname;
+    ORES_LOG_SEV(lg, info) << "Hostname: " << hostname;
 
     CHECK(hostname == expected);
 }
@@ -121,13 +121,13 @@ TEST_CASE("get_primary_mac_address_reports_the_first_kernel_address", "[net]") {
 
     const auto kernel_macs = kernel_mac_addresses();
     if (kernel_macs.empty()) {
-        BOOST_LOG_SEV(lg, warn) << "No non-loopback interface available";
+        ORES_LOG_SEV(lg, warn) << "No non-loopback interface available";
         return;
     }
 
     const auto mac = get_primary_mac_address();
     REQUIRE(mac.has_value());
-    BOOST_LOG_SEV(lg, info) << "Primary MAC: " << *mac;
+    ORES_LOG_SEV(lg, info) << "Primary MAC: " << *mac;
 
     CHECK(*mac == kernel_macs.front());
 #else
@@ -159,7 +159,7 @@ TEST_CASE("derive_machine_id_is_the_hex_hash_of_hostname_and_formatted_mac", "[n
     auto lg(make_logger(test_suite));
 
     const auto machine_id = derive_machine_id();
-    BOOST_LOG_SEV(lg, info) << "Machine ID: " << machine_id;
+    ORES_LOG_SEV(lg, info) << "Machine ID: " << machine_id;
 
     const std::string combined = get_hostname() + ":" + get_primary_mac_address().value_or("");
     const std::size_t expected_hash = std::hash<std::string>{}(combined);

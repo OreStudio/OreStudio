@@ -485,7 +485,7 @@ filled. The arithmetic is the pure engine's, not a second copy of it here.
      * request -- is an error reply.
      */
     void resolve_tenor(ores::nats::message msg) {
-        BOOST_LOG_SEV(tenor_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(tenor_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -500,20 +500,20 @@ filled. The arithmetic is the pure engine's, not a second copy of it here.
         }
         auto req = decode<resolve_tenor_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(tenor_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(tenor_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::tenor_resolution_service svc(req_ctx);
         try {
             auto response = svc.resolve(*req);
-            BOOST_LOG_SEV(tenor_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(tenor_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(tenor_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(tenor_handler_lg(), error) << msg.subject << " failed: " << e.what();
             resolve_tenor_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
             failure.result.code = "internal_error";
@@ -531,7 +531,7 @@ filled. The arithmetic is the pure engine's, not a second copy of it here.
      * checks the permission, decodes, calls the service and replies.
      */
     void preview_tenor_resolution(ores::nats::message msg) {
-        BOOST_LOG_SEV(tenor_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(tenor_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -546,17 +546,17 @@ filled. The arithmetic is the pure engine's, not a second copy of it here.
         }
         auto req = decode<preview_tenor_resolution_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(tenor_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(tenor_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::tenor_resolution_service svc(req_ctx);
         try {
             auto response = svc.preview(*req);
-            BOOST_LOG_SEV(tenor_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(tenor_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(tenor_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(tenor_handler_lg(), error) << msg.subject << " failed: " << e.what();
             resolve_tenor_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
             failure.result.code = "internal_error";
@@ -575,7 +575,7 @@ filled. The arithmetic is the pure engine's, not a second copy of it here.
      * reply.
      */
     void resolve_convention(ores::nats::message msg) {
-        BOOST_LOG_SEV(tenor_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(tenor_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -590,17 +590,17 @@ filled. The arithmetic is the pure engine's, not a second copy of it here.
         }
         auto req = decode<resolve_convention_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(tenor_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(tenor_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::tenor_resolution_service svc(req_ctx);
         try {
             auto response = svc.resolve_convention(*req);
-            BOOST_LOG_SEV(tenor_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(tenor_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(tenor_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(tenor_handler_lg(), error) << msg.subject << " failed: " << e.what();
             resolve_convention_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
             failure.result.code = "internal_error";

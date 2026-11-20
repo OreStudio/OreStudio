@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.platform/filesystem/scoped_temp_directory.hpp"
 #include "ores.platform/filesystem/scoped_temp_file.hpp"
 #include "test_suite.hpp"
@@ -53,7 +53,7 @@ TEST_CASE("create_temp_file_at_path_that_exists", "[filesystem]") {
 
     scoped_temp_file sut;
 
-    BOOST_LOG_SEV(lg, info) << "Created temp file: " << sut.path();
+    ORES_LOG_SEV(lg, info) << "Created temp file: " << sut.path();
     CHECK(std::filesystem::exists(sut.path()));
 }
 
@@ -66,7 +66,7 @@ TEST_CASE("delete_temp_file_on_destruction", "[filesystem]") {
         temp_path = sut.path();
     }
 
-    BOOST_LOG_SEV(lg, info) << "Released temp file: " << temp_path;
+    ORES_LOG_SEV(lg, info) << "Released temp file: " << temp_path;
     CHECK(!std::filesystem::exists(temp_path));
 }
 
@@ -82,7 +82,7 @@ TEST_CASE("place_temp_file_under_system_temp_directory", "[filesystem]") {
     const auto temp_dir = std::filesystem::temp_directory_path();
     const auto parent = sut.path().parent_path();
 
-    BOOST_LOG_SEV(lg, info) << "Temp file parent: " << parent;
+    ORES_LOG_SEV(lg, info) << "Temp file parent: " << parent;
     CHECK(std::filesystem::equivalent(parent, temp_dir));
 }
 
@@ -91,7 +91,7 @@ TEST_CASE("create_temp_directory_at_path_that_exists", "[filesystem]") {
 
     scoped_temp_directory sut;
 
-    BOOST_LOG_SEV(lg, info) << "Created temp directory: " << sut.path();
+    ORES_LOG_SEV(lg, info) << "Created temp directory: " << sut.path();
     CHECK(std::filesystem::exists(sut.path()));
     CHECK(std::filesystem::is_directory(sut.path()));
 }
@@ -107,7 +107,7 @@ TEST_CASE("delete_temp_directory_and_its_contents_on_destruction", "[filesystem]
         std::filesystem::create_directory(temp_path / "nested");
     }
 
-    BOOST_LOG_SEV(lg, info) << "Released temp directory: " << temp_path;
+    ORES_LOG_SEV(lg, info) << "Released temp directory: " << temp_path;
     CHECK(!std::filesystem::exists(temp_path));
 }
 
@@ -120,7 +120,7 @@ TEST_CASE("place_temp_directory_under_system_temp_directory", "[filesystem]") {
     const auto temp_dir = std::filesystem::temp_directory_path();
     const auto parent = sut.path().parent_path();
 
-    BOOST_LOG_SEV(lg, info) << "Temp directory parent: " << parent;
+    ORES_LOG_SEV(lg, info) << "Temp directory parent: " << parent;
     CHECK(std::filesystem::equivalent(parent, temp_dir));
 }
 
@@ -130,7 +130,7 @@ TEST_CASE("create_distinct_paths_for_consecutive_temp_files", "[filesystem]") {
     scoped_temp_file first;
     scoped_temp_file second;
 
-    BOOST_LOG_SEV(lg, info) << "First: " << first.path() << " second: " << second.path();
+    ORES_LOG_SEV(lg, info) << "First: " << first.path() << " second: " << second.path();
     CHECK(first.path() != second.path());
 }
 
@@ -140,7 +140,7 @@ TEST_CASE("create_distinct_paths_for_consecutive_temp_directories", "[filesystem
     scoped_temp_directory first;
     scoped_temp_directory second;
 
-    BOOST_LOG_SEV(lg, info) << "First: " << first.path() << " second: " << second.path();
+    ORES_LOG_SEV(lg, info) << "First: " << first.path() << " second: " << second.path();
     CHECK(first.path() != second.path());
 }
 
@@ -154,7 +154,7 @@ TEST_CASE("create_distinct_paths_for_many_temp_files", "[filesystem]") {
         paths.insert(sut.path());
     }
 
-    BOOST_LOG_SEV(lg, info) << "Created " << paths.size() << " temp files";
+    ORES_LOG_SEV(lg, info) << "Created " << paths.size() << " temp files";
     CHECK(paths.size() == count);
 }
 
@@ -163,7 +163,7 @@ TEST_CASE("create_temp_file_as_a_regular_file", "[filesystem]") {
 
     scoped_temp_file sut;
 
-    BOOST_LOG_SEV(lg, info) << "Temp file: " << sut.path();
+    ORES_LOG_SEV(lg, info) << "Temp file: " << sut.path();
     CHECK(std::filesystem::is_regular_file(sut.path()));
     CHECK(!std::filesystem::is_directory(sut.path()));
 }
@@ -182,7 +182,7 @@ TEST_CASE("hold_content_written_to_temp_file", "[filesystem]") {
     const std::string content((std::istreambuf_iterator<char>(stream)),
                               std::istreambuf_iterator<char>());
 
-    BOOST_LOG_SEV(lg, info) << "Read back: " << content;
+    ORES_LOG_SEV(lg, info) << "Read back: " << content;
     CHECK(content == expected_content);
 }
 
@@ -195,7 +195,7 @@ TEST_CASE("keep_temp_file_on_disk_after_release", "[filesystem]") {
         temp_path = sut.release();
     }
 
-    BOOST_LOG_SEV(lg, info) << "Released temp file: " << temp_path;
+    ORES_LOG_SEV(lg, info) << "Released temp file: " << temp_path;
     CHECK(!temp_path.empty());
     CHECK(std::filesystem::exists(temp_path));
 
@@ -212,7 +212,7 @@ TEST_CASE("keep_temp_directory_on_disk_after_release", "[filesystem]") {
         temp_path = sut.release();
     }
 
-    BOOST_LOG_SEV(lg, info) << "Released temp directory: " << temp_path;
+    ORES_LOG_SEV(lg, info) << "Released temp directory: " << temp_path;
     CHECK(!temp_path.empty());
     CHECK(std::filesystem::exists(temp_path));
 
@@ -226,7 +226,7 @@ TEST_CASE("keep_temp_file_of_moved_to_guard_after_moved_from_guard_dies", "[file
     scoped_temp_file source;
     const auto source_path = source.path();
 
-    BOOST_LOG_SEV(lg, info) << "Source: " << source_path;
+    ORES_LOG_SEV(lg, info) << "Source: " << source_path;
     CHECK(std::filesystem::exists(source_path));
 
     const auto removed = path_removed_by_owner(std::move(source));
@@ -241,7 +241,7 @@ TEST_CASE("keep_temp_directory_of_moved_to_guard_after_moved_from_guard_dies", "
     scoped_temp_directory source;
     const auto source_path = source.path();
 
-    BOOST_LOG_SEV(lg, info) << "Source: " << source_path;
+    ORES_LOG_SEV(lg, info) << "Source: " << source_path;
     CHECK(std::filesystem::exists(source_path));
 
     const auto removed = path_removed_by_owner(std::move(source));
@@ -262,7 +262,7 @@ TEST_CASE("keep_temp_file_held_by_another_owner_when_moved_from_guard_dies", "[f
         source = std::move(target);
     }
 
-    BOOST_LOG_SEV(lg, info) << "Source now holds: " << source.path();
+    ORES_LOG_SEV(lg, info) << "Source now holds: " << source.path();
     CHECK(source.path() == target_path);
     CHECK(std::filesystem::exists(target_path));
     CHECK(!std::filesystem::exists(evicted_path));
@@ -280,7 +280,7 @@ TEST_CASE("keep_temp_directory_held_by_another_owner_when_moved_from_guard_dies"
         source = std::move(target);
     }
 
-    BOOST_LOG_SEV(lg, info) << "Source now holds: " << source.path();
+    ORES_LOG_SEV(lg, info) << "Source now holds: " << source.path();
     CHECK(source.path() == target_path);
     CHECK(std::filesystem::exists(target_path));
     CHECK(!std::filesystem::exists(evicted_path));

@@ -23,7 +23,7 @@
 #include "ores.iam.api/messaging/session_protocol.hpp"
 #include "ores.iam.core/repository/session_repository.hpp"
 #include "ores.iam.core/service/session_service.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
@@ -48,7 +48,7 @@ TEST_CASE("create_single_session", "[repository]") {
     session_repository repo;
     auto s = generate_synthetic_session(gen_ctx);
 
-    BOOST_LOG_SEV(lg, debug) << "Session: " << s;
+    ORES_LOG_SEV(lg, debug) << "Session: " << s;
     CHECK_NOTHROW(repo.write(h.context(), s));
 }
 
@@ -62,13 +62,13 @@ TEST_CASE("read_session_by_id", "[repository]") {
     auto s = generate_synthetic_session(gen_ctx);
     const auto target_id = s.id;
 
-    BOOST_LOG_SEV(lg, debug) << "Session: " << s;
+    ORES_LOG_SEV(lg, debug) << "Session: " << s;
     repo.write(h.context(), s);
 
-    BOOST_LOG_SEV(lg, debug) << "Target ID: " << target_id;
+    ORES_LOG_SEV(lg, debug) << "Target ID: " << target_id;
 
     auto read_session = repo.read(h.context(), target_id);
-    BOOST_LOG_SEV(lg, debug) << "Read session has value: " << read_session.has_value();
+    ORES_LOG_SEV(lg, debug) << "Read session has value: " << read_session.has_value();
 
     REQUIRE(read_session.has_value());
     CHECK(read_session->id == target_id);
@@ -83,10 +83,10 @@ TEST_CASE("read_nonexistent_session", "[repository]") {
     session_repository repo;
 
     const auto nonexistent_id = boost::uuids::random_generator()();
-    BOOST_LOG_SEV(lg, debug) << "Non-existent ID: " << nonexistent_id;
+    ORES_LOG_SEV(lg, debug) << "Non-existent ID: " << nonexistent_id;
 
     auto read_session = repo.read(h.context(), nonexistent_id);
-    BOOST_LOG_SEV(lg, debug) << "Read session has value: " << read_session.has_value();
+    ORES_LOG_SEV(lg, debug) << "Read session has value: " << read_session.has_value();
 
     CHECK(!read_session.has_value());
 }

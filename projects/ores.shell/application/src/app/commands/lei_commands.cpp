@@ -79,7 +79,7 @@ void lei_commands::process_countries(std::ostream& out, nats_client& session) {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Fetching LEI entity countries.";
+    ORES_LOG_SEV(lg(), debug) << "Fetching LEI entity countries.";
 
     auto result = fetch_entities(out, session, "");
     if (!result)
@@ -89,7 +89,7 @@ void lei_commands::process_countries(std::ostream& out, nats_client& session) {
     for (const auto& entity : result->entities)
         countries.insert(entity.country);
 
-    BOOST_LOG_SEV(lg(), info) << "Found " << countries.size() << " countries.";
+    ORES_LOG_SEV(lg(), info) << "Found " << countries.size() << " countries.";
     for (const auto& country : countries)
         out << country << std::endl;
     out << countries.size() << " countr" << (countries.size() == 1 ? "y" : "ies")

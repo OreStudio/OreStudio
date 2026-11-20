@@ -22,7 +22,7 @@
 #include "ores.http.api/net/router.hpp"
 #include "ores.http.api/openapi/endpoint_registry.hpp"
 #include "ores.http/routes/reporting/run_file_routes.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "test_suite.hpp"
 #include <boost/asio/co_spawn.hpp>
@@ -75,7 +75,7 @@ const auto a_run = "00000000-0000-0000-0000-0000000000c1";
 
 TEST_CASE("a_run_files_address_that_names_no_uuid_is_refused", "[run_file]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the run file routes' addresses";
+    ORES_LOG_SEV(lg, info) << "Testing the run file routes' addresses";
 
     CHECK(answer_at(http_method::get,
                     "/api/reporting/runs/not-an-id/files",
@@ -96,7 +96,7 @@ TEST_CASE("a_run_files_address_that_names_no_uuid_is_refused", "[run_file]") {
 
 TEST_CASE("a_run_whose_services_cannot_answer_is_refused_as_upstream", "[run_file]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a run files read with no service behind it";
+    ORES_LOG_SEV(lg, info) << "Testing a run files read with no service behind it";
 
     CHECK(answer_at(http_method::get,
                     "/api/reporting/runs/" + std::string(a_run) + "/files",
@@ -107,7 +107,7 @@ TEST_CASE("a_run_whose_services_cannot_answer_is_refused_as_upstream", "[run_fil
 
 TEST_CASE("a_run_files_read_refuses_a_query_parameter_it_does_not_name", "[run_file]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the run file routes' strict query";
+    ORES_LOG_SEV(lg, info) << "Testing the run file routes' strict query";
 
     http_request req;
     req.query_params["depth"] = "2";

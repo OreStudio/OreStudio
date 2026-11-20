@@ -26,13 +26,11 @@
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.marketdata.api/domain/market_series_asset_class.hpp"
 #include "ores.marketdata.api/domain/market_series_asset_class_json_io.hpp" // IWYU pragma: keep.
 #include "ores.marketdata.core/repository/market_series_asset_class_entity.hpp"
 #include "ores.marketdata.core/repository/market_series_asset_class_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -197,9 +195,8 @@ void market_series_asset_class_repository::write(
 void market_series_asset_class_repository::write(
     const domain::market_series_asset_class& asset_class,
     const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing asset class to database: "
-                               << asset_class.market_series_id << "/"
-                               << asset_class.asset_class_code;
+    ORES_LOG_SEV(lg(), debug) << "Writing asset class to database: " << asset_class.market_series_id
+                              << "/" << asset_class.asset_class_code;
     const auto current =
         claim.kind == ores::utility::domain::precondition_kind::any ?
             read_latest(asset_class.market_series_id, asset_class.asset_class_code) :
@@ -212,8 +209,8 @@ void market_series_asset_class_repository::write(
 void market_series_asset_class_repository::write(
     const std::vector<domain::market_series_asset_class>& asset_classes,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing asset classes to database. Count: "
-                               << asset_classes.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing asset classes to database. Count: "
+                              << asset_classes.size();
     if (claims.size() != asset_classes.size())
         throw std::invalid_argument(
             "market_series_asset_class_repository::write: one claim is needed for each row");
@@ -254,8 +251,8 @@ std::vector<domain::market_series_asset_class> market_series_asset_class_reposit
 
 std::vector<domain::market_series_asset_class>
 market_series_asset_class_repository::read_latest(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest asset classes with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest asset classes with offset: " << offset
+                              << " and limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<market_series_asset_class_entity>> |
@@ -275,8 +272,8 @@ market_series_asset_class_repository::read_latest(std::uint32_t offset, std::uin
 std::vector<domain::market_series_asset_class>
 market_series_asset_class_repository::read_latest(const boost::uuids::uuid& market_series_id,
                                                   const std::string& asset_class_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest asset class. " << market_series_id << "/"
-                               << asset_class_code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest asset class. " << market_series_id << "/"
+                              << asset_class_code;
 
     static constexpr auto max = db_timestamp::max();
     const auto market_series_id_str = boost::uuids::to_string(market_series_id);
@@ -297,7 +294,7 @@ market_series_asset_class_repository::read_latest(const boost::uuids::uuid& mark
 }
 
 std::uint32_t market_series_asset_class_repository::get_total_asset_class_count() {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active asset classes count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active asset classes count";
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
@@ -306,14 +303,14 @@ std::uint32_t market_series_asset_class_repository::get_total_asset_class_count(
 
     const auto count = query_builder::execute_count_query<market_series_asset_class_entity>(
         ctx_, query, std::nullopt, lg(), "Counting asset classes");
-    BOOST_LOG_SEV(lg(), debug) << "Total active asset classes count: " << count;
+    ORES_LOG_SEV(lg(), debug) << "Total active asset classes count: " << count;
     return count;
 }
 
 std::vector<domain::market_series_asset_class>
 market_series_asset_class_repository::read_latest_by_series(
     const boost::uuids::uuid& market_series_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest asset classes. Series: " << market_series_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest asset classes. Series: " << market_series_id;
 
     static constexpr auto max = db_timestamp::max();
     const auto market_series_id_str = boost::uuids::to_string(market_series_id);
@@ -338,7 +335,7 @@ market_series_asset_class_repository::read_latest_by_series(
 std::vector<domain::market_series_asset_class>
 market_series_asset_class_repository::read_latest_by_asset_class(
     const std::string& asset_class_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest asset classes. Asset Class: " << asset_class_code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest asset classes. Asset Class: " << asset_class_code;
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
@@ -363,8 +360,8 @@ std::vector<domain::market_series_asset_class>
 market_series_asset_class_repository::read_latest_by_series(
     const boost::uuids::uuid& market_series_id, std::uint32_t offset, std::uint32_t limit) {
     const auto market_series_id_str = boost::uuids::to_string(market_series_id);
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest asset classes. Series: " << market_series_id
-                               << " offset: " << offset << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest asset classes. Series: " << market_series_id
+                              << " offset: " << offset << " limit: " << limit;
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
@@ -389,8 +386,8 @@ market_series_asset_class_repository::read_latest_by_series(
 std::uint32_t market_series_asset_class_repository::get_total_asset_class_count_by_series(
     const boost::uuids::uuid& market_series_id) {
     const auto market_series_id_str = boost::uuids::to_string(market_series_id);
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active asset classes count. Series: "
-                               << market_series_id;
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active asset classes count. Series: "
+                              << market_series_id;
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
@@ -401,14 +398,14 @@ std::uint32_t market_series_asset_class_repository::get_total_asset_class_count_
 
     const auto count = query_builder::execute_count_query<market_series_asset_class_entity>(
         ctx_, query, std::nullopt, lg(), "Counting asset classes");
-    BOOST_LOG_SEV(lg(), debug) << "Total active asset classes count by series: " << count;
+    ORES_LOG_SEV(lg(), debug) << "Total active asset classes count by series: " << count;
     return count;
 }
 
 std::uint32_t market_series_asset_class_repository::get_total_asset_class_count_by_asset_class(
     const std::string& asset_class_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active asset classes count. Asset Class: "
-                               << asset_class_code;
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active asset classes count. Asset Class: "
+                              << asset_class_code;
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
@@ -419,15 +416,15 @@ std::uint32_t market_series_asset_class_repository::get_total_asset_class_count_
 
     const auto count = query_builder::execute_count_query<market_series_asset_class_entity>(
         ctx_, query, std::nullopt, lg(), "Counting asset classes");
-    BOOST_LOG_SEV(lg(), debug) << "Total active asset classes count by asset_class: " << count;
+    ORES_LOG_SEV(lg(), debug) << "Total active asset classes count by asset_class: " << count;
     return count;
 }
 
 std::vector<market_series_asset_class_history_row>
 market_series_asset_class_repository::read_all_by_series(
     const boost::uuids::uuid& market_series_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading every version of the asset classes. Series: "
-                               << market_series_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading every version of the asset classes. Series: "
+                              << market_series_id;
 
     const auto market_series_id_str = boost::uuids::to_string(market_series_id);
     const auto tid = ctx_.tenant_id().to_string();
@@ -480,8 +477,8 @@ market_series_asset_class_repository::remove_status
 market_series_asset_class_repository::remove(const boost::uuids::uuid& market_series_id,
                                              const std::string& asset_class_code,
                                              std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing asset class from database: " << market_series_id << "/"
-                               << asset_class_code;
+    ORES_LOG_SEV(lg(), debug) << "Removing asset class from database: " << market_series_id << "/"
+                              << asset_class_code;
 
     const auto current = read_latest(market_series_id, asset_class_code);
     if (current.empty())
@@ -529,7 +526,7 @@ void market_series_asset_class_repository::remove(
 
 void market_series_asset_class_repository::remove_by_series(
     const boost::uuids::uuid& market_series_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing all asset classes from database: " << market_series_id;
+    ORES_LOG_SEV(lg(), debug) << "Removing all asset classes from database: " << market_series_id;
 
     const auto market_series_id_str = boost::uuids::to_string(market_series_id);
     const auto tid = ctx_.tenant_id().to_string();

@@ -28,7 +28,7 @@
 #include "ores.http/routes/reporting/pricing_engine_rows.hpp"
 #include "ores.http/routes/reporting/pricing_engine_shapes.hpp"
 #include "ores.http/routes/reporting/reporting_configuration_rows.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/random_generator.hpp>
@@ -283,7 +283,7 @@ void save_document(const http_request& req,
     msg.document = std::move(document);
     const auto reply = forwarding::forward(req, session, msg);
     if (!reply.success) {
-        BOOST_LOG_SEV(pricing_write_lg(), ores::logging::debug)
+        ORES_LOG_SEV(pricing_write_lg(), ores::logging::debug)
             << "The pricing engines service refused the document: " << reply.message;
         rr::invalid(reply.message.empty() ? "The pricing engines document could not be written." :
                                             reply.message);

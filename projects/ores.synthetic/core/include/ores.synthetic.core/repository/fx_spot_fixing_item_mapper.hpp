@@ -25,7 +25,7 @@
 #ifndef ORES_SYNTHETIC_CORE_REPOSITORY_FX_SPOT_FIXING_ITEM_MAPPER_HPP
 #define ORES_SYNTHETIC_CORE_REPOSITORY_FX_SPOT_FIXING_ITEM_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.synthetic.api/domain/fx_spot_fixing_item.hpp"
 #include "ores.synthetic.core/export.hpp"
 #include "ores.synthetic.core/repository/fx_spot_fixing_item_entity.hpp"

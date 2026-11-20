@@ -25,7 +25,7 @@
 #ifndef ORES_SHELL_APP_COMMANDS_YIELD_CURVE_PROCESS_PARAMETER_DEFINITION_COMMANDS_HPP
 #define ORES_SHELL_APP_COMMANDS_YIELD_CURVE_PROCESS_PARAMETER_DEFINITION_COMMANDS_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include <ostream>
 #include <string>

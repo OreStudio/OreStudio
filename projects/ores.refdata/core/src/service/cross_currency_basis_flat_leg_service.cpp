@@ -26,7 +26,6 @@
 #include "ores.refdata.api/domain/cross_currency_basis_flat_leg.hpp"
 #include "ores.refdata.api/messaging/cross_currency_basis_flat_leg_protocol.hpp"
 #include "ores.refdata.core/repository/cross_currency_basis_flat_leg_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <chrono>
@@ -45,7 +44,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -529,12 +527,12 @@ ores::utility::domain::result cross_currency_basis_flat_leg_service::prepare_cha
 std::vector<domain::cross_currency_basis_flat_leg>
 cross_currency_basis_flat_leg_service::list_cross_currency_basis_flat_legs(std::uint32_t offset,
                                                                            std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all cross currency basis flat legs";
+    ORES_LOG_SEV(lg(), debug) << "Listing all cross currency basis flat legs";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t cross_currency_basis_flat_leg_service::count_cross_currency_basis_flat_legs() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total cross currency basis flat legs count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total cross currency basis flat legs count";
     return repo_.get_total_cross_currency_basis_flat_leg_count(ctx_);
 }
 
@@ -542,15 +540,15 @@ std::uint32_t cross_currency_basis_flat_leg_service::count_cross_currency_basis_
 std::vector<domain::cross_currency_basis_flat_leg>
 cross_currency_basis_flat_leg_service::list_cross_currency_basis_flat_legs_by_convention_id(
     const std::string& convention_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing cross currency basis flat legs by convention_id: "
-                               << convention_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing cross currency basis flat legs by convention_id: "
+                              << convention_id;
     return repo_.read_latest_by_convention_id(ctx_, convention_id, offset, limit);
 }
 
 std::uint32_t
 cross_currency_basis_flat_leg_service::count_cross_currency_basis_flat_legs_by_convention_id(
     const std::string& convention_id) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Getting total cross currency basis flat legs count by convention_id: " << convention_id;
     return repo_.get_total_cross_currency_basis_flat_leg_count_by_convention_id(ctx_,
                                                                                 convention_id);
@@ -559,8 +557,8 @@ cross_currency_basis_flat_leg_service::count_cross_currency_basis_flat_legs_by_c
 std::vector<domain::cross_currency_basis_flat_leg>
 cross_currency_basis_flat_leg_service::list_cross_currency_basis_flat_legs_by_convention_id(
     const boost::uuids::uuid& convention_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing cross currency basis flat legs by convention_id: "
-                               << convention_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing cross currency basis flat legs by convention_id: "
+                              << convention_id;
     return repo_.read_latest_by_convention_id(
         ctx_, boost::uuids::to_string(convention_id), offset, limit);
 }
@@ -568,7 +566,7 @@ cross_currency_basis_flat_leg_service::list_cross_currency_basis_flat_legs_by_co
 std::uint32_t
 cross_currency_basis_flat_leg_service::count_cross_currency_basis_flat_legs_by_convention_id(
     const boost::uuids::uuid& convention_id) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Getting total cross currency basis flat legs count by convention_id: " << convention_id;
     return repo_.get_total_cross_currency_basis_flat_leg_count_by_convention_id(
         ctx_, boost::uuids::to_string(convention_id));
@@ -580,7 +578,7 @@ cross_currency_basis_flat_leg_service::list_cross_currency_basis_flat_legs_by_co
     const std::string& convention_id,
     std::chrono::system_clock::time_point valid_from_bound,
     std::chrono::system_clock::time_point valid_to_bound) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Listing cross currency basis flat legs by convention_id as of window: "
         << convention_id;
     return repo_.read_by_convention_id_as_of(ctx_, convention_id, valid_from_bound, valid_to_bound);
@@ -589,15 +587,15 @@ cross_currency_basis_flat_leg_service::list_cross_currency_basis_flat_legs_by_co
 std::optional<domain::cross_currency_basis_flat_leg>
 cross_currency_basis_flat_leg_service::get_cross_currency_basis_flat_leg_at_version(
     const boost::uuids::uuid& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting cross currency basis flat leg at version. "
-                               << "id: " << id << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting cross currency basis flat leg at version. "
+                              << "id: " << id << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::cross_currency_basis_flat_leg>
 cross_currency_basis_flat_leg_service::get_cross_currency_basis_flat_leg(
     const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting cross currency basis flat leg. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting cross currency basis flat leg. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -614,11 +612,11 @@ void cross_currency_basis_flat_leg_service::save_cross_currency_basis_flat_leg(
     const domain::cross_currency_basis_flat_leg& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Cross Currency Basis Flat Leg id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving cross currency basis flat leg. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving cross currency basis flat leg. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved cross currency basis flat leg. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved cross currency basis flat leg. " << "id: " << v.id;
 }
 
 void cross_currency_basis_flat_leg_service::save_cross_currency_basis_flat_legs(
@@ -627,8 +625,8 @@ void cross_currency_basis_flat_leg_service::save_cross_currency_basis_flat_legs(
         if (e.id.is_nil())
             throw std::invalid_argument("Cross Currency Basis Flat Leg id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << cross_currency_basis_flat_legs.size()
-                               << " cross currency basis flat legs";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << cross_currency_basis_flat_legs.size()
+                              << " cross currency basis flat legs";
     auto ts = cross_currency_basis_flat_legs;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -638,9 +636,9 @@ void cross_currency_basis_flat_leg_service::save_cross_currency_basis_flat_legs(
 
 void cross_currency_basis_flat_leg_service::delete_cross_currency_basis_flat_leg(
     const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing cross currency basis flat leg. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing cross currency basis flat leg. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed cross currency basis flat leg. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed cross currency basis flat leg. " << "id: " << id;
 }
 
 void cross_currency_basis_flat_leg_service::delete_cross_currency_basis_flat_legs(
@@ -651,8 +649,8 @@ void cross_currency_basis_flat_leg_service::delete_cross_currency_basis_flat_leg
 std::vector<domain::cross_currency_basis_flat_leg>
 cross_currency_basis_flat_leg_service::get_cross_currency_basis_flat_leg_history(
     const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for cross currency basis flat leg. "
-                               << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for cross currency basis flat leg. "
+                              << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

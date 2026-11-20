@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/domain/market_fixing.hpp"
 #include "ores.marketdata.api/domain/market_fixing_json_io.hpp" // IWYU pragma: keep.
 #include "ores.marketdata.api/generators/market_fixing_generator.hpp"
@@ -50,7 +50,7 @@ TEST_CASE("insert_single_market_fixing", "[repository]") {
     market_fixing_repository fixings_repo;
     auto f = generate_synthetic_market_fixing(ctx);
     f.series_id = s.id;
-    BOOST_LOG_SEV(lg, debug) << "Fixing: " << f;
+    ORES_LOG_SEV(lg, debug) << "Fixing: " << f;
     fixings_repo.insert(h.context(), f);
 
     const auto read = fixings_repo.read_latest_for_series(h.context(), s.id);
@@ -72,7 +72,7 @@ TEST_CASE("insert_multiple_market_fixings", "[repository]") {
     auto fixings = generate_synthetic_market_fixings(5, ctx);
     for (auto& f : fixings)
         f.series_id = s.id;
-    BOOST_LOG_SEV(lg, debug) << "Fixings: " << fixings;
+    ORES_LOG_SEV(lg, debug) << "Fixings: " << fixings;
     CHECK_NOTHROW(fixings_repo.insert(h.context(), fixings));
 }
 
@@ -93,7 +93,7 @@ TEST_CASE("read_latest_market_fixings_by_series", "[repository]") {
     fixings_repo.insert(h.context(), written);
 
     auto read = fixings_repo.read_latest_for_series(h.context(), s.id);
-    BOOST_LOG_SEV(lg, debug) << "Read fixings: " << read;
+    ORES_LOG_SEV(lg, debug) << "Read fixings: " << read;
 
     CHECK(read.size() == written.size());
     for (const auto& r : read)

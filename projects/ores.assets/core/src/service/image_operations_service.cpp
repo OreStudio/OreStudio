@@ -60,8 +60,8 @@ image_operations_service::upload_image(const messaging::upload_image_request& re
     try {
         bytes = ores::utility::convert::base64_converter::convert(request.data);
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn) << "Refused an upload: the data is not readable base64: "
-                                  << e.what();
+        ORES_LOG_SEV(lg(), warn) << "Refused an upload: the data is not readable base64: "
+                                 << e.what();
         response.result = refusal_result(
             validation::image_upload_refusal{.code = "invalid_image",
                                              .field = "data",
@@ -70,8 +70,8 @@ image_operations_service::upload_image(const messaging::upload_image_request& re
     }
     if (const auto refusal =
             validation::image_upload_validator::validate(request.mime_type, bytes)) {
-        BOOST_LOG_SEV(lg(), warn) << "Refused an upload: " << refusal->code << " ("
-                                  << refusal->field << ")";
+        ORES_LOG_SEV(lg(), warn) << "Refused an upload: " << refusal->code << " (" << refusal->field
+                                 << ")";
         response.result = refusal_result(*refusal);
         return response;
     }
@@ -83,7 +83,7 @@ image_operations_service::upload_image(const messaging::upload_image_request& re
     stamp(value, ctx_);
     repo_.write(ctx_, value);
     response.image_id = boost::uuids::to_string(value.id);
-    BOOST_LOG_SEV(lg(), debug) << "Stored an uploaded image. id: " << response.image_id;
+    ORES_LOG_SEV(lg(), debug) << "Stored an uploaded image. id: " << response.image_id;
     return response;
 }
 
@@ -107,7 +107,7 @@ image_operations_service::ensure_image(const messaging::ensure_image_request& re
     const auto existing = repo_.read_latest_by_code(ctx_, request.code);
     if (!existing.empty()) {
         response.image_id = boost::uuids::to_string(existing.front().id);
-        BOOST_LOG_SEV(lg(), debug) << "The tenant already holds image '" << request.code << "'.";
+        ORES_LOG_SEV(lg(), debug) << "The tenant already holds image '" << request.code << "'.";
         return response;
     }
 
@@ -123,7 +123,7 @@ image_operations_service::ensure_image(const messaging::ensure_image_request& re
 
     if (rows.empty() || rows.front().size() < 3 || !rows.front()[0] || !rows.front()[1] ||
         !rows.front()[2]) {
-        BOOST_LOG_SEV(lg(), warn) << "No template image with code '" << request.code << "'.";
+        ORES_LOG_SEV(lg(), warn) << "No template image with code '" << request.code << "'.";
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "template_not_found";
         response.result.message =
@@ -140,8 +140,8 @@ image_operations_service::ensure_image(const messaging::ensure_image_request& re
     stamp(value, ctx_);
     repo_.write(ctx_, value);
     response.image_id = boost::uuids::to_string(value.id);
-    BOOST_LOG_SEV(lg(), debug) << "Copied the template image '" << request.code
-                               << "' into the tenant: " << response.image_id;
+    ORES_LOG_SEV(lg(), debug) << "Copied the template image '" << request.code
+                              << "' into the tenant: " << response.image_id;
     return response;
 }
 

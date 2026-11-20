@@ -29,10 +29,8 @@
 #include "ores.dq.api/domain/artefact_type.hpp"
 #include "ores.dq.api/messaging/artefact_type_protocol.hpp"
 #include "ores.dq.core/repository/artefact_type_repository.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -445,25 +443,25 @@ artefact_type_service::prepare_change(const messaging::artefact_type_change& cha
 
 std::vector<domain::artefact_type> artefact_type_service::list_types(std::uint32_t offset,
                                                                      std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all artefact types";
+    ORES_LOG_SEV(lg(), debug) << "Listing all artefact types";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t artefact_type_service::count_types() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total artefact types count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total artefact types count";
     return repo_.get_total_type_count(ctx_);
 }
 
 
 std::optional<domain::artefact_type>
 artefact_type_service::get_type_at_version(const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting artefact type at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting artefact type at version. " << "code: " << code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::artefact_type> artefact_type_service::get_type(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting artefact type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting artefact type. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -478,11 +476,11 @@ artefact_type_service::get_types(const std::vector<std::string>& codes) {
 void artefact_type_service::save_type(const domain::artefact_type& v) {
     if (v.code.empty())
         throw std::invalid_argument("Artefact Type code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving artefact type. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving artefact type. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved artefact type. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved artefact type. " << "code: " << v.code;
 }
 
 void artefact_type_service::save_types(const std::vector<domain::artefact_type>& types) {
@@ -490,7 +488,7 @@ void artefact_type_service::save_types(const std::vector<domain::artefact_type>&
         if (e.code.empty())
             throw std::invalid_argument("Artefact Type code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << types.size() << " artefact types";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << types.size() << " artefact types";
     auto ts = types;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -499,9 +497,9 @@ void artefact_type_service::save_types(const std::vector<domain::artefact_type>&
 }
 
 void artefact_type_service::delete_type(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing artefact type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing artefact type. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed artefact type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed artefact type. " << "code: " << code;
 }
 
 void artefact_type_service::delete_types(const std::vector<std::string>& codes) {
@@ -510,7 +508,7 @@ void artefact_type_service::delete_types(const std::vector<std::string>& codes) 
 
 std::vector<domain::artefact_type>
 artefact_type_service::get_type_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for artefact type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for artefact type. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

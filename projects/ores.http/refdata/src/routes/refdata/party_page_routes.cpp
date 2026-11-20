@@ -115,11 +115,11 @@ std::map<std::string, std::string> party_page_routes::flags_or_none(
         return centre_flags(req, session, codes);
     } catch (const rr::refusal& r) {
         using namespace ores::logging;
-        BOOST_LOG_SEV(lg(), warn) << "The flags a page names could not be read: " << r.message;
+        ORES_LOG_SEV(lg(), warn) << "The flags a page names could not be read: " << r.message;
         return {};
     } catch (const std::exception& e) {
         using namespace ores::logging;
-        BOOST_LOG_SEV(lg(), warn) << "The flags a page names could not be read: " << e.what();
+        ORES_LOG_SEV(lg(), warn) << "The flags a page names could not be read: " << e.what();
         return {};
     }
 }

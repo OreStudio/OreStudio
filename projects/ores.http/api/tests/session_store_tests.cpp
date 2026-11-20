@@ -18,7 +18,7 @@
  *
  */
 #include "ores.http.api/domain/session_store.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
@@ -62,7 +62,7 @@ session_record a_record(std::string token = "the-token") {
 
 TEST_CASE("a_session_is_held_against_an_identifier_and_gives_it_back", "[session_store]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing what the store keeps and what it hands out";
+    ORES_LOG_SEV(lg, info) << "Testing what the store keeps and what it hands out";
 
     test_clock clock;
     session_store store(1h, [&clock] { return clock.now(); });
@@ -80,7 +80,7 @@ TEST_CASE("a_session_is_held_against_an_identifier_and_gives_it_back", "[session
 
 TEST_CASE("the_store_never_holds_the_identifier_it_hands_out", "[session_store]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that a dump of the store is not a set of credentials";
+    ORES_LOG_SEV(lg, info) << "Testing that a dump of the store is not a set of credentials";
 
     test_clock clock;
     session_store store(1h, [&clock] { return clock.now(); });
@@ -95,7 +95,7 @@ TEST_CASE("the_store_never_holds_the_identifier_it_hands_out", "[session_store]"
 
 TEST_CASE("a_session_that_is_left_alone_expires", "[session_store]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that a quiet session is evicted";
+    ORES_LOG_SEV(lg, info) << "Testing that a quiet session is evicted";
 
     test_clock clock;
     session_store store(30s, [&clock] { return clock.now(); });
@@ -112,7 +112,7 @@ TEST_CASE("a_session_that_is_left_alone_expires", "[session_store]") {
 
 TEST_CASE("using_a_session_keeps_it_alive", "[session_store]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that the expiry slides with use";
+    ORES_LOG_SEV(lg, info) << "Testing that the expiry slides with use";
 
     test_clock clock;
     session_store store(30s, [&clock] { return clock.now(); });
@@ -130,7 +130,7 @@ TEST_CASE("using_a_session_keeps_it_alive", "[session_store]") {
 
 TEST_CASE("closing_a_session_ends_only_that_one", "[session_store]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that signing out does not sign anybody else out";
+    ORES_LOG_SEV(lg, info) << "Testing that signing out does not sign anybody else out";
 
     test_clock clock;
     session_store store(1h, [&clock] { return clock.now(); });
@@ -146,7 +146,7 @@ TEST_CASE("closing_a_session_ends_only_that_one", "[session_store]") {
 
 TEST_CASE("a_replaced_identifier_keeps_the_session_and_drops_the_old_one", "[session_store]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that a change of privilege mints a new identifier";
+    ORES_LOG_SEV(lg, info) << "Testing that a change of privilege mints a new identifier";
 
     test_clock clock;
     session_store store(1h, [&clock] { return clock.now(); });
@@ -166,7 +166,7 @@ TEST_CASE("a_replaced_identifier_keeps_the_session_and_drops_the_old_one", "[ses
 
 TEST_CASE("what_has_expired_is_evicted_and_what_has_not_is_kept", "[session_store]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the sweep a timer would run";
+    ORES_LOG_SEV(lg, info) << "Testing the sweep a timer would run";
 
     test_clock clock;
     session_store store(30s, [&clock] { return clock.now(); });
@@ -185,7 +185,7 @@ TEST_CASE("what_has_expired_is_evicted_and_what_has_not_is_kept", "[session_stor
 
 TEST_CASE("a_session_is_changed_in_place_and_kept_alive", "[session_store]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that a change replaces what the session holds";
+    ORES_LOG_SEV(lg, info) << "Testing that a change replaces what the session holds";
 
     test_clock clock;
     session_store store(1h, [&clock] { return clock.now(); });
@@ -212,7 +212,7 @@ TEST_CASE("a_session_is_changed_in_place_and_kept_alive", "[session_store]") {
 
 TEST_CASE("one_request_at_a_time_renews_a_session", "[session_store]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that a renewal is claimed by one caller";
+    ORES_LOG_SEV(lg, info) << "Testing that a renewal is claimed by one caller";
 
     session_store store(1h);
     const auto identifier = store.open(a_record());
@@ -225,7 +225,7 @@ TEST_CASE("one_request_at_a_time_renews_a_session", "[session_store]") {
 
 TEST_CASE("a_failed_renewal_waits_before_the_next_attempt", "[session_store]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that an outage costs one attempt in half a minute";
+    ORES_LOG_SEV(lg, info) << "Testing that an outage costs one attempt in half a minute";
 
     test_clock clock;
     session_store store(1h, [&clock] { return clock.now(); });

@@ -47,7 +47,7 @@ std::vector<ores::{{component}}::domain::{{entity_singular}}>
     auto reply = ores::http::forwarding::forward(req, session, msg);
     rr::require_ok(reply.result);
     if (reply.total > reply.{{rows_member}}.size())
-        BOOST_LOG_SEV({{unit}}_routes_lg(), warn) << "The {{key}} list holds " << reply.total
+        ORES_LOG_SEV({{unit}}_routes_lg(), warn) << "The {{key}} list holds " << reply.total
                                                     << " rows; one page read " << reply.{{rows_member}}.size();
     return std::move(reply.{{rows_member}});
 }
@@ -86,9 +86,9 @@ boost::asio::awaitable<http_response> {{unit}}_routes::handle_list(const http_re
         try {
             labels = classification_routes::labels_of(req, session, "{{code_domain}}");
         } catch (const rr::refusal& refusal) {
-            BOOST_LOG_SEV(lg(), warn) << "Labels could not be read: " << refusal.message;
+            ORES_LOG_SEV(lg(), warn) << "Labels could not be read: " << refusal.message;
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), warn) << "Labels could not be read: " << e.what();
+            ORES_LOG_SEV(lg(), warn) << "Labels could not be read: " << e.what();
         }
         cr::sort_rows(rows);
         std::string out = "{\"rows\":[";
@@ -101,7 +101,7 @@ boost::asio::awaitable<http_response> {{unit}}_routes::handle_list(const http_re
     } catch (const rr::refusal& refusal) {
         co_return rr::answer(refusal);
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << e.what();
+        ORES_LOG_SEV(lg(), error) << e.what();
         co_return http_response::api_error(http_status::bad_gateway, "internal",
                                            std::string(rr::unanswered));
     }
@@ -128,7 +128,7 @@ boost::asio::awaitable<http_response> {{unit}}_routes::handle_create(const http_
     } catch (const rr::refusal& refusal) {
         co_return rr::answer(refusal);
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << e.what();
+        ORES_LOG_SEV(lg(), error) << e.what();
         co_return http_response::api_error(http_status::bad_gateway, "internal",
                                            std::string(rr::unanswered));
     }
@@ -157,7 +157,7 @@ boost::asio::awaitable<http_response> {{unit}}_routes::handle_update(const http_
     } catch (const rr::refusal& refusal) {
         co_return rr::answer(refusal);
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << e.what();
+        ORES_LOG_SEV(lg(), error) << e.what();
         co_return http_response::api_error(http_status::bad_gateway, "internal",
                                            std::string(rr::unanswered));
     }
@@ -197,7 +197,7 @@ boost::asio::awaitable<http_response> {{unit}}_routes::handle_order(const http_r
     } catch (const rr::refusal& refusal) {
         co_return rr::answer(refusal);
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << e.what();
+        ORES_LOG_SEV(lg(), error) << e.what();
         co_return http_response::api_error(http_status::bad_gateway, "internal",
                                            std::string(rr::unanswered));
     }
@@ -222,7 +222,7 @@ boost::asio::awaitable<http_response> {{unit}}_routes::handle_delete(const http_
     } catch (const rr::refusal& refusal) {
         co_return rr::answer(refusal);
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << e.what();
+        ORES_LOG_SEV(lg(), error) << e.what();
         co_return http_response::api_error(http_status::bad_gateway, "internal",
                                            std::string(rr::unanswered));
     }
@@ -248,7 +248,7 @@ boost::asio::awaitable<http_response> {{unit}}_routes::handle_label(const http_r
     } catch (const rr::refusal& refusal) {
         co_return rr::answer(refusal);
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << e.what();
+        ORES_LOG_SEV(lg(), error) << e.what();
         co_return http_response::api_error(http_status::bad_gateway, "internal",
                                            std::string(rr::unanswered));
     }
@@ -258,7 +258,7 @@ void {{unit}}_routes::register_routes(
     std::shared_ptr<ores::http::net::router> router,
     std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
     nats_client& session) {
-    BOOST_LOG_SEV(lg(), info) << "Registering the {{key}} classification routes";
+    ORES_LOG_SEV(lg(), info) << "Registering the {{key}} classification routes";
 
     auto list_route = router->get("{{base}}")
                           .summary("List the {{key}} rows for the classification screen")

@@ -30,9 +30,7 @@
 #include "ores.iam.api/domain/account_role_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.core/repository/account_role_entity.hpp"
 #include "ores.iam.core/repository/account_role_mapper.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -187,8 +185,8 @@ void account_role_repository::write(const std::vector<domain::account_role>& acc
 
 void account_role_repository::write(const domain::account_role& account_role,
                                     const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing account role to database: " << account_role.account_id
-                               << "/" << account_role.role_id;
+    ORES_LOG_SEV(lg(), debug) << "Writing account role to database: " << account_role.account_id
+                              << "/" << account_role.role_id;
     const auto current = claim.kind == ores::utility::domain::precondition_kind::any ?
                              read_latest(account_role.account_id, account_role.role_id) :
                              std::vector<domain::account_role>{};
@@ -200,8 +198,8 @@ void account_role_repository::write(const domain::account_role& account_role,
 void account_role_repository::write(
     const std::vector<domain::account_role>& account_roles,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing account roles to database. Count: "
-                               << account_roles.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing account roles to database. Count: "
+                              << account_roles.size();
     if (claims.size() != account_roles.size())
         throw std::invalid_argument(
             "account_role_repository::write: one claim is needed for each row");
@@ -237,8 +235,8 @@ std::vector<domain::account_role> account_role_repository::read_latest() {
 
 std::vector<domain::account_role> account_role_repository::read_latest(std::uint32_t offset,
                                                                        std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest account roles with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest account roles with offset: " << offset
+                              << " and limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<account_role_entity>> |
@@ -257,7 +255,7 @@ std::vector<domain::account_role> account_role_repository::read_latest(std::uint
 std::vector<domain::account_role>
 account_role_repository::read_latest(const boost::uuids::uuid& account_id,
                                      const boost::uuids::uuid& role_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest account role. " << account_id << "/" << role_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest account role. " << account_id << "/" << role_id;
 
     static constexpr auto max = db_timestamp::max();
     const auto account_id_str = boost::uuids::to_string(account_id);
@@ -277,7 +275,7 @@ account_role_repository::read_latest(const boost::uuids::uuid& account_id,
 }
 
 std::uint32_t account_role_repository::get_total_account_role_count() {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active account roles count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active account roles count";
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
@@ -286,13 +284,13 @@ std::uint32_t account_role_repository::get_total_account_role_count() {
 
     const auto count = query_builder::execute_count_query<account_role_entity>(
         ctx_, query, std::nullopt, lg(), "Counting account roles");
-    BOOST_LOG_SEV(lg(), debug) << "Total active account roles count: " << count;
+    ORES_LOG_SEV(lg(), debug) << "Total active account roles count: " << count;
     return count;
 }
 
 std::vector<domain::account_role>
 account_role_repository::read_latest_by_account(const boost::uuids::uuid& account_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest account roles. Account: " << account_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest account roles. Account: " << account_id;
 
     static constexpr auto max = db_timestamp::max();
     const auto account_id_str = boost::uuids::to_string(account_id);
@@ -315,7 +313,7 @@ account_role_repository::read_latest_by_account(const boost::uuids::uuid& accoun
 
 std::vector<domain::account_role>
 account_role_repository::read_latest_by_role(const boost::uuids::uuid& role_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest account roles. Role: " << role_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest account roles. Role: " << role_id;
 
     static constexpr auto max = db_timestamp::max();
     const auto role_id_str = boost::uuids::to_string(role_id);
@@ -338,8 +336,8 @@ account_role_repository::read_latest_by_role(const boost::uuids::uuid& role_id) 
 std::vector<domain::account_role> account_role_repository::read_latest_by_account(
     const boost::uuids::uuid& account_id, std::uint32_t offset, std::uint32_t limit) {
     const auto account_id_str = boost::uuids::to_string(account_id);
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest account roles. Account: " << account_id
-                               << " offset: " << offset << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest account roles. Account: " << account_id
+                              << " offset: " << offset << " limit: " << limit;
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
@@ -363,8 +361,8 @@ std::vector<domain::account_role> account_role_repository::read_latest_by_accoun
 std::uint32_t account_role_repository::get_total_account_role_count_by_account(
     const boost::uuids::uuid& account_id) {
     const auto account_id_str = boost::uuids::to_string(account_id);
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active account roles count. Account: "
-                               << account_id;
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active account roles count. Account: "
+                              << account_id;
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
@@ -375,15 +373,15 @@ std::uint32_t account_role_repository::get_total_account_role_count_by_account(
 
     const auto count = query_builder::execute_count_query<account_role_entity>(
         ctx_, query, std::nullopt, lg(), "Counting account roles");
-    BOOST_LOG_SEV(lg(), debug) << "Total active account roles count by account: " << count;
+    ORES_LOG_SEV(lg(), debug) << "Total active account roles count by account: " << count;
     return count;
 }
 
 std::vector<domain::account_role> account_role_repository::read_latest_by_role(
     const boost::uuids::uuid& role_id, std::uint32_t offset, std::uint32_t limit) {
     const auto role_id_str = boost::uuids::to_string(role_id);
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest account roles. Role: " << role_id
-                               << " offset: " << offset << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest account roles. Role: " << role_id
+                              << " offset: " << offset << " limit: " << limit;
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
@@ -406,7 +404,7 @@ std::vector<domain::account_role> account_role_repository::read_latest_by_role(
 std::uint32_t
 account_role_repository::get_total_account_role_count_by_role(const boost::uuids::uuid& role_id) {
     const auto role_id_str = boost::uuids::to_string(role_id);
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active account roles count. Role: " << role_id;
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active account roles count. Role: " << role_id;
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
@@ -416,14 +414,14 @@ account_role_repository::get_total_account_role_count_by_role(const boost::uuids
 
     const auto count = query_builder::execute_count_query<account_role_entity>(
         ctx_, query, std::nullopt, lg(), "Counting account roles");
-    BOOST_LOG_SEV(lg(), debug) << "Total active account roles count by role: " << count;
+    ORES_LOG_SEV(lg(), debug) << "Total active account roles count by role: " << count;
     return count;
 }
 
 std::vector<account_role_history_row>
 account_role_repository::read_all_by_account(const boost::uuids::uuid& account_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading every version of the account roles. Account: "
-                               << account_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading every version of the account roles. Account: "
+                              << account_id;
 
     const auto account_id_str = boost::uuids::to_string(account_id);
     const auto tid = ctx_.tenant_id().to_string();
@@ -474,8 +472,8 @@ account_role_repository::remove_status
 account_role_repository::remove(const boost::uuids::uuid& account_id,
                                 const boost::uuids::uuid& role_id,
                                 std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing account role from database: " << account_id << "/"
-                               << role_id;
+    ORES_LOG_SEV(lg(), debug) << "Removing account role from database: " << account_id << "/"
+                              << role_id;
 
     const auto current = read_latest(account_id, role_id);
     if (current.empty())
@@ -521,7 +519,7 @@ void account_role_repository::remove(const std::vector<boost::uuids::uuid>& acco
 }
 
 void account_role_repository::remove_by_account(const boost::uuids::uuid& account_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing all account roles from database: " << account_id;
+    ORES_LOG_SEV(lg(), debug) << "Removing all account roles from database: " << account_id;
 
     const auto account_id_str = boost::uuids::to_string(account_id);
     const auto tid = ctx_.tenant_id().to_string();

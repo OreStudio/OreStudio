@@ -20,7 +20,7 @@
 #include "ores.http.server/messaging/registrar.hpp"
 #include "ores.http.api/messaging/http_info_protocol.hpp"
 #include "ores.http.server/messaging/http_info_handler.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 
 namespace {
 inline auto& registrar_lg() {
@@ -50,7 +50,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
                              queue_group,
                              [handler](ores::nats::message msg) { handler->get(std::move(msg)); }));
 
-    BOOST_LOG_SEV(registrar_lg(), info)
+    ORES_LOG_SEV(registrar_lg(), info)
         << "Registered NATS handler for " << http::messaging::get_http_info_request::nats_subject
         << " (base_url=" << base_url << ")";
 
@@ -61,7 +61,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     subs.push_back(nats.subscribe(std::string(stream::all_entity_events),
                                   [feed](ores::nats::message msg) { feed->notify(msg); }));
 
-    BOOST_LOG_SEV(registrar_lg(), info)
+    ORES_LOG_SEV(registrar_lg(), info)
         << "Hearing entity events on " << stream::all_entity_events << " for the change stream";
 
     return subs;

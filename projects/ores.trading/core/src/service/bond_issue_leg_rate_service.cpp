@@ -26,7 +26,6 @@
 #include "ores.trading.api/domain/bond_issue_leg_rate.hpp"
 #include "ores.trading.api/messaging/bond_issue_leg_rate_protocol.hpp"
 #include "ores.trading.core/repository/bond_issue_leg_rate_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -43,7 +42,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -494,12 +492,12 @@ bond_issue_leg_rate_service::prepare_change(const messaging::bond_issue_leg_rate
 
 std::vector<domain::bond_issue_leg_rate>
 bond_issue_leg_rate_service::list_bond_issue_leg_rates(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all bond issue leg rates";
+    ORES_LOG_SEV(lg(), debug) << "Listing all bond issue leg rates";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t bond_issue_leg_rate_service::count_bond_issue_leg_rates() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total bond issue leg rates count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total bond issue leg rates count";
     return repo_.get_total_bond_issue_leg_rate_count(ctx_);
 }
 
@@ -508,17 +506,17 @@ std::optional<domain::bond_issue_leg_rate>
 bond_issue_leg_rate_service::get_bond_issue_leg_rate_at_version(const std::string& issue_id,
                                                                 const std::string& leg_number,
                                                                 std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting bond issue leg rate at version. "
-                               << "issue_id: " << issue_id << " leg_number: " << leg_number
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting bond issue leg rate at version. "
+                              << "issue_id: " << issue_id << " leg_number: " << leg_number
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, issue_id, leg_number, version);
 }
 
 std::optional<domain::bond_issue_leg_rate>
 bond_issue_leg_rate_service::get_bond_issue_leg_rate(const std::string& issue_id,
                                                      const std::string& leg_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting bond issue leg rate. " << "issue_id: " << issue_id
-                               << " leg_number: " << leg_number;
+    ORES_LOG_SEV(lg(), debug) << "Getting bond issue leg rate. " << "issue_id: " << issue_id
+                              << " leg_number: " << leg_number;
     auto results = repo_.read_latest(ctx_, issue_id, leg_number);
     if (results.empty())
         return std::nullopt;
@@ -534,13 +532,13 @@ bond_issue_leg_rate_service::get_bond_issue_leg_rates(const std::vector<std::str
 void bond_issue_leg_rate_service::save_bond_issue_leg_rate(const domain::bond_issue_leg_rate& v) {
     if (v.issue_id.is_nil())
         throw std::invalid_argument("Bond Issue Leg Rate issue_id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving bond issue leg rate. " << "issue_id: " << v.issue_id
-                               << " leg_number: " << v.leg_number;
+    ORES_LOG_SEV(lg(), debug) << "Saving bond issue leg rate. " << "issue_id: " << v.issue_id
+                              << " leg_number: " << v.leg_number;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved bond issue leg rate. " << "issue_id: " << v.issue_id
-                              << " leg_number: " << v.leg_number;
+    ORES_LOG_SEV(lg(), info) << "Saved bond issue leg rate. " << "issue_id: " << v.issue_id
+                             << " leg_number: " << v.leg_number;
 }
 
 void bond_issue_leg_rate_service::save_bond_issue_leg_rates(
@@ -549,8 +547,8 @@ void bond_issue_leg_rate_service::save_bond_issue_leg_rates(
         if (e.issue_id.is_nil())
             throw std::invalid_argument("Bond Issue Leg Rate issue_id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << bond_issue_leg_rates.size()
-                               << " bond issue leg rates";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << bond_issue_leg_rates.size()
+                              << " bond issue leg rates";
     auto ts = bond_issue_leg_rates;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -560,11 +558,11 @@ void bond_issue_leg_rate_service::save_bond_issue_leg_rates(
 
 void bond_issue_leg_rate_service::delete_bond_issue_leg_rate(const std::string& issue_id,
                                                              const std::string& leg_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing bond issue leg rate. " << "issue_id: " << issue_id
-                               << " leg_number: " << leg_number;
-    repo_.remove(ctx_, issue_id, leg_number);
-    BOOST_LOG_SEV(lg(), info) << "Removed bond issue leg rate. " << "issue_id: " << issue_id
+    ORES_LOG_SEV(lg(), debug) << "Removing bond issue leg rate. " << "issue_id: " << issue_id
                               << " leg_number: " << leg_number;
+    repo_.remove(ctx_, issue_id, leg_number);
+    ORES_LOG_SEV(lg(), info) << "Removed bond issue leg rate. " << "issue_id: " << issue_id
+                             << " leg_number: " << leg_number;
 }
 
 void bond_issue_leg_rate_service::delete_bond_issue_leg_rates(
@@ -575,8 +573,8 @@ void bond_issue_leg_rate_service::delete_bond_issue_leg_rates(
 std::vector<domain::bond_issue_leg_rate>
 bond_issue_leg_rate_service::get_bond_issue_leg_rate_history(const std::string& issue_id,
                                                              const std::string& leg_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for bond issue leg rate. "
-                               << "issue_id: " << issue_id << " leg_number: " << leg_number;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for bond issue leg rate. "
+                              << "issue_id: " << issue_id << " leg_number: " << leg_number;
     return repo_.read_all(ctx_, issue_id, leg_number);
 }
 

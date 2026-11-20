@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/datum/market_reference.hpp"
 #include "ores.marketdata.api/datum/ore_key_codec.hpp"
 #include "ores.marketdata.api/projection/ore_projection.hpp"
@@ -134,7 +134,7 @@ TEST_CASE("export_single_currency_to_xml", "[ore][xml][exporter]") {
     c.ore_currency_type = "Major";
 
     const auto xml = exporter::export_currency_config({c});
-    BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
+    ORES_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
 
     CHECK(!xml.empty());
     CHECK(xml.contains("<CurrencyConfig>"));
@@ -167,7 +167,7 @@ TEST_CASE("export_multiple_currencies_to_xml", "[ore][xml][exporter]") {
     eur.rounding_precision = 2;
 
     const auto xml = exporter::export_currency_config({usd, eur});
-    BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
+    ORES_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
 
     CHECK(xml.contains("<ISOCode>USD</ISOCode>"));
     CHECK(xml.contains("<ISOCode>EUR</ISOCode>"));
@@ -177,7 +177,7 @@ TEST_CASE("export_empty_currency_list_to_xml", "[ore][xml][exporter]") {
     auto lg(make_logger(test_suite));
 
     const auto xml = exporter::export_currency_config({});
-    BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
+    ORES_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
 
     CHECK(!xml.empty());
     CHECK(xml.contains("CurrencyConfig"));
@@ -195,7 +195,7 @@ TEST_CASE("export_currency_without_optional_fields", "[ore][xml][exporter]") {
     // numeric_code and asset_class left empty
 
     const auto xml = exporter::export_currency_config({c});
-    BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
+    ORES_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
 
     CHECK(xml.contains("<ISOCode>TST</ISOCode>"));
     CHECK(!xml.contains("<NumericCode>"));
@@ -210,16 +210,16 @@ TEST_CASE("import_export_roundtrip_preserves_currency_fields", "[ore][xml][expor
     auto lg(make_logger(test_suite));
 
     const auto f = ores::testing::ore_path("examples/Input/currencies.xml");
-    BOOST_LOG_SEV(lg, debug) << "Importing from: " << f;
+    ORES_LOG_SEV(lg, debug) << "Importing from: " << f;
 
     // Import
     const auto imported = importer::import_currency_config(f);
     REQUIRE(!imported.empty());
-    BOOST_LOG_SEV(lg, debug) << "Imported " << imported.size() << " currencies";
+    ORES_LOG_SEV(lg, debug) << "Imported " << imported.size() << " currencies";
 
     // Export
     const auto xml = exporter::export_currency_config(imported);
-    BOOST_LOG_SEV(lg, trace) << "Exported XML:\n" << xml;
+    ORES_LOG_SEV(lg, trace) << "Exported XML:\n" << xml;
 
     // Re-import by parsing the exported XML through domain layer
     // Since import_currency_config takes a file path, we verify via field checks
@@ -249,7 +249,7 @@ TEST_CASE("export_all_rounding_types", "[ore][xml][exporter]") {
     }
 
     const auto xml = exporter::export_currency_config(currencies);
-    BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
+    ORES_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
 
     for (const auto& rt : rounding_types) {
         CHECK(xml.contains("<RoundingType>" + rt + "</RoundingType>"));
@@ -264,7 +264,7 @@ TEST_CASE("export_portfolio_empty_items_produces_valid_xml", "[ore][xml][exporte
     auto lg(make_logger(test_suite));
 
     const auto xml = exporter::export_portfolio({}, {});
-    BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
+    ORES_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
 
     CHECK(!xml.empty());
     CHECK(xml.contains("Portfolio"));
@@ -280,7 +280,7 @@ TEST_CASE("export_portfolio_swap_roundtrip", "[ore][xml][exporter]") {
     auto [items, instruments] = make_export_payload(imported);
 
     const auto xml = exporter::export_portfolio(items, instruments);
-    BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
+    ORES_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
 
     CHECK(!xml.empty());
     CHECK(xml.contains("<Portfolio>"));
@@ -361,7 +361,7 @@ TEST_CASE("a_rate_trade_without_a_fact_row_exports_without_its_legs", "[ore][xml
     leg(2, "Floating", "GBP-SONIA", "spread", 0.001);
 
     const auto xml = exporter::export_portfolio({item}, instruments);
-    BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
+    ORES_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
 
     /*
      * The store rebuilds a rates instrument from a header and one fact row, so
@@ -445,7 +445,7 @@ TEST_CASE("a_rate_trade_that_states_its_fact_row_exports_its_legs", "[ore][xml][
     leg(2, "Floating", "GBP-SONIA", "spread", 0.001);
 
     const auto xml = exporter::export_portfolio({item}, instruments);
-    BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
+    ORES_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
 
     CHECK(xml.contains("<SwapData>"));
     CHECK(xml.contains("GBP-SONIA"));
@@ -522,7 +522,7 @@ TEST_CASE("a_forward_rate_agreement_exports_the_index_its_fact_row_states",
     instruments.swap_leg_rates.push_back(strike);
 
     const auto xml = exporter::export_portfolio({item}, instruments);
-    BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
+    ORES_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
 
     CHECK(xml.contains("<ForwardRateAgreementData>"));
     CHECK(xml.contains("GBP-SONIA"));
@@ -567,7 +567,7 @@ TEST_CASE("a_forward_exports_its_two_currencies", "[ore][xml][exporter]") {
     f.instruments.fx_forward_instruments.push_back(row);
 
     const auto xml = exporter::export_portfolio({f.item}, f.instruments);
-    BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
+    ORES_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
     CHECK(xml.contains("<FxForwardData>"));
     CHECK(xml.contains("EUR"));
     CHECK(xml.contains("GBP"));
@@ -590,7 +590,7 @@ TEST_CASE("a_vanilla_option_exports_its_expiry_and_style", "[ore][xml][exporter]
     f.instruments.fx_vanilla_option_instruments.push_back(row);
 
     const auto xml = exporter::export_portfolio({f.item}, f.instruments);
-    BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
+    ORES_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
     CHECK(xml.contains("<FxOptionData>"));
     // ORE refuses an FxOption that states no style, so the row's style is
     // written beside the expiry.
@@ -617,7 +617,7 @@ TEST_CASE("a_barrier_option_exports_its_barrier", "[ore][xml][exporter]") {
     f.instruments.fx_barrier_option_instruments.push_back(row);
 
     const auto xml = exporter::export_portfolio({f.item}, f.instruments);
-    BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
+    ORES_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
     CHECK(xml.contains("<FxBarrierOptionData>"));
     // The pair is implicit in the two currencies, so a plain barrier states no
     // underlying; the barrier itself is what the element adds.
@@ -641,7 +641,7 @@ TEST_CASE("a_digital_exports_its_payoff", "[ore][xml][exporter]") {
     f.instruments.fx_digital_option_instruments.push_back(row);
 
     const auto xml = exporter::export_portfolio({f.item}, f.instruments);
-    BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
+    ORES_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
     CHECK(xml.contains("<FxDigitalOptionData>"));
     CHECK(xml.contains("GBP"));
 }
@@ -665,7 +665,7 @@ TEST_CASE("an_average_forward_exports_its_index", "[ore][xml][exporter]") {
     f.instruments.fx_asian_forward_instruments.push_back(row);
 
     const auto xml = exporter::export_portfolio({f.item}, f.instruments);
-    BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
+    ORES_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
     CHECK(xml.contains("<FxAverageForwardData>"));
     CHECK(xml.contains("EUR/GBP"));
 }
@@ -687,7 +687,7 @@ TEST_CASE("a_variance_swap_exports_its_strike", "[ore][xml][exporter]") {
     f.instruments.fx_variance_swap_instruments.push_back(row);
 
     const auto xml = exporter::export_portfolio({f.item}, f.instruments);
-    BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
+    ORES_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
     CHECK(xml.contains("<FxVarianceSwapData>"));
     CHECK(xml.contains("0.09"));
 }
@@ -718,7 +718,7 @@ TEST_CASE("an_accumulator_exports_its_knock_out", "[ore][xml][exporter]") {
     f.instruments.range_bounds.push_back(bound);
 
     const auto xml = exporter::export_portfolio({f.item}, f.instruments);
-    BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
+    ORES_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
     CHECK(xml.contains("<FxAccumulatorData>"));
     CHECK(xml.contains("EUR/GBP"));
 }
@@ -752,7 +752,7 @@ TEST_CASE("export_portfolio_keeps_a_cross_currency_swap_apart_from_a_swap",
 
     auto [items, instruments] = make_export_payload(imported);
     const auto xml = exporter::export_portfolio(items, instruments);
-    BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
+    ORES_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
 
     CHECK(xml.contains("<TradeType>Swap</TradeType>"));
     CHECK(xml.contains("<TradeType>CrossCurrencySwap</TradeType>"));
@@ -770,7 +770,7 @@ TEST_CASE("export_portfolio_fx_forward_roundtrip", "[ore][xml][exporter]") {
     auto [items, instruments] = make_export_payload(imported);
 
     const auto xml = exporter::export_portfolio(items, instruments);
-    BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
+    ORES_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
 
     CHECK(!xml.empty());
     CHECK(xml.contains("<FxForwardData>"));
@@ -807,7 +807,7 @@ TEST_CASE("export_portfolio_roundtrips_every_fx_product", "[ore][xml][exporter]"
 
         auto [items, instruments] = make_export_payload(imported);
         const auto xml = exporter::export_portfolio(items, instruments);
-        BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
+        ORES_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
 
         CHECK(xml.contains(product.element));
         CHECK(xml.contains(imported.front().ore_id));
@@ -832,7 +832,7 @@ TEST_CASE("export_portfolio_ascot_roundtrip", "[ore][xml][exporter]") {
     auto [items, instruments] = make_export_payload(imported);
 
     const auto xml = exporter::export_portfolio(items, instruments);
-    BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
+    ORES_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
 
     CHECK(!xml.empty());
     CHECK(xml.contains("<AscotData>"));
@@ -871,7 +871,7 @@ TEST_CASE("export_portfolio_bond_future_roundtrip", "[ore][xml][exporter]") {
     ores::trading::domain::append_instrument(instruments, instrument);
 
     const auto xml = exporter::export_portfolio({item}, instruments);
-    BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
+    ORES_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
 
     CHECK(!xml.empty());
     CHECK(xml.contains("<BondFutureData>"));
@@ -893,7 +893,7 @@ TEST_CASE("export_portfolio_unmapped_trade_keeps_its_type_and_envelope", "[ore][
     item.envelope = env;
 
     const auto xml = exporter::export_portfolio({item}, {});
-    BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
+    ORES_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
 
     // The schema makes the product data optional, so the trade goes out as
     // its type and its envelope rather than being dropped whole.
@@ -913,7 +913,7 @@ TEST_CASE("export_portfolio_unknown_type_is_skipped", "[ore][xml][exporter]") {
     // instrument left as monostate
 
     const auto xml = exporter::export_portfolio({item}, {});
-    BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
+    ORES_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
 
     // A type the schema does not name leaves no valid document to write.
     CHECK(!xml.empty());
@@ -958,7 +958,7 @@ TEST_CASE("export_portfolio_names_a_bonds_reference_curve_the_run_forwards",
         items,
         instruments,
         ores::marketdata::projection::ore_projection({{curve->uri(), "EUR-ESTER"}}));
-    BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << translated;
+    ORES_LOG_SEV(lg, debug) << "Exported XML:\n" << translated;
 
     /*
      * Only the reference curve is translated: the documents' index and income
@@ -1065,7 +1065,7 @@ TEST_CASE("export_pricing_engines_writes_the_document_ore_reads", "[ore][xml][ex
     auto lg(make_logger(test_suite));
 
     const auto xml = exporter::export_pricing_engines(swap_configuration());
-    BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
+    ORES_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
 
     CHECK(xml == R"(<?xml version="1.0"?>
 <PricingEngines>
@@ -1094,7 +1094,7 @@ TEST_CASE("export_pricing_engines_writes_the_products_in_position_order", "[ore]
     document.products.push_back(first);
 
     const auto xml = exporter::export_pricing_engines(document);
-    BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
+    ORES_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
 
     CHECK(xml.find("BondTRS") < xml.find("ForwardBond"));
 }
@@ -1110,7 +1110,7 @@ TEST_CASE("export_pricing_engines_writes_each_products_parameters_under_its_own_
     document.parameters.push_back(parameter_of("model", "Calibration", "Bootstrap", 0, swap.id));
 
     const auto xml = exporter::export_pricing_engines(document);
-    BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
+    ORES_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
 
     // The model parameter sits under ModelParameters and the engine parameter
     // under EngineParameters, each in its own scope's order.
@@ -1137,7 +1137,7 @@ TEST_CASE("export_pricing_engines_escapes_the_values_it_writes", "[ore][xml][exp
         parameter_of("engine", "Script", R"(x < 1 && y > 2 && s == "z")", 0, product.id));
 
     const auto xml = exporter::export_pricing_engines(document);
-    BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
+    ORES_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
 
     CHECK(xml.contains(R"(type="Scripted&amp;Co")"));
     CHECK(xml.contains("<Model>Model&lt;One&gt;</Model>"));
@@ -1158,7 +1158,7 @@ TEST_CASE("export_pricing_engines_writes_an_empty_configuration_as_empty_section
 
     const auto xml =
         exporter::export_pricing_engines(ores::analytics::messaging::pricing_engines_document{});
-    BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
+    ORES_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
 
     CHECK(xml == R"(<?xml version="1.0"?>
 <PricingEngines>
@@ -1181,7 +1181,7 @@ TEST_CASE("export_pricing_engines_states_the_document_the_round_trip_states",
     const auto from_document = exporter::export_pricing_engines(document);
     const auto from_round_trip = ores::ore::domain::pricing_engine_projection::write(document);
 
-    BOOST_LOG_SEV(lg, debug) << "From rows:\n" << from_rows;
+    ORES_LOG_SEV(lg, debug) << "From rows:\n" << from_rows;
     CHECK(from_document == from_rows);
     CHECK(from_round_trip == from_rows);
 }

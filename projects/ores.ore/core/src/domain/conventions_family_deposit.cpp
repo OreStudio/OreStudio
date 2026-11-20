@@ -28,7 +28,7 @@ using namespace ores::logging;
 using namespace conventions_fields;
 
 refdata::domain::deposit_convention conventions_mapper::map_deposit(const record_reader& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping deposit convention: " << text_of(v, "Id");
+    ORES_LOG_SEV(lg(), trace) << "Mapping deposit convention: " << text_of(v, "Id");
 
     refdata::domain::deposit_convention r;
     r.id = text_of(v, "Id");

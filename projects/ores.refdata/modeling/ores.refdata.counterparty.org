@@ -455,7 +455,7 @@ TypeScript twin both render it from there.
 
 #+begin_src cpp :name custom_handler_methods :implements B9E2F4A1-3C7D-4E8B-A5F0-2D6C1B8E3A7F
     void composite_as_of(ores::nats::message msg) {
-        BOOST_LOG_SEV(counterparty_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(counterparty_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -468,7 +468,7 @@ TypeScript twin both render it from there.
         }
         auto req = decode<get_counterparty_composite_as_of_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(counterparty_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(counterparty_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
@@ -504,7 +504,7 @@ TypeScript twin both render it from there.
                 contact_svc.list_counterparty_contact_informations_by_counterparty_id_as_of(
                     boost::uuids::to_string(req->id), current->recorded_at, window_end);
 
-            BOOST_LOG_SEV(counterparty_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(counterparty_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_,
                   msg,
                   get_counterparty_composite_as_of_response{.success = true,
@@ -512,7 +512,7 @@ TypeScript twin both render it from there.
                                                             .identifiers = std::move(identifiers),
                                                             .contacts = std::move(contacts)});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(counterparty_handler_lg(), error)
+            ORES_LOG_SEV(counterparty_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             reply(nats_,
                   msg,
@@ -521,7 +521,7 @@ TypeScript twin both render it from there.
     }
 
     void put_composite(ores::nats::message msg) {
-        BOOST_LOG_SEV(counterparty_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(counterparty_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -534,7 +534,7 @@ TypeScript twin both render it from there.
         }
         auto req = decode<put_counterparty_composite_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(counterparty_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(counterparty_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
@@ -611,7 +611,7 @@ TypeScript twin both render it from there.
             // carries the version and the audit stamps the store gave it.
             service::counterparty_service reader(req_ctx);
             auto written = reader.find_counterparty(counterparty.id);
-            BOOST_LOG_SEV(counterparty_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(counterparty_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_,
                   msg,
                   put_counterparty_composite_response{
@@ -621,7 +621,7 @@ TypeScript twin both render it from there.
             // The store refused one of the rows and the transaction is gone
             // with it. The reason is the store's own words, so nothing here
             // states a code the catalogue could own instead.
-            BOOST_LOG_SEV(counterparty_handler_lg(), error)
+            ORES_LOG_SEV(counterparty_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             put_counterparty_composite_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;

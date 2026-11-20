@@ -99,7 +99,7 @@ void notification_operations_commands::register_commands(cli::Menu& root_menu,
 
 void notification_operations_commands::process_raise_notification(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating raise-notification request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating raise-notification request.";
 
     using request_type = ores::inbox::messaging::raise_notification_request;
 

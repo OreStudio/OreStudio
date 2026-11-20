@@ -24,7 +24,7 @@
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.iam.api/messaging/account_party_protocol.hpp"
 #include "ores.iam.core/service/account_party_service.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
@@ -407,18 +407,18 @@ private:
     }
 
     void bad_request(const ores::nats::message& msg) {
-        BOOST_LOG_SEV(account_party_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+        ORES_LOG_SEV(account_party_handler_lg(), warn) << "Failed to decode: " << msg.subject;
         error_reply(nats_, msg, ores::service::error_code::bad_request);
     }
 
     void complete(const ores::nats::message& msg) {
-        BOOST_LOG_SEV(account_party_handler_lg(), debug) << "Completed " << msg.subject;
+        ORES_LOG_SEV(account_party_handler_lg(), debug) << "Completed " << msg.subject;
     }
 
     void failed(const ores::nats::message& msg,
                 const std::exception& e,
                 ores::utility::domain::result& result) {
-        BOOST_LOG_SEV(account_party_handler_lg(), error) << msg.subject << " failed: " << e.what();
+        ORES_LOG_SEV(account_party_handler_lg(), error) << msg.subject << " failed: " << e.what();
         result.outcome = ores::utility::domain::outcome::failed;
         result.code = "internal_error";
         result.message = e.what();
@@ -440,7 +440,7 @@ private:
                              ores::utility::domain::result& result) {
         if (order.field.empty() && !order.descending)
             return false;
-        BOOST_LOG_SEV(account_party_handler_lg(), warn)
+        ORES_LOG_SEV(account_party_handler_lg(), warn)
             << msg.subject << " rejected: order " << order.field << " is not served";
         result.outcome = ores::utility::domain::outcome::invalid;
         result.code = "order_not_supported";
@@ -453,7 +453,7 @@ private:
                               ores::utility::domain::result& result) {
         if (!filter_stated)
             return false;
-        BOOST_LOG_SEV(account_party_handler_lg(), warn)
+        ORES_LOG_SEV(account_party_handler_lg(), warn)
             << msg.subject << " rejected: filtering is not served";
         result.outcome = ores::utility::domain::outcome::invalid;
         result.code = "filter_not_supported";
@@ -466,7 +466,7 @@ private:
                               ores::utility::domain::result& result) {
         if (scope != ores::utility::domain::scope::subtree)
             return false;
-        BOOST_LOG_SEV(account_party_handler_lg(), warn)
+        ORES_LOG_SEV(account_party_handler_lg(), warn)
             << msg.subject << " rejected: the resource has no subtree";
         result.outcome = ores::utility::domain::outcome::invalid;
         result.code = "scope_not_supported";
@@ -535,7 +535,7 @@ private:
                 stamp_account_party(link, wf_ctx);
                 svc.save_account_party(link);
             }
-            BOOST_LOG_SEV(account_party_handler_lg(), debug)
+            ORES_LOG_SEV(account_party_handler_lg(), debug)
                 << "Workflow step completed: " << msg.subject;
             publish_step_completion(
                 nats_,
@@ -546,7 +546,7 @@ private:
                     {}),
                 "");
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(account_party_handler_lg(), error)
+            ORES_LOG_SEV(account_party_handler_lg(), error)
                 << "Workflow step failed: " << msg.subject << " - " << e.what();
             publish_step_completion(nats_,
                                     step_id,

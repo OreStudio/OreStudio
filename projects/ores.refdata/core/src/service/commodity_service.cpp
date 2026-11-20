@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/commodity.hpp"
 #include "ores.refdata.api/messaging/commodity_protocol.hpp"
 #include "ores.refdata.core/repository/commodity_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -442,25 +440,25 @@ commodity_service::prepare_change(const messaging::commodity_change& change,
 
 std::vector<domain::commodity> commodity_service::list_commodities(std::uint32_t offset,
                                                                    std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all commodities";
+    ORES_LOG_SEV(lg(), debug) << "Listing all commodities";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t commodity_service::count_commodities() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total commodities count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total commodities count";
     return repo_.get_total_commodity_count(ctx_);
 }
 
 
 std::optional<domain::commodity>
 commodity_service::get_commodity_at_version(const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting commodity at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting commodity at version. " << "code: " << code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::commodity> commodity_service::get_commodity(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting commodity. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting commodity. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -475,11 +473,11 @@ commodity_service::get_commodities(const std::vector<std::string>& codes) {
 void commodity_service::save_commodity(const domain::commodity& v) {
     if (v.code.empty())
         throw std::invalid_argument("Commodity code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving commodity. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving commodity. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved commodity. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved commodity. " << "code: " << v.code;
 }
 
 void commodity_service::save_commodities(const std::vector<domain::commodity>& commodities) {
@@ -487,7 +485,7 @@ void commodity_service::save_commodities(const std::vector<domain::commodity>& c
         if (e.code.empty())
             throw std::invalid_argument("Commodity code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << commodities.size() << " commodities";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << commodities.size() << " commodities";
     auto ts = commodities;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -496,9 +494,9 @@ void commodity_service::save_commodities(const std::vector<domain::commodity>& c
 }
 
 void commodity_service::delete_commodity(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing commodity. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing commodity. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed commodity. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed commodity. " << "code: " << code;
 }
 
 void commodity_service::delete_commodities(const std::vector<std::string>& codes) {
@@ -506,7 +504,7 @@ void commodity_service::delete_commodities(const std::vector<std::string>& codes
 }
 
 std::vector<domain::commodity> commodity_service::get_commodity_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for commodity. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for commodity. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

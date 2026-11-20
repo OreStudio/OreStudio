@@ -26,14 +26,12 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/ibor_index_convention.hpp"
 #include "ores.refdata.api/domain/ibor_index_convention_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/messaging/ibor_index_convention_protocol.hpp"
 #include "ores.refdata.core/repository/ibor_index_convention_entity.hpp"
 #include "ores.refdata.core/repository/ibor_index_convention_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -216,7 +214,7 @@ void ibor_index_convention_repository::write(const context& ctx,
 void ibor_index_convention_repository::write(const context& ctx,
                                              const domain::ibor_index_convention& v,
                                              const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing IBOR index convention. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Writing IBOR index convention. " << "id: " << v.id;
     const auto t =
         ibor_index_convention_apply_claim(v,
                                           claim,
@@ -233,7 +231,7 @@ void ibor_index_convention_repository::write(
     const context& ctx,
     const std::vector<domain::ibor_index_convention>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing IBOR index conventions. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing IBOR index conventions. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "ibor_index_convention_repository::write: one claim is needed for each row");
@@ -273,7 +271,7 @@ ibor_index_convention_repository::read_latest(const context& ctx) {
 
 std::vector<domain::ibor_index_convention>
 ibor_index_convention_repository::read_latest(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest IBOR index convention. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest IBOR index convention. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -292,7 +290,7 @@ ibor_index_convention_repository::read_latest(const context& ctx, const std::str
 
 std::vector<domain::ibor_index_convention>
 ibor_index_convention_repository::read_all(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all IBOR index convention versions. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading all IBOR index convention versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<ibor_index_convention_entity>> |
                        query_builder::where("tenant_id"_c == tid && "id"_c == id) |
@@ -309,8 +307,8 @@ ibor_index_convention_repository::read_all(const context& ctx, const std::string
 
 std::optional<domain::ibor_index_convention> ibor_index_convention_repository::read_at_version(
     const context& ctx, const std::string& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading IBOR index convention at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading IBOR index convention at version. " << "id: " << id
+                              << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<ibor_index_convention_entity>> |
@@ -332,7 +330,7 @@ std::optional<domain::ibor_index_convention> ibor_index_convention_repository::r
 
 ibor_index_convention_repository::remove_status ibor_index_convention_repository::remove(
     const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing IBOR index convention. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing IBOR index convention. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
         return remove_status::missing;
@@ -371,8 +369,8 @@ std::vector<domain::ibor_index_convention> ibor_index_convention_repository::rea
     const ores::utility::domain::order& order,
     const std::optional<messaging::ibor_index_conventions_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest IBOR index conventions with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest IBOR index conventions with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<ibor_index_convention_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -394,7 +392,7 @@ std::uint32_t ibor_index_convention_repository::get_total_ibor_index_convention_
     const context& ctx,
     const std::optional<messaging::ibor_index_conventions_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active IBOR index convention count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active IBOR index convention count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<ibor_index_convention_entity>> |

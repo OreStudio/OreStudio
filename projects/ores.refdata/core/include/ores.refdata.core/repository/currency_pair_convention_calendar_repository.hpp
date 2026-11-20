@@ -26,7 +26,7 @@
 #define ORES_REFDATA_CORE_REPOSITORY_CURRENCY_PAIR_CONVENTION_CALENDAR_REPOSITORY_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/currency_pair_convention_calendar.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.utility/domain/protocol.hpp"

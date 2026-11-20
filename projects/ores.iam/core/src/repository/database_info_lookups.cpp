@@ -19,7 +19,7 @@
  */
 #include "ores.iam.core/repository/database_info_lookups.hpp"
 #include "ores.database/query_builder/execute.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 
 namespace ores::iam::repository {
 
@@ -45,7 +45,7 @@ messaging::database_info read_database_info(const ores::database::context& ctx) 
             lg(),
             "Reading the database's recorded build");
         if (rows.empty()) {
-            BOOST_LOG_SEV(lg(), warn)
+            ORES_LOG_SEV(lg(), warn)
                 << "ores_database_info_tbl holds no row; the database was not built by "
                    "compass db recreate";
             return {};
@@ -56,7 +56,7 @@ messaging::database_info read_database_info(const ores::database::context& ctx) 
                                         .commit = row[2].value_or(""),
                                         .created = row[3].value_or("")};
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn) << "Could not read ores_database_info_tbl: " << e.what();
+        ORES_LOG_SEV(lg(), warn) << "Could not read ores_database_info_tbl: " << e.what();
         return {};
     }
 }

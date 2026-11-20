@@ -31,9 +31,7 @@
 #include "ores.dq.api/messaging/lei_bic_protocol.hpp"
 #include "ores.dq.core/repository/lei_bic_entity.hpp"
 #include "ores.dq.core/repository/lei_bic_mapper.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -197,7 +195,7 @@ void lei_bic_repository::write(const context& ctx, const std::vector<domain::lei
 void lei_bic_repository::write(const context& ctx,
                                const domain::lei_bic& v,
                                const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing LEI BIC. " << "lei: " << v.lei;
+    ORES_LOG_SEV(lg(), debug) << "Writing LEI BIC. " << "lei: " << v.lei;
     const auto t =
         lei_bic_apply_claim(v,
                             claim,
@@ -212,7 +210,7 @@ void lei_bic_repository::write(const context& ctx,
 void lei_bic_repository::write(const context& ctx,
                                const std::vector<domain::lei_bic>& v,
                                const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing LEI BIC. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing LEI BIC. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument("lei_bic_repository::write: one claim is needed for each row");
     std::vector<domain::lei_bic> to_read;
@@ -245,7 +243,7 @@ std::vector<domain::lei_bic> lei_bic_repository::read_latest(const context& ctx)
 
 std::vector<domain::lei_bic> lei_bic_repository::read_latest(const context& ctx,
                                                              const std::string& lei) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest LEI BIC. " << "lei: " << lei;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest LEI BIC. " << "lei: " << lei;
     const auto query =
         query_builder::read<std::vector<lei_bic_entity>> | query_builder::where("lei"_c == lei);
 
@@ -260,7 +258,7 @@ std::vector<domain::lei_bic> lei_bic_repository::read_latest(const context& ctx,
 
 std::vector<domain::lei_bic> lei_bic_repository::read_all(const context& ctx,
                                                           const std::string& lei) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all LEI BIC versions. " << "lei: " << lei;
+    ORES_LOG_SEV(lg(), debug) << "Reading all LEI BIC versions. " << "lei: " << lei;
     const auto query = query_builder::read<std::vector<lei_bic_entity>> |
                        query_builder::where("lei"_c == lei) | query_builder::order_by("lei"_c);
 
@@ -276,7 +274,7 @@ std::vector<domain::lei_bic> lei_bic_repository::read_all(const context& ctx,
 lei_bic_repository::remove_status lei_bic_repository::remove(const context& ctx,
                                                              const std::string& lei,
                                                              std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing LEI BIC. " << "lei: " << lei;
+    ORES_LOG_SEV(lg(), debug) << "Removing LEI BIC. " << "lei: " << lei;
     // The store keeps no version column, so a caller that stated a version
     // asked a question this table cannot answer.
     if (version)
@@ -302,8 +300,8 @@ lei_bic_repository::read_latest(const context& ctx,
                                 std::uint32_t limit,
                                 const ores::utility::domain::order& order,
                                 const std::optional<messaging::lei_bic_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest LEI BIC with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest LEI BIC with offset: " << offset
+                              << " and limit: " << limit;
     const auto query = query_builder::read<std::vector<lei_bic_entity>> |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
@@ -319,7 +317,7 @@ lei_bic_repository::read_latest(const context& ctx,
 
 std::uint32_t lei_bic_repository::get_total_lei_bic_count(
     const context& ctx, const std::optional<messaging::lei_bic_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active LEI BIC count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active LEI BIC count";
 
     const auto query = query_builder::read<std::vector<lei_bic_entity>>;
 

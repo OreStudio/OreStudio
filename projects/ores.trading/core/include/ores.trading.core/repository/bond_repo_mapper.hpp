@@ -25,7 +25,7 @@
 #ifndef ORES_TRADING_CORE_REPOSITORY_BOND_REPO_MAPPER_HPP
 #define ORES_TRADING_CORE_REPOSITORY_BOND_REPO_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.trading.api/domain/bond_repo.hpp"
 #include "ores.trading.core/export.hpp"
 #include "ores.trading.core/repository/bond_repo_entity.hpp"

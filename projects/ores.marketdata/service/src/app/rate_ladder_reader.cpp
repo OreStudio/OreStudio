@@ -21,7 +21,7 @@
 #include "../curve_pillar_reader.hpp"
 #include "../curve_republish_resolver.hpp"
 #include "ores.analytics.quant/service/day_count_calculator.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/datum/market_datum.hpp"
 #include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.api/datum/schema.hpp"
@@ -225,7 +225,7 @@ mm::get_rate_ladder_response get_rate_ladder(const ores::database::context& ctx,
             // A rung the convention cannot resolve is named in the answer
             // rather than dropped in silence: a person reading a ladder has to
             // know which rung the server could not date, and why.
-            BOOST_LOG_SEV(rate_ladder_lg(), warn)
+            ORES_LOG_SEV(rate_ladder_lg(), warn)
                 << "Cannot date rung '" << tenor << "': " << e.what();
             if (!undated.empty())
                 undated += "; ";

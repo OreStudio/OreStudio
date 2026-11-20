@@ -34,7 +34,7 @@ void database_lifecycle_listener::register_pre_run_sweep_table(std::string table
 void database_lifecycle_listener::testRunStarting(Catch::TestRunInfo const& testRunInfo) {
     BOOST_LOG_SCOPED_LOGGER_TAG(lg(), "Tag", "TestSuite");
 
-    BOOST_LOG_SEV(lg(), info) << "Test run starting, provisioning test tenant";
+    ORES_LOG_SEV(lg(), info) << "Test run starting, provisioning test tenant";
 
     try {
         auto ctx = test_database_manager::make_context();
@@ -57,9 +57,9 @@ void database_lifecycle_listener::testRunStarting(Catch::TestRunInfo const& test
 
         test_database_manager::set_test_tenant_id_env(test_tenant_id_);
 
-        BOOST_LOG_SEV(lg(), info) << "Test tenant ready: " << test_tenant_id_;
+        ORES_LOG_SEV(lg(), info) << "Test tenant ready: " << test_tenant_id_;
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to provision test tenant: " << e.what();
+        ORES_LOG_SEV(lg(), error) << "Failed to provision test tenant: " << e.what();
         throw;
     }
 }
@@ -71,14 +71,14 @@ void database_lifecycle_listener::testRunEnded(Catch::TestRunStats const& /*test
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Test run ended, terminating test tenant: " << test_tenant_id_;
+    ORES_LOG_SEV(lg(), info) << "Test run ended, terminating test tenant: " << test_tenant_id_;
 
     try {
         auto ctx = test_database_manager::make_context();
         test_database_manager::terminate_test_tenant(ctx, test_tenant_id_);
         test_tenant_id_.clear();
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to terminate test tenant: " << e.what();
+        ORES_LOG_SEV(lg(), warn) << "Failed to terminate test tenant: " << e.what();
         // Don't throw - cleanup should be best-effort
     }
 }

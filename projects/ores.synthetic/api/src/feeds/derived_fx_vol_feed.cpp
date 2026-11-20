@@ -17,7 +17,7 @@
  *
  */
 #include "ores.synthetic.api/feeds/derived_fx_vol_feed.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include <algorithm>
 #include <chrono>
 #include <iterator>
@@ -189,10 +189,10 @@ std::size_t derived_fx_vol_feed::persist(std::chrono::year_month_day today,
     using namespace ores::logging;
     const auto pass_started = std::chrono::steady_clock::now();
     const auto fail = [&](const std::string& key, const std::string& why) {
-        BOOST_LOG_SEV(derived_fx_feed_lg(), warn) << "Derived history of " << key << ": " << why;
+        ORES_LOG_SEV(derived_fx_feed_lg(), warn) << "Derived history of " << key << ": " << why;
         failures_.push_back(key + ": " + why);
     };
-    BOOST_LOG_SEV(derived_fx_feed_lg(), info)
+    ORES_LOG_SEV(derived_fx_feed_lg(), info)
         << "Keeping the derived history of " << pairs.size() << " pair(s) up to " << today;
 
     std::size_t written = 0;
@@ -208,7 +208,7 @@ std::size_t derived_fx_vol_feed::persist(std::chrono::year_month_day today,
                 fail(key, "the series: " + series.error());
                 continue;
             }
-            BOOST_LOG_SEV(derived_fx_feed_lg(), info)
+            ORES_LOG_SEV(derived_fx_feed_lg(), info)
                 << "Derived history of " << key << ": series " << *series << " ready in "
                 << seconds_since(started) << "s";
             started = std::chrono::steady_clock::now();
@@ -217,7 +217,7 @@ std::size_t derived_fx_vol_feed::persist(std::chrono::year_month_day today,
                 fail(key, "the days held: " + held.error());
                 continue;
             }
-            BOOST_LOG_SEV(derived_fx_feed_lg(), info)
+            ORES_LOG_SEV(derived_fx_feed_lg(), info)
                 << "Derived history of " << key << ": holds " << held->size()
                 << " stored day(s), read in " << seconds_since(started) << "s";
             kept = kept_.emplace(key, std::pair{*series, std::move(*held)}).first;
@@ -231,7 +231,7 @@ std::size_t derived_fx_vol_feed::persist(std::chrono::year_month_day today,
             continue;
         }
         const auto returns = pair_log_returns(*levels);
-        BOOST_LOG_SEV(derived_fx_feed_lg(), debug)
+        ORES_LOG_SEV(derived_fx_feed_lg(), debug)
             << "Derived history of " << key << ": " << returns.dates.size()
             << " daily return(s) from the levels, read in " << seconds_since(started) << "s";
         // The tail a feed keeps is what it owes: a tail already held needs no derivation, and
@@ -244,7 +244,7 @@ std::size_t derived_fx_vol_feed::persist(std::chrono::year_month_day today,
             std::views::drop(returns.dates, static_cast<std::ptrdiff_t>(tail_from)),
             [&](const std::chrono::year_month_day d) { return held.contains(d); });
         if (whole) {
-            BOOST_LOG_SEV(derived_fx_feed_lg(), debug)
+            ORES_LOG_SEV(derived_fx_feed_lg(), debug)
                 << "Derived history of " << key << ": every day is held; nothing to derive";
             continue;
         }
@@ -283,7 +283,7 @@ std::size_t derived_fx_vol_feed::persist(std::chrono::year_month_day today,
             fail(key, "the write: " + stored.error());
             continue;
         }
-        BOOST_LOG_SEV(derived_fx_feed_lg(), info)
+        ORES_LOG_SEV(derived_fx_feed_lg(), info)
             << "Derived history of " << key << ": " << missing->days.size() << " day(s) derived in "
             << derived_in << "s and written in " << seconds_since(started) << "s";
         for (const auto& d : missing->days)
@@ -291,7 +291,7 @@ std::size_t derived_fx_vol_feed::persist(std::chrono::year_month_day today,
         written += missing->days.size();
         ++pairs_written;
     }
-    BOOST_LOG_SEV(derived_fx_feed_lg(), info)
+    ORES_LOG_SEV(derived_fx_feed_lg(), info)
         << "Kept the derived history of " << pairs.size() << " pair(s) in "
         << seconds_since(pass_started) << "s: " << written << " day(s) written, "
         << failures_.size() << " failure(s)";

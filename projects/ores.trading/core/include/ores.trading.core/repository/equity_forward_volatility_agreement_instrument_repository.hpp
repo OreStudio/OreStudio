@@ -26,7 +26,7 @@
 #define ORES_TRADING_CORE_REPOSITORY_EQUITY_FORWARD_VOLATILITY_AGREEMENT_INSTRUMENT_REPOSITORY_HPP
 
 #include "ores.database/domain/context_fwd.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.trading.api/domain/equity_forward_volatility_agreement_instrument.hpp"
 #include "ores.trading.api/messaging/equity_forward_volatility_agreement_instrument_protocol.hpp"
 #include "ores.trading.core/export.hpp"

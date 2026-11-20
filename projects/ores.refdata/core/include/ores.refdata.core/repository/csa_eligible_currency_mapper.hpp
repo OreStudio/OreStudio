@@ -25,7 +25,7 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_CSA_ELIGIBLE_CURRENCY_MAPPER_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_CSA_ELIGIBLE_CURRENCY_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/csa_eligible_currency.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/csa_eligible_currency_entity.hpp"

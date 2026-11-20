@@ -26,7 +26,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/party.hpp"
 #include "ores.refdata.api/domain/party_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/messaging/party_protocol.hpp"
@@ -36,7 +35,6 @@
 #include "ores.utility/domain/protocol.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/lexical_cast.hpp>
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -222,7 +220,7 @@ void party_repository::write(const context& ctx, const std::vector<domain::party
 void party_repository::write(const context& ctx,
                              const domain::party& v,
                              const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing party. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Writing party. " << "id: " << v.id;
     const auto t = party_apply_claim(v,
                                      claim,
                                      party_claim_reads_current(claim) ?
@@ -235,7 +233,7 @@ void party_repository::write(const context& ctx,
 void party_repository::write(const context& ctx,
                              const std::vector<domain::party>& v,
                              const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing parties. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing parties. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument("party_repository::write: one claim is needed for each row");
     std::vector<domain::party> to_read;
@@ -269,7 +267,7 @@ std::vector<domain::party> party_repository::read_latest(const context& ctx) {
 
 std::vector<domain::party> party_repository::read_latest(const context& ctx,
                                                          const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest party. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest party. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -286,7 +284,7 @@ std::vector<domain::party> party_repository::read_latest(const context& ctx,
 
 std::vector<domain::party> party_repository::read_latest_by_code(const context& ctx,
                                                                  const std::string& short_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest party by short_code: " << short_code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest party by short_code: " << short_code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<party_entity>> |
@@ -302,7 +300,7 @@ std::vector<domain::party> party_repository::read_latest_by_code(const context& 
 }
 std::vector<domain::party>
 party_repository::read_latest_by_short_code(const context& ctx, const std::string& short_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest party by short_code: " << short_code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest party by short_code: " << short_code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<party_entity>> |
@@ -338,8 +336,8 @@ party_repository::read_latest_by_short_code(const context& ctx,
         }
         return all;
     }
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest parties by short_code. Count: "
-                               << short_codes.size();
+    ORES_LOG_SEV(lg(), debug) << "Reading latest parties by short_code. Count: "
+                              << short_codes.size();
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<party_entity>> |
@@ -356,7 +354,7 @@ party_repository::read_latest_by_short_code(const context& ctx,
 
 std::vector<domain::party> party_repository::read_any_by_short_code(const context& ctx,
                                                                     const std::string& short_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading any party by short_code: " << short_code;
+    ORES_LOG_SEV(lg(), debug) << "Reading any party by short_code: " << short_code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<party_entity>> |
                        query_builder::where("tenant_id"_c == tid && "short_code"_c == short_code) |
@@ -372,7 +370,7 @@ std::vector<domain::party> party_repository::read_any_by_short_code(const contex
 
 
 std::vector<domain::party> party_repository::read_all(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all party versions. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading all party versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<party_entity>> |
                        query_builder::where("tenant_id"_c == tid && "id"_c == id) |
@@ -389,8 +387,8 @@ std::vector<domain::party> party_repository::read_all(const context& ctx, const 
 std::optional<domain::party> party_repository::read_at_version(const context& ctx,
                                                                const std::string& id,
                                                                std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading party at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading party at version. " << "id: " << id
+                              << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<party_entity>> |
@@ -413,7 +411,7 @@ std::optional<domain::party> party_repository::read_at_version(const context& ct
 party_repository::remove_status party_repository::remove(const context& ctx,
                                                          const std::string& id,
                                                          std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing party. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing party. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
         return remove_status::missing;
@@ -451,8 +449,8 @@ party_repository::read_latest(const context& ctx,
                               const ores::utility::domain::order& order,
                               const std::optional<messaging::parties_filter>& filter,
                               const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest parties with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest parties with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<party_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -472,7 +470,7 @@ std::uint32_t
 party_repository::get_total_party_count(const context& ctx,
                                         const std::optional<messaging::parties_filter>& filter,
                                         const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active party count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active party count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -538,8 +536,8 @@ void party_repository::remove(const context& ctx, const std::vector<std::string>
 
 std::vector<ores::utility::domain::hierarchy_flat_row> party_repository::get_hierarchy(
     const context& ctx, const boost::uuids::uuid& root_id, bool from_root) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading party hierarchy. Root: " << root_id
-                               << " from_root: " << from_root;
+    ORES_LOG_SEV(lg(), debug) << "Reading party hierarchy. Root: " << root_id
+                              << " from_root: " << from_root;
 
     const auto tenant_str = boost::uuids::to_string(ctx.tenant_id().to_uuid());
     const auto root_str = boost::uuids::to_string(root_id);
@@ -564,14 +562,14 @@ std::vector<ores::utility::domain::hierarchy_flat_row> party_repository::get_hie
         }
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Read " << result.size() << " party hierarchy rows.";
+    ORES_LOG_SEV(lg(), debug) << "Read " << result.size() << " party hierarchy rows.";
     return result;
 }
 
 
 std::vector<domain::party> party_repository::read_system_party(const context& ctx,
                                                                const std::string& tenant_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading system party for tenant: " << tenant_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading system party for tenant: " << tenant_id;
     const std::string sql =
         "SELECT * FROM ores_refdata_read_system_party_fn('" + tenant_id + "'::uuid)";
     const auto rows = query_builder::execute_raw_multi_column_query(
@@ -605,7 +603,7 @@ std::vector<domain::party> party_repository::read_system_party(const context& ct
 
 std::vector<boost::uuids::uuid>
 party_repository::read_descendants(const context& ctx, const boost::uuids::uuid& root_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading party descendants. Root: " << root_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading party descendants. Root: " << root_id;
     const auto id_str = boost::uuids::to_string(root_id);
     const std::string sql = "WITH RECURSIVE party_tree AS ("
                             "  SELECT id FROM ores_refdata_parties_tbl"

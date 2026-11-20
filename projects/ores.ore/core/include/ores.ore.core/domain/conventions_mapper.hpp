@@ -20,7 +20,7 @@
 #ifndef ORES_ORE_CORE_DOMAIN_CONVENTIONS_MAPPER_HPP
 #define ORES_ORE_CORE_DOMAIN_CONVENTIONS_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.ore.core/domain/conventions_package.hpp"
 #include "ores.ore.core/export.hpp"
 #include "ores.ore.core/xml/record.hpp"

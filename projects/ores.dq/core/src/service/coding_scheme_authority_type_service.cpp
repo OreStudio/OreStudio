@@ -29,10 +29,8 @@
 #include "ores.dq.api/domain/coding_scheme_authority_type.hpp"
 #include "ores.dq.api/messaging/coding_scheme_authority_type_protocol.hpp"
 #include "ores.dq.core/repository/coding_scheme_authority_type_repository.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -468,12 +466,12 @@ ores::utility::domain::result coding_scheme_authority_type_service::prepare_chan
 std::vector<domain::coding_scheme_authority_type>
 coding_scheme_authority_type_service::list_authority_types(std::uint32_t offset,
                                                            std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all coding scheme authority types";
+    ORES_LOG_SEV(lg(), debug) << "Listing all coding scheme authority types";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t coding_scheme_authority_type_service::count_authority_types() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total coding scheme authority types count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total coding scheme authority types count";
     return repo_.get_total_authority_type_count(ctx_);
 }
 
@@ -481,14 +479,14 @@ std::uint32_t coding_scheme_authority_type_service::count_authority_types() {
 std::optional<domain::coding_scheme_authority_type>
 coding_scheme_authority_type_service::get_authority_type_at_version(const std::string& code,
                                                                     std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting coding scheme authority type at version. "
-                               << "code: " << code << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting coding scheme authority type at version. "
+                              << "code: " << code << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::coding_scheme_authority_type>
 coding_scheme_authority_type_service::get_authority_type(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting coding scheme authority type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting coding scheme authority type. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -504,11 +502,11 @@ void coding_scheme_authority_type_service::save_authority_type(
     const domain::coding_scheme_authority_type& v) {
     if (v.code.empty())
         throw std::invalid_argument("Coding Scheme Authority Type code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving coding scheme authority type. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving coding scheme authority type. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved coding scheme authority type. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved coding scheme authority type. " << "code: " << v.code;
 }
 
 void coding_scheme_authority_type_service::save_authority_types(
@@ -517,8 +515,8 @@ void coding_scheme_authority_type_service::save_authority_types(
         if (e.code.empty())
             throw std::invalid_argument("Coding Scheme Authority Type code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << authority_types.size()
-                               << " coding scheme authority types";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << authority_types.size()
+                              << " coding scheme authority types";
     auto ts = authority_types;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -527,9 +525,9 @@ void coding_scheme_authority_type_service::save_authority_types(
 }
 
 void coding_scheme_authority_type_service::delete_authority_type(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing coding scheme authority type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing coding scheme authority type. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed coding scheme authority type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed coding scheme authority type. " << "code: " << code;
 }
 
 void coding_scheme_authority_type_service::delete_authority_types(
@@ -539,8 +537,8 @@ void coding_scheme_authority_type_service::delete_authority_types(
 
 std::vector<domain::coding_scheme_authority_type>
 coding_scheme_authority_type_service::get_authority_type_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for coding scheme authority type. "
-                               << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for coding scheme authority type. "
+                              << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

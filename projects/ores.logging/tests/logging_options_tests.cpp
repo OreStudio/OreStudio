@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.logging/logger.hpp"
 #include "ores.logging/logging_options.hpp"
-#include "ores.logging/make_logger.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <sstream>
@@ -51,7 +51,7 @@ TEST_CASE("logging_options_stream_renders_every_field_name", "[logging]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     const std::string json(stream_to_string(make_populated_options()));
-    BOOST_LOG_SEV(lg, ores::logging::info) << json;
+    ORES_LOG_SEV(lg, ores::logging::info) << json;
 
     CHECK(json.contains("\"severity\""));
     CHECK(json.contains("\"filename\""));
@@ -66,7 +66,7 @@ TEST_CASE("logging_options_stream_renders_populated_field_values", "[logging]") 
     auto lg(ores::logging::make_logger(test_suite));
 
     const std::string json(stream_to_string(make_populated_options()));
-    BOOST_LOG_SEV(lg, ores::logging::info) << json;
+    ORES_LOG_SEV(lg, ores::logging::info) << json;
 
     CHECK(json.contains("\"severity\":\"info\""));
     CHECK(json.contains("\"filename\":\"app.log\""));

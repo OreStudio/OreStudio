@@ -28,7 +28,7 @@
 #include "ores.http.api/net/router.hpp"
 #include "ores.http.api/net/server_counters.hpp"
 #include "ores.http.api/net/worker_pool.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include <boost/asio/awaitable.hpp>
 #include <boost/asio/ip/tcp.hpp>

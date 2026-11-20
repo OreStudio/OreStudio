@@ -26,7 +26,6 @@
 #include "ores.refdata.api/domain/netting_agreement.hpp"
 #include "ores.refdata.api/messaging/netting_agreement_protocol.hpp"
 #include "ores.refdata.core/repository/netting_agreement_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -533,12 +531,12 @@ netting_agreement_service::prepare_change(const messaging::netting_agreement_cha
 
 std::vector<domain::netting_agreement>
 netting_agreement_service::list_netting_agreements(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all netting agreements";
+    ORES_LOG_SEV(lg(), debug) << "Listing all netting agreements";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t netting_agreement_service::count_netting_agreements() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total netting agreements count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total netting agreements count";
     return repo_.get_total_netting_agreement_count(ctx_);
 }
 
@@ -546,31 +544,31 @@ std::uint32_t netting_agreement_service::count_netting_agreements() {
 std::vector<domain::netting_agreement>
 netting_agreement_service::list_netting_agreements_by_counterparty_id(
     const std::string& counterparty_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing netting agreements by counterparty_id: "
-                               << counterparty_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing netting agreements by counterparty_id: "
+                              << counterparty_id;
     return repo_.read_latest_by_counterparty_id(ctx_, counterparty_id, offset, limit);
 }
 
 std::uint32_t netting_agreement_service::count_netting_agreements_by_counterparty_id(
     const std::string& counterparty_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total netting agreements count by counterparty_id: "
-                               << counterparty_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting total netting agreements count by counterparty_id: "
+                              << counterparty_id;
     return repo_.get_total_netting_agreement_count_by_counterparty_id(ctx_, counterparty_id);
 }
 
 std::vector<domain::netting_agreement>
 netting_agreement_service::list_netting_agreements_by_counterparty_id(
     const boost::uuids::uuid& counterparty_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing netting agreements by counterparty_id: "
-                               << counterparty_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing netting agreements by counterparty_id: "
+                              << counterparty_id;
     return repo_.read_latest_by_counterparty_id(
         ctx_, boost::uuids::to_string(counterparty_id), offset, limit);
 }
 
 std::uint32_t netting_agreement_service::count_netting_agreements_by_counterparty_id(
     const boost::uuids::uuid& counterparty_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total netting agreements count by counterparty_id: "
-                               << counterparty_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting total netting agreements count by counterparty_id: "
+                              << counterparty_id;
     return repo_.get_total_netting_agreement_count_by_counterparty_id(
         ctx_, boost::uuids::to_string(counterparty_id));
 }
@@ -579,14 +577,14 @@ std::uint32_t netting_agreement_service::count_netting_agreements_by_counterpart
 std::optional<domain::netting_agreement>
 netting_agreement_service::get_netting_agreement_at_version(const boost::uuids::uuid& id,
                                                             std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting netting agreement at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting netting agreement at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::netting_agreement>
 netting_agreement_service::get_netting_agreement(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting netting agreement. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting netting agreement. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -596,8 +594,8 @@ netting_agreement_service::get_netting_agreement(const boost::uuids::uuid& id) {
 std::optional<domain::netting_agreement>
 netting_agreement_service::get_netting_agreement_by_agreement_number(
     const std::string& agreement_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting netting agreement by agreement_number: "
-                               << agreement_number;
+    ORES_LOG_SEV(lg(), debug) << "Getting netting agreement by agreement_number: "
+                              << agreement_number;
     messaging::netting_agreement_key k;
     k.agreement_number = agreement_number;
     auto found = netting_agreement_read_one(repo_, ctx_, k);
@@ -608,7 +606,7 @@ netting_agreement_service::get_netting_agreement_by_agreement_number(
 
 std::optional<domain::netting_agreement>
 netting_agreement_service::find_netting_agreement(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding netting agreement. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Finding netting agreement. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -623,11 +621,11 @@ netting_agreement_service::get_netting_agreements(const std::vector<std::string>
 void netting_agreement_service::save_netting_agreement(const domain::netting_agreement& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Netting Agreement id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving netting agreement. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving netting agreement. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved netting agreement. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved netting agreement. " << "id: " << v.id;
 }
 
 void netting_agreement_service::save_netting_agreements(
@@ -636,7 +634,7 @@ void netting_agreement_service::save_netting_agreements(
         if (e.id.is_nil())
             throw std::invalid_argument("Netting Agreement id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << netting_agreements.size() << " netting agreements";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << netting_agreements.size() << " netting agreements";
     auto ts = netting_agreements;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -645,15 +643,15 @@ void netting_agreement_service::save_netting_agreements(
 }
 
 void netting_agreement_service::delete_netting_agreement(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing netting agreement. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing netting agreement. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed netting agreement. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed netting agreement. " << "id: " << id;
 }
 
 void netting_agreement_service::remove_netting_agreement(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing netting agreement. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing netting agreement. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed netting agreement. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed netting agreement. " << "id: " << id;
 }
 
 void netting_agreement_service::delete_netting_agreements(const std::vector<std::string>& ids) {
@@ -662,7 +660,7 @@ void netting_agreement_service::delete_netting_agreements(const std::vector<std:
 
 std::vector<domain::netting_agreement>
 netting_agreement_service::get_netting_agreement_history(const std::string& key) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for netting agreement. key: " << key;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for netting agreement. key: " << key;
     // The caller holds the key the model declares and this reads by the
     // storage key, so the two are joined here exactly as they are for any
     // other read. Without this step a provider looks the versions up under a
@@ -684,7 +682,7 @@ netting_agreement_service::get_netting_agreement_history(const std::string& key)
 
 std::vector<domain::netting_agreement>
 netting_agreement_service::get_netting_agreement_history(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for netting agreement. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for netting agreement. " << "id: " << id;
     return repo_.read_all(ctx_, boost::uuids::to_string(id));
 }
 

@@ -30,9 +30,7 @@
 #include "ores.inbox.api/domain/approval_kind_part_json_io.hpp" // IWYU pragma: keep.
 #include "ores.inbox.core/repository/approval_kind_part_entity.hpp"
 #include "ores.inbox.core/repository/approval_kind_part_mapper.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -190,9 +188,9 @@ void approval_kind_part_repository::write(
 
 void approval_kind_part_repository::write(const domain::approval_kind_part& approval_kind_part,
                                           const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing approval kind part to database: "
-                               << approval_kind_part.kind_code << "/"
-                               << approval_kind_part.part_code;
+    ORES_LOG_SEV(lg(), debug) << "Writing approval kind part to database: "
+                              << approval_kind_part.kind_code << "/"
+                              << approval_kind_part.part_code;
     const auto current =
         claim.kind == ores::utility::domain::precondition_kind::any ?
             read_latest(approval_kind_part.kind_code, approval_kind_part.part_code) :
@@ -205,8 +203,8 @@ void approval_kind_part_repository::write(const domain::approval_kind_part& appr
 void approval_kind_part_repository::write(
     const std::vector<domain::approval_kind_part>& approval_kind_parts,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing approval kind parts to database. Count: "
-                               << approval_kind_parts.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing approval kind parts to database. Count: "
+                              << approval_kind_parts.size();
     if (claims.size() != approval_kind_parts.size())
         throw std::invalid_argument(
             "approval_kind_part_repository::write: one claim is needed for each row");
@@ -246,8 +244,8 @@ std::vector<domain::approval_kind_part> approval_kind_part_repository::read_late
 
 std::vector<domain::approval_kind_part>
 approval_kind_part_repository::read_latest(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest approval kind parts with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest approval kind parts with offset: " << offset
+                              << " and limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<approval_kind_part_entity>> |
@@ -266,8 +264,8 @@ approval_kind_part_repository::read_latest(std::uint32_t offset, std::uint32_t l
 std::vector<domain::approval_kind_part>
 approval_kind_part_repository::read_latest(const std::string& kind_code,
                                            const std::string& part_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest approval kind part. " << kind_code << "/"
-                               << part_code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest approval kind part. " << kind_code << "/"
+                              << part_code;
 
     static constexpr auto max = db_timestamp::max();
     const auto kind_code_str = kind_code;
@@ -286,7 +284,7 @@ approval_kind_part_repository::read_latest(const std::string& kind_code,
 }
 
 std::uint32_t approval_kind_part_repository::get_total_approval_kind_part_count() {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active approval kind parts count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active approval kind parts count";
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
@@ -295,13 +293,13 @@ std::uint32_t approval_kind_part_repository::get_total_approval_kind_part_count(
 
     const auto count = query_builder::execute_count_query<approval_kind_part_entity>(
         ctx_, query, std::nullopt, lg(), "Counting approval kind parts");
-    BOOST_LOG_SEV(lg(), debug) << "Total active approval kind parts count: " << count;
+    ORES_LOG_SEV(lg(), debug) << "Total active approval kind parts count: " << count;
     return count;
 }
 
 std::vector<domain::approval_kind_part>
 approval_kind_part_repository::read_latest_by_kind(const std::string& kind_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest approval kind parts. Kind: " << kind_code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest approval kind parts. Kind: " << kind_code;
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
@@ -323,7 +321,7 @@ approval_kind_part_repository::read_latest_by_kind(const std::string& kind_code)
 
 std::vector<domain::approval_kind_part>
 approval_kind_part_repository::read_latest_by_part(const std::string& part_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest approval kind parts. Part: " << part_code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest approval kind parts. Part: " << part_code;
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
@@ -345,8 +343,8 @@ approval_kind_part_repository::read_latest_by_part(const std::string& part_code)
 
 std::vector<domain::approval_kind_part> approval_kind_part_repository::read_latest_by_kind(
     const std::string& kind_code, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest approval kind parts. Kind: " << kind_code
-                               << " offset: " << offset << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest approval kind parts. Kind: " << kind_code
+                              << " offset: " << offset << " limit: " << limit;
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
@@ -369,8 +367,8 @@ std::vector<domain::approval_kind_part> approval_kind_part_repository::read_late
 
 std::uint32_t approval_kind_part_repository::get_total_approval_kind_part_count_by_kind(
     const std::string& kind_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active approval kind parts count. Kind: "
-                               << kind_code;
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active approval kind parts count. Kind: "
+                              << kind_code;
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
@@ -380,14 +378,14 @@ std::uint32_t approval_kind_part_repository::get_total_approval_kind_part_count_
 
     const auto count = query_builder::execute_count_query<approval_kind_part_entity>(
         ctx_, query, std::nullopt, lg(), "Counting approval kind parts");
-    BOOST_LOG_SEV(lg(), debug) << "Total active approval kind parts count by kind: " << count;
+    ORES_LOG_SEV(lg(), debug) << "Total active approval kind parts count by kind: " << count;
     return count;
 }
 
 std::uint32_t approval_kind_part_repository::get_total_approval_kind_part_count_by_part(
     const std::string& part_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active approval kind parts count. Part: "
-                               << part_code;
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active approval kind parts count. Part: "
+                              << part_code;
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
@@ -397,14 +395,14 @@ std::uint32_t approval_kind_part_repository::get_total_approval_kind_part_count_
 
     const auto count = query_builder::execute_count_query<approval_kind_part_entity>(
         ctx_, query, std::nullopt, lg(), "Counting approval kind parts");
-    BOOST_LOG_SEV(lg(), debug) << "Total active approval kind parts count by part: " << count;
+    ORES_LOG_SEV(lg(), debug) << "Total active approval kind parts count by part: " << count;
     return count;
 }
 
 std::vector<approval_kind_part_history_row>
 approval_kind_part_repository::read_all_by_kind(const std::string& kind_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading every version of the approval kind parts. Kind: "
-                               << kind_code;
+    ORES_LOG_SEV(lg(), debug) << "Reading every version of the approval kind parts. Kind: "
+                              << kind_code;
 
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<approval_kind_part_entity>> |
@@ -454,8 +452,8 @@ approval_kind_part_repository::remove_status
 approval_kind_part_repository::remove(const std::string& kind_code,
                                       const std::string& part_code,
                                       std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing approval kind part from database: " << kind_code << "/"
-                               << part_code;
+    ORES_LOG_SEV(lg(), debug) << "Removing approval kind part from database: " << kind_code << "/"
+                              << part_code;
 
     const auto current = read_latest(kind_code, part_code);
     if (current.empty())
@@ -501,7 +499,7 @@ void approval_kind_part_repository::remove(const std::vector<std::string>& kind_
 }
 
 void approval_kind_part_repository::remove_by_kind(const std::string& kind_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing all approval kind parts from database: " << kind_code;
+    ORES_LOG_SEV(lg(), debug) << "Removing all approval kind parts from database: " << kind_code;
 
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::delete_from<approval_kind_part_entity> |

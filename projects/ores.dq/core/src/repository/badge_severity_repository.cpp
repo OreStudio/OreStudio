@@ -31,9 +31,7 @@
 #include "ores.dq.api/messaging/badge_severity_protocol.hpp"
 #include "ores.dq.core/repository/badge_severity_entity.hpp"
 #include "ores.dq.core/repository/badge_severity_mapper.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -213,7 +211,7 @@ void badge_severity_repository::write(const context& ctx,
 void badge_severity_repository::write(const context& ctx,
                                       const domain::badge_severity& v,
                                       const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing badge severity. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Writing badge severity. " << "code: " << v.code;
     const auto t = badge_severity_apply_claim(v,
                                               claim,
                                               badge_severity_claim_reads_current(claim) ?
@@ -227,7 +225,7 @@ void badge_severity_repository::write(
     const context& ctx,
     const std::vector<domain::badge_severity>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing badge severities. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing badge severities. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "badge_severity_repository::write: one claim is needed for each row");
@@ -263,7 +261,7 @@ std::vector<domain::badge_severity> badge_severity_repository::read_latest(const
 
 std::vector<domain::badge_severity>
 badge_severity_repository::read_latest(const context& ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest badge severity. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest badge severity. " << "code: " << code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -281,7 +279,7 @@ badge_severity_repository::read_latest(const context& ctx, const std::string& co
 
 std::vector<domain::badge_severity> badge_severity_repository::read_all(const context& ctx,
                                                                         const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all badge severity versions. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Reading all badge severity versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<badge_severity_entity>> |
                        query_builder::where("tenant_id"_c == tid && "code"_c == code) |
@@ -297,8 +295,8 @@ std::vector<domain::badge_severity> badge_severity_repository::read_all(const co
 
 std::optional<domain::badge_severity> badge_severity_repository::read_at_version(
     const context& ctx, const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading badge severity at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading badge severity at version. " << "code: " << code
+                              << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<badge_severity_entity>> |
@@ -320,7 +318,7 @@ std::optional<domain::badge_severity> badge_severity_repository::read_at_version
 
 badge_severity_repository::remove_status badge_severity_repository::remove(
     const context& ctx, const std::string& code, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing badge severity. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing badge severity. " << "code: " << code;
     const auto current = read_latest(ctx, code);
     if (current.empty())
         return remove_status::missing;
@@ -358,8 +356,8 @@ std::vector<domain::badge_severity> badge_severity_repository::read_latest(
     const ores::utility::domain::order& order,
     const std::optional<messaging::badge_severities_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest badge severities with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest badge severities with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<badge_severity_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -380,7 +378,7 @@ std::uint32_t badge_severity_repository::get_total_severity_count(
     const context& ctx,
     const std::optional<messaging::badge_severities_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active badge severity count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active badge severity count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<badge_severity_entity>> |

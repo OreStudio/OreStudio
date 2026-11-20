@@ -27,7 +27,7 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/messaging/session_protocol.hpp"
 #include "ores.marketdata.core/service/session_service.hpp"
 #include "ores.nats/domain/message.hpp"
@@ -79,7 +79,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void list_sessions(ores::nats::message msg) {
-        BOOST_LOG_SEV(session_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(session_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -94,7 +94,7 @@ public:
         }
         auto req = decode<list_sessions_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(session_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(session_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
@@ -103,13 +103,13 @@ public:
         service::session_service svc(sys_ctx);
         try {
             auto response = svc.list_sessions(*req);
-            BOOST_LOG_SEV(session_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(session_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(session_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(session_handler_lg(), error) << msg.subject << " failed: " << e.what();
             list_sessions_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
             failure.result.code = "internal_error";
@@ -128,7 +128,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void get_session(ores::nats::message msg) {
-        BOOST_LOG_SEV(session_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(session_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -143,7 +143,7 @@ public:
         }
         auto req = decode<get_session_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(session_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(session_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
@@ -152,13 +152,13 @@ public:
         service::session_service svc(sys_ctx);
         try {
             auto response = svc.get_session(*req);
-            BOOST_LOG_SEV(session_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(session_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(session_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(session_handler_lg(), error) << msg.subject << " failed: " << e.what();
             get_session_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
             failure.result.code = "internal_error";
@@ -177,7 +177,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void get_many_sessions(ores::nats::message msg) {
-        BOOST_LOG_SEV(session_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(session_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -192,7 +192,7 @@ public:
         }
         auto req = decode<get_many_sessions_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(session_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(session_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
@@ -201,13 +201,13 @@ public:
         service::session_service svc(sys_ctx);
         try {
             auto response = svc.get_many_sessions(*req);
-            BOOST_LOG_SEV(session_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(session_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(session_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(session_handler_lg(), error) << msg.subject << " failed: " << e.what();
             get_many_sessions_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
             failure.result.code = "internal_error";
@@ -226,7 +226,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void put_session(ores::nats::message msg) {
-        BOOST_LOG_SEV(session_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(session_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -249,7 +249,7 @@ public:
         }
         auto req = decode<put_session_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(session_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(session_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
@@ -258,13 +258,13 @@ public:
         service::session_service svc(sys_ctx);
         try {
             auto response = svc.put_session(*req);
-            BOOST_LOG_SEV(session_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(session_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(session_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(session_handler_lg(), error) << msg.subject << " failed: " << e.what();
             put_session_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
             failure.result.code = "internal_error";
@@ -283,7 +283,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void put_many_sessions(ores::nats::message msg) {
-        BOOST_LOG_SEV(session_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(session_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -306,7 +306,7 @@ public:
         }
         auto req = decode<put_many_sessions_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(session_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(session_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
@@ -315,13 +315,13 @@ public:
         service::session_service svc(sys_ctx);
         try {
             auto response = svc.put_many_sessions(*req);
-            BOOST_LOG_SEV(session_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(session_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(session_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(session_handler_lg(), error) << msg.subject << " failed: " << e.what();
             put_many_sessions_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
             failure.result.code = "internal_error";
@@ -340,7 +340,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void delete_session(ores::nats::message msg) {
-        BOOST_LOG_SEV(session_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(session_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -363,7 +363,7 @@ public:
         }
         auto req = decode<delete_session_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(session_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(session_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
@@ -372,13 +372,13 @@ public:
         service::session_service svc(sys_ctx);
         try {
             auto response = svc.delete_session(*req);
-            BOOST_LOG_SEV(session_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(session_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(session_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(session_handler_lg(), error) << msg.subject << " failed: " << e.what();
             delete_session_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
             failure.result.code = "internal_error";
@@ -397,7 +397,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void delete_many_sessions(ores::nats::message msg) {
-        BOOST_LOG_SEV(session_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(session_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -420,7 +420,7 @@ public:
         }
         auto req = decode<delete_many_sessions_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(session_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(session_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
@@ -429,13 +429,13 @@ public:
         service::session_service svc(sys_ctx);
         try {
             auto response = svc.delete_many_sessions(*req);
-            BOOST_LOG_SEV(session_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(session_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(session_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(session_handler_lg(), error) << msg.subject << " failed: " << e.what();
             delete_many_sessions_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
             failure.result.code = "internal_error";
@@ -454,7 +454,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void list_session_versions(ores::nats::message msg) {
-        BOOST_LOG_SEV(session_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(session_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -469,7 +469,7 @@ public:
         }
         auto req = decode<list_session_versions_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(session_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(session_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
@@ -478,13 +478,13 @@ public:
         service::session_service svc(sys_ctx);
         try {
             auto response = svc.list_session_versions(*req);
-            BOOST_LOG_SEV(session_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(session_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(session_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(session_handler_lg(), error) << msg.subject << " failed: " << e.what();
             list_session_versions_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
             failure.result.code = "internal_error";
@@ -503,7 +503,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void get_session_version(ores::nats::message msg) {
-        BOOST_LOG_SEV(session_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(session_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -518,7 +518,7 @@ public:
         }
         auto req = decode<get_session_version_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(session_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(session_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
@@ -527,13 +527,13 @@ public:
         service::session_service svc(sys_ctx);
         try {
             auto response = svc.get_session_version(*req);
-            BOOST_LOG_SEV(session_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(session_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(session_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(session_handler_lg(), error) << msg.subject << " failed: " << e.what();
             get_session_version_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
             failure.result.code = "internal_error";

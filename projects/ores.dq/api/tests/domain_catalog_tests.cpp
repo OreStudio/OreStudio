@@ -20,7 +20,7 @@
 #include "ores.dq.api/domain/catalog.hpp"
 #include "ores.dq.api/domain/catalog_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.api/domain/catalog_table.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 
@@ -37,7 +37,7 @@ TEST_CASE("create_catalog_with_valid_fields", "[domain]") {
     sut.owner = "Standards Team";
     sut.modified_by = "admin";
     sut.change_commentary = "Initial creation";
-    BOOST_LOG_SEV(lg, info) << "Catalog: " << sut;
+    ORES_LOG_SEV(lg, info) << "Catalog: " << sut;
 
     CHECK(sut.version == 1);
     CHECK(sut.name == "ISO Standards");
@@ -59,7 +59,7 @@ TEST_CASE("catalog_convert_single_to_table", "[domain]") {
     std::vector<catalog> catalogs = {cat};
     auto table = convert_to_table(catalogs);
 
-    BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
+    ORES_LOG_SEV(lg, info) << "Table output:\n" << table;
 
     CHECK(!table.empty());
     CHECK(table.contains("Name"));

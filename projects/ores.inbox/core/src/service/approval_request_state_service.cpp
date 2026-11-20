@@ -29,10 +29,8 @@
 #include "ores.inbox.api/domain/approval_request_state.hpp"
 #include "ores.inbox.api/messaging/approval_request_state_protocol.hpp"
 #include "ores.inbox.core/repository/approval_request_state_repository.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -462,12 +460,12 @@ ores::utility::domain::result approval_request_state_service::prepare_change(
 
 std::vector<domain::approval_request_state>
 approval_request_state_service::list_states(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all approval request states";
+    ORES_LOG_SEV(lg(), debug) << "Listing all approval request states";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t approval_request_state_service::count_states() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total approval request states count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total approval request states count";
     return repo_.get_total_state_count(ctx_);
 }
 
@@ -475,14 +473,14 @@ std::uint32_t approval_request_state_service::count_states() {
 std::optional<domain::approval_request_state>
 approval_request_state_service::get_state_at_version(const std::string& code,
                                                      std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting approval request state at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting approval request state at version. " << "code: " << code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::approval_request_state>
 approval_request_state_service::find_state(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding approval request state. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Finding approval request state. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -497,11 +495,11 @@ approval_request_state_service::get_states(const std::vector<std::string>& codes
 void approval_request_state_service::save_state(const domain::approval_request_state& v) {
     if (v.code.empty())
         throw std::invalid_argument("Approval Request State code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving approval request state. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving approval request state. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved approval request state. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved approval request state. " << "code: " << v.code;
 }
 
 void approval_request_state_service::save_states(
@@ -510,7 +508,7 @@ void approval_request_state_service::save_states(
         if (e.code.empty())
             throw std::invalid_argument("Approval Request State code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << states.size() << " approval request states";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << states.size() << " approval request states";
     auto ts = states;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -519,9 +517,9 @@ void approval_request_state_service::save_states(
 }
 
 void approval_request_state_service::delete_state(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing approval request state. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing approval request state. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed approval request state. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed approval request state. " << "code: " << code;
 }
 
 void approval_request_state_service::delete_states(const std::vector<std::string>& codes) {
@@ -530,8 +528,7 @@ void approval_request_state_service::delete_states(const std::vector<std::string
 
 std::vector<domain::approval_request_state>
 approval_request_state_service::get_state_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for approval request state. "
-                               << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for approval request state. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

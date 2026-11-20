@@ -17,8 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/boost_severity.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/currency_market_tier.hpp"         // IWYU pragma: keep.
 #include "ores.refdata.api/domain/currency_market_tier_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/generators/currency_market_tier_generator.hpp"
@@ -27,7 +26,6 @@
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "test_suite.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
@@ -49,7 +47,7 @@ TEST_CASE("write_single_currency_market_tier", "[repository]") {
     auto cmt = generate_synthetic_currency_market_tier(ctx);
     cmt.code = cmt.code + "_" + std::string(faker::string::alphanumeric(8));
     cmt.change_reason_code = "system.test";
-    BOOST_LOG_SEV(lg, debug) << "Currency market tier: " << cmt;
+    ORES_LOG_SEV(lg, debug) << "Currency market tier: " << cmt;
 
     currency_market_tier_repository repo;
     repo.write(h.context(), cmt);
@@ -79,7 +77,7 @@ TEST_CASE("read_latest_currency_market_tiers_no_duplicate_codes", "[repository]"
     // system-tenant seed rows appear alongside the tenant's provisioned
     // copies, duplicating every code in the UI.
     auto read_tiers = repo.read_latest(h.context());
-    BOOST_LOG_SEV(lg, debug) << "Read currency market tiers: " << read_tiers;
+    ORES_LOG_SEV(lg, debug) << "Read currency market tiers: " << read_tiers;
 
     std::set<std::string> codes;
     for (const auto& t : read_tiers)
@@ -103,7 +101,7 @@ TEST_CASE("read_latest_currency_market_tier_by_code", "[repository]") {
     cmt.code = cmt.code + "_" + std::string(faker::string::alphanumeric(8));
     cmt.change_reason_code = "system.test";
     const auto original_name = cmt.name;
-    BOOST_LOG_SEV(lg, debug) << "Currency market tier: " << cmt;
+    ORES_LOG_SEV(lg, debug) << "Currency market tier: " << cmt;
 
     currency_market_tier_repository repo;
     repo.write(h.context(), cmt);
@@ -112,7 +110,7 @@ TEST_CASE("read_latest_currency_market_tier_by_code", "[repository]") {
     repo.write(h.context(), cmt);
 
     auto read_tiers = repo.read_latest(h.context(), cmt.code);
-    BOOST_LOG_SEV(lg, debug) << "Read currency market tiers: " << read_tiers;
+    ORES_LOG_SEV(lg, debug) << "Read currency market tiers: " << read_tiers;
 
     REQUIRE(read_tiers.size() == 1);
     CHECK(read_tiers[0].code == cmt.code);
@@ -134,10 +132,10 @@ TEST_CASE("read_nonexistent_currency_market_tier_code", "[repository]") {
     repo.write(h.context(), keeper);
 
     const std::string nonexistent_code = "NONEXISTENT_CODE_12345";
-    BOOST_LOG_SEV(lg, debug) << "Non-existent code: " << nonexistent_code;
+    ORES_LOG_SEV(lg, debug) << "Non-existent code: " << nonexistent_code;
 
     auto read_tiers = repo.read_latest(h.context(), nonexistent_code);
-    BOOST_LOG_SEV(lg, debug) << "Read currency market tiers: " << read_tiers;
+    ORES_LOG_SEV(lg, debug) << "Read currency market tiers: " << read_tiers;
 
     const auto answered_with_another_key =
         std::ranges::any_of(read_tiers, [&](const auto& t) { return t.code == nonexistent_code; });

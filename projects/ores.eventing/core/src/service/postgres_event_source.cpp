@@ -39,14 +39,14 @@ postgres_event_source::postgres_event_source(const database::context& ctx, event
                     payload);
             if (!notification) {
                 const auto n = ++parse_failure_count_;
-                BOOST_LOG_SEV(lg(), error) << "Failed to deserialize notification payload"
-                                           << " (total failures: " << n << "): " << payload;
+                ORES_LOG_SEV(lg(), error) << "Failed to deserialize notification payload"
+                                          << " (total failures: " << n << "): " << payload;
                 return;
             }
             const auto canonical = entity_event_mappings_.find(channel);
             if (canonical == entity_event_mappings_.end()) {
-                BOOST_LOG_SEV(lg(), warn) << "No mapping registered for channel: '" << channel
-                                          << "' - notification ignored";
+                ORES_LOG_SEV(lg(), warn) << "No mapping registered for channel: '" << channel
+                                         << "' - notification ignored";
                 return;
             }
             canonical->second.publisher(*notification);
@@ -63,17 +63,17 @@ postgres_event_source::postgres_event_source(const database::context& ctx, event
             bus_.publish(change);
         } catch (const std::exception& e) {
             const auto n = ++parse_failure_count_;
-            BOOST_LOG_SEV(lg(), error)
+            ORES_LOG_SEV(lg(), error)
                 << "Exception parsing notification payload" << " (total failures: " << n
                 << "): " << payload << " - " << e.what();
         }
     }) {
-    BOOST_LOG_SEV(lg(), debug) << "Postgres event source created.";
+    ORES_LOG_SEV(lg(), debug) << "Postgres event source created.";
 }
 
 postgres_event_source::~postgres_event_source() {
     stop();
-    BOOST_LOG_SEV(lg(), debug) << "Postgres event source destroyed.";
+    ORES_LOG_SEV(lg(), debug) << "Postgres event source destroyed.";
 }
 
 void postgres_event_source::start() {
@@ -83,13 +83,13 @@ void postgres_event_source::start() {
             registered_entities_ += ", ";
         registered_entities_ += kv.first;
     }
-    BOOST_LOG_SEV(lg(), info) << "Starting postgres event source. Registered entities: ["
-                              << registered_entities_ << "]";
+    ORES_LOG_SEV(lg(), info) << "Starting postgres event source. Registered entities: ["
+                             << registered_entities_ << "]";
     listener_.start();
 }
 
 void postgres_event_source::stop() {
-    BOOST_LOG_SEV(lg(), info) << "Stopping postgres event source.";
+    ORES_LOG_SEV(lg(), info) << "Stopping postgres event source.";
     listener_.stop();
 }
 

@@ -30,7 +30,7 @@
 #include "ores.inbox.api/messaging/approval_policy_protocol.hpp"
 #include "ores.inbox.core/export.hpp"
 #include "ores.inbox.core/repository/approval_policy_repository.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include <chrono>
 #include <cstdint>
 #include <optional>

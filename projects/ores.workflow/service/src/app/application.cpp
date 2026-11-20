@@ -60,7 +60,7 @@ application::application() = default;
 boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                                               const config::options& cfg) const {
 
-    BOOST_LOG_SEV(lg(), info) << ores::utility::version::format_startup_message(
+    ORES_LOG_SEV(lg(), info) << ores::utility::version::format_startup_message(
         "ores.workflow.service", 0, 1);
 
     ores::nats::service::client nats(cfg.nats);
@@ -76,9 +76,9 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         admin.ensure_stream(stream_name,
                             nats.covering_subjects({start_workflow_message::nats_subject,
                                                     step_completed_event::nats_subject}));
-        BOOST_LOG_SEV(lg(), info) << "Workflow JetStream stream ready: " << stream_name;
+        ORES_LOG_SEV(lg(), info) << "Workflow JetStream stream ready: " << stream_name;
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to ensure workflow stream: " << e.what();
+        ORES_LOG_SEV(lg(), error) << "Failed to ensure workflow stream: " << e.what();
         // The service cannot run without the stream, so the failure propagates.
         throw;
     }
@@ -104,7 +104,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     // Subscriptions are in place before the source starts, so no change that
     // lands during startup is missed.
     event_source.start();
-    BOOST_LOG_SEV(lg(), info) << "Entity change event pipeline started.";
+    ORES_LOG_SEV(lg(), info) << "Entity change event pipeline started.";
 
     // Bound before the await, so no lambda of the call lives in this frame; see run().
     auto service_run = ores::service::service::run(

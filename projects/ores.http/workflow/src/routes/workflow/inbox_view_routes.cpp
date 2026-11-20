@@ -24,7 +24,7 @@
 #include "ores.http/routes/workflow/page_query.hpp"
 #include "ores.http/routes/workflow/request_joins.hpp"
 #include "ores.inbox.api/messaging/approval_operations_protocol.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/messaging/published_curves_operations_protocol.hpp"
 #include "ores.reporting.api/messaging/report_operations_protocol.hpp"
 #include "ores.utility/codec/json_codec.hpp"
@@ -142,7 +142,7 @@ subject_join published_subjects_of(const http_request& req,
         msg.limit = static_cast<std::uint32_t>(request_ids.size());
         const auto reply = forwarding::forward(req, session, msg);
         if (!reply.success) {
-            BOOST_LOG_SEV(inbox_lg(), ores::logging::debug)
+            ORES_LOG_SEV(inbox_lg(), ores::logging::debug)
                 << "The curve publish subjects of a page were refused: " << reply.message;
             return {std::map<std::string, std::string>{}, "refused"};
         }
@@ -154,7 +154,7 @@ subject_join published_subjects_of(const http_request& req,
             out.by_request.emplace(set.request_id, inbox_view_routes::published_subject_json(set));
         }
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(inbox_lg(), ores::logging::warn)
+        ORES_LOG_SEV(inbox_lg(), ores::logging::warn)
             << "The curve publish subjects of a page were not read: " << e.what();
         return {std::map<std::string, std::string>{}, "refused"};
     }
@@ -173,7 +173,7 @@ subject_join cut_subjects_of(const http_request& req,
         msg.request_ids = request_ids;
         const auto reply = forwarding::forward(req, session, msg);
         if (reply.result.outcome != ores::utility::domain::outcome::ok) {
-            BOOST_LOG_SEV(inbox_lg(), ores::logging::debug)
+            ORES_LOG_SEV(inbox_lg(), ores::logging::debug)
                 << "The cut subjects of a page were refused: " << reply.result.message;
             return {std::map<std::string, std::string>{}, "refused"};
         }
@@ -185,7 +185,7 @@ subject_join cut_subjects_of(const http_request& req,
                                    inbox_view_routes::cut_subject_json(subject));
         }
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(inbox_lg(), ores::logging::warn)
+        ORES_LOG_SEV(inbox_lg(), ores::logging::warn)
             << "The cut subjects of a page were not read: " << e.what();
         return {std::map<std::string, std::string>{}, "refused"};
     }

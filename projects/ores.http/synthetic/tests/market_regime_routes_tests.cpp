@@ -20,7 +20,7 @@
 #include "ores.http.api/domain/http_request.hpp"
 #include "ores.http.api/domain/http_response.hpp"
 #include "ores.http/routes/synthetic/market_regime_routes.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "route_answer.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
@@ -62,7 +62,7 @@ std::string settings(const std::string& decay, const std::string& tail) {
 
 TEST_CASE("market_regime_switch_refuses_a_mode_it_does_not_know", "[market_regime]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the regime switch's refusals";
+    ORES_LOG_SEV(lg, info) << "Testing the regime switch's refusals";
 
     CHECK(regime_status(http_method::post, regime_path, "") == http_status::bad_request);
     CHECK(regime_status(http_method::post, regime_path, R"({"mode":"hot"})") ==
@@ -76,7 +76,7 @@ TEST_CASE("market_regime_switch_refuses_a_mode_it_does_not_know", "[market_regim
 
 TEST_CASE("market_regime_settings_refuse_numbers_the_market_cannot_run_on", "[market_regime]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the settings' refusals";
+    ORES_LOG_SEV(lg, info) << "Testing the settings' refusals";
 
     CHECK(regime_status(http_method::put, settings_path, settings("0", "1")) ==
           http_status::bad_request);
@@ -96,7 +96,7 @@ TEST_CASE("market_regime_settings_refuse_numbers_the_market_cannot_run_on", "[ma
 
 TEST_CASE("market_history_refuses_a_query_it_does_not_know", "[market_regime]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the history read's refusals";
+    ORES_LOG_SEV(lg, info) << "Testing the history read's refusals";
 
     CHECK(history_status({{"resolution", "minute"}}) == http_status::bad_request);
     CHECK(history_status({{"seconds", "0"}}) == http_status::bad_request);

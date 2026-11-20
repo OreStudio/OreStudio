@@ -74,7 +74,7 @@ void auth_session_routes::register_routes(
     std::shared_ptr<http::net::router> router,
     std::shared_ptr<http::openapi::endpoint_registry> registry) {
 
-    BOOST_LOG_SEV(lg(), info) << "Registering the session door";
+    ORES_LOG_SEV(lg(), info) << "Registering the session door";
 
     /*
      * Signing in is reachable without a session, which is the point of it; ending a
@@ -137,7 +137,7 @@ boost::asio::awaitable<http_response> auth_session_routes::sign_in(const http_re
      */
     const auto verifier = find_verifier_ ? find_verifier_() : nullptr;
     if (!verifier || !verifier->is_configured()) {
-        BOOST_LOG_SEV(lg(), error) << "Signing in failed: no verifier is configured";
+        ORES_LOG_SEV(lg(), error) << "Signing in failed: no verifier is configured";
         co_return http_response::unauthorized("Authentication is not configured");
     }
 
@@ -172,9 +172,8 @@ boost::asio::awaitable<http_response> auth_session_routes::sign_in(const http_re
 
         auto claims_result = verifier->validate(decoded->token);
         if (!claims_result) {
-            BOOST_LOG_SEV(lg(), error)
-                << "Signing in failed: the token IAM minted does not verify: "
-                << ores::security::jwt::to_string(claims_result.error());
+            ORES_LOG_SEV(lg(), error) << "Signing in failed: the token IAM minted does not verify: "
+                                      << ores::security::jwt::to_string(claims_result.error());
             co_return http_response::internal_error("The token could not be read");
         }
 

@@ -17,8 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/boost_severity.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/contact_type.hpp"         // IWYU pragma: keep.
 #include "ores.refdata.api/domain/contact_type_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/generators/contact_type_generator.hpp"
@@ -27,7 +26,6 @@
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "test_suite.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <string>
@@ -46,7 +44,7 @@ TEST_CASE("write_single_contact_type", "[repository]") {
     auto ctx = ores::testing::make_generation_context(h);
     auto ct = generate_synthetic_contact_type(ctx);
     ct.change_reason_code = "system.test";
-    BOOST_LOG_SEV(lg, debug) << "Contact type: " << ct;
+    ORES_LOG_SEV(lg, debug) << "Contact type: " << ct;
 
     contact_type_repository repo;
     repo.write(h.context(), ct);
@@ -65,7 +63,7 @@ TEST_CASE("write_multiple_contact_types", "[repository]") {
     for (auto& ct : contact_types) {
         ct.change_reason_code = "system.test";
     }
-    BOOST_LOG_SEV(lg, debug) << "Contact types: " << contact_types;
+    ORES_LOG_SEV(lg, debug) << "Contact types: " << contact_types;
 
     contact_type_repository repo;
     repo.write(h.context(), contact_types);
@@ -88,13 +86,13 @@ TEST_CASE("read_latest_contact_types", "[repository]") {
     for (auto& ct : written_contact_types) {
         ct.change_reason_code = "system.test";
     }
-    BOOST_LOG_SEV(lg, debug) << "Written contact types: " << written_contact_types;
+    ORES_LOG_SEV(lg, debug) << "Written contact types: " << written_contact_types;
 
     contact_type_repository repo;
     repo.write(h.context(), written_contact_types);
 
     auto read_contact_types = repo.read_latest(h.context());
-    BOOST_LOG_SEV(lg, debug) << "Read contact types: " << read_contact_types;
+    ORES_LOG_SEV(lg, debug) << "Read contact types: " << read_contact_types;
 
     for (const auto& written : written_contact_types) {
         const auto it = std::ranges::find_if(
@@ -112,7 +110,7 @@ TEST_CASE("read_latest_contact_type_by_code", "[repository]") {
     auto ct = generate_synthetic_contact_type(ctx);
     ct.change_reason_code = "system.test";
     const auto original_name = ct.name;
-    BOOST_LOG_SEV(lg, debug) << "Contact type: " << ct;
+    ORES_LOG_SEV(lg, debug) << "Contact type: " << ct;
 
     contact_type_repository repo;
     repo.write(h.context(), ct);
@@ -121,7 +119,7 @@ TEST_CASE("read_latest_contact_type_by_code", "[repository]") {
     repo.write(h.context(), ct);
 
     auto read_contact_types = repo.read_latest(h.context(), ct.code);
-    BOOST_LOG_SEV(lg, debug) << "Read contact types: " << read_contact_types;
+    ORES_LOG_SEV(lg, debug) << "Read contact types: " << read_contact_types;
 
     REQUIRE(read_contact_types.size() == 1);
     CHECK(read_contact_types[0].code == ct.code);
@@ -142,10 +140,10 @@ TEST_CASE("read_nonexistent_contact_type_code", "[repository]") {
     repo.write(h.context(), keeper);
 
     const std::string nonexistent_code = "NONEXISTENT_CODE_12345";
-    BOOST_LOG_SEV(lg, debug) << "Non-existent code: " << nonexistent_code;
+    ORES_LOG_SEV(lg, debug) << "Non-existent code: " << nonexistent_code;
 
     auto read_contact_types = repo.read_latest(h.context(), nonexistent_code);
-    BOOST_LOG_SEV(lg, debug) << "Read contact types: " << read_contact_types;
+    ORES_LOG_SEV(lg, debug) << "Read contact types: " << read_contact_types;
 
     const auto answered_with_another_key = std::ranges::any_of(
         read_contact_types, [&](const contact_type& c) { return c.code == nonexistent_code; });

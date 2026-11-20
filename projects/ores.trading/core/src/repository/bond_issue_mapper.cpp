@@ -24,14 +24,12 @@
  */
 #include "ores.trading.core/repository/bond_issue_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/bond_issue.hpp"
 #include "ores.trading.api/domain/bond_issue_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/bond_issue_entity.hpp"
 #include "ores.utility/decimal/decimal.hpp"
 #include <boost/lexical_cast.hpp>
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <chrono>
@@ -44,7 +42,7 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 
 domain::bond_issue bond_issue_mapper::map(const bond_issue_entity& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::bond_issue r;
     r.version = v.version;
@@ -73,12 +71,12 @@ domain::bond_issue bond_issue_mapper::map(const bond_issue_entity& v) {
     r.change_commentary = v.change_commentary;
     r.recorded_at = v.valid_from;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
 }
 
 bond_issue_entity bond_issue_mapper::map(const domain::bond_issue& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     bond_issue_entity r;
     r.issue_id = v.issue_id;
@@ -106,7 +104,7 @@ bond_issue_entity bond_issue_mapper::map(const domain::bond_issue& v) {
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;
 }
 

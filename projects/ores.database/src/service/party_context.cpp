@@ -19,7 +19,7 @@
  */
 #include "ores.database/service/party_context.hpp"
 #include "ores.database/query_builder/execute.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <stdexcept>
@@ -80,8 +80,8 @@ context party_context::with_party(const context& ctx,
     const auto tenant_str = tenant.to_string();
     const auto party_str = boost::uuids::to_string(party);
 
-    BOOST_LOG_SEV(lg(), debug) << "Resolving visible party set for party: " << party_str
-                               << " in tenant: " << tenant_str;
+    ORES_LOG_SEV(lg(), debug) << "Resolving visible party set for party: " << party_str
+                              << " in tenant: " << tenant_str;
 
     const auto rows = ores::database::query_builder::execute_parameterized_string_query(
         ctx,
@@ -99,8 +99,8 @@ context party_context::with_party(const context& ctx,
         throw std::runtime_error("Party not found: " + party_str + " in tenant " + tenant_str);
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Party context: " << party_str << " (" << visible_ids.size()
-                              << " visible parties)";
+    ORES_LOG_SEV(lg(), info) << "Party context: " << party_str << " (" << visible_ids.size()
+                             << " visible parties)";
 
     return ctx.with_party(tenant, party, visible_ids, actor);
 }

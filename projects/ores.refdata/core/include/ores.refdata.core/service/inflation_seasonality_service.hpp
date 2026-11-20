@@ -26,7 +26,7 @@
 #define ORES_REFDATA_CORE_SERVICE_INFLATION_SEASONALITY_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/inflation_seasonality.hpp"
 #include "ores.refdata.api/messaging/inflation_seasonality_protocol.hpp"
 #include "ores.refdata.core/export.hpp"

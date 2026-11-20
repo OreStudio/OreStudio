@@ -20,7 +20,7 @@
 #include "ores.compute.api/domain/result.hpp"
 #include "ores.compute.api/domain/result_json_io.hpp" // IWYU pragma: keep.
 #include "ores.compute.api/domain/result_table.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_generators.hpp>
@@ -55,7 +55,7 @@ TEST_CASE("create_result_with_valid_fields", "[domain]") {
     sut.output_uri = "s3://bucket/outputs/result-001.zip";
     sut.received_at = std::chrono::system_clock::now();
 
-    BOOST_LOG_SEV(lg, info) << "Result: " << sut;
+    ORES_LOG_SEV(lg, info) << "Result: " << sut;
 
     CHECK(sut.version == 1);
     CHECK(sut.modified_by == "assimilator");
@@ -79,7 +79,7 @@ TEST_CASE("create_inactive_result", "[domain]") {
     sut.output_uri = "";
     sut.received_at = std::chrono::system_clock::time_point{};
 
-    BOOST_LOG_SEV(lg, info) << "Result: " << sut;
+    ORES_LOG_SEV(lg, info) << "Result: " << sut;
 
     CHECK(sut.server_state == 1);
     CHECK(sut.output_uri.empty());
@@ -100,7 +100,7 @@ TEST_CASE("create_in_progress_result", "[domain]") {
     sut.output_uri = "";
     sut.received_at = std::chrono::system_clock::time_point{};
 
-    BOOST_LOG_SEV(lg, info) << "Result: " << sut;
+    ORES_LOG_SEV(lg, info) << "Result: " << sut;
 
     CHECK(sut.server_state == 4);
 }
@@ -122,7 +122,7 @@ TEST_CASE("create_result_with_specific_uuid", "[domain]") {
     sut.output_uri = "s3://bucket/outputs/validated.zip";
     sut.received_at = std::chrono::system_clock::now();
 
-    BOOST_LOG_SEV(lg, info) << "Result: " << sut;
+    ORES_LOG_SEV(lg, info) << "Result: " << sut;
 
     CHECK(sut.version == 2);
     CHECK(sut.outcome == 1);
@@ -146,7 +146,7 @@ TEST_CASE("result_insertion_operator", "[domain]") {
     os << sut;
     const std::string json_output = os.str();
 
-    BOOST_LOG_SEV(lg, info) << "Result JSON: " << json_output;
+    ORES_LOG_SEV(lg, info) << "Result JSON: " << json_output;
 
     CHECK(!json_output.empty());
     CHECK(json_output.find("serialization-test") != std::string::npos);
@@ -169,7 +169,7 @@ TEST_CASE("result_convert_single_to_table", "[domain]") {
     std::vector<result> results = {r};
     auto table = convert_to_table(results);
 
-    BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
+    ORES_LOG_SEV(lg, info) << "Table output:\n" << table;
 
     CHECK(!table.empty());
 }
@@ -194,7 +194,7 @@ TEST_CASE("result_convert_multiple_to_table", "[domain]") {
 
     auto table = convert_to_table(results);
 
-    BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
+    ORES_LOG_SEV(lg, info) << "Table output:\n" << table;
 
     CHECK(!table.empty());
 }
@@ -205,7 +205,7 @@ TEST_CASE("result_convert_empty_vector_to_table", "[domain]") {
     std::vector<result> results;
     auto table = convert_to_table(results);
 
-    BOOST_LOG_SEV(lg, info) << "Empty table output:\n" << table;
+    ORES_LOG_SEV(lg, info) << "Empty table output:\n" << table;
 
     // The header row survives an empty result set.
     CHECK(!table.empty());
@@ -228,7 +228,7 @@ TEST_CASE("create_result_with_faker", "[domain]") {
     sut.output_uri = "s3://bucket/outputs/" + std::string(faker::word::noun()) + ".zip";
     sut.received_at = std::chrono::system_clock::now();
 
-    BOOST_LOG_SEV(lg, info) << "Result: " << sut;
+    ORES_LOG_SEV(lg, info) << "Result: " << sut;
 
     CHECK(sut.version >= 1);
     CHECK(sut.version <= 10);

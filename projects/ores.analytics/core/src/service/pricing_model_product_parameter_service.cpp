@@ -26,7 +26,6 @@
 #include "ores.analytics.api/domain/pricing_model_product_parameter.hpp"
 #include "ores.analytics.api/messaging/pricing_model_product_parameter_protocol.hpp"
 #include "ores.analytics.core/repository/pricing_model_product_parameter_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -513,12 +511,12 @@ ores::utility::domain::result pricing_model_product_parameter_service::prepare_c
 std::vector<domain::pricing_model_product_parameter>
 pricing_model_product_parameter_service::list_parameters(std::uint32_t offset,
                                                          std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all pricing model product parameters";
+    ORES_LOG_SEV(lg(), debug) << "Listing all pricing model product parameters";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t pricing_model_product_parameter_service::count_parameters() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total pricing model product parameters count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total pricing model product parameters count";
     return repo_.get_total_parameter_count(ctx_);
 }
 
@@ -526,14 +524,14 @@ std::uint32_t pricing_model_product_parameter_service::count_parameters() {
 std::optional<domain::pricing_model_product_parameter>
 pricing_model_product_parameter_service::get_parameter_at_version(const boost::uuids::uuid& id,
                                                                   std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting pricing model product parameter at version. "
-                               << "id: " << id << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting pricing model product parameter at version. "
+                              << "id: " << id << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::pricing_model_product_parameter>
 pricing_model_product_parameter_service::get_parameter(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting pricing model product parameter. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting pricing model product parameter. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -543,8 +541,8 @@ pricing_model_product_parameter_service::get_parameter(const boost::uuids::uuid&
 std::optional<domain::pricing_model_product_parameter>
 pricing_model_product_parameter_service::get_parameter_by_parameter_name(
     const std::string& parameter_name) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting pricing model product parameter by parameter_name: "
-                               << parameter_name;
+    ORES_LOG_SEV(lg(), debug) << "Getting pricing model product parameter by parameter_name: "
+                              << parameter_name;
     messaging::pricing_model_product_parameter_key k;
     k.parameter_name = parameter_name;
     auto found = pricing_model_product_parameter_read_one(repo_, ctx_, k);
@@ -555,7 +553,7 @@ pricing_model_product_parameter_service::get_parameter_by_parameter_name(
 
 std::optional<domain::pricing_model_product_parameter>
 pricing_model_product_parameter_service::find_parameter(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding pricing model product parameter. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Finding pricing model product parameter. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -571,11 +569,11 @@ void pricing_model_product_parameter_service::save_parameter(
     const domain::pricing_model_product_parameter& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Pricing Model Product Parameter id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving pricing model product parameter. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving pricing model product parameter. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved pricing model product parameter. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved pricing model product parameter. " << "id: " << v.id;
 }
 
 void pricing_model_product_parameter_service::save_parameters(
@@ -584,8 +582,8 @@ void pricing_model_product_parameter_service::save_parameters(
         if (e.id.is_nil())
             throw std::invalid_argument("Pricing Model Product Parameter id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << parameters.size()
-                               << " pricing model product parameters";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << parameters.size()
+                              << " pricing model product parameters";
     auto ts = parameters;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -594,15 +592,15 @@ void pricing_model_product_parameter_service::save_parameters(
 }
 
 void pricing_model_product_parameter_service::delete_parameter(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing pricing model product parameter. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing pricing model product parameter. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed pricing model product parameter. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed pricing model product parameter. " << "id: " << id;
 }
 
 void pricing_model_product_parameter_service::remove_parameter(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing pricing model product parameter. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing pricing model product parameter. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed pricing model product parameter. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed pricing model product parameter. " << "id: " << id;
 }
 
 void pricing_model_product_parameter_service::delete_parameters(
@@ -612,8 +610,8 @@ void pricing_model_product_parameter_service::delete_parameters(
 
 std::vector<domain::pricing_model_product_parameter>
 pricing_model_product_parameter_service::get_parameter_history(const std::string& key) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for pricing model product parameter. key: "
-                               << key;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for pricing model product parameter. key: "
+                              << key;
     // The caller holds the key the model declares and this reads by the
     // storage key, so the two are joined here exactly as they are for any
     // other read. Without this step a provider looks the versions up under a
@@ -635,8 +633,8 @@ pricing_model_product_parameter_service::get_parameter_history(const std::string
 
 std::vector<domain::pricing_model_product_parameter>
 pricing_model_product_parameter_service::get_parameter_history(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for pricing model product parameter. "
-                               << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for pricing model product parameter. "
+                              << "id: " << id;
     return repo_.read_all(ctx_, boost::uuids::to_string(id));
 }
 

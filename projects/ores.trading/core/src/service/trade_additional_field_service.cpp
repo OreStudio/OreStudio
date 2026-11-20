@@ -26,7 +26,6 @@
 #include "ores.trading.api/domain/trade_additional_field.hpp"
 #include "ores.trading.api/messaging/trade_additional_field_protocol.hpp"
 #include "ores.trading.core/repository/trade_additional_field_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -43,7 +42,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -517,12 +515,12 @@ ores::utility::domain::result trade_additional_field_service::prepare_change(
 std::vector<domain::trade_additional_field>
 trade_additional_field_service::list_trade_additional_fields(std::uint32_t offset,
                                                              std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all trade additional fields";
+    ORES_LOG_SEV(lg(), debug) << "Listing all trade additional fields";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t trade_additional_field_service::count_trade_additional_fields() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total trade additional fields count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total trade additional fields count";
     return repo_.get_total_trade_additional_field_count(ctx_);
 }
 
@@ -530,14 +528,14 @@ std::uint32_t trade_additional_field_service::count_trade_additional_fields() {
 std::vector<domain::trade_additional_field>
 trade_additional_field_service::list_trade_additional_fields_by_trade_id(
     const std::string& trade_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing trade additional fields by trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing trade additional fields by trade_id: " << trade_id;
     return repo_.read_latest_by_trade_id(ctx_, trade_id, offset, limit);
 }
 
 std::uint32_t trade_additional_field_service::count_trade_additional_fields_by_trade_id(
     const std::string& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total trade additional fields count by trade_id: "
-                               << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting total trade additional fields count by trade_id: "
+                              << trade_id;
     return repo_.get_total_trade_additional_field_count_by_trade_id(ctx_, trade_id);
 }
 
@@ -545,18 +543,17 @@ std::uint32_t trade_additional_field_service::count_trade_additional_fields_by_t
 std::optional<domain::trade_additional_field>
 trade_additional_field_service::get_trade_additional_field_at_version(
     const std::string& trade_id, const std::string& sequence_number, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting trade additional field at version. "
-                               << "trade_id: " << trade_id
-                               << " sequence_number: " << sequence_number
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting trade additional field at version. "
+                              << "trade_id: " << trade_id << " sequence_number: " << sequence_number
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, trade_id, sequence_number, version);
 }
 
 std::optional<domain::trade_additional_field>
 trade_additional_field_service::get_trade_additional_field(const std::string& trade_id,
                                                            const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting trade additional field. " << "trade_id: " << trade_id
-                               << " sequence_number: " << sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Getting trade additional field. " << "trade_id: " << trade_id
+                              << " sequence_number: " << sequence_number;
     auto results = repo_.read_latest(ctx_, trade_id, sequence_number);
     if (results.empty())
         return std::nullopt;
@@ -573,13 +570,13 @@ void trade_additional_field_service::save_trade_additional_field(
     const domain::trade_additional_field& v) {
     if (v.trade_id.is_nil())
         throw std::invalid_argument("Trade Additional Field trade_id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving trade additional field. " << "trade_id: " << v.trade_id
-                               << " sequence_number: " << v.sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Saving trade additional field. " << "trade_id: " << v.trade_id
+                              << " sequence_number: " << v.sequence_number;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved trade additional field. " << "trade_id: " << v.trade_id
-                              << " sequence_number: " << v.sequence_number;
+    ORES_LOG_SEV(lg(), info) << "Saved trade additional field. " << "trade_id: " << v.trade_id
+                             << " sequence_number: " << v.sequence_number;
 }
 
 void trade_additional_field_service::save_trade_additional_fields(
@@ -588,8 +585,8 @@ void trade_additional_field_service::save_trade_additional_fields(
         if (e.trade_id.is_nil())
             throw std::invalid_argument("Trade Additional Field trade_id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << trade_additional_fields.size()
-                               << " trade additional fields";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << trade_additional_fields.size()
+                              << " trade additional fields";
     auto ts = trade_additional_fields;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -599,11 +596,11 @@ void trade_additional_field_service::save_trade_additional_fields(
 
 void trade_additional_field_service::delete_trade_additional_field(
     const std::string& trade_id, const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing trade additional field. " << "trade_id: " << trade_id
-                               << " sequence_number: " << sequence_number;
-    repo_.remove(ctx_, trade_id, sequence_number);
-    BOOST_LOG_SEV(lg(), info) << "Removed trade additional field. " << "trade_id: " << trade_id
+    ORES_LOG_SEV(lg(), debug) << "Removing trade additional field. " << "trade_id: " << trade_id
                               << " sequence_number: " << sequence_number;
+    repo_.remove(ctx_, trade_id, sequence_number);
+    ORES_LOG_SEV(lg(), info) << "Removed trade additional field. " << "trade_id: " << trade_id
+                             << " sequence_number: " << sequence_number;
 }
 
 void trade_additional_field_service::delete_trade_additional_fields(
@@ -614,9 +611,9 @@ void trade_additional_field_service::delete_trade_additional_fields(
 std::vector<domain::trade_additional_field>
 trade_additional_field_service::get_trade_additional_field_history(
     const std::string& trade_id, const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for trade additional field. "
-                               << "trade_id: " << trade_id
-                               << " sequence_number: " << sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for trade additional field. "
+                              << "trade_id: " << trade_id
+                              << " sequence_number: " << sequence_number;
     return repo_.read_all(ctx_, trade_id, sequence_number);
 }
 

@@ -21,7 +21,7 @@
 #define ORES_REPORTING_SERVICE_MESSAGING_CUT_AUTHORISATION_SUBJECT_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.reporting.api/messaging/report_operations_protocol.hpp"
@@ -77,7 +77,7 @@ public:
      */
     void list_subjects(ores::nats::message msg) {
         using ores::utility::domain::outcome;
-        BOOST_LOG_SEV(lg(), ores::logging::debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(lg(), ores::logging::debug) << "Handling " << msg.subject;
 
         auto req_ctx = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx) {
@@ -107,7 +107,7 @@ public:
                 try {
                     request_ids.push_back(parse(text));
                 } catch (const std::exception&) {
-                    BOOST_LOG_SEV(lg(), ores::logging::warn)
+                    ORES_LOG_SEV(lg(), ores::logging::warn)
                         << msg.subject << " was asked for a malformed identifier: " << text;
                     ores::service::messaging::error_reply(
                         nats_, msg, ores::service::error_code::bad_request);
@@ -139,11 +139,11 @@ public:
                 answer.subjects.push_back(std::move(row));
             }
             answer.result = {.outcome = outcome::ok, .code = "", .message = "", .fields = {}};
-            BOOST_LOG_SEV(lg(), ores::logging::debug) << "Completed " << msg.subject << " with "
-                                                      << answer.subjects.size() << " subject(s)";
+            ORES_LOG_SEV(lg(), ores::logging::debug) << "Completed " << msg.subject << " with "
+                                                     << answer.subjects.size() << " subject(s)";
             ores::service::messaging::reply(nats_, msg, answer);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), ores::logging::error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(lg(), ores::logging::error) << msg.subject << " failed: " << e.what();
             ores::service::messaging::reply(
                 nats_,
                 msg,

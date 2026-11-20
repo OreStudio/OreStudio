@@ -26,7 +26,7 @@
 #define ORES_REFDATA_CORE_SERVICE_CURRENCY_MARKET_TIER_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/currency_market_tier.hpp"
 #include "ores.refdata.api/messaging/currency_market_tier_protocol.hpp"
 #include "ores.refdata.core/export.hpp"

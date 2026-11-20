@@ -32,7 +32,7 @@
 #include "ores.iam.core/repository/role_repository.hpp"
 #include "ores.iam.core/service/authorization_service.hpp"
 #include "ores.inbox.api/messaging/approval_operations_protocol.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
@@ -92,7 +92,7 @@ public:
 
     void ask(ores::nats::message msg) {
         using ores::utility::domain::outcome;
-        BOOST_LOG_SEV(role_request_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(role_request_handler_lg(), debug) << "Handling " << msg.subject;
         auto ctx = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx) {
             error_reply(nats_, msg, ctx.error());
@@ -124,7 +124,7 @@ public:
             try {
                 record(*ctx, raised.request, *req);
             } catch (const std::exception& e) {
-                BOOST_LOG_SEV(role_request_handler_lg(), error)
+                ORES_LOG_SEV(role_request_handler_lg(), error)
                     << "Recording role request " << boost::uuids::to_string(raised.request.id)
                     << " failed, withdrawing it: " << e.what();
                 withdraw(msg, raised.request);
@@ -142,7 +142,7 @@ public:
                   ask_for_roles_response{.result = role_request_result(outcome::ok, "", ""),
                                          .request_id = boost::uuids::to_string(raised.request.id)});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(role_request_handler_lg(), error)
+            ORES_LOG_SEV(role_request_handler_lg(), error)
                 << "Error asking for roles: " << e.what();
             reply(nats_,
                   msg,
@@ -162,7 +162,7 @@ public:
      */
     void get_roles(ores::nats::message msg) {
         using ores::utility::domain::outcome;
-        BOOST_LOG_SEV(role_request_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(role_request_handler_lg(), debug) << "Handling " << msg.subject;
         auto ctx = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx) {
             error_reply(nats_, msg, ctx.error());
@@ -181,7 +181,7 @@ public:
         try {
             reply(nats_, msg, read_request_roles(*ctx, req->request_id));
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(role_request_handler_lg(), error)
+            ORES_LOG_SEV(role_request_handler_lg(), error)
                 << "Reading the roles of " << req->request_id << " failed: " << e.what();
             reply(nats_,
                   msg,
@@ -228,7 +228,7 @@ private:
             (me && *me == asked_by) ||
             (me && auth.has_permission(*me, domain::permissions::role_grant_request_roles_read));
         if (!entitled) {
-            BOOST_LOG_SEV(role_request_handler_lg(), warn)
+            ORES_LOG_SEV(role_request_handler_lg(), warn)
                 << "Reading the roles of request " << request_id << " denied to " << ctx.actor();
             return absent;
         }
@@ -359,11 +359,11 @@ private:
                                        .version = r.version,
                                        .comment = "The request could not be recorded."});
             if (w.result.outcome != ores::utility::domain::outcome::ok)
-                BOOST_LOG_SEV(role_request_handler_lg(), error)
+                ORES_LOG_SEV(role_request_handler_lg(), error)
                     << "Withdrawing request " << boost::uuids::to_string(r.id)
                     << " was refused: " << w.result.message;
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(role_request_handler_lg(), error)
+            ORES_LOG_SEV(role_request_handler_lg(), error)
                 << "Withdrawing request " << boost::uuids::to_string(r.id)
                 << " failed: " << e.what();
         }

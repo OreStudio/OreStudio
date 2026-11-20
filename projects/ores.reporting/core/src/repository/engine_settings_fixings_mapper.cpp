@@ -24,12 +24,10 @@
  */
 #include "ores.reporting.core/repository/engine_settings_fixings_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.reporting.api/domain/engine_settings_fixings.hpp"
 #include "ores.reporting.api/domain/engine_settings_fixings_json_io.hpp" // IWYU pragma: keep.
 #include "ores.reporting.core/repository/engine_settings_fixings_entity.hpp"
 #include <boost/lexical_cast.hpp>
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <vector>
@@ -41,7 +39,7 @@ using namespace ores::database::repository;
 
 domain::engine_settings_fixings
 engine_settings_fixings_mapper::map(const engine_settings_fixings_entity& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::engine_settings_fixings r;
     r.version = v.version;
@@ -61,13 +59,13 @@ engine_settings_fixings_mapper::map(const engine_settings_fixings_entity& v) {
     r.change_commentary = v.change_commentary;
     r.recorded_at = v.valid_from;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
 }
 
 engine_settings_fixings_entity
 engine_settings_fixings_mapper::map(const domain::engine_settings_fixings& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     engine_settings_fixings_entity r;
     r.id = v.id;
@@ -86,7 +84,7 @@ engine_settings_fixings_mapper::map(const domain::engine_settings_fixings& v) {
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;
 }
 

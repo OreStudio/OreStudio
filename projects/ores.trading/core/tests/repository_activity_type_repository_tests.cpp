@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.trading.api/domain/activity_type.hpp"
@@ -43,7 +43,7 @@ TEST_CASE("write_single_activity_type", "[repository]") {
     activity_type_repository repo;
     auto at = generate_synthetic_activity_type(ctx);
 
-    BOOST_LOG_SEV(lg, debug) << "Activity type: " << at;
+    ORES_LOG_SEV(lg, debug) << "Activity type: " << at;
     CHECK_NOTHROW(repo.write(h.context(), at));
 
     const auto read = repo.read_latest(h.context(), at.code);
@@ -60,7 +60,7 @@ TEST_CASE("write_multiple_activity_types", "[repository]") {
 
     activity_type_repository repo;
     auto activity_types = generate_synthetic_activity_types(5, ctx);
-    BOOST_LOG_SEV(lg, debug) << "Activity types: " << activity_types;
+    ORES_LOG_SEV(lg, debug) << "Activity types: " << activity_types;
 
     CHECK_NOTHROW(repo.write(h.context(), activity_types));
 
@@ -82,11 +82,11 @@ TEST_CASE("read_latest_activity_types", "[repository]") {
 
     activity_type_repository repo;
     auto written = generate_synthetic_activity_types(3, ctx);
-    BOOST_LOG_SEV(lg, debug) << "Written activity types: " << written;
+    ORES_LOG_SEV(lg, debug) << "Written activity types: " << written;
     repo.write(h.context(), written);
 
     auto read = repo.read_latest(h.context());
-    BOOST_LOG_SEV(lg, debug) << "Read activity types: " << read;
+    ORES_LOG_SEV(lg, debug) << "Read activity types: " << read;
 
     for (const auto& written : written) {
         bool found = false;
@@ -106,11 +106,11 @@ TEST_CASE("read_latest_activity_type_by_code", "[repository]") {
     activity_type_repository repo;
     auto activity_types = generate_synthetic_activity_types(5, ctx);
     const auto target = activity_types.front();
-    BOOST_LOG_SEV(lg, debug) << "Written activity types: " << activity_types;
+    ORES_LOG_SEV(lg, debug) << "Written activity types: " << activity_types;
     repo.write(h.context(), activity_types);
 
     auto read = repo.read_latest(h.context(), target.code);
-    BOOST_LOG_SEV(lg, debug) << "Read activity types: " << read;
+    ORES_LOG_SEV(lg, debug) << "Read activity types: " << read;
 
     REQUIRE(read.size() == 1);
     CHECK(read[0].code == target.code);
@@ -132,7 +132,7 @@ TEST_CASE("read_all_versions_of_activity_type", "[repository]") {
     repo.write(h.context(), at);
 
     auto all = repo.read_all(h.context(), at.code);
-    BOOST_LOG_SEV(lg, debug) << "All versions: " << all;
+    ORES_LOG_SEV(lg, debug) << "All versions: " << all;
 
     bool found_update = false;
     for (const auto& r : all) {
@@ -161,7 +161,7 @@ TEST_CASE("remove_activity_type", "[repository]") {
     CHECK_NOTHROW(repo.remove(h.context(), at.code));
 
     auto after = repo.read_latest(h.context(), at.code);
-    BOOST_LOG_SEV(lg, debug) << "After remove count: " << after.size();
+    ORES_LOG_SEV(lg, debug) << "After remove count: " << after.size();
     CHECK(after.size() == before.size() - 1);
 }
 
@@ -180,10 +180,10 @@ TEST_CASE("read_nonexistent_activity_type", "[repository]") {
     CHECK(control[0].code == at.code);
 
     const std::string nonexistent = "NONEXISTENT_ACTIVITY_TYPE_XYZ_12345";
-    BOOST_LOG_SEV(lg, debug) << "Non-existent code: " << nonexistent;
+    ORES_LOG_SEV(lg, debug) << "Non-existent code: " << nonexistent;
 
     auto read = repo.read_latest(h.context(), nonexistent);
-    BOOST_LOG_SEV(lg, debug) << "Read activity types: " << read;
+    ORES_LOG_SEV(lg, debug) << "Read activity types: " << read;
 
     CHECK(read.empty());
 }

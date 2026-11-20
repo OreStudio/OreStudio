@@ -15,7 +15,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/commands/reporting/pricing_engines_commands.hpp"
@@ -63,7 +63,7 @@ TEST_CASE("pricing_engines_commands_registers_the_export", "[commands]") {
     CHECK(std::find(completions.begin(), completions.end(), std::string{"export"}) !=
           completions.end());
 
-    BOOST_LOG_SEV(lg, debug) << "Registered 1 command(s).";
+    ORES_LOG_SEV(lg, debug) << "Registered 1 command(s).";
 }
 
 TEST_CASE("pricing_engines_commands_process_export_requires_a_session", "[commands]") {
@@ -75,7 +75,7 @@ TEST_CASE("pricing_engines_commands_process_export_requires_a_session", "[comman
     command_feedback::reset();
     pricing_engines_commands::process_export(out, session, {configuration_id});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -90,7 +90,7 @@ TEST_CASE("pricing_engines_commands_process_export_reports_the_expected_count", 
     command_feedback::reset();
     pricing_engines_commands::process_export(out, session, {});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
     CHECK(out.str().find("Expected 1 argument, got 0.") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -105,7 +105,7 @@ TEST_CASE("pricing_engines_commands_process_export_refuses_an_id_that_is_not_one
     command_feedback::reset();
     pricing_engines_commands::process_export(out, session, {"not-an-identifier"});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a bad id: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a bad id: " << out.str();
     CHECK(out.str().find("is not one") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -120,7 +120,7 @@ TEST_CASE("pricing_engines_commands_process_export_refuses_an_unknown_flag", "[c
     command_feedback::reset();
     pricing_engines_commands::process_export(out, session, {configuration_id, "--nonsense"});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for an unknown flag: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for an unknown flag: " << out.str();
     CHECK(out.str().find("--nonsense") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -146,7 +146,7 @@ TEST_CASE("pricing_engines_commands_writes_the_document_where_it_was_asked", "[c
     std::ifstream read(path);
     const std::string written((std::istreambuf_iterator<char>(read)),
                               std::istreambuf_iterator<char>());
-    BOOST_LOG_SEV(lg, debug) << "Written file: " << written;
+    ORES_LOG_SEV(lg, debug) << "Written file: " << written;
     CHECK(written == file.content);
     read.close();
     std::filesystem::remove(path);
@@ -162,7 +162,7 @@ TEST_CASE("pricing_engines_commands_states_a_path_it_cannot_write", "[commands]"
         "/nonexistent-directory/pricingengine.xml",
         {.name = "pricingengine.xml", .content = "<PricingEngines />"});
 
-    BOOST_LOG_SEV(lg, debug) << "Output: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output: " << out.str();
     CHECK_FALSE(written);
     CHECK(out.str().find("Cannot write") != std::string::npos);
     CHECK(command_feedback::failed());
@@ -177,7 +177,7 @@ TEST_CASE("pricing_engines_commands_registers_the_import", "[commands]") {
     pricing_engines_commands::register_commands(root_menu, session);
 
     const auto completions = root_menu.GetCompletions("pricing_engines ");
-    BOOST_LOG_SEV(lg, debug) << "Completions: " << completions.size();
+    ORES_LOG_SEV(lg, debug) << "Completions: " << completions.size();
     CHECK(std::find(completions.begin(), completions.end(), std::string{"import"}) !=
           completions.end());
 }
@@ -191,7 +191,7 @@ TEST_CASE("pricing_engines_commands_process_import_requires_a_session", "[comman
     command_feedback::reset();
     pricing_engines_commands::process_import(out, session, {configuration_id});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("Name the file with --file") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -206,7 +206,7 @@ TEST_CASE("pricing_engines_commands_process_import_needs_a_file", "[commands]") 
     command_feedback::reset();
     pricing_engines_commands::process_import(out, session, {"--new-name", "From ORE"});
 
-    BOOST_LOG_SEV(lg, debug) << "Output with no file: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output with no file: " << out.str();
     CHECK(out.str().find("--file <path>") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -227,7 +227,7 @@ TEST_CASE("pricing_engines_commands_process_import_names_one_configuration", "[c
     command_feedback::reset();
     pricing_engines_commands::process_import(out, session, {"--file", path.string()});
 
-    BOOST_LOG_SEV(lg, debug) << "Output with no target: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output with no target: " << out.str();
     CHECK(out.str().find("Name one configuration") != std::string::npos);
     CHECK(command_feedback::failed());
     std::filesystem::remove(path);
@@ -244,7 +244,7 @@ TEST_CASE("pricing_engines_commands_process_import_refuses_a_file_it_cannot_read
     pricing_engines_commands::process_import(
         out, session, {configuration_id, "--file", "/nonexistent-directory/pricingengine.xml"});
 
-    BOOST_LOG_SEV(lg, debug) << "Output: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output: " << out.str();
     CHECK(out.str().find("Cannot read") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -266,7 +266,7 @@ TEST_CASE("pricing_engines_commands_process_import_refuses_two_configurations", 
     pricing_engines_commands::process_import(
         out, session, {configuration_id, "--new-name", "From ORE", "--file", path.string()});
 
-    BOOST_LOG_SEV(lg, debug) << "Output: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output: " << out.str();
     CHECK(out.str().find("Name one configuration") != std::string::npos);
     CHECK(command_feedback::failed());
     std::filesystem::remove(path);

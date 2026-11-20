@@ -25,7 +25,7 @@
 #ifndef ORES_REPORTING_CORE_REPOSITORY_REPORT_INSTANCE_KIND_MAPPER_HPP
 #define ORES_REPORTING_CORE_REPOSITORY_REPORT_INSTANCE_KIND_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.reporting.api/domain/report_instance_kind.hpp"
 #include "ores.reporting.core/export.hpp"
 #include "ores.reporting.core/repository/report_instance_kind_entity.hpp"

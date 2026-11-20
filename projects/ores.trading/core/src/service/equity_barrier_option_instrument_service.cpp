@@ -26,7 +26,6 @@
 #include "ores.trading.api/domain/equity_barrier_option_instrument.hpp"
 #include "ores.trading.api/messaging/equity_barrier_option_instrument_protocol.hpp"
 #include "ores.trading.core/repository/equity_barrier_option_instrument_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -505,12 +503,12 @@ ores::utility::domain::result equity_barrier_option_instrument_service::prepare_
 std::vector<domain::equity_barrier_option_instrument>
 equity_barrier_option_instrument_service::list_equity_barrier_option_instruments(
     std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all Equity Barrier Option instruments";
+    ORES_LOG_SEV(lg(), debug) << "Listing all Equity Barrier Option instruments";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t equity_barrier_option_instrument_service::count_equity_barrier_option_instruments() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total Equity Barrier Option instruments count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total Equity Barrier Option instruments count";
     return repo_.get_total_equity_barrier_option_instrument_count(ctx_);
 }
 
@@ -518,16 +516,16 @@ std::uint32_t equity_barrier_option_instrument_service::count_equity_barrier_opt
 std::optional<domain::equity_barrier_option_instrument>
 equity_barrier_option_instrument_service::get_equity_barrier_option_instrument_at_version(
     const boost::uuids::uuid& trade_id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting Equity Barrier Option instrument at version. "
-                               << "trade_id: " << trade_id << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting Equity Barrier Option instrument at version. "
+                              << "trade_id: " << trade_id << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(trade_id), version);
 }
 
 std::optional<domain::equity_barrier_option_instrument>
 equity_barrier_option_instrument_service::get_equity_barrier_option_instrument(
     const boost::uuids::uuid& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting Equity Barrier Option instrument. "
-                               << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting Equity Barrier Option instrument. "
+                              << "trade_id: " << trade_id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(trade_id));
     if (results.empty())
         return std::nullopt;
@@ -544,13 +542,13 @@ void equity_barrier_option_instrument_service::save_equity_barrier_option_instru
     const domain::equity_barrier_option_instrument& v) {
     if (v.identity.trade_id.is_nil())
         throw std::invalid_argument("Equity Barrier Option Instrument trade_id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving Equity Barrier Option instrument. "
-                               << "trade_id: " << v.identity.trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Saving Equity Barrier Option instrument. "
+                              << "trade_id: " << v.identity.trade_id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved Equity Barrier Option instrument. "
-                              << "trade_id: " << v.identity.trade_id;
+    ORES_LOG_SEV(lg(), info) << "Saved Equity Barrier Option instrument. "
+                             << "trade_id: " << v.identity.trade_id;
 }
 
 void equity_barrier_option_instrument_service::save_equity_barrier_option_instruments(
@@ -561,8 +559,8 @@ void equity_barrier_option_instrument_service::save_equity_barrier_option_instru
             throw std::invalid_argument(
                 "Equity Barrier Option Instrument trade_id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << equity_barrier_option_instruments.size()
-                               << " Equity Barrier Option instruments";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << equity_barrier_option_instruments.size()
+                              << " Equity Barrier Option instruments";
     auto ts = equity_barrier_option_instruments;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -572,11 +570,11 @@ void equity_barrier_option_instrument_service::save_equity_barrier_option_instru
 
 void equity_barrier_option_instrument_service::delete_equity_barrier_option_instrument(
     const boost::uuids::uuid& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing Equity Barrier Option instrument. "
-                               << "trade_id: " << trade_id;
-    repo_.remove(ctx_, boost::uuids::to_string(trade_id));
-    BOOST_LOG_SEV(lg(), info) << "Removed Equity Barrier Option instrument. "
+    ORES_LOG_SEV(lg(), debug) << "Removing Equity Barrier Option instrument. "
                               << "trade_id: " << trade_id;
+    repo_.remove(ctx_, boost::uuids::to_string(trade_id));
+    ORES_LOG_SEV(lg(), info) << "Removed Equity Barrier Option instrument. "
+                             << "trade_id: " << trade_id;
 }
 
 void equity_barrier_option_instrument_service::delete_equity_barrier_option_instruments(
@@ -587,8 +585,8 @@ void equity_barrier_option_instrument_service::delete_equity_barrier_option_inst
 std::vector<domain::equity_barrier_option_instrument>
 equity_barrier_option_instrument_service::get_equity_barrier_option_instrument_history(
     const std::string& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for Equity Barrier Option instrument. "
-                               << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for Equity Barrier Option instrument. "
+                              << "trade_id: " << trade_id;
     return repo_.read_all(ctx_, trade_id);
 }
 

@@ -26,7 +26,7 @@
 #define ORES_TRADING_CORE_SERVICE_DRAFT_REASON_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.trading.api/domain/draft_reason.hpp"
 #include "ores.trading.api/messaging/draft_reason_protocol.hpp"
 #include "ores.trading.core/export.hpp"

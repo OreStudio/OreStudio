@@ -25,7 +25,7 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_PARTY_PRODUCT_TYPE_DEAL_CLASS_MAPPER_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_PARTY_PRODUCT_TYPE_DEAL_CLASS_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/party_product_type_deal_class.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/party_product_type_deal_class_entity.hpp"

@@ -29,10 +29,8 @@
 #include "ores.inbox.api/domain/notification_kind.hpp"
 #include "ores.inbox.api/messaging/notification_kind_protocol.hpp"
 #include "ores.inbox.core/repository/notification_kind_repository.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -453,12 +451,12 @@ notification_kind_service::prepare_change(const messaging::notification_kind_cha
 
 std::vector<domain::notification_kind>
 notification_kind_service::list_notification_kinds(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all notification kinds";
+    ORES_LOG_SEV(lg(), debug) << "Listing all notification kinds";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t notification_kind_service::count_notification_kinds() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total notification kinds count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total notification kinds count";
     return repo_.get_total_notification_kind_count(ctx_);
 }
 
@@ -466,14 +464,14 @@ std::uint32_t notification_kind_service::count_notification_kinds() {
 std::optional<domain::notification_kind>
 notification_kind_service::get_notification_kind_at_version(const std::string& code,
                                                             std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting notification kind at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting notification kind at version. " << "code: " << code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::notification_kind>
 notification_kind_service::find_notification_kind(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding notification kind. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Finding notification kind. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -488,11 +486,11 @@ notification_kind_service::get_notification_kinds(const std::vector<std::string>
 void notification_kind_service::save_notification_kind(const domain::notification_kind& v) {
     if (v.code.empty())
         throw std::invalid_argument("Notification Kind code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving notification kind. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving notification kind. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved notification kind. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved notification kind. " << "code: " << v.code;
 }
 
 void notification_kind_service::save_notification_kinds(
@@ -501,7 +499,7 @@ void notification_kind_service::save_notification_kinds(
         if (e.code.empty())
             throw std::invalid_argument("Notification Kind code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << notification_kinds.size() << " notification kinds";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << notification_kinds.size() << " notification kinds";
     auto ts = notification_kinds;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -510,9 +508,9 @@ void notification_kind_service::save_notification_kinds(
 }
 
 void notification_kind_service::delete_notification_kind(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing notification kind. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing notification kind. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed notification kind. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed notification kind. " << "code: " << code;
 }
 
 void notification_kind_service::delete_notification_kinds(const std::vector<std::string>& codes) {
@@ -521,7 +519,7 @@ void notification_kind_service::delete_notification_kinds(const std::vector<std:
 
 std::vector<domain::notification_kind>
 notification_kind_service::get_notification_kind_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for notification kind. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for notification kind. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

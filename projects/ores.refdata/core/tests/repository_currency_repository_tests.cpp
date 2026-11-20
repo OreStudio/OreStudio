@@ -17,8 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/boost_severity.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/currency.hpp"         // IWYU pragma: keep.
 #include "ores.refdata.api/domain/currency_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/generators/currency_generator.hpp"
@@ -30,7 +29,6 @@
 #include "ores.utility/domain/protocol.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "test_suite.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <catch2/catch_message.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -55,7 +53,7 @@ TEST_CASE("write_single_currency", "[repository]") {
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
     auto currency = generate_synthetic_currency(ctx);
-    BOOST_LOG_SEV(lg, debug) << "Currency: " << currency;
+    ORES_LOG_SEV(lg, debug) << "Currency: " << currency;
 
     currency_repository repo;
     repo.write(h.context(), currency);
@@ -71,7 +69,7 @@ TEST_CASE("write_multiple_currencies", "[repository]") {
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
     auto currencies = generate_unique_synthetic_currencies(3, ctx);
-    BOOST_LOG_SEV(lg, debug) << "Currencies: " << currencies;
+    ORES_LOG_SEV(lg, debug) << "Currencies: " << currencies;
 
     currency_repository repo;
     repo.write(h.context(), currencies);
@@ -91,13 +89,13 @@ TEST_CASE("read_latest_currencies", "[repository]") {
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
     auto written_currencies = generate_unique_synthetic_currencies(3, ctx);
-    BOOST_LOG_SEV(lg, debug) << "Written currencies: " << written_currencies;
+    ORES_LOG_SEV(lg, debug) << "Written currencies: " << written_currencies;
 
     currency_repository repo;
     repo.write(h.context(), written_currencies);
 
     auto read_currencies = repo.read_latest(h.context());
-    BOOST_LOG_SEV(lg, debug) << "Read currencies: " << read_currencies;
+    ORES_LOG_SEV(lg, debug) << "Read currencies: " << read_currencies;
 
     // Verify all written currencies can be found (other tests may have added more)
     for (const auto& written : written_currencies) {
@@ -116,7 +114,7 @@ TEST_CASE("read_latest_currency_by_iso_code", "[repository]") {
     auto ctx = ores::testing::make_generation_context(h);
     auto currency = generate_synthetic_currency(ctx);
     const auto original_name = currency.name;
-    BOOST_LOG_SEV(lg, debug) << "Currency: " << currency;
+    ORES_LOG_SEV(lg, debug) << "Currency: " << currency;
 
     currency_repository repo;
     repo.write(h.context(), currency);
@@ -125,7 +123,7 @@ TEST_CASE("read_latest_currency_by_iso_code", "[repository]") {
     repo.write(h.context(), currency);
 
     auto read_currencies = repo.read_latest(h.context(), currency.iso_code);
-    BOOST_LOG_SEV(lg, debug) << "Read currencies: " << read_currencies;
+    ORES_LOG_SEV(lg, debug) << "Read currencies: " << read_currencies;
 
     REQUIRE(read_currencies.size() == 1);
     CHECK(read_currencies[0].iso_code == currency.iso_code);
@@ -138,13 +136,13 @@ TEST_CASE("read_all_currencies", "[repository]") {
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
     auto written_currencies = generate_unique_synthetic_currencies(3, ctx);
-    BOOST_LOG_SEV(lg, debug) << "Written currencies: " << written_currencies;
+    ORES_LOG_SEV(lg, debug) << "Written currencies: " << written_currencies;
 
     currency_repository repo;
     repo.write(h.context(), written_currencies);
 
     auto read_currencies = repo.read_all(h.context());
-    BOOST_LOG_SEV(lg, debug) << "Read currencies: " << read_currencies;
+    ORES_LOG_SEV(lg, debug) << "Read currencies: " << read_currencies;
 
     for (const auto& written : written_currencies) {
         const auto it = std::ranges::find_if(read_currencies, [&written](const currency& c) {
@@ -169,23 +167,23 @@ TEST_CASE("read_all_currencies_multiple_versions", "[repository]") {
 
     // Get initial version count for this ISO code
     const auto initial_count = repo.read_all(h.context(), test_iso_code).size();
-    BOOST_LOG_SEV(lg, debug) << "Initial version count for " << test_iso_code << ": "
-                             << initial_count;
+    ORES_LOG_SEV(lg, debug) << "Initial version count for " << test_iso_code << ": "
+                            << initial_count;
 
     ccy1.name = test_name + " v1";
-    BOOST_LOG_SEV(lg, debug) << "Currency 1: " << ccy1;
+    ORES_LOG_SEV(lg, debug) << "Currency 1: " << ccy1;
 
     auto ccy2 = ccy1;
     ccy2.name = test_name + " v2";
     ccy2.modified_by = "unit test";
-    BOOST_LOG_SEV(lg, debug) << "Currency 2: " << ccy2;
+    ORES_LOG_SEV(lg, debug) << "Currency 2: " << ccy2;
 
     repo.write(h.context(), {ccy1});
     repo.write(h.context(), {ccy2});
 
     // Read all versions
     auto read_currencies = repo.read_all(h.context(), test_iso_code);
-    BOOST_LOG_SEV(lg, debug) << "Read currencies: " << read_currencies;
+    ORES_LOG_SEV(lg, debug) << "Read currencies: " << read_currencies;
 
     // We added 2 new versions
     CHECK(read_currencies.size() == initial_count + 2);
@@ -216,10 +214,10 @@ TEST_CASE("read_nonexistent_iso_code", "[repository]") {
     repo.write(h.context(), keeper);
 
     const std::string nonexistent_iso = "XXX";
-    BOOST_LOG_SEV(lg, debug) << "Non-existent ISO code: " << nonexistent_iso;
+    ORES_LOG_SEV(lg, debug) << "Non-existent ISO code: " << nonexistent_iso;
 
     auto read_currencies = repo.read_latest(h.context(), nonexistent_iso);
-    BOOST_LOG_SEV(lg, debug) << "Read currencies: " << read_currencies;
+    ORES_LOG_SEV(lg, debug) << "Read currencies: " << read_currencies;
 
     const auto answered_with_another_key = std::ranges::any_of(
         read_currencies, [&](const currency& c) { return c.iso_code == nonexistent_iso; });
@@ -237,7 +235,7 @@ TEST_CASE("write_and_read_currency_with_unicode_symbols", "[repository]") {
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
     auto currencies = generate_synthetic_unicode_currencies(ctx);
-    BOOST_LOG_SEV(lg, debug) << "Currencies: " << currencies;
+    ORES_LOG_SEV(lg, debug) << "Currencies: " << currencies;
 
     currency_repository repo;
     repo.write(h.context(), currencies);
@@ -247,7 +245,7 @@ TEST_CASE("write_and_read_currency_with_unicode_symbols", "[repository]") {
 
     // Read back and verify
     auto read_currencies = repo.read_latest(h.context());
-    BOOST_LOG_SEV(lg, debug) << "Read currencies: " << read_currencies;
+    ORES_LOG_SEV(lg, debug) << "Read currencies: " << read_currencies;
 
     // Verify all written currencies can be found (other tests may have added more)
     CHECK(read_currencies.size() >= currencies.size());
@@ -260,7 +258,7 @@ TEST_CASE("write_and_read_currency_with_unicode_symbols", "[repository]") {
 
         REQUIRE(it != read_currencies.end());
         CHECK(it->symbol == written.symbol);
-        BOOST_LOG_SEV(lg, debug) << "Verified: " << written.iso_code << " = " << it->symbol;
+        ORES_LOG_SEV(lg, debug) << "Verified: " << written.iso_code << " = " << it->symbol;
     }
 }
 
@@ -276,14 +274,14 @@ TEST_CASE("write_and_read_currency_with_no_fractions", "[repository]") {
     REQUIRE(it != currencies.end());
     const auto& no_fractions_currency = *it;
 
-    BOOST_LOG_SEV(lg, debug) << "Currency with no fractions: " << no_fractions_currency;
+    ORES_LOG_SEV(lg, debug) << "Currency with no fractions: " << no_fractions_currency;
 
     currency_repository repo;
     repo.write(h.context(), {no_fractions_currency});
 
     // Read back and verify
     auto read_currencies = repo.read_latest(h.context(), no_fractions_currency.iso_code);
-    BOOST_LOG_SEV(lg, debug) << "Read currencies: " << read_currencies;
+    ORES_LOG_SEV(lg, debug) << "Read currencies: " << read_currencies;
 
     REQUIRE(read_currencies.size() == 1);
     CHECK(read_currencies[0].iso_code == no_fractions_currency.iso_code);
@@ -297,7 +295,7 @@ TEST_CASE("read_currencies_versions_by_key", "[repository]") {
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
     auto currency = generate_synthetic_currency(ctx);
-    BOOST_LOG_SEV(lg, debug) << "Currency: " << currency;
+    ORES_LOG_SEV(lg, debug) << "Currency: " << currency;
 
     currency_repository repo;
     repo.write(h.context(), currency);
@@ -315,13 +313,13 @@ TEST_CASE("read_currencies_versions_resolve_each_version", "[repository]") {
     auto ctx = ores::testing::make_generation_context(h);
     auto currency = generate_synthetic_currency(ctx);
     const auto original_name = currency.name;
-    BOOST_LOG_SEV(lg, debug) << "Currency v1: " << currency;
+    ORES_LOG_SEV(lg, debug) << "Currency v1: " << currency;
 
     currency_repository repo;
     repo.write(h.context(), currency);
 
     currency.name = original_name + " v2";
-    BOOST_LOG_SEV(lg, debug) << "Currency v2: " << currency;
+    ORES_LOG_SEV(lg, debug) << "Currency v2: " << currency;
     repo.write(h.context(), currency);
 
     const auto versions = repo.read_all(h.context(), currency.iso_code);
@@ -344,7 +342,7 @@ TEST_CASE("read_latest_currencies_includes_the_written_row", "[repository]") {
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
     auto currency = generate_synthetic_currency(ctx);
-    BOOST_LOG_SEV(lg, debug) << "Currency: " << currency;
+    ORES_LOG_SEV(lg, debug) << "Currency: " << currency;
 
     currency_repository repo;
     repo.write(h.context(), currency);

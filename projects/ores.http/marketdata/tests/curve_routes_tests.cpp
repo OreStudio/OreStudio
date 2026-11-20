@@ -20,7 +20,7 @@
 #include "ores.http.api/domain/http_request.hpp"
 #include "ores.http.api/domain/http_response.hpp"
 #include "ores.http/routes/marketdata/curve_routes.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "route_answer.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
@@ -55,7 +55,7 @@ http_status curve_status(const std::string& address, const std::string& body) {
 
 TEST_CASE("curves_refuse_a_body_they_do_not_read", "[curve]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the curve routes' bodies";
+    ORES_LOG_SEV(lg, info) << "Testing the curve routes' bodies";
 
     CHECK(curve_status("/api/curves/series", "") == http_status::bad_request);
     CHECK(curve_status("/api/curves/series", R"({"identity":{}})") == http_status::bad_request);
@@ -74,7 +74,7 @@ TEST_CASE("curves_refuse_a_body_they_do_not_read", "[curve]") {
 
 TEST_CASE("curves_refuse_a_slice_that_names_no_component", "[curve]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a slice's component";
+    ORES_LOG_SEV(lg, info) << "Testing a slice's component";
 
     const auto slice = [](const std::string& field) {
         return with_identity(R"(,"component_field":")" + field +
@@ -90,7 +90,7 @@ TEST_CASE("curves_refuse_a_slice_that_names_no_component", "[curve]") {
 
 TEST_CASE("curves_refuse_a_slice_whose_range_ends_before_it_starts", "[curve]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a slice's range";
+    ORES_LOG_SEV(lg, info) << "Testing a slice's range";
 
     const auto slice = [](const std::string& from, const std::string& to) {
         return with_identity(R"(,"component_field":"strike_label","component_value":"ATM",)"
@@ -108,7 +108,7 @@ TEST_CASE("curves_refuse_a_slice_whose_range_ends_before_it_starts", "[curve]") 
 
 TEST_CASE("curves_refuse_an_evolution_that_names_no_instant", "[curve]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing an evolution without a range";
+    ORES_LOG_SEV(lg, info) << "Testing an evolution without a range";
 
     CHECK(curve_status("/api/curves/evolution", with_identity("")) == http_status::bad_request);
     CHECK(curve_status("/api/curves/evolution",
@@ -121,7 +121,7 @@ TEST_CASE("curves_refuse_an_evolution_that_names_no_instant", "[curve]") {
 
 TEST_CASE("curves_refuse_a_point_that_states_no_reason", "[curve]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a keyed manual point";
+    ORES_LOG_SEV(lg, info) << "Testing a keyed manual point";
 
     const auto with_point = [](const std::string& tail) {
         return with_identity(R"(,"coordinates":["5Y"],"value":"1.25")" + tail);
@@ -145,7 +145,7 @@ TEST_CASE("curves_refuse_a_point_that_states_no_reason", "[curve]") {
 
 TEST_CASE("curves_refuse_a_page_that_asks_for_nothing", "[curve]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a published list's page";
+    ORES_LOG_SEV(lg, info) << "Testing a published list's page";
 
     CHECK(curve_status("/api/curves/published", R"({"limit":0})") == http_status::bad_request);
     CHECK(curve_status("/api/curves/published", R"({"offset":-1})") == http_status::bad_request);
@@ -161,7 +161,7 @@ TEST_CASE("curves_refuse_a_page_that_asks_for_nothing", "[curve]") {
 
 TEST_CASE("curves_refuse_a_withdrawal_that_names_no_set", "[curve]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a withdrawal's body";
+    ORES_LOG_SEV(lg, info) << "Testing a withdrawal's body";
 
     CHECK(curve_status("/api/curves/published/withdraw", R"({"reason_code":"system.retired"})") ==
           http_status::bad_request);
@@ -175,7 +175,7 @@ TEST_CASE("curves_refuse_a_withdrawal_that_names_no_set", "[curve]") {
 
 TEST_CASE("curves_refuse_a_series_set_larger_than_a_page", "[curve]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the read of the series a blueprint names";
+    ORES_LOG_SEV(lg, info) << "Testing the read of the series a blueprint names";
 
     std::string ids;
     for (int at = 0; at < 201; ++at) {
@@ -187,7 +187,7 @@ TEST_CASE("curves_refuse_a_series_set_larger_than_a_page", "[curve]") {
 
 TEST_CASE("curves_refuse_a_published_set_that_names_no_series", "[curve]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a published set's series";
+    ORES_LOG_SEV(lg, info) << "Testing a published set's series";
 
     CHECK(curve_status("/api/curves/published-sets", R"({"series_id":"not-an-id"})") ==
           http_status::bad_request);
@@ -198,7 +198,7 @@ TEST_CASE("curves_refuse_a_published_set_that_names_no_series", "[curve]") {
 
 TEST_CASE("curves_read_the_series_of_a_party_without_asking_for_ids", "[curve]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a read of the party's series";
+    ORES_LOG_SEV(lg, info) << "Testing a read of the party's series";
 
     CHECK(curve_status("/api/curves/series-by-id", "{}") == http_status::bad_gateway);
     CHECK(curve_status("/api/curves/series-by-id", R"({"ids":["not-an-id"]})") ==

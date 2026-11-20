@@ -26,7 +26,7 @@
 #define ORES_REFDATA_CORE_MESSAGING_TENOR_CONVENTION_RESOLUTION_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.refdata.api/messaging/tenor_convention_resolution_protocol.hpp"
@@ -75,8 +75,7 @@ public:
      * @brief Serves refdata.v1.tenor_convention_resolutions.list.
      */
     void list_tenor_convention_resolutions(ores::nats::message msg) {
-        BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), debug)
-            << "Handling " << msg.subject;
+        ORES_LOG_SEV(tenor_convention_resolution_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -91,7 +90,7 @@ public:
         }
         auto req = decode<list_tenor_convention_resolutions_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), warn)
+            ORES_LOG_SEV(tenor_convention_resolution_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -99,14 +98,14 @@ public:
         service::tenor_convention_resolution_service svc(req_ctx);
         try {
             auto response = svc.list_tenor_convention_resolutions(*req);
-            BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), debug)
+            ORES_LOG_SEV(tenor_convention_resolution_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), error)
+            ORES_LOG_SEV(tenor_convention_resolution_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             list_tenor_convention_resolutions_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -120,8 +119,7 @@ public:
      * @brief Serves refdata.v1.tenor_convention_resolutions.get.
      */
     void get_tenor_convention_resolution(ores::nats::message msg) {
-        BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), debug)
-            << "Handling " << msg.subject;
+        ORES_LOG_SEV(tenor_convention_resolution_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -136,7 +134,7 @@ public:
         }
         auto req = decode<get_tenor_convention_resolution_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), warn)
+            ORES_LOG_SEV(tenor_convention_resolution_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -144,14 +142,14 @@ public:
         service::tenor_convention_resolution_service svc(req_ctx);
         try {
             auto response = svc.get_tenor_convention_resolution(*req);
-            BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), debug)
+            ORES_LOG_SEV(tenor_convention_resolution_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), error)
+            ORES_LOG_SEV(tenor_convention_resolution_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             get_tenor_convention_resolution_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -165,8 +163,7 @@ public:
      * @brief Serves refdata.v1.tenor_convention_resolutions.get_many.
      */
     void get_many_tenor_convention_resolutions(ores::nats::message msg) {
-        BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), debug)
-            << "Handling " << msg.subject;
+        ORES_LOG_SEV(tenor_convention_resolution_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -181,7 +178,7 @@ public:
         }
         auto req = decode<get_many_tenor_convention_resolutions_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), warn)
+            ORES_LOG_SEV(tenor_convention_resolution_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -189,14 +186,14 @@ public:
         service::tenor_convention_resolution_service svc(req_ctx);
         try {
             auto response = svc.get_many_tenor_convention_resolutions(*req);
-            BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), debug)
+            ORES_LOG_SEV(tenor_convention_resolution_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), error)
+            ORES_LOG_SEV(tenor_convention_resolution_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             get_many_tenor_convention_resolutions_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -210,8 +207,7 @@ public:
      * @brief Serves refdata.v1.tenor_convention_resolutions.put.
      */
     void put_tenor_convention_resolution(ores::nats::message msg) {
-        BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), debug)
-            << "Handling " << msg.subject;
+        ORES_LOG_SEV(tenor_convention_resolution_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -226,7 +222,7 @@ public:
         }
         auto req = decode<put_tenor_convention_resolution_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), warn)
+            ORES_LOG_SEV(tenor_convention_resolution_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -234,14 +230,14 @@ public:
         service::tenor_convention_resolution_service svc(req_ctx);
         try {
             auto response = svc.put_tenor_convention_resolution(*req);
-            BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), debug)
+            ORES_LOG_SEV(tenor_convention_resolution_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), error)
+            ORES_LOG_SEV(tenor_convention_resolution_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             put_tenor_convention_resolution_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -255,8 +251,7 @@ public:
      * @brief Serves refdata.v1.tenor_convention_resolutions.put_many.
      */
     void put_many_tenor_convention_resolutions(ores::nats::message msg) {
-        BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), debug)
-            << "Handling " << msg.subject;
+        ORES_LOG_SEV(tenor_convention_resolution_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -271,7 +266,7 @@ public:
         }
         auto req = decode<put_many_tenor_convention_resolutions_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), warn)
+            ORES_LOG_SEV(tenor_convention_resolution_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -279,14 +274,14 @@ public:
         service::tenor_convention_resolution_service svc(req_ctx);
         try {
             auto response = svc.put_many_tenor_convention_resolutions(*req);
-            BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), debug)
+            ORES_LOG_SEV(tenor_convention_resolution_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), error)
+            ORES_LOG_SEV(tenor_convention_resolution_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             put_many_tenor_convention_resolutions_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -300,8 +295,7 @@ public:
      * @brief Serves refdata.v1.tenor_convention_resolutions.delete.
      */
     void delete_tenor_convention_resolution(ores::nats::message msg) {
-        BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), debug)
-            << "Handling " << msg.subject;
+        ORES_LOG_SEV(tenor_convention_resolution_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -316,7 +310,7 @@ public:
         }
         auto req = decode<delete_tenor_convention_resolution_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), warn)
+            ORES_LOG_SEV(tenor_convention_resolution_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -324,14 +318,14 @@ public:
         service::tenor_convention_resolution_service svc(req_ctx);
         try {
             auto response = svc.delete_tenor_convention_resolution(*req);
-            BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), debug)
+            ORES_LOG_SEV(tenor_convention_resolution_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), error)
+            ORES_LOG_SEV(tenor_convention_resolution_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             delete_tenor_convention_resolution_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -345,8 +339,7 @@ public:
      * @brief Serves refdata.v1.tenor_convention_resolutions.delete_many.
      */
     void delete_many_tenor_convention_resolutions(ores::nats::message msg) {
-        BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), debug)
-            << "Handling " << msg.subject;
+        ORES_LOG_SEV(tenor_convention_resolution_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -361,7 +354,7 @@ public:
         }
         auto req = decode<delete_many_tenor_convention_resolutions_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), warn)
+            ORES_LOG_SEV(tenor_convention_resolution_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -369,14 +362,14 @@ public:
         service::tenor_convention_resolution_service svc(req_ctx);
         try {
             auto response = svc.delete_many_tenor_convention_resolutions(*req);
-            BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), debug)
+            ORES_LOG_SEV(tenor_convention_resolution_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), error)
+            ORES_LOG_SEV(tenor_convention_resolution_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             delete_many_tenor_convention_resolutions_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -390,8 +383,7 @@ public:
      * @brief Serves refdata.v1.tenor_convention_resolutions.list_by_convention_code.
      */
     void list_by_convention_code_tenor_convention_resolutions(ores::nats::message msg) {
-        BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), debug)
-            << "Handling " << msg.subject;
+        ORES_LOG_SEV(tenor_convention_resolution_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -406,7 +398,7 @@ public:
         }
         auto req = decode<list_by_convention_code_tenor_convention_resolutions_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), warn)
+            ORES_LOG_SEV(tenor_convention_resolution_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -414,14 +406,14 @@ public:
         service::tenor_convention_resolution_service svc(req_ctx);
         try {
             auto response = svc.list_by_convention_code_tenor_convention_resolutions(*req);
-            BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), debug)
+            ORES_LOG_SEV(tenor_convention_resolution_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(tenor_convention_resolution_handler_lg(), error)
+            ORES_LOG_SEV(tenor_convention_resolution_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             list_by_convention_code_tenor_convention_resolutions_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;

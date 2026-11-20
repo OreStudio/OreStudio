@@ -21,7 +21,7 @@
 #define ORES_HTTP_ROUTES_IAM_SESSION_RENEWAL_HPP
 
 #include "ores.http.api/domain/session_store.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include <functional>

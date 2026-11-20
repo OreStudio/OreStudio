@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.reporting.api/domain/ore_parameter_value_domain.hpp"
 #include "ores.reporting.api/messaging/ore_parameter_value_domain_protocol.hpp"
 #include "ores.reporting.core/repository/ore_parameter_value_domain_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -463,12 +461,12 @@ ores::utility::domain::result ore_parameter_value_domain_service::prepare_change
 
 std::vector<domain::ore_parameter_value_domain>
 ore_parameter_value_domain_service::list_domains(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all ore parameter value domains";
+    ORES_LOG_SEV(lg(), debug) << "Listing all ore parameter value domains";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t ore_parameter_value_domain_service::count_domains() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total ore parameter value domains count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total ore parameter value domains count";
     return repo_.get_total_domain_count(ctx_);
 }
 
@@ -476,14 +474,14 @@ std::uint32_t ore_parameter_value_domain_service::count_domains() {
 std::optional<domain::ore_parameter_value_domain>
 ore_parameter_value_domain_service::get_domain_at_version(const std::string& code,
                                                           std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting ore parameter value domain at version. "
-                               << "code: " << code << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting ore parameter value domain at version. "
+                              << "code: " << code << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::ore_parameter_value_domain>
 ore_parameter_value_domain_service::get_domain(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting ore parameter value domain. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting ore parameter value domain. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -498,11 +496,11 @@ ore_parameter_value_domain_service::get_domains(const std::vector<std::string>& 
 void ore_parameter_value_domain_service::save_domain(const domain::ore_parameter_value_domain& v) {
     if (v.code.empty())
         throw std::invalid_argument("Ore Parameter Value Domain code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving ore parameter value domain. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving ore parameter value domain. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved ore parameter value domain. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved ore parameter value domain. " << "code: " << v.code;
 }
 
 void ore_parameter_value_domain_service::save_domains(
@@ -511,7 +509,7 @@ void ore_parameter_value_domain_service::save_domains(
         if (e.code.empty())
             throw std::invalid_argument("Ore Parameter Value Domain code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << domains.size() << " ore parameter value domains";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << domains.size() << " ore parameter value domains";
     auto ts = domains;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -520,9 +518,9 @@ void ore_parameter_value_domain_service::save_domains(
 }
 
 void ore_parameter_value_domain_service::delete_domain(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing ore parameter value domain. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing ore parameter value domain. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed ore parameter value domain. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed ore parameter value domain. " << "code: " << code;
 }
 
 void ore_parameter_value_domain_service::delete_domains(const std::vector<std::string>& codes) {
@@ -531,8 +529,8 @@ void ore_parameter_value_domain_service::delete_domains(const std::vector<std::s
 
 std::vector<domain::ore_parameter_value_domain>
 ore_parameter_value_domain_service::get_domain_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for ore parameter value domain. "
-                               << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for ore parameter value domain. "
+                              << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

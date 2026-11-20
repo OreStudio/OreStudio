@@ -29,7 +29,7 @@
 #include "ores.analytics.core/service/pricing_model_service.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
@@ -80,7 +80,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void list_pricing_models(ores::nats::message msg) {
-        BOOST_LOG_SEV(pricing_model_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(pricing_model_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -95,7 +95,7 @@ public:
         }
         auto req = decode<list_pricing_models_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(pricing_model_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(pricing_model_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
@@ -104,13 +104,13 @@ public:
         service::pricing_model_service svc(sys_ctx);
         try {
             auto response = svc.list_pricing_models(*req);
-            BOOST_LOG_SEV(pricing_model_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(pricing_model_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(pricing_model_handler_lg(), error)
+            ORES_LOG_SEV(pricing_model_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             list_pricing_models_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -130,7 +130,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void get_pricing_model(ores::nats::message msg) {
-        BOOST_LOG_SEV(pricing_model_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(pricing_model_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -145,7 +145,7 @@ public:
         }
         auto req = decode<get_pricing_model_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(pricing_model_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(pricing_model_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
@@ -154,13 +154,13 @@ public:
         service::pricing_model_service svc(sys_ctx);
         try {
             auto response = svc.get_pricing_model(*req);
-            BOOST_LOG_SEV(pricing_model_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(pricing_model_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(pricing_model_handler_lg(), error)
+            ORES_LOG_SEV(pricing_model_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             get_pricing_model_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -180,7 +180,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void get_many_pricing_models(ores::nats::message msg) {
-        BOOST_LOG_SEV(pricing_model_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(pricing_model_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -195,7 +195,7 @@ public:
         }
         auto req = decode<get_many_pricing_models_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(pricing_model_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(pricing_model_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
@@ -204,13 +204,13 @@ public:
         service::pricing_model_service svc(sys_ctx);
         try {
             auto response = svc.get_many_pricing_models(*req);
-            BOOST_LOG_SEV(pricing_model_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(pricing_model_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(pricing_model_handler_lg(), error)
+            ORES_LOG_SEV(pricing_model_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             get_many_pricing_models_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -230,7 +230,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void put_pricing_model(ores::nats::message msg) {
-        BOOST_LOG_SEV(pricing_model_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(pricing_model_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -253,7 +253,7 @@ public:
         }
         auto req = decode<put_pricing_model_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(pricing_model_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(pricing_model_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
@@ -262,13 +262,13 @@ public:
         service::pricing_model_service svc(sys_ctx);
         try {
             auto response = svc.put_pricing_model(*req);
-            BOOST_LOG_SEV(pricing_model_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(pricing_model_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(pricing_model_handler_lg(), error)
+            ORES_LOG_SEV(pricing_model_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             put_pricing_model_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -288,7 +288,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void put_many_pricing_models(ores::nats::message msg) {
-        BOOST_LOG_SEV(pricing_model_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(pricing_model_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -311,7 +311,7 @@ public:
         }
         auto req = decode<put_many_pricing_models_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(pricing_model_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(pricing_model_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
@@ -320,13 +320,13 @@ public:
         service::pricing_model_service svc(sys_ctx);
         try {
             auto response = svc.put_many_pricing_models(*req);
-            BOOST_LOG_SEV(pricing_model_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(pricing_model_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(pricing_model_handler_lg(), error)
+            ORES_LOG_SEV(pricing_model_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             put_many_pricing_models_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -346,7 +346,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void delete_pricing_model(ores::nats::message msg) {
-        BOOST_LOG_SEV(pricing_model_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(pricing_model_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -369,7 +369,7 @@ public:
         }
         auto req = decode<delete_pricing_model_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(pricing_model_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(pricing_model_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
@@ -378,13 +378,13 @@ public:
         service::pricing_model_service svc(sys_ctx);
         try {
             auto response = svc.delete_pricing_model(*req);
-            BOOST_LOG_SEV(pricing_model_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(pricing_model_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(pricing_model_handler_lg(), error)
+            ORES_LOG_SEV(pricing_model_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             delete_pricing_model_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -404,7 +404,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void delete_many_pricing_models(ores::nats::message msg) {
-        BOOST_LOG_SEV(pricing_model_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(pricing_model_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -427,7 +427,7 @@ public:
         }
         auto req = decode<delete_many_pricing_models_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(pricing_model_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(pricing_model_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
@@ -436,13 +436,13 @@ public:
         service::pricing_model_service svc(sys_ctx);
         try {
             auto response = svc.delete_many_pricing_models(*req);
-            BOOST_LOG_SEV(pricing_model_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(pricing_model_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(pricing_model_handler_lg(), error)
+            ORES_LOG_SEV(pricing_model_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             delete_many_pricing_models_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -462,7 +462,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void list_pricing_model_versions(ores::nats::message msg) {
-        BOOST_LOG_SEV(pricing_model_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(pricing_model_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -477,7 +477,7 @@ public:
         }
         auto req = decode<list_pricing_model_versions_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(pricing_model_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(pricing_model_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
@@ -486,13 +486,13 @@ public:
         service::pricing_model_service svc(sys_ctx);
         try {
             auto response = svc.list_pricing_model_versions(*req);
-            BOOST_LOG_SEV(pricing_model_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(pricing_model_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(pricing_model_handler_lg(), error)
+            ORES_LOG_SEV(pricing_model_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             list_pricing_model_versions_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -512,7 +512,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void get_pricing_model_version(ores::nats::message msg) {
-        BOOST_LOG_SEV(pricing_model_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(pricing_model_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -527,7 +527,7 @@ public:
         }
         auto req = decode<get_pricing_model_version_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(pricing_model_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(pricing_model_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
@@ -536,13 +536,13 @@ public:
         service::pricing_model_service svc(sys_ctx);
         try {
             auto response = svc.get_pricing_model_version(*req);
-            BOOST_LOG_SEV(pricing_model_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(pricing_model_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(pricing_model_handler_lg(), error)
+            ORES_LOG_SEV(pricing_model_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             get_pricing_model_version_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;

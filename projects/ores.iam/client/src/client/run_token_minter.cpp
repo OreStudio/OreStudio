@@ -19,7 +19,7 @@
  */
 #include "ores.iam.client/client/run_token_minter.hpp"
 #include "ores.iam.api/messaging/run_grant_operations_protocol.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include <chrono>
 #include <exception>
@@ -55,7 +55,7 @@ run_token_minter make_run_token_minter(ores::nats::service::nats_client& nats) {
                     messaging::exchange_run_grant_request::nats_subject, codec.encode(request));
                 auto response = codec.decode<messaging::exchange_run_grant_response>(reply.data);
                 if (!response || !response->success || response->token.empty()) {
-                    BOOST_LOG_SEV(lg(), warn)
+                    ORES_LOG_SEV(lg(), warn)
                         << "No run token for grant " << key.grant_id << " run " << key.run_id
                         << ": " << (response ? response->message : "the answer could not be read");
                     return std::nullopt;
@@ -64,8 +64,8 @@ run_token_minter make_run_token_minter(ores::nats::service::nats_client& nats) {
                                  .expires_at = std::chrono::system_clock::time_point{} +
                                                std::chrono::seconds(response->expires_at)};
             } catch (const std::exception& e) {
-                BOOST_LOG_SEV(lg(), warn) << "No run token for grant " << key.grant_id << " run "
-                                          << key.run_id << ": the exchange failed: " << e.what();
+                ORES_LOG_SEV(lg(), warn) << "No run token for grant " << key.grant_id << " run "
+                                         << key.run_id << ": the exchange failed: " << e.what();
                 return std::nullopt;
             }
         };

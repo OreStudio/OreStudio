@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.trading.api/domain/script.hpp"
 #include "ores.trading.api/messaging/script_protocol.hpp"
 #include "ores.trading.core/repository/script_repository.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -437,25 +435,25 @@ script_service::prepare_change(const messaging::script_change& change,
 
 std::vector<domain::script> script_service::list_scripts(std::uint32_t offset,
                                                          std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all scripts";
+    ORES_LOG_SEV(lg(), debug) << "Listing all scripts";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t script_service::count_scripts() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total scripts count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total scripts count";
     return repo_.get_total_script_count(ctx_);
 }
 
 
 std::optional<domain::script> script_service::get_script_at_version(const std::string& name,
                                                                     std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting script at version. " << "name: " << name
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting script at version. " << "name: " << name
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, name, version);
 }
 
 std::optional<domain::script> script_service::get_script(const std::string& name) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting script. " << "name: " << name;
+    ORES_LOG_SEV(lg(), debug) << "Getting script. " << "name: " << name;
     auto results = repo_.read_latest(ctx_, name);
     if (results.empty())
         return std::nullopt;
@@ -469,11 +467,11 @@ std::vector<domain::script> script_service::get_scripts(const std::vector<std::s
 void script_service::save_script(const domain::script& v) {
     if (v.name.empty())
         throw std::invalid_argument("Script name cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving script. " << "name: " << v.name;
+    ORES_LOG_SEV(lg(), debug) << "Saving script. " << "name: " << v.name;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved script. " << "name: " << v.name;
+    ORES_LOG_SEV(lg(), info) << "Saved script. " << "name: " << v.name;
 }
 
 void script_service::save_scripts(const std::vector<domain::script>& scripts) {
@@ -481,7 +479,7 @@ void script_service::save_scripts(const std::vector<domain::script>& scripts) {
         if (e.name.empty())
             throw std::invalid_argument("Script name cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << scripts.size() << " scripts";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << scripts.size() << " scripts";
     auto ts = scripts;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -490,9 +488,9 @@ void script_service::save_scripts(const std::vector<domain::script>& scripts) {
 }
 
 void script_service::delete_script(const std::string& name) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing script. " << "name: " << name;
+    ORES_LOG_SEV(lg(), debug) << "Removing script. " << "name: " << name;
     repo_.remove(ctx_, name);
-    BOOST_LOG_SEV(lg(), info) << "Removed script. " << "name: " << name;
+    ORES_LOG_SEV(lg(), info) << "Removed script. " << "name: " << name;
 }
 
 void script_service::delete_scripts(const std::vector<std::string>& names) {
@@ -500,7 +498,7 @@ void script_service::delete_scripts(const std::vector<std::string>& names) {
 }
 
 std::vector<domain::script> script_service::get_script_history(const std::string& name) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for script. " << "name: " << name;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for script. " << "name: " << name;
     return repo_.read_all(ctx_, name);
 }
 

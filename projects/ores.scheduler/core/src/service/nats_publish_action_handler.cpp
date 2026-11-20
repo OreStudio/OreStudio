@@ -18,7 +18,7 @@
  *
  */
 #include "ores.scheduler.core/service/nats_publish_action_handler.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.scheduler.core/service/action_payloads.hpp"
@@ -83,7 +83,7 @@ nats_publish_action_handler::nats_publish_action_handler(ores::nats::service::cl
 
 boost::asio::awaitable<std::expected<void, std::string>>
 nats_publish_action_handler::execute(const action_context& ctx) {
-    BOOST_LOG_SEV(nats_publish_action_handler_lg(), debug)
+    ORES_LOG_SEV(nats_publish_action_handler_lg(), debug)
         << "Executing NATS publish action for job: " << ctx.job.job_name;
     try {
         nats_publish_payload parsed;
@@ -93,7 +93,7 @@ nats_publish_action_handler::execute(const action_context& ctx) {
         } catch (const std::exception& e) {
             const auto msg =
                 "Failed to parse action_payload for job '" + ctx.job.job_name + "': " + e.what();
-            BOOST_LOG_SEV(nats_publish_action_handler_lg(), error) << msg;
+            ORES_LOG_SEV(nats_publish_action_handler_lg(), error) << msg;
             co_return std::unexpected(msg);
         }
 
@@ -101,7 +101,7 @@ nats_publish_action_handler::execute(const action_context& ctx) {
         if (subject.empty()) {
             const auto msg =
                 std::string("action_payload missing subject for job '") + ctx.job.job_name + "'";
-            BOOST_LOG_SEV(nats_publish_action_handler_lg(), error) << msg;
+            ORES_LOG_SEV(nats_publish_action_handler_lg(), error) << msg;
             co_return std::unexpected(msg);
         }
 
@@ -110,7 +110,7 @@ nats_publish_action_handler::execute(const action_context& ctx) {
         // report request, so it stays fire-and-forget and reads no identifiers.
         if (!parsed.report_definition_id) {
             nats_.publish(subject, {});
-            BOOST_LOG_SEV(nats_publish_action_handler_lg(), info)
+            ORES_LOG_SEV(nats_publish_action_handler_lg(), info)
                 << "NATS publish action succeeded for job: " << ctx.job.job_name
                 << " (subject: " << subject << ")";
             co_return std::expected<void, std::string>{};
@@ -135,7 +135,7 @@ nats_publish_action_handler::execute(const action_context& ctx) {
         const auto err = reply.headers.find(std::string(ores::nats::headers::x_error));
         if (err != reply.headers.end()) {
             const auto msg = "Subject " + subject + " refused the trigger: " + err->second;
-            BOOST_LOG_SEV(nats_publish_action_handler_lg(), error)
+            ORES_LOG_SEV(nats_publish_action_handler_lg(), error)
                 << msg << " (job: " << ctx.job.job_name << ")";
             co_return std::unexpected(msg);
         }
@@ -143,17 +143,17 @@ nats_publish_action_handler::execute(const action_context& ctx) {
         const auto refused = refusal_in_reply(reply.data);
         if (!refused.empty()) {
             const auto msg = "Subject " + subject + " refused the trigger: " + refused;
-            BOOST_LOG_SEV(nats_publish_action_handler_lg(), error)
+            ORES_LOG_SEV(nats_publish_action_handler_lg(), error)
                 << msg << " (job: " << ctx.job.job_name << ")";
             co_return std::unexpected(msg);
         }
 
-        BOOST_LOG_SEV(nats_publish_action_handler_lg(), info)
+        ORES_LOG_SEV(nats_publish_action_handler_lg(), info)
             << "NATS publish action succeeded for job: " << ctx.job.job_name
             << " (subject: " << subject << ")";
         co_return std::expected<void, std::string>{};
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(nats_publish_action_handler_lg(), error)
+        ORES_LOG_SEV(nats_publish_action_handler_lg(), error)
             << "NATS publish action failed for job: " << ctx.job.job_name << ": " << e.what();
         co_return std::unexpected(std::string(e.what()));
     }

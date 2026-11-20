@@ -68,8 +68,8 @@ void batch_workflow_bridge::poll_once() {
     if (links.empty())
         return;
 
-    BOOST_LOG_SEV(lg(), debug) << "Batch workflow bridge: checking " << links.size()
-                               << " pending link(s)";
+    ORES_LOG_SEV(lg(), debug) << "Batch workflow bridge: checking " << links.size()
+                              << " pending link(s)";
 
     for (const auto& link : links) {
         const auto batch_id = boost::uuids::to_string(link.batch_id);
@@ -82,7 +82,7 @@ void batch_workflow_bridge::poll_once() {
                 batch_svc.get_batch(boost::lexical_cast<boost::uuids::uuid>(batch_id));
 
             if (!batch) {
-                BOOST_LOG_SEV(lg(), warn) << "Batch not found, removing stale link: " << batch_id;
+                ORES_LOG_SEV(lg(), warn) << "Batch not found, removing stale link: " << batch_id;
                 // The link belongs to the batch's tenant, and a removal stays
                 // tenant-scoped, so it is removed as that tenant.
                 link_repo.remove(tenant_ctx, batch_id);
@@ -91,8 +91,8 @@ void batch_workflow_bridge::poll_once() {
             }
 
             if (batch->status != "closed") {
-                BOOST_LOG_SEV(lg(), debug) << "Batch " << batch_id
-                                           << " still in progress (status=" << batch->status << ")";
+                ORES_LOG_SEV(lg(), debug) << "Batch " << batch_id
+                                          << " still in progress (status=" << batch->status << ")";
                 continue;
             }
 
@@ -132,7 +132,7 @@ void batch_workflow_bridge::poll_once() {
                     publish_ack_wait);
             } catch (const std::exception& e) {
                 const auto attempts = ++unstoreable_attempts_[batch_id];
-                BOOST_LOG_SEV(lg(), error)
+                ORES_LOG_SEV(lg(), error)
                     << "Could not fire step_completed for batch " << batch_id
                     << " (step=" << link.workflow_step_id
                     << " instance=" << link.workflow_instance_id << ") on attempt " << attempts
@@ -141,9 +141,9 @@ void batch_workflow_bridge::poll_once() {
             }
             unstoreable_attempts_.erase(batch_id);
 
-            BOOST_LOG_SEV(lg(), info) << "Fired step_completed for batch " << batch_id
-                                      << " (step=" << link.workflow_step_id
-                                      << " instance=" << link.workflow_instance_id << ")";
+            ORES_LOG_SEV(lg(), info) << "Fired step_completed for batch " << batch_id
+                                     << " (step=" << link.workflow_step_id
+                                     << " instance=" << link.workflow_instance_id << ")";
 
             // Remove the link only once the completion is stored. A failed
             // publish throws, so this line is skipped and the link survives to
@@ -151,20 +151,20 @@ void batch_workflow_bridge::poll_once() {
             // it must never precede the confirmation.
             const auto removed = link_repo.remove(tenant_ctx, batch_id, std::nullopt);
             if (removed != repository::workflow_batch_link_repository::remove_status::removed) {
-                BOOST_LOG_SEV(lg(), warn)
+                ORES_LOG_SEV(lg(), warn)
                     << "Link for batch " << batch_id << " was not removed; it will be retried.";
             }
 
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), error)
+            ORES_LOG_SEV(lg(), error)
                 << "Error processing batch link " << batch_id << ": " << e.what();
         }
     }
 }
 
 boost::asio::awaitable<void> batch_workflow_bridge::run() {
-    BOOST_LOG_SEV(lg(), info) << "Batch workflow bridge started. Polling every "
-                              << interval_seconds_ << "s";
+    ORES_LOG_SEV(lg(), info) << "Batch workflow bridge started. Polling every " << interval_seconds_
+                             << "s";
 
     auto executor = co_await boost::asio::this_coro::executor;
     boost::asio::steady_timer timer(executor);
@@ -174,7 +174,7 @@ boost::asio::awaitable<void> batch_workflow_bridge::run() {
             try {
                 poll_once();
             } catch (const std::exception& e) {
-                BOOST_LOG_SEV(lg(), warn) << "Batch workflow bridge poll failed: " << e.what();
+                ORES_LOG_SEV(lg(), warn) << "Batch workflow bridge poll failed: " << e.what();
             }
 
             timer.expires_after(std::chrono::seconds(interval_seconds_));
@@ -182,11 +182,11 @@ boost::asio::awaitable<void> batch_workflow_bridge::run() {
         }
     } catch (const boost::system::system_error& e) {
         if (e.code() != boost::asio::error::operation_aborted) {
-            BOOST_LOG_SEV(lg(), warn) << "Batch workflow bridge timer error: " << e.what();
+            ORES_LOG_SEV(lg(), warn) << "Batch workflow bridge timer error: " << e.what();
         }
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Batch workflow bridge stopped.";
+    ORES_LOG_SEV(lg(), info) << "Batch workflow bridge stopped.";
 }
 
 }

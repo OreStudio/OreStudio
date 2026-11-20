@@ -18,7 +18,7 @@
  *
  */
 #include "ores.ore.service/messaging/registrar.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.ore.api/messaging/currency_config_protocol.hpp"
 #include "ores.ore.api/messaging/ore_import_protocol.hpp"
 #include "ores.ore.api/messaging/pricing_engines_protocol.hpp"
@@ -138,7 +138,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
             [rph](ores::nats::delivery delivery) { rph->prepare_package(std::move(delivery)); });
     subs.push_back(ores::service::messaging::serve_step_commands(nats, qg, routes));
 
-    BOOST_LOG_SEV(lg(), info) << "Registered " << subs.size() << " ORE service message handlers.";
+    ORES_LOG_SEV(lg(), info) << "Registered " << subs.size() << " ORE service message handlers.";
     return subs;
 }
 

@@ -26,7 +26,7 @@
 #define ORES_TRADING_CORE_REPOSITORY_PRODUCT_TYPE_ASSET_CLASS_REPOSITORY_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.trading.api/domain/product_type_asset_class.hpp"
 #include "ores.trading.core/export.hpp"
 #include "ores.utility/domain/protocol.hpp"

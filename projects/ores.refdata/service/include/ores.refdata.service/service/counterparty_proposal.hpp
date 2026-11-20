@@ -22,7 +22,7 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.inbox.api/domain/approval_request.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/counterparty_change.hpp"
 #include "ores.refdata.api/domain/counterparty_identifier_change.hpp"
 #include "ores.refdata.api/domain/party_counterparty_change.hpp"

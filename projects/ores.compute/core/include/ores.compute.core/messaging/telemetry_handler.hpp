@@ -27,7 +27,7 @@
 #include "ores.compute.core/repository/node_sample_repository.hpp"
 #include "ores.compute.core/repository/work_total_repository.hpp"
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.platform/time/datetime.hpp"
@@ -72,7 +72,7 @@ public:
      * TimescaleDB. No live aggregation is performed.
      */
     void get_grid_stats(ores::nats::message msg) {
-        BOOST_LOG_SEV(telemetry_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(telemetry_handler_lg(), debug) << "Handling " << msg.subject;
         auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
@@ -146,12 +146,12 @@ public:
 
             resp.success = true;
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(telemetry_handler_lg(), error) << "get_grid_stats failed: " << e.what();
+            ORES_LOG_SEV(telemetry_handler_lg(), error) << "get_grid_stats failed: " << e.what();
             resp.success = false;
             resp.message = e.what();
         }
         reply(nats_, msg, resp);
-        BOOST_LOG_SEV(telemetry_handler_lg(), debug) << "Completed " << msg.subject;
+        ORES_LOG_SEV(telemetry_handler_lg(), debug) << "Completed " << msg.subject;
     }
 
     /**
@@ -164,7 +164,7 @@ public:
      * the reason and no data.
      */
     void get_grid_series(ores::nats::message msg) {
-        BOOST_LOG_SEV(telemetry_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(telemetry_handler_lg(), debug) << "Handling " << msg.subject;
         auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
@@ -179,7 +179,7 @@ public:
         get_grid_series_response resp;
         const auto req = decode<get_grid_series_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(telemetry_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(telemetry_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             resp.message = "Failed to decode request";
             reply(nats_, msg, resp);
             return;
@@ -209,12 +209,12 @@ public:
             resp.outcomes_no_reply = std::move(series.outcomes_no_reply);
             resp.success = true;
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(telemetry_handler_lg(), warn) << "get_grid_series refused: " << e.what();
+            ORES_LOG_SEV(telemetry_handler_lg(), warn) << "get_grid_series refused: " << e.what();
             resp = get_grid_series_response{};
             resp.message = e.what();
         }
         reply(nats_, msg, resp);
-        BOOST_LOG_SEV(telemetry_handler_lg(), debug) << "Completed " << msg.subject;
+        ORES_LOG_SEV(telemetry_handler_lg(), debug) << "Completed " << msg.subject;
     }
 
     /**
@@ -227,7 +227,7 @@ public:
      * entering it. The read needs the permission to view batches.
      */
     void get_grid_usage(ores::nats::message msg) {
-        BOOST_LOG_SEV(telemetry_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(telemetry_handler_lg(), debug) << "Handling " << msg.subject;
         auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
@@ -256,12 +256,12 @@ public:
             resp.oldest_unsent_seconds = std::move(usage.oldest_unsent_seconds);
             resp.success = true;
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(telemetry_handler_lg(), warn) << "get_grid_usage failed: " << e.what();
+            ORES_LOG_SEV(telemetry_handler_lg(), warn) << "get_grid_usage failed: " << e.what();
             resp = get_grid_usage_response{};
             resp.message = e.what();
         }
         reply(nats_, msg, resp);
-        BOOST_LOG_SEV(telemetry_handler_lg(), debug) << "Completed " << msg.subject;
+        ORES_LOG_SEV(telemetry_handler_lg(), debug) << "Completed " << msg.subject;
     }
 
     /**
@@ -273,7 +273,7 @@ public:
      * with the reason and no data.
      */
     void get_node_series(ores::nats::message msg) {
-        BOOST_LOG_SEV(telemetry_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(telemetry_handler_lg(), debug) << "Handling " << msg.subject;
         auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
@@ -288,7 +288,7 @@ public:
         get_node_series_response resp;
         const auto req = decode<get_node_series_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(telemetry_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(telemetry_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             resp.message = "Failed to decode request";
             reply(nats_, msg, resp);
             return;
@@ -315,12 +315,12 @@ public:
             resp.output_bytes_uploaded = std::move(series.output_bytes_uploaded);
             resp.success = true;
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(telemetry_handler_lg(), warn) << "get_node_series refused: " << e.what();
+            ORES_LOG_SEV(telemetry_handler_lg(), warn) << "get_node_series refused: " << e.what();
             resp = get_node_series_response{};
             resp.message = e.what();
         }
         reply(nats_, msg, resp);
-        BOOST_LOG_SEV(telemetry_handler_lg(), debug) << "Completed " << msg.subject;
+        ORES_LOG_SEV(telemetry_handler_lg(), debug) << "Completed " << msg.subject;
     }
 
     /**
@@ -331,7 +331,7 @@ public:
      * ores_compute_node_samples_tbl hypertable.
      */
     void ingest_node_sample(ores::nats::message msg) {
-        BOOST_LOG_SEV(telemetry_handler_lg(), trace)
+        ORES_LOG_SEV(telemetry_handler_lg(), trace)
             << "Ingesting node sample from: " << msg.subject;
 
         const auto parsed = decode<node_sample_message>(msg);
@@ -369,7 +369,7 @@ public:
                 node_repo.write(ctx_, s);
             }
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(telemetry_handler_lg(), error)
+            ORES_LOG_SEV(telemetry_handler_lg(), error)
                 << "Failed to persist node sample: " << e.what();
         }
     }

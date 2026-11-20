@@ -26,7 +26,7 @@
 #define ORES_SYNTHETIC_CORE_REPOSITORY_FX_SPOT_FIXING_ITEM_REPOSITORY_HPP
 
 #include "ores.database/domain/context_fwd.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.synthetic.api/domain/fx_spot_fixing_item.hpp"
 #include "ores.synthetic.api/messaging/fx_spot_fixing_item_protocol.hpp"
 #include "ores.synthetic.core/export.hpp"

@@ -47,7 +47,7 @@ using namespace logging;
 
 void synthetic_entity_commands::register_commands(cli::Menu& root_menu,
                                                   ores::nats::service::nats_client& session) {
-    BOOST_LOG_SEV(lg(), debug) << "Registering synthetic entity command surface.";
+    ORES_LOG_SEV(lg(), debug) << "Registering synthetic entity command surface.";
 
     // Every unit is generated, so a verb the model gains or loses needs no edit
     // here.

@@ -31,9 +31,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -235,7 +233,7 @@ void workunit_repository::write(const context& ctx, const std::vector<domain::wo
 void workunit_repository::write(const context& ctx,
                                 const domain::workunit& v,
                                 const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing workunit. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Writing workunit. " << "id: " << v.id;
     const auto t = workunit_apply_claim(v,
                                         claim,
                                         workunit_claim_reads_current(claim) ?
@@ -248,7 +246,7 @@ void workunit_repository::write(const context& ctx,
 void workunit_repository::write(const context& ctx,
                                 const std::vector<domain::workunit>& v,
                                 const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing workunits. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing workunits. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument("workunit_repository::write: one claim is needed for each row");
     std::vector<domain::workunit> to_read;
@@ -282,7 +280,7 @@ std::vector<domain::workunit> workunit_repository::read_latest(const context& ct
 
 std::vector<domain::workunit> workunit_repository::read_latest(const context& ctx,
                                                                const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest workunit. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest workunit. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -300,7 +298,7 @@ std::vector<domain::workunit> workunit_repository::read_latest(const context& ct
 
 std::vector<domain::workunit> workunit_repository::read_all(const context& ctx,
                                                             const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all workunit versions. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading all workunit versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<workunit_entity>> |
                        query_builder::where("tenant_id"_c == tid && "id"_c == id) |
@@ -317,8 +315,8 @@ std::vector<domain::workunit> workunit_repository::read_all(const context& ctx,
 std::optional<domain::workunit> workunit_repository::read_at_version(const context& ctx,
                                                                      const std::string& id,
                                                                      std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading workunit at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading workunit at version. " << "id: " << id
+                              << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<workunit_entity>> |
@@ -344,8 +342,8 @@ std::vector<domain::workunit> workunit_repository::read_latest_by_batch_id(
     std::uint32_t limit,
     const ores::utility::domain::order& order,
     const std::optional<messaging::workunits_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest workunits. batch_id: " << batch_id
-                               << " offset: " << offset << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest workunits. batch_id: " << batch_id
+                              << " offset: " << offset << " limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<workunit_entity>> |
@@ -367,7 +365,7 @@ std::uint32_t workunit_repository::get_total_workunit_count_by_batch_id(
     const context& ctx,
     const std::string& batch_id,
     const std::optional<messaging::workunits_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active workunits count. batch_id: " << batch_id;
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active workunits count. batch_id: " << batch_id;
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx.tenant_id().to_string();
@@ -382,7 +380,7 @@ std::uint32_t workunit_repository::get_total_workunit_count_by_batch_id(
 
 workunit_repository::remove_status workunit_repository::remove(
     const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing workunit. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing workunit. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
         return remove_status::missing;
@@ -420,8 +418,8 @@ workunit_repository::read_latest(const context& ctx,
                                  const ores::utility::domain::order& order,
                                  const std::optional<messaging::workunits_filter>& filter,
                                  const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest workunits with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest workunits with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<workunit_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -441,7 +439,7 @@ std::uint32_t workunit_repository::get_total_workunit_count(
     const context& ctx,
     const std::optional<messaging::workunits_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active workunit count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active workunit count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<workunit_entity>> |

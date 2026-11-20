@@ -27,9 +27,7 @@
 #include "ores.dq.api/domain/lei_relationship.hpp"
 #include "ores.dq.api/domain/lei_relationship_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.core/repository/lei_relationship_entity.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.platform/time/datetime.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <optional>
 #include <vector>
 
@@ -39,7 +37,7 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 
 domain::lei_relationship lei_relationship_mapper::map(const lei_relationship_entity& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::lei_relationship r;
     r.tenant_id = v.tenant_id;
@@ -56,12 +54,12 @@ domain::lei_relationship lei_relationship_mapper::map(const lei_relationship_ent
     r.registration_registration_status = v.registration_registration_status;
     r.registration_validation_sources = v.registration_validation_sources;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
 }
 
 lei_relationship_entity lei_relationship_mapper::map(const domain::lei_relationship& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     lei_relationship_entity r;
     r.relationship_start_node_node_id = v.relationship_start_node_node_id;
@@ -78,7 +76,7 @@ lei_relationship_entity lei_relationship_mapper::map(const domain::lei_relations
     r.registration_registration_status = v.registration_registration_status;
     r.registration_validation_sources = v.registration_validation_sources;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;
 }
 

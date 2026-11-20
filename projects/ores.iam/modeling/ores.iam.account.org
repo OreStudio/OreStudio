@@ -534,7 +534,7 @@ host name before it looks the account up.
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 std::vector<domain::account>
 account_repository::read_latest_by_username(const context& ctx, const std::string& username) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest account by username: " << username;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest account by username: " << username;
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -583,7 +583,7 @@ account_repository::read_latest_by_username(const context& ctx, const std::vecto
         }
         return all;
     }
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest accounts by username. Count: " << usernames.size();
+    ORES_LOG_SEV(lg(), debug) << "Reading latest accounts by username. Count: " << usernames.size();
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -618,7 +618,7 @@ names the session's tenant, for the same reason as the username read.
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 std::vector<domain::account>
 account_repository::read_latest_by_email(const context& ctx, const std::string& email) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest account by email: " << email;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest account by email: " << email;
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();

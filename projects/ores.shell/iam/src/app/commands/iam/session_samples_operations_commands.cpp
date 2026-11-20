@@ -61,7 +61,7 @@ void session_samples_operations_commands::register_commands(cli::Menu& root_menu
 
 void session_samples_operations_commands::process_get_session_samples(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating get-session-samples request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating get-session-samples request.";
 
     using request_type = ores::iam::messaging::get_session_samples_request;
 

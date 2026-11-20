@@ -21,7 +21,7 @@
 #define ORES_REFDATA_CORE_SERVICE_CALENDAR_ADJUSTMENT_EXPORT_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/messaging/calendar_adjustment_protocol.hpp"
 #include "ores.refdata.core/export.hpp"
 #include <string>

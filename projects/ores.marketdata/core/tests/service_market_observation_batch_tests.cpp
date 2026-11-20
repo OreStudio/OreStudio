@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/domain/market_observation.hpp"
 #include "ores.marketdata.api/generators/market_observation_generator.hpp"
 #include "ores.marketdata.api/generators/market_series_generator.hpp"
@@ -83,7 +83,7 @@ TEST_CASE("put_many_of_exactly_the_bound_answers_every_row_in_order", "[service]
     ores::marketdata::messaging::put_many_market_observations_request put;
     for (const auto& o : observations)
         put.changes.push_back(change_for(o));
-    BOOST_LOG_SEV(lg, info) << "Putting " << put.changes.size() << " market observations.";
+    ORES_LOG_SEV(lg, info) << "Putting " << put.changes.size() << " market observations.";
     const auto written = svc.put_many_market_observations(put);
 
     REQUIRE(written.result.outcome == outcome::ok);
@@ -117,7 +117,7 @@ TEST_CASE("put_many_of_more_than_the_bound_is_refused_and_writes_nothing", "[ser
     ores::marketdata::messaging::put_many_market_observations_request put;
     for (const auto& o : observations)
         put.changes.push_back(change_for(o));
-    BOOST_LOG_SEV(lg, info) << "Putting " << put.changes.size() << " market observations.";
+    ORES_LOG_SEV(lg, info) << "Putting " << put.changes.size() << " market observations.";
     const auto refused = svc.put_many_market_observations(put);
 
     CHECK(refused.result.outcome == outcome::invalid);
@@ -152,7 +152,7 @@ TEST_CASE("delete_many_of_more_than_the_bound_is_refused_and_removes_nothing", "
         remove.removals.push_back({.key = market_observation_key{.id = o.id}});
     remove.removals.push_back(
         {.key = market_observation_key{.id = boost::uuids::random_generator()()}});
-    BOOST_LOG_SEV(lg, info) << "Removing " << remove.removals.size() << " market observations.";
+    ORES_LOG_SEV(lg, info) << "Removing " << remove.removals.size() << " market observations.";
     const auto refused = svc.delete_many_market_observations(remove);
 
     CHECK(refused.result.outcome == outcome::invalid);
@@ -177,7 +177,7 @@ TEST_CASE("get_many_of_more_than_1000_keys_is_refused", "[service][batch]") {
     boost::uuids::random_generator ids;
     for (std::size_t i = 0; i < 1001; ++i)
         get.keys.push_back(market_observation_key{.id = ids()});
-    BOOST_LOG_SEV(lg, info) << "Getting " << get.keys.size() << " market observations.";
+    ORES_LOG_SEV(lg, info) << "Getting " << get.keys.size() << " market observations.";
     const auto refused = svc.get_many_market_observations(get);
 
     CHECK(refused.result.outcome != outcome::ok);

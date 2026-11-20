@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.trading.api/domain/trade_party_role.hpp"
 #include "ores.trading.api/domain/trade_party_role_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.api/domain/trade_party_role_table.hpp"
@@ -62,7 +62,7 @@ TEST_CASE("create_trade_party_role_with_valid_fields", "[domain]") {
     sut.change_reason_code = "system.new";
     sut.change_commentary = "Initial assignment";
     sut.recorded_at = std::chrono::system_clock::now();
-    BOOST_LOG_SEV(lg, info) << "Trade party role: " << sut;
+    ORES_LOG_SEV(lg, info) << "Trade party role: " << sut;
 
     CHECK(sut.version == 1);
     CHECK(!sut.trade_id.is_nil());
@@ -82,7 +82,7 @@ TEST_CASE("trade_party_role_insertion_operator", "[domain]") {
     sut.change_reason_code = "system.new";
     sut.change_commentary = "Test";
     sut.recorded_at = std::chrono::system_clock::now();
-    BOOST_LOG_SEV(lg, info) << "Trade party role: " << sut;
+    ORES_LOG_SEV(lg, info) << "Trade party role: " << sut;
 
     std::ostringstream os;
     os << sut;
@@ -104,7 +104,7 @@ TEST_CASE("create_trade_party_role_with_faker", "[domain]") {
     sut.change_reason_code = "system.new";
     sut.change_commentary = "Synthetic test data";
     sut.recorded_at = std::chrono::system_clock::now();
-    BOOST_LOG_SEV(lg, info) << "Trade party role: " << sut;
+    ORES_LOG_SEV(lg, info) << "Trade party role: " << sut;
 
     CHECK(sut.version >= 1);
     CHECK(!sut.trade_id.is_nil());
@@ -119,7 +119,7 @@ TEST_CASE("create_multiple_random_trade_party_roles", "[domain]") {
         "Counterparty", "CalculationAgent", "ExecutingBroker", "NovationTransferee"};
     for (const auto& role : roles) {
         auto sut = make_trade_party_role(role);
-        BOOST_LOG_SEV(lg, info) << "Trade party role: " << sut;
+        ORES_LOG_SEV(lg, info) << "Trade party role: " << sut;
         CHECK(!sut.trade_id.is_nil());
         CHECK(sut.version == 1);
     }
@@ -131,7 +131,7 @@ TEST_CASE("trade_party_role_convert_single_to_table", "[domain]") {
     std::vector<trade_party_role> items = {make_trade_party_role("Counterparty")};
     auto table = convert_to_table(items);
 
-    BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
+    ORES_LOG_SEV(lg, info) << "Table output:\n" << table;
 
     CHECK(table.find("Counterparty") != std::string::npos);
 }
@@ -145,7 +145,7 @@ TEST_CASE("trade_party_role_convert_multiple_to_table", "[domain]") {
 
     auto table = convert_to_table(items);
 
-    BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
+    ORES_LOG_SEV(lg, info) << "Table output:\n" << table;
 
     CHECK(table.find("Role0") != std::string::npos);
     CHECK(table.find("Role1") != std::string::npos);
@@ -158,7 +158,7 @@ TEST_CASE("trade_party_role_convert_empty_vector_to_table", "[domain]") {
     std::vector<trade_party_role> items;
     auto table = convert_to_table(items);
 
-    BOOST_LOG_SEV(lg, info) << "Empty table output:\n" << table;
+    ORES_LOG_SEV(lg, info) << "Empty table output:\n" << table;
 
     // An empty vector still renders the table's header row. Trade ID is the
     // anchor the role hangs off: Counterparty ID went with the party columns
@@ -185,7 +185,7 @@ TEST_CASE("trade_party_role_table_with_faker_data", "[domain]") {
 
     auto table = convert_to_table(items);
 
-    BOOST_LOG_SEV(lg, info) << "Faker table output:\n" << table;
+    ORES_LOG_SEV(lg, info) << "Faker table output:\n" << table;
 
     CHECK(!table.empty());
     for (const auto& item : items)

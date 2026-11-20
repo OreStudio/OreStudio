@@ -328,7 +328,7 @@ boost::asio::awaitable<http_response> tag_routes::handle_version(const http_requ
 void tag_routes::register_routes(std::shared_ptr<ores::http::net::router> router,
                                  std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
                                  nats_client& session) {
-    BOOST_LOG_SEV(lg(), info) << "Registering tags routes";
+    ORES_LOG_SEV(lg(), info) << "Registering tags routes";
 
     auto list_route =
         router->get("/api/v1/assets/tags")
@@ -473,7 +473,7 @@ void tag_routes::register_routes(std::shared_ptr<ores::http::net::router> router
     router->add_route(version_built);
     registry->register_route(version_built);
 
-    BOOST_LOG_SEV(lg(), info) << "tags routes registered: " << 10 << " endpoint(s)";
+    ORES_LOG_SEV(lg(), info) << "tags routes registered: " << 10 << " endpoint(s)";
 }
 
 }

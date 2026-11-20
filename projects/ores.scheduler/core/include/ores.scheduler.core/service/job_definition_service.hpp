@@ -26,7 +26,7 @@
 #define ORES_SCHEDULER_CORE_SERVICE_JOB_DEFINITION_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.scheduler.api/domain/job_definition.hpp"
 #include "ores.scheduler.api/messaging/job_definition_protocol.hpp"
 #include "ores.scheduler.core/export.hpp"

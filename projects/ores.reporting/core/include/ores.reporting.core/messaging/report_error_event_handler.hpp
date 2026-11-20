@@ -26,7 +26,7 @@
 #define ORES_REPORTING_CORE_MESSAGING_REPORT_ERROR_EVENT_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.reporting.api/messaging/report_error_event_protocol.hpp"
@@ -74,7 +74,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void list_report_error_events(ores::nats::message msg) {
-        BOOST_LOG_SEV(report_error_event_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(report_error_event_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -89,7 +89,7 @@ public:
         }
         auto req = decode<list_report_error_events_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(report_error_event_handler_lg(), warn)
+            ORES_LOG_SEV(report_error_event_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -97,13 +97,13 @@ public:
         service::report_error_event_service svc(req_ctx);
         try {
             auto response = svc.list_report_error_events(*req);
-            BOOST_LOG_SEV(report_error_event_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(report_error_event_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(report_error_event_handler_lg(), error)
+            ORES_LOG_SEV(report_error_event_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             list_report_error_events_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -123,7 +123,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void get_report_error_event(ores::nats::message msg) {
-        BOOST_LOG_SEV(report_error_event_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(report_error_event_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -138,7 +138,7 @@ public:
         }
         auto req = decode<get_report_error_event_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(report_error_event_handler_lg(), warn)
+            ORES_LOG_SEV(report_error_event_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -146,13 +146,13 @@ public:
         service::report_error_event_service svc(req_ctx);
         try {
             auto response = svc.get_report_error_event(*req);
-            BOOST_LOG_SEV(report_error_event_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(report_error_event_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(report_error_event_handler_lg(), error)
+            ORES_LOG_SEV(report_error_event_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             get_report_error_event_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -172,7 +172,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void get_many_report_error_events(ores::nats::message msg) {
-        BOOST_LOG_SEV(report_error_event_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(report_error_event_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -187,7 +187,7 @@ public:
         }
         auto req = decode<get_many_report_error_events_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(report_error_event_handler_lg(), warn)
+            ORES_LOG_SEV(report_error_event_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -195,13 +195,13 @@ public:
         service::report_error_event_service svc(req_ctx);
         try {
             auto response = svc.get_many_report_error_events(*req);
-            BOOST_LOG_SEV(report_error_event_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(report_error_event_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(report_error_event_handler_lg(), error)
+            ORES_LOG_SEV(report_error_event_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             get_many_report_error_events_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -221,7 +221,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void list_by_report_instance_id_report_error_events(ores::nats::message msg) {
-        BOOST_LOG_SEV(report_error_event_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(report_error_event_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -236,7 +236,7 @@ public:
         }
         auto req = decode<list_by_report_instance_id_report_error_events_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(report_error_event_handler_lg(), warn)
+            ORES_LOG_SEV(report_error_event_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -244,13 +244,13 @@ public:
         service::report_error_event_service svc(req_ctx);
         try {
             auto response = svc.list_by_report_instance_id_report_error_events(*req);
-            BOOST_LOG_SEV(report_error_event_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(report_error_event_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(report_error_event_handler_lg(), error)
+            ORES_LOG_SEV(report_error_event_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             list_by_report_instance_id_report_error_events_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -267,7 +267,7 @@ public:
      * the generated error reads are gated by.
      */
     void get_report_error_counts(ores::nats::message msg) {
-        BOOST_LOG_SEV(report_error_event_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(report_error_event_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -282,7 +282,7 @@ public:
         }
         auto req = decode<get_report_error_counts_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(report_error_event_handler_lg(), warn)
+            ORES_LOG_SEV(report_error_event_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -290,10 +290,10 @@ public:
         service::report_error_event_service svc(req_ctx);
         try {
             auto response = svc.get_report_error_counts(*req);
-            BOOST_LOG_SEV(report_error_event_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(report_error_event_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(report_error_event_handler_lg(), error)
+            ORES_LOG_SEV(report_error_event_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             get_report_error_counts_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;

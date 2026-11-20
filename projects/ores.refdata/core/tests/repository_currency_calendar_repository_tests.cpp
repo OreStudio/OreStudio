@@ -17,8 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/boost_severity.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/calendar.hpp"
 #include "ores.refdata.api/domain/currency_calendar.hpp"
 #include "ores.refdata.api/domain/currency_calendar_json_io.hpp" // IWYU pragma: keep.
@@ -34,7 +33,6 @@
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "test_suite.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <cstddef>
@@ -103,7 +101,7 @@ TEST_CASE("write_single_currency_calendar", "[repository][currency_calendar]") {
     cal_repo.write(h.context(), {calendars[0]});
 
     auto cc = make_currency_calendar(h, currencies[0].iso_code, calendars[0].code);
-    BOOST_LOG_SEV(lg, debug) << "Currency calendar: " << cc;
+    ORES_LOG_SEV(lg, debug) << "Currency calendar: " << cc;
     repo.write(cc);
 
     const auto read_ccs = repo.read_latest(cc.currency_iso_code, cc.calendar_code);
@@ -134,7 +132,7 @@ TEST_CASE("write_multiple_currency_calendars", "[repository][currency_calendar]"
         ccs.push_back(make_currency_calendar(h, currencies[1].iso_code, c.code));
     }
 
-    BOOST_LOG_SEV(lg, debug) << "Currency calendars: " << ccs;
+    ORES_LOG_SEV(lg, debug) << "Currency calendars: " << ccs;
     repo.write(ccs);
 
     const auto read_ccs = repo.read_latest();
@@ -168,7 +166,7 @@ TEST_CASE("read_latest_currency_calendars_by_currency", "[repository][currency_c
     repo.write(cc);
 
     auto read_ccs = repo.read_latest_by_currency(currencies[3].iso_code);
-    BOOST_LOG_SEV(lg, debug) << "Read currency calendars: " << read_ccs;
+    ORES_LOG_SEV(lg, debug) << "Read currency calendars: " << read_ccs;
 
     REQUIRE(!read_ccs.empty());
     bool found = false;
@@ -201,7 +199,7 @@ TEST_CASE("read_latest_currency_calendars_by_calendar", "[repository][currency_c
     repo.write(cc);
 
     auto read_ccs = repo.read_latest_by_calendar(calendars[4].code);
-    BOOST_LOG_SEV(lg, debug) << "Read currency calendars: " << read_ccs;
+    ORES_LOG_SEV(lg, debug) << "Read currency calendars: " << read_ccs;
 
     REQUIRE(read_ccs.size() >= 1);
     CHECK(read_ccs[0].currency_iso_code == currencies[4].iso_code);
@@ -305,7 +303,7 @@ TEST_CASE("read_nonexistent_currency_calendar", "[repository][currency_calendar]
     repo.write(keeper);
 
     auto read_ccs = repo.read_latest_by_currency("ZZZ");
-    BOOST_LOG_SEV(lg, debug) << "Read currency calendars: " << read_ccs;
+    ORES_LOG_SEV(lg, debug) << "Read currency calendars: " << read_ccs;
 
     const auto answered_with_nonexistent_key = std::ranges::any_of(
         read_ccs, [&](const currency_calendar& r) { return r.currency_iso_code == "ZZZ"; });

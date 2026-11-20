@@ -192,7 +192,7 @@ boost::asio::awaitable<http_response> counterparty_web_routes::handle_list(const
     } catch (const rr::refusal& refusal) {
         co_return rr::answer(refusal);
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << e.what();
+        ORES_LOG_SEV(lg(), error) << e.what();
         co_return http_response::api_error(
             http_status::bad_gateway, "internal", std::string(rr::unanswered));
     }
@@ -218,7 +218,7 @@ boost::asio::awaitable<http_response> counterparty_web_routes::handle_key(const 
     } catch (const rr::refusal& refusal) {
         co_return rr::answer(refusal);
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << e.what();
+        ORES_LOG_SEV(lg(), error) << e.what();
         co_return http_response::api_error(
             http_status::bad_gateway, "internal", std::string(rr::unanswered));
     }
@@ -246,7 +246,7 @@ boost::asio::awaitable<http_response> counterparty_web_routes::handle_put(const 
     } catch (const rr::refusal& refusal) {
         co_return rr::answer(refusal);
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << e.what();
+        ORES_LOG_SEV(lg(), error) << e.what();
         co_return http_response::api_error(
             http_status::bad_gateway, "internal", std::string(rr::unanswered));
     }
@@ -273,7 +273,7 @@ counterparty_web_routes::handle_delete(const http_request& req, nats_client& ses
     } catch (const rr::refusal& refusal) {
         co_return rr::answer(refusal);
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << e.what();
+        ORES_LOG_SEV(lg(), error) << e.what();
         co_return http_response::api_error(
             http_status::bad_gateway, "internal", std::string(rr::unanswered));
     }
@@ -283,7 +283,7 @@ void counterparty_web_routes::register_routes(
     std::shared_ptr<ores::http::net::router> router,
     std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
     nats_client& session) {
-    BOOST_LOG_SEV(lg(), info) << "Registering counterparties record routes";
+    ORES_LOG_SEV(lg(), info) << "Registering counterparties record routes";
 
     auto list_route =
         router->get("/api/refdata/counterparties")

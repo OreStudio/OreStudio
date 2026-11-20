@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.platform/filesystem/scoped_temp_directory.hpp"
 #include "ores.platform/filesystem/scoped_temp_file.hpp"
 #include "ores.storage.core/net/http_client.hpp"
@@ -59,7 +59,7 @@ TEST_CASE("get_writes_the_exact_server_body_to_the_destination", "[net]") {
     scoped_temp_file destination;
     http_client::get(server.base_url() + "/objects/download.bin", destination.path(), test_token);
 
-    BOOST_LOG_SEV(lg, info) << "Downloaded to: " << destination.path();
+    ORES_LOG_SEV(lg, info) << "Downloaded to: " << destination.path();
     CHECK(read_file(destination.path()) == body);
     CHECK(server.last_method() == "GET");
     CHECK(server.last_target() == "/objects/download.bin");
@@ -74,7 +74,7 @@ TEST_CASE("every_request_carries_the_callers_bearer_token", "[net]") {
 
     http_client::put(server.base_url() + "/objects/upload.bin", source.path(), test_token);
 
-    BOOST_LOG_SEV(lg, info) << "Server saw Authorization: " << server.last_authorization();
+    ORES_LOG_SEV(lg, info) << "Server saw Authorization: " << server.last_authorization();
     CHECK(server.last_authorization() == test_authorization);
 }
 
@@ -89,8 +89,8 @@ TEST_CASE("put_delivers_the_exact_source_file_bytes", "[net]") {
 
     http_client::put(server.base_url() + "/objects/upload.bin", source.path(), test_token);
 
-    BOOST_LOG_SEV(lg, info) << "Server recorded PUT body of " << server.last_put_body().size()
-                            << " bytes";
+    ORES_LOG_SEV(lg, info) << "Server recorded PUT body of " << server.last_put_body().size()
+                           << " bytes";
     CHECK(server.last_method() == "PUT");
     CHECK(server.last_target() == "/objects/upload.bin");
     CHECK(server.last_put_body() == content);
@@ -109,7 +109,7 @@ TEST_CASE("put_returning_body_returns_the_exact_configured_response", "[net]") {
     const auto actual = http_client::put_returning_body(
         server.base_url() + "/objects/upload.bin", source.path(), test_token);
 
-    BOOST_LOG_SEV(lg, info) << "Response body: " << actual;
+    ORES_LOG_SEV(lg, info) << "Response body: " << actual;
     CHECK(actual == response);
 }
 
@@ -123,7 +123,7 @@ TEST_CASE("get_of_a_not_found_resource_throws_and_creates_no_file", "[net]") {
     scoped_temp_directory parent;
     const auto destination = parent.path() / "absent.bin";
 
-    BOOST_LOG_SEV(lg, info) << "Expecting 404 for: " << destination;
+    ORES_LOG_SEV(lg, info) << "Expecting 404 for: " << destination;
     CHECK_THROWS_AS(
         http_client::get(server.base_url() + "/objects/missing", destination, test_token),
         std::runtime_error);
@@ -140,7 +140,7 @@ TEST_CASE("get_of_a_not_found_resource_leaves_an_existing_file_untouched", "[net
     scoped_temp_file destination;
     http_client_write_file(destination.path(), original_content);
 
-    BOOST_LOG_SEV(lg, info) << "Expecting 404 to leave " << destination.path() << " untouched";
+    ORES_LOG_SEV(lg, info) << "Expecting 404 to leave " << destination.path() << " untouched";
     CHECK_THROWS_AS(
         http_client::get(server.base_url() + "/objects/missing", destination.path(), test_token),
         std::runtime_error);
@@ -157,7 +157,7 @@ TEST_CASE("get_returning_body_returns_the_exact_server_body", "[net]") {
     const auto actual =
         http_client::get_returning_body(server.base_url() + "/objects/listing", test_token);
 
-    BOOST_LOG_SEV(lg, info) << "Response body: " << actual;
+    ORES_LOG_SEV(lg, info) << "Response body: " << actual;
     CHECK(server.last_method() == "GET");
     CHECK(server.last_target() == "/objects/listing");
     CHECK(server.last_authorization() == test_authorization);
@@ -173,7 +173,7 @@ TEST_CASE("delete_sends_the_verb_to_the_target_and_returns_the_server_body", "[n
 
     const auto actual = http_client::del(server.base_url() + "/objects/doomed.bin", test_token);
 
-    BOOST_LOG_SEV(lg, info) << "Server saw " << server.last_method() << " " << server.last_target();
+    ORES_LOG_SEV(lg, info) << "Server saw " << server.last_method() << " " << server.last_target();
     CHECK(server.last_method() == "DELETE");
     CHECK(server.last_target() == "/objects/doomed.bin");
     CHECK(server.last_authorization() == test_authorization);
@@ -186,7 +186,7 @@ TEST_CASE("delete_of_a_rejected_call_throws", "[net]") {
     loopback_http_server server;
     server.set_status(403);
 
-    BOOST_LOG_SEV(lg, info) << "Expecting 403 to throw";
+    ORES_LOG_SEV(lg, info) << "Expecting 403 to throw";
     CHECK_THROWS_AS(http_client::del(server.base_url() + "/objects/denied.bin", test_token),
                     std::runtime_error);
 }

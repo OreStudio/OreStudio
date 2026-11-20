@@ -25,7 +25,7 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_LEGAL_ENTITY_MAPPER_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_LEGAL_ENTITY_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/legal_entity.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/legal_entity_entity.hpp"

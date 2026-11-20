@@ -21,7 +21,7 @@
 #define ORES_SCHEDULER_MESSAGING_SCHEDULER_STATUS_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.platform/time/datetime.hpp"
@@ -59,7 +59,7 @@ public:
         , verifier_(verifier) {}
 
     void status(ores::nats::message msg) {
-        BOOST_LOG_SEV(scheduler_status_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(scheduler_status_handler_lg(), debug) << "Handling " << msg.subject;
 
         auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
@@ -73,7 +73,7 @@ public:
         }
 
         if (!decode<get_scheduler_status_request>(msg)) {
-            BOOST_LOG_SEV(scheduler_status_handler_lg(), warn)
+            ORES_LOG_SEV(scheduler_status_handler_lg(), warn)
                 << "Failed to decode get_scheduler_status_request";
             reply(nats_,
                   msg,
@@ -132,14 +132,14 @@ public:
             }
             resp.success = true;
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(scheduler_status_handler_lg(), error)
+            ORES_LOG_SEV(scheduler_status_handler_lg(), error)
                 << "Error computing scheduler status: " << e.what();
             reply(nats_, msg, get_scheduler_status_response{.success = false, .message = e.what()});
             return;
         }
 
         reply(nats_, msg, resp);
-        BOOST_LOG_SEV(scheduler_status_handler_lg(), debug) << "Completed " << msg.subject;
+        ORES_LOG_SEV(scheduler_status_handler_lg(), debug) << "Completed " << msg.subject;
     }
 
 private:

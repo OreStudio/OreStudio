@@ -18,7 +18,7 @@
  *
  */
 #include "ores.iam.core/service/internal_request_client.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.workflow.api/messaging/workflow_protocol.hpp"
 #include <chrono>
@@ -56,7 +56,7 @@ internal_request_client::workflow_wait_result internal_request_client::wait_for_
     std::chrono::seconds timeout,
     std::size_t expected_steps,
     const std::function<void(const std::string&)>& on_progress) {
-    BOOST_LOG_SEV(internal_request_client_lg(), info)
+    ORES_LOG_SEV(internal_request_client_lg(), info)
         << "Waiting for workflow instance: " << instance_id << " (timeout: " << timeout.count()
         << "s)";
 
@@ -86,7 +86,7 @@ internal_request_client::workflow_wait_result internal_request_client::wait_for_
             // an expired internal impersonation token). That will not
             // change on retry -- unlike a transient transport hiccup, so
             // fail fast instead of burning the rest of the timeout.
-            BOOST_LOG_SEV(internal_request_client_lg(), error)
+            ORES_LOG_SEV(internal_request_client_lg(), error)
                 << "Aborting wait for workflow instance " << instance_id << ": " << e.what();
             return {false, std::string(e.what())};
         } catch (const std::exception& e) {
@@ -102,7 +102,7 @@ internal_request_client::workflow_wait_result internal_request_client::wait_for_
             // the deadline below is the only backstop.
             ++poll_failures;
             last_poll_failure = result.message;
-            BOOST_LOG_SEV(internal_request_client_lg(), warn)
+            ORES_LOG_SEV(internal_request_client_lg(), warn)
                 << "Poll " << poll_failures << " failed for " << instance_id << ": "
                 << result.message;
         } else {
@@ -126,7 +126,7 @@ internal_request_client::workflow_wait_result internal_request_client::wait_for_
             if (result.status == "failed") {
                 const auto msg = result.error.empty() ? std::string("workflow failed") :
                                                         "workflow failed: " + result.error;
-                BOOST_LOG_SEV(internal_request_client_lg(), error)
+                ORES_LOG_SEV(internal_request_client_lg(), error)
                     << "Workflow instance " << instance_id << ": " << msg;
                 return {false, msg};
             }
@@ -138,7 +138,7 @@ internal_request_client::workflow_wait_result internal_request_client::wait_for_
                     const auto msg = "workflow failed at step " +
                                      std::to_string(step.step_index + 1) + " (" + step.name +
                                      "): " + step.error;
-                    BOOST_LOG_SEV(internal_request_client_lg(), error)
+                    ORES_LOG_SEV(internal_request_client_lg(), error)
                         << "Workflow instance " << instance_id << ": " << msg;
                     return {false, msg};
                 }
@@ -149,7 +149,7 @@ internal_request_client::workflow_wait_result internal_request_client::wait_for_
             }
             last_completed = completed;
             if (total > 0 && completed == total && total >= expected_steps) {
-                BOOST_LOG_SEV(internal_request_client_lg(), info)
+                ORES_LOG_SEV(internal_request_client_lg(), info)
                     << "Workflow instance " << instance_id << " completed (" << total
                     << " step(s)).";
                 return {true, {}};
@@ -175,7 +175,7 @@ internal_request_client::workflow_wait_result internal_request_client::wait_for_
             } else {
                 detail = "timed out after " + std::to_string(timeout.count()) + "s";
             }
-            BOOST_LOG_SEV(internal_request_client_lg(), error)
+            ORES_LOG_SEV(internal_request_client_lg(), error)
                 << "Timed out waiting for workflow instance " << instance_id << ": " << detail;
             return {false, detail};
         }

@@ -91,7 +91,7 @@ void session_operations_routes::register_routes(
     std::shared_ptr<ores::http::net::router> router,
     std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
     nats_client& session) {
-    BOOST_LOG_SEV(lg(), info) << "Registering session_operations routes";
+    ORES_LOG_SEV(lg(), info) << "Registering session_operations routes";
 
     auto get_active_sessions_route =
         router->post("/api/v1/iam/ops/get_active_sessions")
@@ -122,7 +122,7 @@ void session_operations_routes::register_routes(
     router->add_route(end_session_built);
     registry->register_route(end_session_built);
 
-    BOOST_LOG_SEV(lg(), info) << "session_operations routes registered: " << 2 << " endpoint(s)";
+    ORES_LOG_SEV(lg(), info) << "session_operations routes registered: " << 2 << " endpoint(s)";
 }
 
 }

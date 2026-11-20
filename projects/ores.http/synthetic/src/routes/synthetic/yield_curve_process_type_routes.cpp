@@ -336,7 +336,7 @@ void yield_curve_process_type_routes::register_routes(
     std::shared_ptr<ores::http::net::router> router,
     std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
     nats_client& session) {
-    BOOST_LOG_SEV(lg(), info) << "Registering yield_curve_process_types routes";
+    ORES_LOG_SEV(lg(), info) << "Registering yield_curve_process_types routes";
 
     auto list_route =
         router->get("/api/v1/simulation/yield_curve_process_types")
@@ -486,8 +486,8 @@ void yield_curve_process_type_routes::register_routes(
     router->add_route(version_built);
     registry->register_route(version_built);
 
-    BOOST_LOG_SEV(lg(), info) << "yield_curve_process_types routes registered: " << 10
-                              << " endpoint(s)";
+    ORES_LOG_SEV(lg(), info) << "yield_curve_process_types routes registered: " << 10
+                             << " endpoint(s)";
 }
 
 }

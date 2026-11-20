@@ -23,7 +23,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/service/tenant_context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
@@ -122,7 +122,7 @@ public:
         , svc_nats_(svc_nats) {}
 
     void trigger(ores::nats::message msg) {
-        BOOST_LOG_SEV(report_instance_trigger_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(report_instance_trigger_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -140,7 +140,7 @@ public:
         try {
             trigger_one(req_ctx, *req, response, msg);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(report_instance_trigger_handler_lg(), error)
+            ORES_LOG_SEV(report_instance_trigger_handler_lg(), error)
                 << "Trigger failed: " << e.what();
             response.result.outcome = ores::utility::domain::outcome::failed;
             response.result.code = "trigger_failed";
@@ -172,7 +172,7 @@ private:
             response.result.code = "unknown_instance_kind";
             response.result.message =
                 std::format("Report instance kind '{}' is not one of production or package.", kind);
-            BOOST_LOG_SEV(report_instance_trigger_handler_lg(), warn) << response.result.message;
+            ORES_LOG_SEV(report_instance_trigger_handler_lg(), warn) << response.result.message;
             return;
         }
         // Scoped from the authenticated context, not the base one: the
@@ -188,7 +188,7 @@ private:
             response.result.code = "definition_not_found";
             response.result.message =
                 std::format("No report definition {} in tenant {}.", definition_id, tenant);
-            BOOST_LOG_SEV(report_instance_trigger_handler_lg(), warn) << response.result.message;
+            ORES_LOG_SEV(report_instance_trigger_handler_lg(), warn) << response.result.message;
             return;
         }
 
@@ -201,7 +201,7 @@ private:
                 "fail, queue or skip.",
                 definition_id,
                 policy);
-            BOOST_LOG_SEV(report_instance_trigger_handler_lg(), warn) << response.result.message;
+            ORES_LOG_SEV(report_instance_trigger_handler_lg(), warn) << response.result.message;
             return;
         }
 
@@ -216,7 +216,7 @@ private:
                             "execute or substitute.",
                             definition_id,
                             def->pre_processing);
-            BOOST_LOG_SEV(report_instance_trigger_handler_lg(), warn) << response.result.message;
+            ORES_LOG_SEV(report_instance_trigger_handler_lg(), warn) << response.result.message;
             return;
         }
         if (def->pre_processing == workflow::pre_processing_substitute &&
@@ -227,7 +227,7 @@ private:
                 std::format("Report definition {} substitutes pre-processing but names no "
                             "prepared input archive.",
                             definition_id);
-            BOOST_LOG_SEV(report_instance_trigger_handler_lg(), warn) << response.result.message;
+            ORES_LOG_SEV(report_instance_trigger_handler_lg(), warn) << response.result.message;
             return;
         }
         if (!workflow::is_known_post_processing(def->post_processing)) {
@@ -238,7 +238,7 @@ private:
                             "execute or ignore.",
                             definition_id,
                             def->post_processing);
-            BOOST_LOG_SEV(report_instance_trigger_handler_lg(), warn) << response.result.message;
+            ORES_LOG_SEV(report_instance_trigger_handler_lg(), warn) << response.result.message;
             return;
         }
         try {
@@ -250,7 +250,7 @@ private:
                 std::format("Report definition {} skips a family that does not exist: {}",
                             definition_id,
                             e.what());
-            BOOST_LOG_SEV(report_instance_trigger_handler_lg(), warn) << response.result.message;
+            ORES_LOG_SEV(report_instance_trigger_handler_lg(), warn) << response.result.message;
             return;
         }
 
@@ -268,7 +268,7 @@ private:
                 std::format("Report definition {} states report type '{}', which is not seeded.",
                             definition_id,
                             def->report_type);
-            BOOST_LOG_SEV(report_instance_trigger_handler_lg(), warn) << response.result.message;
+            ORES_LOG_SEV(report_instance_trigger_handler_lg(), warn) << response.result.message;
             return;
         }
 
@@ -283,7 +283,7 @@ private:
                             "packages.",
                             def->report_type,
                             type->workflow_type);
-            BOOST_LOG_SEV(report_instance_trigger_handler_lg(), warn) << response.result.message;
+            ORES_LOG_SEV(report_instance_trigger_handler_lg(), warn) << response.result.message;
             return;
         }
 
@@ -303,7 +303,7 @@ private:
                             definition_id,
                             def->report_type,
                             names);
-            BOOST_LOG_SEV(report_instance_trigger_handler_lg(), warn) << response.result.message;
+            ORES_LOG_SEV(report_instance_trigger_handler_lg(), warn) << response.result.message;
             return;
         }
 
@@ -317,7 +317,7 @@ private:
                 std::format("Report definition {} substitutes its input, so it has no packages "
                             "to build: the archive it names is its package.",
                             definition_id);
-            BOOST_LOG_SEV(report_instance_trigger_handler_lg(), warn) << response.result.message;
+            ORES_LOG_SEV(report_instance_trigger_handler_lg(), warn) << response.result.message;
             return;
         }
 
@@ -359,7 +359,7 @@ private:
                             "definition names no scheduler job.",
                             definition_id,
                             req.job_instance_id);
-            BOOST_LOG_SEV(report_instance_trigger_handler_lg(), warn) << response.result.message;
+            ORES_LOG_SEV(report_instance_trigger_handler_lg(), warn) << response.result.message;
             return;
         }
 
@@ -371,7 +371,7 @@ private:
         std::optional<service::cut_resolution> resolved_cut;
         if (def->cut_kind_code && !def->cut_kind_code->empty()) {
             if (!states_cut_inputs(req)) {
-                BOOST_LOG_SEV(report_instance_trigger_handler_lg(), info)
+                ORES_LOG_SEV(report_instance_trigger_handler_lg(), info)
                     << "Report definition " << definition_id << " selects the cut kind "
                     << *def->cut_kind_code << ", and this trigger states no covered date, "
                     << "scope or rates centre, so the run records no resolved cut.";
@@ -381,7 +381,7 @@ private:
                     response.result.outcome = ores::utility::domain::outcome::invalid;
                     response.result.code = "cut_not_resolved";
                     response.result.message = resolution.refusal;
-                    BOOST_LOG_SEV(report_instance_trigger_handler_lg(), warn)
+                    ORES_LOG_SEV(report_instance_trigger_handler_lg(), warn)
                         << response.result.message;
                     return;
                 }
@@ -400,7 +400,7 @@ private:
             response.result.outcome = ores::utility::domain::outcome::failed;
             response.result.code = "no_run_grant";
             response.result.message = grant.error();
-            BOOST_LOG_SEV(report_instance_trigger_handler_lg(), warn) << response.result.message;
+            ORES_LOG_SEV(report_instance_trigger_handler_lg(), warn) << response.result.message;
             return;
         }
 
@@ -479,13 +479,13 @@ private:
                                 marked ? "" :
                                          ", and it could not be marked failed, so it still "
                                          "holds this definition");
-                BOOST_LOG_SEV(report_instance_trigger_handler_lg(), error)
+                ORES_LOG_SEV(report_instance_trigger_handler_lg(), error)
                     << response.result.message;
                 return;
             }
         }
 
-        BOOST_LOG_SEV(report_instance_trigger_handler_lg(), info)
+        ORES_LOG_SEV(report_instance_trigger_handler_lg(), info)
             << "Created report instance " << inst_id_str << " for definition " << definition_id
             << (dispatch ? " and dispatched its workflow" : " without dispatching a workflow");
 
@@ -507,7 +507,7 @@ private:
             service::report_instance_service inst_svc(tenant_ctx);
             auto inst = inst_svc.get_instance(instance_id);
             if (!inst) {
-                BOOST_LOG_SEV(report_instance_trigger_handler_lg(), warn)
+                ORES_LOG_SEV(report_instance_trigger_handler_lg(), warn)
                     << "Could not find report instance " << boost::uuids::to_string(instance_id)
                     << " to mark it failed";
                 return false;
@@ -518,7 +518,7 @@ private:
             inst_svc.save_instance(*inst);
             return true;
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(report_instance_trigger_handler_lg(), error)
+            ORES_LOG_SEV(report_instance_trigger_handler_lg(), error)
                 << "Could not mark report instance " << boost::uuids::to_string(instance_id)
                 << " failed: " << e.what();
             return false;

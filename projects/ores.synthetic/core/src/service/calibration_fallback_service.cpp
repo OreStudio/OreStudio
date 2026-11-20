@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.synthetic.api/domain/calibration_fallback.hpp"
 #include "ores.synthetic.api/messaging/calibration_fallback_protocol.hpp"
 #include "ores.synthetic.core/repository/calibration_fallback_repository.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -455,12 +453,12 @@ ores::utility::domain::result calibration_fallback_service::prepare_change(
 
 std::vector<domain::calibration_fallback>
 calibration_fallback_service::list_fallbacks(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all calibration fallbacks";
+    ORES_LOG_SEV(lg(), debug) << "Listing all calibration fallbacks";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t calibration_fallback_service::count_fallbacks() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total calibration fallbacks count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total calibration fallbacks count";
     return repo_.get_total_fallback_count(ctx_);
 }
 
@@ -468,14 +466,14 @@ std::uint32_t calibration_fallback_service::count_fallbacks() {
 std::optional<domain::calibration_fallback>
 calibration_fallback_service::get_fallback_at_version(const std::string& code,
                                                       std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting calibration fallback at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting calibration fallback at version. " << "code: " << code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::calibration_fallback>
 calibration_fallback_service::get_fallback(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting calibration fallback. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting calibration fallback. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -490,11 +488,11 @@ calibration_fallback_service::get_fallbacks(const std::vector<std::string>& code
 void calibration_fallback_service::save_fallback(const domain::calibration_fallback& v) {
     if (v.code.empty())
         throw std::invalid_argument("Calibration Fallback code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving calibration fallback. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving calibration fallback. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved calibration fallback. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved calibration fallback. " << "code: " << v.code;
 }
 
 void calibration_fallback_service::save_fallbacks(
@@ -503,7 +501,7 @@ void calibration_fallback_service::save_fallbacks(
         if (e.code.empty())
             throw std::invalid_argument("Calibration Fallback code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << fallbacks.size() << " calibration fallbacks";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << fallbacks.size() << " calibration fallbacks";
     auto ts = fallbacks;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -512,9 +510,9 @@ void calibration_fallback_service::save_fallbacks(
 }
 
 void calibration_fallback_service::delete_fallback(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing calibration fallback. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing calibration fallback. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed calibration fallback. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed calibration fallback. " << "code: " << code;
 }
 
 void calibration_fallback_service::delete_fallbacks(const std::vector<std::string>& codes) {
@@ -523,7 +521,7 @@ void calibration_fallback_service::delete_fallbacks(const std::vector<std::strin
 
 std::vector<domain::calibration_fallback>
 calibration_fallback_service::get_fallback_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for calibration fallback. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for calibration fallback. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

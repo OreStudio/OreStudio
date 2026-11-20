@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.trading.api/domain/equity_barrier_option_instrument_json_io.hpp" // IWYU pragma: keep.
@@ -79,7 +79,7 @@ TEST_CASE("equity_barrier_option_instrument_write_and_read_latest",
 
     auto instr = repository_equity_barrier_option_instrument_repository_make_instrument(h);
     const auto id_str = boost::uuids::to_string(instr.identity.trade_id);
-    BOOST_LOG_SEV(lg, debug) << "Writing equity barrier option instrument: " << instr;
+    ORES_LOG_SEV(lg, debug) << "Writing equity barrier option instrument: " << instr;
 
     equity_barrier_option_instrument_repository repo;
     CHECK_NOTHROW(repo.write(ctx, instr));
@@ -97,7 +97,7 @@ TEST_CASE("equity_barrier_option_instrument_write_and_read_latest",
     CHECK(read[0].long_short == "Long");
     CHECK(read[0].lower_barrier.to_double() == 3500.0);
     CHECK(read[0].lower_barrier_type == "UpAndOut");
-    BOOST_LOG_SEV(lg, debug) << "Read equity barrier option instrument: " << read[0];
+    ORES_LOG_SEV(lg, debug) << "Read equity barrier option instrument: " << read[0];
 }
 
 TEST_CASE("equity_barrier_option_instrument_read_nonexistent",
@@ -141,6 +141,6 @@ TEST_CASE("equity_barrier_option_instrument_remove",
     CHECK_NOTHROW(repo.remove(ctx, id_str));
 
     const auto after = repo.read_latest(ctx, id_str);
-    BOOST_LOG_SEV(lg, debug) << "After remove count: " << after.size();
+    ORES_LOG_SEV(lg, debug) << "After remove count: " << after.size();
     CHECK(after.size() == before.size() - 1);
 }

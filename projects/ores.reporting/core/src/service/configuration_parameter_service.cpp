@@ -26,7 +26,6 @@
 #include "ores.reporting.api/domain/configuration_parameter.hpp"
 #include "ores.reporting.api/messaging/configuration_parameter_protocol.hpp"
 #include "ores.reporting.core/repository/configuration_parameter_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -603,12 +601,12 @@ ores::utility::domain::result configuration_parameter_service::prepare_change(
 
 std::vector<domain::configuration_parameter>
 configuration_parameter_service::list_parameter_values(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all configuration parameters";
+    ORES_LOG_SEV(lg(), debug) << "Listing all configuration parameters";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t configuration_parameter_service::count_parameter_values() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total configuration parameters count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total configuration parameters count";
     return repo_.get_total_parameter_value_count(ctx_);
 }
 
@@ -616,14 +614,14 @@ std::uint32_t configuration_parameter_service::count_parameter_values() {
 std::vector<domain::configuration_parameter>
 configuration_parameter_service::list_parameter_values_by_configuration_id(
     const std::string& configuration_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing configuration parameters by configuration_id: "
-                               << configuration_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing configuration parameters by configuration_id: "
+                              << configuration_id;
     return repo_.read_latest_by_configuration_id(ctx_, configuration_id, offset, limit);
 }
 
 std::uint32_t configuration_parameter_service::count_parameter_values_by_configuration_id(
     const std::string& configuration_id) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Getting total configuration parameters count by configuration_id: " << configuration_id;
     return repo_.get_total_parameter_value_count_by_configuration_id(ctx_, configuration_id);
 }
@@ -632,14 +630,14 @@ std::uint32_t configuration_parameter_service::count_parameter_values_by_configu
 std::vector<domain::configuration_parameter>
 configuration_parameter_service::list_parameter_values_by_ore_parameter_id(
     const std::string& ore_parameter_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing configuration parameters by ore_parameter_id: "
-                               << ore_parameter_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing configuration parameters by ore_parameter_id: "
+                              << ore_parameter_id;
     return repo_.read_latest_by_ore_parameter_id(ctx_, ore_parameter_id, offset, limit);
 }
 
 std::uint32_t configuration_parameter_service::count_parameter_values_by_ore_parameter_id(
     const std::string& ore_parameter_id) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Getting total configuration parameters count by ore_parameter_id: " << ore_parameter_id;
     return repo_.get_total_parameter_value_count_by_ore_parameter_id(ctx_, ore_parameter_id);
 }
@@ -648,14 +646,14 @@ std::uint32_t configuration_parameter_service::count_parameter_values_by_ore_par
 std::optional<domain::configuration_parameter>
 configuration_parameter_service::get_parameter_value_at_version(const boost::uuids::uuid& id,
                                                                 std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting configuration parameter at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting configuration parameter at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::configuration_parameter>
 configuration_parameter_service::get_parameter_value(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting configuration parameter. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting configuration parameter. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -664,7 +662,7 @@ configuration_parameter_service::get_parameter_value(const boost::uuids::uuid& i
 
 std::optional<domain::configuration_parameter>
 configuration_parameter_service::get_parameter_value_by_value(const std::string& value) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting configuration parameter by value: " << value;
+    ORES_LOG_SEV(lg(), debug) << "Getting configuration parameter by value: " << value;
     messaging::configuration_parameter_key k;
     k.value = value;
     auto found = configuration_parameter_read_one(repo_, ctx_, k);
@@ -682,11 +680,11 @@ void configuration_parameter_service::save_parameter_value(
     const domain::configuration_parameter& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Configuration Parameter id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving configuration parameter. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving configuration parameter. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved configuration parameter. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved configuration parameter. " << "id: " << v.id;
 }
 
 void configuration_parameter_service::save_parameter_values(
@@ -695,8 +693,8 @@ void configuration_parameter_service::save_parameter_values(
         if (e.id.is_nil())
             throw std::invalid_argument("Configuration Parameter id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << parameter_values.size()
-                               << " configuration parameters";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << parameter_values.size()
+                              << " configuration parameters";
     auto ts = parameter_values;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -705,9 +703,9 @@ void configuration_parameter_service::save_parameter_values(
 }
 
 void configuration_parameter_service::delete_parameter_value(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing configuration parameter. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing configuration parameter. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed configuration parameter. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed configuration parameter. " << "id: " << id;
 }
 
 void configuration_parameter_service::delete_parameter_values(const std::vector<std::string>& ids) {
@@ -716,7 +714,7 @@ void configuration_parameter_service::delete_parameter_values(const std::vector<
 
 std::vector<domain::configuration_parameter>
 configuration_parameter_service::get_parameter_value_history(const std::string& key) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for configuration parameter. key: " << key;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for configuration parameter. key: " << key;
     // The caller holds the key the model declares and this reads by the
     // storage key, so the two are joined here exactly as they are for any
     // other read. Without this step a provider looks the versions up under a

@@ -29,7 +29,7 @@
 #include "ores.inbox.core/service/approval_lifecycle.hpp"
 #include "ores.inbox.core/service/approval_request_service.hpp"
 #include "ores.inbox.core/service/notification_center.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
@@ -215,7 +215,7 @@ public:
                   raise_approval_request_response{.result = approval_result(outcome::ok, "", ""),
                                                   .request = raised});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(approval_operations_handler_lg(), error)
+            ORES_LOG_SEV(approval_operations_handler_lg(), error)
                 << "Error raising a request: " << e.what();
             reply(nats_,
                   msg,
@@ -280,7 +280,7 @@ public:
                       .result = decision_reply(r),
                       .request = lifecycle.request(req->request_id).value_or(*current)});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(approval_operations_handler_lg(), error)
+            ORES_LOG_SEV(approval_operations_handler_lg(), error)
                 << "Error withdrawing request " << req->request_id << ": " << e.what();
             reply(nats_,
                   msg,
@@ -408,7 +408,7 @@ public:
                   decide_approval_request_response{.result = decision_reply(r), .request = after});
         } catch (const std::exception& e) {
             const auto refusal = rule_refusal(e);
-            BOOST_LOG_SEV(approval_operations_handler_lg(), refusal ? warn : error)
+            ORES_LOG_SEV(approval_operations_handler_lg(), refusal ? warn : error)
                 << "Decision on request " << req->request_id << " not recorded: " << e.what();
             reply(
                 nats_,
@@ -455,7 +455,7 @@ public:
                                                .total = page.total,
                                                .answered = std::move(answered)});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(approval_operations_handler_lg(), error)
+            ORES_LOG_SEV(approval_operations_handler_lg(), error)
                 << "Error reading the approval queue: " << e.what();
             reply(nats_,
                   msg,
@@ -504,7 +504,7 @@ public:
                   get_approval_response{.result = approval_result(outcome::ok, "", ""),
                                         .request = *found});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(approval_operations_handler_lg(), error)
+            ORES_LOG_SEV(approval_operations_handler_lg(), error)
                 << "Error reading approval request " << req->request_id << ": " << e.what();
             reply(nats_,
                   msg,
@@ -557,7 +557,7 @@ public:
             }
             reply(nats_, msg, answer);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(approval_operations_handler_lg(), error)
+            ORES_LOG_SEV(approval_operations_handler_lg(), error)
                 << "Error reading the parts of approval request " << req->request_id << ": "
                 << e.what();
             reply(nats_,
@@ -624,7 +624,7 @@ public:
                   get_approval_history_response{.result = approval_result(outcome::ok, "", ""),
                                                 .versions = std::move(answer)});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(approval_operations_handler_lg(), error)
+            ORES_LOG_SEV(approval_operations_handler_lg(), error)
                 << "Error reading the history of approval request " << req->request_id << ": "
                 << e.what();
             reply(nats_,
@@ -674,7 +674,7 @@ public:
                       .reason = state.reason,
                       .version = state.version});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(approval_operations_handler_lg(), error)
+            ORES_LOG_SEV(approval_operations_handler_lg(), error)
                 << "Error reading the approvals mode: " << e.what();
             reply(nats_,
                   msg,
@@ -712,7 +712,7 @@ public:
                   msg,
                   set_approvals_mode_response{.result = approval_result(outcome::ok, "", "")});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(approval_operations_handler_lg(), error)
+            ORES_LOG_SEV(approval_operations_handler_lg(), error)
                 << "Error changing the approvals mode: " << e.what();
             reply(nats_,
                   msg,
@@ -754,7 +754,7 @@ public:
                                                      .requests = std::move(page.requests),
                                                      .total = page.total});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(approval_operations_handler_lg(), error)
+            ORES_LOG_SEV(approval_operations_handler_lg(), error)
                 << "Error reading one's own requests: " << e.what();
             reply(nats_,
                   msg,
@@ -794,7 +794,7 @@ public:
                   remind_expiring_approvals_response{.result = approval_result(outcome::ok, "", ""),
                                                      .reminded = std::move(ids)});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(approval_operations_handler_lg(), error)
+            ORES_LOG_SEV(approval_operations_handler_lg(), error)
                 << "Error warning the deciders of requests close to their deadline: " << e.what();
             reply(nats_,
                   msg,
@@ -823,7 +823,7 @@ public:
                                                  .resumed = done.resumed,
                                                  .gave_up = done.gave_up});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(approval_operations_handler_lg(), error)
+            ORES_LOG_SEV(approval_operations_handler_lg(), error)
                 << "Error retrying the applies that stopped: " << e.what();
             reply(nats_,
                   msg,
@@ -846,7 +846,7 @@ public:
                   expire_overdue_approvals_response{.result = approval_result(outcome::ok, "", ""),
                                                     .expired = std::move(ids)});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(approval_operations_handler_lg(), error)
+            ORES_LOG_SEV(approval_operations_handler_lg(), error)
                 << "Error closing the requests nobody answered: " << e.what();
             reply(nats_,
                   msg,
@@ -884,7 +884,7 @@ private:
                 ores::nats::headers::with_publish_identity(
                     ores::nats::service::forwarded_caller_headers(msg), start->instance_id));
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(approval_operations_handler_lg(), error)
+            ORES_LOG_SEV(approval_operations_handler_lg(), error)
                 << "Request " << boost::uuids::to_string(approved.id)
                 << " is approved, but its apply was not started: " << e.what();
         }
@@ -914,14 +914,14 @@ private:
                 .audience_permission_code = ""};
             center.raise(n, n.account_ids, *decider);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(approval_operations_handler_lg(), warn)
+            ORES_LOG_SEV(approval_operations_handler_lg(), warn)
                 << "Request " << boost::uuids::to_string(after.id)
                 << " decided, but the person who asked was not told: " << e.what();
         }
     }
 
     std::optional<ores::database::context> context_for(const ores::nats::message& msg) {
-        BOOST_LOG_SEV(approval_operations_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(approval_operations_handler_lg(), debug) << "Handling " << msg.subject;
         auto ctx = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx) {
             error_reply(nats_, msg, ctx.error());

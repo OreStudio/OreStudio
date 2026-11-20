@@ -26,7 +26,6 @@
 #include "ores.assets.api/domain/image.hpp"
 #include "ores.assets.api/messaging/image_protocol.hpp"
 #include "ores.assets.core/repository/image_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -480,25 +478,25 @@ image_service::prepare_change(const messaging::image_change& change,
 
 
 std::vector<domain::image> image_service::list_images(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all asset images";
+    ORES_LOG_SEV(lg(), debug) << "Listing all asset images";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t image_service::count_images() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total asset images count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total asset images count";
     return repo_.get_total_image_count(ctx_);
 }
 
 
 std::optional<domain::image> image_service::get_image_at_version(const boost::uuids::uuid& id,
                                                                  std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting asset image at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting asset image at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::image> image_service::get_image(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting asset image. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting asset image. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -506,7 +504,7 @@ std::optional<domain::image> image_service::get_image(const boost::uuids::uuid& 
 }
 
 std::optional<domain::image> image_service::get_image_by_code(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting asset image by code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting asset image by code: " << code;
     messaging::image_key k;
     k.code = code;
     auto found = image_read_one(repo_, ctx_, k);
@@ -522,11 +520,11 @@ std::vector<domain::image> image_service::get_images(const std::vector<std::stri
 void image_service::save_image(const domain::image& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Image id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving asset image. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving asset image. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved asset image. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved asset image. " << "id: " << v.id;
 }
 
 void image_service::save_images(const std::vector<domain::image>& images) {
@@ -534,7 +532,7 @@ void image_service::save_images(const std::vector<domain::image>& images) {
         if (e.id.is_nil())
             throw std::invalid_argument("Image id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << images.size() << " asset images";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << images.size() << " asset images";
     auto ts = images;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -543,9 +541,9 @@ void image_service::save_images(const std::vector<domain::image>& images) {
 }
 
 void image_service::delete_image(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing asset image. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing asset image. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed asset image. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed asset image. " << "id: " << id;
 }
 
 void image_service::delete_images(const std::vector<std::string>& ids) {
@@ -553,7 +551,7 @@ void image_service::delete_images(const std::vector<std::string>& ids) {
 }
 
 std::vector<domain::image> image_service::get_image_history(const std::string& key) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for asset image. key: " << key;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for asset image. key: " << key;
     // The caller holds the key the model declares and this reads by the
     // storage key, so the two are joined here exactly as they are for any
     // other read. Without this step a provider looks the versions up under a

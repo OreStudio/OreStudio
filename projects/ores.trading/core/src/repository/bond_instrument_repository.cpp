@@ -26,7 +26,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.trading.api/domain/bond_instrument.hpp"
 #include "ores.trading.api/domain/bond_instrument_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.api/messaging/bond_instrument_protocol.hpp"
@@ -34,7 +33,6 @@
 #include "ores.trading.core/repository/bond_instrument_mapper.hpp"
 #include "ores.trading.core/repository/trade_write_observation.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -220,8 +218,7 @@ void bond_instrument_repository::write(const context& ctx,
 void bond_instrument_repository::write(const context& ctx,
                                        const domain::bond_instrument& v,
                                        const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing bond instrument. "
-                               << "trade_id: " << v.identity.trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Writing bond instrument. " << "trade_id: " << v.identity.trade_id;
     const auto t = bond_instrument_apply_claim(
         v,
         claim,
@@ -236,7 +233,7 @@ void bond_instrument_repository::write(
     const context& ctx,
     const std::vector<domain::bond_instrument>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing bond instruments. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing bond instruments. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "bond_instrument_repository::write: one claim is needed for each row");
@@ -272,7 +269,7 @@ std::vector<domain::bond_instrument> bond_instrument_repository::read_latest(con
 
 std::vector<domain::bond_instrument>
 bond_instrument_repository::read_latest(const context& ctx, const std::string& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest bond instrument. " << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest bond instrument. " << "trade_id: " << trade_id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<bond_instrument_entity>> |
@@ -290,8 +287,8 @@ bond_instrument_repository::read_latest(const context& ctx, const std::string& t
 
 std::vector<domain::bond_instrument>
 bond_instrument_repository::read_all(const context& ctx, const std::string& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all bond instrument versions. "
-                               << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading all bond instrument versions. "
+                              << "trade_id: " << trade_id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<bond_instrument_entity>> |
                        query_builder::where("tenant_id"_c == tid && "trade_id"_c == trade_id) |
@@ -307,8 +304,8 @@ bond_instrument_repository::read_all(const context& ctx, const std::string& trad
 
 std::optional<domain::bond_instrument> bond_instrument_repository::read_at_version(
     const context& ctx, const std::string& trade_id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading bond instrument at version. " << "trade_id: " << trade_id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading bond instrument at version. " << "trade_id: " << trade_id
+                              << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<bond_instrument_entity>> |
                        query_builder::where("tenant_id"_c == tid && "trade_id"_c == trade_id &&
@@ -331,7 +328,7 @@ std::optional<domain::bond_instrument> bond_instrument_repository::read_at_versi
 
 bond_instrument_repository::remove_status bond_instrument_repository::remove(
     const context& ctx, const std::string& trade_id, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing bond instrument. " << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Removing bond instrument. " << "trade_id: " << trade_id;
     const auto current = read_latest(ctx, trade_id);
     if (current.empty())
         return remove_status::missing;
@@ -370,8 +367,8 @@ std::vector<domain::bond_instrument> bond_instrument_repository::read_latest(
     const ores::utility::domain::order& order,
     const std::optional<messaging::bond_instruments_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest bond instruments with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest bond instruments with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<bond_instrument_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -393,7 +390,7 @@ std::uint32_t bond_instrument_repository::get_total_bond_instrument_count(
     const context& ctx,
     const std::optional<messaging::bond_instruments_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active bond instrument count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active bond instrument count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<bond_instrument_entity>> |

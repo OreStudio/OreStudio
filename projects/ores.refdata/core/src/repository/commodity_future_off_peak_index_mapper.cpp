@@ -24,12 +24,10 @@
  */
 #include "ores.refdata.core/repository/commodity_future_off_peak_index_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/commodity_future_off_peak_index.hpp"
 #include "ores.refdata.api/domain/commodity_future_off_peak_index_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/commodity_future_off_peak_index_entity.hpp"
 #include <boost/lexical_cast.hpp>
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <vector>
@@ -41,7 +39,7 @@ using namespace ores::database::repository;
 
 domain::commodity_future_off_peak_index
 commodity_future_off_peak_index_mapper::map(const commodity_future_off_peak_index_entity& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::commodity_future_off_peak_index r;
     r.version = v.version;
@@ -59,13 +57,13 @@ commodity_future_off_peak_index_mapper::map(const commodity_future_off_peak_inde
     r.change_commentary = v.change_commentary;
     r.recorded_at = v.valid_from;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
 }
 
 commodity_future_off_peak_index_entity
 commodity_future_off_peak_index_mapper::map(const domain::commodity_future_off_peak_index& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     commodity_future_off_peak_index_entity r;
     r.id = v.id;
@@ -82,7 +80,7 @@ commodity_future_off_peak_index_mapper::map(const domain::commodity_future_off_p
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;
 }
 

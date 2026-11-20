@@ -27,11 +27,9 @@
 #include "ores.iam.api/domain/login_info.hpp"
 #include "ores.iam.api/domain/login_info_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.core/repository/login_info_entity.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include <boost/asio/ip/address.hpp>
 #include <boost/lexical_cast.hpp>
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <optional>
@@ -43,7 +41,7 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 
 domain::login_info login_info_mapper::map(const login_info_entity& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::login_info r;
     r.tenant_id = v.tenant_id;
@@ -61,12 +59,12 @@ domain::login_info login_info_mapper::map(const login_info_entity& v) {
     r.online = v.online;
     r.password_reset_required = v.password_reset_required;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
 }
 
 login_info_entity login_info_mapper::map(const domain::login_info& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     login_info_entity r;
     r.account_id = v.account_id;
@@ -79,7 +77,7 @@ login_info_entity login_info_mapper::map(const domain::login_info& v) {
     r.online = v.online;
     r.password_reset_required = v.password_reset_required;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;
 }
 

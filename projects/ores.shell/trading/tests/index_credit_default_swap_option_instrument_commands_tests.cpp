@@ -22,7 +22,7 @@
  * Template: cpp_shell_command_tests.cpp.mustache
  * To modify, update the template and regenerate.
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/commands/trading/index_credit_default_swap_option_instrument_commands.hpp"
@@ -88,7 +88,7 @@ TEST_CASE("index_credit_default_swap_option_instrument_commands_registers_every_
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 
-    BOOST_LOG_SEV(lg, debug) << "Registered 10 command(s).";
+    ORES_LOG_SEV(lg, debug) << "Registered 10 command(s).";
 }
 
 TEST_CASE("index_credit_default_swap_option_instrument_commands_process_list_requires_a_session",
@@ -102,7 +102,7 @@ TEST_CASE("index_credit_default_swap_option_instrument_commands_process_list_req
     index_credit_default_swap_option_instrument_commands::process_list(
         out, session, index_credit_default_swap_option_instrument_tokens(0));
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -118,7 +118,7 @@ TEST_CASE("index_credit_default_swap_option_instrument_commands_process_get_requ
     index_credit_default_swap_option_instrument_commands::process_get(
         out, session, index_credit_default_swap_option_instrument_tokens(1));
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -135,7 +135,7 @@ TEST_CASE(
     command_feedback::reset();
     index_credit_default_swap_option_instrument_commands::process_get(out, session, {});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
     // The arity guard names both the count it expects and the count it
     // received. The expected count is shape-specific in the command (a write
     // also reads its intent), so the case pins the wording and the received
@@ -157,7 +157,7 @@ TEST_CASE(
     index_credit_default_swap_option_instrument_commands::process_get_many(
         out, session, index_credit_default_swap_option_instrument_tokens(1));
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -173,7 +173,7 @@ TEST_CASE("index_credit_default_swap_option_instrument_commands_process_add_requ
     index_credit_default_swap_option_instrument_commands::process_add(
         out, session, index_credit_default_swap_option_instrument_tokens(7));
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -190,7 +190,7 @@ TEST_CASE(
     command_feedback::reset();
     index_credit_default_swap_option_instrument_commands::process_add(out, session, {});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
     // The arity guard names both the count it expects and the count it
     // received. The expected count is shape-specific in the command (a write
     // also reads its intent), so the case pins the wording and the received
@@ -211,7 +211,7 @@ TEST_CASE("index_credit_default_swap_option_instrument_commands_process_set_requ
     index_credit_default_swap_option_instrument_commands::process_set(
         out, session, index_credit_default_swap_option_instrument_tokens(7));
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -228,7 +228,7 @@ TEST_CASE(
     command_feedback::reset();
     index_credit_default_swap_option_instrument_commands::process_set(out, session, {});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
     // The arity guard names both the count it expects and the count it
     // received. The expected count is shape-specific in the command (a write
     // also reads its intent), so the case pins the wording and the received
@@ -250,7 +250,7 @@ TEST_CASE(
     index_credit_default_swap_option_instrument_commands::process_put_many(
         out, session, index_credit_default_swap_option_instrument_tokens(7));
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -266,7 +266,7 @@ TEST_CASE("index_credit_default_swap_option_instrument_commands_process_delete_r
     index_credit_default_swap_option_instrument_commands::process_delete(
         out, session, index_credit_default_swap_option_instrument_tokens(1));
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -283,7 +283,7 @@ TEST_CASE("index_credit_default_swap_option_instrument_commands_process_delete_r
     command_feedback::reset();
     index_credit_default_swap_option_instrument_commands::process_delete(out, session, {});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
     // The arity guard names both the count it expects and the count it
     // received. The expected count is shape-specific in the command (a write
     // also reads its intent), so the case pins the wording and the received
@@ -305,7 +305,7 @@ TEST_CASE(
     index_credit_default_swap_option_instrument_commands::process_delete_many(
         out, session, index_credit_default_swap_option_instrument_tokens(1));
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -322,7 +322,7 @@ TEST_CASE(
     index_credit_default_swap_option_instrument_commands::process_versions(
         out, session, index_credit_default_swap_option_instrument_tokens(1));
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -339,7 +339,7 @@ TEST_CASE("index_credit_default_swap_option_instrument_commands_process_versions
     command_feedback::reset();
     index_credit_default_swap_option_instrument_commands::process_versions(out, session, {});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
     // The arity guard names both the count it expects and the count it
     // received. The expected count is shape-specific in the command (a write
     // also reads its intent), so the case pins the wording and the received
@@ -360,7 +360,7 @@ TEST_CASE("index_credit_default_swap_option_instrument_commands_process_version_
     index_credit_default_swap_option_instrument_commands::process_version(
         out, session, index_credit_default_swap_option_instrument_tokens(1));
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -377,7 +377,7 @@ TEST_CASE("index_credit_default_swap_option_instrument_commands_process_version_
     command_feedback::reset();
     index_credit_default_swap_option_instrument_commands::process_version(out, session, {});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
     // The arity guard names both the count it expects and the count it
     // received. The expected count is shape-specific in the command (a write
     // also reads its intent), so the case pins the wording and the received

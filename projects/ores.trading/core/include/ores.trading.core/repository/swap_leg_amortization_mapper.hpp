@@ -25,7 +25,7 @@
 #ifndef ORES_TRADING_CORE_REPOSITORY_SWAP_LEG_AMORTIZATION_MAPPER_HPP
 #define ORES_TRADING_CORE_REPOSITORY_SWAP_LEG_AMORTIZATION_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.trading.api/domain/swap_leg_amortization.hpp"
 #include "ores.trading.core/export.hpp"
 #include "ores.trading.core/repository/swap_leg_amortization_entity.hpp"

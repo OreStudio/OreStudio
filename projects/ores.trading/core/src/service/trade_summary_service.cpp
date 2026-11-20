@@ -26,7 +26,6 @@
 #include "ores.trading.api/domain/trade_summary.hpp"
 #include "ores.trading.api/messaging/trade_summary_protocol.hpp"
 #include "ores.trading.core/repository/trade_summary_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -42,7 +41,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/range_bound.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -275,19 +273,19 @@ messaging::get_many_trade_summaries_response trade_summary_service::get_many_tra
 
 std::vector<domain::trade_summary>
 trade_summary_service::list_trade_summaries(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all trade summaries";
+    ORES_LOG_SEV(lg(), debug) << "Listing all trade summaries";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t trade_summary_service::count_trade_summaries() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total trade summaries count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total trade summaries count";
     return repo_.get_total_trade_summary_count(ctx_);
 }
 
 
 std::optional<domain::trade_summary>
 trade_summary_service::get_trade_summary(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting trade summary. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting trade summary. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -302,11 +300,11 @@ trade_summary_service::get_trade_summaries(const std::vector<std::string>& ids) 
 void trade_summary_service::save_trade_summary(const domain::trade_summary& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Trade Summary id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving trade summary. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving trade summary. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved trade summary. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved trade summary. " << "id: " << v.id;
 }
 
 void trade_summary_service::save_trade_summaries(
@@ -315,7 +313,7 @@ void trade_summary_service::save_trade_summaries(
         if (e.id.is_nil())
             throw std::invalid_argument("Trade Summary id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << trade_summaries.size() << " trade summaries";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << trade_summaries.size() << " trade summaries";
     auto ts = trade_summaries;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -324,9 +322,9 @@ void trade_summary_service::save_trade_summaries(
 }
 
 void trade_summary_service::delete_trade_summary(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing trade summary. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing trade summary. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed trade summary. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed trade summary. " << "id: " << id;
 }
 
 void trade_summary_service::delete_trade_summaries(const std::vector<std::string>& ids) {

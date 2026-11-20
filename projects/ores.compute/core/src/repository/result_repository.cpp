@@ -31,9 +31,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -244,7 +242,7 @@ void result_repository::write(const context& ctx, const std::vector<domain::resu
 void result_repository::write(const context& ctx,
                               const domain::result& v,
                               const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing compute result. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Writing compute result. " << "id: " << v.id;
     const auto t = result_apply_claim(v,
                                       claim,
                                       result_claim_reads_current(claim) ?
@@ -257,7 +255,7 @@ void result_repository::write(const context& ctx,
 void result_repository::write(const context& ctx,
                               const std::vector<domain::result>& v,
                               const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing compute results. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing compute results. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument("result_repository::write: one claim is needed for each row");
     std::vector<domain::result> to_read;
@@ -291,7 +289,7 @@ std::vector<domain::result> result_repository::read_latest(const context& ctx) {
 
 std::vector<domain::result> result_repository::read_latest(const context& ctx,
                                                            const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest compute result. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest compute result. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -308,7 +306,7 @@ std::vector<domain::result> result_repository::read_latest(const context& ctx,
 
 
 std::vector<domain::result> result_repository::read_all(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all compute result versions. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading all compute result versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<result_entity>> |
                        query_builder::where("tenant_id"_c == tid && "id"_c == id) |
@@ -325,8 +323,8 @@ std::vector<domain::result> result_repository::read_all(const context& ctx, cons
 std::optional<domain::result> result_repository::read_at_version(const context& ctx,
                                                                  const std::string& id,
                                                                  std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading compute result at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading compute result at version. " << "id: " << id
+                              << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<result_entity>> |
@@ -352,8 +350,8 @@ std::vector<domain::result> result_repository::read_latest_by_workunit_id(
     std::uint32_t limit,
     const ores::utility::domain::order& order,
     const std::optional<messaging::results_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest compute results. workunit_id: " << workunit_id
-                               << " offset: " << offset << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest compute results. workunit_id: " << workunit_id
+                              << " offset: " << offset << " limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<result_entity>> |
@@ -375,8 +373,8 @@ std::uint32_t result_repository::get_total_result_count_by_workunit_id(
     const context& ctx,
     const std::string& workunit_id,
     const std::optional<messaging::results_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active compute results count. workunit_id: "
-                               << workunit_id;
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active compute results count. workunit_id: "
+                              << workunit_id;
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx.tenant_id().to_string();
@@ -396,7 +394,7 @@ std::uint32_t result_repository::get_total_result_count_by_workunit_id(
 result_repository::remove_status result_repository::remove(const context& ctx,
                                                            const std::string& id,
                                                            std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing compute result. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing compute result. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
         return remove_status::missing;
@@ -434,8 +432,8 @@ result_repository::read_latest(const context& ctx,
                                const ores::utility::domain::order& order,
                                const std::optional<messaging::results_filter>& filter,
                                const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest compute results with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest compute results with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<result_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -455,7 +453,7 @@ std::uint32_t
 result_repository::get_total_result_count(const context& ctx,
                                           const std::optional<messaging::results_filter>& filter,
                                           const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active compute result count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active compute result count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<result_entity>> |
@@ -521,7 +519,7 @@ void result_repository::remove(const context& ctx, const std::vector<std::string
 
 
 std::vector<domain::result> result_repository::read_by_state(const context& ctx, int server_state) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading results by state: " << server_state;
+    ORES_LOG_SEV(lg(), debug) << "Reading results by state: " << server_state;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =

@@ -26,14 +26,12 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/cds_volatility_term.hpp"
 #include "ores.refdata.api/domain/cds_volatility_term_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/messaging/cds_volatility_term_protocol.hpp"
 #include "ores.refdata.core/repository/cds_volatility_term_entity.hpp"
 #include "ores.refdata.core/repository/cds_volatility_term_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -218,7 +216,7 @@ void cds_volatility_term_repository::write(const context& ctx,
 void cds_volatility_term_repository::write(const context& ctx,
                                            const domain::cds_volatility_term& v,
                                            const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing CDS volatility term. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Writing CDS volatility term. " << "id: " << v.id;
     const auto t =
         cds_volatility_term_apply_claim(v,
                                         claim,
@@ -233,7 +231,7 @@ void cds_volatility_term_repository::write(
     const context& ctx,
     const std::vector<domain::cds_volatility_term>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing CDS volatility terms. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing CDS volatility terms. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "cds_volatility_term_repository::write: one claim is needed for each row");
@@ -273,7 +271,7 @@ cds_volatility_term_repository::read_latest(const context& ctx) {
 
 std::vector<domain::cds_volatility_term>
 cds_volatility_term_repository::read_latest(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest CDS volatility term. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest CDS volatility term. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -292,7 +290,7 @@ cds_volatility_term_repository::read_latest(const context& ctx, const std::strin
 
 std::vector<domain::cds_volatility_term>
 cds_volatility_term_repository::read_all(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all CDS volatility term versions. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading all CDS volatility term versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<cds_volatility_term_entity>> |
                        query_builder::where("tenant_id"_c == tid && "id"_c == id) |
@@ -309,8 +307,8 @@ cds_volatility_term_repository::read_all(const context& ctx, const std::string& 
 
 std::optional<domain::cds_volatility_term> cds_volatility_term_repository::read_at_version(
     const context& ctx, const std::string& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading CDS volatility term at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading CDS volatility term at version. " << "id: " << id
+                              << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<cds_volatility_term_entity>> |
@@ -333,7 +331,7 @@ std::optional<domain::cds_volatility_term> cds_volatility_term_repository::read_
 
 cds_volatility_term_repository::remove_status cds_volatility_term_repository::remove(
     const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing CDS volatility term. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing CDS volatility term. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
         return remove_status::missing;
@@ -372,8 +370,8 @@ std::vector<domain::cds_volatility_term> cds_volatility_term_repository::read_la
     const ores::utility::domain::order& order,
     const std::optional<messaging::cds_volatility_terms_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest CDS volatility terms with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest CDS volatility terms with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<cds_volatility_term_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -395,7 +393,7 @@ std::uint32_t cds_volatility_term_repository::get_total_term_count(
     const context& ctx,
     const std::optional<messaging::cds_volatility_terms_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active CDS volatility term count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active CDS volatility term count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<cds_volatility_term_entity>> |

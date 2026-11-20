@@ -19,7 +19,7 @@
  */
 #include "ores.marketdata.core/service/series_snapshot_reader.hpp"
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.core/repository/curve_publish_repository.hpp"
 #include "ores.marketdata.core/repository/curve_snapshot_staleness.hpp"
@@ -202,7 +202,7 @@ series_snapshot_reader::read(const ores::database::context& ctx,
         response.approval_request_id = boost::uuids::to_string(published->request_id);
     }
 
-    BOOST_LOG_SEV(series_snapshot_reader_lg(), debug)
+    ORES_LOG_SEV(series_snapshot_reader_lg(), debug)
         << "Read the snapshot of series " << series_id << ": " << placed.size() << " points over "
         << grid.size() << " nodes";
     response.success = true;

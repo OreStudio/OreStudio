@@ -80,7 +80,7 @@ void configuration_document_handler::save_pricing_engines_document(ores::nats::m
         // before the first row reaches the tables, and every reason comes back.
         const auto problems = validation::problems_of(req->document);
         if (!problems.empty()) {
-            BOOST_LOG_SEV(lg(), warn)
+            ORES_LOG_SEV(lg(), warn)
                 << msg.subject << " refused: " << problems.size() << " problems";
             reply(nats_,
                   msg,
@@ -94,7 +94,7 @@ void configuration_document_handler::save_pricing_engines_document(ores::nats::m
               save_pricing_engines_document_response{
                   .success = true, .id = boost::uuids::to_string(req->document.config.id)});
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn) << msg.subject << " refused: " << e.what();
+        ORES_LOG_SEV(lg(), warn) << msg.subject << " refused: " << e.what();
         reply(nats_, msg, save_pricing_engines_document_response{.message = e.what()});
     }
 }
@@ -124,7 +124,7 @@ void configuration_document_handler::get_pricing_engines_document(ores::nats::me
               msg,
               get_pricing_engines_document_response{.success = true, .document = svc.get(*id)});
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn) << msg.subject << " refused: " << e.what();
+        ORES_LOG_SEV(lg(), warn) << msg.subject << " refused: " << e.what();
         reply(nats_, msg, get_pricing_engines_document_response{.message = e.what()});
     }
 }
@@ -146,7 +146,7 @@ void configuration_document_handler::delete_pricing_engines_document(ores::nats:
             svc.remove(*id);
         reply(nats_, msg, delete_pricing_engines_document_response{.success = true});
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn) << msg.subject << " refused: " << e.what();
+        ORES_LOG_SEV(lg(), warn) << msg.subject << " refused: " << e.what();
         reply(nats_, msg, delete_pricing_engines_document_response{.message = e.what()});
     }
 }
@@ -169,7 +169,7 @@ void configuration_document_handler::save_todays_market_document(ores::nats::mes
               save_todays_market_document_response{
                   .success = true, .id = boost::uuids::to_string(req->document.config.id)});
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn) << msg.subject << " refused: " << e.what();
+        ORES_LOG_SEV(lg(), warn) << msg.subject << " refused: " << e.what();
         reply(nats_, msg, save_todays_market_document_response{.message = e.what()});
     }
 }
@@ -199,7 +199,7 @@ void configuration_document_handler::get_todays_market_document(ores::nats::mess
               msg,
               get_todays_market_document_response{.success = true, .document = svc.get(*id)});
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn) << msg.subject << " refused: " << e.what();
+        ORES_LOG_SEV(lg(), warn) << msg.subject << " refused: " << e.what();
         reply(nats_, msg, get_todays_market_document_response{.message = e.what()});
     }
 }
@@ -221,7 +221,7 @@ void configuration_document_handler::delete_todays_market_document(ores::nats::m
             svc.remove(*id);
         reply(nats_, msg, delete_todays_market_document_response{.success = true});
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn) << msg.subject << " refused: " << e.what();
+        ORES_LOG_SEV(lg(), warn) << msg.subject << " refused: " << e.what();
         reply(nats_, msg, delete_todays_market_document_response{.message = e.what()});
     }
 }

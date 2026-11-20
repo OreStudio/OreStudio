@@ -19,7 +19,7 @@
  */
 #include "ores.http.api/domain/http_request.hpp"
 #include "ores.http/routes/refdata/convention_screen_routes.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "route_answer.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
@@ -51,7 +51,7 @@ std::string terms_body() {
 TEST_CASE("a_convention_document_names_the_family_the_address_does_not_hold",
           "[convention_documents]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the family a convention document names";
+    ORES_LOG_SEV(lg, info) << "Testing the family a convention document names";
 
     const auto answer = answer_at<convention_screen_routes>(
         http_method::get,
@@ -65,7 +65,7 @@ TEST_CASE("a_convention_document_names_the_family_the_address_does_not_hold",
 TEST_CASE("a_convention_document_refuses_an_identifier_and_a_party_that_are_not_ones",
           "[convention_documents]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the identifier and the party a document is asked for";
+    ORES_LOG_SEV(lg, info) << "Testing the identifier and the party a document is asked for";
 
     CHECK(answer_at<convention_screen_routes>(http_method::get,
                                               "/api/conventions/deposit/documents/not-an-id",
@@ -89,7 +89,7 @@ TEST_CASE("a_convention_document_refuses_an_identifier_and_a_party_that_are_not_
 TEST_CASE("a_convention_document_with_no_service_is_refused_as_upstream",
           "[convention_documents]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a convention document with no service behind it";
+    ORES_LOG_SEV(lg, info) << "Testing a convention document with no service behind it";
 
     CHECK(answer_at<convention_screen_routes>(
               http_method::get, deposit_document, http_request{}, document_pattern)
@@ -99,7 +99,7 @@ TEST_CASE("a_convention_document_with_no_service_is_refused_as_upstream",
 TEST_CASE("the_terms_of_a_composite_convention_are_changed_on_its_parts",
           "[convention_documents]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the terms write of a composite convention";
+    ORES_LOG_SEV(lg, info) << "Testing the terms write of a composite convention";
 
     http_request write;
     write.body = terms_body();
@@ -115,7 +115,7 @@ TEST_CASE("the_terms_of_a_composite_convention_are_changed_on_its_parts",
 TEST_CASE("a_terms_write_refuses_a_family_whose_terms_the_screen_does_not_draw",
           "[convention_documents]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the terms write of a family with no write";
+    ORES_LOG_SEV(lg, info) << "Testing the terms write of a family with no write";
 
     http_request write;
     write.body = terms_body();
@@ -130,7 +130,7 @@ TEST_CASE("a_terms_write_refuses_a_family_whose_terms_the_screen_does_not_draw",
 
 TEST_CASE("a_terms_write_refuses_a_body_it_cannot_read", "[convention_documents]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the body a terms write states";
+    ORES_LOG_SEV(lg, info) << "Testing the body a terms write states";
 
     http_request unreadable;
     unreadable.body = "not a body";
@@ -160,7 +160,7 @@ TEST_CASE("a_terms_write_refuses_a_body_it_cannot_read", "[convention_documents]
 
 TEST_CASE("a_terms_write_with_no_service_is_refused_as_upstream", "[convention_documents]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a terms write with no service behind it";
+    ORES_LOG_SEV(lg, info) << "Testing a terms write with no service behind it";
 
     http_request write;
     write.body = terms_body();

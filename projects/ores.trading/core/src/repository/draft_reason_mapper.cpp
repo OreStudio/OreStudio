@@ -24,11 +24,9 @@
  */
 #include "ores.trading.core/repository/draft_reason_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.trading.api/domain/draft_reason.hpp"
 #include "ores.trading.api/domain/draft_reason_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/draft_reason_entity.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <optional>
 #include <vector>
 
@@ -38,7 +36,7 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 
 domain::draft_reason draft_reason_mapper::map(const draft_reason_entity& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::draft_reason r;
     r.version = v.version;
@@ -52,12 +50,12 @@ domain::draft_reason draft_reason_mapper::map(const draft_reason_entity& v) {
     r.change_commentary = v.change_commentary;
     r.recorded_at = v.valid_from;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
 }
 
 draft_reason_entity draft_reason_mapper::map(const domain::draft_reason& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     draft_reason_entity r;
     r.code = v.code;
@@ -71,7 +69,7 @@ draft_reason_entity draft_reason_mapper::map(const domain::draft_reason& v) {
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;
 }
 

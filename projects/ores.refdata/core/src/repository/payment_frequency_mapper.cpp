@@ -24,11 +24,9 @@
  */
 #include "ores.refdata.core/repository/payment_frequency_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/payment_frequency.hpp"
 #include "ores.refdata.api/domain/payment_frequency_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/payment_frequency_entity.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <vector>
 
 namespace ores::refdata::repository {
@@ -37,7 +35,7 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 
 domain::payment_frequency payment_frequency_mapper::map(const payment_frequency_entity& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::payment_frequency r;
     r.version = v.version;
@@ -54,12 +52,12 @@ domain::payment_frequency payment_frequency_mapper::map(const payment_frequency_
     r.change_commentary = v.change_commentary;
     r.recorded_at = v.valid_from;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
 }
 
 payment_frequency_entity payment_frequency_mapper::map(const domain::payment_frequency& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     payment_frequency_entity r;
     r.code = v.code;
@@ -75,7 +73,7 @@ payment_frequency_entity payment_frequency_mapper::map(const domain::payment_fre
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;
 }
 

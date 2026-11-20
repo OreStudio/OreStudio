@@ -29,10 +29,8 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -453,26 +451,26 @@ stress_shift_family_service::prepare_change(const messaging::stress_shift_family
 
 std::vector<domain::stress_shift_family>
 stress_shift_family_service::list_families(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all stress shift families";
+    ORES_LOG_SEV(lg(), debug) << "Listing all stress shift families";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t stress_shift_family_service::count_families() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total stress shift families count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total stress shift families count";
     return repo_.get_total_family_count(ctx_);
 }
 
 
 std::optional<domain::stress_shift_family>
 stress_shift_family_service::get_family_at_version(const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting stress shift family at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting stress shift family at version. " << "code: " << code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::stress_shift_family>
 stress_shift_family_service::get_family(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting stress shift family. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting stress shift family. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -487,11 +485,11 @@ stress_shift_family_service::get_families(const std::vector<std::string>& codes)
 void stress_shift_family_service::save_family(const domain::stress_shift_family& v) {
     if (v.code.empty())
         throw std::invalid_argument("Stress Shift Family code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving stress shift family. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving stress shift family. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved stress shift family. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved stress shift family. " << "code: " << v.code;
 }
 
 void stress_shift_family_service::save_families(
@@ -500,7 +498,7 @@ void stress_shift_family_service::save_families(
         if (e.code.empty())
             throw std::invalid_argument("Stress Shift Family code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << families.size() << " stress shift families";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << families.size() << " stress shift families";
     auto ts = families;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -509,9 +507,9 @@ void stress_shift_family_service::save_families(
 }
 
 void stress_shift_family_service::delete_family(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing stress shift family. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing stress shift family. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed stress shift family. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed stress shift family. " << "code: " << code;
 }
 
 void stress_shift_family_service::delete_families(const std::vector<std::string>& codes) {
@@ -520,7 +518,7 @@ void stress_shift_family_service::delete_families(const std::vector<std::string>
 
 std::vector<domain::stress_shift_family>
 stress_shift_family_service::get_family_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for stress shift family. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for stress shift family. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

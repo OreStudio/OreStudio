@@ -21,7 +21,7 @@
 #define ORES_MARKETDATA_CORE_MESSAGING_ORESMD_URI_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.marketdata.core/service/oresmd_uri_service.hpp"
 #include "ores.nats/domain/message.hpp"
@@ -82,7 +82,7 @@ public:
 private:
     template <typename Request, typename Work>
     void answer(ores::nats::message msg, Work work) {
-        BOOST_LOG_SEV(oresmd_uri_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(oresmd_uri_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -94,7 +94,7 @@ private:
         }
         auto req = decode<Request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(oresmd_uri_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(oresmd_uri_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
@@ -105,9 +105,9 @@ private:
         using response_type = typename Request::response_type;
         try {
             reply(nats_, msg, work(*req));
-            BOOST_LOG_SEV(oresmd_uri_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(oresmd_uri_handler_lg(), debug) << "Completed " << msg.subject;
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(oresmd_uri_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(oresmd_uri_handler_lg(), error) << msg.subject << " failed: " << e.what();
             response_type failure;
             failure.success = false;
             failure.message = e.what();

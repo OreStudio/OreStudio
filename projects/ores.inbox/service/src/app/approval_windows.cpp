@@ -18,7 +18,7 @@
  *
  */
 #include "ores.inbox.service/app/approval_windows.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
@@ -78,11 +78,11 @@ std::chrono::seconds read_window(ores::nats::service::nats_client& svc_nats,
         if (seconds < 0)
             throw std::runtime_error("the setting is " + answer->value +
                                      ", which is not a length of time");
-        BOOST_LOG_SEV(lg(), info) << "The window " << setting_name << " is " << seconds
-                                  << " seconds.";
+        ORES_LOG_SEV(lg(), info) << "The window " << setting_name << " is " << seconds
+                                 << " seconds.";
         return std::chrono::seconds(seconds);
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn)
+        ORES_LOG_SEV(lg(), warn)
             << "Could not read " << setting_name << " (" << e.what()
             << "), so its window is zero. Everything else the inbox does is unaffected.";
         return std::chrono::seconds::zero();

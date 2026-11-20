@@ -20,7 +20,7 @@
 #ifndef ORES_ORE_SERVICE_MESSAGING_ORE_IMPORT_EXECUTE_HANDLER_HPP
 #define ORES_ORE_SERVICE_MESSAGING_ORE_IMPORT_EXECUTE_HANDLER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/delivery.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"

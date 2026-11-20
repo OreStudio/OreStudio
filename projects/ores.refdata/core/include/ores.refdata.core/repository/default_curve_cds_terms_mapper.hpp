@@ -25,7 +25,7 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_DEFAULT_CURVE_CDS_TERMS_MAPPER_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_DEFAULT_CURVE_CDS_TERMS_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/default_curve_cds_terms.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/default_curve_cds_terms_entity.hpp"

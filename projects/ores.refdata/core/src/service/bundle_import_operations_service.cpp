@@ -21,7 +21,7 @@
 #include "ores.database/domain/context_transact.hpp"
 #include "ores.database/pq/store_error.hpp"
 #include "ores.database/repository/unit_of_work.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/bundle_import.hpp"
 #include "ores.refdata.api/domain/bundle_import_item.hpp"
 #include "ores.refdata.api/domain/convention_family_registry.hpp"

@@ -50,7 +50,7 @@ inline constexpr const char* skip_telemetry_attribute = "SkipTelemetry";
  * @code
  * void telemetry_repository::create(const telemetry_log_entry& entry) {
  *     skip_telemetry_guard guard;
- *     BOOST_LOG_SEV(lg(), trace) << "Creating entry...";  // Skipped by telemetry sinks
+ *     ORES_LOG_SEV(lg(), trace) << "Creating entry...";  // Skipped by telemetry sinks
  *     // ... database operations that may log ...
  * }
  * @endcode

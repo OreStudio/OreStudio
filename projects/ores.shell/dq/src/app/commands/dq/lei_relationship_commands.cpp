@@ -140,7 +140,7 @@ void lei_relationship_commands::register_commands(cli::Menu& root_menu, nats_cli
 void lei_relationship_commands::process_list(std::ostream& out,
                                              nats_client& session,
                                              const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating list request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating list request.";
 
     using request_type = messaging::list_lei_relationships_request;
     if constexpr (request_type::requires_session) {
@@ -190,7 +190,7 @@ void lei_relationship_commands::process_list(std::ostream& out,
 void lei_relationship_commands::process_get(std::ostream& out,
                                             nats_client& session,
                                             const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating get request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating get request.";
 
     using request_type = messaging::get_lei_relationship_request;
     if constexpr (request_type::requires_session) {
@@ -237,7 +237,7 @@ void lei_relationship_commands::process_get(std::ostream& out,
 void lei_relationship_commands::process_get_many(std::ostream& out,
                                                  nats_client& session,
                                                  const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating get-many request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating get-many request.";
 
     using request_type = messaging::get_many_lei_relationships_request;
     if constexpr (request_type::requires_session) {

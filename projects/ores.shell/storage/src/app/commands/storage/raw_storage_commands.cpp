@@ -18,7 +18,7 @@
  *
  */
 #include "ores.shell/app/commands/storage/raw_storage_commands.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.shell/app/command_args.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/http_base_url.hpp"
@@ -99,7 +99,7 @@ void process_put(std::ostream& out, nats_client& session, const std::vector<std:
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Uploading " << source.string() << " to " << bucket << "/" << key;
+    ORES_LOG_SEV(lg(), debug) << "Uploading " << source.string() << " to " << bucket << "/" << key;
     try {
         storage_transfer transfer(default_http_base_url(), session.bearer_token());
         transfer.upload(bucket, key, source);
@@ -120,8 +120,8 @@ void process_get(std::ostream& out, nats_client& session, const std::vector<std:
     const auto& key = parsed->positionals[1];
     const fs::path destination(parsed->positionals[2]);
 
-    BOOST_LOG_SEV(lg(), debug) << "Downloading " << bucket << "/" << key << " to "
-                               << destination.string();
+    ORES_LOG_SEV(lg(), debug) << "Downloading " << bucket << "/" << key << " to "
+                              << destination.string();
     try {
         storage_transfer transfer(default_http_base_url(), session.bearer_token());
         transfer.download(bucket, key, destination);
@@ -142,7 +142,7 @@ void process_delete(std::ostream& out, nats_client& session, const std::vector<s
     const auto& bucket = parsed->positionals[0];
     const auto& key = parsed->positionals[1];
 
-    BOOST_LOG_SEV(lg(), debug) << "Deleting " << bucket << "/" << key;
+    ORES_LOG_SEV(lg(), debug) << "Deleting " << bucket << "/" << key;
     std::string body;
     try {
         storage_transfer transfer(default_http_base_url(), session.bearer_token());
@@ -187,7 +187,7 @@ void process_list(std::ostream& out, nats_client& session, const std::vector<std
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Listing " << bucket << " prefix=" << parsed->flag("prefix");
+    ORES_LOG_SEV(lg(), debug) << "Listing " << bucket << " prefix=" << parsed->flag("prefix");
     std::string body;
     try {
         storage_transfer transfer(default_http_base_url(), session.bearer_token());

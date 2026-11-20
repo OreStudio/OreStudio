@@ -23,7 +23,7 @@
 #include "ores.http/routes/workflow/timeline.hpp"
 #include "ores.http/routes/workflow/timeline_sources.hpp"
 #include "ores.http/routes/workflow/workflow_routes.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "route_answer.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
@@ -92,7 +92,7 @@ bool timeline_holds(const std::string& body, const std::string& part) {
 
 TEST_CASE("a_timeline_is_named_by_its_subject_and_id", "[workflow_timeline]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the subject and id a timeline names";
+    ORES_LOG_SEV(lg, info) << "Testing the subject and id a timeline names";
 
     const auto refused = answer_at<workflow_routes>(
         http_method::get, "/api/timeline", http_request{}, timeline_pattern);
@@ -102,7 +102,7 @@ TEST_CASE("a_timeline_is_named_by_its_subject_and_id", "[workflow_timeline]") {
 
 TEST_CASE("a_timeline_names_only_its_own_subjects", "[workflow_timeline]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a subject a timeline cannot read for";
+    ORES_LOG_SEV(lg, info) << "Testing a subject a timeline cannot read for";
 
     const auto refused = answer_at<workflow_routes>(
         http_method::get, "/api/timeline", timeline_query("desk", "ana"), timeline_pattern);
@@ -112,7 +112,7 @@ TEST_CASE("a_timeline_names_only_its_own_subjects", "[workflow_timeline]") {
 
 TEST_CASE("a_timeline_refuses_a_parameter_it_does_not_take", "[workflow_timeline]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a parameter a timeline does not name";
+    ORES_LOG_SEV(lg, info) << "Testing a parameter a timeline does not name";
 
     auto req = timeline_query("person", "ana");
     req.query_params["since"] = "2026-01-01";
@@ -124,7 +124,7 @@ TEST_CASE("a_timeline_refuses_a_parameter_it_does_not_take", "[workflow_timeline
 
 TEST_CASE("a_request_timeline_is_named_by_its_identifier", "[workflow_timeline]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the identifier a request's timeline names";
+    ORES_LOG_SEV(lg, info) << "Testing the identifier a request's timeline names";
 
     const auto refused = answer_at<workflow_routes>(http_method::get,
                                                     "/api/timeline",
@@ -136,7 +136,7 @@ TEST_CASE("a_request_timeline_is_named_by_its_identifier", "[workflow_timeline]"
 
 TEST_CASE("a_timeline_answers_the_service_is_absent", "[workflow_timeline]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a timeline with no service behind it";
+    ORES_LOG_SEV(lg, info) << "Testing a timeline with no service behind it";
 
     CHECK(answer_at<workflow_routes>(
               http_method::get, "/api/timeline", timeline_query("person", "ana"), timeline_pattern)
@@ -145,7 +145,7 @@ TEST_CASE("a_timeline_answers_the_service_is_absent", "[workflow_timeline]") {
 
 TEST_CASE("a_timeline_is_kept_privately_for_thirty_seconds", "[workflow_timeline]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the cache policy a timeline carries";
+    ORES_LOG_SEV(lg, info) << "Testing the cache policy a timeline carries";
 
     timeline_answer answer;
     answer.subject = "party";
@@ -181,7 +181,7 @@ TEST_CASE("a_timeline_is_kept_privately_for_thirty_seconds", "[workflow_timeline
 
 TEST_CASE("a_timeline_reads_its_events_newest_first_within_one_second", "[workflow_timeline]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the one order every subject's stream keeps";
+    ORES_LOG_SEV(lg, info) << "Testing the one order every subject's stream keeps";
 
     const auto event = [](std::string kind, int seconds) {
         story_event made;
@@ -209,7 +209,7 @@ TEST_CASE("a_timeline_reads_its_events_newest_first_within_one_second", "[workfl
 
 TEST_CASE("a_link_states_its_opening_its_change_and_its_closing", "[workflow_timeline]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the entries one link table's history makes";
+    ORES_LOG_SEV(lg, info) << "Testing the entries one link table's history makes";
 
     const auto versions = std::vector<ores::http::net::history::version>{
         timeline_version(1, {"ID", "acc/role", "Role", "admin"}),
@@ -238,7 +238,7 @@ TEST_CASE("a_link_states_its_opening_its_change_and_its_closing", "[workflow_tim
 
 TEST_CASE("a_source_the_caller_may_not_read_is_a_gap", "[workflow_timeline]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the rule that separates a refusal from a fault";
+    ORES_LOG_SEV(lg, info) << "Testing the rule that separates a refusal from a fault";
 
     std::vector<timeline_gap> gaps;
     const auto missing = or_gap(gaps, "ores.iam.role", "The roles are not shown.", []() -> int {

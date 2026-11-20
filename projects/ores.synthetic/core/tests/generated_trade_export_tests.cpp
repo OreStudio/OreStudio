@@ -18,7 +18,7 @@
  */
 #include "ore_example_conventions.hpp"
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.ore.core/domain/portfolio_projection.hpp"
 #include "ores.ore.core/xml/document.hpp"
 #include "ores.ore.core/xml/document_kind.hpp"

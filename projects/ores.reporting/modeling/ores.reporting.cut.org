@@ -615,7 +615,7 @@ cut_repository::read_for_party_in_window(const context& ctx, const boost::uuids:
                                          const std::string& kind_code,
                                          std::chrono::system_clock::time_point from,
                                          std::chrono::system_clock::time_point to) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading cuts of a party in a window.";
+    ORES_LOG_SEV(lg(), debug) << "Reading cuts of a party in a window.";
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto party = boost::uuids::to_string(party_id);
@@ -688,7 +688,7 @@ cut_repository::read_for_occasion_in_window(const context& ctx, const boost::uui
                                             const std::string& business_centre_code,
                                             std::chrono::system_clock::time_point from,
                                             std::chrono::system_clock::time_point to) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading the cuts of one occasion: " << kind_code << " "
+    ORES_LOG_SEV(lg(), debug) << "Reading the cuts of one occasion: " << kind_code << " "
                                << scope_code << " " << business_centre_code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -741,7 +741,7 @@ cut_repository::read_for_scope_in_window(const context& ctx, const std::string& 
                                          const std::string& business_centre_code,
                                          std::chrono::system_clock::time_point from,
                                          std::chrono::system_clock::time_point to) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading cuts of scope: " << scope_code;
+    ORES_LOG_SEV(lg(), debug) << "Reading cuts of scope: " << scope_code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<cut_entity>> |
@@ -782,7 +782,7 @@ read_latest_by_request(const context& ctx, const std::string& request_id);
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 std::optional<domain::cut>
 cut_repository::read_latest_by_request(const context& ctx, const std::string& request_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading the cut of request: " << request_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading the cut of request: " << request_id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<cut_entity>> |

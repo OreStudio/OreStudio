@@ -23,7 +23,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.dq.api/domain/dataset_dependency.hpp"
 #include "ores.dq.core/export.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include <string>
 #include <vector>
 

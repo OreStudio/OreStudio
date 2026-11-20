@@ -17,8 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/boost_severity.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/party_type.hpp"         // IWYU pragma: keep.
 #include "ores.refdata.api/domain/party_type_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/generators/party_type_generator.hpp"
@@ -27,7 +26,6 @@
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "test_suite.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <string>
@@ -46,7 +44,7 @@ TEST_CASE("write_single_party_type", "[repository]") {
     auto ctx = ores::testing::make_generation_context(h);
     auto pt = generate_synthetic_party_type(ctx);
     pt.change_reason_code = "system.test";
-    BOOST_LOG_SEV(lg, debug) << "Party type: " << pt;
+    ORES_LOG_SEV(lg, debug) << "Party type: " << pt;
 
     party_type_repository repo;
     repo.write(h.context(), pt);
@@ -65,7 +63,7 @@ TEST_CASE("write_multiple_party_types", "[repository]") {
     for (auto& pt : party_types) {
         pt.change_reason_code = "system.test";
     }
-    BOOST_LOG_SEV(lg, debug) << "Party types: " << party_types;
+    ORES_LOG_SEV(lg, debug) << "Party types: " << party_types;
 
     party_type_repository repo;
     repo.write(h.context(), party_types);
@@ -88,13 +86,13 @@ TEST_CASE("read_latest_party_types", "[repository]") {
     for (auto& pt : written_party_types) {
         pt.change_reason_code = "system.test";
     }
-    BOOST_LOG_SEV(lg, debug) << "Written party types: " << written_party_types;
+    ORES_LOG_SEV(lg, debug) << "Written party types: " << written_party_types;
 
     party_type_repository repo;
     repo.write(h.context(), written_party_types);
 
     auto read_party_types = repo.read_latest(h.context());
-    BOOST_LOG_SEV(lg, debug) << "Read party types: " << read_party_types;
+    ORES_LOG_SEV(lg, debug) << "Read party types: " << read_party_types;
 
     for (const auto& written : written_party_types) {
         const auto it = std::ranges::find_if(
@@ -112,7 +110,7 @@ TEST_CASE("read_latest_party_type_by_code", "[repository]") {
     auto pt = generate_synthetic_party_type(ctx);
     pt.change_reason_code = "system.test";
     const auto original_name = pt.name;
-    BOOST_LOG_SEV(lg, debug) << "Party type: " << pt;
+    ORES_LOG_SEV(lg, debug) << "Party type: " << pt;
 
     party_type_repository repo;
     repo.write(h.context(), pt);
@@ -121,7 +119,7 @@ TEST_CASE("read_latest_party_type_by_code", "[repository]") {
     repo.write(h.context(), pt);
 
     auto read_party_types = repo.read_latest(h.context(), pt.code);
-    BOOST_LOG_SEV(lg, debug) << "Read party types: " << read_party_types;
+    ORES_LOG_SEV(lg, debug) << "Read party types: " << read_party_types;
 
     REQUIRE(read_party_types.size() == 1);
     CHECK(read_party_types[0].code == pt.code);
@@ -142,10 +140,10 @@ TEST_CASE("read_nonexistent_party_type_code", "[repository]") {
     repo.write(h.context(), keeper);
 
     const std::string nonexistent_code = "NONEXISTENT_CODE_12345";
-    BOOST_LOG_SEV(lg, debug) << "Non-existent code: " << nonexistent_code;
+    ORES_LOG_SEV(lg, debug) << "Non-existent code: " << nonexistent_code;
 
     auto read_party_types = repo.read_latest(h.context(), nonexistent_code);
-    BOOST_LOG_SEV(lg, debug) << "Read party types: " << read_party_types;
+    ORES_LOG_SEV(lg, debug) << "Read party types: " << read_party_types;
 
     const auto answered_with_another_key = std::ranges::any_of(
         read_party_types, [&](const party_type& pt) { return pt.code == nonexistent_code; });

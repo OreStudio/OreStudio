@@ -47,15 +47,14 @@ signup_result signup_service::register_user(const std::string& username,
                                             const std::string& password,
                                             const signup_destination& destination) {
 
-    BOOST_LOG_SEV(lg(), info) << "Signup attempt for username: " << username
-                              << ", email: " << email;
+    ORES_LOG_SEV(lg(), info) << "Signup attempt for username: " << username << ", email: " << email;
 
     signup_result result;
     result.username = username;
 
     // Check if signups are enabled
     if (!system_flags_->is_user_signups_enabled()) {
-        BOOST_LOG_SEV(lg(), warn) << "Signup rejected: signups are disabled";
+        ORES_LOG_SEV(lg(), warn) << "Signup rejected: signups are disabled";
         result.error_message = "User registration is currently disabled";
         result.error_code = error_code::signup_disabled;
         return result;
@@ -63,7 +62,7 @@ signup_result signup_service::register_user(const std::string& username,
 
     // Check if authorization is required (not yet implemented)
     if (system_flags_->is_signup_requires_authorization_enabled()) {
-        BOOST_LOG_SEV(lg(), warn) << "Signup rejected: authorization workflow not implemented";
+        ORES_LOG_SEV(lg(), warn) << "Signup rejected: authorization workflow not implemented";
         result.error_message = "Signup authorization workflow is not yet "
                                "implemented. Please contact an administrator to create an account.";
         result.error_code = error_code::signup_requires_authorization;
@@ -72,7 +71,7 @@ signup_result signup_service::register_user(const std::string& username,
 
     // Validate username is not empty
     if (username.empty()) {
-        BOOST_LOG_SEV(lg(), warn) << "Signup rejected: empty username";
+        ORES_LOG_SEV(lg(), warn) << "Signup rejected: empty username";
         result.error_message = "Username cannot be empty";
         result.error_code = error_code::invalid_request;
         return result;
@@ -81,7 +80,7 @@ signup_result signup_service::register_user(const std::string& username,
     // Check username uniqueness
     auto existing_by_username = account_repo_.read_latest_by_username(ctx_, username);
     if (!existing_by_username.empty()) {
-        BOOST_LOG_SEV(lg(), warn) << "Signup rejected: username already taken: " << username;
+        ORES_LOG_SEV(lg(), warn) << "Signup rejected: username already taken: " << username;
         result.error_message = "Username is already taken";
         result.error_code = error_code::username_taken;
         return result;
@@ -90,7 +89,7 @@ signup_result signup_service::register_user(const std::string& username,
     // Validate email format
     auto email_validation = validation::email_validator::validate(email);
     if (!email_validation.is_valid) {
-        BOOST_LOG_SEV(lg(), warn) << "Signup rejected: invalid email format: " << email;
+        ORES_LOG_SEV(lg(), warn) << "Signup rejected: invalid email format: " << email;
         result.error_message = email_validation.error_message;
         result.error_code = error_code::invalid_request;
         return result;
@@ -99,7 +98,7 @@ signup_result signup_service::register_user(const std::string& username,
     // Check email uniqueness
     auto existing_by_email = account_repo_.read_latest_by_email(ctx_, email);
     if (!existing_by_email.empty()) {
-        BOOST_LOG_SEV(lg(), warn) << "Signup rejected: email already in use: " << email;
+        ORES_LOG_SEV(lg(), warn) << "Signup rejected: email already in use: " << email;
         result.error_message = "Email address is already registered";
         result.error_code = error_code::email_taken;
         return result;
@@ -108,7 +107,7 @@ signup_result signup_service::register_user(const std::string& username,
     // Validate password policy
     auto password_validation = validation::password_validator::validate(password);
     if (!password_validation.is_valid) {
-        BOOST_LOG_SEV(lg(), warn) << "Signup rejected: weak password";
+        ORES_LOG_SEV(lg(), warn) << "Signup rejected: weak password";
         result.error_message = password_validation.error_message;
         result.error_code = error_code::weak_password;
         return result;
@@ -121,7 +120,7 @@ signup_result signup_service::register_user(const std::string& username,
      * service must refuse for every caller and not only for the door.
      */
     if (!destination.role_id) {
-        BOOST_LOG_SEV(lg(), warn) << "Signup rejected: the tenant nominates no default role";
+        ORES_LOG_SEV(lg(), warn) << "Signup rejected: the tenant nominates no default role";
         result.error_message = "This deployment has not nominated a role for new accounts.";
         result.error_code = error_code::no_default_role;
         return result;
@@ -137,7 +136,7 @@ signup_result signup_service::register_user(const std::string& username,
 
     // Generate account ID
     auto id = uuid_generator_();
-    BOOST_LOG_SEV(lg(), debug) << "Generated ID for new account: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Generated ID for new account: " << id;
 
     // Hash password
     auto password_hash = crypto::password_hasher::hash(password);
@@ -185,7 +184,7 @@ signup_result signup_service::register_user(const std::string& username,
 
     // Grant the role the tenant nominated, which is the account's floor.
     auth_service_->assign_role(id, *destination.role_id, username);
-    BOOST_LOG_SEV(lg(), info) << "Assigned the registration default role to new account: " << id;
+    ORES_LOG_SEV(lg(), info) << "Assigned the registration default role to new account: " << id;
 
     // Give the account its first association, when the tenant nominated one.
     if (destination.party_id) {
@@ -200,12 +199,12 @@ signup_result signup_service::register_user(const std::string& username,
         link.change_commentary = "Self-registration association";
         repository::account_party_repository ap_repo(ctx_);
         ap_repo.write(link);
-        BOOST_LOG_SEV(lg(), info) << "Associated new account " << id << " with party "
-                                  << boost::uuids::to_string(*destination.party_id);
+        ORES_LOG_SEV(lg(), info) << "Associated new account " << id << " with party "
+                                 << boost::uuids::to_string(*destination.party_id);
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Signup successful for username: " << username
-                              << ", account ID: " << id << ", status: " << account_status;
+    ORES_LOG_SEV(lg(), info) << "Signup successful for username: " << username
+                             << ", account ID: " << id << ", status: " << account_status;
 
     result.success = true;
     result.account_id = id;

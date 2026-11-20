@@ -89,7 +89,7 @@ boost::asio::awaitable<http_response> login_routes::handle_logout(const http_req
 void login_routes::register_routes(std::shared_ptr<ores::http::net::router> router,
                                    std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
                                    nats_client& session) {
-    BOOST_LOG_SEV(lg(), info) << "Registering login routes";
+    ORES_LOG_SEV(lg(), info) << "Registering login routes";
 
     auto login_route =
         router->post("/api/v1/iam/ops/login")
@@ -118,7 +118,7 @@ void login_routes::register_routes(std::shared_ptr<ores::http::net::router> rout
     router->add_route(logout_built);
     registry->register_route(logout_built);
 
-    BOOST_LOG_SEV(lg(), info) << "login routes registered: " << 2 << " endpoint(s)";
+    ORES_LOG_SEV(lg(), info) << "login routes registered: " << 2 << " endpoint(s)";
 }
 
 }

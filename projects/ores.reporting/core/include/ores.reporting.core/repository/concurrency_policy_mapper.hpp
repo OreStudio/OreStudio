@@ -25,7 +25,7 @@
 #ifndef ORES_REPORTING_CORE_REPOSITORY_CONCURRENCY_POLICY_MAPPER_HPP
 #define ORES_REPORTING_CORE_REPOSITORY_CONCURRENCY_POLICY_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.reporting.api/domain/concurrency_policy.hpp"
 #include "ores.reporting.core/export.hpp"
 #include "ores.reporting.core/repository/concurrency_policy_entity.hpp"

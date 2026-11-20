@@ -26,7 +26,7 @@
 #define ORES_TRADING_CORE_SERVICE_CAP_FLOOR_INSTRUMENT_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.trading.api/domain/cap_floor_instrument.hpp"
 #include "ores.trading.api/messaging/cap_floor_instrument_protocol.hpp"
 #include "ores.trading.core/export.hpp"

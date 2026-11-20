@@ -343,8 +343,8 @@ void marketdata_commands::process_import(std::ostream& out,
     req.source = parsed->flag("source");
     req.duplicates_are_errors = parsed->flag_set("duplicates-are-errors");
 
-    BOOST_LOG_SEV(lg(), info) << "Importing market data (file: " << file_path
-                              << ", fixings: " << fixings_path << ", source: " << req.source << ")";
+    ORES_LOG_SEV(lg(), info) << "Importing market data (file: " << file_path
+                             << ", fixings: " << fixings_path << ", source: " << req.source << ")";
     out << "Importing market data..." << std::endl;
 
     auto result = do_auth_request<marketdata::messaging::import_market_data_response>(
@@ -374,10 +374,10 @@ void marketdata_commands::process_import(std::ostream& out,
         for (const auto& warning : result->warnings)
             out << "  ⚠ " << warning << std::endl;
     }
-    BOOST_LOG_SEV(lg(), info) << "Import succeeded: " << result->series_count << " series, "
-                              << result->observation_count << " observations, "
-                              << result->fixing_count << " fixings, " << result->warnings.size()
-                              << " warning(s).";
+    ORES_LOG_SEV(lg(), info) << "Import succeeded: " << result->series_count << " series, "
+                             << result->observation_count << " observations, "
+                             << result->fixing_count << " fixings, " << result->warnings.size()
+                             << " warning(s).";
 }
 
 void marketdata_commands::process_export(std::ostream& out,
@@ -402,8 +402,8 @@ void marketdata_commands::process_export(std::ostream& out,
     const auto& market_path = parsed->flag("market-data");
     const auto& fixings_path = parsed->flag("fixings");
 
-    BOOST_LOG_SEV(lg(), info) << "Exporting market data (market-data: " << market_path
-                              << ", fixings: " << fixings_path << ")";
+    ORES_LOG_SEV(lg(), info) << "Exporting market data (market-data: " << market_path
+                             << ", fixings: " << fixings_path << ")";
     out << "Exporting market data..." << std::endl;
 
     marketdata::messaging::export_market_data_request req;
@@ -447,9 +447,9 @@ void marketdata_commands::process_export(std::ostream& out,
         out << "  " << result->carried_forward_count
             << " datum(s) carry a value from an earlier day, " << result->stale_count
             << " older than the limit left out of the date." << std::endl;
-    BOOST_LOG_SEV(lg(), info) << "Export succeeded: " << result->series_count << " series, "
-                              << result->observation_count << " observations, "
-                              << result->fixing_count << " fixings.";
+    ORES_LOG_SEV(lg(), info) << "Export succeeded: " << result->series_count << " series, "
+                             << result->observation_count << " observations, "
+                             << result->fixing_count << " fixings.";
 }
 
 void marketdata_commands::process_backfill_identity(std::ostream& out,
@@ -468,8 +468,8 @@ void marketdata_commands::process_backfill_identity(std::ostream& out,
     }
 
     const auto& party = parsed->flag("party");
-    BOOST_LOG_SEV(lg(), info) << "Re-projecting series identities (party: "
-                              << (party.empty() ? "all" : party) << ")";
+    ORES_LOG_SEV(lg(), info) << "Re-projecting series identities (party: "
+                             << (party.empty() ? "all" : party) << ")";
     out << "Re-projecting series identities..." << std::endl;
 
     marketdata::messaging::backfill_series_identity_request req;
@@ -485,7 +485,7 @@ void marketdata_commands::process_backfill_identity(std::ostream& out,
     }
 
     out << "✓ " << result->message << std::endl;
-    BOOST_LOG_SEV(lg(), info) << "Identity backfill succeeded: " << result->message;
+    ORES_LOG_SEV(lg(), info) << "Identity backfill succeeded: " << result->message;
 }
 
 std::expected<std::vector<std::string>, std::string> marketdata_commands::stream_subjects(
@@ -724,8 +724,8 @@ void marketdata_commands::process_ticks(std::ostream& out,
     if (!parsed->flag("coordinate").empty())
         req.coordinates.push_back(parsed->flag("coordinate"));
 
-    BOOST_LOG_SEV(lg(), info) << "Reading the ticks of the " << req.identity.instrument_type
-                              << " series of " << req.identity.scope;
+    ORES_LOG_SEV(lg(), info) << "Reading the ticks of the " << req.identity.instrument_type
+                             << " series of " << req.identity.scope;
     auto result = do_auth_request<marketdata::messaging::get_series_ticks_response>(
         out, session, std::string(req.nats_subject), req);
     if (!result)
@@ -826,7 +826,7 @@ void marketdata_commands::process_stream(std::ostream& out,
     else if (!csv_path.empty())
         out << "CSV written to " << csv_path << " (" << output.rows.size() - 1 << " tick row(s))."
             << std::endl;
-    BOOST_LOG_SEV(lg(), info) << "Streamed " << output.count << " tick(s) for '" << uri << "'.";
+    ORES_LOG_SEV(lg(), info) << "Streamed " << output.count << " tick(s) for '" << uri << "'.";
 }
 
 }

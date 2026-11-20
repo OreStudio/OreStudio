@@ -28,7 +28,7 @@
 #include "ores.analytics.api/messaging/credit_simulation_netting_set_config_protocol.hpp"
 #include "ores.analytics.core/service/credit_simulation_netting_set_config_service.hpp"
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
@@ -75,7 +75,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void list_credit_simulation_netting_set_configs(ores::nats::message msg) {
-        BOOST_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), debug)
+        ORES_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -93,7 +93,7 @@ public:
         }
         auto req = decode<list_credit_simulation_netting_set_configs_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), warn)
+            ORES_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -101,14 +101,14 @@ public:
         service::credit_simulation_netting_set_config_service svc(req_ctx);
         try {
             auto response = svc.list_credit_simulation_netting_set_configs(*req);
-            BOOST_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), debug)
+            ORES_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), error)
+            ORES_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             list_credit_simulation_netting_set_configs_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -128,7 +128,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void get_credit_simulation_netting_set_config(ores::nats::message msg) {
-        BOOST_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), debug)
+        ORES_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -146,7 +146,7 @@ public:
         }
         auto req = decode<get_credit_simulation_netting_set_config_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), warn)
+            ORES_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -154,14 +154,14 @@ public:
         service::credit_simulation_netting_set_config_service svc(req_ctx);
         try {
             auto response = svc.get_credit_simulation_netting_set_config(*req);
-            BOOST_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), debug)
+            ORES_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), error)
+            ORES_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             get_credit_simulation_netting_set_config_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -181,7 +181,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void get_many_credit_simulation_netting_set_configs(ores::nats::message msg) {
-        BOOST_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), debug)
+        ORES_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -199,7 +199,7 @@ public:
         }
         auto req = decode<get_many_credit_simulation_netting_set_configs_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), warn)
+            ORES_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -207,14 +207,14 @@ public:
         service::credit_simulation_netting_set_config_service svc(req_ctx);
         try {
             auto response = svc.get_many_credit_simulation_netting_set_configs(*req);
-            BOOST_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), debug)
+            ORES_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), error)
+            ORES_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             get_many_credit_simulation_netting_set_configs_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -234,7 +234,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void put_credit_simulation_netting_set_config(ores::nats::message msg) {
-        BOOST_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), debug)
+        ORES_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -252,7 +252,7 @@ public:
         }
         auto req = decode<put_credit_simulation_netting_set_config_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), warn)
+            ORES_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -260,14 +260,14 @@ public:
         service::credit_simulation_netting_set_config_service svc(req_ctx);
         try {
             auto response = svc.put_credit_simulation_netting_set_config(*req);
-            BOOST_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), debug)
+            ORES_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), error)
+            ORES_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             put_credit_simulation_netting_set_config_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -287,7 +287,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void put_many_credit_simulation_netting_set_configs(ores::nats::message msg) {
-        BOOST_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), debug)
+        ORES_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -305,7 +305,7 @@ public:
         }
         auto req = decode<put_many_credit_simulation_netting_set_configs_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), warn)
+            ORES_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -313,14 +313,14 @@ public:
         service::credit_simulation_netting_set_config_service svc(req_ctx);
         try {
             auto response = svc.put_many_credit_simulation_netting_set_configs(*req);
-            BOOST_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), debug)
+            ORES_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), error)
+            ORES_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             put_many_credit_simulation_netting_set_configs_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -340,7 +340,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void delete_credit_simulation_netting_set_config(ores::nats::message msg) {
-        BOOST_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), debug)
+        ORES_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -358,7 +358,7 @@ public:
         }
         auto req = decode<delete_credit_simulation_netting_set_config_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), warn)
+            ORES_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -366,14 +366,14 @@ public:
         service::credit_simulation_netting_set_config_service svc(req_ctx);
         try {
             auto response = svc.delete_credit_simulation_netting_set_config(*req);
-            BOOST_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), debug)
+            ORES_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), error)
+            ORES_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             delete_credit_simulation_netting_set_config_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -393,7 +393,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void delete_many_credit_simulation_netting_set_configs(ores::nats::message msg) {
-        BOOST_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), debug)
+        ORES_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -411,7 +411,7 @@ public:
         }
         auto req = decode<delete_many_credit_simulation_netting_set_configs_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), warn)
+            ORES_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -419,14 +419,14 @@ public:
         service::credit_simulation_netting_set_config_service svc(req_ctx);
         try {
             auto response = svc.delete_many_credit_simulation_netting_set_configs(*req);
-            BOOST_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), debug)
+            ORES_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), error)
+            ORES_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             delete_many_credit_simulation_netting_set_configs_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -448,7 +448,7 @@ public:
      */
     void list_by_credit_simulation_config_id_credit_simulation_netting_set_configs(
         ores::nats::message msg) {
-        BOOST_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), debug)
+        ORES_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -467,7 +467,7 @@ public:
         auto req = decode<
             list_by_credit_simulation_config_id_credit_simulation_netting_set_configs_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), warn)
+            ORES_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -476,14 +476,14 @@ public:
         try {
             auto response =
                 svc.list_by_credit_simulation_config_id_credit_simulation_netting_set_configs(*req);
-            BOOST_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), debug)
+            ORES_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), error)
+            ORES_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             list_by_credit_simulation_config_id_credit_simulation_netting_set_configs_response
                 failure;
@@ -504,7 +504,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void list_credit_simulation_netting_set_config_versions(ores::nats::message msg) {
-        BOOST_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), debug)
+        ORES_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -522,7 +522,7 @@ public:
         }
         auto req = decode<list_credit_simulation_netting_set_config_versions_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), warn)
+            ORES_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -530,14 +530,14 @@ public:
         service::credit_simulation_netting_set_config_service svc(req_ctx);
         try {
             auto response = svc.list_credit_simulation_netting_set_config_versions(*req);
-            BOOST_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), debug)
+            ORES_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), error)
+            ORES_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             list_credit_simulation_netting_set_config_versions_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -557,7 +557,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void get_credit_simulation_netting_set_config_version(ores::nats::message msg) {
-        BOOST_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), debug)
+        ORES_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -575,7 +575,7 @@ public:
         }
         auto req = decode<get_credit_simulation_netting_set_config_version_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), warn)
+            ORES_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -583,14 +583,14 @@ public:
         service::credit_simulation_netting_set_config_service svc(req_ctx);
         try {
             auto response = svc.get_credit_simulation_netting_set_config_version(*req);
-            BOOST_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), debug)
+            ORES_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), error)
+            ORES_LOG_SEV(credit_simulation_netting_set_config_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             get_credit_simulation_netting_set_config_version_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;

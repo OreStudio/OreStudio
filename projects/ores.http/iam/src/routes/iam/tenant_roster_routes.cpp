@@ -404,14 +404,13 @@ void tenant_roster_routes::register_routes(
                     const auto runs = setups_of(req, session, ids_of(page.tenants));
                     setups = runs.setups;
                     if (!runs.complete)
-                        BOOST_LOG_SEV(lg(), warn) << "The provisioning run read reached its "
-                                                     "limit; the oldest runs are not shown.";
+                        ORES_LOG_SEV(lg(), warn) << "The provisioning run read reached its "
+                                                    "limit; the oldest runs are not shown.";
                 } catch (const std::exception& e) {
-                    BOOST_LOG_SEV(lg(), warn)
-                        << "The provisioning runs were not read: " << e.what();
+                    ORES_LOG_SEV(lg(), warn) << "The provisioning runs were not read: " << e.what();
                     setup_unavailable = true;
                 } catch (const rr::refusal& r) {
-                    BOOST_LOG_SEV(lg(), warn)
+                    ORES_LOG_SEV(lg(), warn)
                         << "The provisioning runs were not read: " << r.message;
                     setup_unavailable = true;
                 }
@@ -518,12 +517,11 @@ void tenant_roster_routes::register_routes(
                     }
                     o.activity = std::move(activity);
                 } catch (const std::exception& e) {
-                    BOOST_LOG_SEV(lg(), warn)
-                        << "The provisioning runs were not read: " << e.what();
+                    ORES_LOG_SEV(lg(), warn) << "The provisioning runs were not read: " << e.what();
                     failed_setups.clear();
                     o.activity_unavailable = true;
                 } catch (const rr::refusal& r) {
-                    BOOST_LOG_SEV(lg(), warn)
+                    ORES_LOG_SEV(lg(), warn)
                         << "The provisioning runs were not read: " << r.message;
                     failed_setups.clear();
                     o.activity_unavailable = true;
@@ -531,10 +529,10 @@ void tenant_roster_routes::register_routes(
                 try {
                     o.setups = setups_of(req, session, ids_of(first.tenants)).setups;
                 } catch (const std::exception& e) {
-                    BOOST_LOG_SEV(lg(), warn)
+                    ORES_LOG_SEV(lg(), warn)
                         << "The first tenants' setups were not read: " << e.what();
                 } catch (const rr::refusal& r) {
-                    BOOST_LOG_SEV(lg(), warn)
+                    ORES_LOG_SEV(lg(), warn)
                         << "The first tenants' setups were not read: " << r.message;
                 }
                 const auto stalled = static_cast<std::uint64_t>(failed_setups.size());
@@ -561,11 +559,10 @@ void tenant_roster_routes::register_routes(
                 try {
                     setup = setup_for(setups_of(req, session, ids_of({t})).setups, t);
                 } catch (const std::exception& e) {
-                    BOOST_LOG_SEV(lg(), warn)
-                        << "The provisioning runs were not read: " << e.what();
+                    ORES_LOG_SEV(lg(), warn) << "The provisioning runs were not read: " << e.what();
                     setup_unavailable = true;
                 } catch (const rr::refusal& r) {
-                    BOOST_LOG_SEV(lg(), warn)
+                    ORES_LOG_SEV(lg(), warn)
                         << "The provisioning runs were not read: " << r.message;
                     setup_unavailable = true;
                 }
@@ -596,7 +593,7 @@ void tenant_roster_routes::register_routes(
                 using ores::utility::domain::outcome;
                 switch (reply.result.outcome) {
                     case outcome::ok:
-                        BOOST_LOG_SEV(lg(), info) << "Tenant removed: " << code;
+                        ORES_LOG_SEV(lg(), info) << "Tenant removed: " << code;
                         return rr::no_content();
                     case outcome::missing:
                         return rr::refused(

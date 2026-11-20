@@ -26,7 +26,6 @@
 #include "ores.analytics.api/domain/credit_simulation_netting_set_config.hpp"
 #include "ores.analytics.api/messaging/credit_simulation_netting_set_config_protocol.hpp"
 #include "ores.analytics.core/repository/credit_simulation_netting_set_config_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -560,12 +558,12 @@ ores::utility::domain::result credit_simulation_netting_set_config_service::prep
 std::vector<domain::credit_simulation_netting_set_config>
 credit_simulation_netting_set_config_service::list_netting_sets(std::uint32_t offset,
                                                                 std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all netting sets";
+    ORES_LOG_SEV(lg(), debug) << "Listing all netting sets";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t credit_simulation_netting_set_config_service::count_netting_sets() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total netting sets count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total netting sets count";
     return repo_.get_total_netting_set_count(ctx_);
 }
 
@@ -573,8 +571,8 @@ std::uint32_t credit_simulation_netting_set_config_service::count_netting_sets()
 std::vector<domain::credit_simulation_netting_set_config>
 credit_simulation_netting_set_config_service::list_netting_sets_by_credit_simulation_config_id(
     const std::string& credit_simulation_config_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing netting sets by credit_simulation_config_id: "
-                               << credit_simulation_config_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing netting sets by credit_simulation_config_id: "
+                              << credit_simulation_config_id;
     return repo_.read_latest_by_credit_simulation_config_id(
         ctx_, credit_simulation_config_id, offset, limit);
 }
@@ -582,9 +580,8 @@ credit_simulation_netting_set_config_service::list_netting_sets_by_credit_simula
 std::uint32_t
 credit_simulation_netting_set_config_service::count_netting_sets_by_credit_simulation_config_id(
     const std::string& credit_simulation_config_id) {
-    BOOST_LOG_SEV(lg(), debug)
-        << "Getting total netting sets count by credit_simulation_config_id: "
-        << credit_simulation_config_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting total netting sets count by credit_simulation_config_id: "
+                              << credit_simulation_config_id;
     return repo_.get_total_netting_set_count_by_credit_simulation_config_id(
         ctx_, credit_simulation_config_id);
 }
@@ -593,14 +590,14 @@ credit_simulation_netting_set_config_service::count_netting_sets_by_credit_simul
 std::optional<domain::credit_simulation_netting_set_config>
 credit_simulation_netting_set_config_service::get_netting_set_at_version(
     const boost::uuids::uuid& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting netting set at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting netting set at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::credit_simulation_netting_set_config>
 credit_simulation_netting_set_config_service::get_netting_set(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting netting set. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting netting set. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -610,7 +607,7 @@ credit_simulation_netting_set_config_service::get_netting_set(const boost::uuids
 std::optional<domain::credit_simulation_netting_set_config>
 credit_simulation_netting_set_config_service::get_netting_set_by_netting_set_id(
     const std::string& netting_set_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting netting set by netting_set_id: " << netting_set_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting netting set by netting_set_id: " << netting_set_id;
     messaging::credit_simulation_netting_set_config_key k;
     k.netting_set_id = netting_set_id;
     auto found = credit_simulation_netting_set_config_read_one(repo_, ctx_, k);
@@ -629,11 +626,11 @@ void credit_simulation_netting_set_config_service::save_netting_set(
     const domain::credit_simulation_netting_set_config& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Credit Simulation Netting Set Config id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving netting set. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving netting set. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved netting set. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved netting set. " << "id: " << v.id;
 }
 
 void credit_simulation_netting_set_config_service::save_netting_sets(
@@ -642,7 +639,7 @@ void credit_simulation_netting_set_config_service::save_netting_sets(
         if (e.id.is_nil())
             throw std::invalid_argument("Credit Simulation Netting Set Config id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << netting_sets.size() << " netting sets";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << netting_sets.size() << " netting sets";
     auto ts = netting_sets;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -652,9 +649,9 @@ void credit_simulation_netting_set_config_service::save_netting_sets(
 
 void credit_simulation_netting_set_config_service::delete_netting_set(
     const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing netting set. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing netting set. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed netting set. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed netting set. " << "id: " << id;
 }
 
 void credit_simulation_netting_set_config_service::delete_netting_sets(
@@ -664,7 +661,7 @@ void credit_simulation_netting_set_config_service::delete_netting_sets(
 
 std::vector<domain::credit_simulation_netting_set_config>
 credit_simulation_netting_set_config_service::get_netting_set_history(const std::string& key) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for netting set. key: " << key;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for netting set. key: " << key;
     // The caller holds the key the model declares and this reads by the
     // storage key, so the two are joined here exactly as they are for any
     // other read. Without this step a provider looks the versions up under a

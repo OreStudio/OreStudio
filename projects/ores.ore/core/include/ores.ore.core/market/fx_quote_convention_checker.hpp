@@ -20,7 +20,7 @@
 #ifndef ORES_ORE_CORE_MARKET_FX_QUOTE_CONVENTION_CHECKER_HPP
 #define ORES_ORE_CORE_MARKET_FX_QUOTE_CONVENTION_CHECKER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.ore.core/export.hpp"
 #include <set>
 #include <string>

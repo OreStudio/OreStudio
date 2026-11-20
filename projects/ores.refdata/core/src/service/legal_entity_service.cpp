@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/legal_entity.hpp"
 #include "ores.refdata.api/messaging/legal_entity_protocol.hpp"
 #include "ores.refdata.core/repository/legal_entity_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -444,25 +442,25 @@ legal_entity_service::prepare_change(const messaging::legal_entity_change& chang
 
 std::vector<domain::legal_entity> legal_entity_service::list_legal_entities(std::uint32_t offset,
                                                                             std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all legal entities";
+    ORES_LOG_SEV(lg(), debug) << "Listing all legal entities";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t legal_entity_service::count_legal_entities() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total legal entities count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total legal entities count";
     return repo_.get_total_legal_entity_count(ctx_);
 }
 
 
 std::optional<domain::legal_entity>
 legal_entity_service::get_legal_entity_at_version(const std::string& lei, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting legal entity at version. " << "lei: " << lei
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting legal entity at version. " << "lei: " << lei
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, lei, version);
 }
 
 std::optional<domain::legal_entity> legal_entity_service::get_legal_entity(const std::string& lei) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting legal entity. " << "lei: " << lei;
+    ORES_LOG_SEV(lg(), debug) << "Getting legal entity. " << "lei: " << lei;
     auto results = repo_.read_latest(ctx_, lei);
     if (results.empty())
         return std::nullopt;
@@ -477,11 +475,11 @@ legal_entity_service::get_legal_entities(const std::vector<std::string>& leis) {
 void legal_entity_service::save_legal_entity(const domain::legal_entity& v) {
     if (v.lei.empty())
         throw std::invalid_argument("Legal Entity lei cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving legal entity. " << "lei: " << v.lei;
+    ORES_LOG_SEV(lg(), debug) << "Saving legal entity. " << "lei: " << v.lei;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved legal entity. " << "lei: " << v.lei;
+    ORES_LOG_SEV(lg(), info) << "Saved legal entity. " << "lei: " << v.lei;
 }
 
 void legal_entity_service::save_legal_entities(
@@ -490,7 +488,7 @@ void legal_entity_service::save_legal_entities(
         if (e.lei.empty())
             throw std::invalid_argument("Legal Entity lei cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << legal_entities.size() << " legal entities";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << legal_entities.size() << " legal entities";
     auto ts = legal_entities;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -499,9 +497,9 @@ void legal_entity_service::save_legal_entities(
 }
 
 void legal_entity_service::delete_legal_entity(const std::string& lei) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing legal entity. " << "lei: " << lei;
+    ORES_LOG_SEV(lg(), debug) << "Removing legal entity. " << "lei: " << lei;
     repo_.remove(ctx_, lei);
-    BOOST_LOG_SEV(lg(), info) << "Removed legal entity. " << "lei: " << lei;
+    ORES_LOG_SEV(lg(), info) << "Removed legal entity. " << "lei: " << lei;
 }
 
 void legal_entity_service::delete_legal_entities(const std::vector<std::string>& leis) {
@@ -510,7 +508,7 @@ void legal_entity_service::delete_legal_entities(const std::vector<std::string>&
 
 std::vector<domain::legal_entity>
 legal_entity_service::get_legal_entity_history(const std::string& lei) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for legal entity. " << "lei: " << lei;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for legal entity. " << "lei: " << lei;
     return repo_.read_all(ctx_, lei);
 }
 

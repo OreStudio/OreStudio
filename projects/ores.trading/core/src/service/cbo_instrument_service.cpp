@@ -26,7 +26,6 @@
 #include "ores.trading.api/domain/cbo_instrument.hpp"
 #include "ores.trading.api/messaging/cbo_instrument_protocol.hpp"
 #include "ores.trading.core/repository/cbo_instrument_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -451,12 +449,12 @@ cbo_instrument_service::prepare_change(const messaging::cbo_instrument_change& c
 
 std::vector<domain::cbo_instrument>
 cbo_instrument_service::list_cbo_instruments(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all CBO instruments";
+    ORES_LOG_SEV(lg(), debug) << "Listing all CBO instruments";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t cbo_instrument_service::count_cbo_instruments() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total CBO instruments count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total CBO instruments count";
     return repo_.get_total_cbo_instrument_count(ctx_);
 }
 
@@ -464,14 +462,14 @@ std::uint32_t cbo_instrument_service::count_cbo_instruments() {
 std::optional<domain::cbo_instrument>
 cbo_instrument_service::get_cbo_instrument_at_version(const boost::uuids::uuid& trade_id,
                                                       std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting CBO instrument at version. " << "trade_id: " << trade_id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting CBO instrument at version. " << "trade_id: " << trade_id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(trade_id), version);
 }
 
 std::optional<domain::cbo_instrument>
 cbo_instrument_service::get_cbo_instrument(const boost::uuids::uuid& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting CBO instrument. " << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting CBO instrument. " << "trade_id: " << trade_id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(trade_id));
     if (results.empty())
         return std::nullopt;
@@ -486,11 +484,11 @@ cbo_instrument_service::get_cbo_instruments(const std::vector<std::string>& trad
 void cbo_instrument_service::save_cbo_instrument(const domain::cbo_instrument& v) {
     if (v.trade_id.is_nil())
         throw std::invalid_argument("CBO Instrument trade_id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving CBO instrument. " << "trade_id: " << v.trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Saving CBO instrument. " << "trade_id: " << v.trade_id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved CBO instrument. " << "trade_id: " << v.trade_id;
+    ORES_LOG_SEV(lg(), info) << "Saved CBO instrument. " << "trade_id: " << v.trade_id;
 }
 
 void cbo_instrument_service::save_cbo_instruments(
@@ -499,7 +497,7 @@ void cbo_instrument_service::save_cbo_instruments(
         if (e.trade_id.is_nil())
             throw std::invalid_argument("CBO Instrument trade_id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << cbo_instruments.size() << " CBO instruments";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << cbo_instruments.size() << " CBO instruments";
     auto ts = cbo_instruments;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -508,9 +506,9 @@ void cbo_instrument_service::save_cbo_instruments(
 }
 
 void cbo_instrument_service::delete_cbo_instrument(const boost::uuids::uuid& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing CBO instrument. " << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Removing CBO instrument. " << "trade_id: " << trade_id;
     repo_.remove(ctx_, boost::uuids::to_string(trade_id));
-    BOOST_LOG_SEV(lg(), info) << "Removed CBO instrument. " << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), info) << "Removed CBO instrument. " << "trade_id: " << trade_id;
 }
 
 void cbo_instrument_service::delete_cbo_instruments(const std::vector<std::string>& trade_ids) {
@@ -519,8 +517,7 @@ void cbo_instrument_service::delete_cbo_instruments(const std::vector<std::strin
 
 std::vector<domain::cbo_instrument>
 cbo_instrument_service::get_cbo_instrument_history(const std::string& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for CBO instrument. "
-                               << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for CBO instrument. " << "trade_id: " << trade_id;
     return repo_.read_all(ctx_, trade_id);
 }
 

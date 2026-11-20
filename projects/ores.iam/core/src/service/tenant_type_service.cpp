@@ -29,10 +29,8 @@
 #include "ores.iam.api/domain/tenant_type.hpp"
 #include "ores.iam.api/messaging/tenant_type_protocol.hpp"
 #include "ores.iam.core/repository/tenant_type_repository.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -442,25 +440,25 @@ tenant_type_service::prepare_change(const messaging::tenant_type_change& change,
 
 std::vector<domain::tenant_type> tenant_type_service::list_types(std::uint32_t offset,
                                                                  std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all tenant types";
+    ORES_LOG_SEV(lg(), debug) << "Listing all tenant types";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t tenant_type_service::count_types() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total tenant types count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total tenant types count";
     return repo_.get_total_type_count(ctx_);
 }
 
 
 std::optional<domain::tenant_type> tenant_type_service::get_type_at_version(const std::string& type,
                                                                             std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting tenant type at version. " << "type: " << type
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting tenant type at version. " << "type: " << type
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, type, version);
 }
 
 std::optional<domain::tenant_type> tenant_type_service::find_type(const std::string& type) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding tenant type. " << "type: " << type;
+    ORES_LOG_SEV(lg(), debug) << "Finding tenant type. " << "type: " << type;
     auto results = repo_.read_latest(ctx_, type);
     if (results.empty())
         return std::nullopt;
@@ -475,11 +473,11 @@ tenant_type_service::get_types(const std::vector<std::string>& types) {
 void tenant_type_service::save_type(const domain::tenant_type& v) {
     if (v.type.empty())
         throw std::invalid_argument("Tenant Type type cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving tenant type. " << "type: " << v.type;
+    ORES_LOG_SEV(lg(), debug) << "Saving tenant type. " << "type: " << v.type;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved tenant type. " << "type: " << v.type;
+    ORES_LOG_SEV(lg(), info) << "Saved tenant type. " << "type: " << v.type;
 }
 
 void tenant_type_service::save_types(const std::vector<domain::tenant_type>& types) {
@@ -487,7 +485,7 @@ void tenant_type_service::save_types(const std::vector<domain::tenant_type>& typ
         if (e.type.empty())
             throw std::invalid_argument("Tenant Type type cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << types.size() << " tenant types";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << types.size() << " tenant types";
     auto ts = types;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -496,9 +494,9 @@ void tenant_type_service::save_types(const std::vector<domain::tenant_type>& typ
 }
 
 void tenant_type_service::delete_type(const std::string& type) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing tenant type. " << "type: " << type;
+    ORES_LOG_SEV(lg(), debug) << "Removing tenant type. " << "type: " << type;
     repo_.remove(ctx_, type);
-    BOOST_LOG_SEV(lg(), info) << "Removed tenant type. " << "type: " << type;
+    ORES_LOG_SEV(lg(), info) << "Removed tenant type. " << "type: " << type;
 }
 
 void tenant_type_service::delete_types(const std::vector<std::string>& types) {
@@ -506,7 +504,7 @@ void tenant_type_service::delete_types(const std::vector<std::string>& types) {
 }
 
 std::vector<domain::tenant_type> tenant_type_service::get_type_history(const std::string& type) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for tenant type. " << "type: " << type;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for tenant type. " << "type: " << type;
     return repo_.read_all(ctx_, type);
 }
 

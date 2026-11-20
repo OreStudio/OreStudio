@@ -25,7 +25,7 @@
 #ifndef ORES_REPORTING_CORE_REPOSITORY_ORE_FILE_VERSION_MAPPER_HPP
 #define ORES_REPORTING_CORE_REPOSITORY_ORE_FILE_VERSION_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.reporting.api/domain/ore_file_version.hpp"
 #include "ores.reporting.core/export.hpp"
 #include "ores.reporting.core/repository/ore_file_version_entity.hpp"

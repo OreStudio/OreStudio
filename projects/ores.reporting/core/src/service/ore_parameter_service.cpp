@@ -26,7 +26,6 @@
 #include "ores.reporting.api/domain/ore_parameter.hpp"
 #include "ores.reporting.api/messaging/ore_parameter_protocol.hpp"
 #include "ores.reporting.core/repository/ore_parameter_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -534,12 +532,12 @@ ore_parameter_service::prepare_change(const messaging::ore_parameter_change& cha
 
 std::vector<domain::ore_parameter> ore_parameter_service::list_parameters(std::uint32_t offset,
                                                                           std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all ore parameters";
+    ORES_LOG_SEV(lg(), debug) << "Listing all ore parameters";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t ore_parameter_service::count_parameters() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total ore parameters count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total ore parameters count";
     return repo_.get_total_parameter_count(ctx_);
 }
 
@@ -547,15 +545,15 @@ std::uint32_t ore_parameter_service::count_parameters() {
 std::vector<domain::ore_parameter>
 ore_parameter_service::list_parameters_by_ore_parameter_value_domain_code(
     const std::string& ore_parameter_value_domain_code, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing ore parameters by ore_parameter_value_domain_code: "
-                               << ore_parameter_value_domain_code;
+    ORES_LOG_SEV(lg(), debug) << "Listing ore parameters by ore_parameter_value_domain_code: "
+                              << ore_parameter_value_domain_code;
     return repo_.read_latest_by_ore_parameter_value_domain_code(
         ctx_, ore_parameter_value_domain_code, offset, limit);
 }
 
 std::uint32_t ore_parameter_service::count_parameters_by_ore_parameter_value_domain_code(
     const std::string& ore_parameter_value_domain_code) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Getting total ore parameters count by ore_parameter_value_domain_code: "
         << ore_parameter_value_domain_code;
     return repo_.get_total_parameter_count_by_ore_parameter_value_domain_code(
@@ -566,14 +564,14 @@ std::uint32_t ore_parameter_service::count_parameters_by_ore_parameter_value_dom
 std::optional<domain::ore_parameter>
 ore_parameter_service::get_parameter_at_version(const boost::uuids::uuid& id,
                                                 std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting ore parameter at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting ore parameter at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::ore_parameter>
 ore_parameter_service::get_parameter(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting ore parameter. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting ore parameter. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -582,7 +580,7 @@ ore_parameter_service::get_parameter(const boost::uuids::uuid& id) {
 
 std::optional<domain::ore_parameter>
 ore_parameter_service::get_parameter_by_name(const std::string& name) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting ore parameter by name: " << name;
+    ORES_LOG_SEV(lg(), debug) << "Getting ore parameter by name: " << name;
     messaging::ore_parameter_key k;
     k.name = name;
     auto found = ore_parameter_read_one(repo_, ctx_, k);
@@ -599,11 +597,11 @@ ore_parameter_service::get_parameters(const std::vector<std::string>& ids) {
 void ore_parameter_service::save_parameter(const domain::ore_parameter& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Ore Parameter id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving ore parameter. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving ore parameter. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved ore parameter. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved ore parameter. " << "id: " << v.id;
 }
 
 void ore_parameter_service::save_parameters(const std::vector<domain::ore_parameter>& parameters) {
@@ -611,7 +609,7 @@ void ore_parameter_service::save_parameters(const std::vector<domain::ore_parame
         if (e.id.is_nil())
             throw std::invalid_argument("Ore Parameter id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << parameters.size() << " ore parameters";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << parameters.size() << " ore parameters";
     auto ts = parameters;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -620,9 +618,9 @@ void ore_parameter_service::save_parameters(const std::vector<domain::ore_parame
 }
 
 void ore_parameter_service::delete_parameter(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing ore parameter. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing ore parameter. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed ore parameter. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed ore parameter. " << "id: " << id;
 }
 
 void ore_parameter_service::delete_parameters(const std::vector<std::string>& ids) {
@@ -631,7 +629,7 @@ void ore_parameter_service::delete_parameters(const std::vector<std::string>& id
 
 std::vector<domain::ore_parameter>
 ore_parameter_service::get_parameter_history(const std::string& key) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for ore parameter. key: " << key;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for ore parameter. key: " << key;
     // The caller holds the key the model declares and this reads by the
     // storage key, so the two are joined here exactly as they are for any
     // other read. Without this step a provider looks the versions up under a

@@ -21,7 +21,7 @@
 #define ORES_TRADING_CORE_SERVICE_BOND_INSTRUMENT_READER_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.trading.api/domain/bond_instrument_rows.hpp"
 #include "ores.trading.core/export.hpp"
 #include <optional>

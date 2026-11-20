@@ -25,7 +25,7 @@
 #ifndef ORES_TRADING_CORE_REPOSITORY_FLEXI_SWAP_LOWER_NOTIONAL_MAPPER_HPP
 #define ORES_TRADING_CORE_REPOSITORY_FLEXI_SWAP_LOWER_NOTIONAL_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.trading.api/domain/flexi_swap_lower_notional.hpp"
 #include "ores.trading.core/export.hpp"
 #include "ores.trading.core/repository/flexi_swap_lower_notional_entity.hpp"

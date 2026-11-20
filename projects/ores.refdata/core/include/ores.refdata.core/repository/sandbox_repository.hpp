@@ -26,7 +26,7 @@
 #define ORES_REFDATA_CORE_REPOSITORY_SANDBOX_REPOSITORY_HPP
 
 #include "ores.database/domain/context_fwd.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/sandbox.hpp"
 #include "ores.refdata.api/messaging/sandbox_protocol.hpp"
 #include "ores.refdata.core/export.hpp"

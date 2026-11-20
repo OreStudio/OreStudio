@@ -26,7 +26,7 @@
 #define ORES_TRADING_CORE_SERVICE_INFLATION_SWAP_INSTRUMENT_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.trading.api/domain/inflation_swap_instrument.hpp"
 #include "ores.trading.api/messaging/inflation_swap_instrument_protocol.hpp"
 #include "ores.trading.core/export.hpp"

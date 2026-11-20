@@ -26,13 +26,11 @@
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/counterparty_business_centre.hpp"
 #include "ores.refdata.api/domain/counterparty_business_centre_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/counterparty_business_centre_entity.hpp"
 #include "ores.refdata.core/repository/counterparty_business_centre_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -197,9 +195,9 @@ void counterparty_business_centre_repository::write(
 void counterparty_business_centre_repository::write(
     const domain::counterparty_business_centre& counterparty_business_centre,
     const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing counterparty business centre to database: "
-                               << counterparty_business_centre.counterparty_id << "/"
-                               << counterparty_business_centre.business_centre_code;
+    ORES_LOG_SEV(lg(), debug) << "Writing counterparty business centre to database: "
+                              << counterparty_business_centre.counterparty_id << "/"
+                              << counterparty_business_centre.business_centre_code;
     const auto current = claim.kind == ores::utility::domain::precondition_kind::any ?
                              read_latest(counterparty_business_centre.counterparty_id,
                                          counterparty_business_centre.business_centre_code) :
@@ -215,8 +213,8 @@ void counterparty_business_centre_repository::write(
 void counterparty_business_centre_repository::write(
     const std::vector<domain::counterparty_business_centre>& counterparty_business_centres,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing counterparty business centres to database. Count: "
-                               << counterparty_business_centres.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing counterparty business centres to database. Count: "
+                              << counterparty_business_centres.size();
     if (claims.size() != counterparty_business_centres.size())
         throw std::invalid_argument(
             "counterparty_business_centre_repository::write: one claim is needed for each row");
@@ -258,8 +256,8 @@ counterparty_business_centre_repository::read_latest() {
 
 std::vector<domain::counterparty_business_centre>
 counterparty_business_centre_repository::read_latest(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest counterparty business centres with offset: "
-                               << offset << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest counterparty business centres with offset: "
+                              << offset << " and limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<counterparty_business_centre_entity>> |
@@ -279,8 +277,8 @@ counterparty_business_centre_repository::read_latest(std::uint32_t offset, std::
 std::vector<domain::counterparty_business_centre>
 counterparty_business_centre_repository::read_latest(const boost::uuids::uuid& counterparty_id,
                                                      const std::string& business_centre_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest counterparty business centre. " << counterparty_id
-                               << "/" << business_centre_code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest counterparty business centre. " << counterparty_id
+                              << "/" << business_centre_code;
 
     static constexpr auto max = db_timestamp::max();
     const auto counterparty_id_str = boost::uuids::to_string(counterparty_id);
@@ -302,7 +300,7 @@ counterparty_business_centre_repository::read_latest(const boost::uuids::uuid& c
 
 std::uint32_t
 counterparty_business_centre_repository::get_total_counterparty_business_centre_count() {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active counterparty business centres count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active counterparty business centres count";
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
@@ -311,15 +309,15 @@ counterparty_business_centre_repository::get_total_counterparty_business_centre_
 
     const auto count = query_builder::execute_count_query<counterparty_business_centre_entity>(
         ctx_, query, std::nullopt, lg(), "Counting counterparty business centres");
-    BOOST_LOG_SEV(lg(), debug) << "Total active counterparty business centres count: " << count;
+    ORES_LOG_SEV(lg(), debug) << "Total active counterparty business centres count: " << count;
     return count;
 }
 
 std::vector<domain::counterparty_business_centre>
 counterparty_business_centre_repository::read_latest_by_counterparty(
     const boost::uuids::uuid& counterparty_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest counterparty business centres. Counterparty: "
-                               << counterparty_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest counterparty business centres. Counterparty: "
+                              << counterparty_id;
 
     static constexpr auto max = db_timestamp::max();
     const auto counterparty_id_str = boost::uuids::to_string(counterparty_id);
@@ -344,8 +342,8 @@ counterparty_business_centre_repository::read_latest_by_counterparty(
 std::vector<domain::counterparty_business_centre>
 counterparty_business_centre_repository::read_latest_by_business_centre(
     const std::string& business_centre_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest counterparty business centres. Business Centre: "
-                               << business_centre_code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest counterparty business centres. Business Centre: "
+                              << business_centre_code;
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
@@ -370,8 +368,8 @@ std::vector<domain::counterparty_business_centre>
 counterparty_business_centre_repository::read_latest_by_counterparty(
     const boost::uuids::uuid& counterparty_id, std::uint32_t offset, std::uint32_t limit) {
     const auto counterparty_id_str = boost::uuids::to_string(counterparty_id);
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest counterparty business centres. Counterparty: "
-                               << counterparty_id << " offset: " << offset << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest counterparty business centres. Counterparty: "
+                              << counterparty_id << " offset: " << offset << " limit: " << limit;
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
@@ -397,7 +395,7 @@ std::uint32_t counterparty_business_centre_repository::
     get_total_counterparty_business_centre_count_by_counterparty(
         const boost::uuids::uuid& counterparty_id) {
     const auto counterparty_id_str = boost::uuids::to_string(counterparty_id);
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Retrieving total active counterparty business centres count. Counterparty: "
         << counterparty_id;
     static constexpr auto max = db_timestamp::max();
@@ -410,7 +408,7 @@ std::uint32_t counterparty_business_centre_repository::
 
     const auto count = query_builder::execute_count_query<counterparty_business_centre_entity>(
         ctx_, query, std::nullopt, lg(), "Counting counterparty business centres");
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Total active counterparty business centres count by counterparty: " << count;
     return count;
 }
@@ -418,7 +416,7 @@ std::uint32_t counterparty_business_centre_repository::
 std::uint32_t counterparty_business_centre_repository::
     get_total_counterparty_business_centre_count_by_business_centre(
         const std::string& business_centre_code) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Retrieving total active counterparty business centres count. Business Centre: "
         << business_centre_code;
     static constexpr auto max = db_timestamp::max();
@@ -431,7 +429,7 @@ std::uint32_t counterparty_business_centre_repository::
 
     const auto count = query_builder::execute_count_query<counterparty_business_centre_entity>(
         ctx_, query, std::nullopt, lg(), "Counting counterparty business centres");
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Total active counterparty business centres count by business_centre: " << count;
     return count;
 }
@@ -439,7 +437,7 @@ std::uint32_t counterparty_business_centre_repository::
 std::vector<counterparty_business_centre_history_row>
 counterparty_business_centre_repository::read_all_by_counterparty(
     const boost::uuids::uuid& counterparty_id) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Reading every version of the counterparty business centres. Counterparty: "
         << counterparty_id;
 
@@ -494,8 +492,8 @@ counterparty_business_centre_repository::remove_status
 counterparty_business_centre_repository::remove(const boost::uuids::uuid& counterparty_id,
                                                 const std::string& business_centre_code,
                                                 std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing counterparty business centre from database: "
-                               << counterparty_id << "/" << business_centre_code;
+    ORES_LOG_SEV(lg(), debug) << "Removing counterparty business centre from database: "
+                              << counterparty_id << "/" << business_centre_code;
 
     const auto current = read_latest(counterparty_id, business_centre_code);
     if (current.empty())
@@ -544,8 +542,8 @@ void counterparty_business_centre_repository::remove(
 
 void counterparty_business_centre_repository::remove_by_counterparty(
     const boost::uuids::uuid& counterparty_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing all counterparty business centres from database: "
-                               << counterparty_id;
+    ORES_LOG_SEV(lg(), debug) << "Removing all counterparty business centres from database: "
+                              << counterparty_id;
 
     const auto counterparty_id_str = boost::uuids::to_string(counterparty_id);
     const auto tid = ctx_.tenant_id().to_string();

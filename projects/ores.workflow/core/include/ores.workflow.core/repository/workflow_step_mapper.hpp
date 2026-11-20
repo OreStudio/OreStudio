@@ -25,7 +25,7 @@
 #ifndef ORES_WORKFLOW_CORE_REPOSITORY_WORKFLOW_STEP_MAPPER_HPP
 #define ORES_WORKFLOW_CORE_REPOSITORY_WORKFLOW_STEP_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.workflow.api/domain/workflow_step.hpp"
 #include "ores.workflow.core/export.hpp"
 #include "ores.workflow.core/repository/workflow_step_entity.hpp"

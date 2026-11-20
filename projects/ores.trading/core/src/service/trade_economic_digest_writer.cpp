@@ -17,13 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/boost_severity.hpp"
 #include "ores.trading.api/domain/economic_digest.hpp"
 #include "ores.trading.api/domain/trade_economic_digest.hpp"
 #include "ores.trading.core/repository/trade_component_queries.hpp"
 #include "ores.trading.core/repository/trade_repository.hpp"
 #include "ores.trading.core/repository/trade_write_observation.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <string>
 #include <vector>
 
@@ -53,7 +51,7 @@ void refresh_trade_economic_digest(const context& ctx,
 
     const auto found = repository::trade_repository{}.read_latest(ctx, trade_id);
     if (found.empty()) {
-        BOOST_LOG_SEV(log, debug) << "No trade " << trade_id << " to digest.";
+        ORES_LOG_SEV(log, debug) << "No trade " << trade_id << " to digest.";
         return;
     }
     auto trade = found.front();
@@ -77,7 +75,7 @@ void refresh_trade_economic_digest(const context& ctx,
     const auto digest = domain::trade_economic_digest(trade, component_digests);
 
     if (!trade.economic_digest.empty() && trade.economic_digest == digest) {
-        BOOST_LOG_SEV(log, debug) << "Trade " << trade_id << " digest is unchanged.";
+        ORES_LOG_SEV(log, debug) << "Trade " << trade_id << " digest is unchanged.";
         return;
     }
 
@@ -90,7 +88,7 @@ void refresh_trade_economic_digest(const context& ctx,
     if (!is_system_reason(change_reason_code))
         ++trade.external_version;
     repository::trade_repository{}.write(ctx, trade);
-    BOOST_LOG_SEV(log, debug) << "Trade " << trade_id << " digest refreshed.";
+    ORES_LOG_SEV(log, debug) << "Trade " << trade_id << " digest refreshed.";
 }
 
 }

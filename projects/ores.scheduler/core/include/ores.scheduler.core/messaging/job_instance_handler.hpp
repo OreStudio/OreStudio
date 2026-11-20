@@ -21,7 +21,7 @@
 #define ORES_SCHEDULER_MESSAGING_JOB_INSTANCE_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.platform/time/datetime.hpp"
@@ -59,7 +59,7 @@ public:
         , verifier_(verifier) {}
 
     void list(ores::nats::message msg) {
-        BOOST_LOG_SEV(job_instance_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(job_instance_handler_lg(), debug) << "Handling " << msg.subject;
 
         auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
@@ -74,7 +74,7 @@ public:
 
         auto req = decode<get_job_instances_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(job_instance_handler_lg(), warn)
+            ORES_LOG_SEV(job_instance_handler_lg(), warn)
                 << "Failed to decode get_job_instances_request";
             reply(nats_,
                   msg,
@@ -127,14 +127,14 @@ public:
             resp.total_available_count = static_cast<int>(resp.instances.size());
             resp.success = true;
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(job_instance_handler_lg(), error)
+            ORES_LOG_SEV(job_instance_handler_lg(), error)
                 << "Error listing job instances: " << e.what();
             reply(nats_, msg, get_job_instances_response{.success = false, .message = e.what()});
             return;
         }
 
         reply(nats_, msg, resp);
-        BOOST_LOG_SEV(job_instance_handler_lg(), debug) << "Completed " << msg.subject;
+        ORES_LOG_SEV(job_instance_handler_lg(), debug) << "Completed " << msg.subject;
     }
 
 private:

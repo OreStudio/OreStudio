@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/ledger_feed_type.hpp"
 #include "ores.refdata.api/messaging/ledger_feed_type_protocol.hpp"
 #include "ores.refdata.core/repository/ledger_feed_type_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -448,26 +446,26 @@ ledger_feed_type_service::prepare_change(const messaging::ledger_feed_type_chang
 
 std::vector<domain::ledger_feed_type> ledger_feed_type_service::list_types(std::uint32_t offset,
                                                                            std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all ledger feed types";
+    ORES_LOG_SEV(lg(), debug) << "Listing all ledger feed types";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t ledger_feed_type_service::count_types() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total ledger feed types count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total ledger feed types count";
     return repo_.get_total_type_count(ctx_);
 }
 
 
 std::optional<domain::ledger_feed_type>
 ledger_feed_type_service::get_type_at_version(const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting ledger feed type at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting ledger feed type at version. " << "code: " << code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::ledger_feed_type>
 ledger_feed_type_service::get_type(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting ledger feed type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting ledger feed type. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -482,11 +480,11 @@ ledger_feed_type_service::get_types(const std::vector<std::string>& codes) {
 void ledger_feed_type_service::save_type(const domain::ledger_feed_type& v) {
     if (v.code.empty())
         throw std::invalid_argument("Ledger Feed Type code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving ledger feed type. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving ledger feed type. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved ledger feed type. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved ledger feed type. " << "code: " << v.code;
 }
 
 void ledger_feed_type_service::save_types(const std::vector<domain::ledger_feed_type>& types) {
@@ -494,7 +492,7 @@ void ledger_feed_type_service::save_types(const std::vector<domain::ledger_feed_
         if (e.code.empty())
             throw std::invalid_argument("Ledger Feed Type code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << types.size() << " ledger feed types";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << types.size() << " ledger feed types";
     auto ts = types;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -503,9 +501,9 @@ void ledger_feed_type_service::save_types(const std::vector<domain::ledger_feed_
 }
 
 void ledger_feed_type_service::delete_type(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing ledger feed type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing ledger feed type. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed ledger feed type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed ledger feed type. " << "code: " << code;
 }
 
 void ledger_feed_type_service::delete_types(const std::vector<std::string>& codes) {
@@ -514,7 +512,7 @@ void ledger_feed_type_service::delete_types(const std::vector<std::string>& code
 
 std::vector<domain::ledger_feed_type>
 ledger_feed_type_service::get_type_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for ledger feed type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for ledger feed type. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

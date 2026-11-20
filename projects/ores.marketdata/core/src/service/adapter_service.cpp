@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.marketdata.api/domain/adapter.hpp"
 #include "ores.marketdata.api/messaging/adapter_protocol.hpp"
 #include "ores.marketdata.core/repository/adapter_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -228,25 +226,25 @@ adapter_service::get_adapter_version(const messaging::get_adapter_version_reques
 
 std::vector<domain::adapter> adapter_service::list_adapters(std::uint32_t offset,
                                                             std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all adapters";
+    ORES_LOG_SEV(lg(), debug) << "Listing all adapters";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t adapter_service::count_adapters() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total adapters count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total adapters count";
     return repo_.get_total_adapter_count(ctx_);
 }
 
 
 std::optional<domain::adapter> adapter_service::get_adapter_at_version(const std::string& code,
                                                                        std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting adapter at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting adapter at version. " << "code: " << code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::adapter> adapter_service::get_adapter(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting adapter. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting adapter. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -260,11 +258,11 @@ std::vector<domain::adapter> adapter_service::get_adapters(const std::vector<std
 void adapter_service::save_adapter(const domain::adapter& v) {
     if (v.code.empty())
         throw std::invalid_argument("Adapter code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving adapter. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving adapter. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved adapter. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved adapter. " << "code: " << v.code;
 }
 
 void adapter_service::save_adapters(const std::vector<domain::adapter>& adapters) {
@@ -272,7 +270,7 @@ void adapter_service::save_adapters(const std::vector<domain::adapter>& adapters
         if (e.code.empty())
             throw std::invalid_argument("Adapter code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << adapters.size() << " adapters";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << adapters.size() << " adapters";
     auto ts = adapters;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -281,9 +279,9 @@ void adapter_service::save_adapters(const std::vector<domain::adapter>& adapters
 }
 
 void adapter_service::delete_adapter(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing adapter. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing adapter. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed adapter. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed adapter. " << "code: " << code;
 }
 
 void adapter_service::delete_adapters(const std::vector<std::string>& codes) {
@@ -291,7 +289,7 @@ void adapter_service::delete_adapters(const std::vector<std::string>& codes) {
 }
 
 std::vector<domain::adapter> adapter_service::get_adapter_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for adapter. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for adapter. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

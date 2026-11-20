@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/monetary_nature.hpp"
 #include "ores.refdata.api/messaging/monetary_nature_protocol.hpp"
 #include "ores.refdata.core/repository/monetary_nature_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -446,25 +444,25 @@ monetary_nature_service::prepare_change(const messaging::monetary_nature_change&
 
 std::vector<domain::monetary_nature> monetary_nature_service::list_types(std::uint32_t offset,
                                                                          std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all monetary natures";
+    ORES_LOG_SEV(lg(), debug) << "Listing all monetary natures";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t monetary_nature_service::count_types() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total monetary natures count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total monetary natures count";
     return repo_.get_total_type_count(ctx_);
 }
 
 
 std::optional<domain::monetary_nature>
 monetary_nature_service::get_type_at_version(const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting monetary nature at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting monetary nature at version. " << "code: " << code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::monetary_nature> monetary_nature_service::get_type(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting monetary nature. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting monetary nature. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -479,11 +477,11 @@ monetary_nature_service::get_types(const std::vector<std::string>& codes) {
 void monetary_nature_service::save_type(const domain::monetary_nature& v) {
     if (v.code.empty())
         throw std::invalid_argument("Monetary Nature code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving monetary nature. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving monetary nature. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved monetary nature. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved monetary nature. " << "code: " << v.code;
 }
 
 void monetary_nature_service::save_types(const std::vector<domain::monetary_nature>& types) {
@@ -491,7 +489,7 @@ void monetary_nature_service::save_types(const std::vector<domain::monetary_natu
         if (e.code.empty())
             throw std::invalid_argument("Monetary Nature code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << types.size() << " monetary natures";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << types.size() << " monetary natures";
     auto ts = types;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -500,9 +498,9 @@ void monetary_nature_service::save_types(const std::vector<domain::monetary_natu
 }
 
 void monetary_nature_service::delete_type(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing monetary nature. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing monetary nature. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed monetary nature. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed monetary nature. " << "code: " << code;
 }
 
 void monetary_nature_service::delete_types(const std::vector<std::string>& codes) {
@@ -511,7 +509,7 @@ void monetary_nature_service::delete_types(const std::vector<std::string>& codes
 
 std::vector<domain::monetary_nature>
 monetary_nature_service::get_type_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for monetary nature. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for monetary nature. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

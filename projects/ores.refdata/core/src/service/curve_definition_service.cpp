@@ -26,7 +26,6 @@
 #include "ores.refdata.api/domain/curve_definition.hpp"
 #include "ores.refdata.api/messaging/curve_definition_protocol.hpp"
 #include "ores.refdata.core/repository/curve_definition_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -486,12 +484,12 @@ curve_definition_service::prepare_change(const messaging::curve_definition_chang
 
 std::vector<domain::curve_definition> curve_definition_service::list_curves(std::uint32_t offset,
                                                                             std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all curve definitions";
+    ORES_LOG_SEV(lg(), debug) << "Listing all curve definitions";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t curve_definition_service::count_curves() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total curve definitions count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total curve definitions count";
     return repo_.get_total_curve_count(ctx_);
 }
 
@@ -499,14 +497,14 @@ std::uint32_t curve_definition_service::count_curves() {
 std::optional<domain::curve_definition>
 curve_definition_service::get_curve_at_version(const boost::uuids::uuid& id,
                                                std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting curve definition at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting curve definition at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::curve_definition>
 curve_definition_service::get_curve(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting curve definition. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting curve definition. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -515,7 +513,7 @@ curve_definition_service::get_curve(const boost::uuids::uuid& id) {
 
 std::optional<domain::curve_definition>
 curve_definition_service::get_curve_by_curve_id(const std::string& curve_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting curve definition by curve_id: " << curve_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting curve definition by curve_id: " << curve_id;
     messaging::curve_definition_key k;
     k.curve_id = curve_id;
     auto found = curve_definition_read_one(repo_, ctx_, k);
@@ -532,11 +530,11 @@ curve_definition_service::get_curves(const std::vector<std::string>& ids) {
 void curve_definition_service::save_curve(const domain::curve_definition& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Curve Definition id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving curve definition. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving curve definition. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved curve definition. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved curve definition. " << "id: " << v.id;
 }
 
 void curve_definition_service::save_curves(const std::vector<domain::curve_definition>& curves) {
@@ -544,7 +542,7 @@ void curve_definition_service::save_curves(const std::vector<domain::curve_defin
         if (e.id.is_nil())
             throw std::invalid_argument("Curve Definition id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << curves.size() << " curve definitions";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << curves.size() << " curve definitions";
     auto ts = curves;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -553,9 +551,9 @@ void curve_definition_service::save_curves(const std::vector<domain::curve_defin
 }
 
 void curve_definition_service::delete_curve(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing curve definition. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing curve definition. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed curve definition. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed curve definition. " << "id: " << id;
 }
 
 void curve_definition_service::delete_curves(const std::vector<std::string>& ids) {
@@ -564,7 +562,7 @@ void curve_definition_service::delete_curves(const std::vector<std::string>& ids
 
 std::vector<domain::curve_definition>
 curve_definition_service::get_curve_history(const std::string& key) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for curve definition. key: " << key;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for curve definition. key: " << key;
     // The caller holds the key the model declares and this reads by the
     // storage key, so the two are joined here exactly as they are for any
     // other read. Without this step a provider looks the versions up under a

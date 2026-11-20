@@ -20,7 +20,7 @@
 #ifndef ORES_SHELL_APP_COMMANDS_NAVIGATION_COMMANDS_HPP
 #define ORES_SHELL_APP_COMMANDS_NAVIGATION_COMMANDS_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.shell/app/pagination_context.hpp"
 #include <iosfwd>
 

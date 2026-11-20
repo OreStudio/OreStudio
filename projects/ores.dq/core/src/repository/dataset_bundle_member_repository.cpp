@@ -30,9 +30,7 @@
 #include "ores.dq.api/domain/dataset_bundle_member_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.core/repository/dataset_bundle_member_entity.hpp"
 #include "ores.dq.core/repository/dataset_bundle_member_mapper.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -190,8 +188,8 @@ void dataset_bundle_member_repository::write(
 
 void dataset_bundle_member_repository::write(const domain::dataset_bundle_member& member,
                                              const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing dataset bundle member to database: "
-                               << member.bundle_code << "/" << member.dataset_code;
+    ORES_LOG_SEV(lg(), debug) << "Writing dataset bundle member to database: " << member.bundle_code
+                              << "/" << member.dataset_code;
     const auto current = claim.kind == ores::utility::domain::precondition_kind::any ?
                              read_latest(member.bundle_code, member.dataset_code) :
                              std::vector<domain::dataset_bundle_member>{};
@@ -205,8 +203,8 @@ void dataset_bundle_member_repository::write(const domain::dataset_bundle_member
 void dataset_bundle_member_repository::write(
     const std::vector<domain::dataset_bundle_member>& members,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing dataset bundle members to database. Count: "
-                               << members.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing dataset bundle members to database. Count: "
+                              << members.size();
     if (claims.size() != members.size())
         throw std::invalid_argument(
             "dataset_bundle_member_repository::write: one claim is needed for each row");
@@ -245,8 +243,8 @@ std::vector<domain::dataset_bundle_member> dataset_bundle_member_repository::rea
 
 std::vector<domain::dataset_bundle_member>
 dataset_bundle_member_repository::read_latest(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest dataset bundle members with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest dataset bundle members with offset: " << offset
+                              << " and limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<dataset_bundle_member_entity>> |
@@ -266,8 +264,8 @@ dataset_bundle_member_repository::read_latest(std::uint32_t offset, std::uint32_
 std::vector<domain::dataset_bundle_member>
 dataset_bundle_member_repository::read_latest(const std::string& bundle_code,
                                               const std::string& dataset_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest dataset bundle member. " << bundle_code << "/"
-                               << dataset_code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest dataset bundle member. " << bundle_code << "/"
+                              << dataset_code;
 
     static constexpr auto max = db_timestamp::max();
     const auto bundle_code_str = bundle_code;
@@ -288,7 +286,7 @@ dataset_bundle_member_repository::read_latest(const std::string& bundle_code,
 }
 
 std::uint32_t dataset_bundle_member_repository::get_total_member_count() {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active dataset bundle members count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active dataset bundle members count";
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
@@ -297,13 +295,13 @@ std::uint32_t dataset_bundle_member_repository::get_total_member_count() {
 
     const auto count = query_builder::execute_count_query<dataset_bundle_member_entity>(
         ctx_, query, std::nullopt, lg(), "Counting dataset bundle members");
-    BOOST_LOG_SEV(lg(), debug) << "Total active dataset bundle members count: " << count;
+    ORES_LOG_SEV(lg(), debug) << "Total active dataset bundle members count: " << count;
     return count;
 }
 
 std::vector<domain::dataset_bundle_member>
 dataset_bundle_member_repository::read_latest_by_bundle(const std::string& bundle_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest dataset bundle members. Bundle: " << bundle_code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest dataset bundle members. Bundle: " << bundle_code;
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
@@ -325,8 +323,7 @@ dataset_bundle_member_repository::read_latest_by_bundle(const std::string& bundl
 
 std::vector<domain::dataset_bundle_member>
 dataset_bundle_member_repository::read_latest_by_dataset(const std::string& dataset_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest dataset bundle members. Dataset: "
-                               << dataset_code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest dataset bundle members. Dataset: " << dataset_code;
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
@@ -349,8 +346,8 @@ dataset_bundle_member_repository::read_latest_by_dataset(const std::string& data
 
 std::vector<domain::dataset_bundle_member> dataset_bundle_member_repository::read_latest_by_bundle(
     const std::string& bundle_code, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest dataset bundle members. Bundle: " << bundle_code
-                               << " offset: " << offset << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest dataset bundle members. Bundle: " << bundle_code
+                              << " offset: " << offset << " limit: " << limit;
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
@@ -373,8 +370,8 @@ std::vector<domain::dataset_bundle_member> dataset_bundle_member_repository::rea
 
 std::uint32_t
 dataset_bundle_member_repository::get_total_member_count_by_bundle(const std::string& bundle_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active dataset bundle members count. Bundle: "
-                               << bundle_code;
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active dataset bundle members count. Bundle: "
+                              << bundle_code;
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
@@ -384,14 +381,14 @@ dataset_bundle_member_repository::get_total_member_count_by_bundle(const std::st
 
     const auto count = query_builder::execute_count_query<dataset_bundle_member_entity>(
         ctx_, query, std::nullopt, lg(), "Counting dataset bundle members");
-    BOOST_LOG_SEV(lg(), debug) << "Total active dataset bundle members count by bundle: " << count;
+    ORES_LOG_SEV(lg(), debug) << "Total active dataset bundle members count by bundle: " << count;
     return count;
 }
 
 std::uint32_t dataset_bundle_member_repository::get_total_member_count_by_dataset(
     const std::string& dataset_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active dataset bundle members count. Dataset: "
-                               << dataset_code;
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active dataset bundle members count. Dataset: "
+                              << dataset_code;
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
@@ -402,14 +399,14 @@ std::uint32_t dataset_bundle_member_repository::get_total_member_count_by_datase
 
     const auto count = query_builder::execute_count_query<dataset_bundle_member_entity>(
         ctx_, query, std::nullopt, lg(), "Counting dataset bundle members");
-    BOOST_LOG_SEV(lg(), debug) << "Total active dataset bundle members count by dataset: " << count;
+    ORES_LOG_SEV(lg(), debug) << "Total active dataset bundle members count by dataset: " << count;
     return count;
 }
 
 std::vector<dataset_bundle_member_history_row>
 dataset_bundle_member_repository::read_all_by_bundle(const std::string& bundle_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading every version of the dataset bundle members. Bundle: "
-                               << bundle_code;
+    ORES_LOG_SEV(lg(), debug) << "Reading every version of the dataset bundle members. Bundle: "
+                              << bundle_code;
 
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =
@@ -460,8 +457,8 @@ dataset_bundle_member_repository::remove_status
 dataset_bundle_member_repository::remove(const std::string& bundle_code,
                                          const std::string& dataset_code,
                                          std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing dataset bundle member from database: " << bundle_code
-                               << "/" << dataset_code;
+    ORES_LOG_SEV(lg(), debug) << "Removing dataset bundle member from database: " << bundle_code
+                              << "/" << dataset_code;
 
     const auto current = read_latest(bundle_code, dataset_code);
     if (current.empty())
@@ -508,8 +505,8 @@ void dataset_bundle_member_repository::remove(const std::vector<std::string>& bu
 }
 
 void dataset_bundle_member_repository::remove_by_bundle(const std::string& bundle_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing all dataset bundle members from database: "
-                               << bundle_code;
+    ORES_LOG_SEV(lg(), debug) << "Removing all dataset bundle members from database: "
+                              << bundle_code;
 
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::delete_from<dataset_bundle_member_entity> |

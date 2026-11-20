@@ -26,7 +26,6 @@
 #include "ores.synthetic.api/domain/calibration_provider_order.hpp"
 #include "ores.synthetic.api/messaging/calibration_provider_order_protocol.hpp"
 #include "ores.synthetic.core/repository/calibration_provider_order_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -485,12 +483,12 @@ ores::utility::domain::result calibration_provider_order_service::prepare_change
 std::vector<domain::calibration_provider_order>
 calibration_provider_order_service::list_provider_orders(std::uint32_t offset,
                                                          std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all calibration provider orders";
+    ORES_LOG_SEV(lg(), debug) << "Listing all calibration provider orders";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t calibration_provider_order_service::count_provider_orders() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total calibration provider orders count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total calibration provider orders count";
     return repo_.get_total_provider_order_count(ctx_);
 }
 
@@ -498,14 +496,14 @@ std::uint32_t calibration_provider_order_service::count_provider_orders() {
 std::optional<domain::calibration_provider_order>
 calibration_provider_order_service::get_provider_order_at_version(const boost::uuids::uuid& id,
                                                                   std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting calibration provider order at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting calibration provider order at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::calibration_provider_order>
 calibration_provider_order_service::get_provider_order(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting calibration provider order. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting calibration provider order. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -521,11 +519,11 @@ void calibration_provider_order_service::save_provider_order(
     const domain::calibration_provider_order& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Calibration Provider Order id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving calibration provider order. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving calibration provider order. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved calibration provider order. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved calibration provider order. " << "id: " << v.id;
 }
 
 void calibration_provider_order_service::save_provider_orders(
@@ -534,8 +532,8 @@ void calibration_provider_order_service::save_provider_orders(
         if (e.id.is_nil())
             throw std::invalid_argument("Calibration Provider Order id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << provider_orders.size()
-                               << " calibration provider orders";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << provider_orders.size()
+                              << " calibration provider orders";
     auto ts = provider_orders;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -544,9 +542,9 @@ void calibration_provider_order_service::save_provider_orders(
 }
 
 void calibration_provider_order_service::delete_provider_order(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing calibration provider order. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing calibration provider order. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed calibration provider order. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed calibration provider order. " << "id: " << id;
 }
 
 void calibration_provider_order_service::delete_provider_orders(
@@ -556,8 +554,7 @@ void calibration_provider_order_service::delete_provider_orders(
 
 std::vector<domain::calibration_provider_order>
 calibration_provider_order_service::get_provider_order_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for calibration provider order. "
-                               << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for calibration provider order. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

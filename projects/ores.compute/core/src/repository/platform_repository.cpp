@@ -32,9 +32,7 @@
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/service/tenant_context.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -228,7 +226,7 @@ void platform_repository::write(const context& ctx, const std::vector<domain::pl
 void platform_repository::write(const context& ctx,
                                 const domain::platform& v,
                                 const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing compute platform. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Writing compute platform. " << "id: " << v.id;
     const auto t = platform_apply_claim(
         v,
         claim,
@@ -242,7 +240,7 @@ void platform_repository::write(const context& ctx,
 void platform_repository::write(const context& ctx,
                                 const std::vector<domain::platform>& v,
                                 const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing compute platforms. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing compute platforms. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument("platform_repository::write: one claim is needed for each row");
     std::vector<domain::platform> to_read;
@@ -278,7 +276,7 @@ std::vector<domain::platform> platform_repository::read_latest(const context& ct
 
 std::vector<domain::platform> platform_repository::read_latest(const context& ctx,
                                                                const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest compute platform. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest compute platform. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
@@ -296,7 +294,7 @@ std::vector<domain::platform> platform_repository::read_latest(const context& ct
 
 std::vector<domain::platform> platform_repository::read_latest_by_code(const context& ctx,
                                                                        const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest compute platform by code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest compute platform by code: " << code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
@@ -332,8 +330,8 @@ platform_repository::read_latest_by_code(const context& ctx,
         }
         return all;
     }
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest compute platforms by code. Count: "
-                               << codes.size();
+    ORES_LOG_SEV(lg(), debug) << "Reading latest compute platforms by code. Count: "
+                              << codes.size();
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
@@ -351,7 +349,7 @@ platform_repository::read_latest_by_code(const context& ctx,
 
 std::vector<domain::platform> platform_repository::read_any_by_code(const context& ctx,
                                                                     const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading any compute platform by code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Reading any compute platform by code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
@@ -370,7 +368,7 @@ std::vector<domain::platform> platform_repository::read_any_by_code(const contex
 
 std::vector<domain::platform> platform_repository::read_all(const context& ctx,
                                                             const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all compute platform versions. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading all compute platform versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
@@ -389,8 +387,8 @@ std::vector<domain::platform> platform_repository::read_all(const context& ctx,
 std::optional<domain::platform> platform_repository::read_at_version(const context& ctx,
                                                                      const std::string& id,
                                                                      std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading compute platform at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading compute platform at version. " << "id: " << id
+                              << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<platform_entity>> |
@@ -412,7 +410,7 @@ std::optional<domain::platform> platform_repository::read_at_version(const conte
 
 platform_repository::remove_status platform_repository::remove(
     const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing compute platform. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing compute platform. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
         return remove_status::missing;
@@ -451,8 +449,8 @@ platform_repository::read_latest(const context& ctx,
                                  const ores::utility::domain::order& order,
                                  const std::optional<messaging::platforms_filter>& filter,
                                  const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest compute platforms with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest compute platforms with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<platform_entity>> |
@@ -473,7 +471,7 @@ std::uint32_t platform_repository::get_total_platform_count(
     const context& ctx,
     const std::optional<messaging::platforms_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active compute platform count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active compute platform count";
 
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);

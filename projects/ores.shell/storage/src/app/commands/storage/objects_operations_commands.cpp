@@ -132,7 +132,7 @@ void objects_operations_commands::register_commands(cli::Menu& root_menu, nats_c
 void objects_operations_commands::process_put_objects(std::ostream& out,
                                                       nats_client& session,
                                                       const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating put-objects request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating put-objects request.";
 
     using request_type = ores::storage::messaging::put_objects_request;
 
@@ -190,7 +190,7 @@ void objects_operations_commands::process_put_objects(std::ostream& out,
 void objects_operations_commands::process_get_objects(std::ostream& out,
                                                       nats_client& session,
                                                       const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating get-objects request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating get-objects request.";
 
     using request_type = ores::storage::messaging::get_objects_request;
 
@@ -255,7 +255,7 @@ void objects_operations_commands::process_get_objects(std::ostream& out,
 void objects_operations_commands::process_delete_objects(std::ostream& out,
                                                          nats_client& session,
                                                          const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating delete-objects request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating delete-objects request.";
 
     using request_type = ores::storage::messaging::delete_objects_request;
 
@@ -311,7 +311,7 @@ void objects_operations_commands::process_delete_objects(std::ostream& out,
 void objects_operations_commands::process_list_objects(std::ostream& out,
                                                        nats_client& session,
                                                        const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating list-objects request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating list-objects request.";
 
     using request_type = ores::storage::messaging::list_objects_request;
 
@@ -375,7 +375,7 @@ void objects_operations_commands::process_list_objects(std::ostream& out,
 
 void objects_operations_commands::process_list_archive_entries(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating list-archive-entries request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating list-archive-entries request.";
 
     using request_type = ores::storage::messaging::list_archive_entries_request;
 

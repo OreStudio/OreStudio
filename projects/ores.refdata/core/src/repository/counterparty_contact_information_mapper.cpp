@@ -24,12 +24,10 @@
  */
 #include "ores.refdata.core/repository/counterparty_contact_information_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/counterparty_contact_information.hpp"
 #include "ores.refdata.api/domain/counterparty_contact_information_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/counterparty_contact_information_entity.hpp"
 #include <boost/lexical_cast.hpp>
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <optional>
@@ -42,7 +40,7 @@ using namespace ores::database::repository;
 
 domain::counterparty_contact_information
 counterparty_contact_information_mapper::map(const counterparty_contact_information_entity& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::counterparty_contact_information r;
     r.version = v.version;
@@ -65,13 +63,13 @@ counterparty_contact_information_mapper::map(const counterparty_contact_informat
     r.change_commentary = v.change_commentary;
     r.recorded_at = v.valid_from;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
 }
 
 counterparty_contact_information_entity
 counterparty_contact_information_mapper::map(const domain::counterparty_contact_information& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     counterparty_contact_information_entity r;
     r.id = v.id;
@@ -93,7 +91,7 @@ counterparty_contact_information_mapper::map(const domain::counterparty_contact_
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;
 }
 

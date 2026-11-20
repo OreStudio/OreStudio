@@ -18,7 +18,7 @@
  *
  */
 #include "ores.logging/boost_severity.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.telemetry.core/domain/resource.hpp"
 #include "ores.telemetry.core/log/database_sink_backend.hpp"
 #include "ores.telemetry.core/log/database_sink_utils.hpp"
@@ -43,7 +43,7 @@ namespace {
  * immediately after the record is locked.
  */
 boost::log::record_view make_record(const std::string& message,
-                                    ores::logging::boost_severity severity,
+                                    ores::logging::detail::boost_severity severity,
                                     const std::string& channel) {
     boost::log::attribute_value_set values;
     values.insert("Message", boost::log::attributes::make_attribute_value(message));
@@ -82,7 +82,8 @@ TEST_CASE("database_sink_backend_constructs_with_defaults", "[database_sink_back
     };
 
     database_sink_backend backend(resource, handler);
-    backend.consume(make_record("default source message", boost_severity::debug, "test.component"));
+    backend.consume(
+        make_record("default source message", detail::boost_severity::debug, "test.component"));
 
     REQUIRE(captured_entries.size() == 1);
     const auto& entry = captured_entries[0];
@@ -94,7 +95,7 @@ TEST_CASE("database_sink_backend_constructs_with_defaults", "[database_sink_back
     REQUIRE_FALSE(entry.session_id.has_value());
     REQUIRE_FALSE(entry.account_id.has_value());
 
-    BOOST_LOG_SEV(lg, debug) << "Backend constructed successfully with defaults";
+    ORES_LOG_SEV(lg, debug) << "Backend constructed successfully with defaults";
 }
 
 TEST_CASE("database_sink_backend_constructs_with_custom_source", "[database_sink_backend]") {
@@ -108,7 +109,8 @@ TEST_CASE("database_sink_backend_constructs_with_custom_source", "[database_sink
     };
 
     database_sink_backend backend(resource, handler, "server", "my-service");
-    backend.consume(make_record("custom source message", boost_severity::warn, "custom.component"));
+    backend.consume(
+        make_record("custom source message", detail::boost_severity::warn, "custom.component"));
 
     REQUIRE(captured_entries.size() == 1);
     const auto& entry = captured_entries[0];
@@ -118,7 +120,7 @@ TEST_CASE("database_sink_backend_constructs_with_custom_source", "[database_sink
     REQUIRE(entry.message == "custom source message");
     REQUIRE(entry.component == "custom.component");
 
-    BOOST_LOG_SEV(lg, debug) << "Backend constructed successfully with custom source";
+    ORES_LOG_SEV(lg, debug) << "Backend constructed successfully with custom source";
 }
 
 TEST_CASE("database_sink_backend_accepts_session_and_account_ids", "[database_sink_backend]") {
@@ -139,7 +141,7 @@ TEST_CASE("database_sink_backend_accepts_session_and_account_ids", "[database_si
 
     backend.set_session_id(session_id);
     backend.set_account_id(account_id);
-    backend.consume(make_record("ids message", boost_severity::info, "ids.component"));
+    backend.consume(make_record("ids message", detail::boost_severity::info, "ids.component"));
 
     REQUIRE(captured_entries.size() == 1);
     const auto& entry = captured_entries[0];
@@ -149,7 +151,7 @@ TEST_CASE("database_sink_backend_accepts_session_and_account_ids", "[database_si
     REQUIRE(entry.account_id.has_value());
     REQUIRE(entry.account_id.value() == account_id);
 
-    BOOST_LOG_SEV(lg, debug) << "Session and account IDs set successfully";
+    ORES_LOG_SEV(lg, debug) << "Session and account IDs set successfully";
 }
 
 TEST_CASE("make_forwarding_handler_forwards_entries", "[database_sink_backend]") {
@@ -179,7 +181,7 @@ TEST_CASE("make_forwarding_handler_forwards_entries", "[database_sink_backend]")
     REQUIRE(received_entries[0].message == "Test forwarding");
     REQUIRE(received_entries[0].level == "info");
 
-    BOOST_LOG_SEV(lg, debug) << "Forwarding handler works correctly";
+    ORES_LOG_SEV(lg, debug) << "Forwarding handler works correctly";
 }
 
 TEST_CASE("make_forwarding_handler_handles_exceptions", "[database_sink_backend]") {
@@ -209,7 +211,7 @@ TEST_CASE("make_forwarding_handler_handles_exceptions", "[database_sink_backend]
     REQUIRE(captured_stderr.str() ==
             "[Logging Sink Error] Failed to forward log entry: Test exception\n");
 
-    BOOST_LOG_SEV(lg, debug) << "Exception handling in forwarding handler works";
+    ORES_LOG_SEV(lg, debug) << "Exception handling in forwarding handler works";
 }
 
 // Note: lifecycle_manager integration test removed because creating a second
@@ -228,5 +230,5 @@ TEST_CASE("telemetry_log_entry_has_correct_defaults", "[database_sink_backend]")
     // Check default source
     REQUIRE(entry.source == telemetry_source::client);
 
-    BOOST_LOG_SEV(lg, debug) << "Telemetry log entry defaults are correct";
+    ORES_LOG_SEV(lg, debug) << "Telemetry log entry defaults are correct";
 }

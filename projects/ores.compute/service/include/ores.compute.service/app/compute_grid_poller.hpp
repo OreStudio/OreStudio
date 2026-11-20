@@ -21,7 +21,7 @@
 #define ORES_COMPUTE_SERVICE_APP_COMPUTE_GRID_POLLER_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include <boost/asio/awaitable.hpp>
 #include <cstdint>
 

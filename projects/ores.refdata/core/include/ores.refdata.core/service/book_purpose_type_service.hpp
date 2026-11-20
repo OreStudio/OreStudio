@@ -26,7 +26,7 @@
 #define ORES_REFDATA_CORE_SERVICE_BOOK_PURPOSE_TYPE_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/book_purpose_type.hpp"
 #include "ores.refdata.api/messaging/book_purpose_type_protocol.hpp"
 #include "ores.refdata.core/export.hpp"

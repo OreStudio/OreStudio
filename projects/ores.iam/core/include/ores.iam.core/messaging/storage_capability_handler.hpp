@@ -22,7 +22,7 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.iam.api/messaging/storage_capability_operations_protocol.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.security/jwt/jwt_claims.hpp"
@@ -94,7 +94,7 @@ public:
         };
 
         if (!has_permission(*req_ctx, mint_permission)) {
-            BOOST_LOG_SEV(storage_capability_handler_lg(), warn)
+            ORES_LOG_SEV(storage_capability_handler_lg(), warn)
                 << "mint denied: the caller lacks " << mint_permission;
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -139,7 +139,7 @@ public:
         try {
             token = signer_->create_token(claims);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(storage_capability_handler_lg(), error)
+            ORES_LOG_SEV(storage_capability_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             refuse(std::string("The storage capability could not be signed: ") + e.what());
             return;
@@ -149,7 +149,7 @@ public:
             return;
         }
 
-        BOOST_LOG_SEV(storage_capability_handler_lg(), info)
+        ORES_LOG_SEV(storage_capability_handler_lg(), info)
             << "Minted a storage capability for tenant " << *claims.tenant_id << " with "
             << claims.storage_grants.size() << " grant(s)";
 

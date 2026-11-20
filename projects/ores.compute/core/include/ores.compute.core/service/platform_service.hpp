@@ -30,7 +30,7 @@
 #include "ores.compute.core/export.hpp"
 #include "ores.compute.core/repository/platform_repository.hpp"
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include <chrono>
 #include <cstdint>
 #include <optional>

@@ -27,8 +27,6 @@
 #include "ores.inbox.api/domain/approval_decision_type.hpp"
 #include "ores.inbox.api/domain/approval_decision_type_json_io.hpp" // IWYU pragma: keep.
 #include "ores.inbox.core/repository/approval_decision_type_entity.hpp"
-#include "ores.logging/boost_severity.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <vector>
 
 namespace ores::inbox::repository {
@@ -38,7 +36,7 @@ using namespace ores::database::repository;
 
 domain::approval_decision_type
 approval_decision_type_mapper::map(const approval_decision_type_entity& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::approval_decision_type r;
     r.version = v.version;
@@ -54,13 +52,13 @@ approval_decision_type_mapper::map(const approval_decision_type_entity& v) {
     r.change_commentary = v.change_commentary;
     r.recorded_at = v.valid_from;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
 }
 
 approval_decision_type_entity
 approval_decision_type_mapper::map(const domain::approval_decision_type& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     approval_decision_type_entity r;
     r.code = v.code;
@@ -75,7 +73,7 @@ approval_decision_type_mapper::map(const domain::approval_decision_type& v) {
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;
 }
 

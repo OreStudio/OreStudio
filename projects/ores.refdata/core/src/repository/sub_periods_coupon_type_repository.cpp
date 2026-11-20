@@ -27,14 +27,12 @@
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/service/tenant_context.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/sub_periods_coupon_type.hpp"
 #include "ores.refdata.api/domain/sub_periods_coupon_type_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/messaging/sub_periods_coupon_type_protocol.hpp"
 #include "ores.refdata.core/repository/sub_periods_coupon_type_entity.hpp"
 #include "ores.refdata.core/repository/sub_periods_coupon_type_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -236,7 +234,7 @@ void sub_periods_coupon_type_repository::write(
 void sub_periods_coupon_type_repository::write(const context& ctx,
                                                const domain::sub_periods_coupon_type& v,
                                                const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing sub-periods coupon type. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Writing sub-periods coupon type. " << "code: " << v.code;
     const auto t = sub_periods_coupon_type_apply_claim(
         v,
         claim,
@@ -253,7 +251,7 @@ void sub_periods_coupon_type_repository::write(
     const context& ctx,
     const std::vector<domain::sub_periods_coupon_type>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing sub-periods coupon types. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing sub-periods coupon types. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "sub_periods_coupon_type_repository::write: one claim is needed for each row");
@@ -295,7 +293,7 @@ sub_periods_coupon_type_repository::read_latest(const context& ctx) {
 
 std::vector<domain::sub_periods_coupon_type>
 sub_periods_coupon_type_repository::read_latest(const context& ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest sub-periods coupon type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest sub-periods coupon type. " << "code: " << code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
@@ -315,8 +313,8 @@ sub_periods_coupon_type_repository::read_latest(const context& ctx, const std::s
 
 std::vector<domain::sub_periods_coupon_type>
 sub_periods_coupon_type_repository::read_all(const context& ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all sub-periods coupon type versions. "
-                               << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Reading all sub-periods coupon type versions. "
+                              << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
@@ -335,8 +333,8 @@ sub_periods_coupon_type_repository::read_all(const context& ctx, const std::stri
 
 std::optional<domain::sub_periods_coupon_type> sub_periods_coupon_type_repository::read_at_version(
     const context& ctx, const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading sub-periods coupon type at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading sub-periods coupon type at version. " << "code: " << code
+                              << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<sub_periods_coupon_type_entity>> |
@@ -359,7 +357,7 @@ std::optional<domain::sub_periods_coupon_type> sub_periods_coupon_type_repositor
 
 sub_periods_coupon_type_repository::remove_status sub_periods_coupon_type_repository::remove(
     const context& ctx, const std::string& code, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing sub-periods coupon type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing sub-periods coupon type. " << "code: " << code;
     const auto current = read_latest(ctx, code);
     if (current.empty())
         return remove_status::missing;
@@ -398,8 +396,8 @@ std::vector<domain::sub_periods_coupon_type> sub_periods_coupon_type_repository:
     const ores::utility::domain::order& order,
     const std::optional<messaging::sub_periods_coupon_types_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest sub-periods coupon types with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest sub-periods coupon types with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<sub_periods_coupon_type_entity>> |
@@ -422,7 +420,7 @@ std::uint32_t sub_periods_coupon_type_repository::get_total_type_count(
     const context& ctx,
     const std::optional<messaging::sub_periods_coupon_types_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active sub-periods coupon type count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active sub-periods coupon type count";
 
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);

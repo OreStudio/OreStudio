@@ -19,7 +19,7 @@
  */
 #include "ores.http.api/domain/http_request.hpp"
 #include "ores.http/routes/workflow/workflow_routes.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "route_answer.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
@@ -58,7 +58,7 @@ http_request logs_at(const std::vector<std::pair<std::string, std::string>>& que
 
 TEST_CASE("the_roster_reaches_the_service_and_takes_no_query", "[workflow_operations]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the services roster with no service behind it";
+    ORES_LOG_SEV(lg, info) << "Testing the services roster with no service behind it";
 
     CHECK(answer_at<workflow_routes>(
               http_method::get, services_pattern, http_request{}, services_pattern)
@@ -74,7 +74,7 @@ TEST_CASE("the_roster_reaches_the_service_and_takes_no_query", "[workflow_operat
 
 TEST_CASE("the_logs_name_a_range_or_they_are_refused", "[workflow_operations]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the range a logs read states";
+    ORES_LOG_SEV(lg, info) << "Testing the range a logs read states";
 
     const std::vector<std::vector<std::pair<std::string, std::string>>> queries = {
         {}, {{"range", "1y"}}, {{"range", ""}}};
@@ -88,7 +88,7 @@ TEST_CASE("the_logs_name_a_range_or_they_are_refused", "[workflow_operations]") 
 
 TEST_CASE("the_logs_take_the_filters_the_journey_names", "[workflow_operations]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the filters a logs read does not name";
+    ORES_LOG_SEV(lg, info) << "Testing the filters a logs read does not name";
 
     const std::vector<std::vector<std::pair<std::string, std::string>>> queries = {
         {{"range", "1h"}, {"level", "fatal"}},
@@ -107,7 +107,7 @@ TEST_CASE("the_logs_take_the_filters_the_journey_names", "[workflow_operations]"
 
 TEST_CASE("a_page_of_logs_reaches_the_service", "[workflow_operations]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a logs read with no service behind it";
+    ORES_LOG_SEV(lg, info) << "Testing a logs read with no service behind it";
 
     const std::vector<std::vector<std::pair<std::string, std::string>>> queries = {
         {{"range", "15m"}},

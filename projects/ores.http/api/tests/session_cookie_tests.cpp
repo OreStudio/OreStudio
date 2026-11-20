@@ -18,7 +18,7 @@
  *
  */
 #include "ores.http.api/domain/session_cookie.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <string>
@@ -45,7 +45,7 @@ cookie_settings tls_settings() {
 
 TEST_CASE("a_session_cookie_is_httponly_and_same_site", "[session_cookie]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the flags a session cookie carries";
+    ORES_LOG_SEV(lg, info) << "Testing the flags a session cookie carries";
 
     const auto issued = session_cookie::issue(plain_settings(), "the-identifier");
 
@@ -59,7 +59,7 @@ TEST_CASE("a_session_cookie_is_httponly_and_same_site", "[session_cookie]") {
 
 TEST_CASE("over_tls_the_cookie_is_secure_and_prefixed_for_the_host", "[session_cookie]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the prefix a Secure cookie requires";
+    ORES_LOG_SEV(lg, info) << "Testing the prefix a Secure cookie requires";
 
     const auto settings = tls_settings();
     const auto issued = session_cookie::issue(settings, "the-identifier");
@@ -74,7 +74,7 @@ TEST_CASE("over_tls_the_cookie_is_secure_and_prefixed_for_the_host", "[session_c
 
 TEST_CASE("the_identifier_is_read_back_from_a_cookie_header", "[session_cookie]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the parse, which has to survive other cookies";
+    ORES_LOG_SEV(lg, info) << "Testing the parse, which has to survive other cookies";
 
     const auto settings = plain_settings();
 
@@ -91,7 +91,7 @@ TEST_CASE("the_identifier_is_read_back_from_a_cookie_header", "[session_cookie]"
 
 TEST_CASE("a_cookie_for_another_deployment_is_not_this_session", "[session_cookie]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that two deployments on a host cannot swap sessions";
+    ORES_LOG_SEV(lg, info) << "Testing that two deployments on a host cannot swap sessions";
 
     auto settings = plain_settings();
     REQUIRE(!session_cookie::read("ores_web_session_other_environment=abc", settings).has_value());
@@ -104,7 +104,7 @@ TEST_CASE("a_cookie_for_another_deployment_is_not_this_session", "[session_cooki
 
 TEST_CASE("clearing_a_cookie_expires_it_with_the_same_flags", "[session_cookie]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that signing out removes what signing in set";
+    ORES_LOG_SEV(lg, info) << "Testing that signing out removes what signing in set";
 
     for (const auto& settings : {plain_settings(), tls_settings()}) {
         const auto cleared = session_cookie::clear(settings);

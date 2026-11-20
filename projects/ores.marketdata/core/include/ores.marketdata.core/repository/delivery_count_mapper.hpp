@@ -25,7 +25,7 @@
 #ifndef ORES_MARKETDATA_CORE_REPOSITORY_DELIVERY_COUNT_MAPPER_HPP
 #define ORES_MARKETDATA_CORE_REPOSITORY_DELIVERY_COUNT_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/domain/delivery_count.hpp"
 #include "ores.marketdata.core/export.hpp"
 #include "ores.marketdata.core/repository/delivery_count_entity.hpp"

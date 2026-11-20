@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.trading.api/domain/script_coarsening.hpp"
 #include "ores.trading.api/messaging/script_coarsening_protocol.hpp"
 #include "ores.trading.core/repository/script_coarsening_repository.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -473,12 +471,12 @@ script_coarsening_service::prepare_change(const messaging::script_coarsening_cha
 
 std::vector<domain::script_coarsening>
 script_coarsening_service::list_coarsenings(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all script coarsenings";
+    ORES_LOG_SEV(lg(), debug) << "Listing all script coarsenings";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t script_coarsening_service::count_coarsenings() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total script coarsenings count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total script coarsenings count";
     return repo_.get_total_coarsening_count(ctx_);
 }
 
@@ -488,10 +486,9 @@ script_coarsening_service::get_coarsening_at_version(const std::string& script_n
                                                      const std::string& purpose,
                                                      const std::string& sequence_number,
                                                      std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting script coarsening at version. "
-                               << "script_name: " << script_name << " purpose: " << purpose
-                               << " sequence_number: " << sequence_number
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting script coarsening at version. "
+                              << "script_name: " << script_name << " purpose: " << purpose
+                              << " sequence_number: " << sequence_number << " version: " << version;
     return repo_.read_at_version(ctx_, script_name, purpose, sequence_number, version);
 }
 
@@ -499,9 +496,8 @@ std::optional<domain::script_coarsening>
 script_coarsening_service::get_coarsening(const std::string& script_name,
                                           const std::string& purpose,
                                           const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting script coarsening. " << "script_name: " << script_name
-                               << " purpose: " << purpose
-                               << " sequence_number: " << sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Getting script coarsening. " << "script_name: " << script_name
+                              << " purpose: " << purpose << " sequence_number: " << sequence_number;
     auto results = repo_.read_latest(ctx_, script_name, purpose, sequence_number);
     if (results.empty())
         return std::nullopt;
@@ -520,15 +516,15 @@ void script_coarsening_service::save_coarsening(const domain::script_coarsening&
         throw std::invalid_argument("Script Coarsening script_name cannot be empty.");
     if (v.purpose.empty())
         throw std::invalid_argument("Script Coarsening purpose cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving script coarsening. " << "script_name: " << v.script_name
-                               << " purpose: " << v.purpose
-                               << " sequence_number: " << v.sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Saving script coarsening. " << "script_name: " << v.script_name
+                              << " purpose: " << v.purpose
+                              << " sequence_number: " << v.sequence_number;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved script coarsening. " << "script_name: " << v.script_name
-                              << " purpose: " << v.purpose
-                              << " sequence_number: " << v.sequence_number;
+    ORES_LOG_SEV(lg(), info) << "Saved script coarsening. " << "script_name: " << v.script_name
+                             << " purpose: " << v.purpose
+                             << " sequence_number: " << v.sequence_number;
 }
 
 void script_coarsening_service::save_coarsenings(
@@ -539,7 +535,7 @@ void script_coarsening_service::save_coarsenings(
         if (e.purpose.empty())
             throw std::invalid_argument("Script Coarsening purpose cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << coarsenings.size() << " script coarsenings";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << coarsenings.size() << " script coarsenings";
     auto ts = coarsenings;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -550,12 +546,11 @@ void script_coarsening_service::save_coarsenings(
 void script_coarsening_service::delete_coarsening(const std::string& script_name,
                                                   const std::string& purpose,
                                                   const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing script coarsening. " << "script_name: " << script_name
-                               << " purpose: " << purpose
-                               << " sequence_number: " << sequence_number;
-    repo_.remove(ctx_, script_name, purpose, sequence_number);
-    BOOST_LOG_SEV(lg(), info) << "Removed script coarsening. " << "script_name: " << script_name
+    ORES_LOG_SEV(lg(), debug) << "Removing script coarsening. " << "script_name: " << script_name
                               << " purpose: " << purpose << " sequence_number: " << sequence_number;
+    repo_.remove(ctx_, script_name, purpose, sequence_number);
+    ORES_LOG_SEV(lg(), info) << "Removed script coarsening. " << "script_name: " << script_name
+                             << " purpose: " << purpose << " sequence_number: " << sequence_number;
 }
 
 void script_coarsening_service::delete_coarsenings(
@@ -569,9 +564,9 @@ std::vector<domain::script_coarsening>
 script_coarsening_service::get_coarsening_history(const std::string& script_name,
                                                   const std::string& purpose,
                                                   const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for script coarsening. "
-                               << "script_name: " << script_name << " purpose: " << purpose
-                               << " sequence_number: " << sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for script coarsening. "
+                              << "script_name: " << script_name << " purpose: " << purpose
+                              << " sequence_number: " << sequence_number;
     return repo_.read_all(ctx_, script_name, purpose, sequence_number);
 }
 

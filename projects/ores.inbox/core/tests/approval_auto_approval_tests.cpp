@@ -23,7 +23,7 @@
 #include "ores.inbox.api/domain/approval_kind.hpp"
 #include "ores.inbox.core/repository/approval_kind_repository.hpp"
 #include "ores.inbox.core/service/approval_lifecycle.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/random_generator.hpp>

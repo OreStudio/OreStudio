@@ -19,7 +19,7 @@
  */
 #include "ores.compute.core/repository/app_version_platform_repository.hpp"
 #include "ores.compute.core/repository/platform_repository.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.testing/database_helper.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>

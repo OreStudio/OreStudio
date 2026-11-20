@@ -24,7 +24,7 @@
 #include "ores.iam.core/repository/auth_event_log.hpp"
 #include "ores.iam.core/repository/tenant_lookups.hpp"
 #include "ores.iam.core/service/authorization_service.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.security/jwt/jwt_claims.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -149,7 +149,7 @@ tenant_session_service::enter(const tenant_session_caller& caller,
     claims.expires_at = now + lifetime_;
     const auto token = signer_.create_token(claims);
     if (!token) {
-        BOOST_LOG_SEV(tenant_session_service_lg(), error)
+        ORES_LOG_SEV(tenant_session_service_lg(), error)
             << "Failed to sign the session for tenant " << target_id;
         return {.success = false, .message = "The session could not be issued."};
     }
@@ -165,7 +165,7 @@ tenant_session_service::enter(const tenant_session_caller& caller,
                                caller.session_id,
                                party_id);
 
-    BOOST_LOG_SEV(tenant_session_service_lg(), info)
+    ORES_LOG_SEV(tenant_session_service_lg(), info)
         << caller.username << " entered tenant " << tenant.code;
     return {.success = true,
             .token = *token,
@@ -248,7 +248,7 @@ messaging::enter_tenant_as_service_response tenant_session_service::enter_as_ser
     claims.expires_at = now + lifetime_;
     const auto token = signer_.create_token(claims);
     if (!token) {
-        BOOST_LOG_SEV(tenant_session_service_lg(), error)
+        ORES_LOG_SEV(tenant_session_service_lg(), error)
             << "Failed to sign the service session for tenant " << target_id;
         return {.success = false, .message = "The session could not be issued."};
     }
@@ -261,7 +261,7 @@ messaging::enter_tenant_as_service_response tenant_session_service::enter_as_ser
                                caller.session_id,
                                inside->party_id);
 
-    BOOST_LOG_SEV(tenant_session_service_lg(), info)
+    ORES_LOG_SEV(tenant_session_service_lg(), info)
         << "Service account " << caller.username << " entered tenant " << tenant.code
         << " to serve its work";
     return {.success = true,
@@ -302,13 +302,13 @@ eventing::service::cache::partition_token tenant_session_service::read_inside(
     const tenant_reader& reader, const std::string& tenant_id, std::chrono::seconds lifetime) {
     const auto target = utility::uuid::tenant_id::from_string(tenant_id);
     if (!target) {
-        BOOST_LOG_SEV(tenant_session_service_lg(), warn)
+        ORES_LOG_SEV(tenant_session_service_lg(), warn)
             << "No token for " << reader.username << ": unreadable tenant id " << tenant_id;
         return {};
     }
     const auto inside = party_inside(*target, reader.username);
     if (!inside) {
-        BOOST_LOG_SEV(tenant_session_service_lg(), warn)
+        ORES_LOG_SEV(tenant_session_service_lg(), warn)
             << "No token for " << reader.username << " inside tenant " << tenant_id
             << ": the tenant has no system party";
         return {};
@@ -327,11 +327,11 @@ eventing::service::cache::partition_token tenant_session_service::read_inside(
     claims.expires_at = now + lifetime;
     const auto token = signer_.create_token(claims);
     if (!token) {
-        BOOST_LOG_SEV(tenant_session_service_lg(), error)
+        ORES_LOG_SEV(tenant_session_service_lg(), error)
             << "Failed to sign the token for " << reader.username << " inside tenant " << tenant_id;
         return {};
     }
-    BOOST_LOG_SEV(tenant_session_service_lg(), info)
+    ORES_LOG_SEV(tenant_session_service_lg(), info)
         << "Issued a token for " << reader.username << " inside tenant " << tenant_id << " for "
         << lifetime.count() << "s";
     return {.token = *token, .expires_at = claims.expires_at};
@@ -355,7 +355,7 @@ tenant_session_service::leave(const tenant_session_caller& caller) {
                             caller.username,
                             caller.session_id,
                             caller.party_id.value_or(""));
-    BOOST_LOG_SEV(tenant_session_service_lg(), info)
+    ORES_LOG_SEV(tenant_session_service_lg(), info)
         << caller.username << " left tenant " << tenant_id;
     return {.success = true};
 }

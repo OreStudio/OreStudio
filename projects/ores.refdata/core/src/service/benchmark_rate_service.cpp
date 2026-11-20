@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/benchmark_rate.hpp"
 #include "ores.refdata.api/messaging/benchmark_rate_protocol.hpp"
 #include "ores.refdata.core/repository/benchmark_rate_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -448,28 +446,28 @@ benchmark_rate_service::prepare_change(const messaging::benchmark_rate_change& c
 
 std::vector<domain::benchmark_rate> benchmark_rate_service::list_rates(std::uint32_t offset,
                                                                        std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all benchmark rates";
+    ORES_LOG_SEV(lg(), debug) << "Listing all benchmark rates";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t benchmark_rate_service::count_rates() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total benchmark rates count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total benchmark rates count";
     return repo_.get_total_rate_count(ctx_);
 }
 
 
 std::optional<domain::benchmark_rate> benchmark_rate_service::get_rate_at_version(
     const std::string& code, const std::string& coding_scheme_code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting benchmark rate at version. " << "code: " << code
-                               << " coding_scheme_code: " << coding_scheme_code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting benchmark rate at version. " << "code: " << code
+                              << " coding_scheme_code: " << coding_scheme_code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, coding_scheme_code, version);
 }
 
 std::optional<domain::benchmark_rate>
 benchmark_rate_service::get_rate(const std::string& code, const std::string& coding_scheme_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting benchmark rate. " << "code: " << code
-                               << " coding_scheme_code: " << coding_scheme_code;
+    ORES_LOG_SEV(lg(), debug) << "Getting benchmark rate. " << "code: " << code
+                              << " coding_scheme_code: " << coding_scheme_code;
     auto results = repo_.read_latest(ctx_, code, coding_scheme_code);
     if (results.empty())
         return std::nullopt;
@@ -487,13 +485,13 @@ void benchmark_rate_service::save_rate(const domain::benchmark_rate& v) {
         throw std::invalid_argument("Benchmark Rate code cannot be empty.");
     if (v.coding_scheme_code.empty())
         throw std::invalid_argument("Benchmark Rate coding_scheme_code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving benchmark rate. " << "code: " << v.code
-                               << " coding_scheme_code: " << v.coding_scheme_code;
+    ORES_LOG_SEV(lg(), debug) << "Saving benchmark rate. " << "code: " << v.code
+                              << " coding_scheme_code: " << v.coding_scheme_code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved benchmark rate. " << "code: " << v.code
-                              << " coding_scheme_code: " << v.coding_scheme_code;
+    ORES_LOG_SEV(lg(), info) << "Saved benchmark rate. " << "code: " << v.code
+                             << " coding_scheme_code: " << v.coding_scheme_code;
 }
 
 void benchmark_rate_service::save_rates(const std::vector<domain::benchmark_rate>& rates) {
@@ -503,7 +501,7 @@ void benchmark_rate_service::save_rates(const std::vector<domain::benchmark_rate
         if (e.coding_scheme_code.empty())
             throw std::invalid_argument("Benchmark Rate coding_scheme_code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << rates.size() << " benchmark rates";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << rates.size() << " benchmark rates";
     auto ts = rates;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -513,11 +511,11 @@ void benchmark_rate_service::save_rates(const std::vector<domain::benchmark_rate
 
 void benchmark_rate_service::delete_rate(const std::string& code,
                                          const std::string& coding_scheme_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing benchmark rate. " << "code: " << code
-                               << " coding_scheme_code: " << coding_scheme_code;
-    repo_.remove(ctx_, code, coding_scheme_code);
-    BOOST_LOG_SEV(lg(), info) << "Removed benchmark rate. " << "code: " << code
+    ORES_LOG_SEV(lg(), debug) << "Removing benchmark rate. " << "code: " << code
                               << " coding_scheme_code: " << coding_scheme_code;
+    repo_.remove(ctx_, code, coding_scheme_code);
+    ORES_LOG_SEV(lg(), info) << "Removed benchmark rate. " << "code: " << code
+                             << " coding_scheme_code: " << coding_scheme_code;
 }
 
 void benchmark_rate_service::delete_rates(const std::vector<std::string>& codes,
@@ -528,8 +526,8 @@ void benchmark_rate_service::delete_rates(const std::vector<std::string>& codes,
 std::vector<domain::benchmark_rate>
 benchmark_rate_service::get_rate_history(const std::string& code,
                                          const std::string& coding_scheme_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for benchmark rate. " << "code: " << code
-                               << " coding_scheme_code: " << coding_scheme_code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for benchmark rate. " << "code: " << code
+                              << " coding_scheme_code: " << coding_scheme_code;
     return repo_.read_all(ctx_, code, coding_scheme_code);
 }
 

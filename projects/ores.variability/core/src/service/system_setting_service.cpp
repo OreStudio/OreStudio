@@ -26,7 +26,6 @@
 #include "ores.variability.api/domain/system_setting.hpp"
 #include "ores.variability.api/messaging/system_setting_protocol.hpp"
 #include "ores.variability.core/repository/system_setting_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -482,12 +480,12 @@ system_setting_service::prepare_change(const messaging::system_setting_change& c
 
 std::vector<domain::system_setting> system_setting_service::list_settings(std::uint32_t offset,
                                                                           std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all system settings";
+    ORES_LOG_SEV(lg(), debug) << "Listing all system settings";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t system_setting_service::count_settings() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total system settings count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total system settings count";
     return repo_.get_total_setting_count(ctx_);
 }
 
@@ -495,14 +493,14 @@ std::uint32_t system_setting_service::count_settings() {
 std::optional<domain::system_setting>
 system_setting_service::get_setting_at_version(const boost::uuids::uuid& id,
                                                std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting system setting at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting system setting at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::system_setting>
 system_setting_service::get_setting(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting system setting. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting system setting. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -511,7 +509,7 @@ system_setting_service::get_setting(const boost::uuids::uuid& id) {
 
 std::optional<domain::system_setting>
 system_setting_service::get_setting_by_name(const std::string& name) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting system setting by name: " << name;
+    ORES_LOG_SEV(lg(), debug) << "Getting system setting by name: " << name;
     messaging::system_setting_key k;
     k.name = name;
     auto found = system_setting_read_one(repo_, ctx_, k);
@@ -528,11 +526,11 @@ system_setting_service::get_settings(const std::vector<std::string>& ids) {
 void system_setting_service::save_setting(const domain::system_setting& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("System Setting id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving system setting. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving system setting. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved system setting. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved system setting. " << "id: " << v.id;
 }
 
 void system_setting_service::save_settings(const std::vector<domain::system_setting>& settings) {
@@ -540,7 +538,7 @@ void system_setting_service::save_settings(const std::vector<domain::system_sett
         if (e.id.is_nil())
             throw std::invalid_argument("System Setting id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << settings.size() << " system settings";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << settings.size() << " system settings";
     auto ts = settings;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -549,9 +547,9 @@ void system_setting_service::save_settings(const std::vector<domain::system_sett
 }
 
 void system_setting_service::delete_setting(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing system setting. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing system setting. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed system setting. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed system setting. " << "id: " << id;
 }
 
 void system_setting_service::delete_settings(const std::vector<std::string>& ids) {
@@ -560,7 +558,7 @@ void system_setting_service::delete_settings(const std::vector<std::string>& ids
 
 std::vector<domain::system_setting>
 system_setting_service::get_setting_history(const std::string& key) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for system setting. key: " << key;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for system setting. key: " << key;
     // The caller holds the key the model declares and this reads by the
     // storage key, so the two are joined here exactly as they are for any
     // other read. Without this step a provider looks the versions up under a

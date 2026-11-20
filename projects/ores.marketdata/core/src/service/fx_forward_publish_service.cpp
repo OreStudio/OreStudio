@@ -26,7 +26,6 @@
 #include "ores.marketdata.api/domain/fx_forward_publish.hpp"
 #include "ores.marketdata.api/messaging/fx_forward_publish_protocol.hpp"
 #include "ores.marketdata.core/repository/fx_forward_publish_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -308,26 +306,26 @@ fx_forward_publish_service::get_fx_forward_publish_version(
 
 std::vector<domain::fx_forward_publish>
 fx_forward_publish_service::list_publishes(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all FX forward publishes";
+    ORES_LOG_SEV(lg(), debug) << "Listing all FX forward publishes";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t fx_forward_publish_service::count_publishes() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total FX forward publishes count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total FX forward publishes count";
     return repo_.get_total_publish_count(ctx_);
 }
 
 
 std::vector<domain::fx_forward_publish> fx_forward_publish_service::list_publishes_by_request_id(
     const std::string& request_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing FX forward publishes by request_id: " << request_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing FX forward publishes by request_id: " << request_id;
     return repo_.read_latest_by_request_id(ctx_, request_id, offset, limit);
 }
 
 std::uint32_t
 fx_forward_publish_service::count_publishes_by_request_id(const std::string& request_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total FX forward publishes count by request_id: "
-                               << request_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting total FX forward publishes count by request_id: "
+                              << request_id;
     return repo_.get_total_publish_count_by_request_id(ctx_, request_id);
 }
 
@@ -335,14 +333,14 @@ fx_forward_publish_service::count_publishes_by_request_id(const std::string& req
 std::optional<domain::fx_forward_publish>
 fx_forward_publish_service::get_publish_at_version(const boost::uuids::uuid& id,
                                                    std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting FX forward publish at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting FX forward publish at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::fx_forward_publish>
 fx_forward_publish_service::get_publish(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting FX forward publish. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting FX forward publish. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -357,11 +355,11 @@ fx_forward_publish_service::get_publishes(const std::vector<std::string>& ids) {
 void fx_forward_publish_service::save_publish(const domain::fx_forward_publish& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Fx Forward Publish id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving FX forward publish. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving FX forward publish. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved FX forward publish. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved FX forward publish. " << "id: " << v.id;
 }
 
 void fx_forward_publish_service::save_publishes(
@@ -370,7 +368,7 @@ void fx_forward_publish_service::save_publishes(
         if (e.id.is_nil())
             throw std::invalid_argument("Fx Forward Publish id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << publishes.size() << " FX forward publishes";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << publishes.size() << " FX forward publishes";
     auto ts = publishes;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -379,9 +377,9 @@ void fx_forward_publish_service::save_publishes(
 }
 
 void fx_forward_publish_service::delete_publish(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing FX forward publish. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing FX forward publish. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed FX forward publish. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed FX forward publish. " << "id: " << id;
 }
 
 void fx_forward_publish_service::delete_publishes(const std::vector<std::string>& ids) {
@@ -390,7 +388,7 @@ void fx_forward_publish_service::delete_publishes(const std::vector<std::string>
 
 std::vector<domain::fx_forward_publish>
 fx_forward_publish_service::get_publish_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for FX forward publish. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for FX forward publish. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

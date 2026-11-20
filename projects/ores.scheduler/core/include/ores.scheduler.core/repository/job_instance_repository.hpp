@@ -20,7 +20,7 @@
 #pragma once
 
 #include "ores.database/domain/context_fwd.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.scheduler.api/domain/job_instance.hpp"
 #include "ores.scheduler.api/domain/job_status.hpp"
 #include "ores.scheduler.core/export.hpp"

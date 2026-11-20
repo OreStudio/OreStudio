@@ -67,7 +67,7 @@ std::vector<ores::refdata::domain::leg_type> leg_type_classification_rows(const 
     auto reply = ores::http::forwarding::forward(req, session, msg);
     rr::require_ok(reply.result);
     if (reply.total > reply.types.size())
-        BOOST_LOG_SEV(leg_type_classification_routes_lg(), warn)
+        ORES_LOG_SEV(leg_type_classification_routes_lg(), warn)
             << "The leg-type list holds " << reply.total << " rows; one page read "
             << reply.types.size();
     return std::move(reply.types);
@@ -108,9 +108,9 @@ leg_type_classification_routes::handle_list(const http_request& req, nats_client
         try {
             labels = classification_routes::labels_of(req, session, "leg_type");
         } catch (const rr::refusal& refusal) {
-            BOOST_LOG_SEV(lg(), warn) << "Labels could not be read: " << refusal.message;
+            ORES_LOG_SEV(lg(), warn) << "Labels could not be read: " << refusal.message;
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), warn) << "Labels could not be read: " << e.what();
+            ORES_LOG_SEV(lg(), warn) << "Labels could not be read: " << e.what();
         }
         cr::sort_rows(rows);
         std::string out = "{\"rows\":[";
@@ -123,7 +123,7 @@ leg_type_classification_routes::handle_list(const http_request& req, nats_client
     } catch (const rr::refusal& refusal) {
         co_return rr::answer(refusal);
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << e.what();
+        ORES_LOG_SEV(lg(), error) << e.what();
         co_return http_response::api_error(
             http_status::bad_gateway, "internal", std::string(rr::unanswered));
     }
@@ -150,7 +150,7 @@ leg_type_classification_routes::handle_create(const http_request& req, nats_clie
     } catch (const rr::refusal& refusal) {
         co_return rr::answer(refusal);
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << e.what();
+        ORES_LOG_SEV(lg(), error) << e.what();
         co_return http_response::api_error(
             http_status::bad_gateway, "internal", std::string(rr::unanswered));
     }
@@ -179,7 +179,7 @@ leg_type_classification_routes::handle_update(const http_request& req, nats_clie
     } catch (const rr::refusal& refusal) {
         co_return rr::answer(refusal);
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << e.what();
+        ORES_LOG_SEV(lg(), error) << e.what();
         co_return http_response::api_error(
             http_status::bad_gateway, "internal", std::string(rr::unanswered));
     }
@@ -217,7 +217,7 @@ leg_type_classification_routes::handle_order(const http_request& req, nats_clien
     } catch (const rr::refusal& refusal) {
         co_return rr::answer(refusal);
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << e.what();
+        ORES_LOG_SEV(lg(), error) << e.what();
         co_return http_response::api_error(
             http_status::bad_gateway, "internal", std::string(rr::unanswered));
     }
@@ -242,7 +242,7 @@ leg_type_classification_routes::handle_delete(const http_request& req, nats_clie
     } catch (const rr::refusal& refusal) {
         co_return rr::answer(refusal);
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << e.what();
+        ORES_LOG_SEV(lg(), error) << e.what();
         co_return http_response::api_error(
             http_status::bad_gateway, "internal", std::string(rr::unanswered));
     }
@@ -268,7 +268,7 @@ leg_type_classification_routes::handle_label(const http_request& req, nats_clien
     } catch (const rr::refusal& refusal) {
         co_return rr::answer(refusal);
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << e.what();
+        ORES_LOG_SEV(lg(), error) << e.what();
         co_return http_response::api_error(
             http_status::bad_gateway, "internal", std::string(rr::unanswered));
     }
@@ -278,7 +278,7 @@ void leg_type_classification_routes::register_routes(
     std::shared_ptr<ores::http::net::router> router,
     std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
     nats_client& session) {
-    BOOST_LOG_SEV(lg(), info) << "Registering the leg-type classification routes";
+    ORES_LOG_SEV(lg(), info) << "Registering the leg-type classification routes";
 
     auto list_route =
         router->get("/api/classifications/leg-type")

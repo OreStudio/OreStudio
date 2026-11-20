@@ -26,7 +26,6 @@
 #include "ores.reporting.api/domain/report_metric.hpp"
 #include "ores.reporting.api/messaging/report_metric_protocol.hpp"
 #include "ores.reporting.core/repository/report_metric_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -42,7 +41,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -431,19 +429,19 @@ report_metric_service::prepare_change(const messaging::report_metric_change& cha
 
 std::vector<domain::report_metric> report_metric_service::list_metrics(std::uint32_t offset,
                                                                        std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all report metrics";
+    ORES_LOG_SEV(lg(), debug) << "Listing all report metrics";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t report_metric_service::count_metrics() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total report metrics count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total report metrics count";
     return repo_.get_total_metric_count(ctx_);
 }
 
 
 std::optional<domain::report_metric>
 report_metric_service::get_metric(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting report metric. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting report metric. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -458,11 +456,11 @@ report_metric_service::get_metrics(const std::vector<std::string>& ids) {
 void report_metric_service::save_metric(const domain::report_metric& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Report Metric id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving report metric. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving report metric. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved report metric. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved report metric. " << "id: " << v.id;
 }
 
 void report_metric_service::save_metrics(const std::vector<domain::report_metric>& metrics) {
@@ -470,7 +468,7 @@ void report_metric_service::save_metrics(const std::vector<domain::report_metric
         if (e.id.is_nil())
             throw std::invalid_argument("Report Metric id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << metrics.size() << " report metrics";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << metrics.size() << " report metrics";
     auto ts = metrics;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -479,9 +477,9 @@ void report_metric_service::save_metrics(const std::vector<domain::report_metric
 }
 
 void report_metric_service::delete_metric(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing report metric. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing report metric. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed report metric. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed report metric. " << "id: " << id;
 }
 
 void report_metric_service::delete_metrics(const std::vector<std::string>& ids) {
@@ -490,7 +488,7 @@ void report_metric_service::delete_metrics(const std::vector<std::string>& ids) 
 
 std::vector<domain::report_metric>
 report_metric_service::get_metric_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for report metric. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for report metric. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

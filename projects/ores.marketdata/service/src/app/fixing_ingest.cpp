@@ -73,8 +73,8 @@ boost::uuids::uuid fixing_store::series_for(const ores::database::context& tenan
             classifier = std::make_shared<const core::series_classifier>(
                 repository::series_classification_rule_repository{}.read_latest(tenant_ctx));
         const auto cl = classifier->classify(core::classification_key_of(*index));
-        BOOST_LOG_SEV(lg(), info) << "Creating fixing series " << index_uri << " for provider "
-                                  << owner.provider_code;
+        ORES_LOG_SEV(lg(), info) << "Creating fixing series " << index_uri << " for provider "
+                                 << owner.provider_code;
         existing.push_back(create_feed_series(
             tenant_ctx, owner, uuid_gen_(), index_uri, cl, ctx_.service_account()));
     }
@@ -101,8 +101,8 @@ std::size_t fixing_store::store(std::span<const consumer> consumers,
     for (const auto& f : fixings) {
         if (!datum::oresmd_uri_codec::read_index(f.index_uri)) {
             ++rejected_;
-            BOOST_LOG_SEV(lg(), warn) << "Rejecting a fixing of '" << f.index_uri
-                                      << "' from source '" << f.source << "': it names no index";
+            ORES_LOG_SEV(lg(), warn) << "Rejecting a fixing of '" << f.index_uri
+                                     << "' from source '" << f.source << "': it names no index";
             continue;
         }
         const auto [it, fresh] = at.try_emplace({f.index_uri, f.date}, latest.size());
@@ -209,7 +209,7 @@ void fixing_ingest::run() {
                                   std::memory_order_relaxed);
                 rejected_.store(store_.rejected(), std::memory_order_relaxed);
             } catch (const std::exception& e) {
-                BOOST_LOG_SEV(lg(), error)
+                ORES_LOG_SEV(lg(), error)
                     << "Failed to store " << fixings.size() << " fixing(s) of source '" << source
                     << "': " << e.what();
                 for (auto& q : queue) {
@@ -233,7 +233,7 @@ void fixing_ingest::run() {
                         std::make_move_iterator(retry.end()));
         if (ready_.wait_for(lock, backoff, [this] { return stopping_; })) {
             failed_.fetch_add(pending_.size(), std::memory_order_relaxed);
-            BOOST_LOG_SEV(lg(), warn)
+            ORES_LOG_SEV(lg(), warn)
                 << "Stopping with " << pending_.size() << " fixing(s) that the store refused";
             return;
         }

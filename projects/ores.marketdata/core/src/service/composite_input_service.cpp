@@ -26,7 +26,6 @@
 #include "ores.marketdata.api/domain/composite_input.hpp"
 #include "ores.marketdata.api/messaging/composite_input_protocol.hpp"
 #include "ores.marketdata.core/repository/composite_input_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -499,12 +497,12 @@ composite_input_service::prepare_change(const messaging::composite_input_change&
 
 std::vector<domain::composite_input>
 composite_input_service::list_composite_inputs(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all composite inputs";
+    ORES_LOG_SEV(lg(), debug) << "Listing all composite inputs";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t composite_input_service::count_composite_inputs() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total composite inputs count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total composite inputs count";
     return repo_.get_total_composite_input_count(ctx_);
 }
 
@@ -512,14 +510,14 @@ std::uint32_t composite_input_service::count_composite_inputs() {
 std::optional<domain::composite_input>
 composite_input_service::get_composite_input_at_version(const boost::uuids::uuid& id,
                                                         std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting composite input at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting composite input at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::composite_input>
 composite_input_service::get_composite_input(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting composite input. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting composite input. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -528,7 +526,7 @@ composite_input_service::get_composite_input(const boost::uuids::uuid& id) {
 
 std::optional<domain::composite_input>
 composite_input_service::get_composite_input_by_oresmd_uri(const std::string& oresmd_uri) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting composite input by oresmd_uri: " << oresmd_uri;
+    ORES_LOG_SEV(lg(), debug) << "Getting composite input by oresmd_uri: " << oresmd_uri;
     messaging::composite_input_key k;
     k.oresmd_uri = oresmd_uri;
     auto found = composite_input_read_one(repo_, ctx_, k);
@@ -545,11 +543,11 @@ composite_input_service::get_composite_inputs(const std::vector<std::string>& id
 void composite_input_service::save_composite_input(const domain::composite_input& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Composite Input id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving composite input. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving composite input. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved composite input. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved composite input. " << "id: " << v.id;
 }
 
 void composite_input_service::save_composite_inputs(
@@ -558,7 +556,7 @@ void composite_input_service::save_composite_inputs(
         if (e.id.is_nil())
             throw std::invalid_argument("Composite Input id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << composite_inputs.size() << " composite inputs";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << composite_inputs.size() << " composite inputs";
     auto ts = composite_inputs;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -567,9 +565,9 @@ void composite_input_service::save_composite_inputs(
 }
 
 void composite_input_service::delete_composite_input(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing composite input. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing composite input. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed composite input. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed composite input. " << "id: " << id;
 }
 
 void composite_input_service::delete_composite_inputs(const std::vector<std::string>& ids) {
@@ -578,7 +576,7 @@ void composite_input_service::delete_composite_inputs(const std::vector<std::str
 
 std::vector<domain::composite_input>
 composite_input_service::get_composite_input_history(const std::string& key) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for composite input. key: " << key;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for composite input. key: " << key;
     // The caller holds the key the model declares and this reads by the
     // storage key, so the two are joined here exactly as they are for any
     // other read. Without this step a provider looks the versions up under a

@@ -26,7 +26,6 @@
 #include "ores.reporting.api/domain/ore_file_version.hpp"
 #include "ores.reporting.api/messaging/ore_file_version_protocol.hpp"
 #include "ores.reporting.core/repository/ore_file_version_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -510,26 +508,26 @@ ore_file_version_service::prepare_change(const messaging::ore_file_version_chang
 
 std::vector<domain::ore_file_version> ore_file_version_service::list_versions(std::uint32_t offset,
                                                                               std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all ORE file versions";
+    ORES_LOG_SEV(lg(), debug) << "Listing all ORE file versions";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t ore_file_version_service::count_versions() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total ORE file versions count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total ORE file versions count";
     return repo_.get_total_version_count(ctx_);
 }
 
 
 std::vector<domain::ore_file_version> ore_file_version_service::list_versions_by_ore_file_code(
     const std::string& ore_file_code, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing ORE file versions by ore_file_code: " << ore_file_code;
+    ORES_LOG_SEV(lg(), debug) << "Listing ORE file versions by ore_file_code: " << ore_file_code;
     return repo_.read_latest_by_ore_file_code(ctx_, ore_file_code, offset, limit);
 }
 
 std::uint32_t
 ore_file_version_service::count_versions_by_ore_file_code(const std::string& ore_file_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total ORE file versions count by ore_file_code: "
-                               << ore_file_code;
+    ORES_LOG_SEV(lg(), debug) << "Getting total ORE file versions count by ore_file_code: "
+                              << ore_file_code;
     return repo_.get_total_version_count_by_ore_file_code(ctx_, ore_file_code);
 }
 
@@ -537,14 +535,14 @@ ore_file_version_service::count_versions_by_ore_file_code(const std::string& ore
 std::optional<domain::ore_file_version>
 ore_file_version_service::get_version_at_version(const boost::uuids::uuid& id,
                                                  std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting ORE file version at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting ORE file version at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::ore_file_version>
 ore_file_version_service::get_version(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting ORE file version. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting ORE file version. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -559,11 +557,11 @@ ore_file_version_service::get_versions(const std::vector<std::string>& ids) {
 void ore_file_version_service::save_version(const domain::ore_file_version& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("ORE File Version id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving ORE file version. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving ORE file version. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved ORE file version. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved ORE file version. " << "id: " << v.id;
 }
 
 void ore_file_version_service::save_versions(
@@ -572,7 +570,7 @@ void ore_file_version_service::save_versions(
         if (e.id.is_nil())
             throw std::invalid_argument("ORE File Version id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << versions.size() << " ORE file versions";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << versions.size() << " ORE file versions";
     auto ts = versions;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -581,9 +579,9 @@ void ore_file_version_service::save_versions(
 }
 
 void ore_file_version_service::delete_version(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing ORE file version. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing ORE file version. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed ORE file version. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed ORE file version. " << "id: " << id;
 }
 
 void ore_file_version_service::delete_versions(const std::vector<std::string>& ids) {
@@ -592,7 +590,7 @@ void ore_file_version_service::delete_versions(const std::vector<std::string>& i
 
 std::vector<domain::ore_file_version>
 ore_file_version_service::get_version_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for ORE file version. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for ORE file version. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

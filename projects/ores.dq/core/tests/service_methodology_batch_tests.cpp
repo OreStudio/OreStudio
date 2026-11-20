@@ -21,7 +21,7 @@
 #include "ores.dq.api/generators/methodology_generator.hpp"
 #include "ores.dq.api/messaging/methodology_protocol.hpp"
 #include "ores.dq.core/service/methodology_service.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include "ores.utility/generation/generation_context.hpp"
@@ -71,7 +71,7 @@ TEST_CASE("get_many_by_name_answers_each_key_in_the_order_asked", "[service][bat
     ores::dq::messaging::put_many_methodologies_request put;
     for (const auto& m : methodologies)
         put.changes.push_back(change_for(m));
-    BOOST_LOG_SEV(lg, info) << "Putting " << put.changes.size() << " methodologies.";
+    ORES_LOG_SEV(lg, info) << "Putting " << put.changes.size() << " methodologies.";
     REQUIRE(svc.put_many_methodologies(put).result.outcome == outcome::ok);
 
     ores::dq::messaging::get_many_methodologies_request get;
@@ -102,8 +102,8 @@ TEST_CASE("put_many_over_an_existing_name_refuses_the_set_and_writes_nothing", "
     ores::dq::messaging::put_many_methodologies_request put;
     for (const auto& m : methodologies)
         put.changes.push_back(change_for(m));
-    BOOST_LOG_SEV(lg, info) << "Putting " << put.changes.size()
-                            << " methodologies, one of which exists.";
+    ORES_LOG_SEV(lg, info) << "Putting " << put.changes.size()
+                           << " methodologies, one of which exists.";
     const auto refused = svc.put_many_methodologies(put);
 
     CHECK(refused.result.outcome != outcome::ok);

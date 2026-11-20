@@ -28,7 +28,6 @@
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/range_bound.hpp"
 #include "ores.database/repository/unit_of_work.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.marketdata.api/datum/series_stream.hpp"
 #include "ores.marketdata.api/domain/market_observation.hpp"
 #include "ores.marketdata.api/domain/market_observation_json_io.hpp" // IWYU pragma: keep.
@@ -44,7 +43,6 @@
 #include "ores.marketdata.core/repository/tick_entitlement.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/nil_generator.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -246,7 +244,7 @@ void market_observation_repository::write(const context& ctx, const domain::mark
 
 void market_observation_repository::insert(const context& ctx,
                                            const domain::market_observation& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Inserting market observation. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Inserting market observation. " << "id: " << v.id;
     series_shape_check::check(ctx, std::vector<domain::market_observation>{v});
     if (manual_point_guard::unshadowed(ctx, std::vector<domain::market_observation>{v}).empty())
         return;
@@ -258,7 +256,7 @@ void market_observation_repository::insert(const context& ctx,
 
 void market_observation_repository::insert(const context& ctx,
                                            const std::vector<domain::market_observation>& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Inserting market observations. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Inserting market observations. Count: " << v.size();
     series_shape_check::check(ctx, v);
     if (const auto kept = manual_point_guard::unshadowed(ctx, v); kept.size() != v.size()) {
         if (!kept.empty())
@@ -288,7 +286,7 @@ void market_observation_repository::write(const context& ctx,
 void market_observation_repository::write(const context& ctx,
                                           const domain::market_observation& v,
                                           const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing market observation. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Writing market observation. " << "id: " << v.id;
     const auto t =
         market_observation_apply_claim(v,
                                        claim,
@@ -303,7 +301,7 @@ void market_observation_repository::write(
     const context& ctx,
     const std::vector<domain::market_observation>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing market observations. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing market observations. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "market_observation_repository::write: one claim is needed for each row");
@@ -342,7 +340,7 @@ market_observation_repository::read_latest(const context& ctx) {
 
 std::vector<domain::market_observation>
 market_observation_repository::read_latest(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest market observation. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest market observation. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -360,7 +358,7 @@ market_observation_repository::read_latest(const context& ctx, const std::string
 
 std::vector<domain::market_observation>
 market_observation_repository::read_all(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all market observation versions. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading all market observation versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<market_observation_entity>> |
                        query_builder::where("tenant_id"_c == tid && "id"_c == id) |
@@ -382,8 +380,8 @@ std::vector<domain::market_observation> market_observation_repository::read_late
     std::uint32_t limit,
     const ores::utility::domain::order& order,
     const std::optional<messaging::market_observations_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest market observations. series_id: " << series_id
-                               << " offset: " << offset << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest market observations. series_id: " << series_id
+                              << " offset: " << offset << " limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<market_observation_entity>> |
@@ -406,8 +404,8 @@ std::uint32_t market_observation_repository::get_total_market_observation_count_
     const context& ctx,
     const std::string& series_id,
     const std::optional<messaging::market_observations_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active market observations count. series_id: "
-                               << series_id;
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active market observations count. series_id: "
+                              << series_id;
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx.tenant_id().to_string();
@@ -426,7 +424,7 @@ std::uint32_t market_observation_repository::get_total_market_observation_count_
 
 market_observation_repository::remove_status market_observation_repository::remove(
     const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing market observation. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing market observation. " << "id: " << id;
     // The store keeps no version column, so a caller that stated a version
     // asked a question this table cannot answer.
     if (version)
@@ -456,8 +454,8 @@ std::vector<domain::market_observation> market_observation_repository::read_late
     const ores::utility::domain::order& order,
     const std::optional<messaging::market_observations_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest market observations with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest market observations with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<market_observation_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -479,7 +477,7 @@ std::uint32_t market_observation_repository::get_total_market_observation_count(
     const context& ctx,
     const std::optional<messaging::market_observations_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active market observation count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active market observation count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<market_observation_entity>> |
@@ -551,7 +549,7 @@ void market_observation_repository::remove(const context& ctx,
 std::vector<domain::market_observation>
 market_observation_repository::read_latest_for_series(const context& ctx,
                                                       const boost::uuids::uuid& series_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest observations for series: " << series_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest observations for series: " << series_id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto sid = boost::uuids::to_string(series_id);
@@ -570,7 +568,7 @@ market_observation_repository::read_latest_for_series(const context& ctx,
 
 std::vector<domain::market_observation>
 market_observation_repository::read_latest_all(const context& ctx) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading the latest observations of every series";
+    ORES_LOG_SEV(lg(), debug) << "Reading the latest observations of every series";
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<market_observation_entity>> |
@@ -744,8 +742,8 @@ std::vector<observation_record> market_observation_repository::read_as_of_record
     const boost::uuids::uuid& series_id,
     const std::chrono::system_clock::time_point& as_of_datetime) {
     using ores::platform::time::datetime;
-    BOOST_LOG_SEV(lg(), debug) << "Reading as-of snapshot for series: " << series_id
-                               << " as-of: " << datetime::to_iso8601_utc(as_of_datetime);
+    ORES_LOG_SEV(lg(), debug) << "Reading as-of snapshot for series: " << series_id
+                              << " as-of: " << datetime::to_iso8601_utc(as_of_datetime);
     const auto tid = ctx.tenant_id().to_string();
     const auto sid = boost::uuids::to_string(series_id);
     const auto as_of_str = datetime::to_iso8601_utc(as_of_datetime);
@@ -828,7 +826,7 @@ std::vector<domain::market_observation> market_observation_repository::read_as_o
     using ores::platform::time::datetime;
     const auto tid = ctx.tenant_id().to_string();
     const auto as_of_str = datetime::to_iso8601_utc(as_of_datetime);
-    BOOST_LOG_SEV(lg(), debug) << "Reading the as-of snapshot of every series as-of: " << as_of_str;
+    ORES_LOG_SEV(lg(), debug) << "Reading the as-of snapshot of every series as-of: " << as_of_str;
 
     // The streams of the tenant travel as two arrays of one order, because the tick rows name
     // their stream by a derived id and no statement derives it. The statement of
@@ -918,10 +916,10 @@ market_observation_repository::read_as_of_buckets(
     const std::chrono::seconds& bucket_size,
     unsigned int bucket_count) {
     using ores::platform::time::datetime;
-    BOOST_LOG_SEV(lg(), debug) << "Reading " << bucket_count
-                               << " as-of bucket snapshots for series: " << series_id << " every "
-                               << bucket_size.count()
-                               << "s ending at: " << datetime::to_iso8601_utc(latest_boundary);
+    ORES_LOG_SEV(lg(), debug) << "Reading " << bucket_count
+                              << " as-of bucket snapshots for series: " << series_id << " every "
+                              << bucket_size.count()
+                              << "s ending at: " << datetime::to_iso8601_utc(latest_boundary);
     const auto tid = ctx.tenant_id().to_string();
     const auto sid = boost::uuids::to_string(series_id);
     const auto latest_str = datetime::to_iso8601_utc(latest_boundary);
@@ -1016,10 +1014,10 @@ std::vector<series_instant> market_observation_repository::read_instants(
     const std::vector<std::chrono::system_clock::time_point>& instants,
     unsigned int max_instants) {
     using ores::platform::time::datetime;
-    BOOST_LOG_SEV(lg(), debug) << "Reading the instants of series: " << series_id << " from "
-                               << datetime::to_iso8601_utc(from_datetime) << " to "
-                               << datetime::to_iso8601_utc(to_datetime) << ", " << instants.size()
-                               << " stated instant(s)";
+    ORES_LOG_SEV(lg(), debug) << "Reading the instants of series: " << series_id << " from "
+                              << datetime::to_iso8601_utc(from_datetime) << " to "
+                              << datetime::to_iso8601_utc(to_datetime) << ", " << instants.size()
+                              << " stated instant(s)";
     const auto tid = ctx.tenant_id().to_string();
     const auto sid = boost::uuids::to_string(series_id);
     const auto from_str = datetime::to_iso8601_utc(from_datetime);
@@ -1130,8 +1128,8 @@ void market_observation_repository::write_manual_point(
     const std::string& value,
     const std::string& change_reason_code,
     const std::string& change_commentary) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing manual point for series: " << series_id
-                               << " coordinate: " << oresmd_uri;
+    ORES_LOG_SEV(lg(), debug) << "Writing manual point for series: " << series_id
+                              << " coordinate: " << oresmd_uri;
     const auto party_id = ctx.party_id();
     if (!party_id)
         throw std::invalid_argument(
@@ -1195,8 +1193,8 @@ void market_observation_repository::clear_manual_point(
     const boost::uuids::uuid& series_id,
     const std::string& oresmd_uri,
     std::chrono::system_clock::time_point observation_datetime) {
-    BOOST_LOG_SEV(lg(), debug) << "Clearing manual point for series: " << series_id
-                               << " coordinate: " << oresmd_uri;
+    ORES_LOG_SEV(lg(), debug) << "Clearing manual point for series: " << series_id
+                              << " coordinate: " << oresmd_uri;
 
     // The read that finds the row and the close that withdraws it share one
     // transaction, so a point that moved on between them is not closed twice.
@@ -1230,8 +1228,8 @@ void market_observation_repository::clear_manual_point(
 std::size_t market_observation_repository::clear_manual_points(const context& ctx,
                                                                const boost::uuids::uuid& series_id,
                                                                const std::string& oresmd_uri) {
-    BOOST_LOG_SEV(lg(), debug) << "Clearing every manual point for series: " << series_id
-                               << " coordinate: " << oresmd_uri;
+    ORES_LOG_SEV(lg(), debug) << "Clearing every manual point for series: " << series_id
+                              << " coordinate: " << oresmd_uri;
 
     unit_of_work uow(ctx);
     const auto& txn_ctx = uow.ctx();

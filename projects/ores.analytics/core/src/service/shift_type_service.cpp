@@ -29,10 +29,8 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -438,25 +436,25 @@ shift_type_service::prepare_change(const messaging::shift_type_change& change,
 
 std::vector<domain::shift_type> shift_type_service::list_shift_types(std::uint32_t offset,
                                                                      std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all shift types";
+    ORES_LOG_SEV(lg(), debug) << "Listing all shift types";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t shift_type_service::count_shift_types() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total shift types count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total shift types count";
     return repo_.get_total_shift_type_count(ctx_);
 }
 
 
 std::optional<domain::shift_type>
 shift_type_service::get_shift_type_at_version(const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting shift type at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting shift type at version. " << "code: " << code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::shift_type> shift_type_service::get_shift_type(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting shift type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting shift type. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -471,11 +469,11 @@ shift_type_service::get_shift_types(const std::vector<std::string>& codes) {
 void shift_type_service::save_shift_type(const domain::shift_type& v) {
     if (v.code.empty())
         throw std::invalid_argument("Shift Type code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving shift type. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving shift type. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved shift type. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved shift type. " << "code: " << v.code;
 }
 
 void shift_type_service::save_shift_types(const std::vector<domain::shift_type>& shift_types) {
@@ -483,7 +481,7 @@ void shift_type_service::save_shift_types(const std::vector<domain::shift_type>&
         if (e.code.empty())
             throw std::invalid_argument("Shift Type code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << shift_types.size() << " shift types";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << shift_types.size() << " shift types";
     auto ts = shift_types;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -492,9 +490,9 @@ void shift_type_service::save_shift_types(const std::vector<domain::shift_type>&
 }
 
 void shift_type_service::delete_shift_type(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing shift type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing shift type. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed shift type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed shift type. " << "code: " << code;
 }
 
 void shift_type_service::delete_shift_types(const std::vector<std::string>& codes) {
@@ -503,7 +501,7 @@ void shift_type_service::delete_shift_types(const std::vector<std::string>& code
 
 std::vector<domain::shift_type>
 shift_type_service::get_shift_type_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for shift type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for shift type. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

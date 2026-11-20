@@ -18,7 +18,7 @@
  *
  */
 #include "ores.database/service/context_factory.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <sstream>
@@ -28,7 +28,7 @@ using namespace ores::logging;
 
 TEST_CASE("context_factory_configuration_construction", "[context_factory]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing context_factory::configuration construction";
+    ORES_LOG_SEV(lg, info) << "Testing context_factory::configuration construction";
 
     context_factory::configuration sut;
     sut.database_options.host = "localhost";
@@ -50,7 +50,7 @@ TEST_CASE("context_factory_configuration_construction", "[context_factory]") {
 
 TEST_CASE("context_factory_configuration_streaming", "[context_factory]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing context_factory::configuration streaming";
+    ORES_LOG_SEV(lg, info) << "Testing context_factory::configuration streaming";
 
     context_factory::configuration sut;
     sut.database_options.host = "db.example.com";
@@ -66,7 +66,7 @@ TEST_CASE("context_factory_configuration_streaming", "[context_factory]") {
     os << sut;
     const std::string json_output = os.str();
 
-    BOOST_LOG_SEV(lg, debug) << "JSON output: " << json_output;
+    ORES_LOG_SEV(lg, debug) << "JSON output: " << json_output;
 
     CHECK(!json_output.empty());
     // Check for specific key-value pairs to make the test more robust.
@@ -80,7 +80,7 @@ TEST_CASE("context_factory_configuration_streaming", "[context_factory]") {
 
 TEST_CASE("context_factory_configuration_default_values", "[context_factory]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing context_factory::configuration default values";
+    ORES_LOG_SEV(lg, info) << "Testing context_factory::configuration default values";
 
     context_factory::configuration sut{};
 

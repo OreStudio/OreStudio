@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.reporting.api/domain/report_instance.hpp"
 #include "ores.reporting.api/domain/report_instance_json_io.hpp" // IWYU pragma: keep.
 #include "ores.reporting.api/domain/report_instance_table.hpp"
@@ -74,7 +74,7 @@ TEST_CASE("create_report_instance_with_valid_fields", "[domain]") {
     sut.change_reason_code = "system.new";
     sut.change_commentary = "Instance created by scheduler";
     sut.recorded_at = std::chrono::system_clock::now();
-    BOOST_LOG_SEV(lg, info) << "Report instance: " << sut;
+    ORES_LOG_SEV(lg, info) << "Report instance: " << sut;
 
     CHECK(sut.version == 1);
     CHECK(!sut.id.is_nil());
@@ -109,7 +109,7 @@ TEST_CASE("create_report_instance_with_optional_fields", "[domain]") {
     sut.change_reason_code = "system.complete";
     sut.change_commentary = "Completed";
     sut.recorded_at = now;
-    BOOST_LOG_SEV(lg, info) << "Report instance with optionals: " << sut;
+    ORES_LOG_SEV(lg, info) << "Report instance with optionals: " << sut;
 
     CHECK(sut.fsm_state_id.has_value());
     CHECK(!sut.fsm_state_id->is_nil());
@@ -134,7 +134,7 @@ TEST_CASE("report_instance_insertion_operator", "[domain]") {
     sut.change_reason_code = "system.new";
     sut.change_commentary = "Test";
     sut.recorded_at = std::chrono::system_clock::now();
-    BOOST_LOG_SEV(lg, info) << "Report instance: " << sut;
+    ORES_LOG_SEV(lg, info) << "Report instance: " << sut;
 
     std::ostringstream os;
     os << sut;
@@ -163,7 +163,7 @@ TEST_CASE("create_report_instance_with_faker", "[domain]") {
     sut.change_reason_code = "system.new";
     sut.change_commentary = "Synthetic test data";
     sut.recorded_at = std::chrono::system_clock::now();
-    BOOST_LOG_SEV(lg, info) << "Report instance: " << sut;
+    ORES_LOG_SEV(lg, info) << "Report instance: " << sut;
 
     // The fixture's own fields say only that faker works. The component's
     // behaviour is its rendered form, so assert on that.
@@ -180,7 +180,7 @@ TEST_CASE("create_multiple_random_report_instances", "[domain]") {
     const std::vector<std::string> names = {"Daily Risk", "Weekly Grid", "Monthly Summary"};
     for (const auto& name : names) {
         auto sut = make_report_instance(name);
-        BOOST_LOG_SEV(lg, info) << "Report instance: " << sut;
+        ORES_LOG_SEV(lg, info) << "Report instance: " << sut;
         CHECK(!sut.id.is_nil());
         CHECK(sut.version == 1);
     }
@@ -192,7 +192,7 @@ TEST_CASE("report_instance_convert_single_to_table", "[domain]") {
     std::vector<report_instance> items = {make_report_instance("Daily Risk")};
     auto table = convert_to_table(items);
 
-    BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
+    ORES_LOG_SEV(lg, info) << "Table output:\n" << table;
 
     // The row's own code is the literal the table must show.
     CHECK(table.find(items.front().name) != std::string::npos);
@@ -207,7 +207,7 @@ TEST_CASE("report_instance_convert_multiple_to_table", "[domain]") {
 
     auto table = convert_to_table(items);
 
-    BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
+    ORES_LOG_SEV(lg, info) << "Table output:\n" << table;
 
     // The row's own natural key is the literal the table must show.
     CHECK(table.find(items.front().name) != std::string::npos);
@@ -219,7 +219,7 @@ TEST_CASE("report_instance_convert_empty_vector_to_table", "[domain]") {
     std::vector<report_instance> items;
     auto table = convert_to_table(items);
 
-    BOOST_LOG_SEV(lg, info) << "Empty table output:\n" << table;
+    ORES_LOG_SEV(lg, info) << "Empty table output:\n" << table;
 
     // No rows, and the headers must survive anyway: the column title is
     // the literal the rendered table has to carry.
@@ -250,7 +250,7 @@ TEST_CASE("report_instance_table_with_faker_data", "[domain]") {
 
     auto table = convert_to_table(items);
 
-    BOOST_LOG_SEV(lg, info) << "Faker table output:\n" << table;
+    ORES_LOG_SEV(lg, info) << "Faker table output:\n" << table;
 
     // The row's own code is the literal the table must show.
     CHECK(table.find(items.front().name) != std::string::npos);

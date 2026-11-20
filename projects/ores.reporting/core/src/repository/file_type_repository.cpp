@@ -26,14 +26,12 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.reporting.api/domain/file_type.hpp"
 #include "ores.reporting.api/domain/file_type_json_io.hpp" // IWYU pragma: keep.
 #include "ores.reporting.api/messaging/file_type_protocol.hpp"
 #include "ores.reporting.core/repository/file_type_entity.hpp"
 #include "ores.reporting.core/repository/file_type_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -253,7 +251,7 @@ void file_type_repository::write(const context& ctx, const std::vector<domain::f
 void file_type_repository::write(const context& ctx,
                                  const domain::file_type& v,
                                  const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing file type. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Writing file type. " << "code: " << v.code;
     const auto t = file_type_apply_claim(v,
                                          claim,
                                          file_type_claim_reads_current(claim) ?
@@ -266,7 +264,7 @@ void file_type_repository::write(const context& ctx,
 void file_type_repository::write(const context& ctx,
                                  const std::vector<domain::file_type>& v,
                                  const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing file types. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing file types. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "file_type_repository::write: one claim is needed for each row");
@@ -301,7 +299,7 @@ std::vector<domain::file_type> file_type_repository::read_latest(const context& 
 
 std::vector<domain::file_type> file_type_repository::read_latest(const context& ctx,
                                                                  const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest file type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest file type. " << "code: " << code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -319,7 +317,7 @@ std::vector<domain::file_type> file_type_repository::read_latest(const context& 
 
 std::vector<domain::file_type> file_type_repository::read_all(const context& ctx,
                                                               const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all file type versions. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Reading all file type versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<file_type_entity>> |
                        query_builder::where("tenant_id"_c == tid && "code"_c == code) |
@@ -336,8 +334,8 @@ std::vector<domain::file_type> file_type_repository::read_all(const context& ctx
 std::optional<domain::file_type> file_type_repository::read_at_version(const context& ctx,
                                                                        const std::string& code,
                                                                        std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading file type at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading file type at version. " << "code: " << code
+                              << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<file_type_entity>> |
@@ -363,8 +361,8 @@ std::vector<domain::file_type> file_type_repository::read_latest_by_ore_file_cod
     std::uint32_t limit,
     const ores::utility::domain::order& order,
     const std::optional<messaging::file_types_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest file types. ore_file_code: " << ore_file_code
-                               << " offset: " << offset << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest file types. ore_file_code: " << ore_file_code
+                              << " offset: " << offset << " limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -387,8 +385,8 @@ std::uint32_t file_type_repository::get_total_type_count_by_ore_file_code(
     const context& ctx,
     const std::string& ore_file_code,
     const std::optional<messaging::file_types_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active file types count. ore_file_code: "
-                               << ore_file_code;
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active file types count. ore_file_code: "
+                              << ore_file_code;
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx.tenant_id().to_string();
@@ -413,9 +411,8 @@ std::vector<domain::file_type> file_type_repository::read_latest_by_analytic_typ
     std::uint32_t limit,
     const ores::utility::domain::order& order,
     const std::optional<messaging::file_types_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest file types. analytic_type_code: "
-                               << analytic_type_code << " offset: " << offset
-                               << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest file types. analytic_type_code: "
+                              << analytic_type_code << " offset: " << offset << " limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -438,8 +435,8 @@ std::uint32_t file_type_repository::get_total_type_count_by_analytic_type_code(
     const context& ctx,
     const std::string& analytic_type_code,
     const std::optional<messaging::file_types_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active file types count. analytic_type_code: "
-                               << analytic_type_code;
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active file types count. analytic_type_code: "
+                              << analytic_type_code;
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx.tenant_id().to_string();
@@ -464,9 +461,9 @@ std::vector<domain::file_type> file_type_repository::read_latest_by_configuratio
     std::uint32_t limit,
     const ores::utility::domain::order& order,
     const std::optional<messaging::file_types_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest file types. configuration_type_code: "
-                               << configuration_type_code << " offset: " << offset
-                               << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest file types. configuration_type_code: "
+                              << configuration_type_code << " offset: " << offset
+                              << " limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -490,7 +487,7 @@ std::uint32_t file_type_repository::get_total_type_count_by_configuration_type_c
     const context& ctx,
     const std::string& configuration_type_code,
     const std::optional<messaging::file_types_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Retrieving total active file types count. configuration_type_code: "
         << configuration_type_code;
     static constexpr auto max = db_timestamp::max();
@@ -518,9 +515,9 @@ std::vector<domain::file_type> file_type_repository::read_latest_by_produced_by_
     std::uint32_t limit,
     const ores::utility::domain::order& order,
     const std::optional<messaging::file_types_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest file types. produced_by_file_type_code: "
-                               << produced_by_file_type_code << " offset: " << offset
-                               << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest file types. produced_by_file_type_code: "
+                              << produced_by_file_type_code << " offset: " << offset
+                              << " limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -544,7 +541,7 @@ std::uint32_t file_type_repository::get_total_type_count_by_produced_by_file_typ
     const context& ctx,
     const std::string& produced_by_file_type_code,
     const std::optional<messaging::file_types_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Retrieving total active file types count. produced_by_file_type_code: "
         << produced_by_file_type_code;
     static constexpr auto max = db_timestamp::max();
@@ -567,7 +564,7 @@ std::uint32_t file_type_repository::get_total_type_count_by_produced_by_file_typ
 
 file_type_repository::remove_status file_type_repository::remove(
     const context& ctx, const std::string& code, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing file type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing file type. " << "code: " << code;
     const auto current = read_latest(ctx, code);
     if (current.empty())
         return remove_status::missing;
@@ -605,8 +602,8 @@ file_type_repository::read_latest(const context& ctx,
                                   const ores::utility::domain::order& order,
                                   const std::optional<messaging::file_types_filter>& filter,
                                   const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest file types with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest file types with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<file_type_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -626,7 +623,7 @@ std::uint32_t file_type_repository::get_total_type_count(
     const context& ctx,
     const std::optional<messaging::file_types_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active file type count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active file type count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<file_type_entity>> |

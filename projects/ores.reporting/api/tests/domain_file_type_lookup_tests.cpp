@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.reporting.api/domain/file_type_lookup.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
@@ -75,7 +75,7 @@ TEST_CASE("the_input_document_of_a_configuration_type_names_its_file", "[domain]
     const auto* type = input_document_file_type_of(types, "pricing_engines");
     REQUIRE(type != nullptr);
     CHECK(type->name_pattern == "pricingengine.xml");
-    BOOST_LOG_SEV(lg, debug) << "Named: " << type->name_pattern;
+    ORES_LOG_SEV(lg, debug) << "Named: " << type->name_pattern;
 }
 
 TEST_CASE("a_row_for_another_kind_or_direction_does_not_answer", "[domain][filetype]") {
@@ -139,5 +139,5 @@ TEST_CASE("no_row_states_no_name", "[domain][filetype]") {
     auto lg(make_logger(test_suite));
 
     CHECK(input_document_file_type_of({}, "pricing_engines") == nullptr);
-    BOOST_LOG_SEV(lg, debug) << "A type with no row is refused by the export.";
+    ORES_LOG_SEV(lg, debug) << "A type with no row is refused by the export.";
 }

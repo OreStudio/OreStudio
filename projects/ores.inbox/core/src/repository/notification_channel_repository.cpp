@@ -31,9 +31,7 @@
 #include "ores.inbox.api/messaging/notification_channel_protocol.hpp"
 #include "ores.inbox.core/repository/notification_channel_entity.hpp"
 #include "ores.inbox.core/repository/notification_channel_mapper.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -216,7 +214,7 @@ void notification_channel_repository::write(const context& ctx,
 void notification_channel_repository::write(const context& ctx,
                                             const domain::notification_channel& v,
                                             const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing notification channel. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Writing notification channel. " << "code: " << v.code;
     const auto t =
         notification_channel_apply_claim(v,
                                          claim,
@@ -233,7 +231,7 @@ void notification_channel_repository::write(
     const context& ctx,
     const std::vector<domain::notification_channel>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing notification channels. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing notification channels. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "notification_channel_repository::write: one claim is needed for each row");
@@ -273,7 +271,7 @@ notification_channel_repository::read_latest(const context& ctx) {
 
 std::vector<domain::notification_channel>
 notification_channel_repository::read_latest(const context& ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest notification channel. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest notification channel. " << "code: " << code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -292,7 +290,7 @@ notification_channel_repository::read_latest(const context& ctx, const std::stri
 
 std::vector<domain::notification_channel>
 notification_channel_repository::read_all(const context& ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all notification channel versions. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Reading all notification channel versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<notification_channel_entity>> |
                        query_builder::where("tenant_id"_c == tid && "code"_c == code) |
@@ -309,8 +307,8 @@ notification_channel_repository::read_all(const context& ctx, const std::string&
 
 std::optional<domain::notification_channel> notification_channel_repository::read_at_version(
     const context& ctx, const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading notification channel at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading notification channel at version. " << "code: " << code
+                              << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<notification_channel_entity>> |
@@ -332,7 +330,7 @@ std::optional<domain::notification_channel> notification_channel_repository::rea
 
 notification_channel_repository::remove_status notification_channel_repository::remove(
     const context& ctx, const std::string& code, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing notification channel. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing notification channel. " << "code: " << code;
     const auto current = read_latest(ctx, code);
     if (current.empty())
         return remove_status::missing;
@@ -371,8 +369,8 @@ std::vector<domain::notification_channel> notification_channel_repository::read_
     const ores::utility::domain::order& order,
     const std::optional<messaging::notification_channels_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest notification channels with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest notification channels with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<notification_channel_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -394,7 +392,7 @@ std::uint32_t notification_channel_repository::get_total_channel_count(
     const context& ctx,
     const std::optional<messaging::notification_channels_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active notification channel count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active notification channel count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<notification_channel_entity>> |

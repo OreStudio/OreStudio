@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.testing/nats_options_helper.hpp"
 #include "ores.testing/scoped_environment_override.hpp"
 #include "test_suite.hpp"
@@ -36,7 +36,7 @@ TEST_CASE("reads_every_setting_from_the_environment", "[testing]") {
     });
 
     const auto opts = ores::testing::make_nats_options();
-    BOOST_LOG_SEV(lg, ores::logging::info) << "URL: " << opts.url;
+    ORES_LOG_SEV(lg, ores::logging::info) << "URL: " << opts.url;
 
     CHECK(opts.url == "nats://broker.test:4222");
     CHECK(opts.subject_prefix == "ores.festive");
@@ -51,7 +51,7 @@ TEST_CASE("falls_back_to_the_local_broker", "[testing]") {
     const ores::testing::scoped_environment_override env({}, {"ORES_NATS_URL"});
 
     const auto opts = ores::testing::make_nats_options();
-    BOOST_LOG_SEV(lg, ores::logging::info) << "URL: " << opts.url;
+    ORES_LOG_SEV(lg, ores::logging::info) << "URL: " << opts.url;
 
     CHECK(opts.url == "nats://localhost:4222");
     CHECK(opts.subject_prefix.empty());

@@ -25,7 +25,7 @@
 #ifndef ORES_TRADING_CORE_REPOSITORY_INFLATION_SWAP_INSTRUMENT_MAPPER_HPP
 #define ORES_TRADING_CORE_REPOSITORY_INFLATION_SWAP_INSTRUMENT_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.trading.api/domain/inflation_swap_instrument.hpp"
 #include "ores.trading.core/export.hpp"
 #include "ores.trading.core/repository/inflation_swap_instrument_entity.hpp"

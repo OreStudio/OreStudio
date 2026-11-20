@@ -18,7 +18,7 @@
  *
  */
 #include "ores.database/domain/database_options.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <sstream>
@@ -44,12 +44,12 @@ TEST_CASE("database_options_to_connection_options", "[database]") {
     REQUIRE(options.user == "test_user");
     REQUIRE(options.password == "test_pass");
 
-    BOOST_LOG_SEV(lg, info) << "Database options to connection options test passed";
+    ORES_LOG_SEV(lg, info) << "Database options to connection options test passed";
 }
 
 TEST_CASE("database_options_default_values", "[database]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing database_options default values";
+    ORES_LOG_SEV(lg, info) << "Testing database_options default values";
 
     database_options sut;
 
@@ -62,7 +62,7 @@ TEST_CASE("database_options_default_values", "[database]") {
 
 TEST_CASE("database_options_custom_values", "[database]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing database_options with custom values";
+    ORES_LOG_SEV(lg, info) << "Testing database_options with custom values";
 
     database_options sut;
     sut.host = "db.production.example.com";
@@ -79,7 +79,7 @@ TEST_CASE("database_options_custom_values", "[database]") {
 
 TEST_CASE("database_options_custom_pool_size", "[database]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing database_options with custom pool_size";
+    ORES_LOG_SEV(lg, info) << "Testing database_options with custom pool_size";
 
     database_options sut;
     sut.pool_size = 8;
@@ -89,7 +89,7 @@ TEST_CASE("database_options_custom_pool_size", "[database]") {
 
 TEST_CASE("database_options_streaming", "[database]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing database_options streaming";
+    ORES_LOG_SEV(lg, info) << "Testing database_options streaming";
 
     database_options sut;
     sut.host = "test-host";
@@ -102,7 +102,7 @@ TEST_CASE("database_options_streaming", "[database]") {
     os << sut;
     const std::string output = os.str();
 
-    BOOST_LOG_SEV(lg, debug) << "Output: " << output;
+    ORES_LOG_SEV(lg, debug) << "Output: " << output;
 
     CHECK(!output.empty());
     CHECK(output.find("test-host") != std::string::npos);
@@ -112,7 +112,7 @@ TEST_CASE("database_options_streaming", "[database]") {
 
 TEST_CASE("database_options_to_connection_options_with_defaults", "[database]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing to_connection_options with default host/port";
+    ORES_LOG_SEV(lg, info) << "Testing to_connection_options with default host/port";
 
     database_options opts;
     opts.database = "mydb";
@@ -130,7 +130,7 @@ TEST_CASE("database_options_to_connection_options_with_defaults", "[database]") 
 
 TEST_CASE("database_options_to_connection_options_different_port", "[database]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing to_connection_options with non-standard port";
+    ORES_LOG_SEV(lg, info) << "Testing to_connection_options with non-standard port";
 
     database_options opts;
     opts.host = "remote-db.example.com";

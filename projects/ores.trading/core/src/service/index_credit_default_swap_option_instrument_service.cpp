@@ -26,7 +26,6 @@
 #include "ores.trading.api/domain/index_credit_default_swap_option_instrument.hpp"
 #include "ores.trading.api/messaging/index_credit_default_swap_option_instrument_protocol.hpp"
 #include "ores.trading.core/repository/index_credit_default_swap_option_instrument_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -502,14 +500,13 @@ ores::utility::domain::result index_credit_default_swap_option_instrument_servic
 std::vector<domain::index_credit_default_swap_option_instrument>
 index_credit_default_swap_option_instrument_service::list_index_cds_option_instruments(
     std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all index credit default swap option instruments";
+    ORES_LOG_SEV(lg(), debug) << "Listing all index credit default swap option instruments";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t
 index_credit_default_swap_option_instrument_service::count_index_cds_option_instruments() {
-    BOOST_LOG_SEV(lg(), debug)
-        << "Getting total index credit default swap option instruments count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total index credit default swap option instruments count";
     return repo_.get_total_index_cds_option_instrument_count(ctx_);
 }
 
@@ -517,16 +514,16 @@ index_credit_default_swap_option_instrument_service::count_index_cds_option_inst
 std::optional<domain::index_credit_default_swap_option_instrument>
 index_credit_default_swap_option_instrument_service::get_index_cds_option_instrument_at_version(
     const boost::uuids::uuid& trade_id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting index credit default swap option instrument at version. "
-                               << "trade_id: " << trade_id << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting index credit default swap option instrument at version. "
+                              << "trade_id: " << trade_id << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(trade_id), version);
 }
 
 std::optional<domain::index_credit_default_swap_option_instrument>
 index_credit_default_swap_option_instrument_service::get_index_cds_option_instrument(
     const boost::uuids::uuid& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting index credit default swap option instrument. "
-                               << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting index credit default swap option instrument. "
+                              << "trade_id: " << trade_id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(trade_id));
     if (results.empty())
         return std::nullopt;
@@ -544,13 +541,13 @@ void index_credit_default_swap_option_instrument_service::save_index_cds_option_
     if (v.trade_id.is_nil())
         throw std::invalid_argument(
             "Index Credit Default Swap Option Instrument trade_id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving index credit default swap option instrument. "
-                               << "trade_id: " << v.trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Saving index credit default swap option instrument. "
+                              << "trade_id: " << v.trade_id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved index credit default swap option instrument. "
-                              << "trade_id: " << v.trade_id;
+    ORES_LOG_SEV(lg(), info) << "Saved index credit default swap option instrument. "
+                             << "trade_id: " << v.trade_id;
 }
 
 void index_credit_default_swap_option_instrument_service::save_index_cds_option_instruments(
@@ -561,8 +558,8 @@ void index_credit_default_swap_option_instrument_service::save_index_cds_option_
             throw std::invalid_argument(
                 "Index Credit Default Swap Option Instrument trade_id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << index_cds_option_instruments.size()
-                               << " index credit default swap option instruments";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << index_cds_option_instruments.size()
+                              << " index credit default swap option instruments";
     auto ts = index_cds_option_instruments;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -572,11 +569,11 @@ void index_credit_default_swap_option_instrument_service::save_index_cds_option_
 
 void index_credit_default_swap_option_instrument_service::delete_index_cds_option_instrument(
     const boost::uuids::uuid& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing index credit default swap option instrument. "
-                               << "trade_id: " << trade_id;
-    repo_.remove(ctx_, boost::uuids::to_string(trade_id));
-    BOOST_LOG_SEV(lg(), info) << "Removed index credit default swap option instrument. "
+    ORES_LOG_SEV(lg(), debug) << "Removing index credit default swap option instrument. "
                               << "trade_id: " << trade_id;
+    repo_.remove(ctx_, boost::uuids::to_string(trade_id));
+    ORES_LOG_SEV(lg(), info) << "Removed index credit default swap option instrument. "
+                             << "trade_id: " << trade_id;
 }
 
 void index_credit_default_swap_option_instrument_service::delete_index_cds_option_instruments(
@@ -587,9 +584,8 @@ void index_credit_default_swap_option_instrument_service::delete_index_cds_optio
 std::vector<domain::index_credit_default_swap_option_instrument>
 index_credit_default_swap_option_instrument_service::get_index_cds_option_instrument_history(
     const std::string& trade_id) {
-    BOOST_LOG_SEV(lg(), debug)
-        << "Getting history for index credit default swap option instrument. "
-        << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for index credit default swap option instrument. "
+                              << "trade_id: " << trade_id;
     return repo_.read_all(ctx_, trade_id);
 }
 

@@ -28,7 +28,7 @@
 #include "ores.inbox.api/domain/approval_kind.hpp"
 #include "ores.inbox.core/export.hpp"
 #include "ores.inbox.core/repository/approval_kind_entity.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 
 namespace ores::inbox::repository {
 

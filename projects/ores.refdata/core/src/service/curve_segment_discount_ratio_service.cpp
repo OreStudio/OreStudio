@@ -26,7 +26,6 @@
 #include "ores.refdata.api/domain/curve_segment_discount_ratio.hpp"
 #include "ores.refdata.api/messaging/curve_segment_discount_ratio_protocol.hpp"
 #include "ores.refdata.core/repository/curve_segment_discount_ratio_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -479,12 +477,12 @@ ores::utility::domain::result curve_segment_discount_ratio_service::prepare_chan
 std::vector<domain::curve_segment_discount_ratio>
 curve_segment_discount_ratio_service::list_segment_discount_ratios(std::uint32_t offset,
                                                                    std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all curve segment discount ratios";
+    ORES_LOG_SEV(lg(), debug) << "Listing all curve segment discount ratios";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t curve_segment_discount_ratio_service::count_segment_discount_ratios() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total curve segment discount ratios count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total curve segment discount ratios count";
     return repo_.get_total_segment_discount_ratio_count(ctx_);
 }
 
@@ -492,14 +490,14 @@ std::uint32_t curve_segment_discount_ratio_service::count_segment_discount_ratio
 std::optional<domain::curve_segment_discount_ratio>
 curve_segment_discount_ratio_service::get_segment_discount_ratio_at_version(
     const boost::uuids::uuid& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting curve segment discount ratio at version. "
-                               << "id: " << id << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting curve segment discount ratio at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::curve_segment_discount_ratio>
 curve_segment_discount_ratio_service::get_segment_discount_ratio(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting curve segment discount ratio. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting curve segment discount ratio. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -516,11 +514,11 @@ void curve_segment_discount_ratio_service::save_segment_discount_ratio(
     const domain::curve_segment_discount_ratio& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Curve Segment Discount Ratio id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving curve segment discount ratio. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving curve segment discount ratio. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved curve segment discount ratio. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved curve segment discount ratio. " << "id: " << v.id;
 }
 
 void curve_segment_discount_ratio_service::save_segment_discount_ratios(
@@ -529,8 +527,8 @@ void curve_segment_discount_ratio_service::save_segment_discount_ratios(
         if (e.id.is_nil())
             throw std::invalid_argument("Curve Segment Discount Ratio id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << segment_discount_ratios.size()
-                               << " curve segment discount ratios";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << segment_discount_ratios.size()
+                              << " curve segment discount ratios";
     auto ts = segment_discount_ratios;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -540,9 +538,9 @@ void curve_segment_discount_ratio_service::save_segment_discount_ratios(
 
 void curve_segment_discount_ratio_service::delete_segment_discount_ratio(
     const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing curve segment discount ratio. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing curve segment discount ratio. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed curve segment discount ratio. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed curve segment discount ratio. " << "id: " << id;
 }
 
 void curve_segment_discount_ratio_service::delete_segment_discount_ratios(
@@ -552,8 +550,8 @@ void curve_segment_discount_ratio_service::delete_segment_discount_ratios(
 
 std::vector<domain::curve_segment_discount_ratio>
 curve_segment_discount_ratio_service::get_segment_discount_ratio_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for curve segment discount ratio. "
-                               << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for curve segment discount ratio. "
+                              << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

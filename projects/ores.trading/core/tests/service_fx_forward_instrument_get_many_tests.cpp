@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.trading.api/messaging/fx_forward_instrument_protocol.hpp"
@@ -119,5 +119,5 @@ TEST_CASE("get_many_answers_one_entry_per_key_in_the_order_asked",
     CHECK(batch_resp.fx_forward_instruments[1].identity.trade_id == batch_second.trade_id);
     CHECK(batch_resp.fx_forward_instruments[1].description == "batch second");
 
-    BOOST_LOG_SEV(lg, debug) << "Answered " << resp.entries.size() << " entries.";
+    ORES_LOG_SEV(lg, debug) << "Answered " << resp.entries.size() << " entries.";
 }

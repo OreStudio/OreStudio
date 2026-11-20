@@ -21,7 +21,7 @@
 #define ORES_TELEMETRY_MESSAGING_TELEMETRY_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
@@ -71,7 +71,7 @@ public:
         , verifier_(verifier) {}
 
     void logs_list(ores::nats::message msg) {
-        BOOST_LOG_SEV(telemetry_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(telemetry_handler_lg(), debug) << "Handling " << msg.subject;
         auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
@@ -85,26 +85,25 @@ public:
                 resp.entries = repo.query(ctx, req->query);
                 resp.total_count = repo.count(ctx, req->query);
                 resp.success = true;
-                BOOST_LOG_SEV(telemetry_handler_lg(), debug)
+                ORES_LOG_SEV(telemetry_handler_lg(), debug)
                     << "Returning " << resp.entries.size()
                     << " log entries (total=" << resp.total_count << ")";
             } catch (const std::exception& e) {
-                BOOST_LOG_SEV(telemetry_handler_lg(), error)
-                    << "Failed to query logs: " << e.what();
+                ORES_LOG_SEV(telemetry_handler_lg(), error) << "Failed to query logs: " << e.what();
                 resp.success = false;
                 resp.message = e.what();
             }
         } else {
-            BOOST_LOG_SEV(telemetry_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(telemetry_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             resp.success = false;
             resp.message = "Failed to decode request";
         }
         reply(nats_, msg, resp);
-        BOOST_LOG_SEV(telemetry_handler_lg(), debug) << "Completed " << msg.subject;
+        ORES_LOG_SEV(telemetry_handler_lg(), debug) << "Completed " << msg.subject;
     }
 
     void nats_server_samples_list(ores::nats::message msg) {
-        BOOST_LOG_SEV(telemetry_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(telemetry_handler_lg(), debug) << "Handling " << msg.subject;
         auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
@@ -117,21 +116,21 @@ public:
                 database::repository::telemetry_repository repo;
                 resp.samples = repo.query_server_samples(ctx, req->query);
                 resp.success = true;
-                BOOST_LOG_SEV(telemetry_handler_lg(), debug)
+                ORES_LOG_SEV(telemetry_handler_lg(), debug)
                     << "Returning " << resp.samples.size() << " NATS server samples";
             } catch (const std::exception& e) {
-                BOOST_LOG_SEV(telemetry_handler_lg(), error)
+                ORES_LOG_SEV(telemetry_handler_lg(), error)
                     << "Failed to query NATS server samples: " << e.what();
                 resp.success = false;
                 resp.message = e.what();
             }
         } else {
-            BOOST_LOG_SEV(telemetry_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(telemetry_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             resp.success = false;
             resp.message = "Failed to decode request";
         }
         reply(nats_, msg, resp);
-        BOOST_LOG_SEV(telemetry_handler_lg(), debug) << "Completed " << msg.subject;
+        ORES_LOG_SEV(telemetry_handler_lg(), debug) << "Completed " << msg.subject;
     }
 
     /**
@@ -141,10 +140,10 @@ public:
      * stamp sampled_at with the current time, and persist via the repository.
      */
     void service_heartbeat(ores::nats::message msg) {
-        BOOST_LOG_SEV(telemetry_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(telemetry_handler_lg(), debug) << "Handling " << msg.subject;
         const auto hb = decode<service_heartbeat_message>(msg);
         if (!hb) {
-            BOOST_LOG_SEV(telemetry_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(telemetry_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
         service_sample sample;
@@ -157,18 +156,18 @@ public:
         try {
             database::repository::telemetry_repository repo;
             repo.insert_service_sample(ctx_, sample);
-            BOOST_LOG_SEV(telemetry_handler_lg(), debug)
+            ORES_LOG_SEV(telemetry_handler_lg(), debug)
                 << "Stored heartbeat: " << sample.service_name
                 << " instance=" << sample.instance_id;
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(telemetry_handler_lg(), error)
+            ORES_LOG_SEV(telemetry_handler_lg(), error)
                 << "Failed to store heartbeat for " << sample.service_name
                 << " instance=" << sample.instance_id << ": " << e.what();
         }
     }
 
     void service_samples_list(ores::nats::message msg) {
-        BOOST_LOG_SEV(telemetry_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(telemetry_handler_lg(), debug) << "Handling " << msg.subject;
         const auto authorised = authorise(nats_, ctx_, msg, verifier_, samples_read_permission);
         if (!authorised)
             return;
@@ -180,16 +179,16 @@ public:
                 resp.samples = repo.list_service_samples(ctx);
                 resp.success = true;
             } catch (const std::exception& e) {
-                BOOST_LOG_SEV(telemetry_handler_lg(), error)
+                ORES_LOG_SEV(telemetry_handler_lg(), error)
                     << "Failed to list service samples: " << e.what();
                 resp.success = false;
                 resp.message = e.what();
             }
             reply(nats_, msg, resp);
         } else {
-            BOOST_LOG_SEV(telemetry_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(telemetry_handler_lg(), warn) << "Failed to decode: " << msg.subject;
         }
-        BOOST_LOG_SEV(telemetry_handler_lg(), debug) << "Completed " << msg.subject;
+        ORES_LOG_SEV(telemetry_handler_lg(), debug) << "Completed " << msg.subject;
     }
 
     /**
@@ -197,7 +196,7 @@ public:
      * state.
      */
     void service_roster_list(ores::nats::message msg) {
-        BOOST_LOG_SEV(telemetry_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(telemetry_handler_lg(), debug) << "Handling " << msg.subject;
         const auto authorised = authorise(nats_, ctx_, msg, verifier_, samples_read_permission);
         if (!authorised)
             return;
@@ -209,16 +208,16 @@ public:
                 resp.slots = repo.list_service_roster(ctx, std::chrono::system_clock::now());
                 resp.success = true;
             } catch (const std::exception& e) {
-                BOOST_LOG_SEV(telemetry_handler_lg(), error)
+                ORES_LOG_SEV(telemetry_handler_lg(), error)
                     << "Failed to read the services roster: " << e.what();
                 resp.success = false;
                 resp.message = e.what();
             }
             reply(nats_, msg, resp);
         } else {
-            BOOST_LOG_SEV(telemetry_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(telemetry_handler_lg(), warn) << "Failed to decode: " << msg.subject;
         }
-        BOOST_LOG_SEV(telemetry_handler_lg(), debug) << "Completed " << msg.subject;
+        ORES_LOG_SEV(telemetry_handler_lg(), debug) << "Completed " << msg.subject;
     }
 
     /**
@@ -227,7 +226,7 @@ public:
      * Published by wrapper nodes to ingest ORE engine logs. No reply is sent.
      */
     void logs_publish(ores::nats::message msg) {
-        BOOST_LOG_SEV(telemetry_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(telemetry_handler_lg(), debug) << "Handling " << msg.subject;
         if (auto req = decode<publish_log_entries_request>(msg)) {
             try {
                 database::repository::telemetry_repository repo;
@@ -249,19 +248,19 @@ public:
                     batch.entries.push_back(std::move(entry));
                 }
                 repo.create_batch(ctx_, batch);
-                BOOST_LOG_SEV(telemetry_handler_lg(), debug)
+                ORES_LOG_SEV(telemetry_handler_lg(), debug)
                     << "Stored " << batch.size() << " log entries from " << req->source_name;
             } catch (const std::exception& e) {
-                BOOST_LOG_SEV(telemetry_handler_lg(), error)
+                ORES_LOG_SEV(telemetry_handler_lg(), error)
                     << "Failed to persist log batch: " << e.what();
             }
         } else {
-            BOOST_LOG_SEV(telemetry_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(telemetry_handler_lg(), warn) << "Failed to decode: " << msg.subject;
         }
     }
 
     void nats_stream_samples_list(ores::nats::message msg) {
-        BOOST_LOG_SEV(telemetry_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(telemetry_handler_lg(), debug) << "Handling " << msg.subject;
         auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
@@ -274,21 +273,21 @@ public:
                 database::repository::telemetry_repository repo;
                 resp.samples = repo.query_stream_samples(ctx, req->query);
                 resp.success = true;
-                BOOST_LOG_SEV(telemetry_handler_lg(), debug)
+                ORES_LOG_SEV(telemetry_handler_lg(), debug)
                     << "Returning " << resp.samples.size() << " NATS stream samples";
             } catch (const std::exception& e) {
-                BOOST_LOG_SEV(telemetry_handler_lg(), error)
+                ORES_LOG_SEV(telemetry_handler_lg(), error)
                     << "Failed to query NATS stream samples: " << e.what();
                 resp.success = false;
                 resp.message = e.what();
             }
         } else {
-            BOOST_LOG_SEV(telemetry_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(telemetry_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             resp.success = false;
             resp.message = "Failed to decode request";
         }
         reply(nats_, msg, resp);
-        BOOST_LOG_SEV(telemetry_handler_lg(), debug) << "Completed " << msg.subject;
+        ORES_LOG_SEV(telemetry_handler_lg(), debug) << "Completed " << msg.subject;
     }
 
 private:

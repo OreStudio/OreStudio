@@ -30,7 +30,7 @@ The full template source. Edit here and re-tangle with
 #define ORES_{{component_core_upper}}_MESSAGING_{{entity_singular_upper}}_HANDLER_HPP
 
 #include <optional>
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.database/domain/context.hpp"
@@ -96,7 +96,7 @@ public:
 {{#is_put_one}}
 <<paste:6D3A9F1E-7C2B-4E8A-9D5F-1B6C4E2A8F3D>>
 {{/is_put_one}}
-        BOOST_LOG_SEV({{entity_singular}}_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV({{entity_singular}}_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -127,7 +127,7 @@ public:
 {{/system_tenant_validation}}
         auto req = decode<{{request}}>(msg);
         if (!req) {
-            BOOST_LOG_SEV({{entity_singular}}_handler_lg(), warn)
+            ORES_LOG_SEV({{entity_singular}}_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -142,14 +142,14 @@ public:
 {{/system_tenant_validation}}
         try {
             auto response = svc.{{method}}(*req);
-            BOOST_LOG_SEV({{entity_singular}}_handler_lg(), debug)
+            ORES_LOG_SEV({{entity_singular}}_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV({{entity_singular}}_handler_lg(), error)
+            ORES_LOG_SEV({{entity_singular}}_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             {{response}} failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -177,7 +177,7 @@ private:
 #define ORES_{{component_core_upper}}_MESSAGING_{{name_singular_upper}}_HANDLER_HPP
 
 #include <optional>
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.database/domain/context.hpp"
@@ -233,7 +233,7 @@ public:
 {{#is_put_one}}
 <<paste:6D3A9F1E-7C2B-4E8A-9D5F-1B6C4E2A8F3D>>
 {{/is_put_one}}
-        BOOST_LOG_SEV({{name_singular}}_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV({{name_singular}}_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -264,7 +264,7 @@ public:
 {{/system_tenant_validation}}
         auto req = decode<{{request}}>(msg);
         if (!req) {
-            BOOST_LOG_SEV({{name_singular}}_handler_lg(), warn)
+            ORES_LOG_SEV({{name_singular}}_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -279,14 +279,14 @@ public:
 {{/system_tenant_validation}}
         try {
             auto response = svc.{{method}}(*req);
-            BOOST_LOG_SEV({{name_singular}}_handler_lg(), debug)
+            ORES_LOG_SEV({{name_singular}}_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV({{name_singular}}_handler_lg(), error)
+            ORES_LOG_SEV({{name_singular}}_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             {{response}} failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -314,7 +314,7 @@ private:
 #define ORES_{{component_core_upper}}_MESSAGING_{{entity_singular_upper}}_HANDLER_HPP
 
 #include <optional>
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.database/domain/context.hpp"
@@ -360,7 +360,7 @@ public:
      * @brief Serves {{subject}}.
      */
     void {{method}}(ores::nats::message msg) {
-        BOOST_LOG_SEV({{entity_singular}}_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV({{entity_singular}}_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -376,7 +376,7 @@ public:
 {{/is_guarded}}
         auto req = decode<{{request}}>(msg);
         if (!req) {
-            BOOST_LOG_SEV({{entity_singular}}_handler_lg(), warn)
+            ORES_LOG_SEV({{entity_singular}}_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -384,14 +384,14 @@ public:
         service::{{entity_singular}}_service svc(req_ctx);
         try {
             auto response = svc.{{method}}(*req);
-            BOOST_LOG_SEV({{entity_singular}}_handler_lg(), debug)
+            ORES_LOG_SEV({{entity_singular}}_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV({{entity_singular}}_handler_lg(), error)
+            ORES_LOG_SEV({{entity_singular}}_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             {{response}} failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;

@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.trading.api/domain/trade_identifier.hpp"
 #include "ores.trading.api/domain/trade_identifier_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.api/domain/trade_identifier_table.hpp"
@@ -64,7 +64,7 @@ TEST_CASE("create_trade_identifier_with_valid_fields", "[domain]") {
     sut.change_reason_code = "system.new";
     sut.change_commentary = "Initial creation";
     sut.recorded_at = std::chrono::system_clock::now();
-    BOOST_LOG_SEV(lg, info) << "Trade identifier: " << sut;
+    ORES_LOG_SEV(lg, info) << "Trade identifier: " << sut;
 
     CHECK(sut.version == 1);
     CHECK(!sut.trade_id.is_nil());
@@ -88,7 +88,7 @@ TEST_CASE("create_trade_identifier_with_issuing_party", "[domain]") {
     sut.change_reason_code = "system.new";
     sut.change_commentary = "Test";
     sut.recorded_at = std::chrono::system_clock::now();
-    BOOST_LOG_SEV(lg, info) << "Trade identifier with party: " << sut;
+    ORES_LOG_SEV(lg, info) << "Trade identifier with party: " << sut;
 
     CHECK(sut.issuing_party_id.has_value());
     CHECK(!sut.issuing_party_id->is_nil());
@@ -108,7 +108,7 @@ TEST_CASE("trade_identifier_insertion_operator", "[domain]") {
     sut.change_reason_code = "system.new";
     sut.change_commentary = "Test";
     sut.recorded_at = std::chrono::system_clock::now();
-    BOOST_LOG_SEV(lg, info) << "Trade identifier: " << sut;
+    ORES_LOG_SEV(lg, info) << "Trade identifier: " << sut;
 
     std::ostringstream os;
     os << sut;
@@ -132,7 +132,7 @@ TEST_CASE("create_trade_identifier_with_faker", "[domain]") {
     sut.change_reason_code = "system.new";
     sut.change_commentary = "Synthetic test data";
     sut.recorded_at = std::chrono::system_clock::now();
-    BOOST_LOG_SEV(lg, info) << "Trade identifier: " << sut;
+    ORES_LOG_SEV(lg, info) << "Trade identifier: " << sut;
 
     CHECK(sut.version >= 1);
     CHECK(!sut.trade_id.is_nil());
@@ -148,7 +148,7 @@ TEST_CASE("create_multiple_random_trade_identifiers", "[domain]") {
         {"UTI", "UTI-001"}, {"USI", "USI-002"}, {"Internal", "INT-003"}, {"CICI", "CICI-004"}};
     for (const auto& [id_type, id_value] : ids) {
         auto sut = make_trade_identifier(id_type, id_value);
-        BOOST_LOG_SEV(lg, info) << "Trade identifier: " << sut;
+        ORES_LOG_SEV(lg, info) << "Trade identifier: " << sut;
         CHECK(!sut.trade_id.is_nil());
         CHECK(sut.version == 1);
     }
@@ -160,7 +160,7 @@ TEST_CASE("trade_identifier_convert_single_to_table", "[domain]") {
     std::vector<trade_identifier> items = {make_trade_identifier("UTI", "UTI-2026-001")};
     auto table = convert_to_table(items);
 
-    BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
+    ORES_LOG_SEV(lg, info) << "Table output:\n" << table;
 
     CHECK(table.find("UTI-2026-001") != std::string::npos);
 }
@@ -175,7 +175,7 @@ TEST_CASE("trade_identifier_convert_multiple_to_table", "[domain]") {
 
     auto table = convert_to_table(items);
 
-    BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
+    ORES_LOG_SEV(lg, info) << "Table output:\n" << table;
 
     CHECK(table.find("Type0") != std::string::npos);
     CHECK(table.find("Type1") != std::string::npos);
@@ -188,7 +188,7 @@ TEST_CASE("trade_identifier_convert_empty_vector_to_table", "[domain]") {
     std::vector<trade_identifier> items;
     auto table = convert_to_table(items);
 
-    BOOST_LOG_SEV(lg, info) << "Empty table output:\n" << table;
+    ORES_LOG_SEV(lg, info) << "Empty table output:\n" << table;
 
     CHECK(table.find("ID Value") != std::string::npos);
 }
@@ -213,7 +213,7 @@ TEST_CASE("trade_identifier_table_with_faker_data", "[domain]") {
 
     auto table = convert_to_table(items);
 
-    BOOST_LOG_SEV(lg, info) << "Faker table output:\n" << table;
+    ORES_LOG_SEV(lg, info) << "Faker table output:\n" << table;
 
     CHECK(!table.empty());
     for (const auto& item : items)

@@ -59,7 +59,7 @@
 #include "ores.inbox.core/messaging/notification_recipient_history_provider_registrar.hpp"
 #include "ores.inbox.core/messaging/notification_recipient_registrar.hpp"
 #include "ores.inbox.core/messaging/notification_registrar.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.service/messaging/step_command_stream.hpp"
 #include <memory>
 #include <string_view>
@@ -188,9 +188,9 @@ registrar::register_handlers(ores::nats::service::client& nats,
             expire_overdue_approvals_request::nats_subject,
             queue_group,
             [h](ores::nats::message msg) { h->expire_overdue(std::move(msg)); }));
-        BOOST_LOG_SEV(lg(), info) << "inbox registrar: approval operations subscribed, "
-                                  << "including get_approval at "
-                                  << get_approval_request::nats_subject;
+        ORES_LOG_SEV(lg(), info) << "inbox registrar: approval operations subscribed, "
+                                 << "including get_approval at "
+                                 << get_approval_request::nats_subject;
     }
 
     // Notifications: a component raises one, and a person reads, marks and
@@ -242,8 +242,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
             nats, hist_registry, "inbox", queue_group, ctx, verifier));
     }
 
-    BOOST_LOG_SEV(lg(), info) << "inbox registrar: registered " << subs.size()
-                              << " subscription(s).";
+    ORES_LOG_SEV(lg(), info) << "inbox registrar: registered " << subs.size()
+                             << " subscription(s).";
 
     return subs;
 }

@@ -25,7 +25,7 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_CURVE_VOLATILITY_DELTA_SURFACE_MAPPER_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_CURVE_VOLATILITY_DELTA_SURFACE_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/curve_volatility_delta_surface.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/curve_volatility_delta_surface_entity.hpp"

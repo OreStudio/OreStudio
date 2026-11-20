@@ -20,7 +20,7 @@
 #include "ores.dq.api/domain/origin_dimension_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.api/generators/origin_dimension_generator.hpp"
 #include "ores.dq.core/repository/origin_dimension_repository.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
@@ -49,11 +49,11 @@ TEST_CASE("write_single_origin_dimension", "[repository]") {
     origin_dimension.code =
         origin_dimension.code + "_" + std::string(faker::string::alphanumeric(8));
 
-    BOOST_LOG_SEV(lg, debug) << "Origin dimension: " << origin_dimension;
+    ORES_LOG_SEV(lg, debug) << "Origin dimension: " << origin_dimension;
     repo.write(h.context(), origin_dimension);
 
     auto read_origin_dimensions = repo.read_latest(h.context(), origin_dimension.code);
-    BOOST_LOG_SEV(lg, debug) << "Read origin dimensions: " << read_origin_dimensions;
+    ORES_LOG_SEV(lg, debug) << "Read origin dimensions: " << read_origin_dimensions;
 
     REQUIRE(read_origin_dimensions.size() == 1);
     CHECK(read_origin_dimensions[0].code == origin_dimension.code);
@@ -72,11 +72,11 @@ TEST_CASE("write_multiple_origin_dimensions", "[repository]") {
         o.tenant_id = h.tenant_id();
         o.code = o.code + "_" + std::string(faker::string::alphanumeric(8));
     }
-    BOOST_LOG_SEV(lg, debug) << "Origin dimensions: " << origin_dimensions;
+    ORES_LOG_SEV(lg, debug) << "Origin dimensions: " << origin_dimensions;
     repo.write(h.context(), origin_dimensions);
 
     auto read_origin_dimensions = repo.read_latest(h.context());
-    BOOST_LOG_SEV(lg, debug) << "Read origin dimensions: " << read_origin_dimensions;
+    ORES_LOG_SEV(lg, debug) << "Read origin dimensions: " << read_origin_dimensions;
 
     for (const auto& written : origin_dimensions) {
         bool found = false;
@@ -102,12 +102,12 @@ TEST_CASE("read_latest_origin_dimensions", "[repository]") {
         o.tenant_id = h.tenant_id();
         o.code = o.code + "_" + std::string(faker::string::alphanumeric(8));
     }
-    BOOST_LOG_SEV(lg, debug) << "Written origin dimensions: " << written_origin_dimensions;
+    ORES_LOG_SEV(lg, debug) << "Written origin dimensions: " << written_origin_dimensions;
 
     repo.write(h.context(), written_origin_dimensions);
 
     auto read_origin_dimensions = repo.read_latest(h.context());
-    BOOST_LOG_SEV(lg, debug) << "Read origin dimensions: " << read_origin_dimensions;
+    ORES_LOG_SEV(lg, debug) << "Read origin dimensions: " << read_origin_dimensions;
 
     for (const auto& written : written_origin_dimensions) {
         bool found = false;
@@ -135,13 +135,13 @@ TEST_CASE("read_latest_origin_dimension_by_code", "[repository]") {
     }
 
     const auto target = origin_dimensions.front();
-    BOOST_LOG_SEV(lg, debug) << "Write origin dimensions: " << origin_dimensions;
+    ORES_LOG_SEV(lg, debug) << "Write origin dimensions: " << origin_dimensions;
     repo.write(h.context(), origin_dimensions);
 
-    BOOST_LOG_SEV(lg, debug) << "Target origin dimension: " << target;
+    ORES_LOG_SEV(lg, debug) << "Target origin dimension: " << target;
 
     auto read_origin_dimensions = repo.read_latest(h.context(), target.code);
-    BOOST_LOG_SEV(lg, debug) << "Read origin dimensions: " << read_origin_dimensions;
+    ORES_LOG_SEV(lg, debug) << "Read origin dimensions: " << read_origin_dimensions;
 
     REQUIRE(read_origin_dimensions.size() == 1);
     CHECK(read_origin_dimensions[0].code == target.code);

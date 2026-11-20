@@ -21,7 +21,7 @@
 #include "ores.iam.api/domain/role_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.api/generators/role_generator.hpp"
 #include "ores.iam.core/repository/role_repository.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
@@ -45,7 +45,7 @@ TEST_CASE("write_single_role", "[repository]") {
     role_repository repo;
     auto r = generate_synthetic_role(gen_ctx);
 
-    BOOST_LOG_SEV(lg, debug) << "Role: " << r;
+    ORES_LOG_SEV(lg, debug) << "Role: " << r;
     CHECK_NOTHROW(repo.write(h.context(), r));
 }
 
@@ -58,11 +58,11 @@ TEST_CASE("read_latest_roles", "[repository]") {
     role_repository repo;
     auto r = generate_synthetic_role(gen_ctx);
 
-    BOOST_LOG_SEV(lg, debug) << "Role: " << r;
+    ORES_LOG_SEV(lg, debug) << "Role: " << r;
     repo.write(h.context(), r);
 
     auto read_roles = repo.read_latest(h.context());
-    BOOST_LOG_SEV(lg, debug) << "Read roles: " << read_roles;
+    ORES_LOG_SEV(lg, debug) << "Read roles: " << read_roles;
 
     CHECK(!read_roles.empty());
 }
@@ -77,13 +77,13 @@ TEST_CASE("read_latest_role_by_id", "[repository]") {
     auto r = generate_synthetic_role(gen_ctx);
     const auto target_id = r.id;
 
-    BOOST_LOG_SEV(lg, debug) << "Role: " << r;
+    ORES_LOG_SEV(lg, debug) << "Role: " << r;
     repo.write(h.context(), r);
 
-    BOOST_LOG_SEV(lg, debug) << "Target ID: " << target_id;
+    ORES_LOG_SEV(lg, debug) << "Target ID: " << target_id;
 
     auto read_roles = repo.read_latest(h.context(), boost::uuids::to_string(target_id));
-    BOOST_LOG_SEV(lg, debug) << "Read roles: " << read_roles;
+    ORES_LOG_SEV(lg, debug) << "Read roles: " << read_roles;
 
     REQUIRE(read_roles.size() == 1);
     // version and recorded_at are stamped by the database, so they are taken
@@ -108,11 +108,11 @@ TEST_CASE("write_role_members_may_not_ask_for", "[repository]") {
     auto r = generate_synthetic_role(gen_ctx);
     r.is_requestable = false;
 
-    BOOST_LOG_SEV(lg, debug) << "Role: " << r;
+    ORES_LOG_SEV(lg, debug) << "Role: " << r;
     repo.write(h.context(), r);
 
     auto read_roles = repo.read_latest(h.context(), boost::uuids::to_string(r.id));
-    BOOST_LOG_SEV(lg, debug) << "Read roles: " << read_roles;
+    ORES_LOG_SEV(lg, debug) << "Read roles: " << read_roles;
 
     REQUIRE(read_roles.size() == 1);
     CHECK_FALSE(read_roles[0].is_requestable);
@@ -126,10 +126,10 @@ TEST_CASE("read_nonexistent_role", "[repository]") {
     role_repository repo;
 
     const auto nonexistent_id = boost::uuids::random_generator()();
-    BOOST_LOG_SEV(lg, debug) << "Non-existent ID: " << nonexistent_id;
+    ORES_LOG_SEV(lg, debug) << "Non-existent ID: " << nonexistent_id;
 
     auto read_roles = repo.read_latest(h.context(), boost::uuids::to_string(nonexistent_id));
-    BOOST_LOG_SEV(lg, debug) << "Read roles: " << read_roles;
+    ORES_LOG_SEV(lg, debug) << "Read roles: " << read_roles;
 
     CHECK(read_roles.size() == 0);
 }

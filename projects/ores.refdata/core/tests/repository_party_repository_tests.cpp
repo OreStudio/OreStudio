@@ -17,8 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/boost_severity.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/party.hpp"         // IWYU pragma: keep.
 #include "ores.refdata.api/domain/party_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/generators/party_generator.hpp"
@@ -27,7 +26,6 @@
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "test_suite.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -52,7 +50,7 @@ TEST_CASE("write_single_party", "[repository]") {
     auto p = generate_synthetic_party(ctx);
     p.change_reason_code = "system.test";
     p.parent_party_id = parent_id;
-    BOOST_LOG_SEV(lg, debug) << "Party: " << p;
+    ORES_LOG_SEV(lg, debug) << "Party: " << p;
 
     repo.write(h.context(), p);
 
@@ -74,7 +72,7 @@ TEST_CASE("write_multiple_parties", "[repository]") {
         p.change_reason_code = "system.test";
         p.parent_party_id = parent_id;
     }
-    BOOST_LOG_SEV(lg, debug) << "Parties: " << parties;
+    ORES_LOG_SEV(lg, debug) << "Parties: " << parties;
 
     repo.write(h.context(), parties);
 
@@ -100,12 +98,12 @@ TEST_CASE("read_latest_parties", "[repository]") {
         p.change_reason_code = "system.test";
         p.parent_party_id = parent_id;
     }
-    BOOST_LOG_SEV(lg, debug) << "Written parties: " << written_parties;
+    ORES_LOG_SEV(lg, debug) << "Written parties: " << written_parties;
 
     repo.write(h.context(), written_parties);
 
     auto read_parties = repo.read_latest(h.context());
-    BOOST_LOG_SEV(lg, debug) << "Read parties: " << read_parties;
+    ORES_LOG_SEV(lg, debug) << "Read parties: " << read_parties;
 
     for (const auto& written : written_parties) {
         const auto it = std::ranges::find_if(
@@ -127,7 +125,7 @@ TEST_CASE("read_latest_party_by_id", "[repository]") {
     p.change_reason_code = "system.test";
     p.parent_party_id = parent_id;
     const auto original_full_name = p.full_name;
-    BOOST_LOG_SEV(lg, debug) << "Party: " << p;
+    ORES_LOG_SEV(lg, debug) << "Party: " << p;
 
     repo.write(h.context(), p);
 
@@ -135,7 +133,7 @@ TEST_CASE("read_latest_party_by_id", "[repository]") {
     repo.write(h.context(), p);
 
     auto read_parties = repo.read_latest(h.context(), boost::uuids::to_string(p.id));
-    BOOST_LOG_SEV(lg, debug) << "Read parties: " << read_parties;
+    ORES_LOG_SEV(lg, debug) << "Read parties: " << read_parties;
 
     REQUIRE(read_parties.size() == 1);
     CHECK(read_parties[0].id == p.id);
@@ -158,10 +156,10 @@ TEST_CASE("read_nonexistent_party_id", "[repository]") {
     repo.write(h.context(), keeper);
 
     const auto nonexistent_id = boost::uuids::random_generator()();
-    BOOST_LOG_SEV(lg, debug) << "Non-existent ID: " << nonexistent_id;
+    ORES_LOG_SEV(lg, debug) << "Non-existent ID: " << nonexistent_id;
 
     auto read_parties = repo.read_latest(h.context(), boost::uuids::to_string(nonexistent_id));
-    BOOST_LOG_SEV(lg, debug) << "Read parties: " << read_parties;
+    ORES_LOG_SEV(lg, debug) << "Read parties: " << read_parties;
 
     const auto answered_with_another_key =
         std::ranges::any_of(read_parties, [&](const party& p) { return p.id == nonexistent_id; });
@@ -192,7 +190,7 @@ TEST_CASE("get_hierarchy_returns_subtree_rooted_at_given_party", "[repository]")
     repo.write(h.context(), child);
 
     const auto rows = repo.get_hierarchy(h.context(), root.id, false);
-    BOOST_LOG_SEV(lg, debug) << "Hierarchy rows: " << rows.size();
+    ORES_LOG_SEV(lg, debug) << "Hierarchy rows: " << rows.size();
 
     REQUIRE(rows.size() == 2);
     const auto has_id = [&rows](const boost::uuids::uuid& id) {

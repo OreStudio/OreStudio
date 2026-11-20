@@ -25,7 +25,7 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_DIARY_ENTRY_TYPE_MAPPER_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_DIARY_ENTRY_TYPE_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/diary_entry_type.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/diary_entry_type_entity.hpp"

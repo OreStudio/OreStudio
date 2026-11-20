@@ -286,8 +286,8 @@ void compute_commands::process_publish_package(std::ostream& out,
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Uploading " << file << " for " << app_name << " "
-                              << engine_version << " (" << platform_code << ")";
+    ORES_LOG_SEV(lg(), info) << "Uploading " << file << " for " << app_name << " " << engine_version
+                             << " (" << platform_code << ")";
 
     compute::client::package_publish_result upload;
     try {
@@ -461,7 +461,7 @@ void compute_commands::process_dispatch_batch(std::ostream& out,
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Uploading input bundle " << key << " for batch " << external_ref;
+    ORES_LOG_SEV(lg(), info) << "Uploading input bundle " << key << " for batch " << external_ref;
     try {
         ores::storage::net::storage_transfer transfer(default_http_base_url(),
                                                       session.bearer_token());
@@ -499,8 +499,8 @@ void compute_commands::process_dispatch_batch(std::ostream& out,
                       << (wu_resp ? wu_resp->result.message : "no response") << std::endl;
             return;
         }
-        BOOST_LOG_SEV(lg(), info) << "Dispatched job " << (i + 1) << "/" << *job_count
-                                  << " (workunit " << boost::uuids::to_string(wu_id) << ")";
+        ORES_LOG_SEV(lg(), info) << "Dispatched job " << (i + 1) << "/" << *job_count
+                                 << " (workunit " << boost::uuids::to_string(wu_id) << ")";
     }
 
     compute::messaging::put_batch_request batch_req;
@@ -577,8 +577,8 @@ void compute_commands::process_grid_stats(std::ostream& out,
                     return w.canonical_result_id != boost::uuids::uuid{};
                 }));
             if (workunit_count > 0 && terminal_count == workunit_count) {
-                BOOST_LOG_SEV(lg(), info) << "Batch " << batch_ref << " drained (" << terminal_count
-                                          << "/" << workunit_count << " workunits).";
+                ORES_LOG_SEV(lg(), info) << "Batch " << batch_ref << " drained (" << terminal_count
+                                         << "/" << workunit_count << " workunits).";
                 break;
             }
             if (workunit_count == 0) {
@@ -602,7 +602,7 @@ void compute_commands::process_grid_stats(std::ostream& out,
         return;
     if (!resp->success) {
         const auto& msg = resp->message.empty() ? "Failed to fetch grid stats." : resp->message;
-        BOOST_LOG_SEV(lg(), warn) << msg;
+        ORES_LOG_SEV(lg(), warn) << msg;
         fail(out) << msg << std::endl;
         return;
     }

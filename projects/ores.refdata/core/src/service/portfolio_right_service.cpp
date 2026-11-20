@@ -26,7 +26,6 @@
 #include "ores.refdata.api/domain/portfolio_right.hpp"
 #include "ores.refdata.api/messaging/portfolio_right_protocol.hpp"
 #include "ores.refdata.core/repository/portfolio_right_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -582,40 +580,40 @@ portfolio_right_service::prepare_change(const messaging::portfolio_right_change&
 
 std::vector<domain::portfolio_right>
 portfolio_right_service::list_portfolio_rights(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all portfolio rights";
+    ORES_LOG_SEV(lg(), debug) << "Listing all portfolio rights";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t portfolio_right_service::count_portfolio_rights() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total portfolio rights count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total portfolio rights count";
     return repo_.get_total_portfolio_right_count(ctx_);
 }
 
 
 std::vector<domain::portfolio_right> portfolio_right_service::list_portfolio_rights_by_account_id(
     const std::string& account_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing portfolio rights by account_id: " << account_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing portfolio rights by account_id: " << account_id;
     return repo_.read_latest_by_account_id(ctx_, account_id, offset, limit);
 }
 
 std::uint32_t
 portfolio_right_service::count_portfolio_rights_by_account_id(const std::string& account_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total portfolio rights count by account_id: "
-                               << account_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting total portfolio rights count by account_id: "
+                              << account_id;
     return repo_.get_total_portfolio_right_count_by_account_id(ctx_, account_id);
 }
 
 std::vector<domain::portfolio_right> portfolio_right_service::list_portfolio_rights_by_account_id(
     const boost::uuids::uuid& account_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing portfolio rights by account_id: " << account_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing portfolio rights by account_id: " << account_id;
     return repo_.read_latest_by_account_id(
         ctx_, boost::uuids::to_string(account_id), offset, limit);
 }
 
 std::uint32_t portfolio_right_service::count_portfolio_rights_by_account_id(
     const boost::uuids::uuid& account_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total portfolio rights count by account_id: "
-                               << account_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting total portfolio rights count by account_id: "
+                              << account_id;
     return repo_.get_total_portfolio_right_count_by_account_id(ctx_,
                                                                boost::uuids::to_string(account_id));
 }
@@ -623,28 +621,28 @@ std::uint32_t portfolio_right_service::count_portfolio_rights_by_account_id(
 
 std::vector<domain::portfolio_right> portfolio_right_service::list_portfolio_rights_by_portfolio_id(
     const std::string& portfolio_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing portfolio rights by portfolio_id: " << portfolio_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing portfolio rights by portfolio_id: " << portfolio_id;
     return repo_.read_latest_by_portfolio_id(ctx_, portfolio_id, offset, limit);
 }
 
 std::uint32_t
 portfolio_right_service::count_portfolio_rights_by_portfolio_id(const std::string& portfolio_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total portfolio rights count by portfolio_id: "
-                               << portfolio_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting total portfolio rights count by portfolio_id: "
+                              << portfolio_id;
     return repo_.get_total_portfolio_right_count_by_portfolio_id(ctx_, portfolio_id);
 }
 
 std::vector<domain::portfolio_right> portfolio_right_service::list_portfolio_rights_by_portfolio_id(
     const boost::uuids::uuid& portfolio_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing portfolio rights by portfolio_id: " << portfolio_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing portfolio rights by portfolio_id: " << portfolio_id;
     return repo_.read_latest_by_portfolio_id(
         ctx_, boost::uuids::to_string(portfolio_id), offset, limit);
 }
 
 std::uint32_t portfolio_right_service::count_portfolio_rights_by_portfolio_id(
     const boost::uuids::uuid& portfolio_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total portfolio rights count by portfolio_id: "
-                               << portfolio_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting total portfolio rights count by portfolio_id: "
+                              << portfolio_id;
     return repo_.get_total_portfolio_right_count_by_portfolio_id(
         ctx_, boost::uuids::to_string(portfolio_id));
 }
@@ -653,14 +651,14 @@ std::uint32_t portfolio_right_service::count_portfolio_rights_by_portfolio_id(
 std::optional<domain::portfolio_right>
 portfolio_right_service::get_portfolio_right_at_version(const boost::uuids::uuid& id,
                                                         std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting portfolio right at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting portfolio right at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::portfolio_right>
 portfolio_right_service::get_portfolio_right(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting portfolio right. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting portfolio right. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -669,7 +667,7 @@ portfolio_right_service::get_portfolio_right(const boost::uuids::uuid& id) {
 
 std::optional<domain::portfolio_right>
 portfolio_right_service::get_portfolio_right_by_right_code(const std::string& right_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting portfolio right by right_code: " << right_code;
+    ORES_LOG_SEV(lg(), debug) << "Getting portfolio right by right_code: " << right_code;
     messaging::portfolio_right_key k;
     k.right_code = right_code;
     auto found = portfolio_right_read_one(repo_, ctx_, k);
@@ -680,7 +678,7 @@ portfolio_right_service::get_portfolio_right_by_right_code(const std::string& ri
 
 std::optional<domain::portfolio_right>
 portfolio_right_service::find_portfolio_right(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding portfolio right. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Finding portfolio right. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -695,11 +693,11 @@ portfolio_right_service::get_portfolio_rights(const std::vector<std::string>& id
 void portfolio_right_service::save_portfolio_right(const domain::portfolio_right& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Portfolio Right id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving portfolio right. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving portfolio right. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved portfolio right. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved portfolio right. " << "id: " << v.id;
 }
 
 void portfolio_right_service::save_portfolio_rights(
@@ -708,7 +706,7 @@ void portfolio_right_service::save_portfolio_rights(
         if (e.id.is_nil())
             throw std::invalid_argument("Portfolio Right id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << portfolio_rights.size() << " portfolio rights";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << portfolio_rights.size() << " portfolio rights";
     auto ts = portfolio_rights;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -717,15 +715,15 @@ void portfolio_right_service::save_portfolio_rights(
 }
 
 void portfolio_right_service::delete_portfolio_right(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing portfolio right. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing portfolio right. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed portfolio right. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed portfolio right. " << "id: " << id;
 }
 
 void portfolio_right_service::remove_portfolio_right(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing portfolio right. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing portfolio right. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed portfolio right. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed portfolio right. " << "id: " << id;
 }
 
 void portfolio_right_service::delete_portfolio_rights(const std::vector<std::string>& ids) {
@@ -734,7 +732,7 @@ void portfolio_right_service::delete_portfolio_rights(const std::vector<std::str
 
 std::vector<domain::portfolio_right>
 portfolio_right_service::get_portfolio_right_history(const std::string& key) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for portfolio right. key: " << key;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for portfolio right. key: " << key;
     // The caller holds the key the model declares and this reads by the
     // storage key, so the two are joined here exactly as they are for any
     // other read. Without this step a provider looks the versions up under a
@@ -756,7 +754,7 @@ portfolio_right_service::get_portfolio_right_history(const std::string& key) {
 
 std::vector<domain::portfolio_right>
 portfolio_right_service::get_portfolio_right_history(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for portfolio right. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for portfolio right. " << "id: " << id;
     return repo_.read_all(ctx_, boost::uuids::to_string(id));
 }
 

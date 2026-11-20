@@ -26,7 +26,7 @@
 #define ORES_MARKETDATA_CORE_SERVICE_COMPOSITE_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/domain/composite.hpp"
 #include "ores.marketdata.api/messaging/composite_protocol.hpp"
 #include "ores.marketdata.core/export.hpp"

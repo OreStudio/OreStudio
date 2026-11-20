@@ -28,10 +28,8 @@
 #include "ores.dq.api/domain/lei_entity.hpp"
 #include "ores.dq.api/messaging/lei_entity_protocol.hpp"
 #include "ores.dq.core/repository/lei_entity_repository.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <cstddef>
 #include <cstdint>
 #include <map>
@@ -178,18 +176,18 @@ lei_entity_service::get_many_lei_entities(const messaging::get_many_lei_entities
 
 std::vector<domain::lei_entity> lei_entity_service::list_entities(std::uint32_t offset,
                                                                   std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all LEI entities";
+    ORES_LOG_SEV(lg(), debug) << "Listing all LEI entities";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t lei_entity_service::count_entities() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total LEI entities count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total LEI entities count";
     return repo_.get_total_entity_count(ctx_);
 }
 
 
 std::optional<domain::lei_entity> lei_entity_service::get_entity(const std::string& lei) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting LEI entity. " << "lei: " << lei;
+    ORES_LOG_SEV(lg(), debug) << "Getting LEI entity. " << "lei: " << lei;
     auto results = repo_.read_latest(ctx_, lei);
     if (results.empty())
         return std::nullopt;
@@ -204,11 +202,11 @@ lei_entity_service::get_entities(const std::vector<std::string>& leis) {
 void lei_entity_service::save_entity(const domain::lei_entity& v) {
     if (v.lei.empty())
         throw std::invalid_argument("LEI Entity lei cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving LEI entity. " << "lei: " << v.lei;
+    ORES_LOG_SEV(lg(), debug) << "Saving LEI entity. " << "lei: " << v.lei;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved LEI entity. " << "lei: " << v.lei;
+    ORES_LOG_SEV(lg(), info) << "Saved LEI entity. " << "lei: " << v.lei;
 }
 
 void lei_entity_service::save_entities(const std::vector<domain::lei_entity>& entities) {
@@ -216,7 +214,7 @@ void lei_entity_service::save_entities(const std::vector<domain::lei_entity>& en
         if (e.lei.empty())
             throw std::invalid_argument("LEI Entity lei cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << entities.size() << " LEI entities";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << entities.size() << " LEI entities";
     auto ts = entities;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -225,9 +223,9 @@ void lei_entity_service::save_entities(const std::vector<domain::lei_entity>& en
 }
 
 void lei_entity_service::delete_entity(const std::string& lei) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing LEI entity. " << "lei: " << lei;
+    ORES_LOG_SEV(lg(), debug) << "Removing LEI entity. " << "lei: " << lei;
     repo_.remove(ctx_, lei);
-    BOOST_LOG_SEV(lg(), info) << "Removed LEI entity. " << "lei: " << lei;
+    ORES_LOG_SEV(lg(), info) << "Removed LEI entity. " << "lei: " << lei;
 }
 
 void lei_entity_service::delete_entities(const std::vector<std::string>& leis) {

@@ -20,7 +20,7 @@
 #ifndef ORES_SERVICE_SERVICE_SERVICE_LIFECYCLE_HPP
 #define ORES_SERVICE_SERVICE_SERVICE_LIFECYCLE_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/service/jwks.hpp"
 #include "ores.nats/service/subscription.hpp"
 #include "ores.platform/process/signals.hpp"
@@ -110,11 +110,11 @@ fetch_public_key_or_shutdown(boost::asio::io_context& io_ctx,
             boost::asio::bind_cancellation_slot(startup_cancel.slot(), boost::asio::use_awaitable));
     } catch (const boost::system::system_error& e) {
         if (e.code() != boost::asio::error::operation_aborted) {
-            BOOST_LOG_SEV(lg, error) << "Fatal error during startup: " << e.what();
+            ORES_LOG_SEV(lg, error) << "Fatal error during startup: " << e.what();
             throw;
         }
-        BOOST_LOG_SEV(lg, info) << "Shutdown signal received during startup.";
-        BOOST_LOG_SEV(lg, info) << "Shutdown complete: " << name;
+        ORES_LOG_SEV(lg, info) << "Shutdown signal received during startup.";
+        ORES_LOG_SEV(lg, info) << "Shutdown complete: " << name;
         co_return std::nullopt;
     }
 }
@@ -145,17 +145,17 @@ inline boost::asio::awaitable<void> announce_ready_and_drain(
     using namespace ores::logging;
 
     auto subs = register_fn();
-    BOOST_LOG_SEV(lg, info) << "Registered " << subs.size() << " subscription(s).";
+    ORES_LOG_SEV(lg, info) << "Registered " << subs.size() << " subscription(s).";
 
     if (on_started)
         on_started(io_ctx);
 
-    BOOST_LOG_SEV(lg, info) << "Service ready.";
+    ORES_LOG_SEV(lg, info) << "Service ready.";
     notify_systemd_ready();
-    BOOST_LOG_SEV(lg, info) << "Waiting for requests...";
+    ORES_LOG_SEV(lg, info) << "Waiting for requests...";
     co_await signals.async_wait(boost::asio::use_awaitable);
 
-    BOOST_LOG_SEV(lg, info) << "Shutdown signal received. Draining...";
+    ORES_LOG_SEV(lg, info) << "Shutdown signal received. Draining...";
     if (on_shutdown)
         on_shutdown();
     // Destroying a subscription waits for the handler it is running, so this
@@ -165,7 +165,7 @@ inline boost::asio::awaitable<void> announce_ready_and_drain(
     // with one more delivery arriving after the line.
     subs.clear();
     nats.drain();
-    BOOST_LOG_SEV(lg, info) << "Shutdown complete: " << name;
+    ORES_LOG_SEV(lg, info) << "Shutdown complete: " << name;
     co_return;
 }
 

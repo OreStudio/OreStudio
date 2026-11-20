@@ -22,7 +22,7 @@
  * Template: cpp_shell_operation_tests.cpp.mustache
  * To modify, update the template and regenerate.
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/commands/workflow/workflow_operations_commands.hpp"
@@ -67,7 +67,7 @@ TEST_CASE("workflow_operations_registers_every_declared_command", "[commands]") 
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 
-    BOOST_LOG_SEV(lg, debug) << "Registered 5 command(s).";
+    ORES_LOG_SEV(lg, debug) << "Registered 5 command(s).";
 }
 
 TEST_CASE("workflow_operations_process_step_result_requires_a_session", "[commands]") {
@@ -84,7 +84,7 @@ TEST_CASE("workflow_operations_process_step_result_requires_a_session", "[comman
                                                           "sample",
                                                       });
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -102,7 +102,7 @@ TEST_CASE("workflow_operations_process_step_result_reports_the_expected_count", 
     command_feedback::reset();
     workflow_operations_commands::process_step_result(out, session, {});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
     CHECK(out.str().find("Expected 2 arguments, got 0.") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -125,7 +125,7 @@ TEST_CASE("workflow_operations_process_step_result_reaches_the_transport", "[com
                                                           "sample",
                                                       });
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
     // Whether the command carries a token or not, everything ahead of the
     // transport is satisfied, which is what the absence of a connection proves.
     CHECK(out.str().find("Not connected to NATS") != std::string::npos);
@@ -141,7 +141,7 @@ TEST_CASE("workflow_operations_process_instances_requires_a_session", "[commands
     command_feedback::reset();
     workflow_operations_commands::process_instances(out, session, std::vector<std::string>{});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -159,7 +159,7 @@ TEST_CASE("workflow_operations_process_instances_reaches_the_transport", "[comma
     command_feedback::reset();
     workflow_operations_commands::process_instances(out, session, std::vector<std::string>{});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
     // Whether the command carries a token or not, everything ahead of the
     // transport is satisfied, which is what the absence of a connection proves.
     CHECK(out.str().find("Not connected to NATS") != std::string::npos);
@@ -179,7 +179,7 @@ TEST_CASE("workflow_operations_process_steps_requires_a_session", "[commands]") 
                                                     "sample",
                                                 });
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -197,7 +197,7 @@ TEST_CASE("workflow_operations_process_steps_reports_the_expected_count", "[comm
     command_feedback::reset();
     workflow_operations_commands::process_steps(out, session, {});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
     CHECK(out.str().find("Expected 1 arguments, got 0.") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -219,7 +219,7 @@ TEST_CASE("workflow_operations_process_steps_reaches_the_transport", "[commands]
                                                     "sample",
                                                 });
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
     // Whether the command carries a token or not, everything ahead of the
     // transport is satisfied, which is what the absence of a connection proves.
     CHECK(out.str().find("Not connected to NATS") != std::string::npos);
@@ -235,7 +235,7 @@ TEST_CASE("workflow_operations_process_definitions_requires_a_session", "[comman
     command_feedback::reset();
     workflow_operations_commands::process_definitions(out, session, std::vector<std::string>{});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -253,7 +253,7 @@ TEST_CASE("workflow_operations_process_definitions_reaches_the_transport", "[com
     command_feedback::reset();
     workflow_operations_commands::process_definitions(out, session, std::vector<std::string>{});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
     // Whether the command carries a token or not, everything ahead of the
     // transport is satisfied, which is what the absence of a connection proves.
     CHECK(out.str().find("Not connected to NATS") != std::string::npos);
@@ -273,7 +273,7 @@ TEST_CASE("workflow_operations_process_retry_requires_a_session", "[commands]") 
                                                     "sample",
                                                 });
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -291,7 +291,7 @@ TEST_CASE("workflow_operations_process_retry_reports_the_expected_count", "[comm
     command_feedback::reset();
     workflow_operations_commands::process_retry(out, session, {});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
     CHECK(out.str().find("Expected 1 arguments, got 0.") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -313,7 +313,7 @@ TEST_CASE("workflow_operations_process_retry_reaches_the_transport", "[commands]
                                                     "sample",
                                                 });
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
     // Whether the command carries a token or not, everything ahead of the
     // transport is satisfied, which is what the absence of a connection proves.
     CHECK(out.str().find("Not connected to NATS") != std::string::npos);

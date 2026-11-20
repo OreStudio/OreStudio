@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.trading.api/domain/counterparty_scope.hpp"
 #include "ores.trading.api/domain/trade.hpp"
 #include "ores.trading.api/domain/trade_economic_digest.hpp"
@@ -66,7 +66,7 @@ TEST_CASE("trade_economic_digest_is_stable_for_the_same_inputs", "[domain]") {
     const std::vector<std::string> components{"digest-a", "digest-b", "digest-c"};
     const auto first = trade_economic_digest(sut, components);
     const auto second = trade_economic_digest(sut, components);
-    BOOST_LOG_SEV(lg, info) << "Digest: " << first;
+    ORES_LOG_SEV(lg, info) << "Digest: " << first;
 
     CHECK(first == second);
     CHECK(first.size() == 64);
@@ -80,8 +80,8 @@ TEST_CASE("trade_economic_digest_changes_when_a_component_digest_changes", "[dom
     const std::vector<std::string> baseline{"digest-a", "digest-b", "digest-c"};
     auto amended = baseline;
     amended[1] = "digest-z";
-    BOOST_LOG_SEV(lg, info) << "Baseline: " << trade_economic_digest(sut, baseline);
-    BOOST_LOG_SEV(lg, info) << "Amended:  " << trade_economic_digest(sut, amended);
+    ORES_LOG_SEV(lg, info) << "Baseline: " << trade_economic_digest(sut, baseline);
+    ORES_LOG_SEV(lg, info) << "Amended:  " << trade_economic_digest(sut, amended);
 
     CHECK(trade_economic_digest(sut, baseline) != trade_economic_digest(sut, amended));
 }
@@ -92,8 +92,8 @@ TEST_CASE("trade_economic_digest_changes_when_components_are_reordered", "[domai
     const auto sut = make_trade();
     const std::vector<std::string> ascending{"digest-a", "digest-b"};
     const std::vector<std::string> descending{"digest-b", "digest-a"};
-    BOOST_LOG_SEV(lg, info) << "Ascending:  " << trade_economic_digest(sut, ascending);
-    BOOST_LOG_SEV(lg, info) << "Descending: " << trade_economic_digest(sut, descending);
+    ORES_LOG_SEV(lg, info) << "Ascending:  " << trade_economic_digest(sut, ascending);
+    ORES_LOG_SEV(lg, info) << "Descending: " << trade_economic_digest(sut, descending);
 
     CHECK(trade_economic_digest(sut, ascending) != trade_economic_digest(sut, descending));
 }
@@ -105,9 +105,9 @@ TEST_CASE("trade_economic_digest_changes_when_a_component_is_added_or_removed", 
     const std::vector<std::string> baseline{"digest-a", "digest-b"};
     const std::vector<std::string> removed{"digest-a"};
     const std::vector<std::string> added{"digest-a", "digest-b", "digest-c"};
-    BOOST_LOG_SEV(lg, info) << "Baseline: " << trade_economic_digest(sut, baseline);
-    BOOST_LOG_SEV(lg, info) << "Removed:  " << trade_economic_digest(sut, removed);
-    BOOST_LOG_SEV(lg, info) << "Added:    " << trade_economic_digest(sut, added);
+    ORES_LOG_SEV(lg, info) << "Baseline: " << trade_economic_digest(sut, baseline);
+    ORES_LOG_SEV(lg, info) << "Removed:  " << trade_economic_digest(sut, removed);
+    ORES_LOG_SEV(lg, info) << "Added:    " << trade_economic_digest(sut, added);
 
     CHECK(trade_economic_digest(sut, baseline) != trade_economic_digest(sut, removed));
     CHECK(trade_economic_digest(sut, baseline) != trade_economic_digest(sut, added));
@@ -119,8 +119,8 @@ TEST_CASE("trade_economic_digest_distinguishes_an_empty_component_list", "[domai
     const auto sut = make_trade();
     const auto empty = trade_economic_digest(sut, {});
     const auto single = trade_economic_digest(sut, {"digest-a"});
-    BOOST_LOG_SEV(lg, info) << "Empty:  " << empty;
-    BOOST_LOG_SEV(lg, info) << "Single: " << single;
+    ORES_LOG_SEV(lg, info) << "Empty:  " << empty;
+    ORES_LOG_SEV(lg, info) << "Single: " << single;
 
     CHECK(empty.size() == 64);
     CHECK(empty != single);
@@ -153,8 +153,8 @@ TEST_CASE("trade_economic_digest_ignores_the_trade_audit_and_identity_tail", "[d
     changed.change_commentary = "a change nobody agreed to";
     changed.recorded_at = std::chrono::system_clock::now();
 
-    BOOST_LOG_SEV(lg, info) << "Baseline:      " << expected;
-    BOOST_LOG_SEV(lg, info) << "Audit changed: " << trade_economic_digest(changed, components);
+    ORES_LOG_SEV(lg, info) << "Baseline:      " << expected;
+    ORES_LOG_SEV(lg, info) << "Audit changed: " << trade_economic_digest(changed, components);
 
     CHECK(trade_economic_digest(changed, components) == expected);
 }
@@ -168,8 +168,8 @@ TEST_CASE("trade_economic_digest_moves_with_a_trade_classification", "[domain]")
     auto amended = baseline;
     amended.counterparty_scope = ores::trading::domain::counterparty_scope::intra_entity;
 
-    BOOST_LOG_SEV(lg, info) << "Baseline: " << trade_economic_digest(baseline, components);
-    BOOST_LOG_SEV(lg, info) << "Amended:  " << trade_economic_digest(amended, components);
+    ORES_LOG_SEV(lg, info) << "Baseline: " << trade_economic_digest(baseline, components);
+    ORES_LOG_SEV(lg, info) << "Amended:  " << trade_economic_digest(amended, components);
 
     CHECK(trade_economic_digest(baseline, components) !=
           trade_economic_digest(amended, components));
@@ -186,8 +186,8 @@ TEST_CASE("trade_economic_digest_does_not_collide_on_ambiguous_concatenation", "
     const auto sut = make_trade();
     const std::vector<std::string> left{"ab", "c"};
     const std::vector<std::string> right{"a", "bc"};
-    BOOST_LOG_SEV(lg, info) << "Left:  " << trade_economic_digest(sut, left);
-    BOOST_LOG_SEV(lg, info) << "Right: " << trade_economic_digest(sut, right);
+    ORES_LOG_SEV(lg, info) << "Left:  " << trade_economic_digest(sut, left);
+    ORES_LOG_SEV(lg, info) << "Right: " << trade_economic_digest(sut, right);
 
     CHECK(left[0] + left[1] == right[0] + right[1]);
     CHECK(trade_economic_digest(sut, left) != trade_economic_digest(sut, right));
@@ -205,8 +205,8 @@ TEST_CASE("trade_economic_digest_pins_the_component_count_boundary", "[domain]")
     const std::string long_digest(64, 'a');
     const std::vector<std::string> one{long_digest};
     const std::vector<std::string> two{long_digest, "digest-b"};
-    BOOST_LOG_SEV(lg, info) << "One: " << trade_economic_digest(sut, one);
-    BOOST_LOG_SEV(lg, info) << "Two: " << trade_economic_digest(sut, two);
+    ORES_LOG_SEV(lg, info) << "One: " << trade_economic_digest(sut, one);
+    ORES_LOG_SEV(lg, info) << "Two: " << trade_economic_digest(sut, two);
 
     CHECK(trade_economic_digest(sut, one) != trade_economic_digest(sut, two));
     CHECK(trade_economic_digest(sut, one).size() == 64);

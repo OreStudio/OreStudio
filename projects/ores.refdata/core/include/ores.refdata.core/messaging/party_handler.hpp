@@ -28,7 +28,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/repository/unit_of_work.hpp"
 #include "ores.database/service/tenant_context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.refdata.api/messaging/party_protocol.hpp"
@@ -82,7 +82,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void list_parties(ores::nats::message msg) {
-        BOOST_LOG_SEV(party_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(party_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -97,20 +97,20 @@ public:
         }
         auto req = decode<list_parties_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(party_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(party_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::party_service svc(req_ctx);
         try {
             auto response = svc.list_parties(*req);
-            BOOST_LOG_SEV(party_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(party_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(party_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(party_handler_lg(), error) << msg.subject << " failed: " << e.what();
             list_parties_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
             failure.result.code = "internal_error";
@@ -129,7 +129,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void get_party(ores::nats::message msg) {
-        BOOST_LOG_SEV(party_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(party_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -144,20 +144,20 @@ public:
         }
         auto req = decode<get_party_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(party_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(party_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::party_service svc(req_ctx);
         try {
             auto response = svc.get_party(*req);
-            BOOST_LOG_SEV(party_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(party_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(party_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(party_handler_lg(), error) << msg.subject << " failed: " << e.what();
             get_party_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
             failure.result.code = "internal_error";
@@ -176,7 +176,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void get_many_parties(ores::nats::message msg) {
-        BOOST_LOG_SEV(party_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(party_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -191,20 +191,20 @@ public:
         }
         auto req = decode<get_many_parties_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(party_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(party_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::party_service svc(req_ctx);
         try {
             auto response = svc.get_many_parties(*req);
-            BOOST_LOG_SEV(party_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(party_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(party_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(party_handler_lg(), error) << msg.subject << " failed: " << e.what();
             get_many_parties_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
             failure.result.code = "internal_error";
@@ -275,7 +275,7 @@ public:
                                             resp.result.message);
                     return;
                 }
-                BOOST_LOG_SEV(party_handler_lg(), debug)
+                ORES_LOG_SEV(party_handler_lg(), debug)
                     << "Workflow step completed: " << msg.subject;
                 publish_step_completion(
                     nats_,
@@ -285,7 +285,7 @@ public:
                     ores::utility::codec::wire_traits<put_party_response>::write_json(resp),
                     "");
             } catch (const std::exception& e) {
-                BOOST_LOG_SEV(party_handler_lg(), error)
+                ORES_LOG_SEV(party_handler_lg(), error)
                     << "Workflow step failed: " << msg.subject << " — " << e.what();
                 publish_step_completion(nats_,
                                         step_id,
@@ -296,7 +296,7 @@ public:
             }
             return;
         }
-        BOOST_LOG_SEV(party_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(party_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -311,20 +311,20 @@ public:
         }
         auto req = decode<put_party_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(party_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(party_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::party_service svc(req_ctx);
         try {
             auto response = svc.put_party(*req);
-            BOOST_LOG_SEV(party_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(party_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(party_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(party_handler_lg(), error) << msg.subject << " failed: " << e.what();
             put_party_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
             failure.result.code = "internal_error";
@@ -343,7 +343,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void put_many_parties(ores::nats::message msg) {
-        BOOST_LOG_SEV(party_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(party_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -358,20 +358,20 @@ public:
         }
         auto req = decode<put_many_parties_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(party_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(party_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::party_service svc(req_ctx);
         try {
             auto response = svc.put_many_parties(*req);
-            BOOST_LOG_SEV(party_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(party_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(party_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(party_handler_lg(), error) << msg.subject << " failed: " << e.what();
             put_many_parties_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
             failure.result.code = "internal_error";
@@ -390,7 +390,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void delete_party(ores::nats::message msg) {
-        BOOST_LOG_SEV(party_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(party_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -405,20 +405,20 @@ public:
         }
         auto req = decode<delete_party_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(party_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(party_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::party_service svc(req_ctx);
         try {
             auto response = svc.delete_party(*req);
-            BOOST_LOG_SEV(party_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(party_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(party_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(party_handler_lg(), error) << msg.subject << " failed: " << e.what();
             delete_party_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
             failure.result.code = "internal_error";
@@ -437,7 +437,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void delete_many_parties(ores::nats::message msg) {
-        BOOST_LOG_SEV(party_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(party_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -452,20 +452,20 @@ public:
         }
         auto req = decode<delete_many_parties_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(party_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(party_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::party_service svc(req_ctx);
         try {
             auto response = svc.delete_many_parties(*req);
-            BOOST_LOG_SEV(party_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(party_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(party_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(party_handler_lg(), error) << msg.subject << " failed: " << e.what();
             delete_many_parties_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
             failure.result.code = "internal_error";
@@ -484,7 +484,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void list_party_versions(ores::nats::message msg) {
-        BOOST_LOG_SEV(party_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(party_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -499,20 +499,20 @@ public:
         }
         auto req = decode<list_party_versions_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(party_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(party_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::party_service svc(req_ctx);
         try {
             auto response = svc.list_party_versions(*req);
-            BOOST_LOG_SEV(party_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(party_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(party_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(party_handler_lg(), error) << msg.subject << " failed: " << e.what();
             list_party_versions_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
             failure.result.code = "internal_error";
@@ -531,7 +531,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void get_party_version(ores::nats::message msg) {
-        BOOST_LOG_SEV(party_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(party_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -546,20 +546,20 @@ public:
         }
         auto req = decode<get_party_version_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(party_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(party_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         service::party_service svc(req_ctx);
         try {
             auto response = svc.get_party_version(*req);
-            BOOST_LOG_SEV(party_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(party_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(party_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(party_handler_lg(), error) << msg.subject << " failed: " << e.what();
             get_party_version_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
             failure.result.code = "internal_error";
@@ -569,7 +569,7 @@ public:
     }
 
     void composite_as_of(ores::nats::message msg) {
-        BOOST_LOG_SEV(party_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(party_handler_lg(), debug) << "Handling " << msg.subject;
         auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
@@ -582,7 +582,7 @@ public:
         }
         auto req = decode<get_party_composite_as_of_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(party_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(party_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             reply(nats_,
                   msg,
                   get_party_composite_as_of_response{.success = false,
@@ -622,7 +622,7 @@ public:
             auto contacts = contact_svc.list_party_contact_informations_by_party_id_as_of(
                 boost::uuids::to_string(req->id), current->recorded_at, window_end);
 
-            BOOST_LOG_SEV(party_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(party_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_,
                   msg,
                   get_party_composite_as_of_response{.success = true,
@@ -630,7 +630,7 @@ public:
                                                      .identifiers = std::move(identifiers),
                                                      .contacts = std::move(contacts)});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(party_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(party_handler_lg(), error) << msg.subject << " failed: " << e.what();
             reply(nats_,
                   msg,
                   get_party_composite_as_of_response{.success = false, .message = e.what()});
@@ -638,7 +638,7 @@ public:
     }
 
     void put_composite(ores::nats::message msg) {
-        BOOST_LOG_SEV(party_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(party_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -651,7 +651,7 @@ public:
         }
         auto req = decode<put_party_composite_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(party_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(party_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
@@ -696,13 +696,13 @@ public:
             // carries the version and the audit stamps the store gave it.
             service::party_service reader(req_ctx);
             auto written = reader.find_party(party.id);
-            BOOST_LOG_SEV(party_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(party_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_,
                   msg,
                   put_party_composite_response{
                       .result = {}, .party = written ? std::move(*written) : std::move(party)});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(party_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(party_handler_lg(), error) << msg.subject << " failed: " << e.what();
             put_party_composite_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
             failure.result.code = "internal_error";

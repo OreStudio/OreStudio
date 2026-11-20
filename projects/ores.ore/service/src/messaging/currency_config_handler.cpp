@@ -308,12 +308,12 @@ void currency_config_handler::export_currency_config(ores::nats::message msg) {
              .content = ores::ore::xml::exporter::export_currency_config(currencies)});
         response.success = true;
         response.message = std::format("Exported {} currencies.", currencies.size());
-        BOOST_LOG_SEV(lg(), info) << "currency config exported | corr=" << correlation_id
-                                  << " count=" << currencies.size();
+        ORES_LOG_SEV(lg(), info) << "currency config exported | corr=" << correlation_id
+                                 << " count=" << currencies.size();
         reply(nats_, msg, response);
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn) << "currency config export refused | corr=" << correlation_id
-                                  << " " << e.what();
+        ORES_LOG_SEV(lg(), warn) << "currency config export refused | corr=" << correlation_id
+                                 << " " << e.what();
         reply(nats_, msg, export_currency_config_response{.message = e.what()});
     }
 }
@@ -357,8 +357,8 @@ void currency_config_handler::preview_currency_config_import(ores::nats::message
         response.message = std::format("{} currencies in the file.", response.in_file);
         reply(nats_, msg, response);
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn) << "currency config preview refused | corr=" << correlation_id
-                                  << " " << e.what();
+        ORES_LOG_SEV(lg(), warn) << "currency config preview refused | corr=" << correlation_id
+                                 << " " << e.what();
         response.message = e.what();
         reply(nats_, msg, response);
     }
@@ -452,12 +452,12 @@ void currency_config_handler::import_currency_config(ores::nats::message msg) {
                                        response.errors.empty() ?
                                            std::string() :
                                            std::format("; {} not written", response.errors.size()));
-        BOOST_LOG_SEV(lg(), info) << "currency config imported | corr=" << correlation_id << " "
-                                  << response.message;
+        ORES_LOG_SEV(lg(), info) << "currency config imported | corr=" << correlation_id << " "
+                                 << response.message;
         reply(nats_, msg, response);
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn) << "currency config import refused | corr=" << correlation_id
-                                  << " " << e.what();
+        ORES_LOG_SEV(lg(), warn) << "currency config import refused | corr=" << correlation_id
+                                 << " " << e.what();
         response.message = e.what();
         reply(nats_, msg, response);
     }

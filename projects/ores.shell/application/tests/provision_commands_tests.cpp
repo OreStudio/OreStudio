@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.shell/app/commands/provision_commands.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
@@ -48,7 +48,7 @@ TEST_CASE("provision_commands_waits_on_the_run_a_successful_reply_names", "[comm
 
     const auto run = provision_commands::started_run(true, "bac74724-221e-4594-ab54-bbe3b9acc5c9");
 
-    BOOST_LOG_SEV(lg, info) << "Run to wait on: " << run.value_or("none");
+    ORES_LOG_SEV(lg, info) << "Run to wait on: " << run.value_or("none");
     REQUIRE(run.has_value());
     CHECK(*run == "bac74724-221e-4594-ab54-bbe3b9acc5c9");
 }
@@ -63,8 +63,8 @@ TEST_CASE("provision_commands_waits_on_no_run_when_the_reply_names_none", "[comm
         provision_commands::started_run(false, "bac74724-221e-4594-ab54-bbe3b9acc5c9");
     const auto unnamed = provision_commands::started_run(true, "");
 
-    BOOST_LOG_SEV(lg, info) << "Run from a failed reply: " << failed.value_or("none")
-                            << ", from an unnamed reply: " << unnamed.value_or("none");
+    ORES_LOG_SEV(lg, info) << "Run from a failed reply: " << failed.value_or("none")
+                           << ", from an unnamed reply: " << unnamed.value_or("none");
     CHECK(!failed.has_value());
     CHECK(!unnamed.has_value());
 }
@@ -78,7 +78,7 @@ TEST_CASE("provision_commands_calls_a_followed_tenant_ready", "[commands][provis
                                               provision_commands::tenant_creation::additional,
                                               provision_commands::tenant_setup::finished);
 
-    BOOST_LOG_SEV(lg, info) << "Output for a followed tenant: " << out.str();
+    ORES_LOG_SEV(lg, info) << "Output for a followed tenant: " << out.str();
     CHECK(out.str().find("✓ Tenant 'Demo Tenant' provisioned.") != std::string::npos);
     CHECK(out.str().find("Next: logout, then: login demo_admin@demo <password>") !=
           std::string::npos);
@@ -97,7 +97,7 @@ TEST_CASE("provision_commands_does_not_call_a_tenant_ready_while_its_setup_conti
         provision_commands::tenant_creation::additional,
         provision_commands::tenant_setup::continues_elsewhere);
 
-    BOOST_LOG_SEV(lg, info) << "Output for a tenant whose setup continues: " << out.str();
+    ORES_LOG_SEV(lg, info) << "Output for a tenant whose setup continues: " << out.str();
     CHECK(out.str().find("✓ Tenant 'Demo Tenant' created; its setup continues.") !=
           std::string::npos);
     CHECK(out.str().find("workflow wait <its instance id>") != std::string::npos);
@@ -120,8 +120,8 @@ TEST_CASE("provision_commands_names_the_system_it_provisioned", "[commands][prov
         provision_commands::tenant_creation::system,
         provision_commands::tenant_setup::continues_elsewhere);
 
-    BOOST_LOG_SEV(lg, info) << "Output for a followed system: " << followed.str()
-                            << "Output for a system whose setup continues: " << continuing.str();
+    ORES_LOG_SEV(lg, info) << "Output for a followed system: " << followed.str()
+                           << "Output for a system whose setup continues: " << continuing.str();
     CHECK(followed.str().find("✓ System provisioned. Tenant 'Demo Tenant'.") != std::string::npos);
     CHECK(continuing.str().find("✓ System provisioned. Tenant 'Demo Tenant' created; its setup "
                                 "continues.") != std::string::npos);

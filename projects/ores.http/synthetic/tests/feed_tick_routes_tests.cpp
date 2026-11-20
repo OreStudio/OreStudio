@@ -23,7 +23,7 @@
 #include "ores.http.api/openapi/endpoint_registry.hpp"
 #include "ores.http/routes/synthetic/feed_tick_buffers.hpp"
 #include "ores.http/routes/synthetic/feed_tick_routes.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "test_suite.hpp"
 #include <boost/asio/co_spawn.hpp>
@@ -113,7 +113,7 @@ http_request tick_query(std::map<std::string, std::string> params) {
 
 TEST_CASE("feed_tick_buffers_keep_the_newest_ticks_of_a_watched_source", "[feed_ticks]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing what a source's buffer keeps";
+    ORES_LOG_SEV(lg, info) << "Testing what a source's buffer keeps";
 
     hand_transport transport;
     feed_tick_buffers buffers(transport.subscriber());
@@ -143,7 +143,7 @@ TEST_CASE("feed_tick_buffers_keep_the_newest_ticks_of_a_watched_source", "[feed_
 
 TEST_CASE("feed_tick_buffers_answer_arrivals_from_an_instant", "[feed_ticks]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the arrival times a raster reads";
+    ORES_LOG_SEV(lg, info) << "Testing the arrival times a raster reads";
 
     hand_transport transport;
     feed_tick_buffers buffers(transport.subscriber());
@@ -159,7 +159,7 @@ TEST_CASE("feed_tick_buffers_answer_arrivals_from_an_instant", "[feed_ticks]") {
 
 TEST_CASE("feed_tick_buffers_stop_listening_to_sources_no_longer_named", "[feed_ticks]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that dropped sources stop their subscriptions";
+    ORES_LOG_SEV(lg, info) << "Testing that dropped sources stop their subscriptions";
 
     hand_transport transport;
     feed_tick_buffers buffers(transport.subscriber());
@@ -183,7 +183,7 @@ TEST_CASE("feed_tick_buffers_stop_listening_to_sources_no_longer_named", "[feed_
 
 TEST_CASE("feed_tick_buffers_hear_at_most_a_thousand_sources", "[feed_ticks]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the bound on the sources heard";
+    ORES_LOG_SEV(lg, info) << "Testing the bound on the sources heard";
 
     hand_transport transport;
     feed_tick_buffers buffers(transport.subscriber());
@@ -199,7 +199,7 @@ TEST_CASE("feed_tick_buffers_hear_at_most_a_thousand_sources", "[feed_ticks]") {
 
 TEST_CASE("feed_tick_buffers_take_ticks_while_sources_come_and_go", "[feed_ticks]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing ticks that arrive while reads drop and watch sources";
+    ORES_LOG_SEV(lg, info) << "Testing ticks that arrive while reads drop and watch sources";
 
     hand_transport transport;
     feed_tick_buffers buffers(transport.subscriber());
@@ -229,7 +229,7 @@ TEST_CASE("feed_tick_buffers_take_ticks_while_sources_come_and_go", "[feed_ticks
 
 TEST_CASE("feed_tick_routes_refuse_a_malformed_request", "[feed_ticks]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the tick and raster refusals";
+    ORES_LOG_SEV(lg, info) << "Testing the tick and raster refusals";
 
     const std::string ticks = "/api/synthetic/feeds/{id}/ticks";
     const std::string feed = "/api/synthetic/feeds/00000000-0000-0000-0000-00000000000a/ticks";
@@ -255,7 +255,7 @@ TEST_CASE("feed_tick_routes_refuse_a_malformed_request", "[feed_ticks]") {
 
 TEST_CASE("feed_tick_routes_forward_a_well_formed_request", "[feed_ticks]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that an accepted tick read reaches the service";
+    ORES_LOG_SEV(lg, info) << "Testing that an accepted tick read reaches the service";
 
     // The client is not connected, so an accepted read fails at the forward step.
     const std::string ticks = "/api/synthetic/feeds/{id}/ticks";

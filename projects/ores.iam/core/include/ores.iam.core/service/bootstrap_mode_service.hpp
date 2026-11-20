@@ -24,7 +24,7 @@
 #include "ores.iam.core/export.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
 #include "ores.iam.core/service/authorization_service.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.variability.core/service/system_settings_service.hpp"
 #include <memory>
 #include <string>

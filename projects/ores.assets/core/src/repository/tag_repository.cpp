@@ -31,9 +31,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -208,7 +206,7 @@ void tag_repository::write(const context& ctx, const std::vector<domain::tag>& v
 void tag_repository::write(const context& ctx,
                            const domain::tag& v,
                            const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing asset tag. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Writing asset tag. " << "id: " << v.id;
     const auto t = tag_apply_claim(v,
                                    claim,
                                    tag_claim_reads_current(claim) ?
@@ -221,7 +219,7 @@ void tag_repository::write(const context& ctx,
 void tag_repository::write(const context& ctx,
                            const std::vector<domain::tag>& v,
                            const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing asset tags. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing asset tags. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument("tag_repository::write: one claim is needed for each row");
     std::vector<domain::tag> to_read;
@@ -254,7 +252,7 @@ std::vector<domain::tag> tag_repository::read_latest(const context& ctx) {
 }
 
 std::vector<domain::tag> tag_repository::read_latest(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest asset tag. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest asset tag. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -271,7 +269,7 @@ std::vector<domain::tag> tag_repository::read_latest(const context& ctx, const s
 
 std::vector<domain::tag> tag_repository::read_latest_by_name(const context& ctx,
                                                              const std::string& name) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest asset tag by name: " << name;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest asset tag by name: " << name;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -305,7 +303,7 @@ tag_repository::read_latest_by_name(const context& ctx, const std::vector<std::s
         }
         return all;
     }
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest asset tags by name. Count: " << names.size();
+    ORES_LOG_SEV(lg(), debug) << "Reading latest asset tags by name. Count: " << names.size();
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -322,7 +320,7 @@ tag_repository::read_latest_by_name(const context& ctx, const std::vector<std::s
 
 std::vector<domain::tag> tag_repository::read_any_by_name(const context& ctx,
                                                           const std::string& name) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading any asset tag by name: " << name;
+    ORES_LOG_SEV(lg(), debug) << "Reading any asset tag by name: " << name;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<tag_entity>> |
                        query_builder::where("tenant_id"_c == tid && "name"_c == name) |
@@ -338,7 +336,7 @@ std::vector<domain::tag> tag_repository::read_any_by_name(const context& ctx,
 
 
 std::vector<domain::tag> tag_repository::read_all(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all asset tag versions. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading all asset tag versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<tag_entity>> |
                        query_builder::where("tenant_id"_c == tid && "id"_c == id) |
@@ -354,8 +352,8 @@ std::vector<domain::tag> tag_repository::read_all(const context& ctx, const std:
 
 std::optional<domain::tag>
 tag_repository::read_at_version(const context& ctx, const std::string& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading asset tag at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading asset tag at version. " << "id: " << id
+                              << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<tag_entity>> |
@@ -377,7 +375,7 @@ tag_repository::read_at_version(const context& ctx, const std::string& id, std::
 tag_repository::remove_status tag_repository::remove(const context& ctx,
                                                      const std::string& id,
                                                      std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing asset tag. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing asset tag. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
         return remove_status::missing;
@@ -415,8 +413,8 @@ tag_repository::read_latest(const context& ctx,
                             const ores::utility::domain::order& order,
                             const std::optional<messaging::tags_filter>& filter,
                             const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest asset tags with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest asset tags with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<tag_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -436,7 +434,7 @@ std::uint32_t
 tag_repository::get_total_tag_count(const context& ctx,
                                     const std::optional<messaging::tags_filter>& filter,
                                     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active asset tag count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active asset tag count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query =

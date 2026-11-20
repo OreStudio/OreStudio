@@ -26,7 +26,6 @@
 #include "ores.synthetic.api/domain/calibration_policy.hpp"
 #include "ores.synthetic.api/messaging/calibration_policy_protocol.hpp"
 #include "ores.synthetic.core/repository/calibration_policy_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -476,12 +474,12 @@ calibration_policy_service::prepare_change(const messaging::calibration_policy_c
 
 std::vector<domain::calibration_policy>
 calibration_policy_service::list_policies(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all calibration policies";
+    ORES_LOG_SEV(lg(), debug) << "Listing all calibration policies";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t calibration_policy_service::count_policies() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total calibration policies count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total calibration policies count";
     return repo_.get_total_policy_count(ctx_);
 }
 
@@ -489,14 +487,14 @@ std::uint32_t calibration_policy_service::count_policies() {
 std::optional<domain::calibration_policy>
 calibration_policy_service::get_policy_at_version(const boost::uuids::uuid& id,
                                                   std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting calibration policy at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting calibration policy at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::calibration_policy>
 calibration_policy_service::get_policy(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting calibration policy. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting calibration policy. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -511,11 +509,11 @@ calibration_policy_service::get_policies(const std::vector<std::string>& ids) {
 void calibration_policy_service::save_policy(const domain::calibration_policy& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Calibration Policy id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving calibration policy. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving calibration policy. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved calibration policy. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved calibration policy. " << "id: " << v.id;
 }
 
 void calibration_policy_service::save_policies(
@@ -524,7 +522,7 @@ void calibration_policy_service::save_policies(
         if (e.id.is_nil())
             throw std::invalid_argument("Calibration Policy id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << policies.size() << " calibration policies";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << policies.size() << " calibration policies";
     auto ts = policies;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -533,9 +531,9 @@ void calibration_policy_service::save_policies(
 }
 
 void calibration_policy_service::delete_policy(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing calibration policy. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing calibration policy. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed calibration policy. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed calibration policy. " << "id: " << id;
 }
 
 void calibration_policy_service::delete_policies(const std::vector<std::string>& ids) {
@@ -544,7 +542,7 @@ void calibration_policy_service::delete_policies(const std::vector<std::string>&
 
 std::vector<domain::calibration_policy>
 calibration_policy_service::get_policy_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for calibration policy. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for calibration policy. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

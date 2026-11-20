@@ -21,7 +21,7 @@
 #include "ores.iam.api/domain/login_info_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.api/generators/login_info_generator.hpp"
 #include "ores.iam.core/repository/login_info_repository.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
@@ -45,7 +45,7 @@ TEST_CASE("write_login_infos", "[repository]") {
     login_info_repository repo;
     auto lis = generate_synthetic_login_info(3, gen_ctx);
 
-    BOOST_LOG_SEV(lg, debug) << "Login infos: " << lis;
+    ORES_LOG_SEV(lg, debug) << "Login infos: " << lis;
     CHECK_NOTHROW(repo.write(h.context(), lis));
 }
 
@@ -61,10 +61,10 @@ TEST_CASE("read_login_infos", "[repository]") {
     const auto target_account_id = li.account_id;
     repo.write(h.context(), {li});
 
-    BOOST_LOG_SEV(lg, debug) << "Target account ID: " << target_account_id;
+    ORES_LOG_SEV(lg, debug) << "Target account ID: " << target_account_id;
 
     auto read_lis = repo.read_latest(h.context(), boost::uuids::to_string(target_account_id));
-    BOOST_LOG_SEV(lg, debug) << "Read login infos: " << read_lis;
+    ORES_LOG_SEV(lg, debug) << "Read login infos: " << read_lis;
 
     REQUIRE(read_lis.size() == 1);
     CHECK(read_lis[0].account_id == target_account_id);
@@ -97,10 +97,10 @@ TEST_CASE("read_nonexistent_login_info", "[repository]") {
     login_info_repository repo;
 
     const auto nonexistent_id = boost::uuids::random_generator()();
-    BOOST_LOG_SEV(lg, debug) << "Non-existent account ID: " << nonexistent_id;
+    ORES_LOG_SEV(lg, debug) << "Non-existent account ID: " << nonexistent_id;
 
     auto read_lis = repo.read_latest(h.context(), boost::uuids::to_string(nonexistent_id));
-    BOOST_LOG_SEV(lg, debug) << "Read login infos: " << read_lis;
+    ORES_LOG_SEV(lg, debug) << "Read login infos: " << read_lis;
 
     CHECK(read_lis.size() == 0);
 }

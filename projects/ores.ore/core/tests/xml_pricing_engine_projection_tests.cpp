@@ -16,7 +16,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.ore.core/domain/pricing_engine_projection.hpp"
 #include "ores.ore.core/xml/binding.hpp"
 #include "ores.ore.core/xml/document_kind.hpp"
@@ -273,8 +273,8 @@ TEST_CASE("every_pricing_engine_document_in_the_corpus_round_trips",
         // rows carry, and the file held none.
         CHECK(exported.global_parameters.parameter.empty());
     }
-    BOOST_LOG_SEV(lg, info) << "pricing engine documents: " << files
-                            << ", of which gained an empty GlobalParameters: " << gained_globals;
+    ORES_LOG_SEV(lg, info) << "pricing engine documents: " << files
+                           << ", of which gained an empty GlobalParameters: " << gained_globals;
     CHECK(files == 125);
     CHECK(gained_globals == 70);
 }

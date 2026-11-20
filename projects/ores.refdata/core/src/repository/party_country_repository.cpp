@@ -26,13 +26,11 @@
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/party_country.hpp"
 #include "ores.refdata.api/domain/party_country_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/party_country_entity.hpp"
 #include "ores.refdata.core/repository/party_country_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -188,8 +186,8 @@ void party_country_repository::write(const std::vector<domain::party_country>& p
 
 void party_country_repository::write(const domain::party_country& party_country,
                                      const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing party country to database: " << party_country.party_id
-                               << "/" << party_country.country_alpha2_code;
+    ORES_LOG_SEV(lg(), debug) << "Writing party country to database: " << party_country.party_id
+                              << "/" << party_country.country_alpha2_code;
     const auto current =
         claim.kind == ores::utility::domain::precondition_kind::any ?
             read_latest(party_country.party_id, party_country.country_alpha2_code) :
@@ -202,8 +200,8 @@ void party_country_repository::write(const domain::party_country& party_country,
 void party_country_repository::write(
     const std::vector<domain::party_country>& party_countries,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing party countries to database. Count: "
-                               << party_countries.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing party countries to database. Count: "
+                              << party_countries.size();
     if (claims.size() != party_countries.size())
         throw std::invalid_argument(
             "party_country_repository::write: one claim is needed for each row");
@@ -239,8 +237,8 @@ std::vector<domain::party_country> party_country_repository::read_latest() {
 
 std::vector<domain::party_country> party_country_repository::read_latest(std::uint32_t offset,
                                                                          std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest party countries with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest party countries with offset: " << offset
+                              << " and limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<party_country_entity>> |
@@ -259,8 +257,8 @@ std::vector<domain::party_country> party_country_repository::read_latest(std::ui
 std::vector<domain::party_country>
 party_country_repository::read_latest(const boost::uuids::uuid& party_id,
                                       const std::string& country_alpha2_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest party country. " << party_id << "/"
-                               << country_alpha2_code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest party country. " << party_id << "/"
+                              << country_alpha2_code;
 
     static constexpr auto max = db_timestamp::max();
     const auto party_id_str = boost::uuids::to_string(party_id);
@@ -280,7 +278,7 @@ party_country_repository::read_latest(const boost::uuids::uuid& party_id,
 }
 
 std::uint32_t party_country_repository::get_total_party_country_count() {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active party countries count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active party countries count";
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
@@ -289,13 +287,13 @@ std::uint32_t party_country_repository::get_total_party_country_count() {
 
     const auto count = query_builder::execute_count_query<party_country_entity>(
         ctx_, query, std::nullopt, lg(), "Counting party countries");
-    BOOST_LOG_SEV(lg(), debug) << "Total active party countries count: " << count;
+    ORES_LOG_SEV(lg(), debug) << "Total active party countries count: " << count;
     return count;
 }
 
 std::vector<domain::party_country>
 party_country_repository::read_latest_by_party(const boost::uuids::uuid& party_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest party countries. Party: " << party_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest party countries. Party: " << party_id;
 
     static constexpr auto max = db_timestamp::max();
     const auto party_id_str = boost::uuids::to_string(party_id);
@@ -317,8 +315,7 @@ party_country_repository::read_latest_by_party(const boost::uuids::uuid& party_i
 
 std::vector<domain::party_country>
 party_country_repository::read_latest_by_country(const std::string& country_alpha2_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest party countries. Country: "
-                               << country_alpha2_code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest party countries. Country: " << country_alpha2_code;
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
@@ -341,8 +338,8 @@ party_country_repository::read_latest_by_country(const std::string& country_alph
 std::vector<domain::party_country> party_country_repository::read_latest_by_party(
     const boost::uuids::uuid& party_id, std::uint32_t offset, std::uint32_t limit) {
     const auto party_id_str = boost::uuids::to_string(party_id);
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest party countries. Party: " << party_id
-                               << " offset: " << offset << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest party countries. Party: " << party_id
+                              << " offset: " << offset << " limit: " << limit;
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
@@ -365,8 +362,8 @@ std::vector<domain::party_country> party_country_repository::read_latest_by_part
 std::uint32_t party_country_repository::get_total_party_country_count_by_party(
     const boost::uuids::uuid& party_id) {
     const auto party_id_str = boost::uuids::to_string(party_id);
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active party countries count. Party: "
-                               << party_id;
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active party countries count. Party: "
+                              << party_id;
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
@@ -376,14 +373,14 @@ std::uint32_t party_country_repository::get_total_party_country_count_by_party(
 
     const auto count = query_builder::execute_count_query<party_country_entity>(
         ctx_, query, std::nullopt, lg(), "Counting party countries");
-    BOOST_LOG_SEV(lg(), debug) << "Total active party countries count by party: " << count;
+    ORES_LOG_SEV(lg(), debug) << "Total active party countries count by party: " << count;
     return count;
 }
 
 std::uint32_t party_country_repository::get_total_party_country_count_by_country(
     const std::string& country_alpha2_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active party countries count. Country: "
-                               << country_alpha2_code;
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active party countries count. Country: "
+                              << country_alpha2_code;
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
@@ -394,14 +391,14 @@ std::uint32_t party_country_repository::get_total_party_country_count_by_country
 
     const auto count = query_builder::execute_count_query<party_country_entity>(
         ctx_, query, std::nullopt, lg(), "Counting party countries");
-    BOOST_LOG_SEV(lg(), debug) << "Total active party countries count by country: " << count;
+    ORES_LOG_SEV(lg(), debug) << "Total active party countries count by country: " << count;
     return count;
 }
 
 std::vector<party_country_history_row>
 party_country_repository::read_all_by_party(const boost::uuids::uuid& party_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading every version of the party countries. Party: "
-                               << party_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading every version of the party countries. Party: "
+                              << party_id;
 
     const auto party_id_str = boost::uuids::to_string(party_id);
     const auto tid = ctx_.tenant_id().to_string();
@@ -452,8 +449,8 @@ party_country_repository::remove_status
 party_country_repository::remove(const boost::uuids::uuid& party_id,
                                  const std::string& country_alpha2_code,
                                  std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing party country from database: " << party_id << "/"
-                               << country_alpha2_code;
+    ORES_LOG_SEV(lg(), debug) << "Removing party country from database: " << party_id << "/"
+                              << country_alpha2_code;
 
     const auto current = read_latest(party_id, country_alpha2_code);
     if (current.empty())
@@ -498,7 +495,7 @@ void party_country_repository::remove(const std::vector<boost::uuids::uuid>& par
 }
 
 void party_country_repository::remove_by_party(const boost::uuids::uuid& party_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing all party countries from database: " << party_id;
+    ORES_LOG_SEV(lg(), debug) << "Removing all party countries from database: " << party_id;
 
     const auto party_id_str = boost::uuids::to_string(party_id);
     const auto tid = ctx_.tenant_id().to_string();

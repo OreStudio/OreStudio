@@ -28,7 +28,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.inbox.api/domain/notification_recipient.hpp"
 #include "ores.inbox.core/export.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>

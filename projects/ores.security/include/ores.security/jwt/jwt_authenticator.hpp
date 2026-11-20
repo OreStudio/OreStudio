@@ -20,7 +20,7 @@
 #ifndef ORES_SECURITY_JWT_JWT_AUTHENTICATOR_HPP
 #define ORES_SECURITY_JWT_JWT_AUTHENTICATOR_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.security/export.hpp"
 #include "ores.security/jwt/jwt_claims.hpp"
 #include "ores.security/jwt/jwt_error.hpp"

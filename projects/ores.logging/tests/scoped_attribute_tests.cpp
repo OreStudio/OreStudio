@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.logging/scoped_attribute.hpp"
 #include "test_suite.hpp"
 #include <boost/log/core.hpp>
@@ -47,7 +47,7 @@ TEST_CASE("guarded_thread_attribute_exists_only_while_guard_is_alive", "[logging
 
     {
         const scoped_attribute guard(guarded_attribute);
-        BOOST_LOG_SEV(lg, ores::logging::info)
+        ORES_LOG_SEV(lg, ores::logging::info)
             << "guarded attribute present: " << has_thread_attribute(guarded_attribute);
 
         CHECK(has_thread_attribute(guarded_attribute));
@@ -65,7 +65,7 @@ TEST_CASE("moved_from_guard_does_not_remove_the_thread_attribute", "[logging]") 
         const scoped_attribute target(std::move(*source));
         source.reset();
 
-        BOOST_LOG_SEV(lg, ores::logging::info)
+        ORES_LOG_SEV(lg, ores::logging::info)
             << "attribute survived the moved-from guard: " << has_thread_attribute(moved_attribute);
 
         CHECK(has_thread_attribute(moved_attribute));

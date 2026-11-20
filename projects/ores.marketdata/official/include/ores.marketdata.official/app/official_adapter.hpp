@@ -20,7 +20,7 @@
 #ifndef ORES_MARKETDATA_OFFICIAL_APP_OFFICIAL_ADAPTER_HPP
 #define ORES_MARKETDATA_OFFICIAL_APP_OFFICIAL_ADAPTER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.official/domain/source_feed.hpp"
 #include "ores.marketdata.official/export.hpp"
 #include "ores.nats/service/client.hpp"

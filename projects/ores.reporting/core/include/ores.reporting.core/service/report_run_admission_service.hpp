@@ -21,7 +21,7 @@
 #define ORES_REPORTING_CORE_SERVICE_REPORT_RUN_ADMISSION_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.reporting.core/export.hpp"
 #include "ores.reporting.core/service/report_run_grant_service.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"

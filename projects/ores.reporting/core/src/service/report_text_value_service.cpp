@@ -26,7 +26,6 @@
 #include "ores.reporting.api/domain/report_text_value.hpp"
 #include "ores.reporting.api/messaging/report_text_value_protocol.hpp"
 #include "ores.reporting.core/repository/report_text_value_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -42,7 +41,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -432,19 +430,19 @@ report_text_value_service::prepare_change(const messaging::report_text_value_cha
 
 std::vector<domain::report_text_value> report_text_value_service::list_values(std::uint32_t offset,
                                                                               std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all report text values";
+    ORES_LOG_SEV(lg(), debug) << "Listing all report text values";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t report_text_value_service::count_values() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total report text values count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total report text values count";
     return repo_.get_total_value_count(ctx_);
 }
 
 
 std::optional<domain::report_text_value>
 report_text_value_service::get_value(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting report text value. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting report text value. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -459,11 +457,11 @@ report_text_value_service::get_values(const std::vector<std::string>& ids) {
 void report_text_value_service::save_value(const domain::report_text_value& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Report Text Value id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving report text value. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving report text value. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved report text value. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved report text value. " << "id: " << v.id;
 }
 
 void report_text_value_service::save_values(const std::vector<domain::report_text_value>& values) {
@@ -471,7 +469,7 @@ void report_text_value_service::save_values(const std::vector<domain::report_tex
         if (e.id.is_nil())
             throw std::invalid_argument("Report Text Value id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << values.size() << " report text values";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << values.size() << " report text values";
     auto ts = values;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -480,9 +478,9 @@ void report_text_value_service::save_values(const std::vector<domain::report_tex
 }
 
 void report_text_value_service::delete_value(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing report text value. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing report text value. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed report text value. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed report text value. " << "id: " << id;
 }
 
 void report_text_value_service::delete_values(const std::vector<std::string>& ids) {
@@ -491,7 +489,7 @@ void report_text_value_service::delete_values(const std::vector<std::string>& id
 
 std::vector<domain::report_text_value>
 report_text_value_service::get_value_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for report text value. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for report text value. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

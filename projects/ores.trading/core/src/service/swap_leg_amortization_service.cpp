@@ -26,7 +26,6 @@
 #include "ores.trading.api/domain/swap_leg_amortization.hpp"
 #include "ores.trading.api/messaging/swap_leg_amortization_protocol.hpp"
 #include "ores.trading.core/repository/swap_leg_amortization_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -43,7 +42,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -538,12 +536,12 @@ ores::utility::domain::result swap_leg_amortization_service::prepare_change(
 std::vector<domain::swap_leg_amortization>
 swap_leg_amortization_service::list_swap_leg_amortizations(std::uint32_t offset,
                                                            std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all swap leg amortizations";
+    ORES_LOG_SEV(lg(), debug) << "Listing all swap leg amortizations";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t swap_leg_amortization_service::count_swap_leg_amortizations() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total swap leg amortizations count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total swap leg amortizations count";
     return repo_.get_total_swap_leg_amortization_count(ctx_);
 }
 
@@ -552,14 +550,14 @@ std::vector<domain::swap_leg_amortization>
 swap_leg_amortization_service::list_swap_leg_amortizations_by_trade_id(const std::string& trade_id,
                                                                        std::uint32_t offset,
                                                                        std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing swap leg amortizations by trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing swap leg amortizations by trade_id: " << trade_id;
     return repo_.read_latest_by_trade_id(ctx_, trade_id, offset, limit);
 }
 
 std::uint32_t swap_leg_amortization_service::count_swap_leg_amortizations_by_trade_id(
     const std::string& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total swap leg amortizations count by trade_id: "
-                               << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting total swap leg amortizations count by trade_id: "
+                              << trade_id;
     return repo_.get_total_swap_leg_amortization_count_by_trade_id(ctx_, trade_id);
 }
 
@@ -570,10 +568,9 @@ swap_leg_amortization_service::get_swap_leg_amortization_at_version(
     const std::string& leg_number,
     const std::string& sequence_number,
     std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting swap leg amortization at version. "
-                               << "trade_id: " << trade_id << " leg_number: " << leg_number
-                               << " sequence_number: " << sequence_number
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting swap leg amortization at version. "
+                              << "trade_id: " << trade_id << " leg_number: " << leg_number
+                              << " sequence_number: " << sequence_number << " version: " << version;
     return repo_.read_at_version(ctx_, trade_id, leg_number, sequence_number, version);
 }
 
@@ -581,9 +578,9 @@ std::optional<domain::swap_leg_amortization>
 swap_leg_amortization_service::get_swap_leg_amortization(const std::string& trade_id,
                                                          const std::string& leg_number,
                                                          const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting swap leg amortization. " << "trade_id: " << trade_id
-                               << " leg_number: " << leg_number
-                               << " sequence_number: " << sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Getting swap leg amortization. " << "trade_id: " << trade_id
+                              << " leg_number: " << leg_number
+                              << " sequence_number: " << sequence_number;
     auto results = repo_.read_latest(ctx_, trade_id, leg_number, sequence_number);
     if (results.empty())
         return std::nullopt;
@@ -602,15 +599,15 @@ void swap_leg_amortization_service::save_swap_leg_amortization(
     const domain::swap_leg_amortization& v) {
     if (v.trade_id.is_nil())
         throw std::invalid_argument("Swap Leg Amortization trade_id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving swap leg amortization. " << "trade_id: " << v.trade_id
-                               << " leg_number: " << v.leg_number
-                               << " sequence_number: " << v.sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Saving swap leg amortization. " << "trade_id: " << v.trade_id
+                              << " leg_number: " << v.leg_number
+                              << " sequence_number: " << v.sequence_number;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved swap leg amortization. " << "trade_id: " << v.trade_id
-                              << " leg_number: " << v.leg_number
-                              << " sequence_number: " << v.sequence_number;
+    ORES_LOG_SEV(lg(), info) << "Saved swap leg amortization. " << "trade_id: " << v.trade_id
+                             << " leg_number: " << v.leg_number
+                             << " sequence_number: " << v.sequence_number;
 }
 
 void swap_leg_amortization_service::save_swap_leg_amortizations(
@@ -619,8 +616,8 @@ void swap_leg_amortization_service::save_swap_leg_amortizations(
         if (e.trade_id.is_nil())
             throw std::invalid_argument("Swap Leg Amortization trade_id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << swap_leg_amortizations.size()
-                               << " swap leg amortizations";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << swap_leg_amortizations.size()
+                              << " swap leg amortizations";
     auto ts = swap_leg_amortizations;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -632,13 +629,13 @@ void swap_leg_amortization_service::delete_swap_leg_amortization(
     const std::string& trade_id,
     const std::string& leg_number,
     const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing swap leg amortization. " << "trade_id: " << trade_id
-                               << " leg_number: " << leg_number
-                               << " sequence_number: " << sequence_number;
-    repo_.remove(ctx_, trade_id, leg_number, sequence_number);
-    BOOST_LOG_SEV(lg(), info) << "Removed swap leg amortization. " << "trade_id: " << trade_id
+    ORES_LOG_SEV(lg(), debug) << "Removing swap leg amortization. " << "trade_id: " << trade_id
                               << " leg_number: " << leg_number
                               << " sequence_number: " << sequence_number;
+    repo_.remove(ctx_, trade_id, leg_number, sequence_number);
+    ORES_LOG_SEV(lg(), info) << "Removed swap leg amortization. " << "trade_id: " << trade_id
+                             << " leg_number: " << leg_number
+                             << " sequence_number: " << sequence_number;
 }
 
 void swap_leg_amortization_service::delete_swap_leg_amortizations(
@@ -653,9 +650,9 @@ swap_leg_amortization_service::get_swap_leg_amortization_history(
     const std::string& trade_id,
     const std::string& leg_number,
     const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for swap leg amortization. "
-                               << "trade_id: " << trade_id << " leg_number: " << leg_number
-                               << " sequence_number: " << sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for swap leg amortization. "
+                              << "trade_id: " << trade_id << " leg_number: " << leg_number
+                              << " sequence_number: " << sequence_number;
     return repo_.read_all(ctx_, trade_id, leg_number, sequence_number);
 }
 

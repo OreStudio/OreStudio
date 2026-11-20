@@ -26,7 +26,6 @@
 #include "ores.reporting.api/domain/configuration_analytic.hpp"
 #include "ores.reporting.api/messaging/configuration_analytic_protocol.hpp"
 #include "ores.reporting.core/repository/configuration_analytic_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -568,12 +566,12 @@ ores::utility::domain::result configuration_analytic_service::prepare_change(
 
 std::vector<domain::configuration_analytic>
 configuration_analytic_service::list_analytics(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all configuration analytics";
+    ORES_LOG_SEV(lg(), debug) << "Listing all configuration analytics";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t configuration_analytic_service::count_analytics() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total configuration analytics count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total configuration analytics count";
     return repo_.get_total_analytic_count(ctx_);
 }
 
@@ -581,15 +579,15 @@ std::uint32_t configuration_analytic_service::count_analytics() {
 std::vector<domain::configuration_analytic>
 configuration_analytic_service::list_analytics_by_configuration_id(
     const std::string& configuration_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing configuration analytics by configuration_id: "
-                               << configuration_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing configuration analytics by configuration_id: "
+                              << configuration_id;
     return repo_.read_latest_by_configuration_id(ctx_, configuration_id, offset, limit);
 }
 
 std::uint32_t configuration_analytic_service::count_analytics_by_configuration_id(
     const std::string& configuration_id) {
-    BOOST_LOG_SEV(lg(), debug)
-        << "Getting total configuration analytics count by configuration_id: " << configuration_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting total configuration analytics count by configuration_id: "
+                              << configuration_id;
     return repo_.get_total_analytic_count_by_configuration_id(ctx_, configuration_id);
 }
 
@@ -597,14 +595,14 @@ std::uint32_t configuration_analytic_service::count_analytics_by_configuration_i
 std::vector<domain::configuration_analytic>
 configuration_analytic_service::list_analytics_by_analytic_type_code(
     const std::string& analytic_type_code, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing configuration analytics by analytic_type_code: "
-                               << analytic_type_code;
+    ORES_LOG_SEV(lg(), debug) << "Listing configuration analytics by analytic_type_code: "
+                              << analytic_type_code;
     return repo_.read_latest_by_analytic_type_code(ctx_, analytic_type_code, offset, limit);
 }
 
 std::uint32_t configuration_analytic_service::count_analytics_by_analytic_type_code(
     const std::string& analytic_type_code) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Getting total configuration analytics count by analytic_type_code: "
         << analytic_type_code;
     return repo_.get_total_analytic_count_by_analytic_type_code(ctx_, analytic_type_code);
@@ -614,14 +612,14 @@ std::uint32_t configuration_analytic_service::count_analytics_by_analytic_type_c
 std::optional<domain::configuration_analytic>
 configuration_analytic_service::get_analytic_at_version(const boost::uuids::uuid& id,
                                                         std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting configuration analytic at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting configuration analytic at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::configuration_analytic>
 configuration_analytic_service::get_analytic(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting configuration analytic. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting configuration analytic. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -636,11 +634,11 @@ configuration_analytic_service::get_analytics(const std::vector<std::string>& id
 void configuration_analytic_service::save_analytic(const domain::configuration_analytic& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Configuration Analytic id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving configuration analytic. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving configuration analytic. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved configuration analytic. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved configuration analytic. " << "id: " << v.id;
 }
 
 void configuration_analytic_service::save_analytics(
@@ -649,7 +647,7 @@ void configuration_analytic_service::save_analytics(
         if (e.id.is_nil())
             throw std::invalid_argument("Configuration Analytic id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << analytics.size() << " configuration analytics";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << analytics.size() << " configuration analytics";
     auto ts = analytics;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -658,9 +656,9 @@ void configuration_analytic_service::save_analytics(
 }
 
 void configuration_analytic_service::delete_analytic(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing configuration analytic. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing configuration analytic. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed configuration analytic. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed configuration analytic. " << "id: " << id;
 }
 
 void configuration_analytic_service::delete_analytics(const std::vector<std::string>& ids) {
@@ -669,7 +667,7 @@ void configuration_analytic_service::delete_analytics(const std::vector<std::str
 
 std::vector<domain::configuration_analytic>
 configuration_analytic_service::get_analytic_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for configuration analytic. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for configuration analytic. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

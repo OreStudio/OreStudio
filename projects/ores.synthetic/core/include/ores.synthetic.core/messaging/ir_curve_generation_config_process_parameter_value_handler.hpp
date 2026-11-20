@@ -26,7 +26,7 @@
 #define ORES_SYNTHETIC_CORE_MESSAGING_IR_CURVE_GENERATION_CONFIG_PROCESS_PARAMETER_VALUE_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
@@ -75,7 +75,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void list_ir_curve_generation_config_process_parameter_values(ores::nats::message msg) {
-        BOOST_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), debug)
+        ORES_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -94,7 +94,7 @@ public:
         }
         auto req = decode<list_ir_curve_generation_config_process_parameter_values_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), warn)
+            ORES_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -102,14 +102,14 @@ public:
         service::ir_curve_generation_config_process_parameter_value_service svc(req_ctx);
         try {
             auto response = svc.list_ir_curve_generation_config_process_parameter_values(*req);
-            BOOST_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), debug)
+            ORES_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), error)
+            ORES_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             list_ir_curve_generation_config_process_parameter_values_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -129,7 +129,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void get_ir_curve_generation_config_process_parameter_value(ores::nats::message msg) {
-        BOOST_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), debug)
+        ORES_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -148,7 +148,7 @@ public:
         }
         auto req = decode<get_ir_curve_generation_config_process_parameter_value_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), warn)
+            ORES_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -156,14 +156,14 @@ public:
         service::ir_curve_generation_config_process_parameter_value_service svc(req_ctx);
         try {
             auto response = svc.get_ir_curve_generation_config_process_parameter_value(*req);
-            BOOST_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), debug)
+            ORES_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), error)
+            ORES_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             get_ir_curve_generation_config_process_parameter_value_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -183,7 +183,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void get_many_ir_curve_generation_config_process_parameter_values(ores::nats::message msg) {
-        BOOST_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), debug)
+        ORES_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -203,7 +203,7 @@ public:
         auto req =
             decode<get_many_ir_curve_generation_config_process_parameter_values_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), warn)
+            ORES_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -211,14 +211,14 @@ public:
         service::ir_curve_generation_config_process_parameter_value_service svc(req_ctx);
         try {
             auto response = svc.get_many_ir_curve_generation_config_process_parameter_values(*req);
-            BOOST_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), debug)
+            ORES_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), error)
+            ORES_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             get_many_ir_curve_generation_config_process_parameter_values_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -238,7 +238,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void put_ir_curve_generation_config_process_parameter_value(ores::nats::message msg) {
-        BOOST_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), debug)
+        ORES_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -257,7 +257,7 @@ public:
         }
         auto req = decode<put_ir_curve_generation_config_process_parameter_value_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), warn)
+            ORES_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -265,14 +265,14 @@ public:
         service::ir_curve_generation_config_process_parameter_value_service svc(req_ctx);
         try {
             auto response = svc.put_ir_curve_generation_config_process_parameter_value(*req);
-            BOOST_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), debug)
+            ORES_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), error)
+            ORES_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             put_ir_curve_generation_config_process_parameter_value_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -292,7 +292,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void put_many_ir_curve_generation_config_process_parameter_values(ores::nats::message msg) {
-        BOOST_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), debug)
+        ORES_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -312,7 +312,7 @@ public:
         auto req =
             decode<put_many_ir_curve_generation_config_process_parameter_values_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), warn)
+            ORES_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -320,14 +320,14 @@ public:
         service::ir_curve_generation_config_process_parameter_value_service svc(req_ctx);
         try {
             auto response = svc.put_many_ir_curve_generation_config_process_parameter_values(*req);
-            BOOST_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), debug)
+            ORES_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), error)
+            ORES_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             put_many_ir_curve_generation_config_process_parameter_values_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -347,7 +347,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void delete_ir_curve_generation_config_process_parameter_value(ores::nats::message msg) {
-        BOOST_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), debug)
+        ORES_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -366,7 +366,7 @@ public:
         }
         auto req = decode<delete_ir_curve_generation_config_process_parameter_value_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), warn)
+            ORES_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -374,14 +374,14 @@ public:
         service::ir_curve_generation_config_process_parameter_value_service svc(req_ctx);
         try {
             auto response = svc.delete_ir_curve_generation_config_process_parameter_value(*req);
-            BOOST_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), debug)
+            ORES_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), error)
+            ORES_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             delete_ir_curve_generation_config_process_parameter_value_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -401,7 +401,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void delete_many_ir_curve_generation_config_process_parameter_values(ores::nats::message msg) {
-        BOOST_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), debug)
+        ORES_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -421,7 +421,7 @@ public:
         auto req =
             decode<delete_many_ir_curve_generation_config_process_parameter_values_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), warn)
+            ORES_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -430,14 +430,14 @@ public:
         try {
             auto response =
                 svc.delete_many_ir_curve_generation_config_process_parameter_values(*req);
-            BOOST_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), debug)
+            ORES_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), error)
+            ORES_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             delete_many_ir_curve_generation_config_process_parameter_values_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -457,7 +457,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void list_ir_curve_generation_config_process_parameter_value_versions(ores::nats::message msg) {
-        BOOST_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), debug)
+        ORES_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -477,7 +477,7 @@ public:
         auto req =
             decode<list_ir_curve_generation_config_process_parameter_value_versions_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), warn)
+            ORES_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -486,14 +486,14 @@ public:
         try {
             auto response =
                 svc.list_ir_curve_generation_config_process_parameter_value_versions(*req);
-            BOOST_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), debug)
+            ORES_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), error)
+            ORES_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             list_ir_curve_generation_config_process_parameter_value_versions_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -513,7 +513,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void get_ir_curve_generation_config_process_parameter_value_version(ores::nats::message msg) {
-        BOOST_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), debug)
+        ORES_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -533,7 +533,7 @@ public:
         auto req =
             decode<get_ir_curve_generation_config_process_parameter_value_version_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), warn)
+            ORES_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -542,14 +542,14 @@ public:
         try {
             auto response =
                 svc.get_ir_curve_generation_config_process_parameter_value_version(*req);
-            BOOST_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), debug)
+            ORES_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), error)
+            ORES_LOG_SEV(ir_curve_generation_config_process_parameter_value_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             get_ir_curve_generation_config_process_parameter_value_version_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;

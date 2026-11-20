@@ -22,7 +22,7 @@
 
 #include "ores.compute.core/export.hpp"
 #include "ores.database/domain/context_fwd.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <cstdint>

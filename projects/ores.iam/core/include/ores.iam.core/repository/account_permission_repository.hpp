@@ -23,7 +23,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.iam.api/domain/role.hpp"
 #include "ores.iam.core/export.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <string>
 #include <vector>

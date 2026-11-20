@@ -24,14 +24,12 @@
  */
 #include "ores.trading.core/repository/swap_leg_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/swap_leg.hpp"
 #include "ores.trading.api/domain/swap_leg_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/swap_leg_entity.hpp"
 #include "ores.utility/decimal/decimal.hpp"
 #include <boost/lexical_cast.hpp>
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <chrono>
@@ -45,7 +43,7 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 
 domain::swap_leg swap_leg_mapper::map(const swap_leg_entity& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::swap_leg r;
     r.identity.version = v.version;
@@ -123,12 +121,12 @@ domain::swap_leg swap_leg_mapper::map(const swap_leg_entity& v) {
     r.audit.change_commentary = v.change_commentary;
     r.audit.recorded_at = v.valid_from;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
 }
 
 swap_leg_entity swap_leg_mapper::map(const domain::swap_leg& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     swap_leg_entity r;
     r.trade_id = v.identity.trade_id;
@@ -210,7 +208,7 @@ swap_leg_entity swap_leg_mapper::map(const domain::swap_leg& v) {
     r.change_reason_code = v.audit.change_reason_code;
     r.change_commentary = v.audit.change_commentary;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;
 }
 

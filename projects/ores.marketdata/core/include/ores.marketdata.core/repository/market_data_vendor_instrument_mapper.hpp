@@ -25,7 +25,7 @@
 #ifndef ORES_MARKETDATA_CORE_REPOSITORY_MARKET_DATA_VENDOR_INSTRUMENT_MAPPER_HPP
 #define ORES_MARKETDATA_CORE_REPOSITORY_MARKET_DATA_VENDOR_INSTRUMENT_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/domain/market_data_vendor_instrument.hpp"
 #include "ores.marketdata.core/export.hpp"
 #include "ores.marketdata.core/repository/market_data_vendor_instrument_entity.hpp"

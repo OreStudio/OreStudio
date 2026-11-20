@@ -30,10 +30,8 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -195,8 +193,8 @@ void grid_sample_repository::write(const context& ctx, const std::vector<domain:
 void grid_sample_repository::write(const context& ctx,
                                    const domain::grid_sample& v,
                                    const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing sample. " << "id: " << v.id
-                               << " sampled_at: " << v.sampled_at;
+    ORES_LOG_SEV(lg(), debug) << "Writing sample. " << "id: " << v.id
+                              << " sampled_at: " << v.sampled_at;
     const auto t = grid_sample_apply_claim(
         v,
         claim,
@@ -214,7 +212,7 @@ void grid_sample_repository::write(const context& ctx,
 void grid_sample_repository::write(const context& ctx,
                                    const std::vector<domain::grid_sample>& v,
                                    const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing grid samples. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing grid samples. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "grid_sample_repository::write: one claim is needed for each row");
@@ -250,8 +248,8 @@ std::vector<domain::grid_sample> grid_sample_repository::read_latest(const conte
 
 std::vector<domain::grid_sample> grid_sample_repository::read_latest(
     const context& ctx, const std::string& id, const std::string& sampled_at) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest sample. " << "id: " << id
-                               << " sampled_at: " << sampled_at;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest sample. " << "id: " << id
+                              << " sampled_at: " << sampled_at;
     const auto query = query_builder::read<std::vector<grid_sample_entity>> |
                        query_builder::where("id"_c == id && "sampled_at"_c == sampled_at);
 
@@ -267,8 +265,8 @@ std::vector<domain::grid_sample> grid_sample_repository::read_latest(
 std::vector<domain::grid_sample> grid_sample_repository::read_all(const context& ctx,
                                                                   const std::string& id,
                                                                   const std::string& sampled_at) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all sample versions. " << "id: " << id
-                               << " sampled_at: " << sampled_at;
+    ORES_LOG_SEV(lg(), debug) << "Reading all sample versions. " << "id: " << id
+                              << " sampled_at: " << sampled_at;
     const auto query = query_builder::read<std::vector<grid_sample_entity>> |
                        query_builder::where("id"_c == id && "sampled_at"_c == sampled_at) |
                        query_builder::order_by("id"_c, "sampled_at"_c);
@@ -287,8 +285,8 @@ grid_sample_repository::remove(const context& ctx,
                                const std::string& id,
                                const std::string& sampled_at,
                                std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing sample. " << "id: " << id
-                               << " sampled_at: " << sampled_at;
+    ORES_LOG_SEV(lg(), debug) << "Removing sample. " << "id: " << id
+                              << " sampled_at: " << sampled_at;
     // The store keeps no version column, so a caller that stated a version
     // asked a question this table cannot answer.
     if (version)
@@ -316,8 +314,8 @@ grid_sample_repository::read_latest(const context& ctx,
                                     std::uint32_t offset,
                                     std::uint32_t limit,
                                     const ores::utility::domain::order& order) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest grid samples with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest grid samples with offset: " << offset
+                              << " and limit: " << limit;
     const auto query = query_builder::read<std::vector<grid_sample_entity>> |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
@@ -332,7 +330,7 @@ grid_sample_repository::read_latest(const context& ctx,
 }
 
 std::optional<domain::grid_sample> grid_sample_repository::read_newest(const context& ctx) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading newest sample";
+    ORES_LOG_SEV(lg(), debug) << "Reading newest sample";
     const auto query = query_builder::read<std::vector<grid_sample_entity>> |
                        query_builder::order_by("sampled_at"_c.desc()) | query_builder::limit(1);
     const auto rows = query_builder::execute_read_query<grid_sample_entity, domain::grid_sample>(
@@ -347,7 +345,7 @@ std::optional<domain::grid_sample> grid_sample_repository::read_newest(const con
 }
 
 std::uint32_t grid_sample_repository::get_total__count(const context& ctx) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active sample count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active sample count";
 
     const auto query = query_builder::read<std::vector<grid_sample_entity>>;
 

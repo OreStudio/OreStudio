@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/tenor_unit.hpp"
 #include "ores.refdata.api/messaging/tenor_unit_protocol.hpp"
 #include "ores.refdata.core/repository/tenor_unit_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -439,25 +437,25 @@ tenor_unit_service::prepare_change(const messaging::tenor_unit_change& change,
 
 std::vector<domain::tenor_unit> tenor_unit_service::list_units(std::uint32_t offset,
                                                                std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all tenor units";
+    ORES_LOG_SEV(lg(), debug) << "Listing all tenor units";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t tenor_unit_service::count_units() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total tenor units count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total tenor units count";
     return repo_.get_total_unit_count(ctx_);
 }
 
 
 std::optional<domain::tenor_unit> tenor_unit_service::get_unit_at_version(const std::string& code,
                                                                           std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting tenor unit at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting tenor unit at version. " << "code: " << code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::tenor_unit> tenor_unit_service::get_unit(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting tenor unit. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting tenor unit. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -472,11 +470,11 @@ tenor_unit_service::get_units(const std::vector<std::string>& codes) {
 void tenor_unit_service::save_unit(const domain::tenor_unit& v) {
     if (v.code.empty())
         throw std::invalid_argument("Tenor Unit code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving tenor unit. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving tenor unit. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved tenor unit. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved tenor unit. " << "code: " << v.code;
 }
 
 void tenor_unit_service::save_units(const std::vector<domain::tenor_unit>& units) {
@@ -484,7 +482,7 @@ void tenor_unit_service::save_units(const std::vector<domain::tenor_unit>& units
         if (e.code.empty())
             throw std::invalid_argument("Tenor Unit code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << units.size() << " tenor units";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << units.size() << " tenor units";
     auto ts = units;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -493,9 +491,9 @@ void tenor_unit_service::save_units(const std::vector<domain::tenor_unit>& units
 }
 
 void tenor_unit_service::delete_unit(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing tenor unit. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing tenor unit. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed tenor unit. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed tenor unit. " << "code: " << code;
 }
 
 void tenor_unit_service::delete_units(const std::vector<std::string>& codes) {
@@ -503,7 +501,7 @@ void tenor_unit_service::delete_units(const std::vector<std::string>& codes) {
 }
 
 std::vector<domain::tenor_unit> tenor_unit_service::get_unit_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for tenor unit. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for tenor unit. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

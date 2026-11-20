@@ -23,7 +23,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.iam.api/messaging/run_grant_operations_protocol.hpp"
 #include "ores.iam.core/service/run_grant_operations_service.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
@@ -112,7 +112,7 @@ private:
             service::run_grant_operations_service svc(*req_ctx, std::move(signer));
             reply(nats_, msg, call(svc, *req));
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(run_grant_operations_handler_lg(), error)
+            ORES_LOG_SEV(run_grant_operations_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             typename Request::response_type failure;
             failure.message = e.what();

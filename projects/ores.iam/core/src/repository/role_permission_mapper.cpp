@@ -27,9 +27,7 @@
 #include "ores.iam.api/domain/role_permission.hpp"
 #include "ores.iam.api/domain/role_permission_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.core/repository/role_permission_entity.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include <boost/lexical_cast.hpp>
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <vector>
@@ -40,7 +38,7 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 
 domain::role_permission role_permission_mapper::map(const role_permission_entity& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::role_permission r;
     r.version = v.version;
@@ -53,12 +51,12 @@ domain::role_permission role_permission_mapper::map(const role_permission_entity
     r.change_commentary = v.change_commentary;
     r.recorded_at = v.valid_from;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
 }
 
 role_permission_entity role_permission_mapper::map(const domain::role_permission& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     role_permission_entity r;
     r.role_id = v.role_id;
@@ -70,7 +68,7 @@ role_permission_entity role_permission_mapper::map(const domain::role_permission
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;
 }
 

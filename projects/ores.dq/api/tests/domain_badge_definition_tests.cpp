@@ -20,7 +20,7 @@
 #include "ores.dq.api/domain/badge_definition.hpp"
 #include "ores.dq.api/domain/badge_definition_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.api/domain/badge_definition_table.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <vector>
@@ -42,7 +42,7 @@ TEST_CASE("create_badge_definition_with_valid_fields", "[domain]") {
     sut.severity_code = "success";
     sut.display_order = 1;
     sut.modified_by = "system";
-    BOOST_LOG_SEV(lg, info) << "Badge definition: " << sut;
+    ORES_LOG_SEV(lg, info) << "Badge definition: " << sut;
 
     CHECK(sut.version == 1);
     CHECK(sut.code == "login_online");
@@ -59,7 +59,7 @@ TEST_CASE("badge_definition_default_values", "[domain]") {
     auto lg(make_logger(test_suite));
 
     badge_definition sut;
-    BOOST_LOG_SEV(lg, info) << "Default badge definition: " << sut;
+    ORES_LOG_SEV(lg, info) << "Default badge definition: " << sut;
 
     CHECK(sut.version == 0);
     CHECK(sut.code.empty());
@@ -84,7 +84,7 @@ TEST_CASE("badge_definition_convert_single_to_table", "[domain]") {
     std::vector<badge_definition> items = {bd};
     const auto table = convert_to_table(items);
 
-    BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
+    ORES_LOG_SEV(lg, info) << "Table output:\n" << table;
 
     CHECK(!table.empty());
     CHECK(table.contains("Code"));
@@ -114,7 +114,7 @@ TEST_CASE("badge_definition_convert_multiple_to_table", "[domain]") {
     std::vector<badge_definition> items = {bd1, bd2};
     const auto table = convert_to_table(items);
 
-    BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
+    ORES_LOG_SEV(lg, info) << "Table output:\n" << table;
 
     CHECK(!table.empty());
     CHECK(table.contains("login_online"));

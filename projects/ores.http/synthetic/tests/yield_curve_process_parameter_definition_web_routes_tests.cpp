@@ -27,7 +27,7 @@
 #include "ores.http.api/net/router.hpp"
 #include "ores.http.api/openapi/endpoint_registry.hpp"
 #include "ores.http/routes/synthetic/yield_curve_process_parameter_definition_web_routes.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "test_suite.hpp"
 #include <boost/asio/co_spawn.hpp>
@@ -104,7 +104,7 @@ TEST_CASE("yield_curve_process_parameter_definition_web_routes_registers_the_scr
     CHECK(has(http_method::put, "/api/synthetic/parameter-definitions"));
     CHECK(has(http_method::delete_, "/api/synthetic/parameter-definitions"));
     CHECK(has(http_method::get, "/api/synthetic/parameter-definitions/key/{key}"));
-    BOOST_LOG_SEV(lg, debug) << "Registered " << routes.size() << " route(s).";
+    ORES_LOG_SEV(lg, debug) << "Registered " << routes.size() << " route(s).";
 }
 
 TEST_CASE(

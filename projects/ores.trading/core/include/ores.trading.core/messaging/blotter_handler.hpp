@@ -21,7 +21,7 @@
 #define ORES_TRADING_CORE_MESSAGING_BLOTTER_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
@@ -86,7 +86,7 @@ public:
         using ores::service::messaging::reply;
         using namespace ores::logging;
 
-        BOOST_LOG_SEV(blotter_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(blotter_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -99,7 +99,7 @@ public:
         }
         auto req = decode<get_blotter_rail_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(blotter_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(blotter_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
@@ -128,10 +128,10 @@ public:
                 response.nodes.begin(),
                 blotter_rail_node{.dimension = "party", .node_id = "", .count = party_total});
             response.result.outcome = ores::utility::domain::outcome::ok;
-            BOOST_LOG_SEV(blotter_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(blotter_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(blotter_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(blotter_handler_lg(), error) << msg.subject << " failed: " << e.what();
             get_blotter_rail_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
             failure.result.code = "internal_error";
@@ -150,7 +150,7 @@ public:
         using ores::service::messaging::reply;
         using namespace ores::logging;
 
-        BOOST_LOG_SEV(blotter_handler_lg(), debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(blotter_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
@@ -163,7 +163,7 @@ public:
         }
         auto req = decode<get_blotter_page_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(blotter_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ORES_LOG_SEV(blotter_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
@@ -190,7 +190,7 @@ public:
                 response.next = repository::trade_summary_repository::blotter_page_key(
                     rows.back(), req->order.field);
             response.result.outcome = ores::utility::domain::outcome::ok;
-            BOOST_LOG_SEV(blotter_handler_lg(), debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(blotter_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::invalid_argument& e) {
             /*
@@ -198,10 +198,10 @@ public:
              * the caller's mistake and not the store's: it is answered as a bad
              * request rather than as a fault.
              */
-            BOOST_LOG_SEV(blotter_handler_lg(), warn) << msg.subject << ": " << e.what();
+            ORES_LOG_SEV(blotter_handler_lg(), warn) << msg.subject << ": " << e.what();
             error_reply(nats_, msg, ores::service::error_code::bad_request);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(blotter_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(blotter_handler_lg(), error) << msg.subject << " failed: " << e.what();
             get_blotter_page_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
             failure.result.code = "internal_error";

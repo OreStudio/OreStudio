@@ -25,7 +25,7 @@
 #ifndef ORES_REPORTING_CORE_REPOSITORY_REPORT_ERROR_EVENT_MAPPER_HPP
 #define ORES_REPORTING_CORE_REPOSITORY_REPORT_ERROR_EVENT_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.reporting.api/domain/report_error_event.hpp"
 #include "ores.reporting.core/export.hpp"
 #include "ores.reporting.core/repository/report_error_event_entity.hpp"

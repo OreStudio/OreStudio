@@ -25,7 +25,7 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_TENOR_ANCHOR_MAPPER_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_TENOR_ANCHOR_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/tenor_anchor.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/tenor_anchor_entity.hpp"

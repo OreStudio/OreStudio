@@ -20,7 +20,7 @@
 #include "ores.iam.api/domain/account.hpp"
 #include "ores.iam.api/domain/account_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.api/domain/account_type.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include "test_suite.hpp"
 #include <boost/lexical_cast.hpp>
@@ -45,7 +45,7 @@ TEST_CASE("create_service_account_with_no_password", "[service_account]") {
     sut.account_type = "service";
     sut.username = "ores.service.binary";
     sut.email = "binary@system.ores";
-    BOOST_LOG_SEV(lg, info) << "Service Account: " << sut;
+    ORES_LOG_SEV(lg, info) << "Service Account: " << sut;
 
     CHECK(sut.account_type == "service");
     CHECK(sut.username == "ores.service.binary");
@@ -63,7 +63,7 @@ TEST_CASE("create_algorithm_account", "[service_account]") {
     sut.account_type = "algorithm";
     sut.username = "algo.risk.calc";
     sut.email = "risk.calc@algorithms.ores";
-    BOOST_LOG_SEV(lg, info) << "Algorithm Account: " << sut;
+    ORES_LOG_SEV(lg, info) << "Algorithm Account: " << sut;
 
     CHECK(sut.account_type == "algorithm");
 }
@@ -80,7 +80,7 @@ TEST_CASE("create_llm_account", "[service_account]") {
     sut.account_type = "llm";
     sut.username = "claude.agent";
     sut.email = "claude@llm.ores";
-    BOOST_LOG_SEV(lg, info) << "LLM Account: " << sut;
+    ORES_LOG_SEV(lg, info) << "LLM Account: " << sut;
 
     CHECK(sut.account_type == "llm");
 }
@@ -96,7 +96,7 @@ TEST_CASE("user_account_requires_password", "[service_account]") {
     sut.account_type = "user";
     sut.username = "john.doe";
     sut.email = "john.doe@example.com";
-    BOOST_LOG_SEV(lg, info) << "User Account: " << sut;
+    ORES_LOG_SEV(lg, info) << "User Account: " << sut;
 
     CHECK(sut.account_type == "user");
 }
@@ -106,7 +106,7 @@ TEST_CASE("account_type_defaults_to_user", "[service_account]") {
 
     account sut;
     sut.id = boost::uuids::random_generator()();
-    BOOST_LOG_SEV(lg, info) << "Default Account Type: " << sut.account_type;
+    ORES_LOG_SEV(lg, info) << "Default Account Type: " << sut.account_type;
 
     CHECK(sut.account_type == "user");
 }

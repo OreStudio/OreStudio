@@ -25,7 +25,7 @@
 #ifndef ORES_VARIABILITY_CORE_REPOSITORY_SYSTEM_SETTING_MAPPER_HPP
 #define ORES_VARIABILITY_CORE_REPOSITORY_SYSTEM_SETTING_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.variability.api/domain/system_setting.hpp"
 #include "ores.variability.core/export.hpp"
 #include "ores.variability.core/repository/system_setting_entity.hpp"

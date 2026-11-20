@@ -1166,7 +1166,7 @@ bool synthetic_commands::list_folders(std::ostream& out,
                                       nats_client& session,
                                       const std::string& collection_id,
                                       const std::string& folder_name) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing synthetic folders.";
+    ORES_LOG_SEV(lg(), debug) << "Listing synthetic folders.";
 
     synthetic::messaging::list_folders_request req{.offset = 0, .limit = 1000};
     auto result = do_auth_request<synthetic::messaging::list_folders_response>(
@@ -1254,7 +1254,7 @@ void synthetic_commands::process_list_feeds(std::ostream& out,
 }
 
 bool synthetic_commands::list_feeds(std::ostream& out, nats_client& session) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing configured synthetic feeds.";
+    ORES_LOG_SEV(lg(), debug) << "Listing configured synthetic feeds.";
 
     auto listing = read_feed_listing(out, session);
     if (!listing)
@@ -1460,7 +1460,7 @@ bool synthetic_commands::start_folder(std::ostream& out,
     const auto folder_id = resolve_folder_id(out, session, token);
     if (!folder_id)
         return false;
-    BOOST_LOG_SEV(lg(), info) << "Starting feeds under folder " << *folder_id << ".";
+    ORES_LOG_SEV(lg(), info) << "Starting feeds under folder " << *folder_id << ".";
     marketdata::messaging::start_feeds_under_folder_request req{.folder_id = *folder_id};
     auto result = do_auth_request<marketdata::messaging::start_feeds_under_folder_response>(
         out, session, std::string(req.nats_subject), req);
@@ -1487,7 +1487,7 @@ bool synthetic_commands::start_feed(std::ostream& out,
     const auto& feed_id = feed->config_id;
 
     synthetic::messaging::start_feed_request req{.config_id = feed_id};
-    BOOST_LOG_SEV(lg(), info) << "Starting feed " << feed_id << ".";
+    ORES_LOG_SEV(lg(), info) << "Starting feed " << feed_id << ".";
     auto result = do_auth_request<synthetic::messaging::start_feed_response>(
         out, session, std::string(req.nats_subject), req);
     if (!result)
@@ -1528,7 +1528,7 @@ bool synthetic_commands::stop_folder(std::ostream& out,
     const auto folder_id = resolve_folder_id(out, session, token);
     if (!folder_id)
         return false;
-    BOOST_LOG_SEV(lg(), info) << "Stopping feeds under folder " << *folder_id << ".";
+    ORES_LOG_SEV(lg(), info) << "Stopping feeds under folder " << *folder_id << ".";
     marketdata::messaging::stop_feeds_under_folder_request req{.folder_id = *folder_id};
     auto result = do_auth_request<marketdata::messaging::stop_feeds_under_folder_response>(
         out, session, std::string(req.nats_subject), req);
@@ -1554,7 +1554,7 @@ bool synthetic_commands::stop_feed(std::ostream& out,
     const auto& feed_id = feed->config_id;
 
     synthetic::messaging::stop_feed_request req{.config_id = feed_id};
-    BOOST_LOG_SEV(lg(), info) << "Stopping feed " << feed_id << ".";
+    ORES_LOG_SEV(lg(), info) << "Stopping feed " << feed_id << ".";
     auto result = do_auth_request<synthetic::messaging::stop_feed_response>(
         out, session, std::string(req.nats_subject), req);
     if (!result)

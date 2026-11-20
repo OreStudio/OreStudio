@@ -26,7 +26,6 @@
 #include "ores.refdata.api/domain/party.hpp"
 #include "ores.refdata.api/messaging/party_protocol.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/hierarchy.hpp"
 #include "ores.utility/domain/protocol.hpp"
@@ -488,25 +486,25 @@ party_service::prepare_change(const messaging::party_change& change,
 
 
 std::vector<domain::party> party_service::list_parties(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all parties";
+    ORES_LOG_SEV(lg(), debug) << "Listing all parties";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t party_service::count_parties() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total parties count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total parties count";
     return repo_.get_total_party_count(ctx_);
 }
 
 
 std::optional<domain::party> party_service::get_party_at_version(const boost::uuids::uuid& id,
                                                                  std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting party at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting party at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::party> party_service::get_party(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting party. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting party. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -514,7 +512,7 @@ std::optional<domain::party> party_service::get_party(const boost::uuids::uuid& 
 }
 
 std::optional<domain::party> party_service::get_party_by_short_code(const std::string& short_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting party by short_code: " << short_code;
+    ORES_LOG_SEV(lg(), debug) << "Getting party by short_code: " << short_code;
     messaging::party_key k;
     k.short_code = short_code;
     auto found = party_read_one(repo_, ctx_, k);
@@ -524,7 +522,7 @@ std::optional<domain::party> party_service::get_party_by_short_code(const std::s
 }
 
 std::optional<domain::party> party_service::find_party(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding party. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Finding party. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -532,7 +530,7 @@ std::optional<domain::party> party_service::find_party(const boost::uuids::uuid&
 }
 
 std::optional<domain::party> party_service::find_party_by_code(const std::string& short_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding party by short_code: " << short_code;
+    ORES_LOG_SEV(lg(), debug) << "Finding party by short_code: " << short_code;
     auto results = repo_.read_latest_by_code(ctx_, short_code);
     if (results.empty())
         return std::nullopt;
@@ -546,11 +544,11 @@ std::vector<domain::party> party_service::get_parties(const std::vector<std::str
 void party_service::save_party(const domain::party& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Party id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving party. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving party. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved party. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved party. " << "id: " << v.id;
 }
 
 void party_service::save_parties(const std::vector<domain::party>& parties) {
@@ -558,7 +556,7 @@ void party_service::save_parties(const std::vector<domain::party>& parties) {
         if (e.id.is_nil())
             throw std::invalid_argument("Party id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << parties.size() << " parties";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << parties.size() << " parties";
     auto ts = parties;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -567,15 +565,15 @@ void party_service::save_parties(const std::vector<domain::party>& parties) {
 }
 
 void party_service::delete_party(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing party. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing party. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed party. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed party. " << "id: " << id;
 }
 
 void party_service::remove_party(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing party. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing party. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed party. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed party. " << "id: " << id;
 }
 
 void party_service::delete_parties(const std::vector<std::string>& ids) {
@@ -583,7 +581,7 @@ void party_service::delete_parties(const std::vector<std::string>& ids) {
 }
 
 std::vector<domain::party> party_service::get_party_history(const std::string& key) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for party. key: " << key;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for party. key: " << key;
     // The caller holds the key the model declares and this reads by the
     // storage key, so the two are joined here exactly as they are for any
     // other read. Without this step a provider looks the versions up under a
@@ -604,13 +602,13 @@ std::vector<domain::party> party_service::get_party_history(const std::string& k
 }
 
 std::vector<domain::party> party_service::get_party_history(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for party. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for party. " << "id: " << id;
     return repo_.read_all(ctx_, boost::uuids::to_string(id));
 }
 
 std::vector<ores::utility::domain::hierarchy_node>
 party_service::get_hierarchy(const boost::uuids::uuid& root_id, bool from_root) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting hierarchy for party root: " << root_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting hierarchy for party root: " << root_id;
     auto rows = repo_.get_hierarchy(ctx_, root_id, from_root);
     return ores::utility::domain::build_tree(rows);
 }

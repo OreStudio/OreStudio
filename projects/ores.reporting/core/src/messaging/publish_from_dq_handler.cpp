@@ -21,7 +21,7 @@
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.dq.api/messaging/publish_from_dq_protocol.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/delivery.hpp"
 #include "ores.reporting.core/service/publish_subject_plan.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
@@ -87,8 +87,8 @@ void publish_from_dq_handler::handle(ores::nats::delivery delivery) {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "publish_from_dq: fn=" << fn_name << " dataset=" << cmd.dataset_id
-                              << " mode=" << cmd.mode << " step=" << wf->step_id;
+    ORES_LOG_SEV(lg(), info) << "publish_from_dq: fn=" << fn_name << " dataset=" << cmd.dataset_id
+                             << " mode=" << cmd.mode << " step=" << wf->step_id;
 
     try {
         auto tenant_ctx = ores::database::service::tenant_context::with_tenant(ctx_, wf->tenant_id);
@@ -117,16 +117,16 @@ void publish_from_dq_handler::handle(ores::nats::delivery delivery) {
             }
         }
 
-        BOOST_LOG_SEV(lg(), info) << "publish_from_dq complete: fn=" << fn_name
-                                  << " inserted=" << result.records_inserted
-                                  << " updated=" << result.records_updated;
+        ORES_LOG_SEV(lg(), info) << "publish_from_dq complete: fn=" << fn_name
+                                 << " inserted=" << result.records_inserted
+                                 << " updated=" << result.records_updated;
 
         wf->complete(ores::utility::codec::json::write(result));
         std::move(delivery).commit();
 
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error)
-            << "publish_from_dq failed: fn=" << fn_name << " error=" << e.what();
+        ORES_LOG_SEV(lg(), error) << "publish_from_dq failed: fn=" << fn_name
+                                  << " error=" << e.what();
         wf->fail(e.what());
         // The failure reaches the engine, so the delivery is done with;
         // redelivering would only report the same failure again.

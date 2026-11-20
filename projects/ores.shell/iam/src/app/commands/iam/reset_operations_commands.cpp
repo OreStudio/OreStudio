@@ -68,7 +68,7 @@ void reset_operations_commands::register_commands(cli::Menu& root_menu, nats_cli
 void reset_operations_commands::process_reset_tenant(std::ostream& out,
                                                      nats_client& session,
                                                      const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating reset-tenant request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating reset-tenant request.";
 
     using request_type = ores::iam::messaging::reset_tenant_command;
 
@@ -123,7 +123,7 @@ void reset_operations_commands::process_reset_tenant(std::ostream& out,
 void reset_operations_commands::process_reset_system(std::ostream& out,
                                                      nats_client& session,
                                                      const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating reset-system request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating reset-system request.";
 
     using request_type = ores::iam::messaging::reset_system_command;
 

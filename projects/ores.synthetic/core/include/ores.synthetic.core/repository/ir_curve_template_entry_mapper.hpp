@@ -25,7 +25,7 @@
 #ifndef ORES_SYNTHETIC_CORE_REPOSITORY_IR_CURVE_TEMPLATE_ENTRY_MAPPER_HPP
 #define ORES_SYNTHETIC_CORE_REPOSITORY_IR_CURVE_TEMPLATE_ENTRY_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.synthetic.api/domain/ir_curve_template_entry.hpp"
 #include "ores.synthetic.core/export.hpp"
 #include "ores.synthetic.core/repository/ir_curve_template_entry_entity.hpp"

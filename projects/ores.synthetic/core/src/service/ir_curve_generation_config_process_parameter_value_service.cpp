@@ -26,7 +26,6 @@
 #include "ores.synthetic.api/domain/ir_curve_generation_config_process_parameter_value.hpp"
 #include "ores.synthetic.api/messaging/ir_curve_generation_config_process_parameter_value_protocol.hpp"
 #include "ores.synthetic.core/repository/ir_curve_generation_config_process_parameter_value_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -516,13 +514,13 @@ ir_curve_generation_config_process_parameter_value_service::prepare_change(
 std::vector<domain::ir_curve_generation_config_process_parameter_value>
 ir_curve_generation_config_process_parameter_value_service::list_process_parameter_values(
     std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all IR curve generation config process parameter values";
+    ORES_LOG_SEV(lg(), debug) << "Listing all IR curve generation config process parameter values";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t
 ir_curve_generation_config_process_parameter_value_service::count_process_parameter_values() {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Getting total IR curve generation config process parameter values count";
     return repo_.get_total_process_parameter_value_count(ctx_);
 }
@@ -531,7 +529,7 @@ ir_curve_generation_config_process_parameter_value_service::count_process_parame
 std::optional<domain::ir_curve_generation_config_process_parameter_value>
 ir_curve_generation_config_process_parameter_value_service::get_process_parameter_value_at_version(
     const boost::uuids::uuid& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Getting IR curve generation config process parameter value at version. " << "id: " << id
         << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
@@ -540,8 +538,8 @@ ir_curve_generation_config_process_parameter_value_service::get_process_paramete
 std::optional<domain::ir_curve_generation_config_process_parameter_value>
 ir_curve_generation_config_process_parameter_value_service::get_process_parameter_value(
     const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting IR curve generation config process parameter value. "
-                               << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting IR curve generation config process parameter value. "
+                              << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -559,13 +557,13 @@ void ir_curve_generation_config_process_parameter_value_service::save_process_pa
     if (v.id.is_nil())
         throw std::invalid_argument(
             "IR Curve Generation Config Process Parameter Value id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving IR curve generation config process parameter value. "
-                               << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving IR curve generation config process parameter value. "
+                              << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved IR curve generation config process parameter value. "
-                              << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved IR curve generation config process parameter value. "
+                             << "id: " << v.id;
 }
 
 void ir_curve_generation_config_process_parameter_value_service::save_process_parameter_values(
@@ -576,8 +574,8 @@ void ir_curve_generation_config_process_parameter_value_service::save_process_pa
             throw std::invalid_argument(
                 "IR Curve Generation Config Process Parameter Value id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << process_parameter_values.size()
-                               << " IR curve generation config process parameter values";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << process_parameter_values.size()
+                              << " IR curve generation config process parameter values";
     auto ts = process_parameter_values;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -587,11 +585,11 @@ void ir_curve_generation_config_process_parameter_value_service::save_process_pa
 
 void ir_curve_generation_config_process_parameter_value_service::delete_process_parameter_value(
     const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing IR curve generation config process parameter value. "
-                               << "id: " << id;
-    repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed IR curve generation config process parameter value. "
+    ORES_LOG_SEV(lg(), debug) << "Removing IR curve generation config process parameter value. "
                               << "id: " << id;
+    repo_.remove(ctx_, boost::uuids::to_string(id));
+    ORES_LOG_SEV(lg(), info) << "Removed IR curve generation config process parameter value. "
+                             << "id: " << id;
 }
 
 void ir_curve_generation_config_process_parameter_value_service::delete_process_parameter_values(
@@ -602,7 +600,7 @@ void ir_curve_generation_config_process_parameter_value_service::delete_process_
 std::vector<domain::ir_curve_generation_config_process_parameter_value>
 ir_curve_generation_config_process_parameter_value_service::get_process_parameter_value_history(
     const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Getting history for IR curve generation config process parameter value. "
         << "id: " << id;
     return repo_.read_all(ctx_, id);

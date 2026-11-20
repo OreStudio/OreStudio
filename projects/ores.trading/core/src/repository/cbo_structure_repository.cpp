@@ -26,14 +26,12 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.trading.api/domain/cbo_structure.hpp"
 #include "ores.trading.api/domain/cbo_structure_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.api/messaging/cbo_structure_protocol.hpp"
 #include "ores.trading.core/repository/cbo_structure_entity.hpp"
 #include "ores.trading.core/repository/cbo_structure_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -215,7 +213,7 @@ void cbo_structure_repository::write(const context& ctx,
 void cbo_structure_repository::write(const context& ctx,
                                      const domain::cbo_structure& v,
                                      const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing cbo structure. " << "trade_id: " << v.trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Writing cbo structure. " << "trade_id: " << v.trade_id;
     const auto t =
         cbo_structure_apply_claim(v,
                                   claim,
@@ -230,7 +228,7 @@ void cbo_structure_repository::write(
     const context& ctx,
     const std::vector<domain::cbo_structure>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing cbo structures. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing cbo structures. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "cbo_structure_repository::write: one claim is needed for each row");
@@ -266,7 +264,7 @@ std::vector<domain::cbo_structure> cbo_structure_repository::read_latest(const c
 
 std::vector<domain::cbo_structure>
 cbo_structure_repository::read_latest(const context& ctx, const std::string& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest cbo structure. " << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest cbo structure. " << "trade_id: " << trade_id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<cbo_structure_entity>> |
@@ -284,8 +282,7 @@ cbo_structure_repository::read_latest(const context& ctx, const std::string& tra
 
 std::vector<domain::cbo_structure> cbo_structure_repository::read_all(const context& ctx,
                                                                       const std::string& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all cbo structure versions. "
-                               << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading all cbo structure versions. " << "trade_id: " << trade_id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<cbo_structure_entity>> |
                        query_builder::where("tenant_id"_c == tid && "trade_id"_c == trade_id) |
@@ -301,8 +298,8 @@ std::vector<domain::cbo_structure> cbo_structure_repository::read_all(const cont
 
 std::optional<domain::cbo_structure> cbo_structure_repository::read_at_version(
     const context& ctx, const std::string& trade_id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading cbo structure at version. " << "trade_id: " << trade_id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading cbo structure at version. " << "trade_id: " << trade_id
+                              << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<cbo_structure_entity>> |
                        query_builder::where("tenant_id"_c == tid && "trade_id"_c == trade_id &&
@@ -329,8 +326,8 @@ std::vector<domain::cbo_structure> cbo_structure_repository::read_latest_by_trad
     std::uint32_t limit,
     const ores::utility::domain::order& order,
     const std::optional<messaging::cbo_structures_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest cbo structures. trade_id: " << trade_id
-                               << " offset: " << offset << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest cbo structures. trade_id: " << trade_id
+                              << " offset: " << offset << " limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<cbo_structure_entity>> |
@@ -352,8 +349,8 @@ std::uint32_t cbo_structure_repository::get_total_cbo_structure_count_by_trade_i
     const context& ctx,
     const std::string& trade_id,
     const std::optional<messaging::cbo_structures_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active cbo structures count. trade_id: "
-                               << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active cbo structures count. trade_id: "
+                              << trade_id;
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx.tenant_id().to_string();
@@ -372,7 +369,7 @@ std::uint32_t cbo_structure_repository::get_total_cbo_structure_count_by_trade_i
 
 cbo_structure_repository::remove_status cbo_structure_repository::remove(
     const context& ctx, const std::string& trade_id, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing cbo structure. " << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Removing cbo structure. " << "trade_id: " << trade_id;
     const auto current = read_latest(ctx, trade_id);
     if (current.empty())
         return remove_status::missing;
@@ -410,8 +407,8 @@ cbo_structure_repository::read_latest(const context& ctx,
                                       const ores::utility::domain::order& order,
                                       const std::optional<messaging::cbo_structures_filter>& filter,
                                       const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest cbo structures with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest cbo structures with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<cbo_structure_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -432,7 +429,7 @@ std::uint32_t cbo_structure_repository::get_total_cbo_structure_count(
     const context& ctx,
     const std::optional<messaging::cbo_structures_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active cbo structure count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active cbo structure count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<cbo_structure_entity>> |

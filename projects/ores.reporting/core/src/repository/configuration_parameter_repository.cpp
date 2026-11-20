@@ -26,14 +26,12 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.reporting.api/domain/configuration_parameter.hpp"
 #include "ores.reporting.api/domain/configuration_parameter_json_io.hpp" // IWYU pragma: keep.
 #include "ores.reporting.api/messaging/configuration_parameter_protocol.hpp"
 #include "ores.reporting.core/repository/configuration_parameter_entity.hpp"
 #include "ores.reporting.core/repository/configuration_parameter_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -237,7 +235,7 @@ void configuration_parameter_repository::write(
 void configuration_parameter_repository::write(const context& ctx,
                                                const domain::configuration_parameter& v,
                                                const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing configuration parameter. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Writing configuration parameter. " << "id: " << v.id;
     const auto t =
         configuration_parameter_apply_claim(v,
                                             claim,
@@ -254,7 +252,7 @@ void configuration_parameter_repository::write(
     const context& ctx,
     const std::vector<domain::configuration_parameter>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing configuration parameters. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing configuration parameters. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "configuration_parameter_repository::write: one claim is needed for each row");
@@ -294,7 +292,7 @@ configuration_parameter_repository::read_latest(const context& ctx) {
 
 std::vector<domain::configuration_parameter>
 configuration_parameter_repository::read_latest(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest configuration parameter. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest configuration parameter. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -313,7 +311,7 @@ configuration_parameter_repository::read_latest(const context& ctx, const std::s
 std::vector<domain::configuration_parameter>
 configuration_parameter_repository::read_latest_by_value(const context& ctx,
                                                          const std::string& value) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest configuration parameter by value: " << value;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest configuration parameter by value: " << value;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -355,8 +353,8 @@ configuration_parameter_repository::read_latest_by_value(const context& ctx,
         }
         return all;
     }
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest configuration parameters by value. Count: "
-                               << values.size();
+    ORES_LOG_SEV(lg(), debug) << "Reading latest configuration parameters by value. Count: "
+                              << values.size();
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -378,7 +376,7 @@ configuration_parameter_repository::read_latest_by_value(const context& ctx,
 std::vector<domain::configuration_parameter>
 configuration_parameter_repository::read_any_by_value(const context& ctx,
                                                       const std::string& value) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading any configuration parameter by value: " << value;
+    ORES_LOG_SEV(lg(), debug) << "Reading any configuration parameter by value: " << value;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<configuration_parameter_entity>> |
                        query_builder::where("tenant_id"_c == tid && "value"_c == value) |
@@ -406,7 +404,7 @@ configuration_parameter_repository::read_any_by_value(const context& ctx,
 
 std::vector<domain::configuration_parameter>
 configuration_parameter_repository::read_all(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all configuration parameter versions. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading all configuration parameter versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<configuration_parameter_entity>> |
                        query_builder::where("tenant_id"_c == tid && "id"_c == id) |
@@ -423,8 +421,8 @@ configuration_parameter_repository::read_all(const context& ctx, const std::stri
 
 std::optional<domain::configuration_parameter> configuration_parameter_repository::read_at_version(
     const context& ctx, const std::string& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading configuration parameter at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading configuration parameter at version. " << "id: " << id
+                              << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<configuration_parameter_entity>> |
@@ -452,8 +450,8 @@ configuration_parameter_repository::read_latest_by_configuration_id(
     std::uint32_t limit,
     const ores::utility::domain::order& order,
     const std::optional<messaging::configuration_parameters_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest configuration parameters. configuration_id: "
-                               << configuration_id << " offset: " << offset << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest configuration parameters. configuration_id: "
+                              << configuration_id << " offset: " << offset << " limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -478,7 +476,7 @@ configuration_parameter_repository::get_total_parameter_value_count_by_configura
     const context& ctx,
     const std::string& configuration_id,
     const std::optional<messaging::configuration_parameters_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Retrieving total active configuration parameters count. configuration_id: "
         << configuration_id;
     static constexpr auto max = db_timestamp::max();
@@ -506,8 +504,8 @@ configuration_parameter_repository::read_latest_by_ore_parameter_id(
     std::uint32_t limit,
     const ores::utility::domain::order& order,
     const std::optional<messaging::configuration_parameters_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest configuration parameters. ore_parameter_id: "
-                               << ore_parameter_id << " offset: " << offset << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest configuration parameters. ore_parameter_id: "
+                              << ore_parameter_id << " offset: " << offset << " limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -532,7 +530,7 @@ configuration_parameter_repository::get_total_parameter_value_count_by_ore_param
     const context& ctx,
     const std::string& ore_parameter_id,
     const std::optional<messaging::configuration_parameters_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Retrieving total active configuration parameters count. ore_parameter_id: "
         << ore_parameter_id;
     static constexpr auto max = db_timestamp::max();
@@ -554,7 +552,7 @@ configuration_parameter_repository::get_total_parameter_value_count_by_ore_param
 
 configuration_parameter_repository::remove_status configuration_parameter_repository::remove(
     const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing configuration parameter. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing configuration parameter. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
         return remove_status::missing;
@@ -593,8 +591,8 @@ std::vector<domain::configuration_parameter> configuration_parameter_repository:
     const ores::utility::domain::order& order,
     const std::optional<messaging::configuration_parameters_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest configuration parameters with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest configuration parameters with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<configuration_parameter_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -616,7 +614,7 @@ std::uint32_t configuration_parameter_repository::get_total_parameter_value_coun
     const context& ctx,
     const std::optional<messaging::configuration_parameters_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active configuration parameter count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active configuration parameter count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<configuration_parameter_entity>> |

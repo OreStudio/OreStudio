@@ -224,7 +224,7 @@ approvals_mode_state approval_lifecycle::approvals_mode() const {
                 return std::nullopt;
             return std::move(found.front());
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), error) << "The approvals mode could not be read: " << e.what();
+            ORES_LOG_SEV(lg(), error) << "The approvals mode could not be read: " << e.what();
             return std::nullopt;
         }
     };
@@ -244,8 +244,8 @@ approvals_mode_state approval_lifecycle::approvals_mode() const {
     } else if (row->value == auto_approved_mode) {
         state.enforced = false;
     } else {
-        BOOST_LOG_SEV(lg(), warn) << "The approvals mode is '" << row->value
-                                  << "', which this build does not know; enforcing approvals.";
+        ORES_LOG_SEV(lg(), warn) << "The approvals mode is '" << row->value
+                                 << "', which this build does not know; enforcing approvals.";
         state.enforced = true;
     }
     if (row) {
@@ -407,8 +407,8 @@ approval_lifecycle::raise_under(const raise_policy& policy,
     r.modified_by = ctx_.actor();
     r.change_reason_code = "system.new_record";
 
-    BOOST_LOG_SEV(lg(), info) << "Raising a " << kind.code << " request for "
-                              << boost::uuids::to_string(requested_by);
+    ORES_LOG_SEV(lg(), info) << "Raising a " << kind.code << " request for "
+                             << boost::uuids::to_string(requested_by);
     repository::approval_request_repository repo;
     repo.write(ctx_, r, ores::utility::domain::precondition{});
 
@@ -429,8 +429,8 @@ approval_lifecycle::raise_under(const raise_policy& policy,
         } catch (...) {
             // A request with no part rows is decided by count, so one whose
             // links failed to write must not stay open.
-            BOOST_LOG_SEV(lg(), error) << "The parts of request " << boost::uuids::to_string(r.id)
-                                       << " were not written; withdrawing it.";
+            ORES_LOG_SEV(lg(), error) << "The parts of request " << boost::uuids::to_string(r.id)
+                                      << " were not written; withdrawing it.";
             try {
                 const auto current = request(boost::uuids::to_string(r.id));
                 decide(boost::uuids::to_string(r.id),
@@ -439,7 +439,7 @@ approval_lifecycle::raise_under(const raise_policy& policy,
                        requested_by,
                        "The parts of the request could not be written.");
             } catch (const std::exception& e) {
-                BOOST_LOG_SEV(lg(), error)
+                ORES_LOG_SEV(lg(), error)
                     << "The half-raised request was not withdrawn: " << e.what();
             }
             throw;
@@ -459,8 +459,8 @@ approval_lifecycle::raise_under(const raise_policy& policy,
         // A request a policy closes waits on nobody, so one whose close failed
         // must not stay open: it is withdrawn in the asker's own name, which is
         // the one decision the asker is allowed to take.
-        BOOST_LOG_SEV(lg(), error) << "Request " << boost::uuids::to_string(r.id)
-                                   << " could not be closed by policy; withdrawing it.";
+        ORES_LOG_SEV(lg(), error) << "Request " << boost::uuids::to_string(r.id)
+                                  << " could not be closed by policy; withdrawing it.";
         try {
             const auto current = request(boost::uuids::to_string(r.id));
             decide(boost::uuids::to_string(r.id),
@@ -469,7 +469,7 @@ approval_lifecycle::raise_under(const raise_policy& policy,
                    requested_by,
                    "A policy closes this request and it could not be closed.");
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), error) << "The half-raised request was not withdrawn: " << e.what();
+            ORES_LOG_SEV(lg(), error) << "The half-raised request was not withdrawn: " << e.what();
         }
         throw;
     }
@@ -522,9 +522,9 @@ approval_lifecycle::close_without_approval(const domain::approval_request& reque
                                            const boost::uuids::uuid& system_actor,
                                            auto_approval_rule rule,
                                            const approvals_mode_state& mode) {
-    BOOST_LOG_SEV(lg(), info) << "Closing " << kind.code << " request "
-                              << boost::uuids::to_string(request.id)
-                              << " approved by policy: " << code_of(rule);
+    ORES_LOG_SEV(lg(), info) << "Closing " << kind.code << " request "
+                             << boost::uuids::to_string(request.id)
+                             << " approved by policy: " << code_of(rule);
     const auto r = decide(boost::uuids::to_string(request.id),
                           request.version,
                           "approve",
@@ -676,7 +676,7 @@ decision_result approval_lifecycle::decide(const std::string& request_id,
                                            const std::string& comment,
                                            const std::string& part_code,
                                            const std::string& hold_reason_code) {
-    BOOST_LOG_SEV(lg(), info) << "Deciding request " << request_id << ": " << decision_code;
+    ORES_LOG_SEV(lg(), info) << "Deciding request " << request_id << ": " << decision_code;
     const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx_,
         "select outcome, message, state_code, version::text "
@@ -705,7 +705,7 @@ decision_result approval_lifecycle::decide(const std::string& request_id,
 
 decision_result approval_lifecycle::fail_apply(const std::string& request_id,
                                                const std::string& reason) {
-    BOOST_LOG_SEV(lg(), info) << "Request " << request_id << " could not be applied: " << reason;
+    ORES_LOG_SEV(lg(), info) << "Request " << request_id << " could not be applied: " << reason;
     const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx_,
         "select outcome, message, state_code, version::text "
@@ -866,8 +866,8 @@ std::vector<expired_request> approval_lifecycle::expire_overdue() {
                           .tenant_id = row[1].value_or(""),
                           .kind_code = row[2].value_or(""),
                           .requested_by = row[3].value_or("")};
-        BOOST_LOG_SEV(lg(), info) << "Request " << e.request_id << " (" << e.kind_code
-                                  << ") expired undecided.";
+        ORES_LOG_SEV(lg(), info) << "Request " << e.request_id << " (" << e.kind_code
+                                 << ") expired undecided.";
         tell_expired(e);
         expired.push_back(std::move(e));
     }
@@ -892,8 +892,8 @@ approval_lifecycle::stalled_applies(std::chrono::system_clock::time_point as_of)
     stalled.reserve(rows.size());
     for (const auto& row : rows) {
         if (row.size() != 7) {
-            BOOST_LOG_SEV(lg(), warn) << "A stalled apply came back with " << row.size()
-                                      << " columns instead of 7, so it was skipped.";
+            ORES_LOG_SEV(lg(), warn) << "A stalled apply came back with " << row.size()
+                                     << " columns instead of 7, so it was skipped.";
             continue;
         }
         stalled.push_back(stalled_apply{.request_id = row[0].value_or(""),
@@ -934,8 +934,8 @@ std::vector<expiring_request> approval_lifecycle::remind_expiring(std::chrono::s
                            .kind_code = row[2].value_or(""),
                            .requested_by = row[3].value_or(""),
                            .expires_at = row[4].value_or("")};
-        BOOST_LOG_SEV(lg(), info) << "Request " << e.request_id << " (" << e.kind_code
-                                  << ") is close to its deadline at " << e.expires_at << ".";
+        ORES_LOG_SEV(lg(), info) << "Request " << e.request_id << " (" << e.kind_code
+                                 << ") is close to its deadline at " << e.expires_at << ".";
         tell_expiring(e);
         expiring.push_back(std::move(e));
     }
@@ -982,9 +982,9 @@ void approval_lifecycle::tell_expiring(const expiring_request& expiring) {
             .audience_permission_code = k->decide_permission_code};
         center.raise(n, deciders, *raiser);
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn) << "Request " << expiring.request_id
-                                  << " is close to its deadline, but its deciders were not told: "
-                                  << e.what();
+        ORES_LOG_SEV(lg(), warn) << "Request " << expiring.request_id
+                                 << " is close to its deadline, but its deciders were not told: "
+                                 << e.what();
     }
 }
 
@@ -1017,9 +1017,8 @@ void approval_lifecycle::tell_expired(const expired_request& expired) {
         notification_center(ctx_.with_tenant(*tenant, ctx_.service_account()))
             .raise(n, n.account_ids, *raiser);
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn) << "Request " << expired.request_id
-                                  << " expired, but the person who asked was not told: "
-                                  << e.what();
+        ORES_LOG_SEV(lg(), warn) << "Request " << expired.request_id
+                                 << " expired, but the person who asked was not told: " << e.what();
     }
 }
 

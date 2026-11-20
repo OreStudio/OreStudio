@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/domain/catalogue_ids.hpp"
 #include "ores.marketdata.api/domain/market_observation.hpp"
 #include "ores.marketdata.api/domain/market_observation_json_io.hpp" // IWYU pragma: keep.
@@ -65,7 +65,7 @@ TEST_CASE("insert_single_market_observation", "[repository]") {
     market_observation_repository obs_repo;
     auto obs = generate_synthetic_market_observation(ctx);
     obs.series_id = s.id;
-    BOOST_LOG_SEV(lg, debug) << "Observation: " << obs;
+    ORES_LOG_SEV(lg, debug) << "Observation: " << obs;
     CHECK_NOTHROW(obs_repo.insert(h.context(), obs));
 }
 
@@ -83,7 +83,7 @@ TEST_CASE("insert_multiple_market_observations", "[repository]") {
     auto observations = generate_synthetic_market_observations(5, ctx);
     for (auto& o : observations)
         o.series_id = s.id;
-    BOOST_LOG_SEV(lg, debug) << "Observations: " << observations;
+    ORES_LOG_SEV(lg, debug) << "Observations: " << observations;
     CHECK_NOTHROW(obs_repo.insert(h.context(), observations));
 }
 
@@ -104,7 +104,7 @@ TEST_CASE("read_latest_market_observations_by_series", "[repository]") {
     obs_repo.insert(h.context(), written);
 
     auto read = obs_repo.read_latest_for_series(h.context(), s.id);
-    BOOST_LOG_SEV(lg, debug) << "Read observations: " << read;
+    ORES_LOG_SEV(lg, debug) << "Read observations: " << read;
 
     CHECK(read.size() == written.size());
     for (const auto& r : read)
@@ -225,7 +225,7 @@ TEST_CASE("read_as_of_synchronous_publish", "[repository]") {
 
     // Phase-1 case: every point shares one observation_datetime.
     auto snapshot = obs_repo.read_as_of(h.context(), s.id, now + std::chrono::minutes(1));
-    BOOST_LOG_SEV(lg, debug) << "Snapshot: " << snapshot;
+    ORES_LOG_SEV(lg, debug) << "Snapshot: " << snapshot;
 
     CHECK(snapshot.size() == 3);
     for (const auto& o : snapshot)
@@ -260,7 +260,7 @@ TEST_CASE("read_as_of_staggered_timestamps", "[repository]") {
     // As-of t0 + 1s: only spot-1m@t0 and spot-3m@t0 have ticked; spot-2y hasn't started.
     {
         auto snap = obs_repo.read_as_of(h.context(), s.id, t0 + std::chrono::seconds(1));
-        BOOST_LOG_SEV(lg, debug) << "As-of t0+1s: " << snap;
+        ORES_LOG_SEV(lg, debug) << "As-of t0+1s: " << snap;
         CHECK(snap.size() == 2);
         for (const auto& o : snap) {
             if (o.oresmd_uri == datum_uri("spot-1m"))
@@ -277,7 +277,7 @@ TEST_CASE("read_as_of_staggered_timestamps", "[repository]") {
     // observation_datetime <= as_of" semantics, per coordinate independently.
     {
         auto snap = obs_repo.read_as_of(h.context(), s.id, t1 + std::chrono::seconds(1));
-        BOOST_LOG_SEV(lg, debug) << "As-of t1+1s: " << snap;
+        ORES_LOG_SEV(lg, debug) << "As-of t1+1s: " << snap;
         CHECK(snap.size() == 3);
         for (const auto& o : snap) {
             if (o.oresmd_uri == datum_uri("spot-1m"))
@@ -321,7 +321,7 @@ TEST_CASE("read_as_of_buckets_curve_evolution", "[repository]") {
     // bucket generation and the per-bucket as-of reduction both happen in the database.
     auto buckets = obs_repo.read_as_of_buckets(
         h.context(), s.id, t2 + std::chrono::seconds(1), std::chrono::minutes(30), 3);
-    BOOST_LOG_SEV(lg, debug) << "Bucket snapshots: " << buckets;
+    ORES_LOG_SEV(lg, debug) << "Bucket snapshots: " << buckets;
 
     REQUIRE(buckets.size() == 3);
     REQUIRE(buckets[0].size() == 1);
@@ -769,7 +769,7 @@ TEST_CASE("read_as_of_records_carries_the_row_record_time", "[repository]") {
     const auto written_at = std::chrono::system_clock::now();
     const auto records =
         obs_repo.read_as_of_records(h.context(), s.id, t0 + std::chrono::minutes(1));
-    BOOST_LOG_SEV(lg, debug) << "Records: " << records.size();
+    ORES_LOG_SEV(lg, debug) << "Records: " << records.size();
 
     REQUIRE(records.size() == 2);
     for (const auto& record : records) {
@@ -875,7 +875,7 @@ TEST_CASE("read_latest_by_series_id_takes_an_observed_since_filter", "[repositor
         ores::platform::time::datetime::to_iso8601_utc(t0 + std::chrono::minutes(30));
 
     const auto read = obs_repo.read_latest_by_series_id(h.context(), sid, 0, 500, {}, filter);
-    BOOST_LOG_SEV(lg, debug) << "Observations since the bound: " << read;
+    ORES_LOG_SEV(lg, debug) << "Observations since the bound: " << read;
 
     // The values the read keeps, in no particular order: the two rows at or
     // after the bound, and not the one before it.
@@ -926,8 +926,8 @@ TEST_CASE("a_batch_create_over_a_row_past_the_first_read_chunk_is_refused_and_wr
     const std::vector<ores::utility::domain::precondition> creates(
         observations.size(),
         {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt});
-    BOOST_LOG_SEV(lg, info) << "Creating " << observations.size()
-                            << " market observations, the last of which exists.";
+    ORES_LOG_SEV(lg, info) << "Creating " << observations.size()
+                           << " market observations, the last of which exists.";
     CHECK_THROWS_AS(obs_repo.write(h.context(), observations, creates), std::invalid_argument);
 
     std::vector<std::string> ids;
@@ -955,6 +955,6 @@ TEST_CASE("a_batch_read_of_more_than_one_chunk_returns_every_row", "[repository]
     std::vector<std::string> ids;
     for (const auto& o : observations)
         ids.push_back(boost::uuids::to_string(o.id));
-    BOOST_LOG_SEV(lg, info) << "Reading " << ids.size() << " market observations by id.";
+    ORES_LOG_SEV(lg, info) << "Reading " << ids.size() << " market observations by id.";
     CHECK(obs_repo.read_latest(h.context(), ids).size() == observations.size());
 }

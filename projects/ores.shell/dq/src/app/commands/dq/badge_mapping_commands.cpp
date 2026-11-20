@@ -183,7 +183,7 @@ void badge_mapping_commands::register_commands(cli::Menu& root_menu, nats_client
 void badge_mapping_commands::process_list(std::ostream& out,
                                           nats_client& session,
                                           const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating list request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating list request.";
 
     using request_type = messaging::list_badge_mappings_request;
     if constexpr (request_type::requires_session) {
@@ -233,7 +233,7 @@ void badge_mapping_commands::process_list(std::ostream& out,
 void badge_mapping_commands::process_get(std::ostream& out,
                                          nats_client& session,
                                          const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating get request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating get request.";
 
     using request_type = messaging::get_badge_mapping_request;
     if constexpr (request_type::requires_session) {
@@ -280,7 +280,7 @@ void badge_mapping_commands::process_get(std::ostream& out,
 void badge_mapping_commands::process_get_many(std::ostream& out,
                                               nats_client& session,
                                               const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating get-many request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating get-many request.";
 
     using request_type = messaging::get_many_badge_mappings_request;
     if constexpr (request_type::requires_session) {
@@ -331,7 +331,7 @@ void badge_mapping_commands::process_get_many(std::ostream& out,
 void badge_mapping_commands::process_add(std::ostream& out,
                                          nats_client& session,
                                          const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating add request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating add request.";
 
     using request_type = messaging::put_badge_mapping_request;
     if constexpr (request_type::requires_session) {
@@ -384,7 +384,7 @@ void badge_mapping_commands::process_add(std::ostream& out,
 void badge_mapping_commands::process_set(std::ostream& out,
                                          nats_client& session,
                                          const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating set request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating set request.";
 
     using request_type = messaging::put_badge_mapping_request;
     if constexpr (request_type::requires_session) {
@@ -445,7 +445,7 @@ void badge_mapping_commands::process_set(std::ostream& out,
 void badge_mapping_commands::process_put_many(std::ostream& out,
                                               nats_client& session,
                                               const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating put-many request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating put-many request.";
 
     using request_type = messaging::put_many_badge_mappings_request;
     if constexpr (request_type::requires_session) {
@@ -510,7 +510,7 @@ void badge_mapping_commands::process_put_many(std::ostream& out,
 void badge_mapping_commands::process_delete(std::ostream& out,
                                             nats_client& session,
                                             const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating delete request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating delete request.";
 
     using request_type = messaging::delete_badge_mapping_request;
     if constexpr (request_type::requires_session) {
@@ -568,7 +568,7 @@ void badge_mapping_commands::process_delete(std::ostream& out,
 void badge_mapping_commands::process_delete_many(std::ostream& out,
                                                  nats_client& session,
                                                  const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating delete-many request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating delete-many request.";
 
     using request_type = messaging::delete_many_badge_mappings_request;
     if constexpr (request_type::requires_session) {
@@ -623,7 +623,7 @@ void badge_mapping_commands::process_delete_many(std::ostream& out,
 void badge_mapping_commands::process_by_code_domain_code(std::ostream& out,
                                                          nats_client& session,
                                                          const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating by-code-domain-code request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating by-code-domain-code request.";
 
     using request_type = messaging::list_by_code_domain_code_badge_mappings_request;
     if constexpr (request_type::requires_session) {

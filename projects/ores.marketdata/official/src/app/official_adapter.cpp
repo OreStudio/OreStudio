@@ -70,11 +70,11 @@ std::vector<ores::nats::service::subscription> official_adapter::subscribe() {
     std::vector<ores::nats::service::subscription> subs;
     for (auto& s : served_) {
         const auto subject = subjects::adapter_demand_subject(s->feed->source().source_name);
-        BOOST_LOG_SEV(lg(), info) << "Serving source '" << s->feed->source().source_name
-                                  << "' of provider '" << s->feed->source().provider_code
-                                  << "' through adapter '" << s->feed->source().adapter_code
-                                  << "' as '" << s->feed->source().key << "': demand on '"
-                                  << subject << "'";
+        ORES_LOG_SEV(lg(), info) << "Serving source '" << s->feed->source().source_name
+                                 << "' of provider '" << s->feed->source().provider_code
+                                 << "' through adapter '" << s->feed->source().adapter_code
+                                 << "' as '" << s->feed->source().key << "': demand on '" << subject
+                                 << "'";
         auto* target = s.get();
         subs.push_back(nats_.subscribe(
             subject, [this, target](ores::nats::message msg) { on_demand(*target, msg); }));
@@ -84,7 +84,7 @@ std::vector<ores::nats::service::subscription> official_adapter::subscribe() {
 
 void official_adapter::start() {
     if (served_.empty()) {
-        BOOST_LOG_SEV(lg(), warn) << "No source is configured, so the adapter serves none";
+        ORES_LOG_SEV(lg(), warn) << "No source is configured, so the adapter serves none";
         return;
     }
     thread_ = std::thread(&official_adapter::loop, this);
@@ -100,8 +100,8 @@ void official_adapter::on_demand(served& s, const ores::nats::message& msg) {
     auto request =
         ores::nats::default_wire_codec().decode<messaging::adapter_demand_request>(msg.data);
     if (!request) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to decode a demand on '" << msg.subject
-                                  << "': " << request.error().what();
+        ORES_LOG_SEV(lg(), warn) << "Failed to decode a demand on '" << msg.subject
+                                 << "': " << request.error().what();
         return;
     }
     // Until its universe is read, a source has not announced, and it rejects every id as not
@@ -139,17 +139,16 @@ bool official_adapter::announce(served& s) {
             ores::nats::default_wire_codec().decode<messaging::adapter_announce_response>(
                 reply.data);
         if (!response || !response->success) {
-            BOOST_LOG_SEV(lg(), warn)
+            ORES_LOG_SEV(lg(), warn)
                 << "The service refused the announce of '" << name
                 << "': " << (response ? response->message : response.error().what());
             return false;
         }
-        BOOST_LOG_SEV(lg(), info) << "Announced '" << name << "': " << response->served_count
-                                  << " served, " << response->unknown_count << " unknown";
+        ORES_LOG_SEV(lg(), info) << "Announced '" << name << "': " << response->served_count
+                                 << " served, " << response->unknown_count << " unknown";
         return true;
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), debug)
-            << "The announce of '" << name << "' got no answer: " << e.what();
+        ORES_LOG_SEV(lg(), debug) << "The announce of '" << name << "' got no answer: " << e.what();
         return false;
     }
 }
@@ -160,7 +159,7 @@ bool official_adapter::serve(served& s, clock::time_point now, bool may_refresh)
         if (now < s.next_universe)
             return false;
         if (auto loaded = s.feed->load_universe(); !loaded) {
-            BOOST_LOG_SEV(lg(), warn)
+            ORES_LOG_SEV(lg(), warn)
                 << "Cannot read the universe of '" << name << "': " << loaded.error();
             s.next_universe = now + timing_.retry_interval;
             return false;
@@ -184,7 +183,7 @@ bool official_adapter::serve(served& s, clock::time_point now, bool may_refresh)
             nats_.publish(subjects::adapter_heartbeat_subject(name),
                           ores::nats::default_wire_codec().encode(beat));
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), warn)
+            ORES_LOG_SEV(lg(), warn)
                 << "Failed to send the heartbeat of '" << name << "': " << e.what();
         }
         s.next_heartbeat = now + timing_.heartbeat_interval;
@@ -216,12 +215,12 @@ bool official_adapter::serve(served& s, clock::time_point now, bool may_refresh)
         sent = std::unexpected(std::string(e.what()));
     }
     if (!sent) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to refresh '" << name << "': " << sent.error();
+        ORES_LOG_SEV(lg(), warn) << "Failed to refresh '" << name << "': " << sent.error();
         s.next_refresh = now + timing_.retry_interval;
         return true;
     }
     if (*sent > 0)
-        BOOST_LOG_SEV(lg(), info) << "Sent " << *sent << " fixing(s) of '" << name << "'";
+        ORES_LOG_SEV(lg(), info) << "Sent " << *sent << " fixing(s) of '" << name << "'";
     s.next_refresh = now + timing_.poll_interval;
     return true;
 }

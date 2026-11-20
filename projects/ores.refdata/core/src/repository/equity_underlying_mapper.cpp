@@ -24,11 +24,9 @@
  */
 #include "ores.refdata.core/repository/equity_underlying_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/equity_underlying.hpp"
 #include "ores.refdata.api/domain/equity_underlying_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/equity_underlying_entity.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <optional>
 #include <vector>
 
@@ -38,7 +36,7 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 
 domain::equity_underlying equity_underlying_mapper::map(const equity_underlying_entity& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::equity_underlying r;
     r.version = v.version;
@@ -56,12 +54,12 @@ domain::equity_underlying equity_underlying_mapper::map(const equity_underlying_
     r.change_commentary = v.change_commentary;
     r.recorded_at = v.valid_from;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
 }
 
 equity_underlying_entity equity_underlying_mapper::map(const domain::equity_underlying& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     equity_underlying_entity r;
     r.code = v.code;
@@ -78,7 +76,7 @@ equity_underlying_entity equity_underlying_mapper::map(const domain::equity_unde
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;
 }
 

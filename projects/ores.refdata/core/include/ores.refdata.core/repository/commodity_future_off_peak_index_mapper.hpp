@@ -25,7 +25,7 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_COMMODITY_FUTURE_OFF_PEAK_INDEX_MAPPER_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_COMMODITY_FUTURE_OFF_PEAK_INDEX_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/commodity_future_off_peak_index.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/commodity_future_off_peak_index_entity.hpp"

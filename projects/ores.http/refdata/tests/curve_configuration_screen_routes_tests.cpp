@@ -22,7 +22,7 @@
 #include "ores.http.api/net/router.hpp"
 #include "ores.http.api/openapi/endpoint_registry.hpp"
 #include "ores.http/routes/refdata/curve_configuration_screen_routes.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "test_suite.hpp"
 #include <boost/asio/co_spawn.hpp>
@@ -77,7 +77,7 @@ http_status configuration_status_of(http_request req,
 TEST_CASE("a_page_of_curve_configurations_refuses_a_query_it_does_not_read",
           "[curve_configurations]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the curve configuration page's query";
+    ORES_LOG_SEV(lg, info) << "Testing the curve configuration page's query";
 
     http_request req;
     req.query_params["party"] = "acme";
@@ -87,7 +87,7 @@ TEST_CASE("a_page_of_curve_configurations_refuses_a_query_it_does_not_read",
 TEST_CASE("a_page_of_curve_configurations_with_no_service_is_refused_as_upstream",
           "[curve_configurations]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the curve configuration page with no service behind it";
+    ORES_LOG_SEV(lg, info) << "Testing the curve configuration page with no service behind it";
 
     CHECK(configuration_status_of(http_request{}) == http_status::bad_gateway);
 }
@@ -95,7 +95,7 @@ TEST_CASE("a_page_of_curve_configurations_with_no_service_is_refused_as_upstream
 TEST_CASE("one_curve_configuration_refuses_an_identifier_that_is_not_one",
           "[curve_configurations]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the curve configuration document's identifier";
+    ORES_LOG_SEV(lg, info) << "Testing the curve configuration document's identifier";
 
     CHECK(configuration_status_of(http_request{},
                                   "/api/refdata/curve-configurations/not-an-id",
@@ -105,7 +105,7 @@ TEST_CASE("one_curve_configuration_refuses_an_identifier_that_is_not_one",
 
 TEST_CASE("one_curve_configuration_refuses_a_party_that_is_not_one", "[curve_configurations]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the curve configuration document's party";
+    ORES_LOG_SEV(lg, info) << "Testing the curve configuration document's party";
 
     http_request req;
     req.query_params["party"] = "acme";
@@ -116,7 +116,7 @@ TEST_CASE("one_curve_configuration_refuses_a_party_that_is_not_one", "[curve_con
 
 TEST_CASE("one_curve_configuration_refuses_a_query_it_does_not_read", "[curve_configurations]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the curve configuration document's query";
+    ORES_LOG_SEV(lg, info) << "Testing the curve configuration document's query";
 
     http_request req;
     req.query_params["asOf"] = "2026-01-01";
@@ -128,7 +128,7 @@ TEST_CASE("one_curve_configuration_refuses_a_query_it_does_not_read", "[curve_co
 TEST_CASE("one_curve_configuration_with_no_service_is_refused_as_upstream",
           "[curve_configurations]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the curve configuration document with no service behind it";
+    ORES_LOG_SEV(lg, info) << "Testing the curve configuration document with no service behind it";
 
     CHECK(configuration_status_of(
               http_request{}, configuration_address, "/api/refdata/curve-configurations/{id}") ==
@@ -137,7 +137,7 @@ TEST_CASE("one_curve_configuration_with_no_service_is_refused_as_upstream",
 
 TEST_CASE("a_curve_amendment_refuses_a_body_it_cannot_read", "[curve_configurations]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the curve amendment's body";
+    ORES_LOG_SEV(lg, info) << "Testing the curve amendment's body";
 
     http_request req;
     req.body = "not a body";
@@ -155,7 +155,7 @@ TEST_CASE("a_curve_amendment_refuses_a_body_it_cannot_read", "[curve_configurati
 
 TEST_CASE("a_curve_amendment_refuses_a_reason_it_cannot_state", "[curve_configurations]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the curve amendment's reason";
+    ORES_LOG_SEV(lg, info) << "Testing the curve amendment's reason";
 
     http_request req;
     req.body = R"({"version":3,"reasonCode":"  ","changes":[)"
@@ -169,7 +169,7 @@ TEST_CASE("a_curve_amendment_refuses_a_reason_it_cannot_state", "[curve_configur
 
 TEST_CASE("a_curve_amendment_with_no_service_is_refused_as_upstream", "[curve_configurations]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a curve amendment with no service behind it";
+    ORES_LOG_SEV(lg, info) << "Testing a curve amendment with no service behind it";
 
     http_request req;
     req.body = R"({"version":3,"reasonCode":"desk.change","changes":[)"

@@ -20,7 +20,7 @@
 #include "ores.iam.api/domain/permission.hpp"
 #include "ores.iam.api/domain/permission_codes.hpp"
 #include "ores.iam.api/domain/permission_json_io.hpp" // IWYU pragma: keep.
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_generators.hpp>
@@ -38,7 +38,7 @@ TEST_CASE("create_permission_with_valid_fields", "[domain]") {
     sut.id = boost::uuids::random_generator()();
     sut.code = accounts_create;
     sut.description = "Allows creating new user accounts";
-    BOOST_LOG_SEV(lg, info) << "Permission: " << sut;
+    ORES_LOG_SEV(lg, info) << "Permission: " << sut;
 
     CHECK(sut.code == "iam::accounts:create");
     CHECK(!sut.description.empty());
@@ -51,7 +51,7 @@ TEST_CASE("create_permission_with_wildcard", "[domain]") {
     sut.id = boost::uuids::random_generator()();
     sut.code = all;
     sut.description = "Grants all permissions (superuser)";
-    BOOST_LOG_SEV(lg, info) << "Permission: " << sut;
+    ORES_LOG_SEV(lg, info) << "Permission: " << sut;
 
     CHECK(sut.code == "*");
     CHECK(!sut.description.empty());
@@ -64,7 +64,7 @@ TEST_CASE("create_currency_permission", "[domain]") {
     sut.id = boost::uuids::random_generator()();
     sut.code = currencies_read;
     sut.description = "Allows reading currency information";
-    BOOST_LOG_SEV(lg, info) << "Permission: " << sut;
+    ORES_LOG_SEV(lg, info) << "Permission: " << sut;
 
     CHECK(sut.code == "refdata::currencies:read");
 }
@@ -76,7 +76,7 @@ TEST_CASE("create_flags_permission", "[domain]") {
     sut.id = boost::uuids::random_generator()();
     sut.code = flags_update;
     sut.description = "Allows updating system settings";
-    BOOST_LOG_SEV(lg, info) << "Permission: " << sut;
+    ORES_LOG_SEV(lg, info) << "Permission: " << sut;
 
     CHECK(sut.code == "variability::flags:update");
 }
@@ -88,7 +88,7 @@ TEST_CASE("create_roles_permission", "[domain]") {
     sut.id = boost::uuids::random_generator()();
     sut.code = roles_assign;
     sut.description = "Allows assigning roles to accounts";
-    BOOST_LOG_SEV(lg, info) << "Permission: " << sut;
+    ORES_LOG_SEV(lg, info) << "Permission: " << sut;
 
     CHECK(sut.code == "iam::roles:assign");
 }
@@ -103,7 +103,7 @@ TEST_CASE("permission_with_specific_uuid", "[domain]") {
     sut.id = specific_id;
     sut.code = accounts_read;
     sut.description = "Read account data";
-    BOOST_LOG_SEV(lg, info) << "Permission: " << sut;
+    ORES_LOG_SEV(lg, info) << "Permission: " << sut;
 
     CHECK(sut.code == "iam::accounts:read");
 }
@@ -115,7 +115,7 @@ TEST_CASE("permission_serialization_to_json", "[domain]") {
     sut.id = boost::uuids::random_generator()();
     sut.code = accounts_delete;
     sut.description = "Allows deleting user accounts";
-    BOOST_LOG_SEV(lg, info) << "Permission: " << sut;
+    ORES_LOG_SEV(lg, info) << "Permission: " << sut;
 
     std::ostringstream os;
     os << sut;
@@ -137,7 +137,7 @@ TEST_CASE("create_permission_with_faker", "[domain]") {
     sut.code =
         resources[faker::number::integer(0, 3)] + ":" + actions[faker::number::integer(0, 3)];
     sut.description = std::string(faker::lorem::sentence());
-    BOOST_LOG_SEV(lg, info) << "Permission: " << sut;
+    ORES_LOG_SEV(lg, info) << "Permission: " << sut;
 
     CHECK(!sut.code.empty());
     CHECK(sut.code.find(":") != std::string::npos);
@@ -165,7 +165,7 @@ TEST_CASE("create_multiple_random_permissions", "[domain]") {
         sut.id = boost::uuids::random_generator()();
         sut.code = codes[faker::number::integer(0, static_cast<int>(codes.size() - 1))];
         sut.description = std::string(faker::lorem::sentence());
-        BOOST_LOG_SEV(lg, info) << "Permission " << i << ":" << sut;
+        ORES_LOG_SEV(lg, info) << "Permission " << i << ":" << sut;
 
         CHECK(!sut.code.empty());
         CHECK(!sut.description.empty());
@@ -213,5 +213,5 @@ TEST_CASE("well_known_permission_codes_are_consistent", "[domain]") {
     // Wildcards
     CHECK(std::string(all) == "*");
 
-    BOOST_LOG_SEV(lg, info) << "All well-known permission codes validated";
+    ORES_LOG_SEV(lg, info) << "All well-known permission codes validated";
 }

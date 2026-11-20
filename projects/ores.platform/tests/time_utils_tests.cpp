@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.platform/time/time_utils.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
@@ -89,7 +89,7 @@ TEST_CASE("to_time_point_local_roundtrips_utc_via_local_string", "[time][time_ut
     // Simulate the string that a parser would receive: local wall-clock
     // time with the timezone suffix already stripped by strptime.
     const auto local_str = utc_to_local_string(expected);
-    BOOST_LOG_SEV(lg, ores::logging::info)
+    ORES_LOG_SEV(lg, ores::logging::info)
         << "Local string for 2026-03-30 11:55:00 UTC: " << local_str;
 
     // Parse via strptime the same way a parser does (zero-init, then
@@ -99,7 +99,7 @@ TEST_CASE("to_time_point_local_roundtrips_utc_via_local_string", "[time][time_ut
 
     const auto result = time_utils::to_time_point_local(parsed_tm);
 
-    BOOST_LOG_SEV(lg, ores::logging::info)
+    ORES_LOG_SEV(lg, ores::logging::info)
         << "Expected epoch s: " << std::chrono::system_clock::to_time_t(expected)
         << "  Result epoch s: " << std::chrono::system_clock::to_time_t(result);
 
@@ -114,7 +114,7 @@ TEST_CASE("to_time_point_local_roundtrips_utc_via_local_string_winter", "[time][
     const auto expected = time_utils_make_utc(2026, 1, 15, 14, 30, 0);
 
     const auto local_str = utc_to_local_string(expected);
-    BOOST_LOG_SEV(lg, ores::logging::info)
+    ORES_LOG_SEV(lg, ores::logging::info)
         << "Local string for 2026-01-15 14:30:00 UTC: " << local_str;
 
     std::tm parsed_tm = {};

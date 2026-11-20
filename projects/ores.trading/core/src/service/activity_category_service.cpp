@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.trading.api/domain/activity_category.hpp"
 #include "ores.trading.api/messaging/activity_category_protocol.hpp"
 #include "ores.trading.core/repository/activity_category_repository.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -449,12 +447,12 @@ activity_category_service::prepare_change(const messaging::activity_category_cha
 
 std::vector<domain::activity_category>
 activity_category_service::list_activity_categories(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all activity categorys";
+    ORES_LOG_SEV(lg(), debug) << "Listing all activity categorys";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t activity_category_service::count_activity_categories() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total activity categorys count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total activity categorys count";
     return repo_.get_total_activity_category_count(ctx_);
 }
 
@@ -462,14 +460,14 @@ std::uint32_t activity_category_service::count_activity_categories() {
 std::optional<domain::activity_category>
 activity_category_service::get_activity_category_at_version(const std::string& code,
                                                             std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting activity category at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting activity category at version. " << "code: " << code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::activity_category>
 activity_category_service::get_activity_category(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting activity category. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting activity category. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -484,11 +482,11 @@ activity_category_service::get_activity_categories(const std::vector<std::string
 void activity_category_service::save_activity_category(const domain::activity_category& v) {
     if (v.code.empty())
         throw std::invalid_argument("Activity Category code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving activity category. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving activity category. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved activity category. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved activity category. " << "code: " << v.code;
 }
 
 void activity_category_service::save_activity_categories(
@@ -497,7 +495,7 @@ void activity_category_service::save_activity_categories(
         if (e.code.empty())
             throw std::invalid_argument("Activity Category code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << activity_categories.size() << " activity categorys";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << activity_categories.size() << " activity categorys";
     auto ts = activity_categories;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -506,9 +504,9 @@ void activity_category_service::save_activity_categories(
 }
 
 void activity_category_service::delete_activity_category(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing activity category. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing activity category. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed activity category. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed activity category. " << "code: " << code;
 }
 
 void activity_category_service::delete_activity_categories(const std::vector<std::string>& codes) {
@@ -517,7 +515,7 @@ void activity_category_service::delete_activity_categories(const std::vector<std
 
 std::vector<domain::activity_category>
 activity_category_service::get_activity_category_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for activity category. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for activity category. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

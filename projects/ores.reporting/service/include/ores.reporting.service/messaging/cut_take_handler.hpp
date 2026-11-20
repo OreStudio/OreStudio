@@ -21,7 +21,7 @@
 #define ORES_REPORTING_SERVICE_MESSAGING_CUT_TAKE_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.reporting.api/messaging/report_operations_protocol.hpp"
@@ -71,7 +71,7 @@ public:
      */
     void take_cut(ores::nats::message msg) {
         using ores::utility::domain::outcome;
-        BOOST_LOG_SEV(lg(), ores::logging::debug) << "Handling " << msg.subject;
+        ORES_LOG_SEV(lg(), ores::logging::debug) << "Handling " << msg.subject;
 
         auto req_ctx = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx) {
@@ -93,10 +93,10 @@ public:
             const auto authorization = bearer_of(msg);
             ores::reporting::service::nats_cut_body_reader reader(*req_ctx, nats_, authorization);
             auto answer = ores::reporting::service::cut_take_service(*req_ctx, reader).take(*req);
-            BOOST_LOG_SEV(lg(), ores::logging::debug) << "Completed " << msg.subject;
+            ORES_LOG_SEV(lg(), ores::logging::debug) << "Completed " << msg.subject;
             ores::service::messaging::reply(nats_, msg, answer);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), ores::logging::error) << msg.subject << " failed: " << e.what();
+            ORES_LOG_SEV(lg(), ores::logging::error) << msg.subject << " failed: " << e.what();
             ores::service::messaging::reply(
                 nats_,
                 msg,

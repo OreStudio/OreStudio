@@ -25,7 +25,7 @@
 #ifndef ORES_SYNTHETIC_CORE_REPOSITORY_CALIBRATION_PROVIDER_ORDER_MAPPER_HPP
 #define ORES_SYNTHETIC_CORE_REPOSITORY_CALIBRATION_PROVIDER_ORDER_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.synthetic.api/domain/calibration_provider_order.hpp"
 #include "ores.synthetic.core/export.hpp"
 #include "ores.synthetic.core/repository/calibration_provider_order_entity.hpp"

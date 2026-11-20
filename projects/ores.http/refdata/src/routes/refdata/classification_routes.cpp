@@ -53,7 +53,7 @@
 #include "ores.http/routes/refdata/tenor_kind_classification_routes.hpp"
 #include "ores.http/routes/refdata/tenor_resolution_algorithm_classification_routes.hpp"
 #include "ores.http/routes/refdata/tenor_unit_classification_routes.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.utility/codec/json_codec.hpp"
 #include <boost/asio/awaitable.hpp>
 #include <algorithm>
@@ -89,7 +89,7 @@ constexpr std::uint32_t mapping_page = 2000;
 /// A page that did not hold every row is logged, so a catalogue that outgrew its page is seen.
 void warn_if_short(std::string_view what, std::uint64_t total, std::size_t read) {
     if (total > read)
-        BOOST_LOG_SEV(lg(), warn) << "One page read " << read << " of " << total << " " << what;
+        ORES_LOG_SEV(lg(), warn) << "One page read " << read << " of " << total << " " << what;
 }
 
 /// One list as the catalogue lists it: its entry, and how its rows are counted.
@@ -174,9 +174,9 @@ std::string list_catalogue_body(const http_request& req, nats_client& session) {
         try {
             count = list.count(req, session);
         } catch (const rr::refusal& refusal) {
-            BOOST_LOG_SEV(lg(), warn) << "A list could not be counted: " << refusal.message;
+            ORES_LOG_SEV(lg(), warn) << "A list could not be counted: " << refusal.message;
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), warn) << "A list could not be counted: " << e.what();
+            ORES_LOG_SEV(lg(), warn) << "A list could not be counted: " << e.what();
         }
         if (!first)
             out += ",";

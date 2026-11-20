@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.security/validation/password_validator.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
@@ -29,7 +29,7 @@ TEST_CASE("valid_password_passes_validation", "[validation]") {
     auto lg(make_logger(test_suite));
 
     const std::string password = "ValidPass123!";
-    BOOST_LOG_SEV(lg, info) << "Testing valid password: " << password;
+    ORES_LOG_SEV(lg, info) << "Testing valid password: " << password;
 
     auto result = password_validator::validate(password);
     CHECK(result.is_valid);
@@ -40,7 +40,7 @@ TEST_CASE("valid_password_with_all_special_chars", "[validation]") {
     auto lg(make_logger(test_suite));
 
     const std::string password = "P@ssw0rd!#$%";
-    BOOST_LOG_SEV(lg, info) << "Testing password with multiple special chars: " << password;
+    ORES_LOG_SEV(lg, info) << "Testing password with multiple special chars: " << password;
 
     auto result = password_validator::validate(password);
     CHECK(result.is_valid);
@@ -51,7 +51,7 @@ TEST_CASE("password_exactly_12_chars_passes", "[validation]") {
     auto lg(make_logger(test_suite));
 
     const std::string password = "Pass1234567!";
-    BOOST_LOG_SEV(lg, info) << "Testing 12-char password: " << password;
+    ORES_LOG_SEV(lg, info) << "Testing 12-char password: " << password;
 
     auto result = password_validator::validate(password);
     CHECK(result.is_valid);
@@ -62,7 +62,7 @@ TEST_CASE("password_too_short_fails", "[validation]") {
     auto lg(make_logger(test_suite));
 
     const std::string password = "Pass123!";
-    BOOST_LOG_SEV(lg, info) << "Testing short password: " << password;
+    ORES_LOG_SEV(lg, info) << "Testing short password: " << password;
 
     auto result = password_validator::validate(password);
     CHECK(!result.is_valid);
@@ -73,7 +73,7 @@ TEST_CASE("password_without_uppercase_fails", "[validation]") {
     auto lg(make_logger(test_suite));
 
     const std::string password = "lowercase123!";
-    BOOST_LOG_SEV(lg, info) << "Testing password without uppercase: " << password;
+    ORES_LOG_SEV(lg, info) << "Testing password without uppercase: " << password;
 
     auto result = password_validator::validate(password);
     CHECK(!result.is_valid);
@@ -84,7 +84,7 @@ TEST_CASE("password_without_lowercase_fails", "[validation]") {
     auto lg(make_logger(test_suite));
 
     const std::string password = "UPPERCASE123!";
-    BOOST_LOG_SEV(lg, info) << "Testing password without lowercase: " << password;
+    ORES_LOG_SEV(lg, info) << "Testing password without lowercase: " << password;
 
     auto result = password_validator::validate(password);
     CHECK(!result.is_valid);
@@ -95,7 +95,7 @@ TEST_CASE("password_without_digit_fails", "[validation]") {
     auto lg(make_logger(test_suite));
 
     const std::string password = "PasswordOnly!";
-    BOOST_LOG_SEV(lg, info) << "Testing password without digit: " << password;
+    ORES_LOG_SEV(lg, info) << "Testing password without digit: " << password;
 
     auto result = password_validator::validate(password);
     CHECK(!result.is_valid);
@@ -106,7 +106,7 @@ TEST_CASE("password_without_special_char_fails", "[validation]") {
     auto lg(make_logger(test_suite));
 
     const std::string password = "Password1234";
-    BOOST_LOG_SEV(lg, info) << "Testing password without special char: " << password;
+    ORES_LOG_SEV(lg, info) << "Testing password without special char: " << password;
 
     auto result = password_validator::validate(password);
     CHECK(!result.is_valid);
@@ -117,7 +117,7 @@ TEST_CASE("empty_password_fails", "[validation]") {
     auto lg(make_logger(test_suite));
 
     const std::string password = "";
-    BOOST_LOG_SEV(lg, info) << "Testing empty password";
+    ORES_LOG_SEV(lg, info) << "Testing empty password";
 
     auto result = password_validator::validate(password);
     CHECK(!result.is_valid);
@@ -128,7 +128,7 @@ TEST_CASE("password_with_all_special_chars_types", "[validation]") {
     auto lg(make_logger(test_suite));
 
     std::string password = "Pass123" + std::string("!@#$%^&*()_+-=[]{}|;:,.<>?");
-    BOOST_LOG_SEV(lg, info) << "Testing password with all special char types";
+    ORES_LOG_SEV(lg, info) << "Testing password with all special char types";
 
     auto result = password_validator::validate(password);
     CHECK(result.is_valid);
@@ -139,7 +139,7 @@ TEST_CASE("long_valid_password_passes", "[validation]") {
     auto lg(make_logger(test_suite));
 
     const std::string password = "VeryLongPassword123!WithManyCharacters";
-    BOOST_LOG_SEV(lg, info) << "Testing long valid password";
+    ORES_LOG_SEV(lg, info) << "Testing long valid password";
 
     auto result = password_validator::validate(password);
     CHECK(result.is_valid);
@@ -150,7 +150,7 @@ TEST_CASE("password_with_spaces_passes_if_valid", "[validation]") {
     auto lg(make_logger(test_suite));
 
     const std::string password = "Pass Word 123!";
-    BOOST_LOG_SEV(lg, info) << "Testing password with spaces: " << password;
+    ORES_LOG_SEV(lg, info) << "Testing password with spaces: " << password;
 
     auto result = password_validator::validate(password);
     CHECK(result.is_valid);
@@ -161,7 +161,7 @@ TEST_CASE("weak_password_passes_when_validation_disabled", "[validation]") {
     auto lg(make_logger(test_suite));
 
     const std::string weak_password = "weak";
-    BOOST_LOG_SEV(lg, info) << "Testing weak password with validation disabled: " << weak_password;
+    ORES_LOG_SEV(lg, info) << "Testing weak password with validation disabled: " << weak_password;
 
     // Pass false to disable policy enforcement
     auto result = password_validator::validate(weak_password, false);
@@ -173,7 +173,7 @@ TEST_CASE("validation_enabled_by_default", "[validation]") {
     auto lg(make_logger(test_suite));
 
     const std::string weak_password = "weak";
-    BOOST_LOG_SEV(lg, info) << "Testing weak password with validation enabled: " << weak_password;
+    ORES_LOG_SEV(lg, info) << "Testing weak password with validation enabled: " << weak_password;
 
     // Default parameter should enforce policy
     auto result = password_validator::validate(weak_password);
@@ -189,7 +189,7 @@ TEST_CASE("the policy a caller reads is the policy the validator enforces", "[va
     // every rule it states is accepted: a client that shows the record states
     // the server's rules.
     const auto rules = password_validator::policy();
-    BOOST_LOG_SEV(lg, info) << "Policy states a minimum length of " << rules.min_length;
+    ORES_LOG_SEV(lg, info) << "Policy states a minimum length of " << rules.min_length;
 
     // One character short of the stated length, and otherwise complete.
     std::string too_short(rules.min_length - 1, 'a');

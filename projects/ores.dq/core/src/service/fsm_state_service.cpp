@@ -26,7 +26,6 @@
 #include "ores.dq.api/domain/fsm_state.hpp"
 #include "ores.dq.api/messaging/fsm_state_protocol.hpp"
 #include "ores.dq.core/repository/fsm_state_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -476,25 +474,25 @@ fsm_state_service::prepare_change(const messaging::fsm_state_change& change,
 
 std::vector<domain::fsm_state> fsm_state_service::list_states(std::uint32_t offset,
                                                               std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all fsm states";
+    ORES_LOG_SEV(lg(), debug) << "Listing all fsm states";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t fsm_state_service::count_states() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total fsm states count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total fsm states count";
     return repo_.get_total_state_count(ctx_);
 }
 
 
 std::optional<domain::fsm_state>
 fsm_state_service::get_state_at_version(const boost::uuids::uuid& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting fsm state at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting fsm state at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::fsm_state> fsm_state_service::get_state(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting fsm state. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting fsm state. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -502,7 +500,7 @@ std::optional<domain::fsm_state> fsm_state_service::get_state(const boost::uuids
 }
 
 std::optional<domain::fsm_state> fsm_state_service::get_state_by_name(const std::string& name) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting fsm state by name: " << name;
+    ORES_LOG_SEV(lg(), debug) << "Getting fsm state by name: " << name;
     messaging::fsm_state_key k;
     k.name = name;
     auto found = fsm_state_read_one(repo_, ctx_, k);
@@ -518,11 +516,11 @@ std::vector<domain::fsm_state> fsm_state_service::get_states(const std::vector<s
 void fsm_state_service::save_state(const domain::fsm_state& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("FSM State id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving fsm state. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving fsm state. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved fsm state. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved fsm state. " << "id: " << v.id;
 }
 
 void fsm_state_service::save_states(const std::vector<domain::fsm_state>& states) {
@@ -530,7 +528,7 @@ void fsm_state_service::save_states(const std::vector<domain::fsm_state>& states
         if (e.id.is_nil())
             throw std::invalid_argument("FSM State id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << states.size() << " fsm states";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << states.size() << " fsm states";
     auto ts = states;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -539,9 +537,9 @@ void fsm_state_service::save_states(const std::vector<domain::fsm_state>& states
 }
 
 void fsm_state_service::delete_state(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing fsm state. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing fsm state. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed fsm state. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed fsm state. " << "id: " << id;
 }
 
 void fsm_state_service::delete_states(const std::vector<std::string>& ids) {
@@ -549,7 +547,7 @@ void fsm_state_service::delete_states(const std::vector<std::string>& ids) {
 }
 
 std::vector<domain::fsm_state> fsm_state_service::get_state_history(const std::string& key) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for fsm state. key: " << key;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for fsm state. key: " << key;
     // The caller holds the key the model declares and this reads by the
     // storage key, so the two are joined here exactly as they are for any
     // other read. Without this step a provider looks the versions up under a

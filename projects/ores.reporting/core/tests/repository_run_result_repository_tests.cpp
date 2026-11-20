@@ -18,7 +18,7 @@
  *
  */
 #include "ores.database/repository/unit_of_work.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.reporting.core/repository/report_metric_repository.hpp"
 #include "ores.reporting.core/repository/run_result_repository.hpp"
 #include "ores.reporting.core/results/run_output_reader.hpp"
@@ -177,9 +177,7 @@ TEST_CASE("a run refused part way leaves none of the blocks it wrote", "[reposit
                     written += block.size();
                 },
             .cashflows = [](auto&) {},
-            .text_values =
-                [](auto&) {
-                }};
+            .text_values = [](auto&) {}};
         results::run_output_outcome outcome;
         results::read_run_output(file, run, 1, sinks, outcome);
         REQUIRE_FALSE(outcome.refusals.empty());

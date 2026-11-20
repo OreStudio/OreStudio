@@ -21,7 +21,7 @@
 #define ORES_REPORTING_CORE_SERVICE_CUT_RESOLUTION_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.reporting.core/export.hpp"
 #include "ores.reporting.core/service/cut_resolution_plan.hpp"
 #include <boost/uuid/uuid.hpp>

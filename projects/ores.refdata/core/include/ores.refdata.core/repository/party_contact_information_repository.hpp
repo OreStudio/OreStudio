@@ -26,7 +26,7 @@
 #define ORES_REFDATA_CORE_REPOSITORY_PARTY_CONTACT_INFORMATION_REPOSITORY_HPP
 
 #include "ores.database/domain/context_fwd.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/party_contact_information.hpp"
 #include "ores.refdata.api/messaging/party_contact_information_protocol.hpp"
 #include "ores.refdata.core/export.hpp"

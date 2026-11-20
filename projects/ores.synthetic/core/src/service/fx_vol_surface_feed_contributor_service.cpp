@@ -26,7 +26,6 @@
 #include "ores.synthetic.api/domain/fx_vol_surface_feed_contributor.hpp"
 #include "ores.synthetic.api/messaging/fx_vol_surface_feed_contributor_protocol.hpp"
 #include "ores.synthetic.core/repository/fx_vol_surface_feed_contributor_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -490,12 +488,12 @@ ores::utility::domain::result fx_vol_surface_feed_contributor_service::prepare_c
 std::vector<domain::fx_vol_surface_feed_contributor>
 fx_vol_surface_feed_contributor_service::list_fx_vol_surface_feed_contributors(
     std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all FX volatility surface feed contributors";
+    ORES_LOG_SEV(lg(), debug) << "Listing all FX volatility surface feed contributors";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t fx_vol_surface_feed_contributor_service::count_fx_vol_surface_feed_contributors() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total FX volatility surface feed contributors count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total FX volatility surface feed contributors count";
     return repo_.get_total_fx_vol_surface_feed_contributor_count(ctx_);
 }
 
@@ -503,16 +501,15 @@ std::uint32_t fx_vol_surface_feed_contributor_service::count_fx_vol_surface_feed
 std::optional<domain::fx_vol_surface_feed_contributor>
 fx_vol_surface_feed_contributor_service::get_fx_vol_surface_feed_contributor_at_version(
     const boost::uuids::uuid& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting FX volatility surface feed contributor at version. "
-                               << "id: " << id << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting FX volatility surface feed contributor at version. "
+                              << "id: " << id << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::fx_vol_surface_feed_contributor>
 fx_vol_surface_feed_contributor_service::get_fx_vol_surface_feed_contributor(
     const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting FX volatility surface feed contributor. "
-                               << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting FX volatility surface feed contributor. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -529,12 +526,12 @@ void fx_vol_surface_feed_contributor_service::save_fx_vol_surface_feed_contribut
     const domain::fx_vol_surface_feed_contributor& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("FX Volatility Surface Feed Contributor id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving FX volatility surface feed contributor. "
-                               << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving FX volatility surface feed contributor. "
+                              << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved FX volatility surface feed contributor. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved FX volatility surface feed contributor. " << "id: " << v.id;
 }
 
 void fx_vol_surface_feed_contributor_service::save_fx_vol_surface_feed_contributors(
@@ -544,8 +541,8 @@ void fx_vol_surface_feed_contributor_service::save_fx_vol_surface_feed_contribut
             throw std::invalid_argument(
                 "FX Volatility Surface Feed Contributor id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << fx_vol_surface_feed_contributors.size()
-                               << " FX volatility surface feed contributors";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << fx_vol_surface_feed_contributors.size()
+                              << " FX volatility surface feed contributors";
     auto ts = fx_vol_surface_feed_contributors;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -555,10 +552,10 @@ void fx_vol_surface_feed_contributor_service::save_fx_vol_surface_feed_contribut
 
 void fx_vol_surface_feed_contributor_service::delete_fx_vol_surface_feed_contributor(
     const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing FX volatility surface feed contributor. "
-                               << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing FX volatility surface feed contributor. "
+                              << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed FX volatility surface feed contributor. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed FX volatility surface feed contributor. " << "id: " << id;
 }
 
 void fx_vol_surface_feed_contributor_service::delete_fx_vol_surface_feed_contributors(
@@ -569,8 +566,8 @@ void fx_vol_surface_feed_contributor_service::delete_fx_vol_surface_feed_contrib
 std::vector<domain::fx_vol_surface_feed_contributor>
 fx_vol_surface_feed_contributor_service::get_fx_vol_surface_feed_contributor_history(
     const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for FX volatility surface feed contributor. "
-                               << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for FX volatility surface feed contributor. "
+                              << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

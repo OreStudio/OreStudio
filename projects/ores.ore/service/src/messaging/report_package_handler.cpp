@@ -112,8 +112,8 @@ void report_package_handler::prepare_package(ores::nats::delivery delivery) {
     }
     const auto& req = *parsed;
 
-    BOOST_LOG_SEV(lg(), info) << "prepare_ore_package starting | instance="
-                              << req.report_instance_id;
+    ORES_LOG_SEV(lg(), info) << "prepare_ore_package starting | instance="
+                             << req.report_instance_id;
 
     try {
         if (req.definition_id.empty()) {
@@ -160,11 +160,11 @@ void report_package_handler::prepare_package(ores::nats::delivery delivery) {
         auto run_input = ores::ore::service::messaging::export_run(owners, req.definition_id);
         const auto places = ores::ore::xml::declared_data_files(run_input);
 
-        BOOST_LOG_SEV(lg(), debug) << "Downloading market data: " << req.market_data_storage_key;
+        ORES_LOG_SEV(lg(), debug) << "Downloading market data: " << req.market_data_storage_key;
         const auto market_data =
             transfer.download_blob(std::string(platform_bucket), req.market_data_storage_key);
         if (places.market_data.empty()) {
-            BOOST_LOG_SEV(lg(), warn)
+            ORES_LOG_SEV(lg(), warn)
                 << "The run document names no market data file, so the gathered market data "
                    "cannot be placed for run "
                 << req.report_instance_id;
@@ -194,7 +194,7 @@ void report_package_handler::prepare_package(ores::nats::delivery delivery) {
         auto priced_date = requested_date;
         if (market_date && !requested_date.empty() && *market_date < requested_date &&
             document != run_input.end()) {
-            BOOST_LOG_SEV(lg(), warn)
+            ORES_LOG_SEV(lg(), warn)
                 << "The gathered market data ends on " << *market_date << " and the run asked for "
                 << requested_date << ". The run prices at the data's date. Instance "
                 << req.report_instance_id;
@@ -203,11 +203,11 @@ void report_package_handler::prepare_package(ores::nats::delivery delivery) {
             priced_date = *market_date;
         }
 
-        BOOST_LOG_SEV(lg(), debug) << "Downloading fixings: " << req.fixings_storage_key;
+        ORES_LOG_SEV(lg(), debug) << "Downloading fixings: " << req.fixings_storage_key;
         const auto fixings =
             transfer.download_blob(std::string(platform_bucket), req.fixings_storage_key);
         if (places.fixings.empty()) {
-            BOOST_LOG_SEV(lg(), warn)
+            ORES_LOG_SEV(lg(), warn)
                 << "The run document names no fixings file, so the gathered fixings cannot be "
                    "placed for run "
                 << req.report_instance_id;
@@ -233,7 +233,7 @@ void report_package_handler::prepare_package(ores::nats::delivery delivery) {
             return;
         }
 
-        BOOST_LOG_SEV(lg(), debug) << "Downloading trades: " << req.trades_storage_key;
+        ORES_LOG_SEV(lg(), debug) << "Downloading trades: " << req.trades_storage_key;
         const auto trades =
             transfer.download_blob(std::string(platform_bucket), req.trades_storage_key);
 
@@ -371,7 +371,7 @@ void report_package_handler::prepare_package(ores::nats::delivery delivery) {
                 // record that did not land is reported and does not undo the
                 // step. The run page then says nothing about the date rather
                 // than saying something false.
-                BOOST_LOG_SEV(lg(), warn)
+                ORES_LOG_SEV(lg(), warn)
                     << "The run did not record the date it priced at: "
                     << (pricing_error.empty() ? "the service did not answer" : pricing_error)
                     << " Instance " << req.report_instance_id;
@@ -397,13 +397,13 @@ void report_package_handler::prepare_package(ores::nats::delivery delivery) {
             market_data.size(),
             tarball_key);
 
-        BOOST_LOG_SEV(lg(), info) << "prepare_ore_package complete | instance="
-                                  << req.report_instance_id << " tarball=" << tarball_key;
+        ORES_LOG_SEV(lg(), info) << "prepare_ore_package complete | instance="
+                                 << req.report_instance_id << " tarball=" << tarball_key;
 
         wf->complete(ores::utility::codec::json::write(result));
         std::move(delivery).commit();
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "prepare_ore_package failed: " << e.what();
+        ORES_LOG_SEV(lg(), error) << "prepare_ore_package failed: " << e.what();
         wf->fail(e.what());
         std::move(delivery).commit();
     }

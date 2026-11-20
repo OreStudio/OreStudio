@@ -26,7 +26,7 @@
 #define ORES_MARKETDATA_CORE_REPOSITORY_SUBSCRIPTION_INTERVAL_REPOSITORY_HPP
 
 #include "ores.database/domain/context_fwd.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/domain/subscription_interval.hpp"
 #include "ores.marketdata.api/messaging/subscription_interval_protocol.hpp"
 #include "ores.marketdata.core/export.hpp"

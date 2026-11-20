@@ -80,7 +80,7 @@ void geo_operations_routes::register_routes(
     std::shared_ptr<ores::http::net::router> router,
     std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
     nats_client& session) {
-    BOOST_LOG_SEV(lg(), info) << "Registering geo_operations routes";
+    ORES_LOG_SEV(lg(), info) << "Registering geo_operations routes";
 
     auto lookup_country_route =
         router->post("/api/v1/iam/ops/lookup_country")
@@ -97,7 +97,7 @@ void geo_operations_routes::register_routes(
     router->add_route(lookup_country_built);
     registry->register_route(lookup_country_built);
 
-    BOOST_LOG_SEV(lg(), info) << "geo_operations routes registered: " << 1 << " endpoint(s)";
+    ORES_LOG_SEV(lg(), info) << "geo_operations routes registered: " << 1 << " endpoint(s)";
 }
 
 }

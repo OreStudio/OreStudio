@@ -21,7 +21,7 @@
 #include "../curve_pillar_reader.hpp"
 #include "../curve_republish_resolver.hpp"
 #include "ores.analytics.quant/service/day_count_calculator.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/datum/market_datum.hpp"
 #include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
@@ -243,7 +243,7 @@ get_curve_analytics(const ores::database::context& ctx,
         if (!resp.success)
             resp.message = "Curve " + config.name + " produced no analyzable pillar.";
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(curve_analytics_lg(), warn)
+        ORES_LOG_SEV(curve_analytics_lg(), warn)
             << "Curve analytics for " << request.instrument_id << " failed: " << e.what();
         resp.success = false;
         resp.message = e.what();

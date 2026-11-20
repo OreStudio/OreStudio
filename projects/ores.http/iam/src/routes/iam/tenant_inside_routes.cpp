@@ -118,9 +118,9 @@ tenant_inside_routes::read_inside(const http_request& req,
         try {
             ores::http::forwarding::forward(inside, session, messaging::leave_tenant_request{});
         } catch (const rr::refusal& r) {
-            BOOST_LOG_SEV(lg(), warn) << "The exit from the tenant was not recorded: " << r.message;
+            ORES_LOG_SEV(lg(), warn) << "The exit from the tenant was not recorded: " << r.message;
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), warn) << "The exit from the tenant was not recorded: " << e.what();
+            ORES_LOG_SEV(lg(), warn) << "The exit from the tenant was not recorded: " << e.what();
         }
     };
     try {

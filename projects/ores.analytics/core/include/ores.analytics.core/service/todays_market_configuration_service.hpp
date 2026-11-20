@@ -30,7 +30,7 @@
 #include "ores.analytics.core/export.hpp"
 #include "ores.analytics.core/repository/todays_market_configuration_repository.hpp"
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <cstdint>

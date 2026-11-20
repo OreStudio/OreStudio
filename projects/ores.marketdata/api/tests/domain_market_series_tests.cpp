@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/domain/market_series.hpp"
 #include "ores.marketdata.api/domain/market_series_json_io.hpp" // IWYU pragma: keep.
 #include "test_suite.hpp"
@@ -51,7 +51,7 @@ TEST_CASE("create_market_series_with_valid_fields", "[domain]") {
     auto lg(make_logger(test_suite));
 
     auto sut = make_eur_discount_series();
-    BOOST_LOG_SEV(lg, info) << "Market series: " << sut;
+    ORES_LOG_SEV(lg, info) << "Market series: " << sut;
 
     CHECK(sut.version == 1);
     CHECK(sut.oresmd_uri == "oresmd://ir/eur?curve_id=EUR&type=quote&metric=rate&quote=discount");
@@ -70,7 +70,7 @@ TEST_CASE("create_fx_spot_series", "[domain]") {
     sut.change_reason_code = "system.new";
     sut.change_commentary = "Test data";
     sut.recorded_at = std::chrono::system_clock::now();
-    BOOST_LOG_SEV(lg, info) << "FX spot series: " << sut;
+    ORES_LOG_SEV(lg, info) << "FX spot series: " << sut;
 
     CHECK(sut.oresmd_uri == "oresmd://fx/eurusd?type=quote&quote=spot");
     CHECK(sut.series_subclass == "spot");
@@ -84,7 +84,7 @@ TEST_CASE("market_series_json_serialisation", "[domain]") {
     std::ostringstream os;
     os << sut;
     const std::string json_output = os.str();
-    BOOST_LOG_SEV(lg, info) << "JSON output: " << json_output;
+    ORES_LOG_SEV(lg, info) << "JSON output: " << json_output;
 
     CHECK(!json_output.empty());
     CHECK(json_output.find("curve_id=EUR") != std::string::npos);
@@ -104,7 +104,7 @@ TEST_CASE("create_swaption_vol_series", "[domain]") {
     sut.change_reason_code = "system.new";
     sut.change_commentary = "Test data";
     sut.recorded_at = std::chrono::system_clock::now();
-    BOOST_LOG_SEV(lg, info) << "Swaption vol series: " << sut;
+    ORES_LOG_SEV(lg, info) << "Swaption vol series: " << sut;
 
     CHECK(sut.oresmd_uri ==
           "oresmd://ir/eur?tenor=2y&type=vol&quote=swaption&expiry=5y&delta=ATM&model=rate_lnvol");
@@ -124,7 +124,7 @@ TEST_CASE("create_market_series_with_faker", "[domain]") {
     sut.change_reason_code = "system.new";
     sut.change_commentary = "Synthetic test data";
     sut.recorded_at = std::chrono::system_clock::now();
-    BOOST_LOG_SEV(lg, info) << "Faker market series: " << sut;
+    ORES_LOG_SEV(lg, info) << "Faker market series: " << sut;
 
     CHECK(sut.version >= 1);
     CHECK(!sut.oresmd_uri.empty());

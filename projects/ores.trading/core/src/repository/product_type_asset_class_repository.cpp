@@ -27,13 +27,11 @@
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.database/service/tenant_context.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.trading.api/domain/product_type_asset_class.hpp"
 #include "ores.trading.api/domain/product_type_asset_class_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/product_type_asset_class_entity.hpp"
 #include "ores.trading.core/repository/product_type_asset_class_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -197,9 +195,9 @@ void product_type_asset_class_repository::write(
 void product_type_asset_class_repository::write(
     const domain::product_type_asset_class& product_type_asset_class,
     const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing product type market to database: "
-                               << product_type_asset_class.product_type_code << "/"
-                               << product_type_asset_class.asset_class_code;
+    ORES_LOG_SEV(lg(), debug) << "Writing product type market to database: "
+                              << product_type_asset_class.product_type_code << "/"
+                              << product_type_asset_class.asset_class_code;
     const auto current = claim.kind == ores::utility::domain::precondition_kind::any ?
                              read_latest(product_type_asset_class.product_type_code,
                                          product_type_asset_class.asset_class_code) :
@@ -214,8 +212,8 @@ void product_type_asset_class_repository::write(
 void product_type_asset_class_repository::write(
     const std::vector<domain::product_type_asset_class>& product_type_asset_classes,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing product type markets to database. Count: "
-                               << product_type_asset_classes.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing product type markets to database. Count: "
+                              << product_type_asset_classes.size();
     if (claims.size() != product_type_asset_classes.size())
         throw std::invalid_argument(
             "product_type_asset_class_repository::write: one claim is needed for each row");
@@ -258,8 +256,8 @@ std::vector<domain::product_type_asset_class> product_type_asset_class_repositor
 
 std::vector<domain::product_type_asset_class>
 product_type_asset_class_repository::read_latest(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest product type markets with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest product type markets with offset: " << offset
+                              << " and limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
@@ -281,8 +279,8 @@ product_type_asset_class_repository::read_latest(std::uint32_t offset, std::uint
 std::vector<domain::product_type_asset_class>
 product_type_asset_class_repository::read_latest(const std::string& product_type_code,
                                                  const std::string& asset_class_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest product type market. " << product_type_code << "/"
-                               << asset_class_code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest product type market. " << product_type_code << "/"
+                              << asset_class_code;
 
     static constexpr auto max = db_timestamp::max();
     const auto product_type_code_str = product_type_code;
@@ -305,7 +303,7 @@ product_type_asset_class_repository::read_latest(const std::string& product_type
 }
 
 std::uint32_t product_type_asset_class_repository::get_total_product_type_asset_class_count() {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active product type markets count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active product type markets count";
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
@@ -316,15 +314,15 @@ std::uint32_t product_type_asset_class_repository::get_total_product_type_asset_
 
     const auto count = query_builder::execute_count_query<product_type_asset_class_entity>(
         ctx_, query, std::nullopt, lg(), "Counting product type markets");
-    BOOST_LOG_SEV(lg(), debug) << "Total active product type markets count: " << count;
+    ORES_LOG_SEV(lg(), debug) << "Total active product type markets count: " << count;
     return count;
 }
 
 std::vector<domain::product_type_asset_class>
 product_type_asset_class_repository::read_latest_by_product_type(
     const std::string& product_type_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest product type markets. Product Type: "
-                               << product_type_code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest product type markets. Product Type: "
+                              << product_type_code;
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
@@ -349,8 +347,8 @@ product_type_asset_class_repository::read_latest_by_product_type(
 std::vector<domain::product_type_asset_class>
 product_type_asset_class_repository::read_latest_by_asset_class(
     const std::string& asset_class_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest product type markets. Market: "
-                               << asset_class_code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest product type markets. Market: "
+                              << asset_class_code;
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
@@ -375,8 +373,8 @@ product_type_asset_class_repository::read_latest_by_asset_class(
 std::vector<domain::product_type_asset_class>
 product_type_asset_class_repository::read_latest_by_product_type(
     const std::string& product_type_code, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest product type markets. Product Type: "
-                               << product_type_code << " offset: " << offset << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest product type markets. Product Type: "
+                              << product_type_code << " offset: " << offset << " limit: " << limit;
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
@@ -402,7 +400,7 @@ product_type_asset_class_repository::read_latest_by_product_type(
 std::uint32_t
 product_type_asset_class_repository::get_total_product_type_asset_class_count_by_product_type(
     const std::string& product_type_code) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Retrieving total active product type markets count. Product Type: "
         << product_type_code;
     static constexpr auto max = db_timestamp::max();
@@ -416,16 +414,16 @@ product_type_asset_class_repository::get_total_product_type_asset_class_count_by
 
     const auto count = query_builder::execute_count_query<product_type_asset_class_entity>(
         ctx_, query, std::nullopt, lg(), "Counting product type markets");
-    BOOST_LOG_SEV(lg(), debug) << "Total active product type markets count by product_type: "
-                               << count;
+    ORES_LOG_SEV(lg(), debug) << "Total active product type markets count by product_type: "
+                              << count;
     return count;
 }
 
 std::uint32_t
 product_type_asset_class_repository::get_total_product_type_asset_class_count_by_asset_class(
     const std::string& asset_class_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active product type markets count. Market: "
-                               << asset_class_code;
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active product type markets count. Market: "
+                              << asset_class_code;
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
@@ -437,16 +435,16 @@ product_type_asset_class_repository::get_total_product_type_asset_class_count_by
 
     const auto count = query_builder::execute_count_query<product_type_asset_class_entity>(
         ctx_, query, std::nullopt, lg(), "Counting product type markets");
-    BOOST_LOG_SEV(lg(), debug) << "Total active product type markets count by asset_class: "
-                               << count;
+    ORES_LOG_SEV(lg(), debug) << "Total active product type markets count by asset_class: "
+                              << count;
     return count;
 }
 
 std::vector<product_type_asset_class_history_row>
 product_type_asset_class_repository::read_all_by_product_type(
     const std::string& product_type_code) {
-    BOOST_LOG_SEV(lg(), debug)
-        << "Reading every version of the product type markets. Product Type: " << product_type_code;
+    ORES_LOG_SEV(lg(), debug) << "Reading every version of the product type markets. Product Type: "
+                              << product_type_code;
 
     const auto tid = ctx_.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
@@ -499,8 +497,8 @@ product_type_asset_class_repository::remove_status
 product_type_asset_class_repository::remove(const std::string& product_type_code,
                                             const std::string& asset_class_code,
                                             std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing product type market from database: "
-                               << product_type_code << "/" << asset_class_code;
+    ORES_LOG_SEV(lg(), debug) << "Removing product type market from database: " << product_type_code
+                              << "/" << asset_class_code;
 
     const auto current = read_latest(product_type_code, asset_class_code);
     if (current.empty())
@@ -549,8 +547,8 @@ void product_type_asset_class_repository::remove(
 
 void product_type_asset_class_repository::remove_by_product_type(
     const std::string& product_type_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing all product type markets from database: "
-                               << product_type_code;
+    ORES_LOG_SEV(lg(), debug) << "Removing all product type markets from database: "
+                              << product_type_code;
 
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =

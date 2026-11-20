@@ -20,7 +20,7 @@
 #include "ores.nats/service/client.hpp"
 #include "nats_handle.hpp"
 #include "nats_result.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/compression.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/buffered_subscription.hpp"
@@ -204,9 +204,9 @@ struct client::impl {
 void client::log_publish(impl& impl, std::string_view op, const std::string& full_subject) {
     std::lock_guard lock(impl.publish_log_mu);
     if (impl.logged_publish_subjects.insert(full_subject).second)
-        BOOST_LOG_SEV(lg(), debug) << op << ": " << full_subject;
+        ORES_LOG_SEV(lg(), debug) << op << ": " << full_subject;
     else
-        BOOST_LOG_SEV(lg(), trace) << op << ": " << full_subject;
+        ORES_LOG_SEV(lg(), trace) << op << ": " << full_subject;
 }
 
 // ---------------------------------------------------------------------------
@@ -232,10 +232,10 @@ void on_conn_error(natsConnection* nc,
         if (nc != nullptr)
             natsConnection_ReadLastError(nc, detail, sizeof(detail));
         if (detail[0] != '\0')
-            BOOST_LOG_SEV(lg(), warn)
+            ORES_LOG_SEV(lg(), warn)
                 << "NATS error: " << natsStatus_GetText(err) << " (" << detail << ")";
         else
-            BOOST_LOG_SEV(lg(), warn) << "NATS error: " << natsStatus_GetText(err);
+            ORES_LOG_SEV(lg(), warn) << "NATS error: " << natsStatus_GetText(err);
     } catch (...) {
         // Boost.Log may already be torn down on a NATS internal thread.
     }
@@ -251,7 +251,7 @@ void on_conn_error(natsConnection* nc,
  */
 void on_conn_disconnected(natsConnection* /*nc*/, void* /*closure*/) {
     try {
-        BOOST_LOG_SEV(lg(), warn)
+        ORES_LOG_SEV(lg(), warn)
             << "NATS disconnected: the server is unreachable and subscriptions are not "
                "receiving.";
     } catch (...) {
@@ -261,7 +261,7 @@ void on_conn_disconnected(natsConnection* /*nc*/, void* /*closure*/) {
 
 void on_conn_reconnected(natsConnection* /*nc*/, void* /*closure*/) {
     try {
-        BOOST_LOG_SEV(lg(), warn)
+        ORES_LOG_SEV(lg(), warn)
             << "NATS reconnected: subscriptions are receiving again. Anything published "
                "while disconnected was delivered only if its subject is on a stream.";
     } catch (...) {
@@ -415,11 +415,11 @@ void on_msg(natsConnection*, natsSubscription*, natsMsg* delivered, void* ud) {
             durable(delivery(std::move(msg), std::move(settler)));
         }
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Unhandled exception in NATS message handler for subject '"
-                                   << subject << "': " << e.what();
+        ORES_LOG_SEV(lg(), error) << "Unhandled exception in NATS message handler for subject '"
+                                  << subject << "': " << e.what();
     } catch (...) {
-        BOOST_LOG_SEV(lg(), error)
-            << "Unknown exception in NATS message handler for subject '" << subject << "'";
+        ORES_LOG_SEV(lg(), error) << "Unknown exception in NATS message handler for subject '"
+                                  << subject << "'";
     }
 }
 
@@ -504,7 +504,7 @@ static void drain_and_release(subscription::impl* impl) noexcept {
     const natsStatus status = drain_and_wait(sub);
     if (status != NATS_OK) {
         try {
-            BOOST_LOG_SEV(lg(), error)
+            ORES_LOG_SEV(lg(), error)
                 << "NATS subscription drain did not complete (" << natsStatus_GetText(status)
                 << "); leaking it rather than freeing memory a handler may still be using.";
         } catch (...) {
@@ -520,7 +520,7 @@ static void drain_and_release(subscription::impl* impl) noexcept {
     if (const auto still_open = open->wait_until_none(std::chrono::milliseconds(drain_budget_ms));
         still_open != 0) {
         try {
-            BOOST_LOG_SEV(lg(), error)
+            ORES_LOG_SEV(lg(), error)
                 << still_open
                 << " NATS deliveries were still open when their subscription ended; leaking the "
                    "subscription rather than freeing memory the deliveries answer through.";
@@ -561,8 +561,8 @@ void subscription::drain() {
     if (status == NATS_OK)
         return;
     try {
-        BOOST_LOG_SEV(lg(), error)
-            << "NATS subscription drain did not complete (" << natsStatus_GetText(status) << ").";
+        ORES_LOG_SEV(lg(), error) << "NATS subscription drain did not complete ("
+                                  << natsStatus_GetText(status) << ").";
     } catch (...) {
         // Boost.Log may already be torn down on a NATS internal thread.
     }
@@ -668,8 +668,8 @@ void client::connect() {
                                          "owned by the host user may be unreadable even "
                                          "though it exists)");
         }
-        BOOST_LOG_SEV(lg(), info) << "mTLS enabled (ca=" << impl_->opts.tls_ca_cert
-                                  << ", cert=" << impl_->opts.tls_client_cert << ")";
+        ORES_LOG_SEV(lg(), info) << "mTLS enabled (ca=" << impl_->opts.tls_ca_cert
+                                 << ", cert=" << impl_->opts.tls_client_cert << ")";
     }
 
     natsStatus s = natsConnection_Connect(&impl_->conn, opts);
@@ -715,8 +715,8 @@ void client::connect() {
     }
 
     impl_->connected.store(true, std::memory_order_release);
-    BOOST_LOG_SEV(lg(), info) << "NATS connect: " << impl_->opts.url << " (subject prefix: '"
-                              << impl_->opts.subject_prefix << "')";
+    ORES_LOG_SEV(lg(), info) << "NATS connect: " << impl_->opts.url << " (subject prefix: '"
+                             << impl_->opts.subject_prefix << "')";
 }
 
 void client::disconnect() {
@@ -739,8 +739,8 @@ void client::disconnect() {
                 lock, std::chrono::seconds(5), [this] { return impl_->closed_latch.closed; });
         }
         if (!closed)
-            BOOST_LOG_SEV(lg(), warn) << "NATS closed callback did not run within 5s; "
-                                         "destroying the connection regardless.";
+            ORES_LOG_SEV(lg(), warn) << "NATS closed callback did not run within 5s; "
+                                        "destroying the connection regardless.";
         natsConnection_Destroy(impl_->conn);
         impl_->conn = nullptr;
     }
@@ -804,7 +804,7 @@ message client::request_sync(std::string_view subject,
                              std::chrono::milliseconds timeout) {
 
     const std::string full_subject(make_subject(subject));
-    BOOST_LOG_SEV(lg(), debug) << "NATS request: " << full_subject;
+    ORES_LOG_SEV(lg(), debug) << "NATS request: " << full_subject;
 
     const auto req = make_msg(full_subject, data, headers);
     natsMsg* received = nullptr;
@@ -867,7 +867,7 @@ subscription client::subscribe(std::string_view subject, message_handler handler
     cl->handler = std::move(handler);
 
     const std::string full_subject(make_subject(subject));
-    BOOST_LOG_SEV(lg(), info) << "NATS subscribe: " << full_subject;
+    ORES_LOG_SEV(lg(), info) << "NATS subscribe: " << full_subject;
 
     natsSubscription* sub = nullptr;
     const natsStatus s =
@@ -905,8 +905,8 @@ subscription client::queue_subscribe(std::string_view subject,
     cl->handler = std::move(handler);
 
     const std::string full_subject(make_subject(subject));
-    BOOST_LOG_SEV(lg(), info) << "NATS queue-subscribe: " << full_subject
-                              << " (group: " << queue_group << ")";
+    ORES_LOG_SEV(lg(), info) << "NATS queue-subscribe: " << full_subject
+                             << " (group: " << queue_group << ")";
 
     natsSubscription* sub = nullptr;
     const natsStatus s = natsConnection_QueueSubscribe(&sub,
@@ -1099,8 +1099,8 @@ void ensure_durable_consumer(jsCtx* js,
         const natsStatus cs = js_AddConsumer(&created, js, stream.c_str(), &config, &opts, &jerr);
         const consumer_info_handle created_info(created);
         if (cs == NATS_OK) {
-            BOOST_LOG_SEV(lg(), info) << "NATS durable '" << durable << "' on '" << stream
-                                      << "' created for delivery to '" << deliver_subject << "'";
+            ORES_LOG_SEV(lg(), info) << "NATS durable '" << durable << "' on '" << stream
+                                     << "' created for delivery to '" << deliver_subject << "'";
             return;
         }
 
@@ -1161,13 +1161,13 @@ void ensure_durable_consumer(jsCtx* js,
                   "NATS durable '" + durable + "' on '" + stream +
                       "' holds a different configuration and could not be updated");
 
-    BOOST_LOG_SEV(lg(), info) << "NATS durable '" << durable << "' on '" << stream
-                              << "' migrated in place from " << stored.size() << " filter(s), ack "
-                              << static_cast<int>(stored_ack) << ", max-deliver " << stored_bound
-                              << ", ack-wait " << stored_ack_wait << "ns, delivery to '"
-                              << stored_deliver << "' to " << filters.size()
-                              << " filter(s), max-deliver " << max_deliver << ", ack-wait "
-                              << want_ack_wait << "ns, delivery to '" << deliver_subject << "'";
+    ORES_LOG_SEV(lg(), info) << "NATS durable '" << durable << "' on '" << stream
+                             << "' migrated in place from " << stored.size() << " filter(s), ack "
+                             << static_cast<int>(stored_ack) << ", max-deliver " << stored_bound
+                             << ", ack-wait " << stored_ack_wait << "ns, delivery to '"
+                             << stored_deliver << "' to " << filters.size()
+                             << " filter(s), max-deliver " << max_deliver << ", ack-wait "
+                             << want_ack_wait << "ns, delivery to '" << deliver_subject << "'";
 }
 
 }
@@ -1227,10 +1227,10 @@ subscription client::js_queue_subscribe(std::string_view subject,
     const std::string deliver_str(
         make_subject(std::string("_deliver.") + stream_str + "." + durable_str));
 
-    BOOST_LOG_SEV(lg(), info) << "NATS js-queue-subscribe: " << subj_str
-                              << " (durable: " << durable_str << ", group: " << queue_str
-                              << ", max-deliver: " << max_deliver
-                              << ", ack-wait: " << ack_wait.count() << "ms)";
+    ORES_LOG_SEV(lg(), info) << "NATS js-queue-subscribe: " << subj_str
+                             << " (durable: " << durable_str << ", group: " << queue_str
+                             << ", max-deliver: " << max_deliver
+                             << ", ack-wait: " << ack_wait.count() << "ms)";
 
     ensure_durable_consumer(impl_->js,
                             stream_str,
@@ -1282,10 +1282,10 @@ subscription client::js_queue_subscribe_multi(std::span<const std::string_view> 
     const std::string deliver_str(
         make_subject(std::string("_deliver.") + stream_str + "." + durable_str));
 
-    BOOST_LOG_SEV(lg(), info) << "NATS js-queue-subscribe-multi: " << full.size()
-                              << " subject(s) (durable: " << durable_str << ", group: " << queue_str
-                              << ", max-deliver: " << max_deliver
-                              << ", ack-wait: " << ack_wait.count() << "ms)";
+    ORES_LOG_SEV(lg(), info) << "NATS js-queue-subscribe-multi: " << full.size()
+                             << " subject(s) (durable: " << durable_str << ", group: " << queue_str
+                             << ", max-deliver: " << max_deliver
+                             << ", ack-wait: " << ack_wait.count() << "ms)";
 
     ensure_durable_consumer(
         impl_->js, stream_str, durable_str, deliver_str, queue_str, full, max_deliver, ack_wait);
@@ -1349,9 +1349,9 @@ void client::drain() {
                                                  [this] { return impl_->closed_latch.closed; });
     }
     if (!closed)
-        BOOST_LOG_SEV(lg(), error)
-            << "NATS connection drain did not complete (" << natsStatus_GetText(drained)
-            << "); shutting down with deliveries possibly still in flight.";
+        ORES_LOG_SEV(lg(), error) << "NATS connection drain did not complete ("
+                                  << natsStatus_GetText(drained)
+                                  << "); shutting down with deliveries possibly still in flight.";
 }
 
 jetstream_admin client::make_admin() {

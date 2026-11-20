@@ -23,7 +23,7 @@
 #include "ores.iam.api/generators/account_party_generator.hpp"
 #include "ores.iam.core/repository/account_party_repository.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/generators/party_generator.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.testing/database_helper.hpp"
@@ -64,7 +64,7 @@ TEST_CASE("write_single_account_party", "[repository]") {
     ap.account_id = acc.id;
     ap.party_id = party_id;
 
-    BOOST_LOG_SEV(lg, debug) << "Account party: " << ap;
+    ORES_LOG_SEV(lg, debug) << "Account party: " << ap;
     CHECK_NOTHROW(repo.write(ap));
 }
 
@@ -95,7 +95,7 @@ TEST_CASE("write_multiple_account_parties", "[repository]") {
         aps.push_back(ap);
     }
 
-    BOOST_LOG_SEV(lg, debug) << "Account parties: " << aps;
+    ORES_LOG_SEV(lg, debug) << "Account parties: " << aps;
     CHECK_NOTHROW(repo.write(aps));
 }
 
@@ -125,7 +125,7 @@ TEST_CASE("read_latest_account_parties", "[repository]") {
         written.push_back(ap);
     }
 
-    BOOST_LOG_SEV(lg, debug) << "Written account parties: " << written;
+    ORES_LOG_SEV(lg, debug) << "Written account parties: " << written;
 
     // Set party context after child parties exist so the visible set includes
     // all descendants of system_party_id (the 3 newly created parties).
@@ -135,7 +135,7 @@ TEST_CASE("read_latest_account_parties", "[repository]") {
     repo.write(written);
 
     auto read_aps = repo.read_latest();
-    BOOST_LOG_SEV(lg, debug) << "Read account parties: " << read_aps;
+    ORES_LOG_SEV(lg, debug) << "Read account parties: " << read_aps;
 
     CHECK(!read_aps.empty());
     CHECK(read_aps.size() >= written.size());
@@ -161,13 +161,13 @@ TEST_CASE("read_latest_account_parties_by_account", "[repository]") {
     auto ap = generate_synthetic_account_party(ctx);
     ap.account_id = acc.id;
     ap.party_id = party_id;
-    BOOST_LOG_SEV(lg, debug) << "Written account party: " << ap;
+    ORES_LOG_SEV(lg, debug) << "Written account party: " << ap;
     repo.write(ap);
 
-    BOOST_LOG_SEV(lg, debug) << "Target account ID: " << acc.id;
+    ORES_LOG_SEV(lg, debug) << "Target account ID: " << acc.id;
 
     auto read_aps = repo.read_latest_by_account(acc.id);
-    BOOST_LOG_SEV(lg, debug) << "Read account parties: " << read_aps;
+    ORES_LOG_SEV(lg, debug) << "Read account parties: " << read_aps;
 
     REQUIRE(read_aps.size() >= 1);
     CHECK(read_aps[0].account_id == acc.id);
@@ -181,10 +181,10 @@ TEST_CASE("read_nonexistent_account_party", "[repository]") {
     account_party_repository repo(h.context());
 
     const auto nonexistent_id = boost::uuids::random_generator()();
-    BOOST_LOG_SEV(lg, debug) << "Non-existent account ID: " << nonexistent_id;
+    ORES_LOG_SEV(lg, debug) << "Non-existent account ID: " << nonexistent_id;
 
     auto read_aps = repo.read_latest_by_account(nonexistent_id);
-    BOOST_LOG_SEV(lg, debug) << "Read account parties: " << read_aps;
+    ORES_LOG_SEV(lg, debug) << "Read account parties: " << read_aps;
 
     CHECK(read_aps.size() == 0);
 }

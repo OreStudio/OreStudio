@@ -27,14 +27,12 @@
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/service/tenant_context.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/currency_pair_classification.hpp"
 #include "ores.refdata.api/domain/currency_pair_classification_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/messaging/currency_pair_classification_protocol.hpp"
 #include "ores.refdata.core/repository/currency_pair_classification_entity.hpp"
 #include "ores.refdata.core/repository/currency_pair_classification_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -238,7 +236,7 @@ void currency_pair_classification_repository::write(
     const context& ctx,
     const domain::currency_pair_classification& v,
     const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing currency pair classification. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Writing currency pair classification. " << "code: " << v.code;
     const auto t = currency_pair_classification_apply_claim(
         v,
         claim,
@@ -255,7 +253,7 @@ void currency_pair_classification_repository::write(
     const context& ctx,
     const std::vector<domain::currency_pair_classification>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing currency pair classifications. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing currency pair classifications. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "currency_pair_classification_repository::write: one claim is needed for each row");
@@ -297,8 +295,8 @@ currency_pair_classification_repository::read_latest(const context& ctx) {
 
 std::vector<domain::currency_pair_classification>
 currency_pair_classification_repository::read_latest(const context& ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest currency pair classification. "
-                               << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest currency pair classification. "
+                              << "code: " << code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
@@ -318,8 +316,8 @@ currency_pair_classification_repository::read_latest(const context& ctx, const s
 
 std::vector<domain::currency_pair_classification>
 currency_pair_classification_repository::read_all(const context& ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all currency pair classification versions. "
-                               << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Reading all currency pair classification versions. "
+                              << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
@@ -340,8 +338,8 @@ std::optional<domain::currency_pair_classification>
 currency_pair_classification_repository::read_at_version(const context& ctx,
                                                          const std::string& code,
                                                          std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading currency pair classification at version. "
-                               << "code: " << code << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading currency pair classification at version. "
+                              << "code: " << code << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<currency_pair_classification_entity>> |
@@ -366,7 +364,7 @@ currency_pair_classification_repository::remove_status
 currency_pair_classification_repository::remove(const context& ctx,
                                                 const std::string& code,
                                                 std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing currency pair classification. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing currency pair classification. " << "code: " << code;
     const auto current = read_latest(ctx, code);
     if (current.empty())
         return remove_status::missing;
@@ -406,8 +404,8 @@ currency_pair_classification_repository::read_latest(
     const ores::utility::domain::order& order,
     const std::optional<messaging::currency_pair_classifications_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest currency pair classifications with offset: "
-                               << offset << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest currency pair classifications with offset: "
+                              << offset << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<currency_pair_classification_entity>> |
@@ -430,7 +428,7 @@ std::uint32_t currency_pair_classification_repository::get_total_classification_
     const context& ctx,
     const std::optional<messaging::currency_pair_classifications_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active currency pair classification count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active currency pair classification count";
 
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);

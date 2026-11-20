@@ -30,7 +30,7 @@
 #include "ores.assets.core/export.hpp"
 #include "ores.assets.core/repository/image_repository.hpp"
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include <chrono>
 #include <cstdint>
 #include <optional>

@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/currency.hpp"         // IWYU pragma: keep.
 #include "ores.refdata.api/domain/currency_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/generators/currency_generator.hpp"
@@ -38,7 +38,7 @@ TEST_CASE("generate_single_currency", "[generators]") {
     generation_context ctx;
 
     auto currency = generate_synthetic_currency(ctx);
-    BOOST_LOG_SEV(lg, debug) << "Generated currency: " << currency;
+    ORES_LOG_SEV(lg, debug) << "Generated currency: " << currency;
 
     CHECK(!currency.iso_code.empty());
     CHECK(!currency.name.empty());
@@ -52,7 +52,7 @@ TEST_CASE("generate_multiple_currencies", "[generators]") {
     generation_context ctx;
 
     auto currencies = generate_synthetic_currencies(3, ctx);
-    BOOST_LOG_SEV(lg, debug) << "Generated currencies: " << currencies;
+    ORES_LOG_SEV(lg, debug) << "Generated currencies: " << currencies;
 
     CHECK(currencies.size() == 3);
 
@@ -71,7 +71,7 @@ TEST_CASE("generate_unique_currencies", "[generators]") {
     generation_context ctx;
 
     auto currencies = generate_unique_synthetic_currencies(3, ctx);
-    BOOST_LOG_SEV(lg, debug) << "Generated unique currencies: " << currencies;
+    ORES_LOG_SEV(lg, debug) << "Generated unique currencies: " << currencies;
 
     CHECK(currencies.size() == 3);
 
@@ -91,7 +91,7 @@ TEST_CASE("generate_unicode_currencies", "[generators]") {
     generation_context ctx;
 
     auto currencies = generate_synthetic_unicode_currencies(ctx);
-    BOOST_LOG_SEV(lg, debug) << "Generated unicode currencies: " << currencies;
+    ORES_LOG_SEV(lg, debug) << "Generated unicode currencies: " << currencies;
 
     CHECK(currencies.size() == 7);
 
@@ -112,7 +112,7 @@ TEST_CASE("generate_fictional_currencies_returns_all_when_no_count", "[generator
     generation_context ctx;
 
     auto currencies = generate_fictional_currencies(0, ctx);
-    BOOST_LOG_SEV(lg, debug) << "Generated fictional currencies: " << currencies;
+    ORES_LOG_SEV(lg, debug) << "Generated fictional currencies: " << currencies;
 
     CHECK(currencies.size() == 50);
 
@@ -134,7 +134,7 @@ TEST_CASE("generate_fictional_currencies_returns_requested_count", "[generators]
     generation_context ctx;
 
     auto currencies = generate_fictional_currencies(5, ctx);
-    BOOST_LOG_SEV(lg, debug) << "Generated 5 fictional currencies: " << currencies;
+    ORES_LOG_SEV(lg, debug) << "Generated 5 fictional currencies: " << currencies;
 
     REQUIRE(currencies.size() == 5);
     CHECK(currencies[0].iso_code == "XAE");
@@ -149,7 +149,7 @@ TEST_CASE("generate_fictional_currencies_returns_all_when_count_exceeds_availabl
     generation_context ctx;
 
     auto currencies = generate_fictional_currencies(100, ctx);
-    BOOST_LOG_SEV(lg, debug) << "Generated fictional currencies with large count: " << currencies;
+    ORES_LOG_SEV(lg, debug) << "Generated fictional currencies with large count: " << currencies;
 
     CHECK(currencies.size() == 50);
 
@@ -195,7 +195,7 @@ TEST_CASE("generate_fictional_currencies_has_expected_first_currency", "[generat
     generation_context ctx;
 
     auto currencies = generate_fictional_currencies(1, ctx);
-    BOOST_LOG_SEV(lg, debug) << "First fictional currency: " << currencies;
+    ORES_LOG_SEV(lg, debug) << "First fictional currency: " << currencies;
 
     REQUIRE(currencies.size() == 1);
     CHECK(currencies[0].iso_code == "XAE");
@@ -230,7 +230,7 @@ TEST_CASE("generate_random_fictional_currency_returns_known_currency", "[generat
         known_codes.insert(c.iso_code);
 
     const auto currency = faker::helper::randomElement(all);
-    BOOST_LOG_SEV(lg, debug) << "Generated random fictional currency: " << currency;
+    ORES_LOG_SEV(lg, debug) << "Generated random fictional currency: " << currency;
 
     CHECK(known_codes.count(currency.iso_code) == 1);
 }

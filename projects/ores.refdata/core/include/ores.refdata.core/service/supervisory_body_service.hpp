@@ -26,7 +26,7 @@
 #define ORES_REFDATA_CORE_SERVICE_SUPERVISORY_BODY_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/supervisory_body.hpp"
 #include "ores.refdata.api/messaging/supervisory_body_protocol.hpp"
 #include "ores.refdata.core/export.hpp"

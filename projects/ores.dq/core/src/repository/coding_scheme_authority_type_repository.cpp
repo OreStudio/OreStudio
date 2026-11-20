@@ -31,9 +31,7 @@
 #include "ores.dq.api/messaging/coding_scheme_authority_type_protocol.hpp"
 #include "ores.dq.core/repository/coding_scheme_authority_type_entity.hpp"
 #include "ores.dq.core/repository/coding_scheme_authority_type_mapper.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -218,7 +216,7 @@ void coding_scheme_authority_type_repository::write(
     const context& ctx,
     const domain::coding_scheme_authority_type& v,
     const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing coding scheme authority type. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Writing coding scheme authority type. " << "code: " << v.code;
     const auto t = coding_scheme_authority_type_apply_claim(
         v,
         claim,
@@ -235,7 +233,7 @@ void coding_scheme_authority_type_repository::write(
     const context& ctx,
     const std::vector<domain::coding_scheme_authority_type>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing coding scheme authority types. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing coding scheme authority types. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "coding_scheme_authority_type_repository::write: one claim is needed for each row");
@@ -274,8 +272,8 @@ coding_scheme_authority_type_repository::read_latest(const context& ctx) {
 
 std::vector<domain::coding_scheme_authority_type>
 coding_scheme_authority_type_repository::read_latest(const context& ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest coding scheme authority type. "
-                               << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest coding scheme authority type. "
+                              << "code: " << code;
     static constexpr auto max = db_timestamp::max();
     const auto query = query_builder::read<std::vector<coding_scheme_authority_type_entity>> |
                        query_builder::where("code"_c == code && "valid_to"_c == max);
@@ -292,8 +290,8 @@ coding_scheme_authority_type_repository::read_latest(const context& ctx, const s
 
 std::vector<domain::coding_scheme_authority_type>
 coding_scheme_authority_type_repository::read_all(const context& ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all coding scheme authority type versions. "
-                               << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Reading all coding scheme authority type versions. "
+                              << "code: " << code;
     const auto query = query_builder::read<std::vector<coding_scheme_authority_type_entity>> |
                        query_builder::where("code"_c == code) |
                        query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
@@ -311,8 +309,8 @@ std::optional<domain::coding_scheme_authority_type>
 coding_scheme_authority_type_repository::read_at_version(const context& ctx,
                                                          const std::string& code,
                                                          std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading coding scheme authority type at version. "
-                               << "code: " << code << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading coding scheme authority type at version. "
+                              << "code: " << code << " version: " << version;
     const auto query = query_builder::read<std::vector<coding_scheme_authority_type_entity>> |
                        query_builder::where("code"_c == code && "version"_c == version) |
                        query_builder::limit(1);
@@ -334,7 +332,7 @@ coding_scheme_authority_type_repository::remove_status
 coding_scheme_authority_type_repository::remove(const context& ctx,
                                                 const std::string& code,
                                                 std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing coding scheme authority type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing coding scheme authority type. " << "code: " << code;
     const auto current = read_latest(ctx, code);
     if (current.empty())
         return remove_status::missing;
@@ -374,8 +372,8 @@ coding_scheme_authority_type_repository::read_latest(
     const ores::utility::domain::order& order,
     const std::optional<messaging::coding_scheme_authority_types_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest coding scheme authority types with offset: "
-                               << offset << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest coding scheme authority types with offset: "
+                              << offset << " and limit: " << limit;
     const auto query = query_builder::read<std::vector<coding_scheme_authority_type_entity>> |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
@@ -395,7 +393,7 @@ std::uint32_t coding_scheme_authority_type_repository::get_total_authority_type_
     const context& ctx,
     const std::optional<messaging::coding_scheme_authority_types_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active coding scheme authority type count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active coding scheme authority type count";
 
     const auto query = query_builder::read<std::vector<coding_scheme_authority_type_entity>>;
 

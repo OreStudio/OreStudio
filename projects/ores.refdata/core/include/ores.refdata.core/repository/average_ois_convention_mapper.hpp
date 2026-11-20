@@ -25,7 +25,7 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_AVERAGE_OIS_CONVENTION_MAPPER_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_AVERAGE_OIS_CONVENTION_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/average_ois_convention.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/average_ois_convention_entity.hpp"

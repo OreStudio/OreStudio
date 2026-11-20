@@ -25,7 +25,7 @@
 #ifndef ORES_TRADING_CORE_REPOSITORY_INSTRUMENT_OPTION_PAYMENT_DATE_MAPPER_HPP
 #define ORES_TRADING_CORE_REPOSITORY_INSTRUMENT_OPTION_PAYMENT_DATE_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.trading.api/domain/instrument_option_payment_date.hpp"
 #include "ores.trading.core/export.hpp"
 #include "ores.trading.core/repository/instrument_option_payment_date_entity.hpp"

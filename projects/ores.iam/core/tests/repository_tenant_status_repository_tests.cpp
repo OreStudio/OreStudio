@@ -20,7 +20,7 @@
 #include "ores.iam.api/domain/tenant_status.hpp"
 #include "ores.iam.api/domain/tenant_status_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.core/repository/tenant_status_repository.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.utility/uuid/tenant_id.hpp"
@@ -68,7 +68,7 @@ TEST_CASE("write_single_tenant_status", "[repository]") {
     tenant_status_repository repo;
     auto ts = make_tenant_status(h);
 
-    BOOST_LOG_SEV(lg, debug) << "Tenant status: " << ts;
+    ORES_LOG_SEV(lg, debug) << "Tenant status: " << ts;
     CHECK_NOTHROW(repo.write(sys_ctx, ts));
 }
 
@@ -83,7 +83,7 @@ TEST_CASE("write_multiple_tenant_statuses", "[repository]") {
     for (int i = 0; i < 3; ++i)
         statuses.push_back(make_tenant_status(h));
 
-    BOOST_LOG_SEV(lg, debug) << "Tenant statuses: " << statuses;
+    ORES_LOG_SEV(lg, debug) << "Tenant statuses: " << statuses;
     CHECK_NOTHROW(repo.write(sys_ctx, statuses));
 }
 
@@ -98,11 +98,11 @@ TEST_CASE("read_latest_tenant_statuses", "[repository]") {
     for (int i = 0; i < 3; ++i)
         written.push_back(make_tenant_status(h));
 
-    BOOST_LOG_SEV(lg, debug) << "Written statuses: " << written;
+    ORES_LOG_SEV(lg, debug) << "Written statuses: " << written;
     repo.write(sys_ctx, written);
 
     auto read_statuses = repo.read_latest(sys_ctx);
-    BOOST_LOG_SEV(lg, debug) << "Read statuses: " << read_statuses;
+    ORES_LOG_SEV(lg, debug) << "Read statuses: " << read_statuses;
 
     CHECK(!read_statuses.empty());
     CHECK(read_statuses.size() >= written.size());
@@ -118,13 +118,13 @@ TEST_CASE("read_latest_tenant_status_by_status", "[repository]") {
     auto ts = make_tenant_status(h);
     const auto target_status = ts.status;
 
-    BOOST_LOG_SEV(lg, debug) << "Tenant status: " << ts;
+    ORES_LOG_SEV(lg, debug) << "Tenant status: " << ts;
     repo.write(sys_ctx, ts);
 
-    BOOST_LOG_SEV(lg, debug) << "Target status: " << target_status;
+    ORES_LOG_SEV(lg, debug) << "Target status: " << target_status;
 
     auto read_statuses = repo.read_latest(sys_ctx, target_status);
-    BOOST_LOG_SEV(lg, debug) << "Read statuses: " << read_statuses;
+    ORES_LOG_SEV(lg, debug) << "Read statuses: " << read_statuses;
 
     REQUIRE(read_statuses.size() == 1);
     // version and recorded_at are stamped by the database, so they are taken
@@ -144,10 +144,10 @@ TEST_CASE("read_nonexistent_tenant_status", "[repository]") {
     tenant_status_repository repo;
 
     const std::string nonexistent("nonexistent_status_xyz_99999");
-    BOOST_LOG_SEV(lg, debug) << "Non-existent status: " << nonexistent;
+    ORES_LOG_SEV(lg, debug) << "Non-existent status: " << nonexistent;
 
     auto read_statuses = repo.read_latest(sys_ctx, nonexistent);
-    BOOST_LOG_SEV(lg, debug) << "Read statuses: " << read_statuses;
+    ORES_LOG_SEV(lg, debug) << "Read statuses: " << read_statuses;
 
     CHECK(read_statuses.size() == 0);
 }

@@ -41,17 +41,17 @@ void database_helper::set_tenant_context() {
     auto tenant_id = test_database_manager::get_test_tenant_id_env();
     if (tenant_id.empty()) {
         tenant_id = test_database_manager::system_tenant_id;
-        BOOST_LOG_SEV(lg(), debug) << "No test tenant found, using system tenant";
+        ORES_LOG_SEV(lg(), debug) << "No test tenant found, using system tenant";
     } else {
-        BOOST_LOG_SEV(lg(), info) << "Using test tenant: " << tenant_id;
+        ORES_LOG_SEV(lg(), info) << "Using test tenant: " << tenant_id;
     }
 
     context_ = tenant_context::with_tenant(context_, tenant_id);
-    BOOST_LOG_SEV(lg(), info) << "Successfully set tenant context";
+    ORES_LOG_SEV(lg(), info) << "Successfully set tenant context";
 }
 
 void database_helper::seed_rbac() {
-    BOOST_LOG_SEV(lg(), info) << "Seeding minimal RBAC data for tests";
+    ORES_LOG_SEV(lg(), info) << "Seeding minimal RBAC data for tests";
 
     // Execute each statement separately (libpq doesn't handle multiple statements well)
     const std::vector<std::string> statements = {
@@ -107,18 +107,18 @@ void database_helper::seed_rbac() {
             ores::database::query_builder::execute_raw_command(
                 context_, sql, lg(), "Seeding RBAC data");
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to seed RBAC data: " << e.what();
+            ORES_LOG_SEV(lg(), error) << "Failed to seed RBAC data: " << e.what();
             return;
         }
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Successfully seeded RBAC data";
+    ORES_LOG_SEV(lg(), info) << "Successfully seeded RBAC data";
 }
 
 void database_helper::set_party(const boost::uuids::uuid& party_id) {
-    BOOST_LOG_SEV(lg(), info) << "Setting party context: " << boost::uuids::to_string(party_id);
+    ORES_LOG_SEV(lg(), info) << "Setting party context: " << boost::uuids::to_string(party_id);
     context_ = party_context::with_party(context_, tenant_id(), party_id, db_user());
-    BOOST_LOG_SEV(lg(), info) << "Party context set";
+    ORES_LOG_SEV(lg(), info) << "Party context set";
 }
 
 std::string database_helper::db_user() {

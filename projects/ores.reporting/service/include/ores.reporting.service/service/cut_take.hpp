@@ -21,7 +21,7 @@
 #define ORES_REPORTING_SERVICE_SERVICE_CUT_TAKE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.reporting.api/messaging/report_operations_protocol.hpp"
 #include "ores.reporting.core/service/cut_body_reader.hpp"
 #include "ores.reporting.service/export.hpp"

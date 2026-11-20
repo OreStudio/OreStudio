@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/person_role.hpp"
 #include "ores.refdata.api/messaging/person_role_protocol.hpp"
 #include "ores.refdata.core/repository/person_role_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -446,28 +444,28 @@ person_role_service::prepare_change(const messaging::person_role_change& change,
 
 std::vector<domain::person_role> person_role_service::list_roles(std::uint32_t offset,
                                                                  std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all person roles";
+    ORES_LOG_SEV(lg(), debug) << "Listing all person roles";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t person_role_service::count_roles() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total person roles count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total person roles count";
     return repo_.get_total_role_count(ctx_);
 }
 
 
 std::optional<domain::person_role> person_role_service::get_role_at_version(
     const std::string& code, const std::string& coding_scheme_code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting person role at version. " << "code: " << code
-                               << " coding_scheme_code: " << coding_scheme_code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting person role at version. " << "code: " << code
+                              << " coding_scheme_code: " << coding_scheme_code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, coding_scheme_code, version);
 }
 
 std::optional<domain::person_role>
 person_role_service::get_role(const std::string& code, const std::string& coding_scheme_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting person role. " << "code: " << code
-                               << " coding_scheme_code: " << coding_scheme_code;
+    ORES_LOG_SEV(lg(), debug) << "Getting person role. " << "code: " << code
+                              << " coding_scheme_code: " << coding_scheme_code;
     auto results = repo_.read_latest(ctx_, code, coding_scheme_code);
     if (results.empty())
         return std::nullopt;
@@ -485,13 +483,13 @@ void person_role_service::save_role(const domain::person_role& v) {
         throw std::invalid_argument("Person Role code cannot be empty.");
     if (v.coding_scheme_code.empty())
         throw std::invalid_argument("Person Role coding_scheme_code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving person role. " << "code: " << v.code
-                               << " coding_scheme_code: " << v.coding_scheme_code;
+    ORES_LOG_SEV(lg(), debug) << "Saving person role. " << "code: " << v.code
+                              << " coding_scheme_code: " << v.coding_scheme_code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved person role. " << "code: " << v.code
-                              << " coding_scheme_code: " << v.coding_scheme_code;
+    ORES_LOG_SEV(lg(), info) << "Saved person role. " << "code: " << v.code
+                             << " coding_scheme_code: " << v.coding_scheme_code;
 }
 
 void person_role_service::save_roles(const std::vector<domain::person_role>& roles) {
@@ -501,7 +499,7 @@ void person_role_service::save_roles(const std::vector<domain::person_role>& rol
         if (e.coding_scheme_code.empty())
             throw std::invalid_argument("Person Role coding_scheme_code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << roles.size() << " person roles";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << roles.size() << " person roles";
     auto ts = roles;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -511,11 +509,11 @@ void person_role_service::save_roles(const std::vector<domain::person_role>& rol
 
 void person_role_service::delete_role(const std::string& code,
                                       const std::string& coding_scheme_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing person role. " << "code: " << code
-                               << " coding_scheme_code: " << coding_scheme_code;
-    repo_.remove(ctx_, code, coding_scheme_code);
-    BOOST_LOG_SEV(lg(), info) << "Removed person role. " << "code: " << code
+    ORES_LOG_SEV(lg(), debug) << "Removing person role. " << "code: " << code
                               << " coding_scheme_code: " << coding_scheme_code;
+    repo_.remove(ctx_, code, coding_scheme_code);
+    ORES_LOG_SEV(lg(), info) << "Removed person role. " << "code: " << code
+                             << " coding_scheme_code: " << coding_scheme_code;
 }
 
 void person_role_service::delete_roles(const std::vector<std::string>& codes,
@@ -526,8 +524,8 @@ void person_role_service::delete_roles(const std::vector<std::string>& codes,
 std::vector<domain::person_role>
 person_role_service::get_role_history(const std::string& code,
                                       const std::string& coding_scheme_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for person role. " << "code: " << code
-                               << " coding_scheme_code: " << coding_scheme_code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for person role. " << "code: " << code
+                              << " coding_scheme_code: " << coding_scheme_code;
     return repo_.read_all(ctx_, code, coding_scheme_code);
 }
 

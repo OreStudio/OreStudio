@@ -26,7 +26,6 @@
 #include "ores.synthetic.api/domain/variance_calibration_input_point.hpp"
 #include "ores.synthetic.api/messaging/variance_calibration_input_point_protocol.hpp"
 #include "ores.synthetic.core/repository/variance_calibration_input_point_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -490,12 +488,12 @@ ores::utility::domain::result variance_calibration_input_point_service::prepare_
 std::vector<domain::variance_calibration_input_point>
 variance_calibration_input_point_service::list_variance_calibration_input_points(
     std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all variance calibration input points";
+    ORES_LOG_SEV(lg(), debug) << "Listing all variance calibration input points";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t variance_calibration_input_point_service::count_variance_calibration_input_points() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total variance calibration input points count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total variance calibration input points count";
     return repo_.get_total_variance_calibration_input_point_count(ctx_);
 }
 
@@ -503,15 +501,15 @@ std::uint32_t variance_calibration_input_point_service::count_variance_calibrati
 std::optional<domain::variance_calibration_input_point>
 variance_calibration_input_point_service::get_variance_calibration_input_point_at_version(
     const boost::uuids::uuid& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting variance calibration input point at version. "
-                               << "id: " << id << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting variance calibration input point at version. "
+                              << "id: " << id << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::variance_calibration_input_point>
 variance_calibration_input_point_service::get_variance_calibration_input_point(
     const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting variance calibration input point. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting variance calibration input point. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -528,11 +526,11 @@ void variance_calibration_input_point_service::save_variance_calibration_input_p
     const domain::variance_calibration_input_point& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Variance Calibration Input Point id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving variance calibration input point. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving variance calibration input point. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved variance calibration input point. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved variance calibration input point. " << "id: " << v.id;
 }
 
 void variance_calibration_input_point_service::save_variance_calibration_input_points(
@@ -542,8 +540,8 @@ void variance_calibration_input_point_service::save_variance_calibration_input_p
         if (e.id.is_nil())
             throw std::invalid_argument("Variance Calibration Input Point id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << variance_calibration_input_points.size()
-                               << " variance calibration input points";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << variance_calibration_input_points.size()
+                              << " variance calibration input points";
     auto ts = variance_calibration_input_points;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -553,9 +551,9 @@ void variance_calibration_input_point_service::save_variance_calibration_input_p
 
 void variance_calibration_input_point_service::delete_variance_calibration_input_point(
     const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing variance calibration input point. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing variance calibration input point. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed variance calibration input point. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed variance calibration input point. " << "id: " << id;
 }
 
 void variance_calibration_input_point_service::delete_variance_calibration_input_points(
@@ -566,8 +564,8 @@ void variance_calibration_input_point_service::delete_variance_calibration_input
 std::vector<domain::variance_calibration_input_point>
 variance_calibration_input_point_service::get_variance_calibration_input_point_history(
     const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for variance calibration input point. "
-                               << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for variance calibration input point. "
+                              << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

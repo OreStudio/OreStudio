@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.ore.core/xml/importer.hpp"
 #include "ores.testing/project_root.hpp"
 #include "test_helpers.hpp"
@@ -47,10 +47,10 @@ TEST_CASE("import_portfolio_from_minimal_swap", "[ore][xml][trade_import]") {
     auto lg(make_logger(test_suite));
 
     const auto f = ores::testing::ore_path("examples/MinimalSetup/Input/portfolio_swap.xml");
-    BOOST_LOG_SEV(lg, debug) << "Importing from: " << f;
+    ORES_LOG_SEV(lg, debug) << "Importing from: " << f;
 
     const auto items = importer::import_portfolio_with_context(f);
-    BOOST_LOG_SEV(lg, debug) << "Imported " << items.size() << " trades";
+    ORES_LOG_SEV(lg, debug) << "Imported " << items.size() << " trades";
 
     REQUIRE(items.size() == 1);
 
@@ -82,10 +82,10 @@ TEST_CASE("import_portfolio_from_example_1", "[ore][xml][trade_import]") {
     auto lg(make_logger(test_suite));
 
     const auto f = ores::testing::ore_path("examples/Legacy/Example_1/Input/portfolio.xml");
-    BOOST_LOG_SEV(lg, debug) << "Importing from: " << f;
+    ORES_LOG_SEV(lg, debug) << "Importing from: " << f;
 
     const auto items = importer::import_portfolio_with_context(f);
-    BOOST_LOG_SEV(lg, debug) << "Imported " << items.size() << " trades";
+    ORES_LOG_SEV(lg, debug) << "Imported " << items.size() << " trades";
 
     REQUIRE(items.size() == 12);
 
@@ -105,10 +105,10 @@ TEST_CASE("import_portfolio_from_minimal_swaptions", "[ore][xml][trade_import]")
     auto lg(make_logger(test_suite));
 
     const auto f = ores::testing::ore_path("examples/MinimalSetup/Input/portfolio_swaptions.xml");
-    BOOST_LOG_SEV(lg, debug) << "Importing from: " << f;
+    ORES_LOG_SEV(lg, debug) << "Importing from: " << f;
 
     const auto items = importer::import_portfolio_with_context(f);
-    BOOST_LOG_SEV(lg, debug) << "Imported " << items.size() << " trades";
+    ORES_LOG_SEV(lg, debug) << "Imported " << items.size() << " trades";
 
     REQUIRE(!items.empty());
 
@@ -131,7 +131,7 @@ TEST_CASE("import_portfolio_gives_every_trade_an_ore_id_and_type", "[ore][xml][t
         CHECK_FALSE(item.anchor.trade_type.empty());
     }
 
-    BOOST_LOG_SEV(lg, debug) << "All " << items.size() << " imported trades pass validation";
+    ORES_LOG_SEV(lg, debug) << "All " << items.size() << " imported trades pass validation";
 }
 
 TEST_CASE("import_portfolio_all_ore_example_files_can_be_parsed", "[ore][xml][trade_import]") {
@@ -157,13 +157,13 @@ TEST_CASE("import_portfolio_all_ore_example_files_can_be_parsed", "[ore][xml][tr
     }
     std::sort(portfolio_files.begin(), portfolio_files.end());
 
-    BOOST_LOG_SEV(lg, info) << "Found " << portfolio_files.size()
-                            << " portfolio files in ORE examples";
+    ORES_LOG_SEV(lg, info) << "Found " << portfolio_files.size()
+                           << " portfolio files in ORE examples";
     REQUIRE(portfolio_files.size() > 300);
 
     int trade_count = 0;
     for (const auto& file : portfolio_files) {
-        BOOST_LOG_SEV(lg, info) << "Importing: " << file;
+        ORES_LOG_SEV(lg, info) << "Importing: " << file;
         const auto t0 = std::chrono::steady_clock::now();
 
         std::vector<trade_import_item> items;
@@ -179,8 +179,8 @@ TEST_CASE("import_portfolio_all_ore_example_files_can_be_parsed", "[ore][xml][tr
                             .count();
 
         trade_count += static_cast<int>(items.size());
-        BOOST_LOG_SEV(lg, info) << file.filename() << " -> " << items.size() << " trades in " << ms
-                                << "ms";
+        ORES_LOG_SEV(lg, info) << file.filename() << " -> " << items.size() << " trades in " << ms
+                               << "ms";
 
         for (const auto& item : items) {
             INFO("File: " << file.filename() << "  Trade: " << item.ore_id);
@@ -189,8 +189,8 @@ TEST_CASE("import_portfolio_all_ore_example_files_can_be_parsed", "[ore][xml][tr
         }
     }
 
-    BOOST_LOG_SEV(lg, info) << "Total trades imported across all " << portfolio_files.size()
-                            << " files: " << trade_count;
+    ORES_LOG_SEV(lg, info) << "Total trades imported across all " << portfolio_files.size()
+                           << " files: " << trade_count;
 }
 
 // =============================================================================
@@ -221,7 +221,7 @@ TEST_CASE("import_portfolio_with_context_swap_has_instrument", "[ore][xml][trade
     for (const auto& leg : r.legs)
         CHECK(leg.identity.trade_id == instr_id);
 
-    BOOST_LOG_SEV(lg, info) << "Swap instrument mapped. Legs: " << r.legs.size();
+    ORES_LOG_SEV(lg, info) << "Swap instrument mapped. Legs: " << r.legs.size();
 }
 
 TEST_CASE("import_portfolio_with_context_fx_forward_has_instrument", "[ore][xml][trade_import]") {
@@ -248,8 +248,8 @@ TEST_CASE("import_portfolio_with_context_fx_forward_has_instrument", "[ore][xml]
     CHECK(!instr.bought_currency.empty());
     CHECK(!instr.sold_currency.empty());
 
-    BOOST_LOG_SEV(lg, info) << "FX instrument mapped: " << instr.bought_currency << "/"
-                            << instr.sold_currency;
+    ORES_LOG_SEV(lg, info) << "FX instrument mapped: " << instr.bought_currency << "/"
+                           << instr.sold_currency;
 }
 
 TEST_CASE("import_portfolio_with_context_bond_has_instrument", "[ore][xml][trade_import]") {
@@ -275,5 +275,5 @@ TEST_CASE("import_portfolio_with_context_bond_has_instrument", "[ore][xml][trade
     CHECK(r.instrument.issue_id == r.issue.issue_id);
     CHECK(!r.issue.issuer.empty());
 
-    BOOST_LOG_SEV(lg, info) << "Bond instrument mapped. Issuer: " << r.issue.issuer;
+    ORES_LOG_SEV(lg, info) << "Bond instrument mapped. Issuer: " << r.issue.issuer;
 }

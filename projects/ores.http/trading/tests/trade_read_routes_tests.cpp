@@ -20,7 +20,7 @@
 #include "ores.http.api/domain/http_request.hpp"
 #include "ores.http.api/domain/http_response.hpp"
 #include "ores.http/routes/trading/trade_read_routes.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "route_answer.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/string_generator.hpp>
@@ -73,7 +73,7 @@ bool holds(const std::string& text, const std::string& part) {
 
 TEST_CASE("trade_reads_quote_the_identifier_a_desk_prefers", "[trade_read]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the identifier order";
+    ORES_LOG_SEV(lg, info) << "Testing the identifier order";
 
     const auto best =
         trade_read_routes::best_identifiers({identifier_of(trade_one, "ORE", "ore-1"),
@@ -88,7 +88,7 @@ TEST_CASE("trade_reads_quote_the_identifier_a_desk_prefers", "[trade_read]") {
 
 TEST_CASE("trade_reads_enrich_each_row_with_what_a_person_reads", "[trade_read]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the enriched rows";
+    ORES_LOG_SEV(lg, info) << "Testing the enriched rows";
 
     trading_domain::trade_summary trade_row;
     trade_row.id = trade_one;
@@ -133,7 +133,7 @@ TEST_CASE("trade_reads_enrich_each_row_with_what_a_person_reads", "[trade_read]"
 
 TEST_CASE("trade_reads_leave_a_row_naming_nothing_as_it_is", "[trade_read]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a row with nothing to enrich";
+    ORES_LOG_SEV(lg, info) << "Testing a row with nothing to enrich";
 
     trading_domain::trade_summary other;
     other.id = trade_one;
@@ -145,7 +145,7 @@ TEST_CASE("trade_reads_leave_a_row_naming_nothing_as_it_is", "[trade_read]") {
 
 TEST_CASE("trade_reads_name_a_trades_structures_and_links", "[trade_read]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the structures and links of a trade's page";
+    ORES_LOG_SEV(lg, info) << "Testing the structures and links of a trade's page";
 
     trading_domain::structure_member member;
     member.trade_id = trade_one;
@@ -171,7 +171,7 @@ TEST_CASE("trade_reads_name_a_trades_structures_and_links", "[trade_read]") {
 
 TEST_CASE("trade_reads_refuse_a_malformed_request", "[trade_read]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the trade reads' refusals";
+    ORES_LOG_SEV(lg, info) << "Testing the trade reads' refusals";
 
     CHECK(trades_status({{"limit", "0"}}) == http_status::bad_request);
     CHECK(trades_status({{"limit", "1001"}}) == http_status::bad_request);

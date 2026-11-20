@@ -25,7 +25,7 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_CRM_ENABLED_DERIVED_PAIR_MAPPER_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_CRM_ENABLED_DERIVED_PAIR_MAPPER_HPP
 
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/crm_enabled_derived_pair.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/crm_enabled_derived_pair_entity.hpp"

@@ -32,9 +32,7 @@
 #include "ores.inbox.api/messaging/approval_kind_protocol.hpp"
 #include "ores.inbox.core/repository/approval_kind_entity.hpp"
 #include "ores.inbox.core/repository/approval_kind_mapper.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -229,7 +227,7 @@ void approval_kind_repository::write(const context& ctx,
 void approval_kind_repository::write(const context& ctx,
                                      const domain::approval_kind& v,
                                      const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing approval kind. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Writing approval kind. " << "code: " << v.code;
     const auto t =
         approval_kind_apply_claim(v,
                                   claim,
@@ -244,7 +242,7 @@ void approval_kind_repository::write(
     const context& ctx,
     const std::vector<domain::approval_kind>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing approval kinds. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing approval kinds. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "approval_kind_repository::write: one claim is needed for each row");
@@ -282,7 +280,7 @@ std::vector<domain::approval_kind> approval_kind_repository::read_latest(const c
 
 std::vector<domain::approval_kind> approval_kind_repository::read_latest(const context& ctx,
                                                                          const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest approval kind. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest approval kind. " << "code: " << code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
@@ -301,7 +299,7 @@ std::vector<domain::approval_kind> approval_kind_repository::read_latest(const c
 
 std::vector<domain::approval_kind> approval_kind_repository::read_all(const context& ctx,
                                                                       const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all approval kind versions. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Reading all approval kind versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
@@ -319,8 +317,8 @@ std::vector<domain::approval_kind> approval_kind_repository::read_all(const cont
 
 std::optional<domain::approval_kind> approval_kind_repository::read_at_version(
     const context& ctx, const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading approval kind at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading approval kind at version. " << "code: " << code
+                              << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<approval_kind_entity>> |
@@ -344,7 +342,7 @@ std::optional<domain::approval_kind> approval_kind_repository::read_at_version(
 
 approval_kind_repository::remove_status approval_kind_repository::remove(
     const context& ctx, const std::string& code, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing approval kind. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing approval kind. " << "code: " << code;
     const auto current = read_latest(ctx, code);
     if (current.empty())
         return remove_status::missing;
@@ -382,8 +380,8 @@ approval_kind_repository::read_latest(const context& ctx,
                                       const ores::utility::domain::order& order,
                                       const std::optional<messaging::approval_kinds_filter>& filter,
                                       const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest approval kinds with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest approval kinds with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<approval_kind_entity>> |
@@ -405,7 +403,7 @@ std::uint32_t approval_kind_repository::get_total_kind_count(
     const context& ctx,
     const std::optional<messaging::approval_kinds_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active approval kind count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active approval kind count";
 
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);

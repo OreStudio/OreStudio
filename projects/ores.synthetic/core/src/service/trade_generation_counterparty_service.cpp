@@ -26,7 +26,6 @@
 #include "ores.synthetic.api/domain/trade_generation_counterparty.hpp"
 #include "ores.synthetic.api/messaging/trade_generation_counterparty_protocol.hpp"
 #include "ores.synthetic.core/repository/trade_generation_counterparty_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -482,12 +480,12 @@ ores::utility::domain::result trade_generation_counterparty_service::prepare_cha
 std::vector<domain::trade_generation_counterparty>
 trade_generation_counterparty_service::list_trade_generation_counterparties(std::uint32_t offset,
                                                                             std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all trade generation counterparties";
+    ORES_LOG_SEV(lg(), debug) << "Listing all trade generation counterparties";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t trade_generation_counterparty_service::count_trade_generation_counterparties() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total trade generation counterparties count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total trade generation counterparties count";
     return repo_.get_total_trade_generation_counterparty_count(ctx_);
 }
 
@@ -495,15 +493,15 @@ std::uint32_t trade_generation_counterparty_service::count_trade_generation_coun
 std::optional<domain::trade_generation_counterparty>
 trade_generation_counterparty_service::get_trade_generation_counterparty_at_version(
     const boost::uuids::uuid& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting trade generation counterparty at version. "
-                               << "id: " << id << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting trade generation counterparty at version. "
+                              << "id: " << id << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::trade_generation_counterparty>
 trade_generation_counterparty_service::get_trade_generation_counterparty(
     const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting trade generation counterparty. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting trade generation counterparty. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -520,11 +518,11 @@ void trade_generation_counterparty_service::save_trade_generation_counterparty(
     const domain::trade_generation_counterparty& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Trade Generation Counterparty id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving trade generation counterparty. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving trade generation counterparty. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved trade generation counterparty. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved trade generation counterparty. " << "id: " << v.id;
 }
 
 void trade_generation_counterparty_service::save_trade_generation_counterparties(
@@ -533,8 +531,8 @@ void trade_generation_counterparty_service::save_trade_generation_counterparties
         if (e.id.is_nil())
             throw std::invalid_argument("Trade Generation Counterparty id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << trade_generation_counterparties.size()
-                               << " trade generation counterparties";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << trade_generation_counterparties.size()
+                              << " trade generation counterparties";
     auto ts = trade_generation_counterparties;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -544,9 +542,9 @@ void trade_generation_counterparty_service::save_trade_generation_counterparties
 
 void trade_generation_counterparty_service::delete_trade_generation_counterparty(
     const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing trade generation counterparty. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing trade generation counterparty. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed trade generation counterparty. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed trade generation counterparty. " << "id: " << id;
 }
 
 void trade_generation_counterparty_service::delete_trade_generation_counterparties(
@@ -557,8 +555,8 @@ void trade_generation_counterparty_service::delete_trade_generation_counterparti
 std::vector<domain::trade_generation_counterparty>
 trade_generation_counterparty_service::get_trade_generation_counterparty_history(
     const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for trade generation counterparty. "
-                               << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for trade generation counterparty. "
+                              << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

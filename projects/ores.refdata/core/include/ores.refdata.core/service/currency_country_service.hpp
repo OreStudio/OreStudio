@@ -26,7 +26,7 @@
 #define ORES_REFDATA_SERVICE_CURRENCY_COUNTRY_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/currency_country.hpp"
 #include "ores.refdata.api/messaging/currency_country_protocol.hpp"
 #include "ores.refdata.core/export.hpp"

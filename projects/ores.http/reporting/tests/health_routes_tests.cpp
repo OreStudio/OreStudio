@@ -22,7 +22,7 @@
 #include "ores.http.api/net/router.hpp"
 #include "ores.http.api/openapi/endpoint_registry.hpp"
 #include "ores.http/routes/reporting/reporting_routes.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "test_suite.hpp"
 #include <boost/asio/co_spawn.hpp>
@@ -71,7 +71,7 @@ http_status status_of(http_request req) {
 
 TEST_CASE("a_health_tally_refuses_a_party_that_is_not_an_id", "[report_health]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the health tally's party";
+    ORES_LOG_SEV(lg, info) << "Testing the health tally's party";
 
     http_request req;
     req.query_params["party_id"] = "not-an-id";
@@ -80,7 +80,7 @@ TEST_CASE("a_health_tally_refuses_a_party_that_is_not_an_id", "[report_health]")
 
 TEST_CASE("a_health_tally_refuses_a_search_it_does_not_read", "[report_health]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the health tally's search";
+    ORES_LOG_SEV(lg, info) << "Testing the health tally's search";
 
     http_request too_long;
     too_long.query_params["search"] = std::string(257, 'x');
@@ -93,7 +93,7 @@ TEST_CASE("a_health_tally_refuses_a_search_it_does_not_read", "[report_health]")
 
 TEST_CASE("a_health_tally_with_no_service_is_refused_as_upstream", "[report_health]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a health tally with no service behind it";
+    ORES_LOG_SEV(lg, info) << "Testing a health tally with no service behind it";
 
     CHECK(status_of(http_request{}) == http_status::bad_gateway);
 

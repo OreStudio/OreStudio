@@ -34,11 +34,11 @@ boost::asio::awaitable<int> host::execute(const std::vector<std::string>& args,
                                           boost::asio::io_context& io_ctx) {
     ores::service::service::host_runner_options opts;
     opts.on_before_log = [] {
-        BOOST_LOG_SEV(lg(), info) << "ORES HTTP Server v" << ORES_VERSION << " starting ("
-                                  << ores::utility::version::build_info() << ")...";
+        ORES_LOG_SEV(lg(), info) << "ORES HTTP Server v" << ORES_VERSION << " starting ("
+                                 << ores::utility::version::build_info() << ")...";
     };
     opts.on_success = [] {
-        BOOST_LOG_SEV(lg(), info) << "ORES HTTP Server stopped successfully";
+        ORES_LOG_SEV(lg(), info) << "ORES HTTP Server stopped successfully";
     };
     opts.failure_message = "Failed to execute HTTP server.";
 

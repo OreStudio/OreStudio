@@ -98,7 +98,7 @@ fetch_known_currency_pairs(ores::nats::service::nats_client& auth_nats) {
             auto resp =
                 codec.decode<ores::refdata::messaging::list_currency_pairs_response>(reply.data);
             if (!resp || resp->result.outcome != ores::utility::domain::outcome::ok) {
-                BOOST_LOG_SEV(import_helpers_lg(), warn)
+                ORES_LOG_SEV(import_helpers_lg(), warn)
                     << "Failed to fetch currency pairs for FX quote convention checking; "
                     << "reversed-key correction disabled for this import.";
                 return {};
@@ -110,7 +110,7 @@ fetch_known_currency_pairs(ores::nats::service::nats_client& auth_nats) {
                 break;
         }
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(import_helpers_lg(), warn)
+        ORES_LOG_SEV(import_helpers_lg(), warn)
             << "Failed to fetch currency pairs (" << e.what()
             << "); reversed-key correction disabled for this import.";
         return {};

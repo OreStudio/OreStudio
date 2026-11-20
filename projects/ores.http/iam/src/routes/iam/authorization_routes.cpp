@@ -140,7 +140,7 @@ void authorization_routes::register_routes(
     std::shared_ptr<ores::http::net::router> router,
     std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
     nats_client& session) {
-    BOOST_LOG_SEV(lg(), info) << "Registering authorization routes";
+    ORES_LOG_SEV(lg(), info) << "Registering authorization routes";
 
     auto assign_role_route = router->post("/api/v1/iam/ops/assign_role")
                                  .summary("Assign role")
@@ -215,7 +215,7 @@ void authorization_routes::register_routes(
     router->add_route(put_role_permissions_built);
     registry->register_route(put_role_permissions_built);
 
-    BOOST_LOG_SEV(lg(), info) << "authorization routes registered: " << 5 << " endpoint(s)";
+    ORES_LOG_SEV(lg(), info) << "authorization routes registered: " << 5 << " endpoint(s)";
 }
 
 }

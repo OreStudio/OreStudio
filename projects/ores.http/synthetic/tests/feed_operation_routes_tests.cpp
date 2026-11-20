@@ -20,7 +20,7 @@
 #include "ores.http.api/domain/http_request.hpp"
 #include "ores.http.api/domain/http_response.hpp"
 #include "ores.http/routes/synthetic/feed_operation_routes.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "route_answer.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
@@ -66,7 +66,7 @@ http_response selected(const std::string& verb, const std::string& body) {
 
 TEST_CASE("feed_operations_refuse_a_malformed_request", "[feed_operation]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing each feed operation's refusals";
+    ORES_LOG_SEV(lg, info) << "Testing each feed operation's refusals";
 
     for (const std::string verb : {"start", "stop"}) {
         CHECK(feed_answer(http_method::post,
@@ -97,7 +97,7 @@ TEST_CASE("feed_operations_refuse_a_malformed_request", "[feed_operation]") {
 
 TEST_CASE("feed_operations_forward_a_well_formed_request", "[feed_operation]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that an accepted feed operation reaches the service";
+    ORES_LOG_SEV(lg, info) << "Testing that an accepted feed operation reaches the service";
 
     // The client is not connected, so an accepted request fails at the forward step.
     for (const std::string verb : {"start", "stop"}) {

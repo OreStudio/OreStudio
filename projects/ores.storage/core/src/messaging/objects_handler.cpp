@@ -59,13 +59,13 @@ objects_handler::authorise(const ores::nats::message& msg,
                            std::string_view operation_name) {
     const auto ctx = make_request_context(base_ctx_, msg, verifier_);
     if (!ctx) {
-        BOOST_LOG_SEV(lg(), warn) << operation_name << " denied: the request context failed";
+        ORES_LOG_SEV(lg(), warn) << operation_name << " denied: the request context failed";
         error_reply(nats_, msg, ctx.error());
         return std::nullopt;
     }
 
     if (!has_permission(*ctx, required_permission)) {
-        BOOST_LOG_SEV(lg(), warn) << operation_name << " denied: lacks " << required_permission;
+        ORES_LOG_SEV(lg(), warn) << operation_name << " denied: lacks " << required_permission;
         error_reply(nats_, msg, ores::service::error_code::forbidden);
         return std::nullopt;
     }
@@ -74,7 +74,7 @@ objects_handler::authorise(const ores::nats::message& msg,
 }
 
 void objects_handler::put(ores::nats::message msg) {
-    BOOST_LOG_SEV(lg(), debug) << "Handling " << msg.subject;
+    ORES_LOG_SEV(lg(), debug) << "Handling " << msg.subject;
 
     const auto req = decode<put_objects_request>(msg);
     if (!req) {
@@ -90,7 +90,7 @@ void objects_handler::put(ores::nats::message msg) {
         store_.put(req->bucket, req->key, req->content);
         resp.size_bytes = req->content.size();
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "put failed: " << e.what();
+        ORES_LOG_SEV(lg(), error) << "put failed: " << e.what();
         resp.success = false;
         resp.message = e.what();
     }
@@ -99,7 +99,7 @@ void objects_handler::put(ores::nats::message msg) {
 }
 
 void objects_handler::get(ores::nats::message msg) {
-    BOOST_LOG_SEV(lg(), debug) << "Handling " << msg.subject;
+    ORES_LOG_SEV(lg(), debug) << "Handling " << msg.subject;
 
     const auto req = decode<get_objects_request>(msg);
     if (!req) {
@@ -129,7 +129,7 @@ void objects_handler::get(ores::nats::message msg) {
             resp.found = false;
             resp.size_bytes = 0;
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), error) << "get failed: " << e.what();
+            ORES_LOG_SEV(lg(), error) << "get failed: " << e.what();
             resp.success = false;
             resp.message = e.what();
         }
@@ -139,7 +139,7 @@ void objects_handler::get(ores::nats::message msg) {
 }
 
 void objects_handler::remove(ores::nats::message msg) {
-    BOOST_LOG_SEV(lg(), debug) << "Handling " << msg.subject;
+    ORES_LOG_SEV(lg(), debug) << "Handling " << msg.subject;
 
     const auto req = decode<delete_objects_request>(msg);
     if (!req) {
@@ -154,7 +154,7 @@ void objects_handler::remove(ores::nats::message msg) {
     try {
         resp.removed = store_.remove(req->bucket, req->key);
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "delete failed: " << e.what();
+        ORES_LOG_SEV(lg(), error) << "delete failed: " << e.what();
         resp.success = false;
         resp.message = e.what();
     }
@@ -163,7 +163,7 @@ void objects_handler::remove(ores::nats::message msg) {
 }
 
 void objects_handler::list(ores::nats::message msg) {
-    BOOST_LOG_SEV(lg(), debug) << "Handling " << msg.subject;
+    ORES_LOG_SEV(lg(), debug) << "Handling " << msg.subject;
 
     const auto req = decode<list_objects_request>(msg);
     if (!req) {
@@ -185,7 +185,7 @@ void objects_handler::list(ores::nats::message msg) {
         for (std::size_t i = first; i < last; ++i)
             resp.objects.push_back(object_summary{entries[i].key, entries[i].size_bytes});
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "list failed: " << e.what();
+        ORES_LOG_SEV(lg(), error) << "list failed: " << e.what();
         resp.success = false;
         resp.message = e.what();
     }
@@ -194,7 +194,7 @@ void objects_handler::list(ores::nats::message msg) {
 }
 
 void objects_handler::list_archive_entries(ores::nats::message msg) {
-    BOOST_LOG_SEV(lg(), debug) << "Handling " << msg.subject;
+    ORES_LOG_SEV(lg(), debug) << "Handling " << msg.subject;
 
     const auto req = decode<list_archive_entries_request>(msg);
     if (!req) {
@@ -218,7 +218,7 @@ void objects_handler::list_archive_entries(ores::nats::message msg) {
         if (!path) {
             listing.success = false;
             listing.message = "No object at this key.";
-            BOOST_LOG_SEV(lg(), warn)
+            ORES_LOG_SEV(lg(), warn)
                 << "list_archive_entries: no object at " << req->bucket << "/" << key;
             resp.archives.push_back(std::move(listing));
             continue;
@@ -230,8 +230,8 @@ void objects_handler::list_archive_entries(ores::nats::message msg) {
         } catch (const std::exception& e) {
             listing.success = false;
             listing.message = e.what();
-            BOOST_LOG_SEV(lg(), warn) << "list_archive_entries: " << req->bucket << "/" << key
-                                      << " is not a package: " << e.what();
+            ORES_LOG_SEV(lg(), warn) << "list_archive_entries: " << req->bucket << "/" << key
+                                     << " is not a package: " << e.what();
         }
         resp.archives.push_back(std::move(listing));
     }

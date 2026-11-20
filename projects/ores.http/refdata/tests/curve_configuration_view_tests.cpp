@@ -20,7 +20,7 @@
 #include "ores.http.core/routes/ore_value_sets.hpp"
 #include "ores.http/routes/refdata/curve_configuration_view.hpp"
 #include "ores.http/routes/refdata/curve_document_cells.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/string_generator.hpp>
@@ -135,7 +135,7 @@ refdata_domain::curve_section section_row(std::string code, std::string entry, s
 
 TEST_CASE("a_curve_configuration_draws_its_sections_entries_and_leaves", "[curve_view]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing one curve configuration as its screen reads it";
+    ORES_LOG_SEV(lg, info) << "Testing one curve configuration as its screen reads it";
 
     const auto document = cells(yield_curve_document(false));
     const auto rows = contract_rows();
@@ -174,7 +174,7 @@ TEST_CASE("a_curve_configuration_draws_its_sections_entries_and_leaves", "[curve
 
 TEST_CASE("a_curve_configurations_segments_draw_their_kind_and_quotes", "[curve_view]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the segments of one curve configuration";
+    ORES_LOG_SEV(lg, info) << "Testing the segments of one curve configuration";
 
     const auto document = cells(yield_curve_document(true));
     const auto rows = contract_rows();
@@ -201,7 +201,7 @@ TEST_CASE("a_curve_configurations_segments_draw_their_kind_and_quotes", "[curve_
 
 TEST_CASE("a_curve_configuration_lists_a_section_no_projection_maps", "[curve_view]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a curve section the projection does not map";
+    ORES_LOG_SEV(lg, info) << "Testing a curve section the projection does not map";
 
     const auto document = cells(yield_curve_document(false));
     const auto rows = contract_rows();

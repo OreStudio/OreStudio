@@ -20,7 +20,7 @@
 #include "ores.dq.api/domain/coding_scheme_authority_type.hpp"
 #include "ores.dq.api/domain/coding_scheme_authority_type_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.api/domain/coding_scheme_authority_type_table.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 
@@ -36,7 +36,7 @@ TEST_CASE("create_coding_scheme_authority_type_with_valid_fields", "[domain]") {
     sut.description = "International Organization for Standardization";
     sut.modified_by = "admin";
     sut.change_commentary = "Initial creation";
-    BOOST_LOG_SEV(lg, info) << "Coding scheme authority type: " << sut;
+    ORES_LOG_SEV(lg, info) << "Coding scheme authority type: " << sut;
 
     CHECK(sut.version == 1);
     CHECK(sut.code == "ISO");
@@ -57,7 +57,7 @@ TEST_CASE("coding_scheme_authority_type_convert_single_to_table", "[domain]") {
     std::vector<coding_scheme_authority_type> types = {csat};
     auto table = convert_to_table(types);
 
-    BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
+    ORES_LOG_SEV(lg, info) << "Table output:\n" << table;
 
     CHECK(!table.empty());
     CHECK(table.contains("Code"));

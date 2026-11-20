@@ -26,7 +26,6 @@
 #include "ores.synthetic.api/domain/trade_generation_trade_type.hpp"
 #include "ores.synthetic.api/messaging/trade_generation_trade_type_protocol.hpp"
 #include "ores.synthetic.core/repository/trade_generation_trade_type_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -480,12 +478,12 @@ ores::utility::domain::result trade_generation_trade_type_service::prepare_chang
 std::vector<domain::trade_generation_trade_type>
 trade_generation_trade_type_service::list_trade_generation_trade_types(std::uint32_t offset,
                                                                        std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all trade generation trade types";
+    ORES_LOG_SEV(lg(), debug) << "Listing all trade generation trade types";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t trade_generation_trade_type_service::count_trade_generation_trade_types() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total trade generation trade types count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total trade generation trade types count";
     return repo_.get_total_trade_generation_trade_type_count(ctx_);
 }
 
@@ -493,14 +491,14 @@ std::uint32_t trade_generation_trade_type_service::count_trade_generation_trade_
 std::optional<domain::trade_generation_trade_type>
 trade_generation_trade_type_service::get_trade_generation_trade_type_at_version(
     const boost::uuids::uuid& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting trade generation trade type at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting trade generation trade type at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::trade_generation_trade_type>
 trade_generation_trade_type_service::get_trade_generation_trade_type(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting trade generation trade type. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting trade generation trade type. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -517,11 +515,11 @@ void trade_generation_trade_type_service::save_trade_generation_trade_type(
     const domain::trade_generation_trade_type& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Trade Generation Trade Type id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving trade generation trade type. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving trade generation trade type. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved trade generation trade type. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved trade generation trade type. " << "id: " << v.id;
 }
 
 void trade_generation_trade_type_service::save_trade_generation_trade_types(
@@ -530,8 +528,8 @@ void trade_generation_trade_type_service::save_trade_generation_trade_types(
         if (e.id.is_nil())
             throw std::invalid_argument("Trade Generation Trade Type id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << trade_generation_trade_types.size()
-                               << " trade generation trade types";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << trade_generation_trade_types.size()
+                              << " trade generation trade types";
     auto ts = trade_generation_trade_types;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -541,9 +539,9 @@ void trade_generation_trade_type_service::save_trade_generation_trade_types(
 
 void trade_generation_trade_type_service::delete_trade_generation_trade_type(
     const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing trade generation trade type. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing trade generation trade type. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed trade generation trade type. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed trade generation trade type. " << "id: " << id;
 }
 
 void trade_generation_trade_type_service::delete_trade_generation_trade_types(
@@ -554,8 +552,8 @@ void trade_generation_trade_type_service::delete_trade_generation_trade_types(
 std::vector<domain::trade_generation_trade_type>
 trade_generation_trade_type_service::get_trade_generation_trade_type_history(
     const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for trade generation trade type. "
-                               << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for trade generation trade type. "
+                              << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

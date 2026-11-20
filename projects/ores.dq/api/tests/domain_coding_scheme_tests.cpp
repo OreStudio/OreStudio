@@ -20,7 +20,7 @@
 #include "ores.dq.api/domain/coding_scheme.hpp"
 #include "ores.dq.api/domain/coding_scheme_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.api/domain/coding_scheme_table.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 
@@ -40,7 +40,7 @@ TEST_CASE("create_coding_scheme_with_valid_fields", "[domain]") {
     sut.uri = "https://www.iso.org/iso-4217-currency-codes.html";
     sut.modified_by = "admin";
     sut.change_commentary = "Initial creation";
-    BOOST_LOG_SEV(lg, info) << "Coding scheme: " << sut;
+    ORES_LOG_SEV(lg, info) << "Coding scheme: " << sut;
 
     CHECK(sut.version == 1);
     CHECK(sut.code == "ISO-4217");
@@ -67,7 +67,7 @@ TEST_CASE("coding_scheme_convert_single_to_table", "[domain]") {
     std::vector<coding_scheme> schemes = {cs};
     auto table = convert_to_table(schemes);
 
-    BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
+    ORES_LOG_SEV(lg, info) << "Table output:\n" << table;
 
     CHECK(!table.empty());
     CHECK(table.contains("Code"));

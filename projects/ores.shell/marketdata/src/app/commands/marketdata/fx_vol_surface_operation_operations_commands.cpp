@@ -83,7 +83,7 @@ void fx_vol_surface_operation_operations_commands::register_commands(cli::Menu& 
 
 void fx_vol_surface_operation_operations_commands::process_calibrate_fx_vol_surface(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating calibrate-fx-vol-surface request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating calibrate-fx-vol-surface request.";
 
     using request_type = ores::marketdata::messaging::calibrate_fx_vol_surface_request;
 
@@ -139,7 +139,7 @@ void fx_vol_surface_operation_operations_commands::process_calibrate_fx_vol_surf
 
 void fx_vol_surface_operation_operations_commands::process_publish_fx_vol_surface(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating publish-fx-vol-surface request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating publish-fx-vol-surface request.";
 
     using request_type = ores::marketdata::messaging::publish_fx_vol_surface_request;
 
@@ -205,7 +205,7 @@ void fx_vol_surface_operation_operations_commands::process_publish_fx_vol_surfac
 
 void fx_vol_surface_operation_operations_commands::process_get_fx_vol_surface_publish_subject(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating get-fx-vol-surface-publish-subject request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating get-fx-vol-surface-publish-subject request.";
 
     using request_type = ores::marketdata::messaging::get_fx_vol_surface_publish_subject_request;
 
@@ -262,7 +262,7 @@ void fx_vol_surface_operation_operations_commands::process_get_fx_vol_surface_pu
 
 void fx_vol_surface_operation_operations_commands::process_get_published_fx_vol_surface(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating get-published-fx-vol-surface request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating get-published-fx-vol-surface request.";
 
     using request_type = ores::marketdata::messaging::get_published_fx_vol_surface_request;
 

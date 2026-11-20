@@ -27,8 +27,6 @@
 #include "ores.dq.api/domain/coding_scheme_authority_type.hpp"
 #include "ores.dq.api/domain/coding_scheme_authority_type_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.core/repository/coding_scheme_authority_type_entity.hpp"
-#include "ores.logging/boost_severity.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <vector>
 
 namespace ores::dq::repository {
@@ -38,7 +36,7 @@ using namespace ores::database::repository;
 
 domain::coding_scheme_authority_type
 coding_scheme_authority_type_mapper::map(const coding_scheme_authority_type_entity& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::coding_scheme_authority_type r;
     r.version = v.version;
@@ -52,13 +50,13 @@ coding_scheme_authority_type_mapper::map(const coding_scheme_authority_type_enti
     r.change_commentary = v.change_commentary;
     r.recorded_at = v.valid_from;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
 }
 
 coding_scheme_authority_type_entity
 coding_scheme_authority_type_mapper::map(const domain::coding_scheme_authority_type& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     coding_scheme_authority_type_entity r;
     r.code = v.code;
@@ -71,7 +69,7 @@ coding_scheme_authority_type_mapper::map(const domain::coding_scheme_authority_t
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;
 }
 

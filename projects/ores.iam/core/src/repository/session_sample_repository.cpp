@@ -30,10 +30,8 @@
 #include "ores.iam.api/domain/session_sample_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.core/repository/session_sample_entity.hpp"
 #include "ores.iam.core/repository/session_sample_mapper.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -201,8 +199,8 @@ void session_sample_repository::write(const context& ctx,
 void session_sample_repository::write(const context& ctx,
                                       const domain::session_sample& v,
                                       const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing sample. " << "session_id: " << v.session_id
-                               << " sample_time: " << v.sample_time;
+    ORES_LOG_SEV(lg(), debug) << "Writing sample. " << "session_id: " << v.session_id
+                              << " sample_time: " << v.sample_time;
     const auto t = session_sample_apply_claim(
         v,
         claim,
@@ -221,7 +219,7 @@ void session_sample_repository::write(
     const context& ctx,
     const std::vector<domain::session_sample>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing session samples. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing session samples. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "session_sample_repository::write: one claim is needed for each row");
@@ -259,8 +257,8 @@ std::vector<domain::session_sample> session_sample_repository::read_latest(const
 
 std::vector<domain::session_sample> session_sample_repository::read_latest(
     const context& ctx, const std::string& session_id, const std::string& sample_time) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest sample. " << "session_id: " << session_id
-                               << " sample_time: " << sample_time;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest sample. " << "session_id: " << session_id
+                              << " sample_time: " << sample_time;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<session_sample_entity>> |
                        query_builder::where("tenant_id"_c == tid && "session_id"_c == session_id &&
@@ -277,8 +275,8 @@ std::vector<domain::session_sample> session_sample_repository::read_latest(
 
 std::vector<domain::session_sample> session_sample_repository::read_all(
     const context& ctx, const std::string& session_id, const std::string& sample_time) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all sample versions. " << "session_id: " << session_id
-                               << " sample_time: " << sample_time;
+    ORES_LOG_SEV(lg(), debug) << "Reading all sample versions. " << "session_id: " << session_id
+                              << " sample_time: " << sample_time;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<session_sample_entity>> |
                        query_builder::where("tenant_id"_c == tid && "session_id"_c == session_id &&
@@ -299,8 +297,8 @@ session_sample_repository::remove(const context& ctx,
                                   const std::string& session_id,
                                   const std::string& sample_time,
                                   std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing sample. " << "session_id: " << session_id
-                               << " sample_time: " << sample_time;
+    ORES_LOG_SEV(lg(), debug) << "Removing sample. " << "session_id: " << session_id
+                              << " sample_time: " << sample_time;
     // The store keeps no version column, so a caller that stated a version
     // asked a question this table cannot answer.
     if (version)
@@ -328,8 +326,8 @@ session_sample_repository::read_latest(const context& ctx,
                                        std::uint32_t offset,
                                        std::uint32_t limit,
                                        const ores::utility::domain::order& order) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest session samples with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest session samples with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<session_sample_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -346,7 +344,7 @@ session_sample_repository::read_latest(const context& ctx,
 }
 
 std::uint32_t session_sample_repository::get_total__count(const context& ctx) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active sample count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active sample count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<session_sample_entity>> |

@@ -68,7 +68,7 @@ void provider_terms_operations_operations_commands::register_commands(cli::Menu&
 
 void provider_terms_operations_operations_commands::process_accept_provider_terms(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating accept-provider-terms request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating accept-provider-terms request.";
 
     using request_type = ores::marketdata::messaging::accept_provider_terms_request;
 
@@ -129,7 +129,7 @@ void provider_terms_operations_operations_commands::process_accept_provider_term
 
 void provider_terms_operations_operations_commands::process_withdraw_provider_terms(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating withdraw-provider-terms request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating withdraw-provider-terms request.";
 
     using request_type = ores::marketdata::messaging::withdraw_provider_terms_request;
 

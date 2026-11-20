@@ -26,7 +26,7 @@
 #define ORES_TRADING_CORE_SERVICE_STRUCTURE_MEMBER_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.trading.api/domain/structure_member.hpp"
 #include "ores.trading.api/messaging/structure_member_protocol.hpp"
 #include "ores.trading.core/export.hpp"

@@ -28,7 +28,7 @@
 #include "ores.compute.api/domain/app_version_platform.hpp"
 #include "ores.compute.core/export.hpp"
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstdint>

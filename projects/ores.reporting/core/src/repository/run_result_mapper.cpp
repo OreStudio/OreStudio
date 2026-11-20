@@ -24,13 +24,11 @@
  */
 #include "ores.reporting.core/repository/run_result_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.reporting.api/domain/run_result.hpp"
 #include "ores.reporting.api/domain/run_result_json_io.hpp" // IWYU pragma: keep.
 #include "ores.reporting.core/repository/run_result_entity.hpp"
 #include <boost/lexical_cast.hpp>
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <chrono>
@@ -44,7 +42,7 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 
 domain::run_result run_result_mapper::map(const run_result_entity& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::run_result r;
     r.tenant_id = v.tenant_id;
@@ -61,12 +59,12 @@ domain::run_result run_result_mapper::map(const run_result_entity& v) {
     r.figure = v.figure;
     r.source = v.source;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
 }
 
 run_result_entity run_result_mapper::map(const domain::run_result& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     run_result_entity r;
     r.id = v.id;
@@ -83,7 +81,7 @@ run_result_entity run_result_mapper::map(const domain::run_result& v) {
     r.figure = v.figure;
     r.source = v.source;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;
 }
 

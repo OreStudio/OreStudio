@@ -26,7 +26,7 @@
 #define ORES_REFDATA_CORE_SERVICE_PERSON_ROLE_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/person_role.hpp"
 #include "ores.refdata.api/messaging/person_role_protocol.hpp"
 #include "ores.refdata.core/export.hpp"

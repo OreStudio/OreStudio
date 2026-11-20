@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.trading.api/domain/exercise_type.hpp"
 #include "ores.trading.api/messaging/exercise_type_protocol.hpp"
 #include "ores.trading.core/repository/exercise_type_repository.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -441,12 +439,12 @@ exercise_type_service::prepare_change(const messaging::exercise_type_change& cha
 
 std::vector<domain::exercise_type> exercise_type_service::list_exercise_types(std::uint32_t offset,
                                                                               std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all exercise types";
+    ORES_LOG_SEV(lg(), debug) << "Listing all exercise types";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t exercise_type_service::count_exercise_types() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total exercise types count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total exercise types count";
     return repo_.get_total_exercise_type_count(ctx_);
 }
 
@@ -454,14 +452,14 @@ std::uint32_t exercise_type_service::count_exercise_types() {
 std::optional<domain::exercise_type>
 exercise_type_service::get_exercise_type_at_version(const std::string& code,
                                                     std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting exercise type at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting exercise type at version. " << "code: " << code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::exercise_type>
 exercise_type_service::get_exercise_type(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting exercise type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting exercise type. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -476,11 +474,11 @@ exercise_type_service::get_exercise_types(const std::vector<std::string>& codes)
 void exercise_type_service::save_exercise_type(const domain::exercise_type& v) {
     if (v.code.empty())
         throw std::invalid_argument("Exercise Type code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving exercise type. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving exercise type. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved exercise type. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved exercise type. " << "code: " << v.code;
 }
 
 void exercise_type_service::save_exercise_types(
@@ -489,7 +487,7 @@ void exercise_type_service::save_exercise_types(
         if (e.code.empty())
             throw std::invalid_argument("Exercise Type code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << exercise_types.size() << " exercise types";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << exercise_types.size() << " exercise types";
     auto ts = exercise_types;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -498,9 +496,9 @@ void exercise_type_service::save_exercise_types(
 }
 
 void exercise_type_service::delete_exercise_type(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing exercise type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing exercise type. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed exercise type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed exercise type. " << "code: " << code;
 }
 
 void exercise_type_service::delete_exercise_types(const std::vector<std::string>& codes) {
@@ -509,7 +507,7 @@ void exercise_type_service::delete_exercise_types(const std::vector<std::string>
 
 std::vector<domain::exercise_type>
 exercise_type_service::get_exercise_type_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for exercise type. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for exercise type. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

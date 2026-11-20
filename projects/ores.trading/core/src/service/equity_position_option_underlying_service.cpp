@@ -26,7 +26,6 @@
 #include "ores.trading.api/domain/equity_position_option_underlying.hpp"
 #include "ores.trading.api/messaging/equity_position_option_underlying_protocol.hpp"
 #include "ores.trading.core/repository/equity_position_option_underlying_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -43,7 +42,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -541,13 +539,13 @@ ores::utility::domain::result equity_position_option_underlying_service::prepare
 std::vector<domain::equity_position_option_underlying>
 equity_position_option_underlying_service::list_equity_position_option_underlyings(
     std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all equity position option underlyings";
+    ORES_LOG_SEV(lg(), debug) << "Listing all equity position option underlyings";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t
 equity_position_option_underlying_service::count_equity_position_option_underlyings() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total equity position option underlyings count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total equity position option underlyings count";
     return repo_.get_total_equity_position_option_underlying_count(ctx_);
 }
 
@@ -555,15 +553,15 @@ equity_position_option_underlying_service::count_equity_position_option_underlyi
 std::vector<domain::equity_position_option_underlying>
 equity_position_option_underlying_service::list_equity_position_option_underlyings_by_trade_id(
     const std::string& trade_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing equity position option underlyings by trade_id: "
-                               << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing equity position option underlyings by trade_id: "
+                              << trade_id;
     return repo_.read_latest_by_trade_id(ctx_, trade_id, offset, limit);
 }
 
 std::uint32_t
 equity_position_option_underlying_service::count_equity_position_option_underlyings_by_trade_id(
     const std::string& trade_id) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Getting total equity position option underlyings count by trade_id: " << trade_id;
     return repo_.get_total_equity_position_option_underlying_count_by_trade_id(ctx_, trade_id);
 }
@@ -572,19 +570,18 @@ equity_position_option_underlying_service::count_equity_position_option_underlyi
 std::optional<domain::equity_position_option_underlying>
 equity_position_option_underlying_service::get_equity_position_option_underlying_at_version(
     const std::string& trade_id, const std::string& sequence_number, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting equity position option underlying at version. "
-                               << "trade_id: " << trade_id
-                               << " sequence_number: " << sequence_number
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting equity position option underlying at version. "
+                              << "trade_id: " << trade_id << " sequence_number: " << sequence_number
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, trade_id, sequence_number, version);
 }
 
 std::optional<domain::equity_position_option_underlying>
 equity_position_option_underlying_service::get_equity_position_option_underlying(
     const std::string& trade_id, const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting equity position option underlying. "
-                               << "trade_id: " << trade_id
-                               << " sequence_number: " << sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Getting equity position option underlying. "
+                              << "trade_id: " << trade_id
+                              << " sequence_number: " << sequence_number;
     auto results = repo_.read_latest(ctx_, trade_id, sequence_number);
     if (results.empty())
         return std::nullopt;
@@ -601,15 +598,15 @@ void equity_position_option_underlying_service::save_equity_position_option_unde
     const domain::equity_position_option_underlying& v) {
     if (v.trade_id.is_nil())
         throw std::invalid_argument("Equity Position Option Underlying trade_id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving equity position option underlying. "
-                               << "trade_id: " << v.trade_id
-                               << " sequence_number: " << v.sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Saving equity position option underlying. "
+                              << "trade_id: " << v.trade_id
+                              << " sequence_number: " << v.sequence_number;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved equity position option underlying. "
-                              << "trade_id: " << v.trade_id
-                              << " sequence_number: " << v.sequence_number;
+    ORES_LOG_SEV(lg(), info) << "Saved equity position option underlying. "
+                             << "trade_id: " << v.trade_id
+                             << " sequence_number: " << v.sequence_number;
 }
 
 void equity_position_option_underlying_service::save_equity_position_option_underlyings(
@@ -620,8 +617,8 @@ void equity_position_option_underlying_service::save_equity_position_option_unde
             throw std::invalid_argument(
                 "Equity Position Option Underlying trade_id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << equity_position_option_underlyings.size()
-                               << " equity position option underlyings";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << equity_position_option_underlyings.size()
+                              << " equity position option underlyings";
     auto ts = equity_position_option_underlyings;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -631,13 +628,12 @@ void equity_position_option_underlying_service::save_equity_position_option_unde
 
 void equity_position_option_underlying_service::delete_equity_position_option_underlying(
     const std::string& trade_id, const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing equity position option underlying. "
-                               << "trade_id: " << trade_id
-                               << " sequence_number: " << sequence_number;
-    repo_.remove(ctx_, trade_id, sequence_number);
-    BOOST_LOG_SEV(lg(), info) << "Removed equity position option underlying. "
+    ORES_LOG_SEV(lg(), debug) << "Removing equity position option underlying. "
                               << "trade_id: " << trade_id
                               << " sequence_number: " << sequence_number;
+    repo_.remove(ctx_, trade_id, sequence_number);
+    ORES_LOG_SEV(lg(), info) << "Removed equity position option underlying. "
+                             << "trade_id: " << trade_id << " sequence_number: " << sequence_number;
 }
 
 void equity_position_option_underlying_service::delete_equity_position_option_underlyings(
@@ -648,9 +644,9 @@ void equity_position_option_underlying_service::delete_equity_position_option_un
 std::vector<domain::equity_position_option_underlying>
 equity_position_option_underlying_service::get_equity_position_option_underlying_history(
     const std::string& trade_id, const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for equity position option underlying. "
-                               << "trade_id: " << trade_id
-                               << " sequence_number: " << sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for equity position option underlying. "
+                              << "trade_id: " << trade_id
+                              << " sequence_number: " << sequence_number;
     return repo_.read_all(ctx_, trade_id, sequence_number);
 }
 

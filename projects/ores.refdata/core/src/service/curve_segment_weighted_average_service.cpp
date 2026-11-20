@@ -26,7 +26,6 @@
 #include "ores.refdata.api/domain/curve_segment_weighted_average.hpp"
 #include "ores.refdata.api/messaging/curve_segment_weighted_average_protocol.hpp"
 #include "ores.refdata.core/repository/curve_segment_weighted_average_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -478,12 +476,12 @@ ores::utility::domain::result curve_segment_weighted_average_service::prepare_ch
 std::vector<domain::curve_segment_weighted_average>
 curve_segment_weighted_average_service::list_segment_weighted_averages(std::uint32_t offset,
                                                                        std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all curve segment weighted averages";
+    ORES_LOG_SEV(lg(), debug) << "Listing all curve segment weighted averages";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t curve_segment_weighted_average_service::count_segment_weighted_averages() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total curve segment weighted averages count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total curve segment weighted averages count";
     return repo_.get_total_segment_weighted_average_count(ctx_);
 }
 
@@ -491,14 +489,14 @@ std::uint32_t curve_segment_weighted_average_service::count_segment_weighted_ave
 std::optional<domain::curve_segment_weighted_average>
 curve_segment_weighted_average_service::get_segment_weighted_average_at_version(
     const boost::uuids::uuid& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting curve segment weighted average at version. "
-                               << "id: " << id << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting curve segment weighted average at version. "
+                              << "id: " << id << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::curve_segment_weighted_average>
 curve_segment_weighted_average_service::get_segment_weighted_average(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting curve segment weighted average. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting curve segment weighted average. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -515,11 +513,11 @@ void curve_segment_weighted_average_service::save_segment_weighted_average(
     const domain::curve_segment_weighted_average& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Curve Segment Weighted Average id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving curve segment weighted average. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving curve segment weighted average. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved curve segment weighted average. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved curve segment weighted average. " << "id: " << v.id;
 }
 
 void curve_segment_weighted_average_service::save_segment_weighted_averages(
@@ -528,8 +526,8 @@ void curve_segment_weighted_average_service::save_segment_weighted_averages(
         if (e.id.is_nil())
             throw std::invalid_argument("Curve Segment Weighted Average id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << segment_weighted_averages.size()
-                               << " curve segment weighted averages";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << segment_weighted_averages.size()
+                              << " curve segment weighted averages";
     auto ts = segment_weighted_averages;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -539,9 +537,9 @@ void curve_segment_weighted_average_service::save_segment_weighted_averages(
 
 void curve_segment_weighted_average_service::delete_segment_weighted_average(
     const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing curve segment weighted average. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing curve segment weighted average. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed curve segment weighted average. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed curve segment weighted average. " << "id: " << id;
 }
 
 void curve_segment_weighted_average_service::delete_segment_weighted_averages(
@@ -552,8 +550,8 @@ void curve_segment_weighted_average_service::delete_segment_weighted_averages(
 std::vector<domain::curve_segment_weighted_average>
 curve_segment_weighted_average_service::get_segment_weighted_average_history(
     const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for curve segment weighted average. "
-                               << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for curve segment weighted average. "
+                              << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

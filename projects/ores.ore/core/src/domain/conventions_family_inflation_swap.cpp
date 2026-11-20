@@ -196,7 +196,7 @@ void write_derived_schedule(const std::string& s, record_writer d) {
 
 refdata::domain::inflation_swap_convention
 conventions_mapper::map_inflation_swap(const record_reader& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping inflation swap convention: " << text_of(v, "Id");
+    ORES_LOG_SEV(lg(), trace) << "Mapping inflation swap convention: " << text_of(v, "Id");
 
     refdata::domain::inflation_swap_convention r;
     r.id = text_of(v, "Id");

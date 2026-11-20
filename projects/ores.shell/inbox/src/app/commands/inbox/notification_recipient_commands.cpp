@@ -185,7 +185,7 @@ void notification_recipient_commands::register_commands(cli::Menu& root_menu,
 void notification_recipient_commands::process_list(std::ostream& out,
                                                    nats_client& session,
                                                    const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating list request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating list request.";
 
     using request_type = messaging::list_notification_recipients_request;
     if constexpr (request_type::requires_session) {
@@ -235,7 +235,7 @@ void notification_recipient_commands::process_list(std::ostream& out,
 void notification_recipient_commands::process_get(std::ostream& out,
                                                   nats_client& session,
                                                   const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating get request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating get request.";
 
     using request_type = messaging::get_notification_recipient_request;
     if constexpr (request_type::requires_session) {
@@ -283,7 +283,7 @@ void notification_recipient_commands::process_get(std::ostream& out,
 void notification_recipient_commands::process_get_many(std::ostream& out,
                                                        nats_client& session,
                                                        const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating get-many request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating get-many request.";
 
     using request_type = messaging::get_many_notification_recipients_request;
     if constexpr (request_type::requires_session) {
@@ -335,7 +335,7 @@ void notification_recipient_commands::process_get_many(std::ostream& out,
 void notification_recipient_commands::process_add(std::ostream& out,
                                                   nats_client& session,
                                                   const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating add request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating add request.";
 
     using request_type = messaging::put_notification_recipient_request;
     if constexpr (request_type::requires_session) {
@@ -390,7 +390,7 @@ void notification_recipient_commands::process_add(std::ostream& out,
 void notification_recipient_commands::process_set(std::ostream& out,
                                                   nats_client& session,
                                                   const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating set request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating set request.";
 
     using request_type = messaging::put_notification_recipient_request;
     if constexpr (request_type::requires_session) {
@@ -453,7 +453,7 @@ void notification_recipient_commands::process_set(std::ostream& out,
 void notification_recipient_commands::process_put_many(std::ostream& out,
                                                        nats_client& session,
                                                        const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating put-many request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating put-many request.";
 
     using request_type = messaging::put_many_notification_recipients_request;
     if constexpr (request_type::requires_session) {
@@ -520,7 +520,7 @@ void notification_recipient_commands::process_put_many(std::ostream& out,
 void notification_recipient_commands::process_delete(std::ostream& out,
                                                      nats_client& session,
                                                      const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating delete request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating delete request.";
 
     using request_type = messaging::delete_notification_recipient_request;
     if constexpr (request_type::requires_session) {
@@ -578,7 +578,7 @@ void notification_recipient_commands::process_delete(std::ostream& out,
 void notification_recipient_commands::process_delete_many(std::ostream& out,
                                                           nats_client& session,
                                                           const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating delete-many request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating delete-many request.";
 
     using request_type = messaging::delete_many_notification_recipients_request;
     if constexpr (request_type::requires_session) {
@@ -634,7 +634,7 @@ void notification_recipient_commands::process_delete_many(std::ostream& out,
 void notification_recipient_commands::process_by_account_id(std::ostream& out,
                                                             nats_client& session,
                                                             const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating by-account-id request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating by-account-id request.";
 
     using request_type = messaging::list_by_account_id_notification_recipients_request;
     if constexpr (request_type::requires_session) {

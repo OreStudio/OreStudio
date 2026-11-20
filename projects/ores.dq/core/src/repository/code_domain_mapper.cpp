@@ -27,8 +27,6 @@
 #include "ores.dq.api/domain/code_domain.hpp"
 #include "ores.dq.api/domain/code_domain_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.core/repository/code_domain_entity.hpp"
-#include "ores.logging/boost_severity.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <vector>
 
 namespace ores::dq::repository {
@@ -37,7 +35,7 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 
 domain::code_domain code_domain_mapper::map(const code_domain_entity& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::code_domain r;
     r.version = v.version;
@@ -52,12 +50,12 @@ domain::code_domain code_domain_mapper::map(const code_domain_entity& v) {
     r.change_commentary = v.change_commentary;
     r.recorded_at = v.valid_from;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
 }
 
 code_domain_entity code_domain_mapper::map(const domain::code_domain& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     code_domain_entity r;
     r.code = v.code;
@@ -71,7 +69,7 @@ code_domain_entity code_domain_mapper::map(const domain::code_domain& v) {
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;
 }
 

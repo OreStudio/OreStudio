@@ -31,7 +31,7 @@
 #include "ores.http.api/net/session_bytes_accumulator.hpp"
 #include "ores.http.api/net/worker_pool.hpp"
 #include "ores.http.api/openapi/endpoint_registry.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include <boost/asio/awaitable.hpp>
 #include <boost/asio/io_context.hpp>

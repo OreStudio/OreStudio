@@ -19,7 +19,7 @@
  */
 #include "ores.database/pq/connection.hpp"
 #include "ores.database/service/postgres_listener_service.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "test_suite.hpp"
 #include <atomic>
@@ -421,8 +421,8 @@ TEST_CASE("postgres_listener_service_drains_a_burst_of_notifications",
     const bool drained = wait_for([&] { return received == burst; }, std::chrono::seconds(60));
     const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
         std::chrono::steady_clock::now() - start);
-    BOOST_LOG_SEV(lg, info) << "Drained " << received << " of " << burst << " notifications in "
-                            << elapsed.count() << "ms.";
+    ORES_LOG_SEV(lg, info) << "Drained " << received << " of " << burst << " notifications in "
+                           << elapsed.count() << "ms.";
     WARN("drained " << received << " of " << burst << " in " << elapsed.count() << "ms");
 
     REQUIRE(drained);

@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.variability.api/domain/system_setting.hpp"
 #include "ores.variability.api/domain/system_setting_json_io.hpp"  // IWYU pragma: keep.
 #include "ores.variability.api/domain/system_setting_table_io.hpp" // IWYU pragma: keep.
@@ -37,7 +37,7 @@ TEST_CASE("create_boolean_system_setting_with_valid_fields", "[domain][system_se
     sut.data_type = "boolean";
     sut.description = "Controls whether the system is in bootstrap mode";
     sut.modified_by = "admin";
-    BOOST_LOG_SEV(lg, info) << "System setting: " << sut;
+    ORES_LOG_SEV(lg, info) << "System setting: " << sut;
 
     CHECK(sut.name == "system.bootstrap_mode");
     CHECK(sut.value == "true");
@@ -55,7 +55,7 @@ TEST_CASE("create_integer_system_setting", "[domain][system_setting]") {
     sut.data_type = "integer";
     sut.description = "Maximum number of retries for failed operations";
     sut.modified_by = "system";
-    BOOST_LOG_SEV(lg, info) << "System setting: " << sut;
+    ORES_LOG_SEV(lg, info) << "System setting: " << sut;
 
     CHECK(sut.name == "system.max_retries");
     CHECK(sut.value == "5");
@@ -71,7 +71,7 @@ TEST_CASE("create_string_system_setting", "[domain][system_setting]") {
     sut.data_type = "string";
     sut.description = "Default locale for the application";
     sut.modified_by = "admin";
-    BOOST_LOG_SEV(lg, info) << "System setting: " << sut;
+    ORES_LOG_SEV(lg, info) << "System setting: " << sut;
 
     CHECK(sut.name == "system.default_locale");
     CHECK(sut.value == "en-GB");
@@ -87,7 +87,7 @@ TEST_CASE("create_json_system_setting", "[domain][system_setting]") {
     sut.data_type = "json";
     sut.description = "Rate limiting configuration";
     sut.modified_by = "admin";
-    BOOST_LOG_SEV(lg, info) << "System setting: " << sut;
+    ORES_LOG_SEV(lg, info) << "System setting: " << sut;
 
     CHECK(sut.name == "system.rate_limits");
     CHECK(sut.data_type == "json");
@@ -98,7 +98,7 @@ TEST_CASE("default_constructed_system_setting_has_zero_version", "[domain][syste
     auto lg(make_logger(test_suite));
 
     const system_setting sut;
-    BOOST_LOG_SEV(lg, info) << "Default system setting version: " << sut.version;
+    ORES_LOG_SEV(lg, info) << "Default system setting version: " << sut.version;
 
     CHECK(sut.version == 0);
     CHECK(sut.name.empty());
@@ -114,7 +114,7 @@ TEST_CASE("system_setting_version_is_set_correctly", "[domain][system_setting]")
     sut.name = "system.user_signups";
     sut.value = "false";
     sut.data_type = "boolean";
-    BOOST_LOG_SEV(lg, info) << "System setting version: " << sut.version;
+    ORES_LOG_SEV(lg, info) << "System setting version: " << sut.version;
 
     CHECK(sut.version == 7);
 }
@@ -135,7 +135,7 @@ TEST_CASE("system_setting_json_output_contains_name_and_value", "[domain][system
     os << sut;
     const std::string json_output = os.str();
 
-    BOOST_LOG_SEV(lg, info) << "JSON output: " << json_output;
+    ORES_LOG_SEV(lg, info) << "JSON output: " << json_output;
 
     CHECK(!json_output.empty());
     CHECK(json_output.find("system.feature_x") != std::string::npos);
@@ -160,7 +160,7 @@ TEST_CASE("system_setting_json_output_for_disabled_setting", "[domain][system_se
     os << sut;
     const std::string json_output = os.str();
 
-    BOOST_LOG_SEV(lg, info) << "JSON output: " << json_output;
+    ORES_LOG_SEV(lg, info) << "JSON output: " << json_output;
 
     CHECK(!json_output.empty());
     CHECK(json_output.find("false") != std::string::npos);
@@ -178,7 +178,7 @@ TEST_CASE("system_setting_provenance_fields_are_stored", "[domain][system_settin
     sut.change_commentary = "Disabling maintenance mode after upgrade";
     sut.performed_by = "ops_user";
     sut.modified_by = "admin";
-    BOOST_LOG_SEV(lg, info) << "System setting: " << sut;
+    ORES_LOG_SEV(lg, info) << "System setting: " << sut;
 
     CHECK(sut.change_reason_code == "SCHEDULED_MAINTENANCE");
     CHECK(sut.change_commentary == "Disabling maintenance mode after upgrade");

@@ -18,7 +18,7 @@
  *
  */
 #include "ores.trading.core/service/bus_book_rules.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.refdata.api/messaging/book_product_type_protocol.hpp"
@@ -63,12 +63,12 @@ std::optional<ores::nats::message> ask(ores::nats::service::client& nats,
         auto reply = nats.request_sync(
             subject, std::span<const std::byte>(body.data(), body.size()), headers);
         if (reply.headers.find(std::string(ores::nats::headers::x_error)) != reply.headers.end()) {
-            BOOST_LOG_SEV(lg(), logging::warn) << "Reading " << what << " was refused.";
+            ORES_LOG_SEV(lg(), logging::warn) << "Reading " << what << " was refused.";
             return std::nullopt;
         }
         return reply;
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), logging::warn) << "Reading " << what << " failed: " << e.what();
+        ORES_LOG_SEV(lg(), logging::warn) << "Reading " << what << " failed: " << e.what();
         return std::nullopt;
     }
 }

@@ -22,7 +22,7 @@
 
 #include "feed_kind_registry.hpp"
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
@@ -71,7 +71,7 @@ public:
         if (!e) {
             // No registered kind, so no typed response of its own to reply
             // with: the registry answers in its own registered shape.
-            BOOST_LOG_SEV(simulate_handler_lg(), error) << "Unknown feed kind: " << kind;
+            ORES_LOG_SEV(simulate_handler_lg(), error) << "Unknown feed kind: " << kind;
             registry_.reply_unknown_kind(nats_, msg, kind);
             return;
         }
@@ -79,14 +79,13 @@ public:
         // Standard service auth: require a valid JWT, then RBAC.
         auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
-            BOOST_LOG_SEV(simulate_handler_lg(), warn)
-                << "Rejecting simulate request: auth failed: "
-                << static_cast<int>(ctx_expected.error());
+            ORES_LOG_SEV(simulate_handler_lg(), warn) << "Rejecting simulate request: auth failed: "
+                                                      << static_cast<int>(ctx_expected.error());
             error_reply(nats_, msg, ctx_expected.error());
             return;
         }
         if (!has_permission(*ctx_expected, e->config_permission)) {
-            BOOST_LOG_SEV(simulate_handler_lg(), warn)
+            ORES_LOG_SEV(simulate_handler_lg(), warn)
                 << "Rejecting simulate request: missing permission " << e->config_permission << ".";
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -94,7 +93,7 @@ public:
 
         auto env = e->decode_simulate(msg);
         if (!env) {
-            BOOST_LOG_SEV(simulate_handler_lg(), error) << "Failed to decode simulate request.";
+            ORES_LOG_SEV(simulate_handler_lg(), error) << "Failed to decode simulate request.";
             e->reply_simulate(
                 nats_,
                 msg,
@@ -111,12 +110,12 @@ public:
         try {
             e->reply_simulate(nats_, msg, run_simulate_paths(*env));
         } catch (const std::exception& ex) {
-            BOOST_LOG_SEV(simulate_handler_lg(), error)
+            ORES_LOG_SEV(simulate_handler_lg(), error)
                 << "Simulate failed for " << kind << ": " << ex.what();
             e->reply_simulate(
                 nats_, msg, feed_simulation_result{.success = false, .message = ex.what()});
         }
-        BOOST_LOG_SEV(simulate_handler_lg(), debug) << "Reply sent for " << kind << ".simulate.";
+        ORES_LOG_SEV(simulate_handler_lg(), debug) << "Reply sent for " << kind << ".simulate.";
     }
 
 private:

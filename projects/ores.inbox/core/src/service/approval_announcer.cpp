@@ -61,7 +61,7 @@ void approval_announcer::tell_asker(const domain::approval_kind& kind,
                          .actor_account_id();
         }
         if (!sender) {
-            BOOST_LOG_SEV(lg(), warn)
+            ORES_LOG_SEV(lg(), warn)
                 << "Request " << boost::uuids::to_string(request.id) << " is " << state
                 << ", but no account sends the notice, so the person who asked was not told.";
             return;
@@ -79,9 +79,9 @@ void approval_announcer::tell_asker(const domain::approval_kind& kind,
             .audience_permission_code = ""};
         center.raise(n, n.account_ids, *sender);
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn) << "Request " << boost::uuids::to_string(request.id) << " is "
-                                  << state
-                                  << ", but the person who asked was not told: " << e.what();
+        ORES_LOG_SEV(lg(), warn) << "Request " << boost::uuids::to_string(request.id) << " is "
+                                 << state
+                                 << ", but the person who asked was not told: " << e.what();
     }
 }
 
@@ -105,8 +105,8 @@ void approval_announcer::tell_deciders(const domain::approval_kind& kind,
             .audience_permission_code = permission_code};
         center.raise(n, deciders, raised.requested_by);
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn) << "Request " << boost::uuids::to_string(raised.id)
-                                  << " raised, but its deciders were not told: " << e.what();
+        ORES_LOG_SEV(lg(), warn) << "Request " << boost::uuids::to_string(raised.id)
+                                 << " raised, but its deciders were not told: " << e.what();
     }
 }
 

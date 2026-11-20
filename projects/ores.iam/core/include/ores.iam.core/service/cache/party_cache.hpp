@@ -27,7 +27,7 @@
 
 #include "ores.eventing.core/service/cache/partition_token_cache.hpp"
 #include "ores.eventing.core/service/cache/partitioned_cache.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
@@ -139,7 +139,7 @@ public:
             };
             if (!authorise(false)) {
                 const std::string msg = "no token acts inside this tenant";
-                BOOST_LOG_SEV(party_cache_lg(), warn)
+                ORES_LOG_SEV(party_cache_lg(), warn)
                     << "Party cache load failed for tenant " << tenant_id << ": " << msg;
                 return msg;
             }
@@ -164,7 +164,7 @@ public:
                 if (!resp || resp->result.outcome != ores::utility::domain::outcome::ok) {
                     const auto msg =
                         resp ? resp->result.message : "parse error (malformed or error reply)";
-                    BOOST_LOG_SEV(party_cache_lg(), warn)
+                    ORES_LOG_SEV(party_cache_lg(), warn)
                         << "Party cache load failed for tenant " << tenant_id << ": " << msg;
                     return msg;
                 }
@@ -188,11 +188,11 @@ public:
             }
             auto aux = children_t.persistent();
             cache_.replace_partition(tenant_id, entries, aux);
-            BOOST_LOG_SEV(party_cache_lg(), debug)
+            ORES_LOG_SEV(party_cache_lg(), debug)
                 << "Loaded " << count << " parties for tenant " << tenant_id;
             return {};
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(party_cache_lg(), warn)
+            ORES_LOG_SEV(party_cache_lg(), warn)
                 << "Party cache load exception for tenant " << tenant_id << ": " << e.what();
             return e.what();
         }

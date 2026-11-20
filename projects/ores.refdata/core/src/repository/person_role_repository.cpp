@@ -27,13 +27,11 @@
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/service/tenant_context.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/person_role.hpp"
 #include "ores.refdata.api/domain/person_role_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/person_role_entity.hpp"
 #include "ores.refdata.core/repository/person_role_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -216,8 +214,8 @@ void person_role_repository::write(const context& ctx, const std::vector<domain:
 void person_role_repository::write(const context& ctx,
                                    const domain::person_role& v,
                                    const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing person role. " << "code: " << v.code
-                               << " coding_scheme_code: " << v.coding_scheme_code;
+    ORES_LOG_SEV(lg(), debug) << "Writing person role. " << "code: " << v.code
+                              << " coding_scheme_code: " << v.coding_scheme_code;
     const auto t = person_role_apply_claim(
         v,
         claim,
@@ -231,7 +229,7 @@ void person_role_repository::write(const context& ctx,
 void person_role_repository::write(const context& ctx,
                                    const std::vector<domain::person_role>& v,
                                    const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing person roles. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing person roles. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "person_role_repository::write: one claim is needed for each row");
@@ -269,8 +267,8 @@ std::vector<domain::person_role> person_role_repository::read_latest(const conte
 
 std::vector<domain::person_role> person_role_repository::read_latest(
     const context& ctx, const std::string& code, const std::string& coding_scheme_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest person role. " << "code: " << code
-                               << " coding_scheme_code: " << coding_scheme_code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest person role. " << "code: " << code
+                              << " coding_scheme_code: " << coding_scheme_code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
@@ -290,8 +288,8 @@ std::vector<domain::person_role> person_role_repository::read_latest(
 
 std::vector<domain::person_role> person_role_repository::read_all(
     const context& ctx, const std::string& code, const std::string& coding_scheme_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all person role versions. " << "code: " << code
-                               << " coding_scheme_code: " << coding_scheme_code;
+    ORES_LOG_SEV(lg(), debug) << "Reading all person role versions. " << "code: " << code
+                              << " coding_scheme_code: " << coding_scheme_code;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
@@ -313,9 +311,9 @@ person_role_repository::read_at_version(const context& ctx,
                                         const std::string& code,
                                         const std::string& coding_scheme_code,
                                         std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading person role at version. " << "code: " << code
-                               << " coding_scheme_code: " << coding_scheme_code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading person role at version. " << "code: " << code
+                              << " coding_scheme_code: " << coding_scheme_code
+                              << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<person_role_entity>> |
@@ -342,8 +340,8 @@ person_role_repository::remove(const context& ctx,
                                const std::string& code,
                                const std::string& coding_scheme_code,
                                std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing person role. " << "code: " << code
-                               << " coding_scheme_code: " << coding_scheme_code;
+    ORES_LOG_SEV(lg(), debug) << "Removing person role. " << "code: " << code
+                              << " coding_scheme_code: " << coding_scheme_code;
     const auto current = read_latest(ctx, code, coding_scheme_code);
     if (current.empty())
         return remove_status::missing;
@@ -383,8 +381,8 @@ person_role_repository::read_latest(const context& ctx,
                                     std::uint32_t limit,
                                     const ores::utility::domain::order& order,
                                     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest person roles with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest person roles with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<person_role_entity>> |
@@ -404,7 +402,7 @@ person_role_repository::read_latest(const context& ctx,
 std::uint32_t
 person_role_repository::get_total_role_count(const context& ctx,
                                              const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active person role count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active person role count";
 
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);

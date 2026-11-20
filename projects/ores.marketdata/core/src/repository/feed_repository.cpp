@@ -27,14 +27,12 @@
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/service/tenant_context.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.marketdata.api/domain/feed.hpp"
 #include "ores.marketdata.api/domain/feed_json_io.hpp" // IWYU pragma: keep.
 #include "ores.marketdata.api/messaging/feed_protocol.hpp"
 #include "ores.marketdata.core/repository/feed_entity.hpp"
 #include "ores.marketdata.core/repository/feed_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -259,7 +257,7 @@ void feed_repository::write(const context& ctx, const std::vector<domain::feed>&
 void feed_repository::write(const context& ctx,
                             const domain::feed& v,
                             const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing market data feed. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Writing market data feed. " << "id: " << v.id;
     const auto t =
         feed_apply_claim(v,
                          claim,
@@ -273,7 +271,7 @@ void feed_repository::write(const context& ctx,
 void feed_repository::write(const context& ctx,
                             const std::vector<domain::feed>& v,
                             const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing market data feeds. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing market data feeds. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument("feed_repository::write: one claim is needed for each row");
     std::vector<domain::feed> to_read;
@@ -308,7 +306,7 @@ std::vector<domain::feed> feed_repository::read_latest(const context& ctx) {
 }
 
 std::vector<domain::feed> feed_repository::read_latest(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest market data feed. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest market data feed. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
@@ -326,7 +324,7 @@ std::vector<domain::feed> feed_repository::read_latest(const context& ctx, const
 
 std::vector<domain::feed> feed_repository::read_latest_by_name(const context& ctx,
                                                                const std::string& name) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest market data feed by name: " << name;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest market data feed by name: " << name;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
@@ -361,8 +359,8 @@ feed_repository::read_latest_by_name(const context& ctx, const std::vector<std::
         }
         return all;
     }
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest market data feeds by name. Count: "
-                               << names.size();
+    ORES_LOG_SEV(lg(), debug) << "Reading latest market data feeds by name. Count: "
+                              << names.size();
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
@@ -380,7 +378,7 @@ feed_repository::read_latest_by_name(const context& ctx, const std::vector<std::
 
 std::vector<domain::feed> feed_repository::read_any_by_name(const context& ctx,
                                                             const std::string& name) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading any market data feed by name: " << name;
+    ORES_LOG_SEV(lg(), debug) << "Reading any market data feed by name: " << name;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
@@ -398,7 +396,7 @@ std::vector<domain::feed> feed_repository::read_any_by_name(const context& ctx,
 
 
 std::vector<domain::feed> feed_repository::read_all(const context& ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all market data feed versions. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Reading all market data feed versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
@@ -416,8 +414,8 @@ std::vector<domain::feed> feed_repository::read_all(const context& ctx, const st
 
 std::optional<domain::feed>
 feed_repository::read_at_version(const context& ctx, const std::string& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading market data feed at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading market data feed at version. " << "id: " << id
+                              << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<feed_entity>> |
@@ -440,7 +438,7 @@ feed_repository::read_at_version(const context& ctx, const std::string& id, std:
 feed_repository::remove_status feed_repository::remove(const context& ctx,
                                                        const std::string& id,
                                                        std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing market data feed. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing market data feed. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
         return remove_status::missing;
@@ -479,8 +477,8 @@ feed_repository::read_latest(const context& ctx,
                              const ores::utility::domain::order& order,
                              const std::optional<messaging::feeds_filter>& filter,
                              const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest market data feeds with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest market data feeds with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<feed_entity>> |
@@ -501,7 +499,7 @@ std::uint32_t
 feed_repository::get_total_feed_count(const context& ctx,
                                       const std::optional<messaging::feeds_filter>& filter,
                                       const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active market data feed count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active market data feed count";
 
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);

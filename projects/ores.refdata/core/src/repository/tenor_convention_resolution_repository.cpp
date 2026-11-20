@@ -27,13 +27,11 @@
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.database/service/tenant_context.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/tenor_convention_resolution.hpp"
 #include "ores.refdata.api/domain/tenor_convention_resolution_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/tenor_convention_resolution_entity.hpp"
 #include "ores.refdata.core/repository/tenor_convention_resolution_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -197,8 +195,8 @@ void tenor_convention_resolution_repository::write(
 void tenor_convention_resolution_repository::write(
     const domain::tenor_convention_resolution& resolution,
     const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing tenor convention resolution to database: "
-                               << resolution.convention_code << "/" << resolution.tenor_code;
+    ORES_LOG_SEV(lg(), debug) << "Writing tenor convention resolution to database: "
+                              << resolution.convention_code << "/" << resolution.tenor_code;
     const auto current = claim.kind == ores::utility::domain::precondition_kind::any ?
                              read_latest(resolution.convention_code, resolution.tenor_code) :
                              std::vector<domain::tenor_convention_resolution>{};
@@ -212,8 +210,8 @@ void tenor_convention_resolution_repository::write(
 void tenor_convention_resolution_repository::write(
     const std::vector<domain::tenor_convention_resolution>& resolutions,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing tenor convention resolutions to database. Count: "
-                               << resolutions.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing tenor convention resolutions to database. Count: "
+                              << resolutions.size();
     if (claims.size() != resolutions.size())
         throw std::invalid_argument(
             "tenor_convention_resolution_repository::write: one claim is needed for each row");
@@ -257,8 +255,8 @@ tenor_convention_resolution_repository::read_latest() {
 
 std::vector<domain::tenor_convention_resolution>
 tenor_convention_resolution_repository::read_latest(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest tenor convention resolutions with offset: "
-                               << offset << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest tenor convention resolutions with offset: "
+                              << offset << " and limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
@@ -280,8 +278,8 @@ tenor_convention_resolution_repository::read_latest(std::uint32_t offset, std::u
 std::vector<domain::tenor_convention_resolution>
 tenor_convention_resolution_repository::read_latest(const std::string& convention_code,
                                                     const std::string& tenor_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest tenor convention resolution. " << convention_code
-                               << "/" << tenor_code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest tenor convention resolution. " << convention_code
+                              << "/" << tenor_code;
 
     static constexpr auto max = db_timestamp::max();
     const auto convention_code_str = convention_code;
@@ -303,7 +301,7 @@ tenor_convention_resolution_repository::read_latest(const std::string& conventio
 }
 
 std::uint32_t tenor_convention_resolution_repository::get_total_resolution_count() {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active tenor convention resolutions count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active tenor convention resolutions count";
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
@@ -314,15 +312,15 @@ std::uint32_t tenor_convention_resolution_repository::get_total_resolution_count
 
     const auto count = query_builder::execute_count_query<tenor_convention_resolution_entity>(
         ctx_, query, std::nullopt, lg(), "Counting tenor convention resolutions");
-    BOOST_LOG_SEV(lg(), debug) << "Total active tenor convention resolutions count: " << count;
+    ORES_LOG_SEV(lg(), debug) << "Total active tenor convention resolutions count: " << count;
     return count;
 }
 
 std::vector<domain::tenor_convention_resolution>
 tenor_convention_resolution_repository::read_latest_by_convention(
     const std::string& convention_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest tenor convention resolutions. Convention: "
-                               << convention_code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest tenor convention resolutions. Convention: "
+                              << convention_code;
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
@@ -346,8 +344,8 @@ tenor_convention_resolution_repository::read_latest_by_convention(
 
 std::vector<domain::tenor_convention_resolution>
 tenor_convention_resolution_repository::read_latest_by_tenor(const std::string& tenor_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest tenor convention resolutions. Tenor: "
-                               << tenor_code;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest tenor convention resolutions. Tenor: "
+                              << tenor_code;
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
@@ -371,8 +369,8 @@ tenor_convention_resolution_repository::read_latest_by_tenor(const std::string& 
 std::vector<domain::tenor_convention_resolution>
 tenor_convention_resolution_repository::read_latest_by_convention(
     const std::string& convention_code, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest tenor convention resolutions. Convention: "
-                               << convention_code << " offset: " << offset << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest tenor convention resolutions. Convention: "
+                              << convention_code << " offset: " << offset << " limit: " << limit;
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
@@ -397,7 +395,7 @@ tenor_convention_resolution_repository::read_latest_by_convention(
 
 std::uint32_t tenor_convention_resolution_repository::get_total_resolution_count_by_convention(
     const std::string& convention_code) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Retrieving total active tenor convention resolutions count. Convention: "
         << convention_code;
     static constexpr auto max = db_timestamp::max();
@@ -411,14 +409,14 @@ std::uint32_t tenor_convention_resolution_repository::get_total_resolution_count
 
     const auto count = query_builder::execute_count_query<tenor_convention_resolution_entity>(
         ctx_, query, std::nullopt, lg(), "Counting tenor convention resolutions");
-    BOOST_LOG_SEV(lg(), debug) << "Total active tenor convention resolutions count by convention: "
-                               << count;
+    ORES_LOG_SEV(lg(), debug) << "Total active tenor convention resolutions count by convention: "
+                              << count;
     return count;
 }
 
 std::uint32_t tenor_convention_resolution_repository::get_total_resolution_count_by_tenor(
     const std::string& tenor_code) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Retrieving total active tenor convention resolutions count. Tenor: " << tenor_code;
     static constexpr auto max = db_timestamp::max();
 
@@ -430,14 +428,14 @@ std::uint32_t tenor_convention_resolution_repository::get_total_resolution_count
 
     const auto count = query_builder::execute_count_query<tenor_convention_resolution_entity>(
         ctx_, query, std::nullopt, lg(), "Counting tenor convention resolutions");
-    BOOST_LOG_SEV(lg(), debug) << "Total active tenor convention resolutions count by tenor: "
-                               << count;
+    ORES_LOG_SEV(lg(), debug) << "Total active tenor convention resolutions count by tenor: "
+                              << count;
     return count;
 }
 
 std::vector<tenor_convention_resolution_history_row>
 tenor_convention_resolution_repository::read_all_by_convention(const std::string& convention_code) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Reading every version of the tenor convention resolutions. Convention: "
         << convention_code;
 
@@ -491,8 +489,8 @@ tenor_convention_resolution_repository::remove_status
 tenor_convention_resolution_repository::remove(const std::string& convention_code,
                                                const std::string& tenor_code,
                                                std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing tenor convention resolution from database: "
-                               << convention_code << "/" << tenor_code;
+    ORES_LOG_SEV(lg(), debug) << "Removing tenor convention resolution from database: "
+                              << convention_code << "/" << tenor_code;
 
     const auto current = read_latest(convention_code, tenor_code);
     if (current.empty())
@@ -540,8 +538,8 @@ void tenor_convention_resolution_repository::remove(
 
 void tenor_convention_resolution_repository::remove_by_convention(
     const std::string& convention_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing all tenor convention resolutions from database: "
-                               << convention_code;
+    ORES_LOG_SEV(lg(), debug) << "Removing all tenor convention resolutions from database: "
+                              << convention_code;
 
     const auto tid = ctx_.tenant_id().to_string();
     const auto query =

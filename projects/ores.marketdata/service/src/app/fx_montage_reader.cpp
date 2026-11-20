@@ -19,7 +19,7 @@
  */
 #include "ores.marketdata.service/app/fx_montage_reader.hpp"
 #include "../curve_pillar_reader.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/datum/market_datum.hpp"
 #include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.api/datum/schema.hpp"
@@ -166,7 +166,7 @@ mm::get_fx_montage_response get_fx_montage(const ores::database::context& ctx,
         try {
             spot.value = observation_value(newest);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(fx_montage_lg(), warn)
+            ORES_LOG_SEV(fx_montage_lg(), warn)
                 << "Skipping a quote that is not a number: " << newest.oresmd_uri << ": "
                 << e.what();
             continue;

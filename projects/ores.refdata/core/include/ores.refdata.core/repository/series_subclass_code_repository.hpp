@@ -26,7 +26,7 @@
 #define ORES_REFDATA_CORE_REPOSITORY_SERIES_SUBCLASS_CODE_REPOSITORY_HPP
 
 #include "ores.database/domain/context_fwd.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/series_subclass_code.hpp"
 #include "ores.refdata.api/messaging/series_subclass_code_protocol.hpp"
 #include "ores.refdata.core/export.hpp"

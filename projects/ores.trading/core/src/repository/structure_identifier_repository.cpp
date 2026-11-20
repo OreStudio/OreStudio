@@ -26,14 +26,12 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.trading.api/domain/structure_identifier.hpp"
 #include "ores.trading.api/domain/structure_identifier_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.api/messaging/structure_identifier_protocol.hpp"
 #include "ores.trading.core/repository/structure_identifier_entity.hpp"
 #include "ores.trading.core/repository/structure_identifier_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -229,8 +227,8 @@ void structure_identifier_repository::write(const context& ctx,
 void structure_identifier_repository::write(const context& ctx,
                                             const domain::structure_identifier& v,
                                             const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing structure identifier. "
-                               << "structure_id: " << v.structure_id << " id_type: " << v.id_type;
+    ORES_LOG_SEV(lg(), debug) << "Writing structure identifier. "
+                              << "structure_id: " << v.structure_id << " id_type: " << v.id_type;
     const auto t = structure_identifier_apply_claim(
         v,
         claim,
@@ -247,7 +245,7 @@ void structure_identifier_repository::write(
     const context& ctx,
     const std::vector<domain::structure_identifier>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing structure identifiers. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing structure identifiers. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "structure_identifier_repository::write: one claim is needed for each row");
@@ -287,8 +285,8 @@ structure_identifier_repository::read_latest(const context& ctx) {
 
 std::vector<domain::structure_identifier> structure_identifier_repository::read_latest(
     const context& ctx, const std::string& structure_id, const std::string& id_type) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest structure identifier. "
-                               << "structure_id: " << structure_id << " id_type: " << id_type;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest structure identifier. "
+                              << "structure_id: " << structure_id << " id_type: " << id_type;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -308,8 +306,8 @@ std::vector<domain::structure_identifier> structure_identifier_repository::read_
 
 std::vector<domain::structure_identifier> structure_identifier_repository::read_all(
     const context& ctx, const std::string& structure_id, const std::string& id_type) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all structure identifier versions. "
-                               << "structure_id: " << structure_id << " id_type: " << id_type;
+    ORES_LOG_SEV(lg(), debug) << "Reading all structure identifier versions. "
+                              << "structure_id: " << structure_id << " id_type: " << id_type;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<structure_identifier_entity>> |
@@ -331,9 +329,9 @@ structure_identifier_repository::read_at_version(const context& ctx,
                                                  const std::string& structure_id,
                                                  const std::string& id_type,
                                                  std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading structure identifier at version. "
-                               << "structure_id: " << structure_id << " id_type: " << id_type
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading structure identifier at version. "
+                              << "structure_id: " << structure_id << " id_type: " << id_type
+                              << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<structure_identifier_entity>> |
@@ -362,8 +360,8 @@ structure_identifier_repository::read_latest_by_structure_id(
     std::uint32_t limit,
     const ores::utility::domain::order& order,
     const std::optional<messaging::structure_identifiers_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest structure identifiers. structure_id: "
-                               << structure_id << " offset: " << offset << " limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest structure identifiers. structure_id: "
+                              << structure_id << " offset: " << offset << " limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -387,7 +385,7 @@ std::uint32_t structure_identifier_repository::get_total_identifier_count_by_str
     const context& ctx,
     const std::string& structure_id,
     const std::optional<messaging::structure_identifiers_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug)
+    ORES_LOG_SEV(lg(), debug)
         << "Retrieving total active structure identifiers count. structure_id: " << structure_id;
     static constexpr auto max = db_timestamp::max();
 
@@ -411,8 +409,8 @@ structure_identifier_repository::remove(const context& ctx,
                                         const std::string& structure_id,
                                         const std::string& id_type,
                                         std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing structure identifier. "
-                               << "structure_id: " << structure_id << " id_type: " << id_type;
+    ORES_LOG_SEV(lg(), debug) << "Removing structure identifier. "
+                              << "structure_id: " << structure_id << " id_type: " << id_type;
     const auto current = read_latest(ctx, structure_id, id_type);
     if (current.empty())
         return remove_status::missing;
@@ -455,8 +453,8 @@ std::vector<domain::structure_identifier> structure_identifier_repository::read_
     const ores::utility::domain::order& order,
     const std::optional<messaging::structure_identifiers_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest structure identifiers with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest structure identifiers with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<structure_identifier_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -478,7 +476,7 @@ std::uint32_t structure_identifier_repository::get_total_identifier_count(
     const context& ctx,
     const std::optional<messaging::structure_identifiers_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active structure identifier count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active structure identifier count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<structure_identifier_entity>> |

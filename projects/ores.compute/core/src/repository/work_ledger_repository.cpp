@@ -56,7 +56,7 @@ boost::uuids::uuid uuid_of(const std::optional<std::string>& cell) {
 } // namespace
 
 void work_ledger_repository::enqueue(const context& ctx, const ledger_entry& entry) {
-    BOOST_LOG_SEV(lg(), debug) << "Queueing result " << boost::uuids::to_string(entry.result_id);
+    ORES_LOG_SEV(lg(), debug) << "Queueing result " << boost::uuids::to_string(entry.result_id);
     static const std::string sql = R"(
         INSERT INTO ores_compute_work_ledger_tbl
             (result_id, work_tenant_id, workunit_id, platforms, priority)

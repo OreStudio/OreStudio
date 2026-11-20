@@ -26,7 +26,7 @@
 #define ORES_MARKETDATA_CORE_SERVICE_RATE_CARD_COMPONENT_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/domain/rate_card_component.hpp"
 #include "ores.marketdata.api/messaging/rate_card_component_protocol.hpp"
 #include "ores.marketdata.core/export.hpp"

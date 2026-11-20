@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/commands/inbox/notification_operations_commands.hpp"
@@ -60,7 +60,7 @@ TEST_CASE("notification_operations_commands_registers_raise_notification", "[com
     CHECK(std::find(completions.begin(), completions.end(), "raise-notification") !=
           completions.end());
 
-    BOOST_LOG_SEV(lg, debug) << "Registered 1 command(s).";
+    ORES_LOG_SEV(lg, debug) << "Registered 1 command(s).";
 }
 
 TEST_CASE("notification_operations_commands_raise_notification_requires_a_session", "[commands]") {
@@ -75,7 +75,7 @@ TEST_CASE("notification_operations_commands_raise_notification_requires_a_sessio
         session,
         std::vector<std::string>{"scenario.to_run", "/development/tests/1", "__none__"});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -90,7 +90,7 @@ TEST_CASE("notification_operations_commands_raise_notification_reports_the_expec
     command_feedback::reset();
     notification_operations_commands::process_raise_notification(out, session, {});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
     CHECK(out.str().find("Expected 3 arguments, got 0.") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -111,7 +111,7 @@ TEST_CASE("notification_operations_commands_raise_notification_reads_named_value
                                  "--argument",
                                  "scenario=a scenario with = in its title"});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for named values: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for named values: " << out.str();
     // The token was read as one named value, so the command got as far as the
     // transport rather than refusing the argument.
     CHECK(out.str().find("Not connected to NATS") != std::string::npos);
@@ -131,7 +131,7 @@ TEST_CASE("notification_operations_commands_raise_notification_refuses_a_bare_na
         std::vector<std::string>{
             "scenario.to_run", "/development/tests/1", "__none__", "--argument", "scenario"});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a token with no value: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a token with no value: " << out.str();
     CHECK(out.str().find("Expected name=value, got 'scenario'.") != std::string::npos);
     CHECK(command_feedback::failed());
 }

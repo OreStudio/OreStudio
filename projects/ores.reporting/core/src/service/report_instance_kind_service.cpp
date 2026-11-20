@@ -26,13 +26,11 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.reporting.api/domain/report_instance_kind.hpp"
 #include "ores.reporting.api/messaging/report_instance_kind_protocol.hpp"
 #include "ores.reporting.core/repository/report_instance_kind_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -455,26 +453,26 @@ ores::utility::domain::result report_instance_kind_service::prepare_change(
 
 std::vector<domain::report_instance_kind>
 report_instance_kind_service::list_types(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all report instance kinds";
+    ORES_LOG_SEV(lg(), debug) << "Listing all report instance kinds";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t report_instance_kind_service::count_types() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total report instance kinds count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total report instance kinds count";
     return repo_.get_total_type_count(ctx_);
 }
 
 
 std::optional<domain::report_instance_kind>
 report_instance_kind_service::get_type_at_version(const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting report instance kind at version. " << "code: " << code
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting report instance kind at version. " << "code: " << code
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::report_instance_kind>
 report_instance_kind_service::get_type(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting report instance kind. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting report instance kind. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -489,11 +487,11 @@ report_instance_kind_service::get_types(const std::vector<std::string>& codes) {
 void report_instance_kind_service::save_type(const domain::report_instance_kind& v) {
     if (v.code.empty())
         throw std::invalid_argument("Report Instance Kind code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving report instance kind. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), debug) << "Saving report instance kind. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved report instance kind. " << "code: " << v.code;
+    ORES_LOG_SEV(lg(), info) << "Saved report instance kind. " << "code: " << v.code;
 }
 
 void report_instance_kind_service::save_types(
@@ -502,7 +500,7 @@ void report_instance_kind_service::save_types(
         if (e.code.empty())
             throw std::invalid_argument("Report Instance Kind code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << types.size() << " report instance kinds";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << types.size() << " report instance kinds";
     auto ts = types;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -511,9 +509,9 @@ void report_instance_kind_service::save_types(
 }
 
 void report_instance_kind_service::delete_type(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing report instance kind. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Removing report instance kind. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed report instance kind. " << "code: " << code;
+    ORES_LOG_SEV(lg(), info) << "Removed report instance kind. " << "code: " << code;
 }
 
 void report_instance_kind_service::delete_types(const std::vector<std::string>& codes) {
@@ -522,7 +520,7 @@ void report_instance_kind_service::delete_types(const std::vector<std::string>& 
 
 std::vector<domain::report_instance_kind>
 report_instance_kind_service::get_type_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for report instance kind. " << "code: " << code;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for report instance kind. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

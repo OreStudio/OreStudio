@@ -61,7 +61,7 @@ The full template source. Edit here and re-tangle with
 #include "ores.http.api/domain/http_response.hpp"
 #include "ores.http.api/net/router.hpp"
 #include "ores.http.api/openapi/endpoint_registry.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "test_suite.hpp"
 #include <algorithm>
@@ -163,7 +163,7 @@ TEST_CASE("{{entity_singular}}_routes_registers_every_derived_route", "[routes]"
         CHECK(found != routes.end());
     }
 
-    BOOST_LOG_SEV(lg, debug) << "Registered {{http_route.route_count}} route(s).";
+    ORES_LOG_SEV(lg, debug) << "Registered {{http_route.route_count}} route(s).";
 }
 
 TEST_CASE("{{entity_singular}}_routes_requires_a_session_where_the_operation_does", "[routes]") {
@@ -199,7 +199,7 @@ TEST_CASE("{{entity_singular}}_routes_requires_a_session_where_the_operation_doe
         CHECK(found->auth_declared);
     }
 
-    BOOST_LOG_SEV(lg, debug) << "Checked the auth flag of {{http_route.route_count}} route(s).";
+    ORES_LOG_SEV(lg, debug) << "Checked the auth flag of {{http_route.route_count}} route(s).";
 }
 {{#http_route.routes}}
 {{#is_paged}}
@@ -215,7 +215,7 @@ TEST_CASE("{{entity_singular}}_routes_{{identifier}}_accepts_a_page_and_an_order
         {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_query({ {"offset", "10"}, {"limit", "5"}, {"sort", "version"}, {"descending", "true"} }), session));
 
     CHECK(response.status == http_status::bad_gateway);
-    BOOST_LOG_SEV(lg, debug) << "Response: " << response.body;
+    ORES_LOG_SEV(lg, debug) << "Response: " << response.body;
 }
 
 TEST_CASE("{{entity_singular}}_routes_{{identifier}}_accepts_every_filter_it_declares", "[routes]") {
@@ -231,7 +231,7 @@ TEST_CASE("{{entity_singular}}_routes_{{identifier}}_accepts_every_filter_it_dec
         INFO(name);
         CHECK(response.status == http_status::bad_gateway);
     }
-    BOOST_LOG_SEV(lg, debug) << "Checked " << names.size() << " declared filter(s).";
+    ORES_LOG_SEV(lg, debug) << "Checked " << names.size() << " declared filter(s).";
 }
 
 TEST_CASE("{{entity_singular}}_routes_{{identifier}}_refuses_an_undeclared_filter", "[routes]") {
@@ -243,7 +243,7 @@ TEST_CASE("{{entity_singular}}_routes_{{identifier}}_refuses_an_undeclared_filte
 
     CHECK(response.status == http_status::bad_request);
     CHECK(response.body.find("no_such_column") != std::string::npos);
-    BOOST_LOG_SEV(lg, debug) << "Response: " << response.body;
+    ORES_LOG_SEV(lg, debug) << "Response: " << response.body;
 }
 {{#domain_entity.filter_members}}
 {{#is_one_of}}
@@ -257,7 +257,7 @@ TEST_CASE("{{entity_singular}}_routes_{{identifier}}_refuses_an_empty_item_in_f_
 
     CHECK(response.status == http_status::bad_request);
     CHECK(response.body.find("f.{{member}}") != std::string::npos);
-    BOOST_LOG_SEV(lg, debug) << "Response: " << response.body;
+    ORES_LOG_SEV(lg, debug) << "Response: " << response.body;
 }
 {{/is_one_of}}
 {{/domain_entity.filter_members}}

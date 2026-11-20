@@ -20,7 +20,7 @@
 #include "ores.dq.api/domain/subject_area.hpp"
 #include "ores.dq.api/domain/subject_area_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.api/domain/subject_area_table.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 
@@ -37,7 +37,7 @@ TEST_CASE("create_subject_area_with_valid_fields", "[domain]") {
     sut.description = "Currency codes and related information";
     sut.modified_by = "admin";
     sut.change_commentary = "Initial creation";
-    BOOST_LOG_SEV(lg, info) << "Subject area: " << sut;
+    ORES_LOG_SEV(lg, info) << "Subject area: " << sut;
 
     CHECK(sut.version == 1);
     CHECK(sut.name == "Currencies");
@@ -60,7 +60,7 @@ TEST_CASE("subject_area_convert_single_to_table", "[domain]") {
     std::vector<subject_area> areas = {sa};
     auto table = convert_to_table(areas);
 
-    BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
+    ORES_LOG_SEV(lg, info) << "Table output:\n" << table;
 
     CHECK(!table.empty());
     CHECK(table.contains("Name"));

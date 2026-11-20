@@ -26,7 +26,7 @@
 #define ORES_REFDATA_CORE_MESSAGING_TENOR_BASIS_SWAP_PAY_RECEIVE_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.refdata.api/messaging/tenor_basis_swap_pay_receive_protocol.hpp"
@@ -75,7 +75,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void list_tenor_basis_swap_pay_receives(ores::nats::message msg) {
-        BOOST_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), debug)
+        ORES_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -91,7 +91,7 @@ public:
         }
         auto req = decode<list_tenor_basis_swap_pay_receives_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), warn)
+            ORES_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -99,14 +99,14 @@ public:
         service::tenor_basis_swap_pay_receive_service svc(req_ctx);
         try {
             auto response = svc.list_tenor_basis_swap_pay_receives(*req);
-            BOOST_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), debug)
+            ORES_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), error)
+            ORES_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             list_tenor_basis_swap_pay_receives_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -126,7 +126,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void get_tenor_basis_swap_pay_receive(ores::nats::message msg) {
-        BOOST_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), debug)
+        ORES_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -142,7 +142,7 @@ public:
         }
         auto req = decode<get_tenor_basis_swap_pay_receive_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), warn)
+            ORES_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -150,14 +150,14 @@ public:
         service::tenor_basis_swap_pay_receive_service svc(req_ctx);
         try {
             auto response = svc.get_tenor_basis_swap_pay_receive(*req);
-            BOOST_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), debug)
+            ORES_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), error)
+            ORES_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             get_tenor_basis_swap_pay_receive_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -177,7 +177,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void get_many_tenor_basis_swap_pay_receives(ores::nats::message msg) {
-        BOOST_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), debug)
+        ORES_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -193,7 +193,7 @@ public:
         }
         auto req = decode<get_many_tenor_basis_swap_pay_receives_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), warn)
+            ORES_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -201,14 +201,14 @@ public:
         service::tenor_basis_swap_pay_receive_service svc(req_ctx);
         try {
             auto response = svc.get_many_tenor_basis_swap_pay_receives(*req);
-            BOOST_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), debug)
+            ORES_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), error)
+            ORES_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             get_many_tenor_basis_swap_pay_receives_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -228,7 +228,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void put_tenor_basis_swap_pay_receive(ores::nats::message msg) {
-        BOOST_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), debug)
+        ORES_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -244,7 +244,7 @@ public:
         }
         auto req = decode<put_tenor_basis_swap_pay_receive_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), warn)
+            ORES_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -252,14 +252,14 @@ public:
         service::tenor_basis_swap_pay_receive_service svc(req_ctx);
         try {
             auto response = svc.put_tenor_basis_swap_pay_receive(*req);
-            BOOST_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), debug)
+            ORES_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), error)
+            ORES_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             put_tenor_basis_swap_pay_receive_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -279,7 +279,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void put_many_tenor_basis_swap_pay_receives(ores::nats::message msg) {
-        BOOST_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), debug)
+        ORES_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -295,7 +295,7 @@ public:
         }
         auto req = decode<put_many_tenor_basis_swap_pay_receives_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), warn)
+            ORES_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -303,14 +303,14 @@ public:
         service::tenor_basis_swap_pay_receive_service svc(req_ctx);
         try {
             auto response = svc.put_many_tenor_basis_swap_pay_receives(*req);
-            BOOST_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), debug)
+            ORES_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), error)
+            ORES_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             put_many_tenor_basis_swap_pay_receives_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -330,7 +330,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void delete_tenor_basis_swap_pay_receive(ores::nats::message msg) {
-        BOOST_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), debug)
+        ORES_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -346,7 +346,7 @@ public:
         }
         auto req = decode<delete_tenor_basis_swap_pay_receive_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), warn)
+            ORES_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -354,14 +354,14 @@ public:
         service::tenor_basis_swap_pay_receive_service svc(req_ctx);
         try {
             auto response = svc.delete_tenor_basis_swap_pay_receive(*req);
-            BOOST_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), debug)
+            ORES_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), error)
+            ORES_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             delete_tenor_basis_swap_pay_receive_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -381,7 +381,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void delete_many_tenor_basis_swap_pay_receives(ores::nats::message msg) {
-        BOOST_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), debug)
+        ORES_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -397,7 +397,7 @@ public:
         }
         auto req = decode<delete_many_tenor_basis_swap_pay_receives_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), warn)
+            ORES_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -405,14 +405,14 @@ public:
         service::tenor_basis_swap_pay_receive_service svc(req_ctx);
         try {
             auto response = svc.delete_many_tenor_basis_swap_pay_receives(*req);
-            BOOST_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), debug)
+            ORES_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), error)
+            ORES_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             delete_many_tenor_basis_swap_pay_receives_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -432,7 +432,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void list_by_convention_id_tenor_basis_swap_pay_receives(ores::nats::message msg) {
-        BOOST_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), debug)
+        ORES_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -448,7 +448,7 @@ public:
         }
         auto req = decode<list_by_convention_id_tenor_basis_swap_pay_receives_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), warn)
+            ORES_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -456,14 +456,14 @@ public:
         service::tenor_basis_swap_pay_receive_service svc(req_ctx);
         try {
             auto response = svc.list_by_convention_id_tenor_basis_swap_pay_receives(*req);
-            BOOST_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), debug)
+            ORES_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), error)
+            ORES_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             list_by_convention_id_tenor_basis_swap_pay_receives_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -483,7 +483,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void list_tenor_basis_swap_pay_receive_versions(ores::nats::message msg) {
-        BOOST_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), debug)
+        ORES_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -499,7 +499,7 @@ public:
         }
         auto req = decode<list_tenor_basis_swap_pay_receive_versions_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), warn)
+            ORES_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -507,14 +507,14 @@ public:
         service::tenor_basis_swap_pay_receive_service svc(req_ctx);
         try {
             auto response = svc.list_tenor_basis_swap_pay_receive_versions(*req);
-            BOOST_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), debug)
+            ORES_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), error)
+            ORES_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             list_tenor_basis_swap_pay_receive_versions_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
@@ -534,7 +534,7 @@ public:
      * answer, so the two cannot disagree about what happened.
      */
     void get_tenor_basis_swap_pay_receive_version(ores::nats::message msg) {
-        BOOST_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), debug)
+        ORES_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), debug)
             << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
@@ -550,7 +550,7 @@ public:
         }
         auto req = decode<get_tenor_basis_swap_pay_receive_version_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), warn)
+            ORES_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -558,14 +558,14 @@ public:
         service::tenor_basis_swap_pay_receive_service svc(req_ctx);
         try {
             auto response = svc.get_tenor_basis_swap_pay_receive_version(*req);
-            BOOST_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), debug)
+            ORES_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
             // exception here is the store failing, which is a different
             // thing and is reported as such.
-            BOOST_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), error)
+            ORES_LOG_SEV(tenor_basis_swap_pay_receive_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             get_tenor_basis_swap_pay_receive_version_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;

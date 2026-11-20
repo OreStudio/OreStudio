@@ -68,7 +68,7 @@ void lei_entity_summary_operations_commands::register_commands(cli::Menu& root_m
 
 void lei_entity_summary_operations_commands::process_get_lei_entities_summary(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating get-lei-entities-summary request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating get-lei-entities-summary request.";
 
     using request_type = ores::dq::messaging::get_lei_entities_summary_request;
 
@@ -134,7 +134,7 @@ void lei_entity_summary_operations_commands::process_get_lei_entities_summary(
 
 void lei_entity_summary_operations_commands::process_search_lei_entities(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating search-lei-entities request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating search-lei-entities request.";
 
     using request_type = ores::dq::messaging::search_lei_entities_request;
 

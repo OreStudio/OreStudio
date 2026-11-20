@@ -28,7 +28,7 @@ using namespace ores::logging;
 using namespace conventions_fields;
 
 refdata::domain::ois_convention conventions_mapper::map_ois(const record_reader& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping OIS convention: " << text_of(v, "Id");
+    ORES_LOG_SEV(lg(), trace) << "Mapping OIS convention: " << text_of(v, "Id");
 
     refdata::domain::ois_convention r;
     r.id = text_of(v, "Id");

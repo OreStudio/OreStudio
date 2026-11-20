@@ -31,9 +31,7 @@
 #include "ores.iam.api/messaging/tenant_type_protocol.hpp"
 #include "ores.iam.core/repository/tenant_type_entity.hpp"
 #include "ores.iam.core/repository/tenant_type_mapper.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -208,7 +206,7 @@ void tenant_type_repository::write(const context& ctx, const std::vector<domain:
 void tenant_type_repository::write(const context& ctx,
                                    const domain::tenant_type& v,
                                    const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing tenant type. " << "type: " << v.type;
+    ORES_LOG_SEV(lg(), debug) << "Writing tenant type. " << "type: " << v.type;
     const auto t = tenant_type_apply_claim(v,
                                            claim,
                                            tenant_type_claim_reads_current(claim) ?
@@ -221,7 +219,7 @@ void tenant_type_repository::write(const context& ctx,
 void tenant_type_repository::write(const context& ctx,
                                    const std::vector<domain::tenant_type>& v,
                                    const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing tenant types. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing tenant types. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "tenant_type_repository::write: one claim is needed for each row");
@@ -257,7 +255,7 @@ std::vector<domain::tenant_type> tenant_type_repository::read_latest(const conte
 
 std::vector<domain::tenant_type> tenant_type_repository::read_latest(const context& ctx,
                                                                      const std::string& type) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest tenant type. " << "type: " << type;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest tenant type. " << "type: " << type;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -275,7 +273,7 @@ std::vector<domain::tenant_type> tenant_type_repository::read_latest(const conte
 
 std::vector<domain::tenant_type> tenant_type_repository::read_all(const context& ctx,
                                                                   const std::string& type) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all tenant type versions. " << "type: " << type;
+    ORES_LOG_SEV(lg(), debug) << "Reading all tenant type versions. " << "type: " << type;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<tenant_type_entity>> |
                        query_builder::where("tenant_id"_c == tid && "type"_c == type) |
@@ -292,8 +290,8 @@ std::vector<domain::tenant_type> tenant_type_repository::read_all(const context&
 std::optional<domain::tenant_type> tenant_type_repository::read_at_version(const context& ctx,
                                                                            const std::string& type,
                                                                            std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading tenant type at version. " << "type: " << type
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading tenant type at version. " << "type: " << type
+                              << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         query_builder::read<std::vector<tenant_type_entity>> |
@@ -315,7 +313,7 @@ std::optional<domain::tenant_type> tenant_type_repository::read_at_version(const
 
 tenant_type_repository::remove_status tenant_type_repository::remove(
     const context& ctx, const std::string& type, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing tenant type. " << "type: " << type;
+    ORES_LOG_SEV(lg(), debug) << "Removing tenant type. " << "type: " << type;
     const auto current = read_latest(ctx, type);
     if (current.empty())
         return remove_status::missing;
@@ -353,8 +351,8 @@ tenant_type_repository::read_latest(const context& ctx,
                                     const ores::utility::domain::order& order,
                                     const std::optional<messaging::tenant_types_filter>& filter,
                                     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest tenant types with offset: " << offset
-                               << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest tenant types with offset: " << offset
+                              << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<tenant_type_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -375,7 +373,7 @@ std::uint32_t tenant_type_repository::get_total_type_count(
     const context& ctx,
     const std::optional<messaging::tenant_types_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active tenant type count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active tenant type count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<tenant_type_entity>> |

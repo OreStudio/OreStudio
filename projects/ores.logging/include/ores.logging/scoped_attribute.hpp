@@ -47,7 +47,7 @@ namespace ores::logging {
  *     scoped_attribute guard("SkipTelemetry");
  *     // All logs in this scope (and any functions called) will have
  *     // the SkipTelemetry attribute set to true.
- *     BOOST_LOG_SEV(lg, info) << "Sending...";
+ *     ORES_LOG_SEV(lg, info) << "Sending...";
  *     do_network_stuff();  // Logs here also have the attribute
  * }
  * @endcode

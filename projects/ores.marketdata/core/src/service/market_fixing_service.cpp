@@ -26,7 +26,6 @@
 #include "ores.marketdata.api/domain/market_fixing.hpp"
 #include "ores.marketdata.api/messaging/market_fixing_protocol.hpp"
 #include "ores.marketdata.core/repository/market_fixing_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -42,7 +41,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -400,19 +398,19 @@ market_fixing_service::prepare_change(const messaging::market_fixing_change& cha
 
 std::vector<domain::market_fixing> market_fixing_service::list_market_fixings(std::uint32_t offset,
                                                                               std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all market fixings";
+    ORES_LOG_SEV(lg(), debug) << "Listing all market fixings";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t market_fixing_service::count_market_fixings() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total market fixings count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total market fixings count";
     return repo_.get_total_market_fixing_count(ctx_);
 }
 
 
 std::optional<domain::market_fixing>
 market_fixing_service::get_market_fixing(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting market fixing. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting market fixing. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -427,11 +425,11 @@ market_fixing_service::get_market_fixings(const std::vector<std::string>& ids) {
 void market_fixing_service::save_market_fixing(const domain::market_fixing& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Market Fixing id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving market fixing. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving market fixing. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved market fixing. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved market fixing. " << "id: " << v.id;
 }
 
 void market_fixing_service::save_market_fixings(
@@ -440,7 +438,7 @@ void market_fixing_service::save_market_fixings(
         if (e.id.is_nil())
             throw std::invalid_argument("Market Fixing id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << market_fixings.size() << " market fixings";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << market_fixings.size() << " market fixings";
     auto ts = market_fixings;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -449,9 +447,9 @@ void market_fixing_service::save_market_fixings(
 }
 
 void market_fixing_service::delete_market_fixing(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing market fixing. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing market fixing. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed market fixing. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed market fixing. " << "id: " << id;
 }
 
 void market_fixing_service::delete_market_fixings(const std::vector<std::string>& ids) {
@@ -460,7 +458,7 @@ void market_fixing_service::delete_market_fixings(const std::vector<std::string>
 
 std::vector<domain::market_fixing>
 market_fixing_service::get_market_fixing_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for market fixing. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for market fixing. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

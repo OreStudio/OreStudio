@@ -61,7 +61,7 @@ void curve_publish_operations_operations_commands::register_commands(cli::Menu& 
 
 void curve_publish_operations_operations_commands::process_publish_curve(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating publish-curve request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating publish-curve request.";
 
     using request_type = ores::marketdata::messaging::publish_curve_request;
 

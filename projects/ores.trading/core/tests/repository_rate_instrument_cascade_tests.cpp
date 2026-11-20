@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/make_generation_context.hpp"
@@ -168,7 +168,7 @@ TEST_CASE("rate_instrument_delete_closes_the_whole_family", "[repository][rate_i
     CHECK(legs[0].currency == "USD");
 
     const auto status = header_repo.remove(ctx, id_str, std::nullopt);
-    BOOST_LOG_SEV(lg, debug) << "Header removal status: " << static_cast<int>(status);
+    ORES_LOG_SEV(lg, debug) << "Header removal status: " << static_cast<int>(status);
     CHECK(status == rate_instrument_repository::remove_status::removed);
 
     CHECK(header_repo.read_latest(ctx, id_str).empty());

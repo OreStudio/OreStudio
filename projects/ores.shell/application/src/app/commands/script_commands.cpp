@@ -18,7 +18,7 @@
  *
  */
 #include "ores.shell/app/commands/script_commands.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.shell/app/command_args.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/script_runner.hpp"
@@ -67,13 +67,13 @@ void script_commands::register_commands(cli::Menu& root, cli::CliSession*& activ
             std::ifstream file(filename);
             if (!file.is_open()) {
                 fail(out) << "Error: cannot open file: " << filename << std::endl;
-                BOOST_LOG_SEV(script_commands_anon_lg(), error)
+                ORES_LOG_SEV(script_commands_anon_lg(), error)
                     << "Cannot open script file: " << filename;
                 return;
             }
 
             out << "Loading script: " << filename << std::endl;
-            BOOST_LOG_SEV(script_commands_anon_lg(), info) << "Loading script: " << filename;
+            ORES_LOG_SEV(script_commands_anon_lg(), info) << "Loading script: " << filename;
 
             auto result = run_script(
                 file,
@@ -87,7 +87,7 @@ void script_commands::register_commands(cli::Menu& root, cli::CliSession*& activ
                 // nest) aborts too.
                 fail(out) << "Script aborted at line " << result.aborted_line << ": "
                           << result.aborted_command << std::endl;
-                BOOST_LOG_SEV(script_commands_anon_lg(), error)
+                ORES_LOG_SEV(script_commands_anon_lg(), error)
                     << "Script aborted at line " << result.aborted_line << " of " << filename
                     << ": " << result.aborted_command;
                 return;
@@ -95,7 +95,7 @@ void script_commands::register_commands(cli::Menu& root, cli::CliSession*& activ
 
             out << "Script complete: " << result.executed << " command"
                 << (result.executed != 1 ? "s" : "") << " executed." << std::endl;
-            BOOST_LOG_SEV(script_commands_anon_lg(), info)
+            ORES_LOG_SEV(script_commands_anon_lg(), info)
                 << "Script complete: " << result.executed << " commands executed from " << filename;
         },
         "Load and execute a .ores script file (aborts on first error; "

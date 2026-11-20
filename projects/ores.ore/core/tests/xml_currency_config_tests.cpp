@@ -16,7 +16,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.ore.core/xml/document_kind.hpp"
 #include "ores.ore.core/xml/exporter.hpp"
 #include "ores.ore.core/xml/importer.hpp"
@@ -78,7 +78,7 @@ TEST_CASE("a_currency_states_its_own_fields", "[ore][xml]") {
 
     const auto imported = ores::ore::xml::importer::import_currency_config_text(text);
     REQUIRE(imported.size() == 1);
-    BOOST_LOG_SEV(lg, info) << "currencies: " << imported.size();
+    ORES_LOG_SEV(lg, info) << "currencies: " << imported.size();
 
     CHECK(imported[0].iso_code == "JPY");
     CHECK(imported[0].name == "Japanese Yen");
@@ -103,7 +103,7 @@ TEST_CASE("a_numeric_code_keeps_its_leading_zeros", "[ore][xml]") {
     aud.replace(aud.find("392"), 3, "36");
     const auto imported = ores::ore::xml::importer::import_currency_config_text(aud);
     REQUIRE(imported.size() == 1);
-    BOOST_LOG_SEV(lg, info) << "numeric code: " << imported[0].numeric_code;
+    ORES_LOG_SEV(lg, info) << "numeric code: " << imported[0].numeric_code;
 
     CHECK(imported[0].numeric_code == "036");
     require_round_trip(imported);
@@ -194,6 +194,6 @@ TEST_CASE("every_currency_config_in_the_corpus_round_trips", "[ore][xml]") {
         const auto imported = ores::ore::xml::importer::import_currency_config(entry.path());
         require_round_trip(imported);
     }
-    BOOST_LOG_SEV(lg, info) << "currency configs: " << files;
+    ORES_LOG_SEV(lg, info) << "currency configs: " << files;
     CHECK(files == 13);
 }

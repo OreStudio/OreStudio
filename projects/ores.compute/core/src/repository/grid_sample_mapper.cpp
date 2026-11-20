@@ -27,10 +27,8 @@
 #include "ores.compute.api/domain/grid_sample_json_io.hpp" // IWYU pragma: keep.
 #include "ores.compute.core/repository/grid_sample_entity.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include <boost/lexical_cast.hpp>
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <chrono>
@@ -44,7 +42,7 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 
 domain::grid_sample grid_sample_mapper::map(const grid_sample_entity& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::grid_sample r;
     r.tenant_id = v.tenant_id;
@@ -65,12 +63,12 @@ domain::grid_sample grid_sample_mapper::map(const grid_sample_entity& v) {
     r.outcomes_client_error = v.outcomes_client_error;
     r.outcomes_no_reply = v.outcomes_no_reply;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
 }
 
 grid_sample_entity grid_sample_mapper::map(const domain::grid_sample& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
+    ORES_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     grid_sample_entity r;
     r.id = v.id;
@@ -91,7 +89,7 @@ grid_sample_entity grid_sample_mapper::map(const domain::grid_sample& v) {
     r.outcomes_client_error = v.outcomes_client_error;
     r.outcomes_no_reply = v.outcomes_no_reply;
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
+    ORES_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;
 }
 

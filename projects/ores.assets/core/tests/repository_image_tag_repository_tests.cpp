@@ -29,7 +29,7 @@
 #include "ores.assets.core/repository/image_repository.hpp"
 #include "ores.assets.core/repository/image_tag_repository.hpp"
 #include "ores.assets.core/repository/tag_repository.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
@@ -68,7 +68,7 @@ TEST_CASE("write_single_image_tag", "[repository]") {
     auto it = generate_synthetic_image_tag(ctx);
     it.image_id = img.id;
     it.tag_id = t.id;
-    BOOST_LOG_SEV(lg, debug) << "Image-tag: " << it;
+    ORES_LOG_SEV(lg, debug) << "Image-tag: " << it;
 
     CHECK_NOTHROW(repo.write(it));
 }
@@ -96,7 +96,7 @@ TEST_CASE("write_multiple_image_tags", "[repository]") {
     auto it2 = generate_synthetic_image_tag(ctx);
     it2.image_id = img.id;
     it2.tag_id = t2.id;
-    BOOST_LOG_SEV(lg, debug) << "Image-tags: " << std::vector<image_tag>{it1, it2};
+    ORES_LOG_SEV(lg, debug) << "Image-tags: " << std::vector<image_tag>{it1, it2};
 
     CHECK_NOTHROW(repo.write(std::vector<image_tag>{it1, it2}));
 }
@@ -122,7 +122,7 @@ TEST_CASE("read_latest_image_tags", "[repository]") {
     repo.write(it);
 
     auto read_image_tags = repo.read_latest();
-    BOOST_LOG_SEV(lg, debug) << "Read image-tags: " << read_image_tags;
+    ORES_LOG_SEV(lg, debug) << "Read image-tags: " << read_image_tags;
 
     auto found = std::ranges::find_if(read_image_tags, [&it](const image_tag& r) {
         return r.image_id == it.image_id && r.tag_id == it.tag_id;
@@ -153,7 +153,7 @@ TEST_CASE("read_latest_image_tags_by_image", "[repository]") {
     repo.write(it);
 
     auto read_image_tags = repo.read_latest_by_image(it.image_id);
-    BOOST_LOG_SEV(lg, debug) << "Read image-tags: " << read_image_tags;
+    ORES_LOG_SEV(lg, debug) << "Read image-tags: " << read_image_tags;
 
     REQUIRE(read_image_tags.size() == 1);
     CHECK(read_image_tags[0].image_id == it.image_id);
@@ -181,7 +181,7 @@ TEST_CASE("read_latest_image_tags_by_tag", "[repository]") {
     repo.write(it);
 
     auto read_image_tags = repo.read_latest_by_tag(it.tag_id);
-    BOOST_LOG_SEV(lg, debug) << "Read image-tags: " << read_image_tags;
+    ORES_LOG_SEV(lg, debug) << "Read image-tags: " << read_image_tags;
 
     REQUIRE(read_image_tags.size() == 1);
     CHECK(read_image_tags[0].tag_id == it.tag_id);
@@ -196,10 +196,10 @@ TEST_CASE("read_nonexistent_image_tag", "[repository]") {
 
     boost::uuids::random_generator gen;
     const auto nonexistent_image_id = gen();
-    BOOST_LOG_SEV(lg, debug) << "Non-existent image ID: " << nonexistent_image_id;
+    ORES_LOG_SEV(lg, debug) << "Non-existent image ID: " << nonexistent_image_id;
 
     auto read_image_tags = repo.read_latest_by_image(nonexistent_image_id);
-    BOOST_LOG_SEV(lg, debug) << "Read image-tags: " << read_image_tags;
+    ORES_LOG_SEV(lg, debug) << "Read image-tags: " << read_image_tags;
 
     CHECK(read_image_tags.empty());
 }
@@ -228,12 +228,12 @@ TEST_CASE("update_image_tag", "[repository]") {
     // the new row carries the actor the second write stated.
     auto updated_it = it;
     updated_it.assigned_by = "new_user";
-    BOOST_LOG_SEV(lg, debug) << "Updated image-tag: " << updated_it;
+    ORES_LOG_SEV(lg, debug) << "Updated image-tag: " << updated_it;
 
     CHECK_NOTHROW(repo.write(updated_it));
 
     auto read_image_tags = repo.read_latest(it.image_id, it.tag_id);
-    BOOST_LOG_SEV(lg, debug) << "Read image-tags: " << read_image_tags;
+    ORES_LOG_SEV(lg, debug) << "Read image-tags: " << read_image_tags;
 
     REQUIRE(read_image_tags.size() == 1);
     CHECK(read_image_tags[0].version == 2);

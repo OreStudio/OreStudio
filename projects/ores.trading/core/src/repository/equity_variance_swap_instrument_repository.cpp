@@ -26,7 +26,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.trading.api/domain/equity_variance_swap_instrument.hpp"
 #include "ores.trading.api/domain/equity_variance_swap_instrument_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.api/messaging/equity_variance_swap_instrument_protocol.hpp"
@@ -34,7 +33,6 @@
 #include "ores.trading.core/repository/equity_variance_swap_instrument_mapper.hpp"
 #include "ores.trading.core/repository/trade_write_observation.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -225,8 +223,8 @@ void equity_variance_swap_instrument_repository::write(
     const context& ctx,
     const domain::equity_variance_swap_instrument& v,
     const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing equity variance swap instrument. "
-                               << "trade_id: " << v.identity.trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Writing equity variance swap instrument. "
+                              << "trade_id: " << v.identity.trade_id;
     const auto t = equity_variance_swap_instrument_apply_claim(
         v,
         claim,
@@ -243,7 +241,7 @@ void equity_variance_swap_instrument_repository::write(
     const context& ctx,
     const std::vector<domain::equity_variance_swap_instrument>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing equity variance swap instruments. Count: " << v.size();
+    ORES_LOG_SEV(lg(), debug) << "Writing equity variance swap instruments. Count: " << v.size();
     if (claims.size() != v.size())
         throw std::invalid_argument(
             "equity_variance_swap_instrument_repository::write: one claim is needed for each row");
@@ -284,8 +282,8 @@ equity_variance_swap_instrument_repository::read_latest(const context& ctx) {
 std::vector<domain::equity_variance_swap_instrument>
 equity_variance_swap_instrument_repository::read_latest(const context& ctx,
                                                         const std::string& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest equity variance swap instrument. "
-                               << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest equity variance swap instrument. "
+                              << "trade_id: " << trade_id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<equity_variance_swap_instrument_entity>> |
@@ -305,8 +303,8 @@ equity_variance_swap_instrument_repository::read_latest(const context& ctx,
 std::vector<domain::equity_variance_swap_instrument>
 equity_variance_swap_instrument_repository::read_all(const context& ctx,
                                                      const std::string& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all equity variance swap instrument versions. "
-                               << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Reading all equity variance swap instrument versions. "
+                              << "trade_id: " << trade_id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<equity_variance_swap_instrument_entity>> |
                        query_builder::where("tenant_id"_c == tid && "trade_id"_c == trade_id) |
@@ -325,8 +323,8 @@ std::optional<domain::equity_variance_swap_instrument>
 equity_variance_swap_instrument_repository::read_at_version(const context& ctx,
                                                             const std::string& trade_id,
                                                             std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading equity variance swap instrument at version. "
-                               << "trade_id: " << trade_id << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Reading equity variance swap instrument at version. "
+                              << "trade_id: " << trade_id << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<equity_variance_swap_instrument_entity>> |
                        query_builder::where("tenant_id"_c == tid && "trade_id"_c == trade_id &&
@@ -354,8 +352,8 @@ equity_variance_swap_instrument_repository::remove_status
 equity_variance_swap_instrument_repository::remove(const context& ctx,
                                                    const std::string& trade_id,
                                                    std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing equity variance swap instrument. "
-                               << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Removing equity variance swap instrument. "
+                              << "trade_id: " << trade_id;
     const auto current = read_latest(ctx, trade_id);
     if (current.empty())
         return remove_status::missing;
@@ -396,8 +394,8 @@ equity_variance_swap_instrument_repository::read_latest(
     const ores::utility::domain::order& order,
     const std::optional<messaging::equity_variance_swap_instruments_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest equity variance swap instruments with offset: "
-                               << offset << " and limit: " << limit;
+    ORES_LOG_SEV(lg(), debug) << "Reading latest equity variance swap instruments with offset: "
+                              << offset << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<equity_variance_swap_instrument_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
@@ -420,7 +418,7 @@ equity_variance_swap_instrument_repository::get_total_equity_variance_swap_instr
     const context& ctx,
     const std::optional<messaging::equity_variance_swap_instruments_filter>& filter,
     const std::optional<std::string>& as_of) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active equity variance swap instrument count";
+    ORES_LOG_SEV(lg(), debug) << "Retrieving total active equity variance swap instrument count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<equity_variance_swap_instrument_entity>> |

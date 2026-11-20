@@ -26,7 +26,6 @@
 #include "ores.refdata.api/domain/curve_segment.hpp"
 #include "ores.refdata.api/messaging/curve_segment_protocol.hpp"
 #include "ores.refdata.core/repository/curve_segment_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -447,26 +445,26 @@ curve_segment_service::prepare_change(const messaging::curve_segment_change& cha
 
 std::vector<domain::curve_segment> curve_segment_service::list_segments(std::uint32_t offset,
                                                                         std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all curve segments";
+    ORES_LOG_SEV(lg(), debug) << "Listing all curve segments";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t curve_segment_service::count_segments() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total curve segments count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total curve segments count";
     return repo_.get_total_segment_count(ctx_);
 }
 
 
 std::optional<domain::curve_segment>
 curve_segment_service::get_segment_at_version(const boost::uuids::uuid& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting curve segment at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting curve segment at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::curve_segment>
 curve_segment_service::get_segment(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting curve segment. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting curve segment. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -481,11 +479,11 @@ curve_segment_service::get_segments(const std::vector<std::string>& ids) {
 void curve_segment_service::save_segment(const domain::curve_segment& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Curve Segment id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving curve segment. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving curve segment. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved curve segment. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved curve segment. " << "id: " << v.id;
 }
 
 void curve_segment_service::save_segments(const std::vector<domain::curve_segment>& segments) {
@@ -493,7 +491,7 @@ void curve_segment_service::save_segments(const std::vector<domain::curve_segmen
         if (e.id.is_nil())
             throw std::invalid_argument("Curve Segment id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << segments.size() << " curve segments";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << segments.size() << " curve segments";
     auto ts = segments;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -502,9 +500,9 @@ void curve_segment_service::save_segments(const std::vector<domain::curve_segmen
 }
 
 void curve_segment_service::delete_segment(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing curve segment. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing curve segment. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed curve segment. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed curve segment. " << "id: " << id;
 }
 
 void curve_segment_service::delete_segments(const std::vector<std::string>& ids) {
@@ -513,7 +511,7 @@ void curve_segment_service::delete_segments(const std::vector<std::string>& ids)
 
 std::vector<domain::curve_segment>
 curve_segment_service::get_segment_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for curve segment. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for curve segment. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

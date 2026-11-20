@@ -26,7 +26,6 @@
 #include "ores.refdata.api/domain/curve_volatility_delta_surface.hpp"
 #include "ores.refdata.api/messaging/curve_volatility_delta_surface_protocol.hpp"
 #include "ores.refdata.core/repository/curve_volatility_delta_surface_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -488,12 +486,12 @@ ores::utility::domain::result curve_volatility_delta_surface_service::prepare_ch
 std::vector<domain::curve_volatility_delta_surface>
 curve_volatility_delta_surface_service::list_curve_volatility_delta_surfaces(std::uint32_t offset,
                                                                              std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all curve volatility delta surfaces";
+    ORES_LOG_SEV(lg(), debug) << "Listing all curve volatility delta surfaces";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t curve_volatility_delta_surface_service::count_curve_volatility_delta_surfaces() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total curve volatility delta surfaces count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total curve volatility delta surfaces count";
     return repo_.get_total_curve_volatility_delta_surface_count(ctx_);
 }
 
@@ -501,15 +499,15 @@ std::uint32_t curve_volatility_delta_surface_service::count_curve_volatility_del
 std::optional<domain::curve_volatility_delta_surface>
 curve_volatility_delta_surface_service::get_curve_volatility_delta_surface_at_version(
     const boost::uuids::uuid& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting curve volatility delta surface at version. "
-                               << "id: " << id << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting curve volatility delta surface at version. "
+                              << "id: " << id << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::curve_volatility_delta_surface>
 curve_volatility_delta_surface_service::get_curve_volatility_delta_surface(
     const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting curve volatility delta surface. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting curve volatility delta surface. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -526,11 +524,11 @@ void curve_volatility_delta_surface_service::save_curve_volatility_delta_surface
     const domain::curve_volatility_delta_surface& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Curve Volatility Delta Surface id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving curve volatility delta surface. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving curve volatility delta surface. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved curve volatility delta surface. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved curve volatility delta surface. " << "id: " << v.id;
 }
 
 void curve_volatility_delta_surface_service::save_curve_volatility_delta_surfaces(
@@ -539,8 +537,8 @@ void curve_volatility_delta_surface_service::save_curve_volatility_delta_surface
         if (e.id.is_nil())
             throw std::invalid_argument("Curve Volatility Delta Surface id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << curve_volatility_delta_surfaces.size()
-                               << " curve volatility delta surfaces";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << curve_volatility_delta_surfaces.size()
+                              << " curve volatility delta surfaces";
     auto ts = curve_volatility_delta_surfaces;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -550,9 +548,9 @@ void curve_volatility_delta_surface_service::save_curve_volatility_delta_surface
 
 void curve_volatility_delta_surface_service::delete_curve_volatility_delta_surface(
     const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing curve volatility delta surface. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing curve volatility delta surface. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed curve volatility delta surface. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed curve volatility delta surface. " << "id: " << id;
 }
 
 void curve_volatility_delta_surface_service::delete_curve_volatility_delta_surfaces(
@@ -563,8 +561,8 @@ void curve_volatility_delta_surface_service::delete_curve_volatility_delta_surfa
 std::vector<domain::curve_volatility_delta_surface>
 curve_volatility_delta_surface_service::get_curve_volatility_delta_surface_history(
     const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for curve volatility delta surface. "
-                               << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for curve volatility delta surface. "
+                              << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

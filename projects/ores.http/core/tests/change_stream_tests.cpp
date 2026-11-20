@@ -18,7 +18,7 @@
  *
  */
 #include "ores.http.core/stream/change_hub.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "test_suite.hpp"
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
@@ -66,7 +66,7 @@ std::string read_once(change_stream_source& source, std::size_t bytes) {
 
 TEST_CASE("a_frame_reaches_every_open_stream", "[change_stream]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that one frame reaches every subscription";
+    ORES_LOG_SEV(lg, info) << "Testing that one frame reaches every subscription";
 
     change_hub hub(stream_system_tenant);
     auto first = hub.subscribe({.tenant = "acme"});
@@ -85,7 +85,7 @@ TEST_CASE("a_frame_reaches_every_open_stream", "[change_stream]") {
 
 TEST_CASE("a_stream_that_has_ended_is_forgotten_by_the_next_publish", "[change_stream]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that a closed stream does not accumulate";
+    ORES_LOG_SEV(lg, info) << "Testing that a closed stream does not accumulate";
 
     change_hub hub(stream_system_tenant);
     auto ended = hub.subscribe({.tenant = "acme"});
@@ -101,7 +101,7 @@ TEST_CASE("a_stream_that_has_ended_is_forgotten_by_the_next_publish", "[change_s
 
 TEST_CASE("a_stream_that_is_not_read_drops_its_oldest_frames", "[change_stream]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that a stream's queue is bounded";
+    ORES_LOG_SEV(lg, info) << "Testing that a stream's queue is bounded";
 
     change_hub hub(stream_system_tenant, 3);
     auto slow = hub.subscribe({.tenant = "acme"});
@@ -119,7 +119,7 @@ TEST_CASE("a_stream_that_is_not_read_drops_its_oldest_frames", "[change_stream]"
 
 TEST_CASE("the_source_writes_a_queued_frame", "[change_stream]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that the source writes what the hub published";
+    ORES_LOG_SEV(lg, info) << "Testing that the source writes what the hub published";
 
     auto subscription = std::make_shared<change_subscription>(stream_scope{.tenant = "acme"}, 8);
     change_stream_source source(subscription, std::chrono::milliseconds(50));
@@ -130,7 +130,7 @@ TEST_CASE("the_source_writes_a_queued_frame", "[change_stream]") {
 
 TEST_CASE("the_source_writes_a_keep_alive_when_nothing_arrives", "[change_stream]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that a quiet stream is kept alive";
+    ORES_LOG_SEV(lg, info) << "Testing that a quiet stream is kept alive";
 
     auto subscription = std::make_shared<change_subscription>(stream_scope{.tenant = "acme"}, 8);
     change_stream_source source(subscription, std::chrono::milliseconds(10));
@@ -143,7 +143,7 @@ TEST_CASE("the_source_writes_a_keep_alive_when_nothing_arrives", "[change_stream
 
 TEST_CASE("a_frame_ends_the_wait_before_the_keep_alive_interval", "[change_stream]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that a frame does not wait out the keep-alive";
+    ORES_LOG_SEV(lg, info) << "Testing that a frame does not wait out the keep-alive";
 
     auto subscription = std::make_shared<change_subscription>(stream_scope{.tenant = "acme"}, 8);
     change_stream_source source(subscription, std::chrono::seconds(30));
@@ -173,7 +173,7 @@ TEST_CASE("a_frame_ends_the_wait_before_the_keep_alive_interval", "[change_strea
 
 TEST_CASE("the_source_ends_when_its_subscription_closes", "[change_stream]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that a closed subscription ends the source";
+    ORES_LOG_SEV(lg, info) << "Testing that a closed subscription ends the source";
 
     auto subscription = std::make_shared<change_subscription>(stream_scope{.tenant = "acme"}, 8);
     change_stream_source source(subscription, std::chrono::milliseconds(10));
@@ -184,7 +184,7 @@ TEST_CASE("the_source_ends_when_its_subscription_closes", "[change_stream]") {
 
 TEST_CASE("a_frame_reaches_only_the_streams_that_hear_its_tenant", "[change_stream]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that a stream is kept to its own tenant";
+    ORES_LOG_SEV(lg, info) << "Testing that a stream is kept to its own tenant";
 
     change_hub hub(stream_system_tenant);
     auto acme = hub.subscribe({.tenant = "acme"});
@@ -198,7 +198,7 @@ TEST_CASE("a_frame_reaches_only_the_streams_that_hear_its_tenant", "[change_stre
 
 TEST_CASE("a_system_tenant_frame_reaches_every_stream", "[change_stream]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that the shared catalogue reaches every tenant";
+    ORES_LOG_SEV(lg, info) << "Testing that the shared catalogue reaches every tenant";
 
     change_hub hub(stream_system_tenant);
     auto acme = hub.subscribe({.tenant = "acme"});
@@ -212,7 +212,7 @@ TEST_CASE("a_system_tenant_frame_reaches_every_stream", "[change_stream]") {
 
 TEST_CASE("a_stream_whose_source_ended_leaves_the_hub", "[change_stream]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that a client that is gone is not held";
+    ORES_LOG_SEV(lg, info) << "Testing that a client that is gone is not held";
 
     change_hub hub(stream_system_tenant);
     {
@@ -231,7 +231,7 @@ TEST_CASE("a_stream_whose_source_ended_leaves_the_hub", "[change_stream]") {
 
 TEST_CASE("every_frame_carries_an_id_and_the_ids_ascend", "[change_stream]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that a frame states which frame it is";
+    ORES_LOG_SEV(lg, info) << "Testing that a frame states which frame it is";
 
     change_hub hub(stream_system_tenant);
     auto stream = hub.subscribe({.tenant = "acme"});
@@ -247,7 +247,7 @@ TEST_CASE("every_frame_carries_an_id_and_the_ids_ascend", "[change_stream]") {
 
 TEST_CASE("a_resuming_client_is_given_the_frames_it_missed", "[change_stream]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that Last-Event-ID replays what was missed";
+    ORES_LOG_SEV(lg, info) << "Testing that Last-Event-ID replays what was missed";
 
     change_hub hub(stream_system_tenant);
     hub.publish("acme", "", "iam.book", "data: one\n\n");
@@ -265,7 +265,7 @@ TEST_CASE("a_resuming_client_is_given_the_frames_it_missed", "[change_stream]") 
 
 TEST_CASE("a_resuming_client_hears_only_its_own_tenant_and_the_system_one", "[change_stream]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that a replay cannot cross tenants";
+    ORES_LOG_SEV(lg, info) << "Testing that a replay cannot cross tenants";
 
     change_hub hub(stream_system_tenant);
     hub.publish("acme", "", "iam.book", "data: acme moved\n\n");
@@ -281,7 +281,7 @@ TEST_CASE("a_resuming_client_hears_only_its_own_tenant_and_the_system_one", "[ch
 
 TEST_CASE("a_resuming_client_outside_the_window_is_told_to_resync", "[change_stream]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that an old id is answered with a resync";
+    ORES_LOG_SEV(lg, info) << "Testing that an old id is answered with a resync";
 
     change_hub hub(stream_system_tenant);
     // An id this process never issued: the client comes from a previous life.
@@ -293,7 +293,7 @@ TEST_CASE("a_resuming_client_outside_the_window_is_told_to_resync", "[change_str
 
 TEST_CASE("a_member_hears_their_party_and_the_tenant_wide_changes", "[change_stream]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that a party's changes stay that party's";
+    ORES_LOG_SEV(lg, info) << "Testing that a party's changes stay that party's";
 
     change_hub hub(stream_system_tenant);
     auto ops = hub.subscribe({.tenant = "acme", .party = "ops"});
@@ -309,7 +309,7 @@ TEST_CASE("a_member_hears_their_party_and_the_tenant_wide_changes", "[change_str
 
 TEST_CASE("an_administrator_hears_every_party_of_the_tenant", "[change_stream]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that an administrator is not narrowed by party";
+    ORES_LOG_SEV(lg, info) << "Testing that an administrator is not narrowed by party";
 
     change_hub hub(stream_system_tenant);
     auto admin = hub.subscribe({.tenant = "acme", .party = "ops", .sees_all_parties = true});
@@ -323,7 +323,7 @@ TEST_CASE("an_administrator_hears_every_party_of_the_tenant", "[change_stream]")
 
 TEST_CASE("a_replay_respects_the_parties_the_caller_works_in", "[change_stream]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that a resume cannot widen the party";
+    ORES_LOG_SEV(lg, info) << "Testing that a resume cannot widen the party";
 
     change_hub hub(stream_system_tenant);
     hub.publish("acme", "ops", "iam.book", "data: ops moved\n\n");
@@ -339,7 +339,7 @@ TEST_CASE("a_replay_respects_the_parties_the_caller_works_in", "[change_stream]"
 
 TEST_CASE("a_newer_frame_replaces_the_one_a_stream_has_not_written", "[change_stream]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that a pending frame for a collection is conflated";
+    ORES_LOG_SEV(lg, info) << "Testing that a pending frame for a collection is conflated";
 
     change_hub hub(stream_system_tenant);
     auto stream = hub.subscribe({.tenant = "acme", .party = "ops"});
@@ -357,7 +357,7 @@ TEST_CASE("a_newer_frame_replaces_the_one_a_stream_has_not_written", "[change_st
 
 TEST_CASE("a_conflated_frame_moves_behind_the_others_so_its_ids_ascend", "[change_stream]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that conflation does not reorder the ids";
+    ORES_LOG_SEV(lg, info) << "Testing that conflation does not reorder the ids";
 
     change_hub hub(stream_system_tenant);
     auto stream = hub.subscribe({.tenant = "acme", .party = "ops"});
@@ -375,7 +375,7 @@ TEST_CASE("a_conflated_frame_moves_behind_the_others_so_its_ids_ascend", "[chang
 
 TEST_CASE("one_collection_heard_for_two_parties_is_two_frames", "[change_stream]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that conflation never folds two parties together";
+    ORES_LOG_SEV(lg, info) << "Testing that conflation never folds two parties together";
 
     change_hub hub(stream_system_tenant);
     auto admin = hub.subscribe({.tenant = "acme", .party = "ops", .sees_all_parties = true});
@@ -388,7 +388,7 @@ TEST_CASE("one_collection_heard_for_two_parties_is_two_frames", "[change_stream]
 
 TEST_CASE("a_replay_conflates_a_collection_into_its_newest_frame", "[change_stream]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that a replay gives the newest frame per collection";
+    ORES_LOG_SEV(lg, info) << "Testing that a replay gives the newest frame per collection";
 
     change_hub hub(stream_system_tenant);
     hub.publish("acme", "", "iam.book", "data: one\n\n");
@@ -406,7 +406,7 @@ TEST_CASE("a_replay_conflates_a_collection_into_its_newest_frame", "[change_stre
 
 TEST_CASE("an_id_from_an_earlier_process_is_answered_with_a_resync", "[change_stream]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that a restarted hub does not replay a stranger's gap";
+    ORES_LOG_SEV(lg, info) << "Testing that a restarted hub does not replay a stranger's gap";
 
     // The previous process issued its first id; a restart numbers from one again,
     // so the number alone would land inside the new window.
@@ -434,7 +434,7 @@ TEST_CASE("each_epoch_is_later_than_the_one_before_it", "[change_stream]") {
 
 TEST_CASE("an_id_that_is_not_a_frame_id_is_refused", "[change_stream]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that only an id of the frame grammar is read";
+    ORES_LOG_SEV(lg, info) << "Testing that only an id of the frame grammar is read";
 
     REQUIRE(!change_hub::read_id("").has_value());
     REQUIRE(!change_hub::read_id("12").has_value());
@@ -451,7 +451,7 @@ TEST_CASE("an_id_that_is_not_a_frame_id_is_refused", "[change_stream]") {
 
 TEST_CASE("a_replay_the_stream_cannot_hold_is_answered_with_a_resync", "[change_stream]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing that half a replay is not given as a replay";
+    ORES_LOG_SEV(lg, info) << "Testing that half a replay is not given as a replay";
 
     // A stream that holds two frames cannot be caught up on three, and losing the
     // oldest silently is the gap a resync exists to prevent.

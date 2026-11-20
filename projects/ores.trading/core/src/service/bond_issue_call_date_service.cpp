@@ -26,7 +26,6 @@
 #include "ores.trading.api/domain/bond_issue_call_date.hpp"
 #include "ores.trading.api/messaging/bond_issue_call_date_protocol.hpp"
 #include "ores.trading.core/repository/bond_issue_call_date_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -43,7 +42,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -474,30 +472,29 @@ ores::utility::domain::result bond_issue_call_date_service::prepare_change(
 
 std::vector<domain::bond_issue_call_date>
 bond_issue_call_date_service::list_call_dates(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all bond issue call dates";
+    ORES_LOG_SEV(lg(), debug) << "Listing all bond issue call dates";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t bond_issue_call_date_service::count_call_dates() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total bond issue call dates count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total bond issue call dates count";
     return repo_.get_total_call_date_count(ctx_);
 }
 
 
 std::optional<domain::bond_issue_call_date> bond_issue_call_date_service::get_call_date_at_version(
     const std::string& issue_id, const std::string& sequence_number, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting bond issue call date at version. "
-                               << "issue_id: " << issue_id
-                               << " sequence_number: " << sequence_number
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting bond issue call date at version. "
+                              << "issue_id: " << issue_id << " sequence_number: " << sequence_number
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, issue_id, sequence_number, version);
 }
 
 std::optional<domain::bond_issue_call_date>
 bond_issue_call_date_service::get_call_date(const std::string& issue_id,
                                             const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting bond issue call date. " << "issue_id: " << issue_id
-                               << " sequence_number: " << sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Getting bond issue call date. " << "issue_id: " << issue_id
+                              << " sequence_number: " << sequence_number;
     auto results = repo_.read_latest(ctx_, issue_id, sequence_number);
     if (results.empty())
         return std::nullopt;
@@ -513,13 +510,13 @@ bond_issue_call_date_service::get_call_dates(const std::vector<std::string>& iss
 void bond_issue_call_date_service::save_call_date(const domain::bond_issue_call_date& v) {
     if (v.issue_id.is_nil())
         throw std::invalid_argument("Bond Issue Call Date issue_id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving bond issue call date. " << "issue_id: " << v.issue_id
-                               << " sequence_number: " << v.sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Saving bond issue call date. " << "issue_id: " << v.issue_id
+                              << " sequence_number: " << v.sequence_number;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved bond issue call date. " << "issue_id: " << v.issue_id
-                              << " sequence_number: " << v.sequence_number;
+    ORES_LOG_SEV(lg(), info) << "Saved bond issue call date. " << "issue_id: " << v.issue_id
+                             << " sequence_number: " << v.sequence_number;
 }
 
 void bond_issue_call_date_service::save_call_dates(
@@ -528,7 +525,7 @@ void bond_issue_call_date_service::save_call_dates(
         if (e.issue_id.is_nil())
             throw std::invalid_argument("Bond Issue Call Date issue_id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << call_dates.size() << " bond issue call dates";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << call_dates.size() << " bond issue call dates";
     auto ts = call_dates;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -538,11 +535,11 @@ void bond_issue_call_date_service::save_call_dates(
 
 void bond_issue_call_date_service::delete_call_date(const std::string& issue_id,
                                                     const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing bond issue call date. " << "issue_id: " << issue_id
-                               << " sequence_number: " << sequence_number;
-    repo_.remove(ctx_, issue_id, sequence_number);
-    BOOST_LOG_SEV(lg(), info) << "Removed bond issue call date. " << "issue_id: " << issue_id
+    ORES_LOG_SEV(lg(), debug) << "Removing bond issue call date. " << "issue_id: " << issue_id
                               << " sequence_number: " << sequence_number;
+    repo_.remove(ctx_, issue_id, sequence_number);
+    ORES_LOG_SEV(lg(), info) << "Removed bond issue call date. " << "issue_id: " << issue_id
+                             << " sequence_number: " << sequence_number;
 }
 
 void bond_issue_call_date_service::delete_call_dates(
@@ -553,9 +550,9 @@ void bond_issue_call_date_service::delete_call_dates(
 std::vector<domain::bond_issue_call_date>
 bond_issue_call_date_service::get_call_date_history(const std::string& issue_id,
                                                     const std::string& sequence_number) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for bond issue call date. "
-                               << "issue_id: " << issue_id
-                               << " sequence_number: " << sequence_number;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for bond issue call date. "
+                              << "issue_id: " << issue_id
+                              << " sequence_number: " << sequence_number;
     return repo_.read_all(ctx_, issue_id, sequence_number);
 }
 

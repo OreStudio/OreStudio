@@ -18,7 +18,7 @@
  *
  */
 #include "ores.marketdata.core/service/series_slice_reader.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/datum/market_datum.hpp"
 #include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.api/datum/schema.hpp"
@@ -168,7 +168,7 @@ series_slice_reader::read(const ores::database::context& ctx,
         response.instants.push_back(std::move(row));
     }
 
-    BOOST_LOG_SEV(series_slice_reader_lg(), debug)
+    ORES_LOG_SEV(series_slice_reader_lg(), debug)
         << "Read component " << request.component_field << "='" << request.component_value
         << "' of series " << series_id << ": " << response.instants.size() << " instants over "
         << response.coordinates.size() << " coordinates";

@@ -26,7 +26,6 @@
 #include "ores.iam.api/domain/seed_profile_step.hpp"
 #include "ores.iam.api/messaging/seed_profile_step_protocol.hpp"
 #include "ores.iam.core/repository/seed_profile_step_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -499,12 +497,12 @@ seed_profile_step_service::prepare_change(const messaging::seed_profile_step_cha
 
 std::vector<domain::seed_profile_step>
 seed_profile_step_service::list_seed_profile_steps(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all seed profile steps";
+    ORES_LOG_SEV(lg(), debug) << "Listing all seed profile steps";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t seed_profile_step_service::count_seed_profile_steps() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total seed profile steps count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total seed profile steps count";
     return repo_.get_total_seed_profile_step_count(ctx_);
 }
 
@@ -512,15 +510,15 @@ std::uint32_t seed_profile_step_service::count_seed_profile_steps() {
 std::vector<domain::seed_profile_step>
 seed_profile_step_service::list_seed_profile_steps_by_seed_profile_id(
     const std::string& seed_profile_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing seed profile steps by seed_profile_id: "
-                               << seed_profile_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing seed profile steps by seed_profile_id: "
+                              << seed_profile_id;
     return repo_.read_latest_by_seed_profile_id(ctx_, seed_profile_id, offset, limit);
 }
 
 std::uint32_t seed_profile_step_service::count_seed_profile_steps_by_seed_profile_id(
     const std::string& seed_profile_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total seed profile steps count by seed_profile_id: "
-                               << seed_profile_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting total seed profile steps count by seed_profile_id: "
+                              << seed_profile_id;
     return repo_.get_total_seed_profile_step_count_by_seed_profile_id(ctx_, seed_profile_id);
 }
 
@@ -528,14 +526,14 @@ std::uint32_t seed_profile_step_service::count_seed_profile_steps_by_seed_profil
 std::optional<domain::seed_profile_step>
 seed_profile_step_service::get_seed_profile_step_at_version(const boost::uuids::uuid& id,
                                                             std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting seed profile step at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting seed profile step at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::seed_profile_step>
 seed_profile_step_service::get_seed_profile_step(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting seed profile step. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting seed profile step. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -550,11 +548,11 @@ seed_profile_step_service::get_seed_profile_steps(const std::vector<std::string>
 void seed_profile_step_service::save_seed_profile_step(const domain::seed_profile_step& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Seed Profile Step id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving seed profile step. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving seed profile step. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved seed profile step. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved seed profile step. " << "id: " << v.id;
 }
 
 void seed_profile_step_service::save_seed_profile_steps(
@@ -563,7 +561,7 @@ void seed_profile_step_service::save_seed_profile_steps(
         if (e.id.is_nil())
             throw std::invalid_argument("Seed Profile Step id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << seed_profile_steps.size() << " seed profile steps";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << seed_profile_steps.size() << " seed profile steps";
     auto ts = seed_profile_steps;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -572,9 +570,9 @@ void seed_profile_step_service::save_seed_profile_steps(
 }
 
 void seed_profile_step_service::delete_seed_profile_step(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing seed profile step. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing seed profile step. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed seed profile step. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed seed profile step. " << "id: " << id;
 }
 
 void seed_profile_step_service::delete_seed_profile_steps(const std::vector<std::string>& ids) {
@@ -583,7 +581,7 @@ void seed_profile_step_service::delete_seed_profile_steps(const std::vector<std:
 
 std::vector<domain::seed_profile_step>
 seed_profile_step_service::get_seed_profile_step_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for seed profile step. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for seed profile step. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

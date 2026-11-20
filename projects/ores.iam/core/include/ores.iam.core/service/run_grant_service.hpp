@@ -30,7 +30,7 @@
 #include "ores.iam.api/messaging/run_grant_protocol.hpp"
 #include "ores.iam.core/export.hpp"
 #include "ores.iam.core/repository/run_grant_repository.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <cstdint>

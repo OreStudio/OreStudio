@@ -20,7 +20,7 @@
 #include "ores.dq.api/domain/artefact_type_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.api/generators/artefact_type_generator.hpp"
 #include "ores.dq.core/repository/artefact_type_repository.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
@@ -48,11 +48,11 @@ TEST_CASE("write_single_artefact_type", "[repository]") {
     artefact_type.tenant_id = h.tenant_id();
     artefact_type.code = artefact_type.code + "_" + std::string(faker::string::alphanumeric(8));
 
-    BOOST_LOG_SEV(lg, debug) << "Artefact type: " << artefact_type;
+    ORES_LOG_SEV(lg, debug) << "Artefact type: " << artefact_type;
     repo.write(h.context(), artefact_type);
 
     auto read_artefact_types = repo.read_latest(h.context(), artefact_type.code);
-    BOOST_LOG_SEV(lg, debug) << "Read artefact types: " << read_artefact_types;
+    ORES_LOG_SEV(lg, debug) << "Read artefact types: " << read_artefact_types;
 
     REQUIRE(read_artefact_types.size() == 1);
     CHECK(read_artefact_types[0].code == artefact_type.code);
@@ -71,12 +71,12 @@ TEST_CASE("write_multiple_artefact_types", "[repository]") {
         a.tenant_id = h.tenant_id();
         a.code = a.code + "_" + std::string(faker::string::alphanumeric(8));
     }
-    BOOST_LOG_SEV(lg, debug) << "Artefact types: " << artefact_types;
+    ORES_LOG_SEV(lg, debug) << "Artefact types: " << artefact_types;
 
     repo.write(h.context(), artefact_types);
 
     auto read_artefact_types = repo.read_latest(h.context());
-    BOOST_LOG_SEV(lg, debug) << "Read artefact types: " << read_artefact_types;
+    ORES_LOG_SEV(lg, debug) << "Read artefact types: " << read_artefact_types;
 
     for (const auto& written : artefact_types) {
         bool found = false;
@@ -102,12 +102,12 @@ TEST_CASE("read_latest_artefact_types", "[repository]") {
         a.tenant_id = h.tenant_id();
         a.code = a.code + "_" + std::string(faker::string::alphanumeric(8));
     }
-    BOOST_LOG_SEV(lg, debug) << "Written artefact types: " << written_artefact_types;
+    ORES_LOG_SEV(lg, debug) << "Written artefact types: " << written_artefact_types;
 
     repo.write(h.context(), written_artefact_types);
 
     auto read_artefact_types = repo.read_latest(h.context());
-    BOOST_LOG_SEV(lg, debug) << "Read artefact types: " << read_artefact_types;
+    ORES_LOG_SEV(lg, debug) << "Read artefact types: " << read_artefact_types;
 
     for (const auto& written : written_artefact_types) {
         bool found = false;
@@ -135,13 +135,13 @@ TEST_CASE("read_latest_artefact_type_by_code", "[repository]") {
     }
 
     const auto target = artefact_types.front();
-    BOOST_LOG_SEV(lg, debug) << "Write artefact types: " << artefact_types;
+    ORES_LOG_SEV(lg, debug) << "Write artefact types: " << artefact_types;
     repo.write(h.context(), artefact_types);
 
-    BOOST_LOG_SEV(lg, debug) << "Target artefact type: " << target;
+    ORES_LOG_SEV(lg, debug) << "Target artefact type: " << target;
 
     auto read_artefact_types = repo.read_latest(h.context(), target.code);
-    BOOST_LOG_SEV(lg, debug) << "Read artefact types: " << read_artefact_types;
+    ORES_LOG_SEV(lg, debug) << "Read artefact types: " << read_artefact_types;
 
     REQUIRE(read_artefact_types.size() == 1);
     CHECK(read_artefact_types[0].code == target.code);
@@ -160,18 +160,18 @@ TEST_CASE("read_all_artefact_type_versions", "[repository]") {
     at1.tenant_id = h.tenant_id();
     at1.code = at1.code + "_" + std::string(faker::string::alphanumeric(8));
     const auto test_code = at1.code;
-    BOOST_LOG_SEV(lg, debug) << "Artefact type v1: " << at1;
+    ORES_LOG_SEV(lg, debug) << "Artefact type v1: " << at1;
 
     auto at2 = at1;
     at2.version = 0;
     at2.description = "Updated description for version test";
-    BOOST_LOG_SEV(lg, debug) << "Artefact type v2: " << at2;
+    ORES_LOG_SEV(lg, debug) << "Artefact type v2: " << at2;
 
     repo.write(h.context(), at1);
     repo.write(h.context(), at2);
 
     auto read_artefact_types = repo.read_all(h.context(), test_code);
-    BOOST_LOG_SEV(lg, debug) << "Read artefact types: " << read_artefact_types;
+    ORES_LOG_SEV(lg, debug) << "Read artefact types: " << read_artefact_types;
 
     REQUIRE(read_artefact_types.size() >= 2);
 
@@ -201,15 +201,15 @@ TEST_CASE("read_nonexistent_artefact_type", "[repository]") {
     repo.write(h.context(), artefact_type);
 
     auto read_written = repo.read_latest(h.context(), artefact_type.code);
-    BOOST_LOG_SEV(lg, debug) << "Read artefact types: " << read_written;
+    ORES_LOG_SEV(lg, debug) << "Read artefact types: " << read_written;
     REQUIRE(read_written.size() == 1);
     CHECK(read_written[0].name == artefact_type.name);
 
     const std::string nonexistent_code = "nonexistent.artefact_type.12345";
-    BOOST_LOG_SEV(lg, debug) << "Non-existent code: " << nonexistent_code;
+    ORES_LOG_SEV(lg, debug) << "Non-existent code: " << nonexistent_code;
 
     auto read_artefact_types = repo.read_latest(h.context(), nonexistent_code);
-    BOOST_LOG_SEV(lg, debug) << "Read artefact types: " << read_artefact_types;
+    ORES_LOG_SEV(lg, debug) << "Read artefact types: " << read_artefact_types;
 
     CHECK(read_artefact_types.size() == 0);
 }
@@ -225,13 +225,13 @@ TEST_CASE("write_and_read_artefact_type_roundtrip", "[repository]") {
     auto artefact_type = generate_synthetic_artefact_type(ctx);
     artefact_type.tenant_id = h.tenant_id();
     artefact_type.code = artefact_type.code + "_" + std::string(faker::string::alphanumeric(8));
-    BOOST_LOG_SEV(lg, debug) << "Artefact type: " << artefact_type;
+    ORES_LOG_SEV(lg, debug) << "Artefact type: " << artefact_type;
 
     const auto artefact_type_code = artefact_type.code;
     repo.write(h.context(), artefact_type);
 
     auto read_artefact_types = repo.read_latest(h.context(), artefact_type_code);
-    BOOST_LOG_SEV(lg, debug) << "Read artefact types: " << read_artefact_types;
+    ORES_LOG_SEV(lg, debug) << "Read artefact types: " << read_artefact_types;
 
     REQUIRE(read_artefact_types.size() == 1);
     CHECK(read_artefact_types[0].code == artefact_type.code);

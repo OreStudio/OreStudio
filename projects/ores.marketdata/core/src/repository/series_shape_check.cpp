@@ -18,14 +18,13 @@
  *
  */
 #include "ores.marketdata.core/repository/series_shape_check.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/datum/market_datum.hpp"
 #include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.api/datum/schema.hpp"
 #include "ores.marketdata.api/datum/value.hpp"
 #include "ores.marketdata.core/repository/series_axis_repository.hpp"
 #include "ores.marketdata.core/repository/series_axis_value_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <map>
 #include <set>
@@ -94,7 +93,7 @@ void series_shape_check::check(const ores::database::context& ctx,
 
         const auto point = datum::oresmd_uri_codec::read(obs.oresmd_uri);
         if (!point) {
-            BOOST_LOG_SEV(shape_check_lg(), warn)
+            ORES_LOG_SEV(shape_check_lg(), warn)
                 << "Series " << id
                 << " has an oresmd URI the codec cannot read, so its point is accepted: "
                 << obs.oresmd_uri;

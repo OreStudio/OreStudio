@@ -26,7 +26,6 @@
 #include "ores.trading.api/domain/risk_participation_agreement_instrument.hpp"
 #include "ores.trading.api/messaging/risk_participation_agreement_instrument_protocol.hpp"
 #include "ores.trading.core/repository/risk_participation_agreement_instrument_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -492,13 +490,13 @@ ores::utility::domain::result risk_participation_agreement_instrument_service::p
 std::vector<domain::risk_participation_agreement_instrument>
 risk_participation_agreement_instrument_service::list_risk_participation_agreement_instruments(
     std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all risk participation agreement instruments";
+    ORES_LOG_SEV(lg(), debug) << "Listing all risk participation agreement instruments";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t
 risk_participation_agreement_instrument_service::count_risk_participation_agreement_instruments() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total risk participation agreement instruments count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total risk participation agreement instruments count";
     return repo_.get_total_risk_participation_agreement_instrument_count(ctx_);
 }
 
@@ -507,16 +505,16 @@ std::optional<domain::risk_participation_agreement_instrument>
 risk_participation_agreement_instrument_service::
     get_risk_participation_agreement_instrument_at_version(const boost::uuids::uuid& trade_id,
                                                            std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting risk participation agreement instrument at version. "
-                               << "trade_id: " << trade_id << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting risk participation agreement instrument at version. "
+                              << "trade_id: " << trade_id << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(trade_id), version);
 }
 
 std::optional<domain::risk_participation_agreement_instrument>
 risk_participation_agreement_instrument_service::get_risk_participation_agreement_instrument(
     const boost::uuids::uuid& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting risk participation agreement instrument. "
-                               << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting risk participation agreement instrument. "
+                              << "trade_id: " << trade_id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(trade_id));
     if (results.empty())
         return std::nullopt;
@@ -534,13 +532,13 @@ void risk_participation_agreement_instrument_service::save_risk_participation_ag
     if (v.trade_id.is_nil())
         throw std::invalid_argument(
             "Risk Participation Agreement Instrument trade_id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving risk participation agreement instrument. "
-                               << "trade_id: " << v.trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Saving risk participation agreement instrument. "
+                              << "trade_id: " << v.trade_id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved risk participation agreement instrument. "
-                              << "trade_id: " << v.trade_id;
+    ORES_LOG_SEV(lg(), info) << "Saved risk participation agreement instrument. "
+                             << "trade_id: " << v.trade_id;
 }
 
 void risk_participation_agreement_instrument_service::save_risk_participation_agreement_instruments(
@@ -551,8 +549,8 @@ void risk_participation_agreement_instrument_service::save_risk_participation_ag
             throw std::invalid_argument(
                 "Risk Participation Agreement Instrument trade_id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << risk_participation_agreement_instruments.size()
-                               << " risk participation agreement instruments";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << risk_participation_agreement_instruments.size()
+                              << " risk participation agreement instruments";
     auto ts = risk_participation_agreement_instruments;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -562,11 +560,11 @@ void risk_participation_agreement_instrument_service::save_risk_participation_ag
 
 void risk_participation_agreement_instrument_service::
     delete_risk_participation_agreement_instrument(const boost::uuids::uuid& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing risk participation agreement instrument. "
-                               << "trade_id: " << trade_id;
-    repo_.remove(ctx_, boost::uuids::to_string(trade_id));
-    BOOST_LOG_SEV(lg(), info) << "Removed risk participation agreement instrument. "
+    ORES_LOG_SEV(lg(), debug) << "Removing risk participation agreement instrument. "
                               << "trade_id: " << trade_id;
+    repo_.remove(ctx_, boost::uuids::to_string(trade_id));
+    ORES_LOG_SEV(lg(), info) << "Removed risk participation agreement instrument. "
+                             << "trade_id: " << trade_id;
 }
 
 void risk_participation_agreement_instrument_service::
@@ -577,8 +575,8 @@ void risk_participation_agreement_instrument_service::
 std::vector<domain::risk_participation_agreement_instrument>
 risk_participation_agreement_instrument_service::
     get_risk_participation_agreement_instrument_history(const std::string& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for risk participation agreement instrument. "
-                               << "trade_id: " << trade_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for risk participation agreement instrument. "
+                              << "trade_id: " << trade_id;
     return repo_.read_all(ctx_, trade_id);
 }
 

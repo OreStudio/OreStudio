@@ -25,7 +25,7 @@
 #include "ores.iam.api/messaging/account_protocol.hpp"
 #include "ores.iam.api/messaging/auth_event_operations_protocol.hpp"
 #include "ores.iam.api/messaging/role_protocol.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include <boost/uuid/string_generator.hpp>
 #include <cstdint>
 #include <exception>
@@ -123,7 +123,7 @@ roles_of(const http_request& req, nats_client& session, const std::set<std::stri
         try {
             wanted.push_back(boost::uuids::string_generator()(id));
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(person_timeline_lg(), ores::logging::warn)
+            ORES_LOG_SEV(person_timeline_lg(), ores::logging::warn)
                 << "A role this stream points at is not named by a uuid, so it keeps its id: "
                 << e.what();
         }

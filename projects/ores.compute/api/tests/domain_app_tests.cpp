@@ -20,7 +20,7 @@
 #include "ores.compute.api/domain/app.hpp"
 #include "ores.compute.api/domain/app_json_io.hpp" // IWYU pragma: keep.
 #include "ores.compute.api/domain/app_table.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_generators.hpp>
@@ -42,7 +42,7 @@ TEST_CASE("create_app_with_valid_fields", "[domain]") {
     sut.name = "ORE_STUDIO";
     sut.description = "ORE Studio financial computation engine";
 
-    BOOST_LOG_SEV(lg, info) << "App: " << sut;
+    ORES_LOG_SEV(lg, info) << "App: " << sut;
 
     CHECK(sut.version == 1);
     CHECK(sut.modified_by == "admin");
@@ -63,7 +63,7 @@ TEST_CASE("create_app_with_specific_uuid", "[domain]") {
     sut.name = "LLAMA_CPP";
     sut.description = "Llama inference engine";
 
-    BOOST_LOG_SEV(lg, info) << "App: " << sut;
+    ORES_LOG_SEV(lg, info) << "App: " << sut;
 
     CHECK(sut.version == 2);
     CHECK(sut.name == "LLAMA_CPP");
@@ -83,7 +83,7 @@ TEST_CASE("app_insertion_operator", "[domain]") {
     os << sut;
     const std::string json_output = os.str();
 
-    BOOST_LOG_SEV(lg, info) << "App JSON: " << json_output;
+    ORES_LOG_SEV(lg, info) << "App JSON: " << json_output;
 
     CHECK(!json_output.empty());
     CHECK(json_output.find("LEDGER") != std::string::npos);
@@ -102,7 +102,7 @@ TEST_CASE("app_convert_single_to_table", "[domain]") {
     std::vector<app> apps = {a};
     auto table = convert_to_table(apps);
 
-    BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
+    ORES_LOG_SEV(lg, info) << "Table output:\n" << table;
 
     CHECK(!table.empty());
     CHECK(table.find("ORE_STUDIO") != std::string::npos);
@@ -125,7 +125,7 @@ TEST_CASE("app_convert_multiple_to_table", "[domain]") {
 
     auto table = convert_to_table(apps);
 
-    BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
+    ORES_LOG_SEV(lg, info) << "Table output:\n" << table;
 
     CHECK(!table.empty());
     CHECK(table.find("ORE_STUDIO") != std::string::npos);
@@ -139,7 +139,7 @@ TEST_CASE("app_convert_empty_vector_to_table", "[domain]") {
     std::vector<app> apps;
     auto table = convert_to_table(apps);
 
-    BOOST_LOG_SEV(lg, info) << "Empty table output:\n" << table;
+    ORES_LOG_SEV(lg, info) << "Empty table output:\n" << table;
 
     // The header row survives an empty result set.
     CHECK(!table.empty());
@@ -155,7 +155,7 @@ TEST_CASE("create_app_with_faker", "[domain]") {
     sut.name = std::string(faker::word::noun());
     sut.description = std::string(faker::lorem::sentence());
 
-    BOOST_LOG_SEV(lg, info) << "App: " << sut;
+    ORES_LOG_SEV(lg, info) << "App: " << sut;
 
     CHECK(sut.version >= 1);
     CHECK(sut.version <= 10);
@@ -180,7 +180,7 @@ TEST_CASE("app_table_with_faker_data", "[domain]") {
 
     auto table = convert_to_table(apps);
 
-    BOOST_LOG_SEV(lg, info) << "Faker table output:\n" << table;
+    ORES_LOG_SEV(lg, info) << "Faker table output:\n" << table;
 
     CHECK(!table.empty());
     for (const auto& a : apps) {

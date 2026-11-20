@@ -16,7 +16,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.ore.core/domain/credit_simulation_projection.hpp"
 #include "ores.ore.core/xml/document_kind.hpp"
 #include "ores.testing/project_root.hpp"
@@ -194,6 +194,6 @@ TEST_CASE("every_credit_simulation_in_the_corpus_round_trips",
             credit_simulation_projection::map(credit_simulation_projection::read(written));
         require_same_entities(first, second, entry.path().string());
     }
-    BOOST_LOG_SEV(lg, info) << "credit simulation documents: " << files;
+    ORES_LOG_SEV(lg, info) << "credit simulation documents: " << files;
     CHECK(files == 14);
 }

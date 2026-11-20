@@ -26,7 +26,7 @@
 #define ORES_REFDATA_CORE_SERVICE_COMMODITY_CURVE_DIRECT_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.refdata.api/domain/commodity_curve_direct.hpp"
 #include "ores.refdata.api/messaging/commodity_curve_direct_protocol.hpp"
 #include "ores.refdata.core/export.hpp"

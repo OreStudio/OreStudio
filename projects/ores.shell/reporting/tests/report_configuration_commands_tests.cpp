@@ -22,7 +22,7 @@
  * Template: cpp_shell_command_tests.cpp.mustache
  * To modify, update the template and regenerate.
  */
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/commands/reporting/report_configuration_commands.hpp"
@@ -88,7 +88,7 @@ TEST_CASE("report_configuration_commands_registers_every_derived_verb", "[comman
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 
-    BOOST_LOG_SEV(lg, debug) << "Registered 13 command(s).";
+    ORES_LOG_SEV(lg, debug) << "Registered 13 command(s).";
 }
 
 TEST_CASE("report_configuration_commands_process_list_requires_a_session", "[commands]") {
@@ -100,7 +100,7 @@ TEST_CASE("report_configuration_commands_process_list_requires_a_session", "[com
     command_feedback::reset();
     report_configuration_commands::process_list(out, session, report_configuration_tokens(0));
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -114,7 +114,7 @@ TEST_CASE("report_configuration_commands_process_get_requires_a_session", "[comm
     command_feedback::reset();
     report_configuration_commands::process_get(out, session, report_configuration_tokens(1));
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -129,7 +129,7 @@ TEST_CASE("report_configuration_commands_process_get_reports_the_expected_count"
     command_feedback::reset();
     report_configuration_commands::process_get(out, session, {});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
     // The arity guard names both the count it expects and the count it
     // received. The expected count is shape-specific in the command (a write
     // also reads its intent), so the case pins the wording and the received
@@ -148,7 +148,7 @@ TEST_CASE("report_configuration_commands_process_get_many_requires_a_session", "
     command_feedback::reset();
     report_configuration_commands::process_get_many(out, session, report_configuration_tokens(1));
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -162,7 +162,7 @@ TEST_CASE("report_configuration_commands_process_add_requires_a_session", "[comm
     command_feedback::reset();
     report_configuration_commands::process_add(out, session, report_configuration_tokens(4));
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -177,7 +177,7 @@ TEST_CASE("report_configuration_commands_process_add_reports_the_expected_count"
     command_feedback::reset();
     report_configuration_commands::process_add(out, session, {});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
     // The arity guard names both the count it expects and the count it
     // received. The expected count is shape-specific in the command (a write
     // also reads its intent), so the case pins the wording and the received
@@ -196,7 +196,7 @@ TEST_CASE("report_configuration_commands_process_set_requires_a_session", "[comm
     command_feedback::reset();
     report_configuration_commands::process_set(out, session, report_configuration_tokens(4));
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -211,7 +211,7 @@ TEST_CASE("report_configuration_commands_process_set_reports_the_expected_count"
     command_feedback::reset();
     report_configuration_commands::process_set(out, session, {});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
     // The arity guard names both the count it expects and the count it
     // received. The expected count is shape-specific in the command (a write
     // also reads its intent), so the case pins the wording and the received
@@ -230,7 +230,7 @@ TEST_CASE("report_configuration_commands_process_put_many_requires_a_session", "
     command_feedback::reset();
     report_configuration_commands::process_put_many(out, session, report_configuration_tokens(4));
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -244,7 +244,7 @@ TEST_CASE("report_configuration_commands_process_delete_requires_a_session", "[c
     command_feedback::reset();
     report_configuration_commands::process_delete(out, session, report_configuration_tokens(1));
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -259,7 +259,7 @@ TEST_CASE("report_configuration_commands_process_delete_reports_the_expected_cou
     command_feedback::reset();
     report_configuration_commands::process_delete(out, session, {});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
     // The arity guard names both the count it expects and the count it
     // received. The expected count is shape-specific in the command (a write
     // also reads its intent), so the case pins the wording and the received
@@ -279,7 +279,7 @@ TEST_CASE("report_configuration_commands_process_delete_many_requires_a_session"
     report_configuration_commands::process_delete_many(
         out, session, report_configuration_tokens(1));
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -295,7 +295,7 @@ TEST_CASE("report_configuration_commands_process_by_report_definition_id_require
     report_configuration_commands::process_by_report_definition_id(
         out, session, report_configuration_tokens(1));
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -312,7 +312,7 @@ TEST_CASE(
     command_feedback::reset();
     report_configuration_commands::process_by_report_definition_id(out, session, {});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
     // The arity guard names both the count it expects and the count it
     // received. The expected count is shape-specific in the command (a write
     // also reads its intent), so the case pins the wording and the received
@@ -333,7 +333,7 @@ TEST_CASE("report_configuration_commands_process_by_configuration_type_code_requ
     report_configuration_commands::process_by_configuration_type_code(
         out, session, report_configuration_tokens(1));
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -350,7 +350,7 @@ TEST_CASE(
     command_feedback::reset();
     report_configuration_commands::process_by_configuration_type_code(out, session, {});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
     // The arity guard names both the count it expects and the count it
     // received. The expected count is shape-specific in the command (a write
     // also reads its intent), so the case pins the wording and the received
@@ -371,7 +371,7 @@ TEST_CASE("report_configuration_commands_process_by_configuration_id_requires_a_
     report_configuration_commands::process_by_configuration_id(
         out, session, report_configuration_tokens(1));
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -387,7 +387,7 @@ TEST_CASE("report_configuration_commands_process_by_configuration_id_reports_the
     command_feedback::reset();
     report_configuration_commands::process_by_configuration_id(out, session, {});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
     // The arity guard names both the count it expects and the count it
     // received. The expected count is shape-specific in the command (a write
     // also reads its intent), so the case pins the wording and the received
@@ -406,7 +406,7 @@ TEST_CASE("report_configuration_commands_process_versions_requires_a_session", "
     command_feedback::reset();
     report_configuration_commands::process_versions(out, session, report_configuration_tokens(1));
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -422,7 +422,7 @@ TEST_CASE("report_configuration_commands_process_versions_reports_the_expected_c
     command_feedback::reset();
     report_configuration_commands::process_versions(out, session, {});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
     // The arity guard names both the count it expects and the count it
     // received. The expected count is shape-specific in the command (a write
     // also reads its intent), so the case pins the wording and the received
@@ -441,7 +441,7 @@ TEST_CASE("report_configuration_commands_process_version_requires_a_session", "[
     command_feedback::reset();
     report_configuration_commands::process_version(out, session, report_configuration_tokens(1));
 
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
     CHECK(command_feedback::failed());
 }
@@ -457,7 +457,7 @@ TEST_CASE("report_configuration_commands_process_version_reports_the_expected_co
     command_feedback::reset();
     report_configuration_commands::process_version(out, session, {});
 
-    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    ORES_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
     // The arity guard names both the count it expects and the count it
     // received. The expected count is shape-specific in the command (a write
     // also reads its intent), so the case pins the wording and the received

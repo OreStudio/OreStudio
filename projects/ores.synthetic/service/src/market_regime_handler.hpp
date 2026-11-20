@@ -68,11 +68,11 @@ public:
         using ores::service::messaging::reply;
         using namespace ores::logging;
 
-        BOOST_LOG_SEV(market_regime_handler_lg(), info)
+        ORES_LOG_SEV(market_regime_handler_lg(), info)
             << "market_regime get: a request arrived on subject '" << msg.subject << "'.";
         auto ctx = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx) {
-            BOOST_LOG_SEV(market_regime_handler_lg(), warn)
+            ORES_LOG_SEV(market_regime_handler_lg(), warn)
                 << "Rejecting get_market_regime request: auth failed.";
             error_reply(nats_, msg, ctx.error());
             return;
@@ -82,18 +82,18 @@ public:
         response.success = true;
         fill(response);
         fill_heat(response);
-        BOOST_LOG_SEV(market_regime_handler_lg(), info)
+        ORES_LOG_SEV(market_regime_handler_lg(), info)
             << "market_regime get: replying to '" << msg.reply_subject << "' with state '"
             << response.state << "'.";
         const auto market = scheduler_.snapshot();
-        BOOST_LOG_SEV(market_regime_handler_lg(), debug)
+        ORES_LOG_SEV(market_regime_handler_lg(), debug)
             << "market_regime get: pace " << market.pace << ", tau " << market.tau << ", heat "
             << market.heat << ", enrolled rate " << market.population_rate << " a second, "
             << scheduler_.size() << " series.";
         try {
             reply(nats_, msg, response);
         } catch (const std::exception& ex) {
-            BOOST_LOG_SEV(market_regime_handler_lg(), error)
+            ORES_LOG_SEV(market_regime_handler_lg(), error)
                 << "market_regime get: the reply failed: " << ex.what();
             throw;
         }
@@ -106,13 +106,13 @@ public:
 
         auto ctx = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx) {
-            BOOST_LOG_SEV(market_regime_handler_lg(), warn)
+            ORES_LOG_SEV(market_regime_handler_lg(), warn)
                 << "Rejecting pin_market_regime request: auth failed.";
             error_reply(nats_, msg, ctx.error());
             return;
         }
         if (!feed_kind_registry::permits_run(*ctx)) {
-            BOOST_LOG_SEV(market_regime_handler_lg(), warn)
+            ORES_LOG_SEV(market_regime_handler_lg(), warn)
                 << "Rejecting pin_market_regime request: the caller may not run feeds.";
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -120,7 +120,7 @@ public:
         // The market is the installation's: every system feed runs on it for every tenant, so
         // only the system tenant sets it, as only the system tenant starts a system feed.
         if (!feed_kind_registry::is_system_caller(*ctx)) {
-            BOOST_LOG_SEV(market_regime_handler_lg(), warn)
+            ORES_LOG_SEV(market_regime_handler_lg(), warn)
                 << "Rejecting pin_market_regime request: only the system tenant sets the market.";
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -130,7 +130,7 @@ public:
             ores::nats::default_wire_codec()
                 .decode<ores::synthetic::messaging::pin_market_regime_request>(msg.data);
         if (!decoded) {
-            BOOST_LOG_SEV(market_regime_handler_lg(), warn)
+            ORES_LOG_SEV(market_regime_handler_lg(), warn)
                 << "Rejecting pin_market_regime request: the payload did not decode.";
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -149,7 +149,7 @@ public:
             return;
         }
 
-        BOOST_LOG_SEV(market_regime_handler_lg(), info)
+        ORES_LOG_SEV(market_regime_handler_lg(), info)
             << "The market regime was set to '" << mode << "'.";
 
         ores::synthetic::messaging::pin_market_regime_response response;
@@ -170,13 +170,13 @@ public:
 
         auto ctx = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx) {
-            BOOST_LOG_SEV(market_regime_handler_lg(), warn)
+            ORES_LOG_SEV(market_regime_handler_lg(), warn)
                 << "Rejecting configure_market request: auth failed.";
             error_reply(nats_, msg, ctx.error());
             return;
         }
         if (!feed_kind_registry::permits_run(*ctx) || !feed_kind_registry::is_system_caller(*ctx)) {
-            BOOST_LOG_SEV(market_regime_handler_lg(), warn)
+            ORES_LOG_SEV(market_regime_handler_lg(), warn)
                 << "Rejecting configure_market request: only the system tenant sets the market.";
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -185,7 +185,7 @@ public:
             ores::nats::default_wire_codec()
                 .decode<ores::synthetic::messaging::configure_market_request>(msg.data);
         if (!decoded) {
-            BOOST_LOG_SEV(market_regime_handler_lg(), warn)
+            ORES_LOG_SEV(market_regime_handler_lg(), warn)
                 << "Rejecting configure_market request: the payload did not decode.";
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
@@ -202,14 +202,14 @@ public:
                                   .speed = decoded->speed,
                                   .tail_loading = decoded->tail_loading});
         } catch (const std::invalid_argument& ex) {
-            BOOST_LOG_SEV(market_regime_handler_lg(), warn)
+            ORES_LOG_SEV(market_regime_handler_lg(), warn)
                 << "Refusing configure_market request: " << ex.what();
             response.message = ex.what();
             reply(nats_, msg, response);
             return;
         }
 
-        BOOST_LOG_SEV(market_regime_handler_lg(), info)
+        ORES_LOG_SEV(market_regime_handler_lg(), info)
             << "The market was set to wake rate " << decoded->wake_rate << ", calm rate "
             << decoded->calm_rate << ", jump " << decoded->jump << ", decay " << decoded->decay
             << ", speed " << decoded->speed << ", tail loading " << decoded->tail_loading << ".";
@@ -231,7 +231,7 @@ public:
 
         auto ctx = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx) {
-            BOOST_LOG_SEV(market_regime_handler_lg(), warn)
+            ORES_LOG_SEV(market_regime_handler_lg(), warn)
                 << "Rejecting get_market_trace request: auth failed.";
             error_reply(nats_, msg, ctx.error());
             return;
@@ -240,7 +240,7 @@ public:
             ores::nats::default_wire_codec()
                 .decode<ores::synthetic::messaging::get_market_trace_request>(msg.data);
         if (!decoded || !std::isfinite(decoded->seconds) || decoded->seconds <= 0.0) {
-            BOOST_LOG_SEV(market_regime_handler_lg(), warn)
+            ORES_LOG_SEV(market_regime_handler_lg(), warn)
                 << "Rejecting get_market_trace request: the payload did not decode or names no "
                    "window.";
             error_reply(nats_, msg, ores::service::error_code::bad_request);
@@ -300,7 +300,7 @@ public:
 
         auto ctx = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx) {
-            BOOST_LOG_SEV(market_regime_handler_lg(), warn)
+            ORES_LOG_SEV(market_regime_handler_lg(), warn)
                 << "Rejecting get_market_history request: auth failed.";
             error_reply(nats_, msg, ctx.error());
             return;
@@ -310,7 +310,7 @@ public:
                 .decode<ores::synthetic::messaging::get_market_history_request>(msg.data);
         if (!decoded || !std::isfinite(decoded->seconds) || decoded->seconds <= 0.0 ||
             (decoded->resolution != "second" && decoded->resolution != "tenth")) {
-            BOOST_LOG_SEV(market_regime_handler_lg(), warn)
+            ORES_LOG_SEV(market_regime_handler_lg(), warn)
                 << "Rejecting get_market_history request: the payload did not decode, names no "
                    "window or names no resolution.";
             error_reply(nats_, msg, ores::service::error_code::bad_request);

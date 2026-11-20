@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :build:compilation:headers:break_the_large_compilation_dependencies:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/split-the-logger-typedef-out-of-make-logger
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,7 +26,7 @@ A single typedef in make_logger.hpp pulls Boost.Log's sources into 565 objects. 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:2B6612F6-D9F8-4DFF-8952-61716D22C2CF][Break the large compilation dependencies]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -41,9 +41,40 @@ A single typedef in make_logger.hpp pulls Boost.Log's sources into 565 objects. 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+make_logger.hpp is fifteen lines, and it costs 6.40 s to parse. Almost all of
+that is the three Boost.Log includes it needs to name its one type, and 604
+objects reach the header because every component's source calls =make_logger=
+to make its own static logger.
+
+The handle:
+
+- =ores.logging/logger.hpp= holds what a call site needs and nothing else: the
+  severity constants, a =logger= class whose backend is an opaque
+  =std::shared_ptr<detail::logger_core>=, the =make_logger= factory declared
+  here and defined in the =.cpp=, and a =log_record= that streams with =<<= and
+  writes when it goes out of scope. The same probe costs 0.67 s.
+- =ORES_LOG_SEV(logger, severity)= replaces =BOOST_LOG_SEV=. The severity is a
+  =severity_level= constant in =ores::logging=, so a call site's =debug= and
+  =ores::logging::debug= both resolve as they did.
+- =ores.logging/src/logger.cpp= keeps the backend: the Boost.Log logger, the
+  channel and the one =BOOST_LOG_SEV= left in the tree.
+- =boost_severity= moves into =ores::logging::detail=. Its enumerators spelled
+  the same five words as the new constants, and two sets of those cannot share
+  a namespace. Its users are the logging internals and the telemetry sinks,
+  which extract the severity attribute from a record.
+
+The sweep is mechanical and is kept as a script in the task's evidence: 55199
+call sites across 4073 files, 4764 includes of the header, 2152
+=severity_feature.hpp= includes and 2155 =boost_severity.hpp= includes. The
+codegen templates carry 264 sites in 40 files and 20 model archetypes carry 99
+more, so the generated tree is regenerated rather than edited.
+
+One behaviour changes. A =log_record= formats its text into an
+=std::ostringstream= whether or not a sink keeps it, because the header cannot
+name Boost's record type and so cannot defer the formatting. A filtered record
+therefore costs a string build where it used to cost a record that was never
+formatted. That is the price of the 5.7 s, and it is written here rather than
+left to be discovered.
 
 * Measurements
 

@@ -26,7 +26,6 @@
 #include "ores.workflow.api/domain/workflow_step.hpp"
 #include "ores.workflow.api/messaging/workflow_step_protocol.hpp"
 #include "ores.workflow.core/repository/workflow_step_repository.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -44,7 +43,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -506,38 +504,38 @@ workflow_step_service::prepare_change(const messaging::workflow_step_change& cha
 
 std::vector<domain::workflow_step> workflow_step_service::list_steps(std::uint32_t offset,
                                                                      std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all workflow steps";
+    ORES_LOG_SEV(lg(), debug) << "Listing all workflow steps";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t workflow_step_service::count_steps() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total workflow steps count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total workflow steps count";
     return repo_.get_total_step_count(ctx_);
 }
 
 
 std::vector<domain::workflow_step> workflow_step_service::list_steps_by_workflow_id(
     const std::string& workflow_id, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing workflow steps by workflow_id: " << workflow_id;
+    ORES_LOG_SEV(lg(), debug) << "Listing workflow steps by workflow_id: " << workflow_id;
     return repo_.read_latest_by_workflow_id(ctx_, workflow_id, offset, limit);
 }
 
 std::uint32_t workflow_step_service::count_steps_by_workflow_id(const std::string& workflow_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total workflow steps count by workflow_id: "
-                               << workflow_id;
+    ORES_LOG_SEV(lg(), debug) << "Getting total workflow steps count by workflow_id: "
+                              << workflow_id;
     return repo_.get_total_step_count_by_workflow_id(ctx_, workflow_id);
 }
 
 
 std::optional<domain::workflow_step>
 workflow_step_service::get_step_at_version(const boost::uuids::uuid& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting workflow step at version. " << "id: " << id
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting workflow step at version. " << "id: " << id
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
 }
 
 std::optional<domain::workflow_step> workflow_step_service::get_step(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting workflow step. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting workflow step. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -552,11 +550,11 @@ workflow_step_service::get_steps(const std::vector<std::string>& ids) {
 void workflow_step_service::save_step(const domain::workflow_step& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Workflow Step id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving workflow step. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), debug) << "Saving workflow step. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved workflow step. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved workflow step. " << "id: " << v.id;
 }
 
 void workflow_step_service::save_steps(const std::vector<domain::workflow_step>& steps) {
@@ -564,7 +562,7 @@ void workflow_step_service::save_steps(const std::vector<domain::workflow_step>&
         if (e.id.is_nil())
             throw std::invalid_argument("Workflow Step id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << steps.size() << " workflow steps";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << steps.size() << " workflow steps";
     auto ts = steps;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -573,9 +571,9 @@ void workflow_step_service::save_steps(const std::vector<domain::workflow_step>&
 }
 
 void workflow_step_service::delete_step(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing workflow step. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Removing workflow step. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed workflow step. " << "id: " << id;
+    ORES_LOG_SEV(lg(), info) << "Removed workflow step. " << "id: " << id;
 }
 
 void workflow_step_service::delete_steps(const std::vector<std::string>& ids) {
@@ -583,7 +581,7 @@ void workflow_step_service::delete_steps(const std::vector<std::string>& ids) {
 }
 
 std::vector<domain::workflow_step> workflow_step_service::get_step_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for workflow step. " << "id: " << id;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for workflow step. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

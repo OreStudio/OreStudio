@@ -28,7 +28,7 @@ using namespace ores::logging;
 using namespace conventions_fields;
 
 refdata::domain::fx_option_convention conventions_mapper::map_fx_option(const record_reader& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping FX option convention: " << text_of(v, "Id");
+    ORES_LOG_SEV(lg(), trace) << "Mapping FX option convention: " << text_of(v, "Id");
 
     refdata::domain::fx_option_convention r;
     r.id = text_of(v, "Id");

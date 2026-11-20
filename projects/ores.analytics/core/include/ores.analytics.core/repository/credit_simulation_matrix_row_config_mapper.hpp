@@ -28,7 +28,7 @@
 #include "ores.analytics.api/domain/credit_simulation_matrix_row_config.hpp"
 #include "ores.analytics.core/export.hpp"
 #include "ores.analytics.core/repository/credit_simulation_matrix_row_config_entity.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logger.hpp"
 
 namespace ores::analytics::repository {
 

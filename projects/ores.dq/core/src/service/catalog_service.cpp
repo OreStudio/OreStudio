@@ -29,10 +29,8 @@
 #include "ores.dq.api/domain/catalog.hpp"
 #include "ores.dq.api/messaging/catalog_protocol.hpp"
 #include "ores.dq.core/repository/catalog_repository.hpp"
-#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -437,25 +435,25 @@ catalog_service::prepare_change(const messaging::catalog_change& change,
 
 std::vector<domain::catalog> catalog_service::list_catalogs(std::uint32_t offset,
                                                             std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all catalogs";
+    ORES_LOG_SEV(lg(), debug) << "Listing all catalogs";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t catalog_service::count_catalogs() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total catalogs count";
+    ORES_LOG_SEV(lg(), debug) << "Getting total catalogs count";
     return repo_.get_total_catalog_count(ctx_);
 }
 
 
 std::optional<domain::catalog> catalog_service::get_catalog_at_version(const std::string& name,
                                                                        std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting catalog at version. " << "name: " << name
-                               << " version: " << version;
+    ORES_LOG_SEV(lg(), debug) << "Getting catalog at version. " << "name: " << name
+                              << " version: " << version;
     return repo_.read_at_version(ctx_, name, version);
 }
 
 std::optional<domain::catalog> catalog_service::get_catalog(const std::string& name) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting catalog. " << "name: " << name;
+    ORES_LOG_SEV(lg(), debug) << "Getting catalog. " << "name: " << name;
     auto results = repo_.read_latest(ctx_, name);
     if (results.empty())
         return std::nullopt;
@@ -469,11 +467,11 @@ std::vector<domain::catalog> catalog_service::get_catalogs(const std::vector<std
 void catalog_service::save_catalog(const domain::catalog& v) {
     if (v.name.empty())
         throw std::invalid_argument("Catalog name cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving catalog. " << "name: " << v.name;
+    ORES_LOG_SEV(lg(), debug) << "Saving catalog. " << "name: " << v.name;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved catalog. " << "name: " << v.name;
+    ORES_LOG_SEV(lg(), info) << "Saved catalog. " << "name: " << v.name;
 }
 
 void catalog_service::save_catalogs(const std::vector<domain::catalog>& catalogs) {
@@ -481,7 +479,7 @@ void catalog_service::save_catalogs(const std::vector<domain::catalog>& catalogs
         if (e.name.empty())
             throw std::invalid_argument("Catalog name cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << catalogs.size() << " catalogs";
+    ORES_LOG_SEV(lg(), debug) << "Saving " << catalogs.size() << " catalogs";
     auto ts = catalogs;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -490,9 +488,9 @@ void catalog_service::save_catalogs(const std::vector<domain::catalog>& catalogs
 }
 
 void catalog_service::delete_catalog(const std::string& name) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing catalog. " << "name: " << name;
+    ORES_LOG_SEV(lg(), debug) << "Removing catalog. " << "name: " << name;
     repo_.remove(ctx_, name);
-    BOOST_LOG_SEV(lg(), info) << "Removed catalog. " << "name: " << name;
+    ORES_LOG_SEV(lg(), info) << "Removed catalog. " << "name: " << name;
 }
 
 void catalog_service::delete_catalogs(const std::vector<std::string>& names) {
@@ -500,7 +498,7 @@ void catalog_service::delete_catalogs(const std::vector<std::string>& names) {
 }
 
 std::vector<domain::catalog> catalog_service::get_catalog_history(const std::string& name) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for catalog. " << "name: " << name;
+    ORES_LOG_SEV(lg(), debug) << "Getting history for catalog. " << "name: " << name;
     return repo_.read_all(ctx_, name);
 }
 

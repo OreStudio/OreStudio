@@ -154,6 +154,13 @@ lifecycle_manager::lifecycle_manager(std::optional<logging_options> ocfg) {
 
     const auto& cfg(*ocfg);
     logging_options_validator::validate(cfg);
+
+    // The clock goes in before any sink and before any record: every formatter
+    // names %TimeStamp%, and a record written before the attribute exists is
+    // formatted without one.
+    const std::string time_stamp_attr("TimeStamp");
+    core.add_global_attribute(time_stamp_attr, boost::log::attributes::local_clock());
+
     core.set_logging_enabled(true);
 
     const auto sl(to_boost_severity(cfg.severity));
@@ -171,9 +178,6 @@ lifecycle_manager::lifecycle_manager(std::optional<logging_options> ocfg) {
 
     if (cfg.replica_index)
         ORES_LOG_SEV(lg(), ores::logging::info) << "Replica index: " << *cfg.replica_index;
-
-    const std::string time_stamp_attr("TimeStamp");
-    core.add_global_attribute(time_stamp_attr, boost::log::attributes::local_clock());
 }
 
 lifecycle_manager::~lifecycle_manager() {

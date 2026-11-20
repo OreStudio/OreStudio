@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :logging:break_the_large_compilation_dependencies:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr: 4923
+#+branch: feature/give-every-log-record-a-timestamp
+#+pr: 4926
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-20
 #+updated: 2026-11-20
-#+environment: festive-dijkstra
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2B6612F6-D9F8-4DFF-8952-61716D22C2CF][Break the large compilation dependencies]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -40,11 +40,11 @@ All log lines should look the same.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:2B6612F6-D9F8-4DFF-8952-61716D22C2CF][Break the large compilation dependencies]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-20                               |
 
 * Acceptance
@@ -103,10 +103,37 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Records without a timestamp after the fix | 0 across 26 log files, where every service wrote one before | =grep -vhE '^[0-9]{4}-[0-9]{2}-[0-9]{2} ' publish/log/*.log= | working tree on 2026-11-20 |
+| The record that was missing one | reads =2026-11-20 10:32:09.196683 [INFO] [ores.logging.lifecycle_manager] Replica index: 0= | =grep -h "Replica index" publish/log/*.log= | working tree on 2026-11-20 |
+| Build | 4 min 10 s incremental at =-j6=, 0 failures | =compass build -j 6 -k 0= | working tree on 2026-11-20 |
+| Suites | =ores.logging.tests= passes, including the new case that asserts every record the manager writes opens with a timestamp | =compass test run --preset linux-clang-release-ninja -- -j 4 -R "ores.logging.tests"= | working tree on 2026-11-20 |
+| Services | 24 running, 0 failed, on a database recreated from scratch | =compass services start= | working tree on 2026-11-20 |
+| Local checks | format, lint, cmake-sources and compass-ng pass | =compass check --only format --only lint --only cmake-sources= | working tree on 2026-11-20 |
 
 * Notes
 
+The fix is one move, not a special case: the =TimeStamp= global attribute is
+registered before the sinks are created, so every record a formatter sees names
+it. The attribute belongs to the core, so it cannot depend on which sink is up.
+
+The test is the part that keeps it fixed. It configures file logging with a
+replica index, lets the manager write its record, flushes the core and reads the
+file back, and it asserts that *every* line opens with the timestamp shape,
+not only the one that used to miss it. It failed on its first run for a
+different reason worth recording: the check compared the wrong offsets, which
+proves the test reads the format rather than a substring.
+
+While this ran, two things the sweep script needed became clear, and it has
+them now:
+
+- It must never rewrite =ores.logging/src/logger.cpp= (the one call of Boost's
+  macro the handle exists to hide) or the two =boost_severity= files. A quick
+  hand-run of the same replacements had already broken the backend once.
+- A file that writes =using ... boost_severity;= decides how the name is spelled
+  in its own scope, so the qualification step leaves it alone.
+
+The script keeps =--check=, which reports stragglers and exits non-zero, because
+branches in flight will keep arriving with the old macro until the tree settles.
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -122,6 +149,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4926][#4926]] | [logging] Give every record a timestamp |
 | [[https://github.com/OreStudio/OreStudio/pull/4923][#4923]] | [docs] Capture the missing timestamp on the first log record |
 
 * Review
@@ -131,3 +159,12 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Every record a service writes now looks the same. The =Replica index= line
+carries its timestamp because the clock is registered before the first sink is
+created, and 0 of the 26 log files hold a line without one, where every service
+had exactly one before.
+
+=ores.logging.tests= keeps it that way: a new case starts the manager with a
+replica index, writes a second record, and asserts that every line in the file
+opens with the timestamp shape.

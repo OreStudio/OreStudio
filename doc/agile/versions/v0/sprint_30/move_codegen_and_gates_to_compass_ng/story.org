@@ -25,7 +25,7 @@ compass-ng generates the code and runs the build-free gates for every environmen
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
 | Now           | Every build-free gate compass-ng ports runs through it; compass-ng check passes on main. |
 | Waiting on    | Publish installable binaries, in the compass repository, for CI and external developers; one week of agreement for the retirement. |
-| Next          | Run compass check in CI once a release exists; retire the Python gates after the week of agreement. |
+| Next          | Watch the Compass check workflow on main; remove the single-gate workflows and retire the Python gates after the week of agreement. |
 | Last touched  | 2026-11-17                               |
 
 * Acceptance
@@ -53,7 +53,7 @@ compass-ng generates the code and runs the build-free gates for every environmen
 | [[id:C9EC800C-94A5-4D63-A885-6BA3B478BE92][Check each edit with the compass hook]] | DONE | 2026-11-18 | 2026-11-18 | Add compass hook as a PostToolUse hook through doc/llm/claude_code_settings.org. |
 | [[id:E1BC8C25-71E9-4586-98D6-F320F44B02A7][Fix the gate defects compass found]] | DONE | | 2026-11-17 | Fix the defects in ORE Studio's own gates that the compass port found. |
 | [[id:AE4F196D-F528-467A-AF6A-2E464A6601F5][Roll compass-ng out to the fleet]] | DONE | 2026-11-18 | 2026-11-18 | Make every ores_dev environment use compass-ng: check the binary, build each worktree's records, collect the store, and say what to do when it fails. |
-| [[id:C333376D-5D88-4D73-BB2F-AACED7605D17][Run compass check in CI]] | BLOCKED | | | Install the pinned compass-ng release in CI and replace the single-gate workflows it covers with one compass check --ratchet job. |
+| [[id:C333376D-5D88-4D73-BB2F-AACED7605D17][Run compass check in CI]] | STARTED | 2026-11-20 | | Install the pinned compass-ng release in CI and replace the single-gate workflows it covers with one compass check --ratchet job. |
 | [[id:A463E42D-7A73-44DC-BB9B-FEFF1D1413E2][Install compass-ng for external developers]] | BLOCKED | | | Document and script how a developer outside the fleet installs compass-ng, and keep the project usable when they do not. |
 | [[id:67AF2BC8-0FD7-4382-A4B3-C2407C408708][Retire the Python gates and generators compass replaces]] | BLOCKED | | | Delete the Python gates, generator scripts and baseline files compass replaces, once the two tools have agreed for an agreed period. |
 | [[id:F2F96980-5CF8-4FE5-B827-8405D15F6F6B][Fix the two codegen tests that fail on main]] | DONE | | 2026-11-18 | Every local gate reported two codegen test failures that came from main, not from the change it checked. |

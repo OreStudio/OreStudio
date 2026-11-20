@@ -335,6 +335,7 @@ projection project_one(const ores::database::context& ctx, const domain::market_
     row.tenant_id = ctx.tenant_id();
     row.series_id = series.id;
     row.party_id = series.party_id;
+    row.provider_code = series.provider_code;
     row.identity_kind = std::string(kind_unknown);
 
     if (const auto d = datum::oresmd_uri_codec::read(series.oresmd_uri); d && d->is_series()) {

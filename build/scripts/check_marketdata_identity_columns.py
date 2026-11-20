@@ -84,6 +84,7 @@ CONTEXT_COLUMNS = (
     "series_id",
     "tenant_id",
     "party_id",
+    "provider_code",
     "identity_kind",
     "asset_class",
     "instrument_type",

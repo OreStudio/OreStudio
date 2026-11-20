@@ -50,6 +50,7 @@ namespace ores::marketdata::domain {
         utility::codec::field{"tenant_id", &market_series_identity::tenant_id},
         utility::codec::field{"series_id", &market_series_identity::series_id},
         utility::codec::field{"party_id", &market_series_identity::party_id},
+        utility::codec::field{"provider_code", &market_series_identity::provider_code},
         utility::codec::field{"identity_kind", &market_series_identity::identity_kind},
         utility::codec::field{"asset_class", &market_series_identity::asset_class},
         utility::codec::field{"instrument_type", &market_series_identity::instrument_type},

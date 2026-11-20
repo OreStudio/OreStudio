@@ -55,8 +55,9 @@ namespace ores::marketdata::domain {
  * schema by build/scripts/check_marketdata_identity_columns.py, so the two cannot
  * drift.
  *
- * The identity the decomposed columns spell is unique per party, as the series URI
- * is. A fixing row states that at the table: a unique index over its context and
+ * The identity the decomposed columns spell is unique per party and provider, as
+ * the series is: the series table keys a series by party, URI and provider. A fixing
+ * row states that at the table: a unique index over its context and
  * its index-grammar columns, with nulls not distinct so an empty field counts as
  * equal to an empty field, refuses two fixings that spell one identity. A series
  * row cannot carry such an index, because its identity spans the whole instrument
@@ -81,6 +82,14 @@ struct market_series_identity final {
      * table.
      */
     boost::uuids::uuid party_id;
+
+    /**
+     * @brief The provider whose ids the series carries, copied from the series. A series is one
+     * item of one provider held by one party, so two providers that quote one fixing keep two
+     * series, and each carries an identity of its own. The fixing identity's unique index holds
+     * this column for that reason.
+     */
+    std::string provider_code;
 
     /**
      * @brief Which grammar named the series: series for a series URI, index for an index (fixing)

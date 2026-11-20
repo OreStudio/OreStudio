@@ -53,6 +53,7 @@ struct market_series_identity_entity {
     boost::uuids::uuid series_id;
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
     boost::uuids::uuid party_id;
+    std::string provider_code;
     std::string identity_kind;
     std::optional<std::string> asset_class;
     std::optional<std::string> instrument_type;
@@ -119,6 +120,7 @@ struct market_series_identity_entity {
         return query_builder::columns<e>() | query_builder::key("series_id", &e::series_id) |
                query_builder::bind("tenant_id", &e::tenant_id) |
                query_builder::bind("party_id", &e::party_id) |
+               query_builder::bind("provider_code", &e::provider_code) |
                query_builder::bind("identity_kind", &e::identity_kind) |
                query_builder::bind("asset_class", &e::asset_class) |
                query_builder::bind("instrument_type", &e::instrument_type) |

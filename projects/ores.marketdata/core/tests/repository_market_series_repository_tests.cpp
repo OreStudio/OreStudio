@@ -527,7 +527,10 @@ TEST_CASE("two_providers_keep_two_series_for_one_item_and_party", "[repository]"
     market_series_repository repo;
     const auto party = boost::uuids::random_generator{}();
 
-    auto bloomberg = make_identity_test_series(h, party);
+    // A real fixing, so each write projects an identity row: two providers of one
+    // fixing keep a series and an identity each, as the series table's key allows.
+    auto bloomberg = make_fixing_test_series(
+        h, party, "oresmd://ir/EUR?type=fixing&index=ibor&name=EURIBOR&tenor=6M");
     bloomberg.provider_code = "bloomberg";
     repo.write(h.context(), bloomberg);
 
@@ -545,6 +548,41 @@ TEST_CASE("two_providers_keep_two_series_for_one_item_and_party", "[repository]"
     REQUIRE(from_lseg.size() == 1);
     CHECK(from_bloomberg.front().id == bloomberg.id);
     CHECK(from_lseg.front().id == lseg.id);
+
+    ores::marketdata::repository::market_series_identity_repository identities;
+    for (const auto& [series, provider] :
+         {std::pair{bloomberg, std::string("bloomberg")}, std::pair{lseg, std::string("lseg")}}) {
+        const auto rows = identities.read_latest(h.context(), boost::uuids::to_string(series.id));
+        REQUIRE(rows.size() == 1);
+        CHECK(rows[0].identity_kind == "index");
+        CHECK(rows[0].index_name == "EURIBOR");
+        CHECK(rows[0].provider_code == provider);
+    }
+}
+
+TEST_CASE("one_provider_cannot_hold_one_fixing_identity_twice", "[repository]") {
+    database_helper h;
+    const auto party = boost::uuids::random_generator{}();
+    market_series_repository repo;
+    ores::marketdata::repository::market_series_identity_repository identities;
+
+    auto three_month = make_fixing_test_series(
+        h, party, "oresmd://ir/EUR?type=fixing&index=ibor&name=EURIBOR&tenor=3M");
+    three_month.provider_code = "bloomberg";
+    repo.write(h.context(), three_month);
+    auto one_month = make_fixing_test_series(
+        h, party, "oresmd://ir/EUR?type=fixing&index=ibor&name=EURIBOR&tenor=1M");
+    one_month.provider_code = "bloomberg";
+    repo.write(h.context(), one_month);
+
+    // A second row of one provider that spells the first's fixing is refused.
+    const auto rows = identities.read_latest(h.context(), boost::uuids::to_string(three_month.id));
+    REQUIRE(rows.size() == 1);
+    auto copy = rows[0];
+    copy.series_id = one_month.id;
+    CHECK_THROWS_WITH(
+        identities.write(h.context(), copy),
+        Catch::Matchers::ContainsSubstring("market_series_identity_fixing_identity_idx"));
 }
 
 TEST_CASE("one_provider_keeps_one_series_for_one_item_and_party", "[repository]") {

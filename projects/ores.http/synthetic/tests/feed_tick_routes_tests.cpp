@@ -155,7 +155,7 @@ TEST_CASE("feed_tick_buffers_keep_the_newest_ticks_of_a_watched_source", "[feed_
 
 TEST_CASE("feed_tick_buffers_follow_a_sources_subjects_and_keep_its_ticks", "[feed_ticks]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a source that stops and one whose subjects change";
+    ORES_LOG_SEV(lg, info) << "Testing a source that stops and one whose subjects change";
 
     hand_transport transport;
     feed_tick_buffers buffers(transport.subscriber());
@@ -187,7 +187,7 @@ TEST_CASE("feed_tick_buffers_follow_a_sources_subjects_and_keep_its_ticks", "[fe
 
 TEST_CASE("feed_tick_buffers_keep_a_source_whole_when_a_subscribe_fails", "[feed_ticks]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a subscribe that throws, and subjects in another order";
+    ORES_LOG_SEV(lg, info) << "Testing a subscribe that throws, and subjects in another order";
 
     hand_transport transport;
     std::set<std::string> refused;

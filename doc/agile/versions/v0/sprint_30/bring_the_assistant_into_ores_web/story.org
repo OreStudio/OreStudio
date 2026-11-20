@@ -1,0 +1,92 @@
+:PROPERTIES:
+:ID: BBEDFA8E-D43D-4F48-8FD7-1A3CC9F47E3E
+:END:
+#+title: Story: Bring the assistant into ores.web on the target architecture
+#+description: The ores.agent prototype runs as its own Node process with a hand-kept NATS subject map, its own chat UI and a llama.cpp process it starts itself. Rebuild it on ORE's architecture: the chat in ores.web, served through ores.http rather than the BFF, the model in an ores.llama.cpp service, and every operation a user can do open to the model, with machine operations told apart from the user's own.
+#+type: story
+#+level: s2
+#+filetags: :agent:llm:web:http:architecture:sprint_30:v0:
+#+created: 2026-11-20
+#+updated: 2026-11-20
+#+environment: solid_dirac
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A person signed in to ores.web asks the assistant, in a panel of ores.web,
+to do anything they can do themselves: find and read records, run
+reports, explain results, and book or change records. The assistant works
+through the same operations the screens use, with the person's own
+permissions, and every operation it performs is recorded as the
+assistant's, done for that person, so nobody can mistake it for the
+person's own action.
+
+The prototype in =projects/ores.agent= (PRs #4498, #4534 and #4752) shows
+that this works. Its architecture does not fit ORE's:
+
+- It is a separate Node process with its own chat UI, outside ores.web.
+- It calls NATS through a hand-kept subject map, =backend.ts= and
+  =backend-contract.json=, pinned to one revision, instead of the
+  generated wire protocol, so it drifts when a subject changes.
+- Its tools are written by hand, one per question, so it can do only what
+  someone wrote a tool for.
+- It starts and owns a llama.cpp process, so the model is not a service
+  the rest of the system can run, watch or scale.
+- Its documents call it read-only, but it books trades through
+  =trading.v1.ops.book_trade=.
+- No ORE gate covers it: =compass check= and compass-ng do not read it.
+
+This story designs the target architecture first, then builds it, and
+retires the prototype once ores.web does what it does.
+
+* Context
+
+- The browser is moving off the BFF onto ores.http. This story adds
+  nothing to the BFF. See [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it]].
+- ORE already has two patterns for one service calling another, and one
+  for a service acting as a user: [[id:3E20C1A0-7BA1-4F31-8C34-1E5F13558890][Service-to-service auth]] and [[id:AAC60D20-8696-4455-9292-E8FAE1389CBC][Internal actor impersonation]]. The machine operation
+  question starts from them.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
+| Now           | Scaffolded; the architecture analysis is next. |
+| Waiting on    | Nothing.                               |
+| Next          | Analyse the target-state architecture. |
+| Last touched  | 2026-11-20                               |
+
+* Acceptance
+
+- The assistant runs in ores.web and reaches the server only through
+  ores.http and the services behind it. Nothing is added to the BFF.
+- The model runs in an ores.llama.cpp service that ORE starts, stops,
+  monitors and deploys like its other services.
+- The model can call any operation the signed-in person may call, from a
+  catalogue derived from the generated protocol, not from hand-written
+  tools.
+- Every operation the assistant performs is distinguishable from the
+  person's own, in the audit trail and wherever ORE shows who did what.
+- An operation that changes data runs only after the person confirms it.
+- The gates cover the new code, and the prototype is retired or reduced
+  to what the new design keeps.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:F245FC50-7440-4C5E-AFA4-1B2D0E28F05D][Scaffold story: Bring the assistant into ores.web on the target architecture]] | DONE | 2026-11-20 | 2026-11-20 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:E3102699-58F9-4EF2-94BE-BCDBC1FA14BE][Analyse the assistant's target-state architecture]] | BACKLOG | | | Design the target architecture: the chat in ores.web via ores.http, the agent loop, the tool catalogue, machine operations, the ores.llama.cpp service and the fate of the prototype. |
+
+* Decisions
+
+* Out of scope
+
+- New BFF routes or BFF changes for the assistant.
+- Hosted model providers. The model runs in ORE's own service; whether to
+  add a hosted provider later is a separate decision.
+- Training or fine-tuning a model.

@@ -160,7 +160,9 @@ with the timestamp, the severity word, the channel and the message in the
 places they were, and the generator's =[ERROR]= lines, the market data store's
 =[WARN]= lines and the test listener's =Tag= attribute all behave as before. The
 one line without a timestamp is the =Replica index= record, which the lifecycle
-manager writes before it adds the =TimeStamp= attribute; that is not new.
+manager writes before it adds the =TimeStamp= attribute; that is not new,
+and [[id:4324373F-2D26-4041-A4D1-95FA2D826BA1][Give every log record a timestamp]]
+fixes it.
 
 The price is written down: a record is formatted whether or not a sink keeps it,
 because the header cannot name Boost's record type and so cannot defer the

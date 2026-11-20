@@ -1,0 +1,133 @@
+:PROPERTIES:
+:ID: 4324373F-2D26-4041-A4D1-95FA2D826BA1
+:END:
+#+title: Task: Give every log record a timestamp
+#+description: The lifecycle manager writes one record before it adds the TimeStamp global attribute, so the Replica index line of every service log carries no timestamp and does not look like the rest.
+#+type: task
+#+level: s1
+#+filetags: :logging:break_the_large_compilation_dependencies:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr: 4923
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-20
+#+updated: 2026-11-20
+#+environment: festive-dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2B6612F6-D9F8-4DFF-8952-61716D22C2CF][Break the large compilation dependencies]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The lifecycle manager writes one record before it adds the =TimeStamp= global
+attribute, so the =Replica index= line at the top of every service log is the
+only line without a timestamp. Every other line reads
+
+#+begin_example
+2026-11-20 09:40:30.999853 [INFO] [ores.refdata.service.app.host] ...
+#+end_example
+
+and that one reads
+
+#+begin_example
+ [INFO] [ores.logging.lifecycle_manager] Replica index: 0
+#+end_example
+
+All log lines should look the same.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:2B6612F6-D9F8-4DFF-8952-61716D22C2CF][Break the large compilation dependencies]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-20                               |
+
+* Acceptance
+
+- Every record a service writes carries a timestamp, a severity word and a
+  channel, including the first one.
+- A service start writes no line that lacks a timestamp: the check is
+  =grep -vhE '^[0-9]{4}-[0-9]{2}-[0-9]{2} ' publish/log/*.log= returning nothing.
+- The timestamp and the rest of the format do not otherwise change.
+
+* Plan
+
+=projects/ores.logging/src/lifecycle_manager.cpp= configures the sinks, writes
+
+#+begin_src cpp
+if (cfg.replica_index)
+    ORES_LOG_SEV(lg(), ores::logging::info) << "Replica index: " << *cfg.replica_index;
+#+end_src
+
+and only then adds the clock:
+
+#+begin_src cpp
+core.add_global_attribute("TimeStamp", boost::log::attributes::local_clock());
+#+end_src
+
+The record therefore reaches a formatter that names =%TimeStamp%= with no such
+attribute in the record's set.
+
+The fix is to add the global attribute before the first record the manager
+writes, not to special-case the message: the manager should be fully configured
+when it logs anything. Move the attribute registration to the top of the
+configuration path, ahead of the replica line and of any other setup record, and
+check the console sink path takes the same order. If the sinks are created after
+the attribute, so much the better: the attribute belongs to the core, not to a
+sink.
+
+Worth checking while there: whether any other early record (the =Log level= line,
+the sink creation warnings) is written before the formatter is set, and whether
+the tests assert any of this. None of them does today, which is why the gap went
+unnoticed; a test that starts the manager with a replica index and asserts the
+first record's timestamp would keep it fixed.
+
+Found while measuring PR #4922; the logger handle did not cause it and the PR
+was merged without blocking on it. See
+[[id:1CCAE6BF-99D4-4CEB-84BF-D115152DC664][Split the logger typedef out of make_logger.hpp]].''')
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4923][#4923]] | [docs] Capture the missing timestamp on the first log record |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

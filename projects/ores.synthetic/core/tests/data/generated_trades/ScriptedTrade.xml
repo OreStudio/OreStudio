@@ -208,6 +208,74 @@
       </Data>
     </ScriptedTradeData>
   </Trade>
+  <Trade id="f4f9c749-4286-50cc-ad05-e01871ef41a2">
+    <TradeType>ScriptedTrade</TradeType>
+    <ScriptedTradeData>
+      <ScriptName>WindowBarrierOption</ScriptName>
+      <Data>
+        <Number>
+          <Name>BarrierType</Name>
+          <Value>3</Value>
+        </Number>
+        <Number>
+          <Name>BarrierLevel</Name>
+          <Value>188.26</Value>
+        </Number>
+        <Number>
+          <Name>Quantity</Name>
+          <Value>26926.88</Value>
+        </Number>
+        <Number>
+          <Name>PutCall</Name>
+          <Value>1</Value>
+        </Number>
+        <Number>
+          <Name>Strike</Name>
+          <Value>209.18</Value>
+        </Number>
+        <Number>
+          <Name>LongShort</Name>
+          <Value>1</Value>
+        </Number>
+        <Number>
+          <Name>PremiumAmount</Name>
+          <Value>0</Value>
+        </Number>
+        <Currency>
+          <Name>PayCcy</Name>
+          <Value>USD</Value>
+        </Currency>
+        <Currency>
+          <Name>PremiumCcy</Name>
+          <Value>USD</Value>
+        </Currency>
+        <Index>
+          <Name>Underlying</Name>
+          <Value>EQ-RIC:.SPX</Value>
+        </Index>
+        <Event>
+          <Name>StartDate</Name>
+          <Value>2026-01-02</Value>
+        </Event>
+        <Event>
+          <Name>EndDate</Name>
+          <Value>2030-07-03</Value>
+        </Event>
+        <Event>
+          <Name>Expiry</Name>
+          <Value>2035-01-02</Value>
+        </Event>
+        <Event>
+          <Name>Settlement</Name>
+          <Value>2035-01-02</Value>
+        </Event>
+        <Event>
+          <Name>PremiumPayDate</Name>
+          <Value>2035-01-02</Value>
+        </Event>
+      </Data>
+    </ScriptedTradeData>
+  </Trade>
   <Trade id="e8507218-9a87-526e-a5de-62700d7734ad">
     <TradeType>ScriptedTrade</TradeType>
     <ScriptedTradeData>
@@ -501,6 +569,74 @@
       </Data>
     </ScriptedTradeData>
   </Trade>
+  <Trade id="228d878e-02b9-546c-923e-6e948598fcc0">
+    <TradeType>ScriptedTrade</TradeType>
+    <ScriptedTradeData>
+      <ScriptName>WindowBarrierOption</ScriptName>
+      <Data>
+        <Number>
+          <Name>BarrierType</Name>
+          <Value>3</Value>
+        </Number>
+        <Number>
+          <Name>BarrierLevel</Name>
+          <Value>826.07</Value>
+        </Number>
+        <Number>
+          <Name>Quantity</Name>
+          <Value>7485.13</Value>
+        </Number>
+        <Number>
+          <Name>PutCall</Name>
+          <Value>1</Value>
+        </Number>
+        <Number>
+          <Name>Strike</Name>
+          <Value>917.86</Value>
+        </Number>
+        <Number>
+          <Name>LongShort</Name>
+          <Value>-1</Value>
+        </Number>
+        <Number>
+          <Name>PremiumAmount</Name>
+          <Value>0</Value>
+        </Number>
+        <Currency>
+          <Name>PayCcy</Name>
+          <Value>USD</Value>
+        </Currency>
+        <Currency>
+          <Name>PremiumCcy</Name>
+          <Value>USD</Value>
+        </Currency>
+        <Index>
+          <Name>Underlying</Name>
+          <Value>EQ-RIC:.NDX</Value>
+        </Index>
+        <Event>
+          <Name>StartDate</Name>
+          <Value>2025-10-02</Value>
+        </Event>
+        <Event>
+          <Name>EndDate</Name>
+          <Value>2026-10-02</Value>
+        </Event>
+        <Event>
+          <Name>Expiry</Name>
+          <Value>2027-10-02</Value>
+        </Event>
+        <Event>
+          <Name>Settlement</Name>
+          <Value>2027-10-02</Value>
+        </Event>
+        <Event>
+          <Name>PremiumPayDate</Name>
+          <Value>2027-10-02</Value>
+        </Event>
+      </Data>
+    </ScriptedTradeData>
+  </Trade>
   <Trade id="b8a1ce7f-1d6a-5d73-afeb-d392548ac6f4">
     <TradeType>ScriptedTrade</TradeType>
     <ScriptedTradeData>
@@ -789,6 +925,74 @@
         <Event>
           <Name>PremiumDate</Name>
           <Value>2026-01-02</Value>
+        </Event>
+      </Data>
+    </ScriptedTradeData>
+  </Trade>
+  <Trade id="e16ec263-8b54-54c1-8765-42e9c2d2f35c">
+    <TradeType>ScriptedTrade</TradeType>
+    <ScriptedTradeData>
+      <ScriptName>WindowBarrierOption</ScriptName>
+      <Data>
+        <Number>
+          <Name>BarrierType</Name>
+          <Value>3</Value>
+        </Number>
+        <Number>
+          <Name>BarrierLevel</Name>
+          <Value>0.8267</Value>
+        </Number>
+        <Number>
+          <Name>Quantity</Name>
+          <Value>4187691.98</Value>
+        </Number>
+        <Number>
+          <Name>PutCall</Name>
+          <Value>1</Value>
+        </Number>
+        <Number>
+          <Name>Strike</Name>
+          <Value>0.9185</Value>
+        </Number>
+        <Number>
+          <Name>LongShort</Name>
+          <Value>1</Value>
+        </Number>
+        <Number>
+          <Name>PremiumAmount</Name>
+          <Value>0</Value>
+        </Number>
+        <Currency>
+          <Name>PayCcy</Name>
+          <Value>USD</Value>
+        </Currency>
+        <Currency>
+          <Name>PremiumCcy</Name>
+          <Value>USD</Value>
+        </Currency>
+        <Index>
+          <Name>Underlying</Name>
+          <Value>FX-TR20H-EUR-USD</Value>
+        </Index>
+        <Event>
+          <Name>StartDate</Name>
+          <Value>2025-11-02</Value>
+        </Event>
+        <Event>
+          <Name>EndDate</Name>
+          <Value>2027-05-04</Value>
+        </Event>
+        <Event>
+          <Name>Expiry</Name>
+          <Value>2028-11-02</Value>
+        </Event>
+        <Event>
+          <Name>Settlement</Name>
+          <Value>2028-11-02</Value>
+        </Event>
+        <Event>
+          <Name>PremiumPayDate</Name>
+          <Value>2028-11-02</Value>
         </Event>
       </Data>
     </ScriptedTradeData>
@@ -1106,6 +1310,74 @@
         <Event>
           <Name>PremiumDate</Name>
           <Value>2025-11-02</Value>
+        </Event>
+      </Data>
+    </ScriptedTradeData>
+  </Trade>
+  <Trade id="3917cd42-2787-5483-b13d-a9edbe669d08">
+    <TradeType>ScriptedTrade</TradeType>
+    <ScriptedTradeData>
+      <ScriptName>WindowBarrierOption</ScriptName>
+      <Data>
+        <Number>
+          <Name>BarrierType</Name>
+          <Value>3</Value>
+        </Number>
+        <Number>
+          <Name>BarrierLevel</Name>
+          <Value>0.8192</Value>
+        </Number>
+        <Number>
+          <Name>Quantity</Name>
+          <Value>3698285.51</Value>
+        </Number>
+        <Number>
+          <Name>PutCall</Name>
+          <Value>1</Value>
+        </Number>
+        <Number>
+          <Name>Strike</Name>
+          <Value>0.9102</Value>
+        </Number>
+        <Number>
+          <Name>LongShort</Name>
+          <Value>-1</Value>
+        </Number>
+        <Number>
+          <Name>PremiumAmount</Name>
+          <Value>0</Value>
+        </Number>
+        <Currency>
+          <Name>PayCcy</Name>
+          <Value>USD</Value>
+        </Currency>
+        <Currency>
+          <Name>PremiumCcy</Name>
+          <Value>USD</Value>
+        </Currency>
+        <Index>
+          <Name>Underlying</Name>
+          <Value>FX-TR20H-EUR-USD</Value>
+        </Index>
+        <Event>
+          <Name>StartDate</Name>
+          <Value>2025-09-02</Value>
+        </Event>
+        <Event>
+          <Name>EndDate</Name>
+          <Value>2027-09-02</Value>
+        </Event>
+        <Event>
+          <Name>Expiry</Name>
+          <Value>2029-09-02</Value>
+        </Event>
+        <Event>
+          <Name>Settlement</Name>
+          <Value>2029-09-02</Value>
+        </Event>
+        <Event>
+          <Name>PremiumPayDate</Name>
+          <Value>2029-09-02</Value>
         </Event>
       </Data>
     </ScriptedTradeData>

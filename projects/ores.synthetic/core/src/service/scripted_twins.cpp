@@ -244,20 +244,17 @@ std::vector<std::string> one_source(const instrument_batch& batch,
 std::string transformed(std::string value, std::string_view transform) {
     if (transform.empty())
         return value;
-    if (transform == "sign") {
-        if (value == "Long" || value == "Call" || value == "true")
-            return "1";
-        if (value == "Short" || value == "Put" || value == "false")
-            return "-1";
-    } else if (transform == "flag") {
-        if (value == "true")
-            return "1";
-        if (value == "false")
-            return "0";
-    } else {
+    bool known = false;
+    for (const auto& row : script_twin_transforms) {
+        if (row.transform != transform)
+            continue;
+        known = true;
+        if (row.value == value)
+            return std::string(row.code);
+    }
+    if (!known)
         throw trade_population_error("The twin recipe names the unknown transform '" +
                                      std::string(transform) + "'.");
-    }
     throw trade_population_error("The " + std::string(transform) + " transform reads no value '" +
                                  value + "'.");
 }

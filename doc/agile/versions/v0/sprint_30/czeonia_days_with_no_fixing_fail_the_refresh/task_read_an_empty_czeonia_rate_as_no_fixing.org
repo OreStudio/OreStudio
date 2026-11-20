@@ -8,7 +8,7 @@
 #+filetags: :czeonia_days_with_no_fixing_fail_the_refresh:sprint_30:v0:
 #+owner: marco
 #+branch: feature/read-an-empty-czeonia-rate-as-no-fixing
-#+pr:
+#+pr: 4932
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-20
@@ -95,7 +95,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4932][#4932]] | [marketdata] Read an empty CZEONIA rate as no fixing |
 
 * Review
 

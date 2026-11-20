@@ -233,8 +233,9 @@ public:
      * @brief Starts the feed an operator asked for, keyed by the id of its config.
      *
      * A manual run publishes through its collection's adapter as a demanded run does, and no
-     * demand names its group, so the next demand set leaves it running. Returns false, and starts nothing, when a
-     * run of the feed's source name is already publishing it, whichever run started it.
+     * demand names its group, so the next demand set leaves it running. Returns false, and starts
+     * nothing, when a run of the feed's source name is already publishing it, whichever run started
+     * it.
      */
     bool start_manual(std::string group, std::shared_ptr<ores::marketdata::domain::i_feed> feed) {
         if (!feed)

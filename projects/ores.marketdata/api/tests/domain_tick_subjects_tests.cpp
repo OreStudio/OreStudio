@@ -170,8 +170,7 @@ TEST_CASE("a_watcher_of_a_series_receives_its_points_and_no_other_series",
 TEST_CASE("a_watcher_of_a_providers_series_hears_every_feed_of_the_provider",
           "[domain][tick_subjects]") {
     using ores::marketdata::domain::provider_series_watch_subjects;
-    const std::string fx =
-        "oresmd://fx/EUR?type=series&instrument=fx_spot&quote=rate&ccy=USD";
+    const std::string fx = "oresmd://fx/EUR?type=series&instrument=fx_spot&quote=rate&ccy=USD";
 
     const auto watched = provider_series_watch_subjects("bloomberg", {fx, "not a uri"});
 

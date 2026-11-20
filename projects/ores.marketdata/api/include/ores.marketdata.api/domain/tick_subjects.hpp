@@ -208,8 +208,9 @@ inline constexpr std::string_view any_feed = "*";
  * which is enough to name where its ticks land. A series URI the codec cannot read
  * is left out.
  */
-inline std::vector<std::string> provider_series_watch_subjects(
-    std::string_view provider_code, const std::vector<std::string>& series_uris) {
+inline std::vector<std::string>
+provider_series_watch_subjects(std::string_view provider_code,
+                               const std::vector<std::string>& series_uris) {
     std::vector<std::string> out;
     out.reserve(series_uris.size());
     for (const auto& uri : series_uris) {

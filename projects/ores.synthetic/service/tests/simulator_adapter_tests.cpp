@@ -485,9 +485,8 @@ TEST_CASE("the runner rejects an id whose generator cannot be built",
 
 TEST_CASE("the runner survives a generator whose start throws", "[simulator_adapter][runner]") {
     generator_runner runner([] {
-        return std::vector{generator_offer{.id = bbg_id("EUR/USD"), .make = [] {
-                                               return std::make_shared<failing_generator>();
-                                           }}};
+        return std::vector{generator_offer{
+            .id = bbg_id("EUR/USD"), .make = [] { return std::make_shared<failing_generator>(); }}};
     });
 
     const auto out = runner.apply({bbg_id("EUR/USD")});
@@ -720,10 +719,7 @@ TEST_CASE("the offers are the startable system configs of the provider that have
             [](const auto&, const auto&) {
                 return std::optional<ores::synthetic::domain::market_data_generation_config>{};
             },
-        .containers =
-            [containers](const auto&) {
-                return containers();
-            }});
+        .containers = [containers](const auto&) { return containers(); }});
 
     svc::feed_kind kind;
     kind.kind = std::string(ores::synthetic::feed::fx_spot_feed_kind);
@@ -1083,12 +1079,12 @@ TEST_CASE("a curve publishes only where the ingest listens",
 
     // A pillar that serves an adapter travels on the adapter's ingress, which is the family the
     // market data ingest maps, stores and delivers.
-    const auto serving = make(
-        {{.start_tenor_code = "SPOT",
-          .end_tenor_code = "3M",
-          .target = {.id = id,
-                     .subject = domain::adapter_ingress_subject(adapter_id, id.external_id),
-                     .provider_code = "demo"}}});
+    const auto serving =
+        make({{.start_tenor_code = "SPOT",
+               .end_tenor_code = "3M",
+               .target = {.id = id,
+                          .subject = domain::adapter_ingress_subject(adapter_id, id.external_id),
+                          .provider_code = "demo"}}});
     CHECK(serving.published_subject() ==
           domain::adapter_ingress_subject(adapter_id, id.external_id));
     CHECK(domain::ingest_consumes(serving.published_subject()));

@@ -96,7 +96,7 @@ def source_parts(source):
     return [split(listed, " or ") for listed in split(source, " and ")]
 
 
-SCHEDULE = re.compile(r"instrument_schedules\[\w+\]")
+SCHEDULE = re.compile(r"instrument_schedules\[\w+\](?: based on (\w+))?")
 DERIVED = re.compile(r"(\w+) shifted \w+ on \w+ \w+")
 
 
@@ -150,15 +150,20 @@ def recipes():
                 if part.startswith("'") or part in events or "." in part:
                     continue
                 errors.append(f"{code}: {name} names no column in {part}")
-            if events:
-                if typ != "Event":
-                    errors.append(f"{code}: {name} states an event but is not an Event")
-                if len(listed) > 1 or len(events) != len(parts):
+            if events and typ != "Event":
+                errors.append(f"{code}: {name} states an event but is not an Event")
+            # A list of several parts is an event's dates, each part a schedule or values.
+            if events and len(listed) > 1 and not array:
+                errors.append(f"{code}: {name} lists an event's dates but is not a list")
+            for alternatives in listed:
+                stated_events = [part for part in alternatives if part in events]
+                if stated_events and len(stated_events) != len(alternatives):
                     errors.append(f"{code}: {name} mixes an event with values")
             for part in events:
-                base = DERIVED.fullmatch(part)
-                if base and (base.group(1) == name or
-                             (base.group(1), "Event") not in {(n, t) for n, t, _ in inputs}):
+                base = DERIVED.fullmatch(part) or SCHEDULE.fullmatch(part)
+                if base and base.group(1) and (
+                        base.group(1) == name or
+                        (base.group(1), "Event") not in {(n, t) for n, t, _ in inputs}):
                     errors.append(f"{code}: {name} derives from {base.group(1)}, "
                                   f"which is no other Event of {script}")
             rows.append((code, sequence, script, name, typ, array, source, transform))

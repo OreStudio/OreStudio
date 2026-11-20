@@ -27,6 +27,7 @@
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
+#include <charconv>
 #include <chrono>
 #include <format>
 #include <iterator>
@@ -166,22 +167,61 @@ std::vector<std::string> product_column(const instrument_batch& batch,
     return out;
 }
 
-/// The role a source names a whole schedule by, as instrument_schedules[<role>].
-std::optional<std::string_view> schedule_role_of(std::string_view source) {
-    constexpr std::string_view prefix = "instrument_schedules[";
-    if (!source.starts_with(prefix) || !source.ends_with(']'))
-        return std::nullopt;
-    return source.substr(prefix.size(), source.size() - prefix.size() - 1);
+/// The parts of a source between each separator, a quoted literal being read whole.
+std::vector<std::string_view> parts_of(std::string_view source, std::string_view separator) {
+    std::vector<std::string_view> out;
+    bool quoted = false;
+    std::size_t start = 0;
+    for (std::size_t i = 0; i < source.size(); ++i) {
+        if (source[i] == '\'')
+            quoted = !quoted;
+        else if (!quoted && source.substr(i).starts_with(separator)) {
+            out.push_back(source.substr(start, i - start));
+            start = i + separator.size();
+            i = start - 1;
+        }
+    }
+    out.push_back(source.substr(start));
+    return out;
 }
 
 /**
- * @brief The schedule under the role, as its rules or as its listed dates;
- * nothing when no row states it. The twin carries one schedule block, so a role
- * stated by several rows is refused, as is a block with no date to carry. Each
- * rule term is carried as the native row states it, absent terms included.
+ * @brief A whole schedule a source names, as instrument_schedules[<role>], and
+ * the input a derived schedule is carried over, as ... based on <Input>.
  */
-std::optional<std::variant<tb::scripted_schedule, tb::scripted_dates>>
-whole_schedule(const instrument_batch& batch, std::string_view role) {
+struct schedule_source final {
+    std::string_view role;
+    std::optional<std::string_view> base;
+};
+
+std::optional<schedule_source> schedule_source_of(std::string_view source) {
+    constexpr std::string_view prefix = "instrument_schedules[";
+    constexpr std::string_view based = " based on ";
+    if (!source.starts_with(prefix))
+        return std::nullopt;
+    std::optional<std::string_view> base;
+    if (const auto at = source.find(based); at != std::string_view::npos) {
+        base = source.substr(at + based.size());
+        source = source.substr(0, at);
+    }
+    if (!source.ends_with(']') || (base && base->find(' ') != std::string_view::npos))
+        return std::nullopt;
+    return schedule_source{.role = source.substr(prefix.size(), source.size() - prefix.size() - 1),
+                           .base = base};
+}
+
+using twin_event = std::variant<tb::scripted_schedule, tb::scripted_dates, tb::scripted_derived>;
+
+/**
+ * @brief The schedule under the role, as its rules, its listed dates or, when
+ * the source names the input it is carried over, its derivation; nothing when
+ * no row states it. The twin carries one schedule block, so a role stated by
+ * several rows is refused, as is a block with no date to carry. Each term is
+ * carried as the native row states it, absent terms included.
+ */
+std::optional<twin_event> whole_schedule(const instrument_batch& batch,
+                                         const schedule_source& source) {
+    const auto role = source.role;
     const auto refuse = [&](const std::string& why) {
         return trade_population_error("The " + std::string(role) + " schedule " + why + ".");
     };
@@ -206,6 +246,16 @@ whole_schedule(const instrument_batch& batch, std::string_view role) {
             throw refuse("lists no date");
         return out;
     }
+    // The native row names its base by the native element, which the twin
+    // states under its own input, so the recipe names that input.
+    if (row.schedule_kind == "derived" && source.base) {
+        if (!row.shift)
+            throw refuse("states no shift");
+        return tb::scripted_derived{.base = std::string(*source.base),
+                                    .shift = *row.shift,
+                                    .calendar = row.calendar,
+                                    .convention = row.convention};
+    }
     if (row.schedule_kind != "rules")
         throw refuse("is " + row.schedule_kind + ", which a twin cannot read");
     if (!row.start_date || !row.end_date || !row.tenor)
@@ -217,24 +267,6 @@ whole_schedule(const instrument_batch& batch, std::string_view role) {
                                  .convention = row.convention,
                                  .term_convention = row.term_convention,
                                  .rule = row.rule};
-}
-
-/// The parts of a source between each separator, a quoted literal being read whole.
-std::vector<std::string_view> parts_of(std::string_view source, std::string_view separator) {
-    std::vector<std::string_view> out;
-    bool quoted = false;
-    std::size_t start = 0;
-    for (std::size_t i = 0; i < source.size(); ++i) {
-        if (source[i] == '\'')
-            quoted = !quoted;
-        else if (!quoted && source.substr(i).starts_with(separator)) {
-            out.push_back(source.substr(start, i - start));
-            start = i + separator.size();
-            i = start - 1;
-        }
-    }
-    out.push_back(source.substr(start));
-    return out;
 }
 
 /**
@@ -251,12 +283,10 @@ std::optional<tb::scripted_derived> derived_of(std::string_view source) {
                                 .convention = std::string(words[5])};
 }
 
-using twin_event = std::variant<tb::scripted_schedule, tb::scripted_dates, tb::scripted_derived>;
-
 /// Whether the source states an event: a whole schedule or a derived one.
 bool is_event_source(std::string_view source) {
     return std::ranges::any_of(parts_of(source, " or "), [](std::string_view part) {
-        return schedule_role_of(part) || derived_of(part);
+        return schedule_source_of(part) || derived_of(part);
     });
 }
 
@@ -268,15 +298,15 @@ bool is_event_source(std::string_view source) {
 std::optional<twin_event> event_of(const instrument_batch& batch, std::string_view source) {
     const auto parts = parts_of(source, " or ");
     for (const auto part : parts)
-        if (!schedule_role_of(part) && !derived_of(part))
+        if (!schedule_source_of(part) && !derived_of(part))
             throw trade_population_error("The twin recipe source '" + std::string(source) +
                                          "' mixes an event with the value '" + std::string(part) +
                                          "'.");
     for (const auto part : parts) {
         if (auto derived = derived_of(part))
             return std::move(*derived);
-        if (auto schedule = whole_schedule(batch, *schedule_role_of(part)))
-            return std::visit([](auto& s) -> twin_event { return std::move(s); }, *schedule);
+        if (auto schedule = whole_schedule(batch, *schedule_source_of(part)))
+            return schedule;
     }
     return std::nullopt;
 }
@@ -286,13 +316,27 @@ std::vector<std::string> one_source(const instrument_batch& batch,
                                     std::string_view source) {
     if (source.size() >= 2 && source.front() == '\'' && source.back() == '\'')
         return {std::string(source.substr(1, source.size() - 2))};
-    if (schedule_role_of(source) || derived_of(source))
+    if (schedule_source_of(source) || derived_of(source))
         throw trade_population_error("The twin recipe source '" + std::string(source) +
                                      "' states an event, which a value cannot fall back to.");
     const auto dot = source.rfind('.');
     if (dot == std::string_view::npos)
         throw trade_population_error("The twin recipe source '" + std::string(source) +
                                      "' names no column.");
+    // A column may pick one of its values by position, as <column>[<n>].
+    if (const auto open = source.rfind('['); open != std::string_view::npos && open > dot) {
+        std::size_t n = 0;
+        const auto digits = source.substr(open + 1, source.size() - open - 2);
+        const auto [end, error] = std::from_chars(digits.data(), digits.data() + digits.size(), n);
+        if (!source.ends_with(']') || error != std::errc{} ||
+            end != digits.data() + digits.size() || n == 0)
+            throw trade_population_error("The twin recipe source '" + std::string(source) +
+                                         "' picks no value by position.");
+        auto values = one_source(batch, trade_type_code, source.substr(0, open));
+        if (values.size() < n)
+            return {};
+        return {std::move(values[n - 1])};
+    }
     const auto rows = source.substr(0, dot);
     const auto column = source.substr(dot + 1);
     if (rows == "product")
@@ -302,6 +346,68 @@ std::vector<std::string> one_source(const instrument_batch& batch,
         return rows_column(batch, rows, std::nullopt, column);
     const auto role = rows.substr(bracket + 1, rows.size() - bracket - 2);
     return rows_column(batch, rows.substr(0, bracket), role, column);
+}
+
+/// A date as a column states it, YYYY-MM-DD.
+std::chrono::year_month_day date_of(const std::string& text) {
+    int y = 0;
+    unsigned m = 0, d = 0;
+    const auto read = [&](std::size_t at, std::size_t size, auto& out) {
+        const auto* first = text.data() + at;
+        return std::from_chars(first, first + size, out).ptr == first + size;
+    };
+    if (text.size() != 10 || text[4] != '-' || text[7] != '-' || !read(0, 4, y) || !read(5, 2, m) ||
+        !read(8, 2, d))
+        throw trade_population_error("The twin reads '" + text + "' as no date.");
+    const std::chrono::year_month_day date{
+        std::chrono::year{y}, std::chrono::month{m}, std::chrono::day{d}};
+    if (!date.ok())
+        throw trade_population_error("The twin reads '" + text + "' as no date.");
+    return date;
+}
+
+/**
+ * @brief An event listed from its parts, as a and b: the dates of each part in
+ * turn, a part being a dates schedule or a source of date values. The listed
+ * schedules must agree on their calendar and convention, which the event takes.
+ */
+tb::scripted_dates dated_list(const instrument_batch& batch,
+                              std::string_view trade_type_code,
+                              std::string_view source) {
+    tb::scripted_dates out;
+    bool adjusted = false;
+    for (const auto part : parts_of(source, " and ")) {
+        if (!is_event_source(part)) {
+            const auto values = twin_source_values(batch, trade_type_code, part);
+            if (values.empty())
+                throw trade_population_error("The twin recipe source '" + std::string(part) +
+                                             "' finds no date.");
+            for (const auto& value : values)
+                out.dates.push_back(date_of(value));
+            continue;
+        }
+        auto event = event_of(batch, part);
+        auto* listed = event ? std::get_if<tb::scripted_dates>(&*event) : nullptr;
+        if (!listed)
+            throw trade_population_error("The twin recipe source '" + std::string(part) +
+                                         "' states no listed dates, which an event list needs.");
+        if (adjusted && (listed->calendar != out.calendar || listed->convention != out.convention))
+            throw trade_population_error("The twin recipe source '" + std::string(source) +
+                                         "' lists schedules adjusted apart.");
+        adjusted = true;
+        out.calendar = listed->calendar;
+        out.convention = listed->convention;
+        std::ranges::move(listed->dates, std::back_inserter(out.dates));
+    }
+    // ORE reads a listed schedule's dates once each, so a repeated date would
+    // shorten the event the script counts.
+    for (std::size_t i = 1; i < out.dates.size(); ++i)
+        if (std::ranges::find(out.dates.begin(), out.dates.begin() + i, out.dates[i]) !=
+            out.dates.begin() + i)
+            throw trade_population_error("The twin recipe source '" + std::string(source) +
+                                         "' lists " + std::format("{:%Y-%m-%d}", out.dates[i]) +
+                                         " twice, which ORE reads once.");
+    return out;
 }
 
 std::string transformed(std::string value, std::string_view transform) {
@@ -375,6 +481,12 @@ scripted_twin_of(const domain::trade_population_slot& native) {
         tb::scripted_variable variable{.name = std::string(row->input_name),
                                        .type = std::string(row->data_type),
                                        .value = std::string()};
+        if (std::string_view(row->data_type) == "Event" &&
+            parts_of(row->source, " and ").size() > 1) {
+            variable.value = dated_list(native.instruments, native.trade_type_code, row->source);
+            variables.push_back(std::move(variable));
+            continue;
+        }
         // An event is carried as the native trade states it, by rules or by
         // dates, or derived from another input as ORE derives it.
         if (is_event_source(row->source)) {

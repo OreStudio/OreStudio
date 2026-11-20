@@ -1960,6 +1960,7 @@ TEST_CASE("every_product_with_a_recipe_has_a_twin_over_its_library_script", "[tr
         {"FxForwardVolatilityAgreement", "ForwardVolatilityAgreement"},
         {"FxPairwiseVarianceSwap", "PairwiseVarianceSwap"},
         {"FxWindowBarrierOption", "WindowBarrierOption"},
+        {"FxWorstOfBasketSwap", "WorstOfBasketSwap"},
         {"FxRainbowOption", "MaxRainbowOption"}};
     std::set<std::string> twinned;
     std::set<boost::uuids::uuid> twin_ids;
@@ -2099,6 +2100,93 @@ TEST_CASE("a_twin_source_reads_a_column_a_role_a_fallback_and_a_literal", "[trad
                              "FxBasketOption",
                              "product.settlement_date or 'x and y' and product.currency") ==
           std::vector<std::string>{"x and y", "USD"});
+    CHECK(
+        twin_source_values(batch, "FxBasketOption", "instrument_underlyings[underlying].name[2]") ==
+        std::vector<std::string>{"underlying1"});
+    CHECK(twin_source_values(batch, "FxBasketOption", "instrument_underlyings[underlying].name[3]")
+              .empty());
+    CHECK_THROWS_AS(
+        twin_source_values(batch, "FxBasketOption", "instrument_underlyings[underlying].name[0]"),
+        trade_population_error);
+}
+
+TEST_CASE("a_worst_of_twin_pays_its_initial_amount_first_and_fixes_as_its_native_derives",
+          "[trade_population]") {
+    namespace td = ores::trading::domain;
+    using ores::synthetic::service::scripted_twin_of;
+    auto scope = fx_scope();
+    scope.trades_per_book = 64;
+    const auto plan = plan_of(scope);
+    const auto native = std::ranges::find_if(
+        plan.slots, [](const auto& s) { return s.trade_type_code == "FxWorstOfBasketSwap"; });
+    REQUIRE(native != plan.slots.end());
+    const auto dates_of = [](const td::instrument_batch& batch, const auto& keep) {
+        std::vector<std::chrono::year_month_day> out;
+        for (const auto& d : batch.instrument_schedule_dates)
+            if (keep(d))
+                out.push_back(d.schedule_date);
+        return out;
+    };
+    const auto pays = dates_of(native->instruments, [](const auto& d) {
+        return d.schedule_role == "floating_pay_schedule";
+    });
+    const auto periods = dates_of(native->instruments, [](const auto& d) {
+        return d.schedule_role == "floating_period_schedule";
+    });
+    REQUIRE_FALSE(pays.empty());
+
+    const auto twin = scripted_twin_of(*native);
+    REQUIRE(twin.has_value());
+    const auto& rows = twin->instruments;
+    const auto parameter = [&](const char* name) -> const td::scripted_parameter& {
+        const auto p = std::ranges::find_if(rows.scripted_parameters,
+                                            [&](const auto& p) { return p.name == name; });
+        REQUIRE(p != rows.scripted_parameters.end());
+        return *p;
+    };
+    const auto event_dates = [&](const char* name) {
+        const auto owner = parameter(name).sequence_number;
+        return dates_of(rows, [&](const auto& d) { return d.owner_number == owner; });
+    };
+    // The initial fixed amount pays first, on the trade's start: ORE reads a
+    // listed date once, so it cannot share the first pay date.
+    auto settlements = pays;
+    settlements.insert(settlements.begin(), periods.front());
+    CHECK(event_dates("SettlementDates") == settlements);
+    CHECK(event_dates("DeterminationDates") == periods);
+    const auto settlement = std::ranges::find_if(rows.instrument_schedules, [&](const auto& s) {
+        return s.owner_number == parameter("SettlementDates").sequence_number;
+    });
+    REQUIRE(settlement != rows.instrument_schedules.end());
+    CHECK(settlement->calendar == "TARGET");
+    CHECK(settlement->convention == "MF");
+
+    const auto& fixing = parameter("FixingSchedule");
+    CHECK(fixing.shape == "derived_schedule");
+    CHECK(fixing.base_schedule == "DeterminationDates");
+    CHECK(fixing.shift == "-2D");
+    CHECK(fixing.calendar == "TARGET");
+    CHECK(fixing.convention == "P");
+    for (const auto* tag :
+         {"InitialFixedAmount", "FloatingLeg", "FixedCouponLeg", "EquityAmountPayoff"})
+        CHECK(parameter(tag).value == "0");
+
+    // An initial pay date on the first pay date would be read once, so the twin is refused.
+    auto repeated = *native;
+    repeated.instruments.fx_worst_of_basket_swap_instruments[0].initial_fixed_pay_date =
+        pays.front();
+    CHECK_THROWS_AS(scripted_twin_of(repeated), trade_population_error);
+
+    // With no fixing schedule of its own, the swap fixes on its period dates, as ORE takes it.
+    auto unstated = *native;
+    std::erase_if(unstated.instruments.instrument_schedules,
+                  [](const auto& s) { return s.schedule_role == "floating_fixing_schedule"; });
+    const auto plain = scripted_twin_of(unstated);
+    REQUIRE(plain.has_value());
+    const auto own = std::ranges::find_if(plain->instruments.scripted_parameters,
+                                          [](const auto& p) { return p.name == "FixingSchedule"; });
+    REQUIRE(own != plain->instruments.scripted_parameters.end());
+    CHECK(own->shape == "schedule");
 }
 
 TEST_CASE("a_pairwise_twin_lists_both_members_and_derives_its_lag_as_ore_does",

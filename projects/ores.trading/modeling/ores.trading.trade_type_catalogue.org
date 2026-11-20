@@ -241,182 +241,217 @@ A source is =product.<column>= for a column of the native product row,
 Event input reads as its rules or as its dates, or
 =<Input> shifted <period> on <calendar> <convention>= for an Event derived from
 another Event input of the script; =a or b= takes =b= when =a= holds no value,
-=a and b= lists the values of =a= then those of =b=, and a quoted ='text'= is a
+=a and b= lists the values of =a= then those of =b=, and for an Event the
+dates of each part, a part being a dates schedule or date values, and a quoted ='text'= is a
 literal.
 
 A pairwise variance swap that states no lagged schedule takes the valuation
 schedule shifted by one day, unadjusted, as ORE's own class derives it. ORE
 reads an absent or zero payoff limit as no limit, but the script requires a
 positive one, so the twin states a limit of a million times the notionals,
-which no realised variance reaches. A transform turns the value
+which no realised variance reaches.
+
+A worst-of basket swap pays its initial fixed amount on the first settlement
+date of the script, then each period's coupons on the next, so the twin lists
+the initial fixed pay date before the pay dates. ORE's own class pays an absent
+initial fixed pay date on the first pay date, but ORE reads a listed schedule's
+dates once each, so the script cannot pay two amounts on one date: the twin
+pays it on the first period date, the trade's start. =<column>[<n>]= picks the n-th value of a column, and
+=instrument_schedules[<role>] based on <Input>= carries a derived schedule of
+the native trade over the input that states its base. The script's
+InitialFixedAmount, FloatingLeg, FixedCouponLeg and EquityAmountPayoff name the
+cash flow types its LOGPAY calls record, which ORE reads by name and never by
+value, so the twin states them as zero. A transform turns the value
 into the code the script reads, as the =Scripted twin transforms= table states.
 
-| code                             | input                   | source                                                                                                     | transform |
-|----------------------------------+-------------------------+------------------------------------------------------------------------------------------------------------+-----------|
-| EquityBasketOption               | Underlyings             | instrument_underlyings[underlying].name                                                                    |           |
-| EquityBasketOption               | Weights                 | instrument_underlyings[underlying].weight                                                                  |           |
-| EquityBasketOption               | Expiry                  | instrument_schedule_dates[exercise_dates].schedule_date                                                    |           |
-| EquityBasketOption               | PutCall                 | instrument_options.option_type                                                                             | sign      |
-| EquityBasketOption               | Strike                  | product.strike                                                                                             |           |
-| EquityBasketOption               | LongShort               | instrument_options.long_short                                                                              | sign      |
-| EquityBasketOption               | Notional                | product.notional                                                                                           |           |
-| EquityBasketOption               | Settlement              | product.settlement_date or instrument_schedule_dates[exercise_dates].schedule_date                         |           |
-| EquityBasketOption               | PayCcy                  | product.currency                                                                                           |           |
-| EquityBasketVarianceSwap         | Notional                | product.notional                                                                                           |           |
-| EquityBasketVarianceSwap         | Strike                  | product.strike                                                                                             |           |
-| EquityBasketVarianceSwap         | Cap                     | product.cap or '0'                                                                                         |           |
-| EquityBasketVarianceSwap         | Floor                   | product.floor or '0'                                                                                       |           |
-| EquityBasketVarianceSwap         | Underlyings             | instrument_underlyings[underlying].name                                                                    |           |
-| EquityBasketVarianceSwap         | Weights                 | instrument_underlyings[underlying].weight                                                                  |           |
-| EquityBasketVarianceSwap         | ValuationSchedule       | instrument_schedules[valuation_schedule]                                                                   |           |
-| EquityBasketVarianceSwap         | SquaredPayoff           | product.squared_payoff                                                                                     | flag      |
-| EquityBasketVarianceSwap         | LongShort               | product.long_short                                                                                         | sign      |
-| EquityBasketVarianceSwap         | SettlementDate          | product.settlement_date                                                                                    |           |
-| EquityBasketVarianceSwap         | PayCcy                  | product.currency                                                                                           |           |
-| EquityBestEntryOption            | Underlying              | instrument_underlyings[underlying].name                                                                    |           |
-| EquityBestEntryOption            | StrikeDate              | product.strike_date                                                                                        |           |
-| EquityBestEntryOption            | ResetMinimum            | product.reset_minimum                                                                                      |           |
-| EquityBestEntryOption            | StrikeObservationDates  | instrument_schedules[strike_observation_schedule]                                                          |           |
-| EquityBestEntryOption            | TriggerLevel            | product.trigger_level                                                                                      |           |
-| EquityBestEntryOption            | ExpiryDate              | product.expiry_date                                                                                        |           |
-| EquityBestEntryOption            | Strike                  | product.strike                                                                                             |           |
-| EquityBestEntryOption            | LongShort               | product.long_short                                                                                         | sign      |
-| EquityBestEntryOption            | Notional                | product.notional                                                                                           |           |
-| EquityBestEntryOption            | Multiplier              | product.multiplier                                                                                         |           |
-| EquityBestEntryOption            | Cap                     | product.cap                                                                                                |           |
-| EquityBestEntryOption            | SettlementDate          | product.settlement_date                                                                                    |           |
-| EquityBestEntryOption            | Currency                | product.currency                                                                                           |           |
-| EquityBestEntryOption            | PremiumDate             | product.premium_date                                                                                       |           |
-| EquityBestEntryOption            | Premium                 | product.premium                                                                                            |           |
-| EquityForwardVolatilityAgreement | FvaDate                 | product.fva_date                                                                                           |           |
-| EquityForwardVolatilityAgreement | PremiumDate             | product.premium_date                                                                                       |           |
-| EquityForwardVolatilityAgreement | OptionExpiry            | product.option_expiry                                                                                      |           |
-| EquityForwardVolatilityAgreement | Quantity                | product.quantity                                                                                           |           |
-| EquityForwardVolatilityAgreement | ImpliedVolStrike        | product.implied_vol_strike                                                                                 |           |
-| EquityForwardVolatilityAgreement | Underlying              | instrument_underlyings[underlying].name                                                                    |           |
-| EquityForwardVolatilityAgreement | LongShort               | product.long_short                                                                                         | sign      |
-| EquityForwardVolatilityAgreement | SettlementDate          | product.settlement_date                                                                                    |           |
-| EquityForwardVolatilityAgreement | PayCcy                  | product.pay_currency                                                                                       |           |
-| EquityRainbowOption              | Underlyings             | instrument_underlyings[underlying].name                                                                    |           |
-| EquityRainbowOption              | Weights                 | instrument_underlyings[underlying].weight                                                                  |           |
-| EquityRainbowOption              | Expiry                  | instrument_schedule_dates[exercise_dates].schedule_date                                                    |           |
-| EquityRainbowOption              | PutCall                 | instrument_options.option_type                                                                             | sign      |
-| EquityRainbowOption              | Strike                  | product.strike                                                                                             |           |
-| EquityRainbowOption              | LongShort               | instrument_options.long_short                                                                              | sign      |
-| EquityRainbowOption              | Notional                | product.notional                                                                                           |           |
-| EquityRainbowOption              | Settlement              | product.settlement_date or instrument_schedule_dates[exercise_dates].schedule_date                         |           |
-| EquityRainbowOption              | PayCcy                  | product.currency                                                                                           |           |
-| EquityPairwiseVarianceSwap       | Underlyings             | product.first_underlying and product.second_underlying                                                     |           |
-| EquityPairwiseVarianceSwap       | UnderlyingStrikes       | product.first_strike and product.second_strike                                                             |           |
-| EquityPairwiseVarianceSwap       | UnderlyingNotionals     | product.first_notional and product.second_notional                                                         |           |
-| EquityPairwiseVarianceSwap       | BasketStrike            | product.basket_strike                                                                                      |           |
-| EquityPairwiseVarianceSwap       | BasketNotional          | product.basket_notional                                                                                    |           |
-| EquityPairwiseVarianceSwap       | PayoffLimit             | product.payoff_limit or '1000000'                                                                          |           |
-| EquityPairwiseVarianceSwap       | ValuationSchedule       | instrument_schedules[valuation_schedule]                                                                   |           |
-| EquityPairwiseVarianceSwap       | LaggedValuationSchedule | instrument_schedules[lagged_valuation_schedule] or ValuationSchedule shifted 1D on NullCalendar Unadjusted |           |
-| EquityPairwiseVarianceSwap       | AccrualLag              | product.accrual_lag or '1'                                                                                 |           |
-| EquityPairwiseVarianceSwap       | Floor                   | product.floor or '0'                                                                                       |           |
-| EquityPairwiseVarianceSwap       | Cap                     | product.cap or '0'                                                                                         |           |
-| EquityPairwiseVarianceSwap       | SettlementDate          | product.settlement_date                                                                                    |           |
-| EquityPairwiseVarianceSwap       | PayCcy                  | product.currency                                                                                           |           |
-| EquityPairwiseVarianceSwap       | LongShort               | product.long_short                                                                                         | sign      |
-| EquityWindowBarrierOption        | BarrierType             | instrument_barriers[barrier].barrier_type                                                                  | barrier   |
-| EquityWindowBarrierOption        | Underlying              | instrument_underlyings[underlying].name                                                                    |           |
-| EquityWindowBarrierOption        | StartDate               | product.start_date                                                                                         |           |
-| EquityWindowBarrierOption        | EndDate                 | product.end_date                                                                                           |           |
-| EquityWindowBarrierOption        | BarrierLevel            | instrument_barrier_levels[barrier].level                                                                   |           |
-| EquityWindowBarrierOption        | Quantity                | product.fixing_amount                                                                                      |           |
-| EquityWindowBarrierOption        | PutCall                 | instrument_options.option_type                                                                             | sign      |
-| EquityWindowBarrierOption        | Expiry                  | instrument_schedule_dates[exercise_dates].schedule_date                                                    |           |
-| EquityWindowBarrierOption        | Strike                  | product.strike                                                                                             |           |
-| EquityWindowBarrierOption        | Settlement              | instrument_schedule_dates[exercise_dates].schedule_date                                                    |           |
-| EquityWindowBarrierOption        | PayCcy                  | product.currency                                                                                           |           |
-| EquityWindowBarrierOption        | LongShort               | instrument_options.long_short                                                                              | sign      |
-| EquityWindowBarrierOption        | PremiumPayDate          | instrument_option_premiums.pay_date or instrument_schedule_dates[exercise_dates].schedule_date             |           |
-| EquityWindowBarrierOption        | PremiumCcy              | instrument_option_premiums.currency or product.currency                                                    |           |
-| EquityWindowBarrierOption        | PremiumAmount           | instrument_option_premiums.amount or '0'                                                                   |           |
-| FxBasketOption                   | Underlyings             | instrument_underlyings[underlying].name                                                                    |           |
-| FxBasketOption                   | Weights                 | instrument_underlyings[underlying].weight                                                                  |           |
-| FxBasketOption                   | Expiry                  | instrument_schedule_dates[exercise_dates].schedule_date                                                    |           |
-| FxBasketOption                   | PutCall                 | instrument_options.option_type                                                                             | sign      |
-| FxBasketOption                   | Strike                  | product.strike                                                                                             |           |
-| FxBasketOption                   | LongShort               | instrument_options.long_short                                                                              | sign      |
-| FxBasketOption                   | Notional                | product.notional                                                                                           |           |
-| FxBasketOption                   | Settlement              | product.settlement_date or instrument_schedule_dates[exercise_dates].schedule_date                         |           |
-| FxBasketOption                   | PayCcy                  | product.currency                                                                                           |           |
-| FxBasketVarianceSwap             | Notional                | product.notional                                                                                           |           |
-| FxBasketVarianceSwap             | Strike                  | product.strike                                                                                             |           |
-| FxBasketVarianceSwap             | Cap                     | product.cap or '0'                                                                                         |           |
-| FxBasketVarianceSwap             | Floor                   | product.floor or '0'                                                                                       |           |
-| FxBasketVarianceSwap             | Underlyings             | instrument_underlyings[underlying].name                                                                    |           |
-| FxBasketVarianceSwap             | Weights                 | instrument_underlyings[underlying].weight                                                                  |           |
-| FxBasketVarianceSwap             | ValuationSchedule       | instrument_schedules[valuation_schedule]                                                                   |           |
-| FxBasketVarianceSwap             | SquaredPayoff           | product.squared_payoff                                                                                     | flag      |
-| FxBasketVarianceSwap             | LongShort               | product.long_short                                                                                         | sign      |
-| FxBasketVarianceSwap             | SettlementDate          | product.settlement_date                                                                                    |           |
-| FxBasketVarianceSwap             | PayCcy                  | product.currency                                                                                           |           |
-| FxBestEntryOption                | Underlying              | instrument_underlyings[underlying].name                                                                    |           |
-| FxBestEntryOption                | StrikeDate              | product.strike_date                                                                                        |           |
-| FxBestEntryOption                | ResetMinimum            | product.reset_minimum                                                                                      |           |
-| FxBestEntryOption                | StrikeObservationDates  | instrument_schedules[strike_observation_schedule]                                                          |           |
-| FxBestEntryOption                | TriggerLevel            | product.trigger_level                                                                                      |           |
-| FxBestEntryOption                | ExpiryDate              | product.expiry_date                                                                                        |           |
-| FxBestEntryOption                | Strike                  | product.strike                                                                                             |           |
-| FxBestEntryOption                | LongShort               | product.long_short                                                                                         | sign      |
-| FxBestEntryOption                | Notional                | product.notional                                                                                           |           |
-| FxBestEntryOption                | Multiplier              | product.multiplier                                                                                         |           |
-| FxBestEntryOption                | Cap                     | product.cap                                                                                                |           |
-| FxBestEntryOption                | SettlementDate          | product.settlement_date                                                                                    |           |
-| FxBestEntryOption                | Currency                | product.currency                                                                                           |           |
-| FxBestEntryOption                | PremiumDate             | product.premium_date                                                                                       |           |
-| FxBestEntryOption                | Premium                 | product.premium                                                                                            |           |
-| FxForwardVolatilityAgreement     | FvaDate                 | product.fva_date                                                                                           |           |
-| FxForwardVolatilityAgreement     | PremiumDate             | product.premium_date                                                                                       |           |
-| FxForwardVolatilityAgreement     | OptionExpiry            | product.option_expiry                                                                                      |           |
-| FxForwardVolatilityAgreement     | Quantity                | product.quantity                                                                                           |           |
-| FxForwardVolatilityAgreement     | ImpliedVolStrike        | product.implied_vol_strike                                                                                 |           |
-| FxForwardVolatilityAgreement     | Underlying              | instrument_underlyings[underlying].name                                                                    |           |
-| FxForwardVolatilityAgreement     | LongShort               | product.long_short                                                                                         | sign      |
-| FxForwardVolatilityAgreement     | SettlementDate          | product.settlement_date                                                                                    |           |
-| FxForwardVolatilityAgreement     | PayCcy                  | product.pay_currency                                                                                       |           |
-| FxRainbowOption                  | Underlyings             | instrument_underlyings[underlying].name                                                                    |           |
-| FxRainbowOption                  | Weights                 | instrument_underlyings[underlying].weight                                                                  |           |
-| FxRainbowOption                  | Expiry                  | instrument_schedule_dates[exercise_dates].schedule_date                                                    |           |
-| FxRainbowOption                  | PutCall                 | instrument_options.option_type                                                                             | sign      |
-| FxRainbowOption                  | Strike                  | product.strike                                                                                             |           |
-| FxRainbowOption                  | LongShort               | instrument_options.long_short                                                                              | sign      |
-| FxRainbowOption                  | Notional                | product.notional                                                                                           |           |
-| FxRainbowOption                  | Settlement              | product.settlement_date or instrument_schedule_dates[exercise_dates].schedule_date                         |           |
-| FxRainbowOption                  | PayCcy                  | product.currency                                                                                           |           |
-| FxPairwiseVarianceSwap           | Underlyings             | product.first_underlying and product.second_underlying                                                     |           |
-| FxPairwiseVarianceSwap           | UnderlyingStrikes       | product.first_strike and product.second_strike                                                             |           |
-| FxPairwiseVarianceSwap           | UnderlyingNotionals     | product.first_notional and product.second_notional                                                         |           |
-| FxPairwiseVarianceSwap           | BasketStrike            | product.basket_strike                                                                                      |           |
-| FxPairwiseVarianceSwap           | BasketNotional          | product.basket_notional                                                                                    |           |
-| FxPairwiseVarianceSwap           | PayoffLimit             | product.payoff_limit or '1000000'                                                                          |           |
-| FxPairwiseVarianceSwap           | ValuationSchedule       | instrument_schedules[valuation_schedule]                                                                   |           |
-| FxPairwiseVarianceSwap           | LaggedValuationSchedule | instrument_schedules[lagged_valuation_schedule] or ValuationSchedule shifted 1D on NullCalendar Unadjusted |           |
-| FxPairwiseVarianceSwap           | AccrualLag              | product.accrual_lag or '1'                                                                                 |           |
-| FxPairwiseVarianceSwap           | Floor                   | product.floor or '0'                                                                                       |           |
-| FxPairwiseVarianceSwap           | Cap                     | product.cap or '0'                                                                                         |           |
-| FxPairwiseVarianceSwap           | SettlementDate          | product.settlement_date                                                                                    |           |
-| FxPairwiseVarianceSwap           | PayCcy                  | product.currency                                                                                           |           |
-| FxPairwiseVarianceSwap           | LongShort               | product.long_short                                                                                         | sign      |
-| FxWindowBarrierOption            | BarrierType             | instrument_barriers[barrier].barrier_type                                                                  | barrier   |
-| FxWindowBarrierOption            | Underlying              | instrument_underlyings[underlying].name                                                                    |           |
-| FxWindowBarrierOption            | StartDate               | product.start_date                                                                                         |           |
-| FxWindowBarrierOption            | EndDate                 | product.end_date                                                                                           |           |
-| FxWindowBarrierOption            | BarrierLevel            | instrument_barrier_levels[barrier].level                                                                   |           |
-| FxWindowBarrierOption            | Quantity                | product.fixing_amount                                                                                      |           |
-| FxWindowBarrierOption            | PutCall                 | instrument_options.option_type                                                                             | sign      |
-| FxWindowBarrierOption            | Expiry                  | instrument_schedule_dates[exercise_dates].schedule_date                                                    |           |
-| FxWindowBarrierOption            | Strike                  | product.strike                                                                                             |           |
-| FxWindowBarrierOption            | Settlement              | instrument_schedule_dates[exercise_dates].schedule_date                                                    |           |
-| FxWindowBarrierOption            | PayCcy                  | product.currency                                                                                           |           |
-| FxWindowBarrierOption            | LongShort               | instrument_options.long_short                                                                              | sign      |
-| FxWindowBarrierOption            | PremiumPayDate          | instrument_option_premiums.pay_date or instrument_schedule_dates[exercise_dates].schedule_date             |           |
-| FxWindowBarrierOption            | PremiumCcy              | instrument_option_premiums.currency or product.currency                                                    |           |
-| FxWindowBarrierOption            | PremiumAmount           | instrument_option_premiums.amount or '0'                                                                   |           |
+| code                             | input                    | source                                                                                                                                                 | transform |
+|----------------------------------+--------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------+-----------|
+| EquityBasketOption               | Underlyings              | instrument_underlyings[underlying].name                                                                                                                |           |
+| EquityBasketOption               | Weights                  | instrument_underlyings[underlying].weight                                                                                                              |           |
+| EquityBasketOption               | Expiry                   | instrument_schedule_dates[exercise_dates].schedule_date                                                                                                |           |
+| EquityBasketOption               | PutCall                  | instrument_options.option_type                                                                                                                         | sign      |
+| EquityBasketOption               | Strike                   | product.strike                                                                                                                                         |           |
+| EquityBasketOption               | LongShort                | instrument_options.long_short                                                                                                                          | sign      |
+| EquityBasketOption               | Notional                 | product.notional                                                                                                                                       |           |
+| EquityBasketOption               | Settlement               | product.settlement_date or instrument_schedule_dates[exercise_dates].schedule_date                                                                     |           |
+| EquityBasketOption               | PayCcy                   | product.currency                                                                                                                                       |           |
+| EquityBasketVarianceSwap         | Notional                 | product.notional                                                                                                                                       |           |
+| EquityBasketVarianceSwap         | Strike                   | product.strike                                                                                                                                         |           |
+| EquityBasketVarianceSwap         | Cap                      | product.cap or '0'                                                                                                                                     |           |
+| EquityBasketVarianceSwap         | Floor                    | product.floor or '0'                                                                                                                                   |           |
+| EquityBasketVarianceSwap         | Underlyings              | instrument_underlyings[underlying].name                                                                                                                |           |
+| EquityBasketVarianceSwap         | Weights                  | instrument_underlyings[underlying].weight                                                                                                              |           |
+| EquityBasketVarianceSwap         | ValuationSchedule        | instrument_schedules[valuation_schedule]                                                                                                               |           |
+| EquityBasketVarianceSwap         | SquaredPayoff            | product.squared_payoff                                                                                                                                 | flag      |
+| EquityBasketVarianceSwap         | LongShort                | product.long_short                                                                                                                                     | sign      |
+| EquityBasketVarianceSwap         | SettlementDate           | product.settlement_date                                                                                                                                |           |
+| EquityBasketVarianceSwap         | PayCcy                   | product.currency                                                                                                                                       |           |
+| EquityBestEntryOption            | Underlying               | instrument_underlyings[underlying].name                                                                                                                |           |
+| EquityBestEntryOption            | StrikeDate               | product.strike_date                                                                                                                                    |           |
+| EquityBestEntryOption            | ResetMinimum             | product.reset_minimum                                                                                                                                  |           |
+| EquityBestEntryOption            | StrikeObservationDates   | instrument_schedules[strike_observation_schedule]                                                                                                      |           |
+| EquityBestEntryOption            | TriggerLevel             | product.trigger_level                                                                                                                                  |           |
+| EquityBestEntryOption            | ExpiryDate               | product.expiry_date                                                                                                                                    |           |
+| EquityBestEntryOption            | Strike                   | product.strike                                                                                                                                         |           |
+| EquityBestEntryOption            | LongShort                | product.long_short                                                                                                                                     | sign      |
+| EquityBestEntryOption            | Notional                 | product.notional                                                                                                                                       |           |
+| EquityBestEntryOption            | Multiplier               | product.multiplier                                                                                                                                     |           |
+| EquityBestEntryOption            | Cap                      | product.cap                                                                                                                                            |           |
+| EquityBestEntryOption            | SettlementDate           | product.settlement_date                                                                                                                                |           |
+| EquityBestEntryOption            | Currency                 | product.currency                                                                                                                                       |           |
+| EquityBestEntryOption            | PremiumDate              | product.premium_date                                                                                                                                   |           |
+| EquityBestEntryOption            | Premium                  | product.premium                                                                                                                                        |           |
+| EquityForwardVolatilityAgreement | FvaDate                  | product.fva_date                                                                                                                                       |           |
+| EquityForwardVolatilityAgreement | PremiumDate              | product.premium_date                                                                                                                                   |           |
+| EquityForwardVolatilityAgreement | OptionExpiry             | product.option_expiry                                                                                                                                  |           |
+| EquityForwardVolatilityAgreement | Quantity                 | product.quantity                                                                                                                                       |           |
+| EquityForwardVolatilityAgreement | ImpliedVolStrike         | product.implied_vol_strike                                                                                                                             |           |
+| EquityForwardVolatilityAgreement | Underlying               | instrument_underlyings[underlying].name                                                                                                                |           |
+| EquityForwardVolatilityAgreement | LongShort                | product.long_short                                                                                                                                     | sign      |
+| EquityForwardVolatilityAgreement | SettlementDate           | product.settlement_date                                                                                                                                |           |
+| EquityForwardVolatilityAgreement | PayCcy                   | product.pay_currency                                                                                                                                   |           |
+| EquityRainbowOption              | Underlyings              | instrument_underlyings[underlying].name                                                                                                                |           |
+| EquityRainbowOption              | Weights                  | instrument_underlyings[underlying].weight                                                                                                              |           |
+| EquityRainbowOption              | Expiry                   | instrument_schedule_dates[exercise_dates].schedule_date                                                                                                |           |
+| EquityRainbowOption              | PutCall                  | instrument_options.option_type                                                                                                                         | sign      |
+| EquityRainbowOption              | Strike                   | product.strike                                                                                                                                         |           |
+| EquityRainbowOption              | LongShort                | instrument_options.long_short                                                                                                                          | sign      |
+| EquityRainbowOption              | Notional                 | product.notional                                                                                                                                       |           |
+| EquityRainbowOption              | Settlement               | product.settlement_date or instrument_schedule_dates[exercise_dates].schedule_date                                                                     |           |
+| EquityRainbowOption              | PayCcy                   | product.currency                                                                                                                                       |           |
+| EquityPairwiseVarianceSwap       | Underlyings              | product.first_underlying and product.second_underlying                                                                                                 |           |
+| EquityPairwiseVarianceSwap       | UnderlyingStrikes        | product.first_strike and product.second_strike                                                                                                         |           |
+| EquityPairwiseVarianceSwap       | UnderlyingNotionals      | product.first_notional and product.second_notional                                                                                                     |           |
+| EquityPairwiseVarianceSwap       | BasketStrike             | product.basket_strike                                                                                                                                  |           |
+| EquityPairwiseVarianceSwap       | BasketNotional           | product.basket_notional                                                                                                                                |           |
+| EquityPairwiseVarianceSwap       | PayoffLimit              | product.payoff_limit or '1000000'                                                                                                                      |           |
+| EquityPairwiseVarianceSwap       | ValuationSchedule        | instrument_schedules[valuation_schedule]                                                                                                               |           |
+| EquityPairwiseVarianceSwap       | LaggedValuationSchedule  | instrument_schedules[lagged_valuation_schedule] or ValuationSchedule shifted 1D on NullCalendar Unadjusted                                             |           |
+| EquityPairwiseVarianceSwap       | AccrualLag               | product.accrual_lag or '1'                                                                                                                             |           |
+| EquityPairwiseVarianceSwap       | Floor                    | product.floor or '0'                                                                                                                                   |           |
+| EquityPairwiseVarianceSwap       | Cap                      | product.cap or '0'                                                                                                                                     |           |
+| EquityPairwiseVarianceSwap       | SettlementDate           | product.settlement_date                                                                                                                                |           |
+| EquityPairwiseVarianceSwap       | PayCcy                   | product.currency                                                                                                                                       |           |
+| EquityPairwiseVarianceSwap       | LongShort                | product.long_short                                                                                                                                     | sign      |
+| EquityWindowBarrierOption        | BarrierType              | instrument_barriers[barrier].barrier_type                                                                                                              | barrier   |
+| EquityWindowBarrierOption        | Underlying               | instrument_underlyings[underlying].name                                                                                                                |           |
+| EquityWindowBarrierOption        | StartDate                | product.start_date                                                                                                                                     |           |
+| EquityWindowBarrierOption        | EndDate                  | product.end_date                                                                                                                                       |           |
+| EquityWindowBarrierOption        | BarrierLevel             | instrument_barrier_levels[barrier].level                                                                                                               |           |
+| EquityWindowBarrierOption        | Quantity                 | product.fixing_amount                                                                                                                                  |           |
+| EquityWindowBarrierOption        | PutCall                  | instrument_options.option_type                                                                                                                         | sign      |
+| EquityWindowBarrierOption        | Expiry                   | instrument_schedule_dates[exercise_dates].schedule_date                                                                                                |           |
+| EquityWindowBarrierOption        | Strike                   | product.strike                                                                                                                                         |           |
+| EquityWindowBarrierOption        | Settlement               | instrument_schedule_dates[exercise_dates].schedule_date                                                                                                |           |
+| EquityWindowBarrierOption        | PayCcy                   | product.currency                                                                                                                                       |           |
+| EquityWindowBarrierOption        | LongShort                | instrument_options.long_short                                                                                                                          | sign      |
+| EquityWindowBarrierOption        | PremiumPayDate           | instrument_option_premiums.pay_date or instrument_schedule_dates[exercise_dates].schedule_date                                                         |           |
+| EquityWindowBarrierOption        | PremiumCcy               | instrument_option_premiums.currency or product.currency                                                                                                |           |
+| EquityWindowBarrierOption        | PremiumAmount            | instrument_option_premiums.amount or '0'                                                                                                               |           |
+| FxBasketOption                   | Underlyings              | instrument_underlyings[underlying].name                                                                                                                |           |
+| FxBasketOption                   | Weights                  | instrument_underlyings[underlying].weight                                                                                                              |           |
+| FxBasketOption                   | Expiry                   | instrument_schedule_dates[exercise_dates].schedule_date                                                                                                |           |
+| FxBasketOption                   | PutCall                  | instrument_options.option_type                                                                                                                         | sign      |
+| FxBasketOption                   | Strike                   | product.strike                                                                                                                                         |           |
+| FxBasketOption                   | LongShort                | instrument_options.long_short                                                                                                                          | sign      |
+| FxBasketOption                   | Notional                 | product.notional                                                                                                                                       |           |
+| FxBasketOption                   | Settlement               | product.settlement_date or instrument_schedule_dates[exercise_dates].schedule_date                                                                     |           |
+| FxBasketOption                   | PayCcy                   | product.currency                                                                                                                                       |           |
+| FxBasketVarianceSwap             | Notional                 | product.notional                                                                                                                                       |           |
+| FxBasketVarianceSwap             | Strike                   | product.strike                                                                                                                                         |           |
+| FxBasketVarianceSwap             | Cap                      | product.cap or '0'                                                                                                                                     |           |
+| FxBasketVarianceSwap             | Floor                    | product.floor or '0'                                                                                                                                   |           |
+| FxBasketVarianceSwap             | Underlyings              | instrument_underlyings[underlying].name                                                                                                                |           |
+| FxBasketVarianceSwap             | Weights                  | instrument_underlyings[underlying].weight                                                                                                              |           |
+| FxBasketVarianceSwap             | ValuationSchedule        | instrument_schedules[valuation_schedule]                                                                                                               |           |
+| FxBasketVarianceSwap             | SquaredPayoff            | product.squared_payoff                                                                                                                                 | flag      |
+| FxBasketVarianceSwap             | LongShort                | product.long_short                                                                                                                                     | sign      |
+| FxBasketVarianceSwap             | SettlementDate           | product.settlement_date                                                                                                                                |           |
+| FxBasketVarianceSwap             | PayCcy                   | product.currency                                                                                                                                       |           |
+| FxBestEntryOption                | Underlying               | instrument_underlyings[underlying].name                                                                                                                |           |
+| FxBestEntryOption                | StrikeDate               | product.strike_date                                                                                                                                    |           |
+| FxBestEntryOption                | ResetMinimum             | product.reset_minimum                                                                                                                                  |           |
+| FxBestEntryOption                | StrikeObservationDates   | instrument_schedules[strike_observation_schedule]                                                                                                      |           |
+| FxBestEntryOption                | TriggerLevel             | product.trigger_level                                                                                                                                  |           |
+| FxBestEntryOption                | ExpiryDate               | product.expiry_date                                                                                                                                    |           |
+| FxBestEntryOption                | Strike                   | product.strike                                                                                                                                         |           |
+| FxBestEntryOption                | LongShort                | product.long_short                                                                                                                                     | sign      |
+| FxBestEntryOption                | Notional                 | product.notional                                                                                                                                       |           |
+| FxBestEntryOption                | Multiplier               | product.multiplier                                                                                                                                     |           |
+| FxBestEntryOption                | Cap                      | product.cap                                                                                                                                            |           |
+| FxBestEntryOption                | SettlementDate           | product.settlement_date                                                                                                                                |           |
+| FxBestEntryOption                | Currency                 | product.currency                                                                                                                                       |           |
+| FxBestEntryOption                | PremiumDate              | product.premium_date                                                                                                                                   |           |
+| FxBestEntryOption                | Premium                  | product.premium                                                                                                                                        |           |
+| FxForwardVolatilityAgreement     | FvaDate                  | product.fva_date                                                                                                                                       |           |
+| FxForwardVolatilityAgreement     | PremiumDate              | product.premium_date                                                                                                                                   |           |
+| FxForwardVolatilityAgreement     | OptionExpiry             | product.option_expiry                                                                                                                                  |           |
+| FxForwardVolatilityAgreement     | Quantity                 | product.quantity                                                                                                                                       |           |
+| FxForwardVolatilityAgreement     | ImpliedVolStrike         | product.implied_vol_strike                                                                                                                             |           |
+| FxForwardVolatilityAgreement     | Underlying               | instrument_underlyings[underlying].name                                                                                                                |           |
+| FxForwardVolatilityAgreement     | LongShort                | product.long_short                                                                                                                                     | sign      |
+| FxForwardVolatilityAgreement     | SettlementDate           | product.settlement_date                                                                                                                                |           |
+| FxForwardVolatilityAgreement     | PayCcy                   | product.pay_currency                                                                                                                                   |           |
+| FxRainbowOption                  | Underlyings              | instrument_underlyings[underlying].name                                                                                                                |           |
+| FxRainbowOption                  | Weights                  | instrument_underlyings[underlying].weight                                                                                                              |           |
+| FxRainbowOption                  | Expiry                   | instrument_schedule_dates[exercise_dates].schedule_date                                                                                                |           |
+| FxRainbowOption                  | PutCall                  | instrument_options.option_type                                                                                                                         | sign      |
+| FxRainbowOption                  | Strike                   | product.strike                                                                                                                                         |           |
+| FxRainbowOption                  | LongShort                | instrument_options.long_short                                                                                                                          | sign      |
+| FxRainbowOption                  | Notional                 | product.notional                                                                                                                                       |           |
+| FxRainbowOption                  | Settlement               | product.settlement_date or instrument_schedule_dates[exercise_dates].schedule_date                                                                     |           |
+| FxRainbowOption                  | PayCcy                   | product.currency                                                                                                                                       |           |
+| FxPairwiseVarianceSwap           | Underlyings              | product.first_underlying and product.second_underlying                                                                                                 |           |
+| FxPairwiseVarianceSwap           | UnderlyingStrikes        | product.first_strike and product.second_strike                                                                                                         |           |
+| FxPairwiseVarianceSwap           | UnderlyingNotionals      | product.first_notional and product.second_notional                                                                                                     |           |
+| FxPairwiseVarianceSwap           | BasketStrike             | product.basket_strike                                                                                                                                  |           |
+| FxPairwiseVarianceSwap           | BasketNotional           | product.basket_notional                                                                                                                                |           |
+| FxPairwiseVarianceSwap           | PayoffLimit              | product.payoff_limit or '1000000'                                                                                                                      |           |
+| FxPairwiseVarianceSwap           | ValuationSchedule        | instrument_schedules[valuation_schedule]                                                                                                               |           |
+| FxPairwiseVarianceSwap           | LaggedValuationSchedule  | instrument_schedules[lagged_valuation_schedule] or ValuationSchedule shifted 1D on NullCalendar Unadjusted                                             |           |
+| FxPairwiseVarianceSwap           | AccrualLag               | product.accrual_lag or '1'                                                                                                                             |           |
+| FxPairwiseVarianceSwap           | Floor                    | product.floor or '0'                                                                                                                                   |           |
+| FxPairwiseVarianceSwap           | Cap                      | product.cap or '0'                                                                                                                                     |           |
+| FxPairwiseVarianceSwap           | SettlementDate           | product.settlement_date                                                                                                                                |           |
+| FxPairwiseVarianceSwap           | PayCcy                   | product.currency                                                                                                                                       |           |
+| FxPairwiseVarianceSwap           | LongShort                | product.long_short                                                                                                                                     | sign      |
+| FxWindowBarrierOption            | BarrierType              | instrument_barriers[barrier].barrier_type                                                                                                              | barrier   |
+| FxWindowBarrierOption            | Underlying               | instrument_underlyings[underlying].name                                                                                                                |           |
+| FxWindowBarrierOption            | StartDate                | product.start_date                                                                                                                                     |           |
+| FxWindowBarrierOption            | EndDate                  | product.end_date                                                                                                                                       |           |
+| FxWindowBarrierOption            | BarrierLevel             | instrument_barrier_levels[barrier].level                                                                                                               |           |
+| FxWindowBarrierOption            | Quantity                 | product.fixing_amount                                                                                                                                  |           |
+| FxWindowBarrierOption            | PutCall                  | instrument_options.option_type                                                                                                                         | sign      |
+| FxWindowBarrierOption            | Expiry                   | instrument_schedule_dates[exercise_dates].schedule_date                                                                                                |           |
+| FxWindowBarrierOption            | Strike                   | product.strike                                                                                                                                         |           |
+| FxWindowBarrierOption            | Settlement               | instrument_schedule_dates[exercise_dates].schedule_date                                                                                                |           |
+| FxWindowBarrierOption            | PayCcy                   | product.currency                                                                                                                                       |           |
+| FxWindowBarrierOption            | LongShort                | instrument_options.long_short                                                                                                                          | sign      |
+| FxWindowBarrierOption            | PremiumPayDate           | instrument_option_premiums.pay_date or instrument_schedule_dates[exercise_dates].schedule_date                                                         |           |
+| FxWindowBarrierOption            | PremiumCcy               | instrument_option_premiums.currency or product.currency                                                                                                |           |
+| FxWindowBarrierOption            | PremiumAmount            | instrument_option_premiums.amount or '0'                                                                                                               |           |
+| FxWorstOfBasketSwap              | Underlyings              | instrument_underlyings[underlying].name                                                                                                                |           |
+| FxWorstOfBasketSwap              | InitialPrices            | instrument_values[initial_price].value                                                                                                                 |           |
+| FxWorstOfBasketSwap              | SettlementDates          | product.initial_fixed_pay_date or instrument_schedule_dates[floating_period_schedule].schedule_date[1] and instrument_schedules[floating_pay_schedule] |           |
+| FxWorstOfBasketSwap              | DeterminationDates       | instrument_schedules[floating_period_schedule]                                                                                                         |           |
+| FxWorstOfBasketSwap              | KnockOutLevels           | instrument_values[knock_out_level].value                                                                                                               |           |
+| FxWorstOfBasketSwap              | CouponTriggerLevels      | instrument_values[fixed_trigger_level].value                                                                                                           |           |
+| FxWorstOfBasketSwap              | PayCcy                   | product.currency                                                                                                                                       |           |
+| FxWorstOfBasketSwap              | LongShort                | product.long_short                                                                                                                                     | sign      |
+| FxWorstOfBasketSwap              | Quantity                 | product.quantity                                                                                                                                       |           |
+| FxWorstOfBasketSwap              | InitialFixedRate         | product.initial_fixed_rate or '0'                                                                                                                      |           |
+| FxWorstOfBasketSwap              | InitialFixedAmount       | '0'                                                                                                                                                    |           |
+| FxWorstOfBasketSwap              | FloatingIndex            | product.floating_index                                                                                                                                 |           |
+| FxWorstOfBasketSwap              | FixingSchedule           | instrument_schedules[floating_fixing_schedule] based on DeterminationDates or instrument_schedules[floating_period_schedule]                           |           |
+| FxWorstOfBasketSwap              | FloatingSpread           | product.floating_spread or '0'                                                                                                                         |           |
+| FxWorstOfBasketSwap              | FloatingDayCountFraction | product.floating_day_count_fraction                                                                                                                    |           |
+| FxWorstOfBasketSwap              | FloatingLeg              | '0'                                                                                                                                                    |           |
+| FxWorstOfBasketSwap              | CouponRate               | product.fixed_rate                                                                                                                                     |           |
+| FxWorstOfBasketSwap              | FixedCouponLeg           | '0'                                                                                                                                                    |           |
+| FxWorstOfBasketSwap              | AccumulatingCoupons      | product.accumulating_fixed_coupons                                                                                                                     | flag      |
+| FxWorstOfBasketSwap              | Strike                   | product.strike or '1'                                                                                                                                  |           |
+| FxWorstOfBasketSwap              | KnockInLevel             | product.knock_in_level or '1'                                                                                                                          |           |
+| FxWorstOfBasketSwap              | EquityAmountPayoff       | '0'                                                                                                                                                    |           |
 
 * Scripted twin transforms
 

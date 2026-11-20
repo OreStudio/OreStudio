@@ -117,6 +117,38 @@ requires a positive one, so the twin states a limit of a million. The native
 trades have no pricing engine in the engine run, so the two forms cannot be
 compared by NPV; the four twins price with no error.
 
+** The FX worst-of basket swap: a library script ORE cannot parse
+
+ORE's library WorstOfBasketSwap script (=Examples/Products/Input/scriptlibrary.xml=,
+line 792) has no semicolon after =couponAccumulation = couponAccumulation +
+(1-allAssetsTriggered)=, and ORE's parser stops there: "expected
+<InstructionSequence> in L17:30:0". No trade can run it. The seed states the library
+as ORE ships it, and compass-ng regenerates that file, so the correction is a
+populate script of its own, =trading_script_library_corrections_populate.sql=,
+which writes a new version of the variant after the seed. It applies when its
+text occurs once, does nothing once the code holds the replacement, and fails
+the load otherwise, so a library that changes the script is reviewed.
+
+ORE's own class runs a script of its own, not the library one, so the twin
+maps the native terms onto the library's inputs:
+
+- The script pays the initial fixed amount on SettlementDates[1] and each
+  period's coupons on the dates after, and requires as many settlement dates as
+  determination dates. ORE reads a listed schedule's dates once each
+  (=OREData/ored/portfolio/schedule.cpp=, the =std::unique= before the Schedule
+  constructor), so the initial amount cannot share the first pay date, as ORE's
+  class pays it when none is stated. The twin pays it on the first period date.
+- The script reads one fixing of the floating index on each fixing date. ORE's
+  class compounds an overnight index over the period.
+- The LOGPAY cash flow types InitialFixedAmount, FloatingLeg, FixedCouponLeg and
+  EquityAmountPayoff are mined as inputs; ORE reads them by name only, so the
+  twin states them as zero.
+
+Priced alone in ORE, the twins and their natives are close: -651335.18 against
+-630811.63 USD (2027 maturity, short) and 266454.13 against 264880.01 USD (2035
+maturity, long). The fixing and the initial pay date above are the known
+differences; Monte Carlo noise is the other.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

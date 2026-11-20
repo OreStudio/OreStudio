@@ -8,7 +8,7 @@
 #+filetags: :synthetic:web:ticks:see_the_market_as_vendor_quotes:sprint_30:v0:
 #+owner: marco
 #+branch: feature/retire-the-synthetic-display-tap
-#+pr:
+#+pr: 4918
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-18
@@ -103,7 +103,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4918][#4918]] | [marketdata,synthetic,web] Read a feed's ticks from the vendor subjects |
 
 * Review
 

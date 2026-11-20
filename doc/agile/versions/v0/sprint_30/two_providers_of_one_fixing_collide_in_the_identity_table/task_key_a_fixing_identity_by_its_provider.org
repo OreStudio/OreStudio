@@ -69,7 +69,12 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Local checks passed | 57 of 60 | =./compass.sh check= | a37d823e8a |
+| ores.marketdata.core cases | 471 passed, 0 failed | =./compass.sh check= (ctest) | a37d823e8a |
+| CTest suites | 104 of 105; ores.database.tests failed once | =./compass.sh check= (ctest) | a37d823e8a |
+| ores.database.tests rerun alone | 1 of 1 passed | =./compass.sh test run -- -R ^ores.database.tests$= | a37d823e8a |
+| compass-ng new diagnostics | 0 | =compass-ng check --ratchet origin/main= | b60c3dd4cd |
+| Format | pass | =./compass.sh check --only format= | 96dc1ddff6 |
 
 * Notes
 
@@ -107,7 +112,11 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: an existing database has no provider_code column | =marketdata_market_series_identity_create.sql= | Decline | The migration scripts were removed (04dc337ab7); the schema fingerprint refuses an old database, which is recreated |
+| 2 | Local review: the changed files spell clean | all | Accept | misspell-fixer on the changed files exits 0 |
+| 3 | Gate: the manual point message was not clang-formatted | =manual_point_service.cpp= | Accept | Formatted in its own commit |
+| 4 | Gate: ticks-smoke fails on a fresh database | fleet | Decline | The market data service misses its 90 s start timeout writing 5472 demand intervals; main tracks it as Ready the market data service before its usage sync |
+| 5 | Gate: ores.database.tests failed once on the listener reconnect case | =postgres_listener_service_tests.cpp= | Decline | Not touched by this branch; it ran beside the smoke's database recreate and passes alone |
 
 * Result
 

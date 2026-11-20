@@ -88,6 +88,17 @@ and =svimodeltraits.cpp=), not run.
   values. The first condition reads them from the end of the array and is
   right. Not reproduced; worth a test before relying on QuantExt's second
   condition, and worth reporting upstream if it holds.
+  - Where: =svimodeltraits.cpp= lines 549–552 (ORE 1.8.17.0 tree at
+    =~/Vault/Development/ORE/Engine=). =cond3Bound= reads
+    =q[isFree_.size() - 3]= to =q[isFree_.size() - 1]=; =cond4Bound= reads
+    =q[2]=, =q[1]= and =q[3]=.
+  - Why the layout differs: =SsviParametricVolatility::calibrateModelParametersGlobal()=
+    (=sviparametricvolatility.cpp= line 1535) passes the flat array to the same
+    constraint, and =extractSsviGlobalSliceParameters= shows its layout: the
+    thetas of every slice, then rho, eta and gamma.
+  - Test that would show it: a global power-law fit on three expiries with
+    gamma below 1/2 and a long-end theta past the second bound. The constraint
+    should refuse that point and, if the defect holds, accepts it.
 
 * Assessment of the analysis
 

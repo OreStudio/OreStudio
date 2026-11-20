@@ -29,6 +29,7 @@
 #include <algorithm>
 #include <chrono>
 #include <format>
+#include <iterator>
 #include <type_traits>
 #include <utility>
 #include <variant>
@@ -218,14 +219,72 @@ whole_schedule(const instrument_batch& batch, std::string_view role) {
                                  .rule = row.rule};
 }
 
+/// The parts of a source between each separator, a quoted literal being read whole.
+std::vector<std::string_view> parts_of(std::string_view source, std::string_view separator) {
+    std::vector<std::string_view> out;
+    bool quoted = false;
+    std::size_t start = 0;
+    for (std::size_t i = 0; i < source.size(); ++i) {
+        if (source[i] == '\'')
+            quoted = !quoted;
+        else if (!quoted && source.substr(i).starts_with(separator)) {
+            out.push_back(source.substr(start, i - start));
+            start = i + separator.size();
+            i = start - 1;
+        }
+    }
+    out.push_back(source.substr(start));
+    return out;
+}
+
+/**
+ * @brief The event a source derives from another input of the twin, as
+ * <Input> shifted <period> on <calendar> <convention>.
+ */
+std::optional<tb::scripted_derived> derived_of(std::string_view source) {
+    const auto words = parts_of(source, " ");
+    if (words.size() != 6 || words[1] != "shifted" || words[3] != "on")
+        return std::nullopt;
+    return tb::scripted_derived{.base = std::string(words[0]),
+                                .shift = std::string(words[2]),
+                                .calendar = std::string(words[4]),
+                                .convention = std::string(words[5])};
+}
+
+using twin_event = std::variant<tb::scripted_schedule, tb::scripted_dates, tb::scripted_derived>;
+
+/// Whether the source states an event: a whole schedule or a derived one.
+bool is_event_source(std::string_view source) {
+    return std::ranges::any_of(parts_of(source, " or "), [](std::string_view part) {
+        return schedule_role_of(part) || derived_of(part);
+    });
+}
+
+/// The first alternative of an event source that states an event.
+std::optional<twin_event> event_of(const instrument_batch& batch, std::string_view source) {
+    for (const auto part : parts_of(source, " or ")) {
+        if (const auto role = schedule_role_of(part)) {
+            if (auto schedule = whole_schedule(batch, *role))
+                return std::visit([](auto& s) -> twin_event { return std::move(s); }, *schedule);
+        } else if (auto derived = derived_of(part)) {
+            return std::move(*derived);
+        } else {
+            throw trade_population_error("The twin recipe source '" + std::string(source) +
+                                         "' mixes an event with the value '" + std::string(part) +
+                                         "'.");
+        }
+    }
+    return std::nullopt;
+}
+
 std::vector<std::string> one_source(const instrument_batch& batch,
                                     std::string_view trade_type_code,
                                     std::string_view source) {
     if (source.size() >= 2 && source.front() == '\'' && source.back() == '\'')
         return {std::string(source.substr(1, source.size() - 2))};
-    if (schedule_role_of(source))
+    if (schedule_role_of(source) || derived_of(source))
         throw trade_population_error("The twin recipe source '" + std::string(source) +
-                                     "' reads a whole schedule, which takes no fallback.");
+                                     "' states an event, which a value cannot fall back to.");
     const auto dot = source.rfind('.');
     if (dot == std::string_view::npos)
         throw trade_population_error("The twin recipe source '" + std::string(source) +
@@ -275,18 +334,17 @@ boost::uuids::uuid twin_id_for(const boost::uuids::uuid& native, std::string_vie
 std::vector<std::string> twin_source_values(const instrument_batch& batch,
                                             std::string_view trade_type_code,
                                             std::string_view source) {
-    // A quoted literal is read whole, so a literal may hold " or ".
-    if (source.size() >= 2 && source.front() == '\'' && source.back() == '\'')
-        return one_source(batch, trade_type_code, source);
-    std::string_view rest = source;
-    while (true) {
-        const auto split = rest.find(" or ");
-        const auto first = rest.substr(0, split);
-        auto values = one_source(batch, trade_type_code, first);
-        if (!values.empty() || split == std::string_view::npos)
-            return values;
-        rest = rest.substr(split + 4);
+    std::vector<std::string> out;
+    for (const auto listed : parts_of(source, " and ")) {
+        for (const auto part : parts_of(listed, " or ")) {
+            auto values = one_source(batch, trade_type_code, part);
+            if (values.empty())
+                continue;
+            std::ranges::move(values, std::back_inserter(out));
+            break;
+        }
     }
+    return out;
 }
 
 std::optional<domain::trade_population_slot>
@@ -313,14 +371,15 @@ scripted_twin_of(const domain::trade_population_slot& native) {
         tb::scripted_variable variable{.name = std::string(row->input_name),
                                        .type = std::string(row->data_type),
                                        .value = std::string()};
-        // A whole schedule is carried as the native trade states it, by rules or by dates.
-        if (const auto role = schedule_role_of(row->source)) {
-            auto schedule = whole_schedule(native.instruments, *role);
-            if (!schedule)
+        // An event is carried as the native trade states it, by rules or by
+        // dates, or derived from another input as ORE derives it.
+        if (is_event_source(row->source)) {
+            auto event = event_of(native.instruments, row->source);
+            if (!event)
                 throw trade_population_error(
                     "The " + native.trade_type_code + " twin finds no schedule for " +
                     std::string(row->input_name) + " at " + std::string(row->source) + ".");
-            std::visit([&](auto& s) { variable.value = std::move(s); }, *schedule);
+            std::visit([&](auto& e) { variable.value = std::move(e); }, *event);
             variables.push_back(std::move(variable));
             continue;
         }

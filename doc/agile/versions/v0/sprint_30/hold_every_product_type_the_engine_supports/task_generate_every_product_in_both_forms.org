@@ -105,6 +105,18 @@ the recipe itself was right. The open choice is how to book these twins under
 the FD engine: correct the FD variant of the script in the library seed, roll
 the twin's dates as ORE's native class does, or price the twins' tag by MC.
 
+** The pairwise variance swaps: a derived lag and an unlimited payoff
+
+The PairwiseVarianceSwap script reads a LaggedValuationSchedule and a positive
+PayoffLimit, and the native trade states neither. ORE's own class
+(=OREData/ored/portfolio/pairwisevarianceswap.cpp=) derives the lag as the
+valuation schedule shifted by =1D= on =NullCalendar=, =Unadjusted=, so the twin
+states that =DerivedSchedule=, unless the native states a lagged schedule of
+its own. ORE's engine reads a payoff limit of zero as no limit, and the script
+requires a positive one, so the twin states a limit of a million. The native
+trades have no pricing engine in the engine run, so the two forms cannot be
+compared by NPV; the four twins price with no error.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -120,6 +132,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| TBD | [synthetic] Twin the pairwise variance swaps |
 | [[https://github.com/OreStudio/OreStudio/pull/4912][#4912]] | [synthetic] Twin the window barrier options |
 | [[https://github.com/OreStudio/OreStudio/pull/4906][#4906]] | [synthetic] Twin the variance swaps, forward vol agreements and best entry options |
 | [[https://github.com/OreStudio/OreStudio/pull/4898][#4898]] | [synthetic] Book the basket and rainbow options as scripted twins |

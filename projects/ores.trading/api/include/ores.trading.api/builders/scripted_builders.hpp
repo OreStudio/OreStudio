@@ -62,15 +62,28 @@ struct scripted_dates final {
     std::optional<std::string> convention;
 };
 
+/// An event derived from another event of the trade, each of its dates moved by the shift.
+struct scripted_derived final {
+    std::string base;
+    std::string shift;
+    std::optional<std::string> calendar;
+    std::optional<std::string> convention;
+};
+
 /**
  * @brief One variable a generic scripted trade states: its name, the type ORE
  * reads it as, and one value, a list of values, a schedule of dates by rules,
- * or a schedule of listed dates.
+ * a schedule of listed dates, or a schedule derived from another.
  */
 struct scripted_variable final {
     std::string name;
     std::string type;
-    std::variant<std::string, std::vector<std::string>, scripted_schedule, scripted_dates> value;
+    std::variant<std::string,
+                 std::vector<std::string>,
+                 scripted_schedule,
+                 scripted_dates,
+                 scripted_derived>
+        value;
 };
 
 /**

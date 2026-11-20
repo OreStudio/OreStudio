@@ -26,11 +26,11 @@ Every screen that shows live ticks reads them the same way, from the vendor subj
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:726A5326-E52C-44FB-9453-133D1E51C242][See the market as the vendors quote it]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-18                               |
 
 * Acceptance
@@ -112,3 +112,26 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+- The FX spot and IR curve feeds no longer publish =synthetic.v1.ops.feed_tick=,
+  and =feed_display_subject= is gone. Each feed names the vendor subjects its
+  ticks land on (=i_feed::vendor_watch_subjects=, from its adapter target's new
+  =provider_code= and its series, through =provider_series_watch_subjects=), and
+  the synthetic service's running feeds reply carries them
+  (=running_feed.watch_subjects=, in the operation model, rendered to C++ and
+  TypeScript).
+- =ores.http='s =feed_tick_buffers= and the BFF's =FeedTickBuffers= listen to a
+  source on those subjects, keep a stopped feed's ticks, and follow a feed whose
+  subjects change. The Ticks tab and the arrivals raster read through them.
+- Checked on the running fleet as UK plc after a fresh provisioning: the raster
+  showed ticks for all 51 running FX feeds within 20 seconds, and for 39 of the
+  63 IR curve feeds within about three minutes, rising as their one-a-minute
+  rate predicts.
+- Tests: =ores.marketdata.api.tests= 1170 cases (a new watch test),
+  =ores.synthetic.api.tests= 1021, =ores.http.synthetic.tests= 146 (a new test of
+  a source that stops and one whose subjects change), the synthetic service's
+  simulator adapter cases bar the known announce race (captured twice in the
+  backlog), and every web workspace (the BFF's buffer and route tests moved to
+  the vendor subjects).
+- The feed screen standard states the Ticks tab's source, and the capture about
+  a curve feed's missing display tick is discarded as moot.

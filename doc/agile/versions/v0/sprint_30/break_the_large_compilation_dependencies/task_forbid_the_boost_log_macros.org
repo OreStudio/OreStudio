@@ -8,7 +8,7 @@
 #+filetags: :compass:check:logging:break_the_large_compilation_dependencies:sprint_30:v0:
 #+owner: marco
 #+branch: feature/forbid-boost-log-sev
-#+pr:
+#+pr: 4925
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-20
@@ -96,7 +96,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4925][#4925]] | [compass] Forbid the Boost.Log macros outside the logger backend |
 
 * Review
 

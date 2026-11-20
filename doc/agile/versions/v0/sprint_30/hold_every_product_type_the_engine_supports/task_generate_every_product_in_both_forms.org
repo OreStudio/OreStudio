@@ -8,7 +8,7 @@
 #+filetags: :hold_every_product_type_the_engine_supports:sprint_30:v0:
 #+owner: marco
 #+branch: feature/generate-every-product-in-both-forms
-#+pr: 4919
+#+pr: 4930
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-15
@@ -117,6 +117,38 @@ requires a positive one, so the twin states a limit of a million. The native
 trades have no pricing engine in the engine run, so the two forms cannot be
 compared by NPV; the four twins price with no error.
 
+** The FX worst-of basket swap: a library script ORE cannot parse
+
+ORE's library WorstOfBasketSwap script (=Examples/Products/Input/scriptlibrary.xml=,
+line 792) has no semicolon after =couponAccumulation = couponAccumulation +
+(1-allAssetsTriggered)=, and ORE's parser stops there: "expected
+<InstructionSequence> in L17:30:0". No trade can run it. The seed states the library
+as ORE ships it, and compass-ng regenerates that file, so the correction is a
+populate script of its own, =trading_script_library_corrections_populate.sql=,
+which writes a new version of the variant after the seed. It applies when its
+text occurs once, does nothing once the code holds the replacement, and fails
+the load otherwise, so a library that changes the script is reviewed.
+
+ORE's own class runs a script of its own, not the library one, so the twin
+maps the native terms onto the library's inputs:
+
+- The script pays the initial fixed amount on SettlementDates[1] and each
+  period's coupons on the dates after, and requires as many settlement dates as
+  determination dates. ORE reads a listed schedule's dates once each
+  (=OREData/ored/portfolio/schedule.cpp=, the =std::unique= before the Schedule
+  constructor), so the initial amount cannot share the first pay date, as ORE's
+  class pays it when none is stated. The twin pays it on the first period date.
+- The script reads one fixing of the floating index on each fixing date. ORE's
+  class compounds an overnight index over the period.
+- The LOGPAY cash flow types InitialFixedAmount, FloatingLeg, FixedCouponLeg and
+  EquityAmountPayoff are mined as inputs; ORE reads them by name only, so the
+  twin states them as zero.
+
+Priced alone in ORE, the twins and their natives are close: -651335.18 against
+-630811.63 USD (2027 maturity, short) and 266454.13 against 264880.01 USD (2035
+maturity, long). The fixing and the initial pay date above are the known
+differences; Monte Carlo noise is the other.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -132,6 +164,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4930][#4930]] | [synthetic] Twin the FX worst-of basket swap; correct its library script |
 | [[https://github.com/OreStudio/OreStudio/pull/4919][#4919]] | [synthetic] Twin the pairwise variance swaps |
 | [[https://github.com/OreStudio/OreStudio/pull/4912][#4912]] | [synthetic] Twin the window barrier options |
 | [[https://github.com/OreStudio/OreStudio/pull/4906][#4906]] | [synthetic] Twin the variance swaps, forward vol agreements and best entry options |
@@ -169,6 +202,12 @@ via its "Verifies task" field.
 | 4919.4 | The payoff limit of a million is a magic number | catalogue | Declined | The catalogue's recipe prose and the task notes state why it is not 0. |
 | 4919.5 | The two forms are not compared by NPV | tests | Declined | The native swaps have no engine here; the task Compare the two forms covers it. |
 | 4919.6 | The table realignment hides the change | catalogue | Declined | The diff with whitespace ignored shows only the new rows and prose. |
+| 4930.1 | The repeated-date check is quadratic | scripted_twins.cpp | Accepted | A sorted copy and adjacent_find. |
+| 4930.2 | A list of date values alone states no calendar | scripted_twins.cpp | Accepted | A comment says ORE then takes the dates as listed. |
+| 4930.3 | A base with a space gets a generic error | scripted_twins.cpp | Declined | The generator refuses such a source when the recipe is written. |
+| 4930.4 | CRLF line endings fail the correction | trading_script_library_corrections_populate.sql | Declined | The load fails loudly and says to review the correction, as intended. |
+| 4930.5 | The worst-of limits are not in the code | catalogue | Accepted | The catalogue prose the recipe is generated from states them; the header is generated. |
+| 4930.6 | No test of column[0] or an index past the end | tests | Declined | The source test already checks both. |
 
 * Result
 

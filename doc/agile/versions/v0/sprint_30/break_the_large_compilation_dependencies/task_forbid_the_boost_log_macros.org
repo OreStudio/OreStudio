@@ -1,0 +1,131 @@
+:PROPERTIES:
+:ID: 52116497-C612-4788-ADEB-FCC1A2DF6667
+:END:
+#+title: Task: Forbid the Boost.Log macros outside the logger backend
+#+description: A compass check that fails any C++ source calling a Boost.Log macro, or including a Boost.Log header only those macros need, outside the logger backend, and names the ORES_ replacement.
+#+type: task
+#+level: s1
+#+filetags: :compass:check:logging:break_the_large_compilation_dependencies:sprint_30:v0:
+#+owner: marco
+#+branch: feature/forbid-boost-log-sev
+#+pr: 4925
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-20
+#+updated: 2026-11-20
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2B6612F6-D9F8-4DFF-8952-61716D22C2CF][Break the large compilation dependencies]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A compass check fails any C++ source that calls BOOST_LOG_SEV or BOOST_LOG_SCOPED_LOGGER_TAG outside ores.logging/src/logger.cpp, and names the ORES_ macro to use instead, so the 604-object Boost.Log reach the logger handle removed does not come back.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:2B6612F6-D9F8-4DFF-8952-61716D22C2CF][Break the large compilation dependencies]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-20                               |
+
+* Acceptance
+
+- =compass/checks/ores_logger.org= forbids =BOOST_LOG_SEV= and
+  =BOOST_LOG_SCOPED_LOGGER_TAG= in every C++ source except
+  =projects/ores.logging/src/logger.cpp=.
+- It also forbids the Boost.Log headers only those macros need: the
+  =boost/log/sources/= headers, =boost/log/trivial.hpp= and
+  =boost/log/attributes/scoped_attribute.hpp=. The sink and attribute headers
+  the telemetry sinks use stay allowed.
+- Each finding names the ORES_ replacement, the header to include, and the
+  Boost.Log include to remove.
+- The page explains why, from this story, and carries examples that compass
+  runs on every check.
+- The tree has no finding: the two calls left on main are converted, and the
+  four unused includes are removed.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+- compass-85 advised the form. =CPP_NAME= matches a macro invocation and skips
+  comments and strings. =OUTSIDE= is the place for a permanent exemption,
+  because =* Exceptions= rows expire, and it is set once per check, so the page
+  is named for the concept (log through the ORE logger) and later rules share
+  the exemption.
+- Two calls to =BOOST_LOG_SEV= were left on main at 6ebe67a9ac, in
+  =projects/ores.http/synthetic/tests/feed_tick_routes_tests.cpp= lines 158
+  and 190. This task converts them.
+- The product owner asked for the old includes too. The sweep left four files
+  that included a Boost.Log header and used nothing from it:
+  =ores.http/reporting/src/routes/reporting/run_routes.cpp=
+  (=sources/record_ostream.hpp=),
+  =ores.synthetic/service/src/market_regime_handler.hpp= (=trivial.hpp=), and
+  =ores.testing/src/database_lifecycle_listener.cpp= and
+  =test_database_manager.cpp= (=attributes/scoped_attribute.hpp=). This task
+  removes them.
+- The exemption widened from =logger.cpp= to =projects/ores.logging/src/**=,
+  because =lifecycle_manager.cpp= includes =boost/log/sources/logger.hpp= to
+  set up the sinks. The rule lists exact headers rather than all of
+  =boost/log=, because the telemetry sinks need the sink and attribute
+  headers.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4925][#4925]] | [compass] Forbid the Boost.Log macros outside the logger backend |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The build and vendor globs in OUTSIDE may repeat a default. | compass/checks/ores_logger.org | Declined | portable_cpp carries the same globs; the two pages stay alike. |
+| 2 | The figures in Why will go stale on a page that runs. | compass/checks/ores_logger.org | Declined | The product owner asked for the story's background on the page. The figures are dated history ("Until 2026-11-20"), not claims about the tree. |
+| 3 | Other Boost.Log macros, such as BOOST_LOG_TRIVIAL and BOOST_LOG_SCOPED_THREAD_TAG, slip through. | compass/checks/ores_logger.org | Accepted | New rule other_boost_log_macros lists the logging, logger and scoped-attribute macros, with the ORE replacement for each; two examples. |
+
+* Result
+
+=compass/checks/ores_logger.org= forbids both Boost.Log macros, and the
+Boost.Log headers only they need, outside the logger backend. Each finding names
+its ORES_ replacement and the include to remove. The two calls left on main are
+converted and the four unused includes are removed. With compass-ng 459f4a3 and
+with the v0.0.2 release, =compass check --codec ores_logger= gives 0
+diagnostics and its six examples pass. One call put back on line 158 gave
+=ores_logger/boost_log_sev=, and one include put back in
+=market_regime_handler.hpp= gave =ores_logger/boost_log_source_headers=, each
+with its fix text and exit 1.

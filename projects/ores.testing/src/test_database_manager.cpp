@@ -25,7 +25,6 @@
 #include "ores.platform/process/pid.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.testing/publish_helper.hpp"
-#include <boost/log/attributes/scoped_attribute.hpp>
 #include <chrono>
 #include <random>
 #include <sstream>

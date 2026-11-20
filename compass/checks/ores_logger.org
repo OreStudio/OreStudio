@@ -1,0 +1,185 @@
+:PROPERTIES:
+:ID: 33F85962-30D5-4B40-8904-602A4AE9C27E
+:END:
+#+title: Check: log through the ORE logger
+#+description: No C++ source outside the logger backend calls a Boost.Log macro or includes the Boost.Log headers those macros need; it calls the ORES_ macro that ores.logging/logger.hpp gives instead.
+#+type: check
+#+level: cross
+#+filetags: :compass:check:cpp:logging:compilation:
+#+created: 2026-11-20
+#+updated: 2026-11-20
+#+options: prop:t
+
+This page defines a =check= that compass runs over ORE Studio. Its =* Definition=
+is what compass runs; the rest says why.
+
+* Rule
+
+No C++ source calls a Boost.Log macro, or includes a Boost.Log header that
+only those macros need, except the sources of =projects/ores.logging/src/=.
+They are the backend of the ORE logger: =ORES_LOG_SEV= writes to Boost.Log in
+=logger.cpp=, and nowhere else.
+
+A call site includes the ORE logger header, not the Boost.Log headers, and
+logs through the handle:
+
+#+begin_src cpp
+#include "ores.logging/logger.hpp"
+
+ORES_LOG_SEV(lg, info) << "Loaded " << count << " records";
+ORES_LOG_SCOPED_TAG(lg, "Tag", test_name);
+#+end_src
+
+| Boost.Log                                   | ORE replacement                        |
+|---------------------------------------------+----------------------------------------|
+| =BOOST_LOG_SEV(lg, sev)=                    | =ORES_LOG_SEV(lg, sev)=                |
+| =BOOST_LOG_SCOPED_LOGGER_TAG=               | =ORES_LOG_SCOPED_TAG(lg, name, value)= |
+| =#include <boost/log/sources/...>=          | =#include "ores.logging/logger.hpp"=   |
+| =#include <boost/log/trivial.hpp>=          | =#include "ores.logging/logger.hpp"=   |
+| =#include <boost/log/attributes/scoped_attribute.hpp>= | =#include "ores.logging/logger.hpp"= |
+| =BOOST_LOG_TRIVIAL=, =BOOST_LOG=, =BOOST_LOG_STREAM= and the other logging macros | =ORES_LOG_SEV(lg, sev)= |
+| =BOOST_LOG_SCOPED_THREAD_TAG= and the other scoped attributes | =ORES_LOG_SCOPED_TAG=, or =ores::logging::scoped_attribute= for a thread attribute |
+
+When you replace a macro, remove the Boost.Log include that served it. A call
+site that keeps the include still parses Boost.Log, even though it no longer
+uses it.
+
+* Why
+
+Until 2026-11-20 every component logged through =BOOST_LOG_SEV=. To name the
+logger type, =make_logger.hpp= included three Boost.Log headers. Every
+component source made its own static logger, so 604 objects parsed Boost.Log.
+A probe measured 1.93 s to parse those headers, against 1.10 s for the handle
+that replaced them.
+
+[[id:1CCAE6BF-99D4-4CEB-84BF-D115152DC664][Split the logger typedef out of make_logger.hpp]] (PR #4922) put the logger
+behind a handle of ORE's own. =ores.logging/logger.hpp= declares the severity
+constants, a =logger= class with an opaque backend, and a =log_record= that
+writes when it goes out of scope. =ORES_LOG_SEV= replaced =BOOST_LOG_SEV=, and
+=ORES_LOG_SCOPED_TAG= replaced Boost's scoped logger tag, at 57911 call sites
+across 7669 files. Boost.Log's logger header is now reached by one object,
+=logger.cpp=, instead of 604.
+
+A Boost.Log macro outside that file undoes the change. It compiles only when
+the file includes the Boost.Log headers again, and each such include puts
+Boost.Log back into every object that reaches it. Code written before the
+sweep, or copied from it, still spells the old macros: two such calls reached
+main in =feed_tick_routes_tests.cpp= on the day of the sweep. The includes stay
+behind too: after the sweep, four files still included a Boost.Log header that
+nothing in them used. This check finds both, and its fix names the
+replacement.
+
+The story is [[id:2B6612F6-D9F8-4DFF-8952-61716D22C2CF][Break the large compilation dependencies]].
+
+* Definition
+:PROPERTIES:
+:ENGINE: forbid
+:FILES: projects/**/*.{cpp,cc,cxx,hpp,h,hxx,ipp,inc}
+:OUTSIDE: projects/ores.logging/src/** projects/**/{node_modules,venv,.venv,build,external}/**
+:END:
+
+The settings every rule below inherits. =ores.logging/src= is outside the
+check, because it is the backend: =logger.cpp= holds the Boost.Log logger, and
+=lifecycle_manager.cpp= sets up its sinks. The exemption is permanent, so it is here and not in
+=* Exceptions=, whose rows expire. A later rule, such as one on the
+=boost/log= includes, shares it.
+
+** boost_log_sev
+:PROPERTIES:
+:CPP_NAME: BOOST_LOG_SEV
+:MESSAGE: {match} bypasses the ORE logger handle and needs the Boost.Log headers
+:FIX: write ORES_LOG_SEV(lg, severity) << ... with the same arguments, include "ores.logging/logger.hpp", and remove the Boost.Log include the macro needed
+:END:
+
+=ORES_LOG_SEV= takes the same logger and severity, so the fix changes the name
+only.
+
+** boost_log_scoped_logger_tag
+:PROPERTIES:
+:CPP_NAME: BOOST_LOG_SCOPED_LOGGER_TAG
+:MESSAGE: {match} needs Boost.Log's attribute interface, which the ORE logger handle does not have
+:FIX: write ORES_LOG_SCOPED_TAG(lg, "name", value), include "ores.logging/logger.hpp", and remove <boost/log/attributes/scoped_attribute.hpp>
+:END:
+
+The handle has no =add_attribute=, so the Boost macro does not compile against
+it. =ORES_LOG_SCOPED_TAG= is the replacement.
+
+** other_boost_log_macros
+:PROPERTIES:
+:CPP_NAME: BOOST_LOG BOOST_LOG_TRIVIAL BOOST_LOG_STREAM BOOST_LOG_STREAM_SEV BOOST_LOG_STREAM_CHANNEL BOOST_LOG_STREAM_CHANNEL_SEV BOOST_LOG_CHANNEL BOOST_LOG_CHANNEL_SEV BOOST_LOG_STREAM_WITH_PARAMS BOOST_LOG_WITH_PARAMS BOOST_LOG_SCOPED_THREAD_TAG BOOST_LOG_SCOPED_THREAD_ATTR BOOST_LOG_SCOPED_LOGGER_ATTR BOOST_LOG_NAMED_SCOPE BOOST_LOG_FUNCTION BOOST_LOG_GLOBAL_LOGGER BOOST_LOG_INLINE_GLOBAL_LOGGER_DEFAULT BOOST_LOG_INLINE_GLOBAL_LOGGER_INIT BOOST_LOG_INLINE_GLOBAL_LOGGER_CTOR_ARGS
+:MESSAGE: {match} is a Boost.Log macro, and it bypasses the ORE logger handle
+:FIX: log with ORES_LOG_SEV(lg, severity) from "ores.logging/logger.hpp"; tag records with ORES_LOG_SCOPED_TAG, or ores::logging::scoped_attribute for a thread attribute; remove the Boost.Log include
+:END:
+
+The other Boost.Log macros that write records, make loggers or set scoped
+attributes. None is in the tree today. A component that makes its own logger
+with one of them, or writes through the trivial logger, has the same cost as
+=BOOST_LOG_SEV=: it needs the Boost.Log source headers, and its records skip
+the ORE channel and severity.
+
+** boost_log_source_headers
+:PROPERTIES:
+:CPP_INCLUDE: <boost/log/sources/record_ostream.hpp> <boost/log/sources/severity_channel_logger.hpp> <boost/log/sources/severity_logger.hpp> <boost/log/sources/severity_feature.hpp> <boost/log/sources/channel_logger.hpp> <boost/log/sources/logger.hpp> <boost/log/sources/global_logger_storage.hpp> <boost/log/trivial.hpp> <boost/log/attributes/scoped_attribute.hpp>
+:MESSAGE: {match} is a Boost.Log header that only the Boost.Log macros need, and it puts Boost.Log back into every object that reaches this file
+:FIX: remove the include; if the file logs, include "ores.logging/logger.hpp" and use ORES_LOG_SEV or ORES_LOG_SCOPED_TAG
+:END:
+
+These are the headers the old macros needed: the logger sources, the trivial
+logger, and the scoped attribute. The sink and attribute headers that the
+telemetry sinks use are not on the list, because a sink reads Boost.Log
+records and has no ORE replacement.
+
+* Examples
+
+A call site that uses the Boost macro is found.
+
+#+begin_src cpp :compass fires=boost_log_sev :path projects/ores.example/src/a.cpp
+BOOST_LOG_SEV(lg, info) << "Loaded";
+#+end_src
+
+The scoped tag is found.
+
+#+begin_src cpp :compass fires=boost_log_scoped_logger_tag :path projects/ores.example/tests/a_tests.cpp
+BOOST_LOG_SCOPED_LOGGER_TAG(lg, "Tag", std::string("a"));
+#+end_src
+
+The trivial logger and the thread tag are found.
+
+#+begin_src cpp :compass fires=other_boost_log_macros :path projects/ores.example/src/e.cpp
+BOOST_LOG_TRIVIAL(info) << "Loaded";
+#+end_src
+
+#+begin_src cpp :compass fires=other_boost_log_macros :path projects/ores.example/tests/e_tests.cpp
+BOOST_LOG_SCOPED_THREAD_TAG("Tag", std::string("a"));
+#+end_src
+
+An include the old macro needed is found.
+
+#+begin_src cpp :compass fires=boost_log_source_headers :path projects/ores.example/src/c.cpp
+#include <boost/log/sources/record_ostream.hpp>
+#+end_src
+
+A sink header is not on the list.
+
+#+begin_src cpp :compass quiet :path projects/ores.example/src/d.cpp
+#include <boost/log/sinks/basic_sink_backend.hpp>
+#+end_src
+
+The backend is outside the check.
+
+#+begin_src cpp :compass quiet :path projects/ores.logging/src/logger.cpp
+#include <boost/log/sources/severity_channel_logger.hpp>
+BOOST_LOG_SEV(core->backend, to_boost_severity(severity_)) << text_.str();
+#+end_src
+
+The replacement, and the old name in a comment or a string, are not found.
+
+#+begin_src cpp :compass quiet :path projects/ores.example/src/b.cpp
+// BOOST_LOG_SEV was replaced by ORES_LOG_SEV.
+ORES_LOG_SEV(lg, info) << "BOOST_LOG_SEV is gone";
+#+end_src
+
+* Exceptions
+
+| path | line | rule | expires | approver | reason |
+|------+------+------+---------+----------+--------|

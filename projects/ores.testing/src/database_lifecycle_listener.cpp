@@ -20,7 +20,6 @@
 #include "ores.testing/database_lifecycle_listener.hpp"
 #include "ores.testing/test_database_manager.hpp"
 #include "ores.utility/version/version.hpp"
-#include <boost/log/attributes/scoped_attribute.hpp>
 #include <sstream>
 
 namespace ores::testing {

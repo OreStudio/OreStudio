@@ -80,16 +80,30 @@ INDEX_PLACEMENT = re.compile(r'name == "(\w+)"\)\s*\n\s*row\.(\w+) = text;')
 CREATE_TABLE = "ores_marketdata_market_series_identity_tbl"
 
 # The columns that say what the identity is, beside the identity's own fields.
-CONTEXT_COLUMNS = (
-    "series_id",
-    "tenant_id",
-    "party_id",
-    "provider_code",
-    "identity_kind",
-    "asset_class",
-    "instrument_type",
-    "quote_type",
-)
+COMPASS_CONFIG = REPO_ROOT / ".compass.org"
+CODEC = "marketdata_identity_columns"
+
+
+def context_columns() -> tuple[str, ...]:
+    """The identity table's columns that are neither identity nor index fields.
+
+    They are declared once, in the codec's row of .compass.org, which compass-ng
+    reads for its port of this check, so the two checks cannot drift apart.
+    """
+    for line in COMPASS_CONFIG.read_text().splitlines():
+        cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
+        if not cells or cells[0] != CODEC:
+            continue
+        for option in (cells[2] if len(cells) > 2 else "").split():
+            key, _, value = option.partition("=")
+            if key == "context_columns":
+                return tuple(column.strip() for column in value.split(",") if column.strip())
+    raise SystemExit(
+        f"FAIL: {COMPASS_CONFIG.relative_to(REPO_ROOT)} declares no context_columns for {CODEC}."
+    )
+
+
+CONTEXT_COLUMNS = context_columns()
 
 # The schema lists a field as identity by writing id(f::x) or id_or_none(f::x)
 # in its per-type row, and as a coordinate by writing at(f::x) or

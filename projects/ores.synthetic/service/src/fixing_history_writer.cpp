@@ -174,7 +174,7 @@ std::set<std::chrono::year_month_day> fixing_history_writer::held_days(
         // A series the market holds nothing for is refused rather than answered empty, which is
         // the same thing to a caller that wants the days a value is not already held on.
         ORES_LOG_SEV(lg(), debug) << "The days the market holds of '" << index_uri
-                                   << "' are not read: " << window.error();
+                                  << "' are not read: " << window.error();
         return {};
     }
     return {window->dates.begin(), window->dates.end()};
@@ -185,7 +185,7 @@ void fixing_history_writer::write(const feed::ir_curve_feed::fixing_plan& plan) 
     const auto party = system_party();
     if (!party) {
         ORES_LOG_SEV(lg(), warn) << "The fixings of '" << plan.index_uri
-                                  << "' are not written: " << party.error();
+                                 << "' are not written: " << party.error();
         return;
     }
     const auto held = held_days(plan.index_uri, *party, plan.as_of);
@@ -193,7 +193,7 @@ void fixing_history_writer::write(const feed::ir_curve_feed::fixing_plan& plan) 
         plan.level, plan.as_of, fixing_history_days, plan.run_seed, plan.index_uri, held);
     if (!history) {
         ORES_LOG_SEV(lg(), warn) << "The fixings of '" << plan.index_uri
-                                  << "' are not stated: " << history.error();
+                                 << "' are not stated: " << history.error();
         return;
     }
     if (history->empty())
@@ -202,7 +202,7 @@ void fixing_history_writer::write(const feed::ir_curve_feed::fixing_plan& plan) 
     const auto series = series_for(plan.index_uri, *party);
     if (!series) {
         ORES_LOG_SEV(lg(), warn) << "The fixings of '" << plan.index_uri
-                                  << "' have no series: " << series.error();
+                                 << "' have no series: " << series.error();
         return;
     }
 

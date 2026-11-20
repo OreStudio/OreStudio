@@ -49,10 +49,10 @@ std::string_view digital_kind_text(digital_kind kind) {
     return "Call";
 }
 
-void add_underlying(domain::multi_asset_instrument_data& out,
-                    std::string_view role,
-                    const marketdata::datum::market_reference& address,
-                    std::string_view type) {
+void add_multi_asset_underlying(domain::multi_asset_instrument_data& out,
+                                std::string_view role,
+                                const marketdata::datum::market_reference& address,
+                                std::string_view type) {
     int sequence = 0;
     for (const auto& row : out.instrument_underlyings)
         if (row.underlying_role == role)
@@ -65,9 +65,9 @@ void add_underlying(domain::multi_asset_instrument_data& out,
     out.instrument_underlyings.push_back(std::move(row));
 }
 
-void add_values(domain::multi_asset_instrument_data& out,
-                std::string_view role,
-                const std::vector<decimal>& values) {
+void add_multi_asset_values(domain::multi_asset_instrument_data& out,
+                            std::string_view role,
+                            const std::vector<decimal>& values) {
     int sequence = 0;
     for (const auto& value : values) {
         domain::instrument_value row{};
@@ -124,8 +124,8 @@ multi_asset_result double_digital_option_builder::build() const {
     row.long_short = long_short_of(terms_.position.get());
     row.pay_currency = terms_.pay_currency.get();
     out.double_digital_options.push_back(std::move(row));
-    add_underlying(out, "underlying1", terms_.underlying_1.get(), "Equity");
-    add_underlying(out, "underlying2", terms_.underlying_2.get(), "Equity");
+    add_multi_asset_underlying(out, "underlying1", terms_.underlying_1.get(), "Equity");
+    add_multi_asset_underlying(out, "underlying2", terms_.underlying_2.get(), "Equity");
     return out;
 }
 
@@ -157,8 +157,8 @@ multi_asset_result performance_option_builder::build() const {
     row.pay_currency = terms_.pay_currency.get();
     out.performance_options.push_back(std::move(row));
     for (const auto& underlying : terms_.underlyings.get())
-        add_underlying(out, "underlying", underlying, "Equity");
-    add_values(out, "strike_price", terms_.strike_prices.get());
+        add_multi_asset_underlying(out, "underlying", underlying, "Equity");
+    add_multi_asset_values(out, "strike_price", terms_.strike_prices.get());
     return out;
 }
 
@@ -205,8 +205,10 @@ multi_asset_result european_option_barrier_builder::build() const {
     row.settlement_date = terms.settlement.get();
     row.pay_currency = terms.pay_currency.get();
     out.european_option_barriers.push_back(std::move(row));
-    add_underlying(out, "optionunderlying", terms.option_underlying.get(), underlying_type);
-    add_underlying(out, "barrierunderlying", terms.barrier_underlying.get(), underlying_type);
+    add_multi_asset_underlying(
+        out, "optionunderlying", terms.option_underlying.get(), underlying_type);
+    add_multi_asset_underlying(
+        out, "barrierunderlying", terms.barrier_underlying.get(), underlying_type);
     return out;
 }
 
@@ -242,10 +244,10 @@ multi_asset_result autocallable_builder::build() const {
     row.pay_currency = terms_.pay_currency.get();
     row.cap = terms_.cap.get();
     out.autocallables.push_back(std::move(row));
-    add_underlying(out, "underlying", terms_.underlying.get(), "Equity");
+    add_multi_asset_underlying(out, "underlying", terms_.underlying.get(), "Equity");
     add_rules_schedule(out, "fixing_schedule", fixings);
     add_rules_schedule(out, "settlement_schedule", settlements);
-    add_values(out, "accumulation_factor", terms_.accumulation_factors.get());
+    add_multi_asset_values(out, "accumulation_factor", terms_.accumulation_factors.get());
     return out;
 }
 

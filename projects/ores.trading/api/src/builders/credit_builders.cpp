@@ -46,7 +46,7 @@ std::optional<build_error> entity_refusal_of(std::string_view reference_entity) 
     return std::nullopt;
 }
 
-std::optional<build_error> refusal_of(const credit_protection_terms& terms) {
+std::optional<build_error> credit_refusal(const credit_protection_terms& terms) {
     if (terms.notional.get() <= decimal{})
         return build_error{"notional", "must be positive"};
     if (terms.currency.get().empty())
@@ -156,7 +156,7 @@ std::expected<domain::credit_instrument_data, build_error>
 index_swap_of(std::string_view trade_type,
               const convention_lookup& conventions,
               const credit_protection_terms& terms) {
-    if (auto refusal = refusal_of(terms))
+    if (auto refusal = credit_refusal(terms))
         return std::unexpected(std::move(*refusal));
     const auto premium = premium_conventions_of(conventions, terms.convention.get());
     if (!premium)
@@ -181,7 +181,7 @@ credit_default_swap_builder::credit_default_swap_builder(const convention_lookup
 
 std::expected<domain::credit_instrument_data, build_error>
 credit_default_swap_builder::build() const {
-    if (auto refusal = refusal_of(terms_))
+    if (auto refusal = credit_refusal(terms_))
         return std::unexpected(std::move(*refusal));
     const auto premium = premium_conventions_of(conventions_, terms_.convention.get());
     if (!premium)
@@ -339,7 +339,7 @@ credit_linked_swap_builder::credit_linked_swap_builder(const convention_lookup& 
 
 std::expected<domain::credit_instrument_data, build_error>
 credit_linked_swap_builder::build() const {
-    if (auto refusal = refusal_of(terms_))
+    if (auto refusal = credit_refusal(terms_))
         return std::unexpected(std::move(*refusal));
     const auto premium = premium_conventions_of(conventions_, terms_.convention.get());
     if (!premium)
@@ -429,7 +429,7 @@ synthetic_cdo_builder::synthetic_cdo_builder(const convention_lookup& convention
 
 std::expected<domain::credit_instrument_data, build_error> synthetic_cdo_builder::build() const {
     const auto& premium_terms = terms_.protection;
-    if (auto refusal = refusal_of(premium_terms))
+    if (auto refusal = credit_refusal(premium_terms))
         return std::unexpected(std::move(*refusal));
     const auto attachment = terms_.attachment_point.get();
     const auto detachment = terms_.detachment_point.get();

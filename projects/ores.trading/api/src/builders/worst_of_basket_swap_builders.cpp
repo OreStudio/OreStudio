@@ -35,7 +35,7 @@ std::optional<build_error> worst_of_positive(std::string term, const decimal& va
     return std::nullopt;
 }
 
-std::optional<build_error> refusal_of(const fx_worst_of_basket_swap_terms& terms) {
+std::optional<build_error> worst_of_refusal(const fx_worst_of_basket_swap_terms& terms) {
     if (terms.currency.get().empty())
         return build_error{"currency", "must name a currency"};
     if (terms.floating_index.get().empty())
@@ -71,9 +71,9 @@ std::optional<build_error> refusal_of(const fx_worst_of_basket_swap_terms& terms
     return std::nullopt;
 }
 
-void add_values(domain::fx_instrument_data& out,
-                std::string_view role,
-                const std::vector<decimal>& values) {
+void add_worst_of_values(domain::fx_instrument_data& out,
+                         std::string_view role,
+                         const std::vector<decimal>& values) {
     int sequence = 0;
     for (const auto& value : values) {
         domain::instrument_value row{};
@@ -123,7 +123,7 @@ fx_worst_of_basket_swap_builder::fx_worst_of_basket_swap_builder(
 
 fx_result fx_worst_of_basket_swap_builder::build() const {
     const auto& terms = terms_;
-    if (auto refusal = refusal_of(terms))
+    if (auto refusal = worst_of_refusal(terms))
         return std::unexpected(std::move(*refusal));
 
     domain::fx_instrument_data out{};
@@ -155,9 +155,9 @@ fx_result fx_worst_of_basket_swap_builder::build() const {
         out.instrument_underlyings.push_back(std::move(underlying));
         initial_prices.push_back(member.initial_price);
     }
-    add_values(out, "initial_price", initial_prices);
-    add_values(out, "knock_out_level", terms.knock_out_levels.get());
-    add_values(out, "fixed_trigger_level", terms.fixed_trigger_levels.get());
+    add_worst_of_values(out, "initial_price", initial_prices);
+    add_worst_of_values(out, "knock_out_level", terms.knock_out_levels.get());
+    add_worst_of_values(out, "fixed_trigger_level", terms.fixed_trigger_levels.get());
 
     add_dated_schedule(out, "floating_period_schedule", terms.period_dates.get());
     add_dated_schedule(out, "floating_pay_schedule", terms.pay_dates.get());

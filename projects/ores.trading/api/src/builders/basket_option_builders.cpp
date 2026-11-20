@@ -75,9 +75,9 @@ Row row_of(std::string_view trade_type, const basket_option_terms& terms) {
 
 /// The members, the OptionData block and its one exercise date, as the carrier's shared rows.
 template <typename Data>
-void add_shared_rows(Data& out,
-                     std::string_view underlying_type,
-                     const basket_option_terms& terms) {
+void add_basket_option_rows(Data& out,
+                            std::string_view underlying_type,
+                            const basket_option_terms& terms) {
     int sequence = 0;
     for (const auto& member : terms.members.get()) {
         domain::instrument_underlying row{};
@@ -123,7 +123,7 @@ equity_result build_equity_basket_option(std::string_view trade_type,
         return std::unexpected(std::move(*refusal));
     domain::equity_instrument_data out{};
     out.instrument = row_of<domain::equity_basket_option_instrument>(trade_type, terms);
-    add_shared_rows(out, "Equity", terms);
+    add_basket_option_rows(out, "Equity", terms);
     return out;
 }
 
@@ -134,7 +134,7 @@ fx_result build_fx_basket_option(std::string_view trade_type,
         return std::unexpected(std::move(*refusal));
     domain::fx_instrument_data out{};
     out.basket_options.push_back(row_of<domain::fx_basket_option_instrument>(trade_type, terms));
-    add_shared_rows(out, "FX", terms);
+    add_basket_option_rows(out, "FX", terms);
     return out;
 }
 

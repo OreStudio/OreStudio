@@ -30,28 +30,35 @@ the series table's key loses the provider for fixings.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                   |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
-| Now           | Not yet started.                       |
+| Now           | Done.                                  |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Nothing.                               |
 | Last touched  | 2026-11-20                               |
 
 * Acceptance
 
--
+- One party holds one fixing from two providers, and each series has an identity.
+- One provider cannot hold one fixing identity twice.
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:AB4D3509-DE98-4866-BB7B-B60E9381179A][Key a fixing's identity by its provider]] | STARTED | 2026-11-20 | | Carry the series' provider on its identity row and in the fixing identity's unique index, so two providers' series of one fixing each keep an identity, as the series table already allows. |
+| [[id:AB4D3509-DE98-4866-BB7B-B60E9381179A][Key a fixing's identity by its provider]] | DONE | 2026-11-20 | 2026-11-20 | Carry the series' provider on its identity row and in the fixing identity's unique index, so two providers' series of one fixing each keep an identity, as the series table already allows. |
 
 * Decisions
 
+- The identity follows the series key. The series table keys a series by party,
+  URI and provider, so the identity row carries the provider and the fixing
+  index holds it. The series key does not lose the provider for fixings.
+- A check's column lists are data. The identity check's context columns live in
+  the codec's row of =.compass.org=, which compass-ng and the Python gate read.
+
 * Out of scope
 
--
+- A v0.0.3 compass release for the CI job that installs from releases.
 
 * Promoted from capture
 

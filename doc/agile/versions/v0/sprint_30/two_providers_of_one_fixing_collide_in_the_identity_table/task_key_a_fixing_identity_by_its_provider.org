@@ -26,11 +26,11 @@ A party holds one fixing from two providers, and both series have an identity a 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:3B58C44F-5E31-4A30-B185-C06A75E6451C][Two providers of one fixing collide in the identity table]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-20                               |
 
 * Acceptance
@@ -42,9 +42,20 @@ A party holds one fixing from two providers, and both series have an identity a 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The series table's key is the documented rule: a series is one item of one
+provider held by one party. So the identity follows the series, and the series
+key stays as it is.
+
+1. Add =provider_code= to the identity model, after =party_id=, and put it in the
+   =fixing_identity= index. Regenerate the table, the domain type, the codec, the
+   generator, the entity, the mapper and the schema diagram.
+2. Copy the provider from the series in the projector.
+3. Make the repository case write a real EURIBOR 6M fixing for two providers, and
+   add a case that one provider cannot hold one fixing identity twice.
+4. Declare the identity check's context columns as data in =.compass.org=, which
+   the Python gate and compass-ng both read (compass PR #115), and pin the
+   compass-ng build that reads them.
+5. Check every reader that looks a series up by its identity fields.
 
 * Measurements
 
@@ -61,6 +72,19 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+- Readers. The snapshot, slice and evolution readers already refuse an
+  identity that names two series and ask for the party or the provider. The
+  manual point lookup asked only for the party; it now names the provider too.
+  No reader assumes one fixing row per identity.
+- The compass-ng port of the identity column check held the context columns in
+  code, so =provider_code= failed it with nothing ORE Studio could edit. On the
+  user's direction the fix is general: compass-85 made the list a codec option
+  (compass PR #115, commit 459f4a3), and both checks read the one row in
+  =.compass.org=.
+- The ORE CI job that installs compass-ng from releases still gets v0.0.2, which
+  refuses the new option. It needs a v0.0.3 release before it passes on this
+  setting.
 
 * Test Scenarios
 
@@ -86,3 +110,10 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The identity row carries its series' provider, and the fixing identity's unique
+index holds it. Two providers of one fixing now write two series and two
+identity rows, and one provider still cannot write the same fixing twice. The
+repository case writes a real fixing, so it tests the index it claims to test.
+The identity check's context columns are data in =.compass.org=, read by the
+Python gate and by compass-ng 459f4a3, which the pin now names.

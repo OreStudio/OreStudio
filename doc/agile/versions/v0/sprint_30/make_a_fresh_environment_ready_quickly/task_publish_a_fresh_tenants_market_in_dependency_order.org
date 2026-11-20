@@ -1,0 +1,103 @@
+:PROPERTIES:
+:ID: C39B96C7-8252-4262-9CBC-F7B9D9A73546
+:END:
+#+title: Task: Publish a fresh tenant's market in dependency order
+#+description: On a fresh database Acme's provisioning leaves 12 party curves deferred on discount curves not yet published, 105 surface blueprints ungiven for want of the derived vol series, and so every party without a surface.
+#+type: task
+#+level: s1
+#+filetags: :provisioning:marketdata:curves:surfaces:make_a_fresh_environment_ready_quickly:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-20
+#+updated: 2026-11-20
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E5314CD1-6AB9-4F65-8858-AF2B08FBAEAC][Make a fresh environment ready quickly]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Provisioning Acme on a fresh database publishes every curve, gives every surface blueprint and publishes every surface it promises, on the first run.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:E5314CD1-6AB9-4F65-8858-AF2B08FBAEAC][Make a fresh environment ready quickly]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-20                               |
+
+* Acceptance
+
+- publish_party_curves publishes a curve after the curves it discounts off, so no curve is deferred for want of one the same step publishes.
+- give_party_surface_blueprints does not fail for want of a derived series that the environment has not yet produced, or waits for it within the step's deadline.
+- A fresh provisioning ends with no market data step completed with warnings.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+Seen on 2026-11-20 provisioning Acme on a fresh database
+(=ores.workflow.service.0.log=, workflow =6f61f205=):
+
+- =give_party_surface_blueprints= ran 600 s and failed: "105 surface
+  blueprint(s) were not given … NZDJPY_SSVI: no series of derived
+  oresmd://fx/NZD?type=series&instrument=fx_option&quote=rate_lnvol&ccy=JPY". The
+  derived vol series exist only once the derived feed has run.
+- =publish_party_curves= ran 719 s and failed: "12 party curve(s) were not
+  published … GBP-LIBOR-12M: Deferred. curve 'GBP-LIBOR-12M' discounts off
+  'GBP-SONIA', which …".
+- =publish_party_surfaces= then failed for every party: "the party holds no
+  surface blueprint".
+
+Each step is marked not essential, so the run ends "with warnings" and the
+setup banner says some market data may be missing.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

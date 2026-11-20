@@ -1,0 +1,111 @@
+:PROPERTIES:
+:ID: 1ACC41D9-2132-49B0-9ACB-B43D61AF39B1
+:END:
+#+title: Task: Shorten the tenant setup's critical path
+#+description: The tenant setup workflow takes 18 minutes on a fresh database; publish_party_curves alone runs 12 minutes while the market data service misses its own adapters' heartbeats.
+#+type: task
+#+level: s1
+#+filetags: :provisioning:workflow:performance:make_a_fresh_environment_ready_quickly:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-20
+#+updated: 2026-11-20
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E5314CD1-6AB9-4F65-8858-AF2B08FBAEAC][Make a fresh environment ready quickly]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Provisioning Acme takes a few minutes, with each step's time measured and the longest ones shortened.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:E5314CD1-6AB9-4F65-8858-AF2B08FBAEAC][Make a fresh environment ready quickly]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-20                               |
+
+* Acceptance
+
+- Each step of the tenant setup is timed on a fresh database, before and after, and the times are recorded on the task.
+- The critical path is at least halved.
+- The market data service keeps its adapters' heartbeats while it provisions.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+The tenant setup workflow of 2026-11-20 on a fresh database, from the step
+state lines of =ores.workflow.service.0.log= (start offset, duration):
+
+| Start (s) | Took (s) | Step |
+|-----------+----------+------|
+| 0 | 95 | publish_bundle |
+| 99 | 90 | provision_party |
+| 189 | 94 | load_staff |
+| 191 | 600 | give_party_surface_blueprints (failed, see the sibling task) |
+| 191 | 719 | publish_party_curves (12 curves deferred) |
+| 283 | 243 | generate_trades |
+| 910 | 47 | publish_party_forwards |
+| 956 | 115 | publish_party_surfaces |
+| 1072 | 0 | complete_provisioning |
+
+The critical path is publish_bundle, provision_party, publish_party_curves,
+publish_party_forwards and publish_party_surfaces: 1072 s. While the curve and
+blueprint steps ran, the market data service missed every adapter's heartbeat
+and its repository reads were logged as slow (5710 mappings, 2557 fixings),
+which points at the service being saturated rather than at one slow query; a
+measurement is the first job. The ticks smoke check provisions a tenant the
+same way, and its slowest step was publish_party_surfaces (see the capture
+[[id:C8714C54-91DF-4941-932D-303BFBB3DD0B][Speed up the ticks smoke gate]]).
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

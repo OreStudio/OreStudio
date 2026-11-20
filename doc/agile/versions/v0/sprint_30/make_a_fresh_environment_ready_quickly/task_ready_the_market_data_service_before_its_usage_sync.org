@@ -1,0 +1,108 @@
+:PROPERTIES:
+:ID: B3BEA3D5-1ABA-444E-8C51-13EBD8E6DF5F
+:END:
+#+title: Task: Ready the market data service before its usage sync
+#+description: On a fresh database the market data service writes thousands of demand intervals before it tells systemd it is ready, misses the 90-second start timeout, and takes the official rates service down with it.
+#+type: task
+#+level: s1
+#+filetags: :marketdata:services:systemd:startup:make_a_fresh_environment_ready_quickly:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-20
+#+updated: 2026-11-20
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E5314CD1-6AB9-4F65-8858-AF2B08FBAEAC][Make a fresh environment ready quickly]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The market data service tells systemd it is ready within seconds on any database, and the official rates service starts whenever the service it requires does.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:E5314CD1-6AB9-4F65-8858-AF2B08FBAEAC][Make a fresh environment ready quickly]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-20                               |
+
+* Acceptance
+
+- On a freshly recreated database the market data service reports ready well inside its start timeout; the measured time is recorded.
+- The usage sync still records every interval, without holding the ready signal.
+- ores.marketdata.official starts when ores.marketdata.service becomes ready, also after a restart of the latter.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+Seen on 2026-11-20 in =bright_faraday=, after =db recreate= and =services start=
+(=journalctl --user -u ores.marketdata.service-bright_faraday=):
+
+- 00:16:52 systemd starts =ores.marketdata.service=; by 00:16:58 it has
+  connected, authenticated, checked the schema and opened its step streams.
+- 00:16:58 to 00:18:22 it publishes 3869 =demand_interval_event=s, one per row
+  written, and uses 3 s of CPU in 117 s.
+- 00:18:22 "start operation timed out. Terminating." (the default 90 s).
+- 00:18:49 "Dependency failed for ores.marketdata.official": that unit
+  =Requires= and starts =After= the market data service, so its start fails
+  with result =dependency= and nothing starts it again. =compass services start=
+  waited 483 s and reported it inactive; a manual restart started it at once.
+- 00:18:52 systemd restarts the market data service, which is ready in about a
+  second, because the intervals are already written.
+
+The cause is the order in =application.cpp=: =notify_systemd_ready()= runs
+after =on_started=, which calls =supervisor->start()=; that runs =refresh()=,
+whose catalogue listener calls =usage->sync()=, which writes every demand
+interval of the catalogue one insert at a time
+(=usage_recorder::sync=, =demand_interval_repository::write=).
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

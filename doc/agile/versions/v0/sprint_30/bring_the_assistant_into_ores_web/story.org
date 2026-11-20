@@ -2,7 +2,7 @@
 :ID: BBEDFA8E-D43D-4F48-8FD7-1A3CC9F47E3E
 :END:
 #+title: Story: Bring the assistant into ores.web on the target architecture
-#+description: The ores.agent prototype runs as its own Node process with a hand-kept NATS subject map, its own chat UI and a llama.cpp process it starts itself. Rebuild it on ORE's architecture: the chat in ores.web, served through ores.http rather than the BFF, the model in an ores.llama.cpp service, and every operation a user can do open to the model, with machine operations told apart from the user's own.
+#+description: The ores.agent prototype runs as its own Node process with a hand-kept NATS subject map, its own chat UI and a llama.cpp process it starts itself. Rebuild it on ORE's architecture: the chat in ores.web, served through ores.http rather than the BFF, the model on an inference server chosen by analysis, plain llama.cpp or an ORE service, and every operation a user can do open to the model, with machine operations told apart from the user's own.
 #+type: story
 #+level: s2
 #+filetags: :agent:llm:web:http:architecture:sprint_30:v0:
@@ -64,8 +64,10 @@ retires the prototype once ores.web does what it does.
 
 - The assistant runs in ores.web and reaches the server only through
   ores.http and the services behind it. Nothing is added to the BFF.
-- The model runs in an ores.llama.cpp service that ORE starts, stops,
-  monitors and deploys like its other services.
+- The model runs on an inference server that the analysis chooses: plain
+  llama.cpp, deployed and run beside ORE, or an ORE service that wraps
+  it. Either way, ORE's tooling starts and stops it, a person can see
+  whether it is healthy, and its model files are pinned.
 - The model can call any operation the signed-in person may call, from a
   catalogue derived from the generated protocol, not from hand-written
   tools.
@@ -80,7 +82,7 @@ retires the prototype once ores.web does what it does.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:F245FC50-7440-4C5E-AFA4-1B2D0E28F05D][Scaffold story: Bring the assistant into ores.web on the target architecture]] | DONE | 2026-11-20 | 2026-11-20 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:E3102699-58F9-4EF2-94BE-BCDBC1FA14BE][Analyse the assistant's target-state architecture]] | BACKLOG | | | Design the target architecture: the chat in ores.web via ores.http, the agent loop, the tool catalogue, machine operations, the ores.llama.cpp service and the fate of the prototype. |
+| [[id:E3102699-58F9-4EF2-94BE-BCDBC1FA14BE][Analyse the assistant's target-state architecture]] | BACKLOG | | | Design the target architecture: the chat in ores.web via ores.http, the agent loop, the tool catalogue, machine operations, the inference server (plain llama.cpp or an ORE service) and the fate of the prototype. |
 
 * Decisions
 

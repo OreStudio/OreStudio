@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/serve-the-message-bus-view
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
 #+updated: 2026-11-09
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ Serve these composed views from ores.telemetry: the message bus. Each view state
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Planned; the part that owns it is open. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-09                               |
+| Next         | Choose the part that owns the route, then serve the two reads. |
+| Last touched | 2026-11-20                               |
 
 * Acceptance
 
@@ -42,25 +42,40 @@ Serve these composed views from ores.telemetry: the message bus. Each view state
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The view answers =GET /api/operations/bus= and takes one query member, =range=, of
+15m, 1h or 6h. The window is derived from the deployment's own clock rather than
+stated by the browser, start-inclusive and end-exclusive so adjacent windows tile,
+which is the rule the operations logs route already states beside it.
 
-* Measurements
+The composition is two reads of the telemetry service and no computation:
 
-Every number this task claims about a tree, with the command that produced it
-and the commit it was measured at. A number without both is not a measurement,
-because a clean-up record describes a tree and trunk moves under a branch: a
-consumer count, a gate's component count and a suite's size all change with no
-code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
+- =telemetry.v1.nats_server_samples.list= once, for the window. The samples travel
+  whole and newest first, because the vitals and the movement across the range are
+  two readings of one series and the counters are running totals that only a
+  subtraction over the range turns into movement.
+- =telemetry.v1.nats_stream_samples.list= once per stream, keeping the newest row of
+  each. The streams are named rather than discovered, because no read lists them:
+  the broker's subject prefix with its dots turned into underscores, then one of
+  =marketdata_ticks=, =synthetic_ticks=, =synthetic_sandbox_ticks=, =workflow= and
+  =compute_assignments=. A stream with no sample in the window contributes no row
+  rather than a row of zeros.
 
-| What | Value | Command | Commit |
-|------+-------+---------+--------|
-|      |       |         |        |
+The answer is ={sampled_at, samples, streams}=, where =sampled_at= is the newest
+server sample's instant or null, and it carries an ETag and stays fresh for 10
+seconds, as the inventory records for this view.
 
-* Notes
+Two things the plan settles before the first line of code. The permission is the
+deployment read, which the BFF asks for by reading the caller's own access and
+testing the granted codes; the gateway already has that helper for the operations
+roster, and this view uses it rather than inventing a second check. And the
+messages live in =ores.telemetry.core= rather than in an =.api= library, so the
+part that serves the route must link that library; which part owns the route is the
+first decision, because the roster and the logs sit in =ores.http.workflow= while
+the inventory names =ores.telemetry= as this view's owner.
+
+The gap the screen states is the stream list: a stream created after this code was
+written is not read, so its row is missing from the answer. The view says so in the
+same way the others state what they cannot show.
 
 * Test Scenarios
 
@@ -86,3 +101,14 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The plan is written and the composition is settled against the BFF's own code: two
+reads of the telemetry service, a window from the deployment's clock, a fixed list
+of five streams, and the deployment read as the gate. No route is served yet.
+
+Two findings change the shape of the work rather than its size. The messages the
+reads need are in =ores.telemetry.core= and not in an =.api= library, so a part
+that links only the api libraries cannot send them. And the roster and the logs
+already sit in =ores.http.workflow= while the inventory records =ores.telemetry= as
+this view's owner, so the part that owns the bus route has to be chosen before it
+is written.

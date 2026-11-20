@@ -43,7 +43,7 @@ inline constexpr severity_level warn = severity_level::warn;
 inline constexpr severity_level error = severity_level::error;
 inline constexpr severity_level fatal = severity_level::fatal;
 
-namespace detail {
+namespace backend {
 struct logger_core;
 }
 
@@ -58,15 +58,15 @@ class ORES_LOGGING_EXPORT logger final {
 public:
     logger();
 
-    explicit logger(std::shared_ptr<detail::logger_core> core) noexcept
+    explicit logger(std::shared_ptr<backend::logger_core> core) noexcept
         : core_(std::move(core)) {}
 
-    [[nodiscard]] const std::shared_ptr<detail::logger_core>& core() const noexcept {
+    [[nodiscard]] const std::shared_ptr<backend::logger_core>& core() const noexcept {
         return core_;
     }
 
 private:
-    std::shared_ptr<detail::logger_core> core_;
+    std::shared_ptr<backend::logger_core> core_;
 };
 
 using logger_t = logger;

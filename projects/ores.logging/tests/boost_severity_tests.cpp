@@ -26,7 +26,7 @@
 #include <string>
 #include <string_view>
 
-using ores::logging::detail::boost_severity;
+using ores::logging::backend::boost_severity;
 using ores::logging::severity_level;
 using ores::logging::to_boost_severity;
 using ores::logging::to_domain_severity;

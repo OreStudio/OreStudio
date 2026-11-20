@@ -27,7 +27,7 @@
 
 namespace ores::logging {
 
-namespace detail {
+namespace backend {
 
 struct logger_core {
     explicit logger_core(std::string_view component_name)
@@ -35,7 +35,7 @@ struct logger_core {
         , backend(boost::log::keywords::channel = std::string_view(channel)) {}
 
     std::string channel;
-    boost::log::sources::severity_channel_logger_mt<detail::boost_severity, std::string_view>
+    boost::log::sources::severity_channel_logger_mt<backend::boost_severity, std::string_view>
         backend;
 };
 
@@ -44,11 +44,11 @@ struct logger_core {
 logger::logger() = default;
 
 logger_t make_logger(std::string_view component_name) {
-    return logger_t(std::make_shared<detail::logger_core>(component_name));
+    return logger_t(std::make_shared<backend::logger_core>(component_name));
 }
 
 struct scoped_tag::state {
-    std::shared_ptr<detail::logger_core> core;
+    std::shared_ptr<backend::logger_core> core;
     boost::log::attribute_set::iterator attribute;
 };
 

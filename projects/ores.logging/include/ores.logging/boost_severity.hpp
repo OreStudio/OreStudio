@@ -38,7 +38,7 @@ namespace ores::logging {
  * @note This is an implementation detail and should not be used directly
  * by client code.
  */
-namespace detail {
+namespace backend {
 
 /**
  * @brief The severity type Boost.Log's severity feature carries.
@@ -57,7 +57,7 @@ enum boost_severity { trace, debug, info, warn, error };
  * @return Corresponding boost_severity value.
  * @throws std::invalid_argument if the string is not a valid severity.
  */
-ORES_LOGGING_EXPORT detail::boost_severity to_boost_severity(const std::string& s);
+ORES_LOGGING_EXPORT backend::boost_severity to_boost_severity(const std::string& s);
 
 /**
  * @brief Converts domain severity_level to internal boost_severity.
@@ -65,7 +65,7 @@ ORES_LOGGING_EXPORT detail::boost_severity to_boost_severity(const std::string& 
  * @param level The domain severity level.
  * @return Corresponding boost_severity value.
  */
-ORES_LOGGING_EXPORT detail::boost_severity to_boost_severity(severity_level level);
+ORES_LOGGING_EXPORT backend::boost_severity to_boost_severity(severity_level level);
 
 /**
  * @brief Converts internal boost_severity to domain severity_level.
@@ -73,7 +73,7 @@ ORES_LOGGING_EXPORT detail::boost_severity to_boost_severity(severity_level leve
  * @param sev The boost severity.
  * @return Corresponding domain severity_level value.
  */
-ORES_LOGGING_EXPORT severity_level to_domain_severity(detail::boost_severity sev);
+ORES_LOGGING_EXPORT severity_level to_domain_severity(backend::boost_severity sev);
 
 /**
  * @brief Inserter for boost_severity enum.
@@ -82,21 +82,21 @@ ORES_LOGGING_EXPORT severity_level to_domain_severity(detail::boost_severity sev
  */
 template <typename CharT, typename TraitsT>
 inline std::basic_ostream<CharT, TraitsT>& operator<<(std::basic_ostream<CharT, TraitsT>& stream,
-                                                      detail::boost_severity level) {
+                                                      backend::boost_severity level) {
     switch (level) {
-        case detail::boost_severity::trace:
+        case backend::boost_severity::trace:
             stream << "TRACE";
             break;
-        case detail::boost_severity::debug:
+        case backend::boost_severity::debug:
             stream << "DEBUG";
             break;
-        case detail::boost_severity::info:
+        case backend::boost_severity::info:
             stream << "INFO";
             break;
-        case detail::boost_severity::warn:
+        case backend::boost_severity::warn:
             stream << "WARN";
             break;
-        case detail::boost_severity::error:
+        case backend::boost_severity::error:
             stream << "ERROR";
             break;
         default:

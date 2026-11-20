@@ -58,7 +58,7 @@ void telemetry_sink_backend::consume(const boost::log::record_view& rec) {
     }
 
     // Extract and convert severity
-    auto severity_val = boost::log::extract<logging::detail::boost_severity>("Severity", rec);
+    auto severity_val = boost::log::extract<logging::backend::boost_severity>("Severity", rec);
     if (severity_val) {
         telemetry_rec.severity = logging::to_domain_severity(severity_val.get());
     } else {

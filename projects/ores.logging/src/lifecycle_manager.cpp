@@ -71,7 +71,7 @@ build_filename(const std::string& filename, std::optional<int> replica_index, bo
 }
 
 boost::shared_ptr<lifecycle_manager::file_sink_type> lifecycle_manager::make_file_sink(
-    std::filesystem::path path, const detail::boost_severity severity, std::string tag) {
+    std::filesystem::path path, const backend::boost_severity severity, std::string tag) {
 
     const std::string extension(".log");
     if (path.extension() != extension)
@@ -88,11 +88,11 @@ boost::shared_ptr<lifecycle_manager::file_sink_type> lifecycle_manager::make_fil
 
     if (!tag.empty()) {
         const std::string tag_attr("Tag");
-        sink->set_filter(expressions::attr<detail::boost_severity>(severity_attr) >= severity &&
+        sink->set_filter(expressions::attr<backend::boost_severity>(severity_attr) >= severity &&
                          expressions::has_attr(tag_attr) &&
                          expressions::attr<std::string>(tag_attr) == tag);
     } else {
-        sink->set_filter(expressions::attr<detail::boost_severity>(severity_attr) >= severity);
+        sink->set_filter(expressions::attr<backend::boost_severity>(severity_attr) >= severity);
     }
 
     const std::string channel_attr("Channel");
@@ -102,13 +102,13 @@ boost::shared_ptr<lifecycle_manager::file_sink_type> lifecycle_manager::make_fil
     sink->set_formatter(expressions::format(record_format) %
                         expressions::format_date_time<boost::posix_time::ptime>(time_stamp_attr,
                                                                                 time_stamp_format) %
-                        expressions::attr<detail::boost_severity>(severity_attr) %
+                        expressions::attr<backend::boost_severity>(severity_attr) %
                         expressions::attr<std::string_view>(channel_attr) % expressions::smessage);
     return sink;
 }
 
 boost::shared_ptr<lifecycle_manager::console_sink_type>
-lifecycle_manager::make_console_sink(const detail::boost_severity severity, std::string tag) {
+lifecycle_manager::make_console_sink(const backend::boost_severity severity, std::string tag) {
     boost::shared_ptr<std::ostream> os(&std::cout, boost::null_deleter());
     auto backend(boost::make_shared<sinks::text_ostream_backend>());
     backend->add_stream(os);
@@ -124,11 +124,11 @@ lifecycle_manager::make_console_sink(const detail::boost_severity severity, std:
 
     if (!tag.empty()) {
         const std::string tag_attr("Tag");
-        sink->set_filter(expressions::attr<detail::boost_severity>(severity_attr) >= severity &&
+        sink->set_filter(expressions::attr<backend::boost_severity>(severity_attr) >= severity &&
                          expressions::has_attr(tag_attr) &&
                          expressions::attr<std::string>(tag_attr) == tag);
     } else {
-        sink->set_filter(expressions::attr<detail::boost_severity>(severity_attr) >= severity);
+        sink->set_filter(expressions::attr<backend::boost_severity>(severity_attr) >= severity);
     }
 
     const std::string channel_attr("Channel");
@@ -138,7 +138,7 @@ lifecycle_manager::make_console_sink(const detail::boost_severity severity, std:
     sink->set_formatter(expressions::format(record_format) %
                         expressions::format_date_time<boost::posix_time::ptime>(time_stamp_attr,
                                                                                 time_stamp_format) %
-                        expressions::attr<detail::boost_severity>(severity_attr) %
+                        expressions::attr<backend::boost_severity>(severity_attr) %
                         expressions::attr<std::string_view>(channel_attr) % expressions::smessage);
 
     std::cout << "Initialised logging." << std::endl;

@@ -15,7 +15,7 @@ KEEP = {
     "projects/ores.logging/src/boost_severity.cpp",
     "projects/ores.logging/include/ores.logging/boost_severity.hpp",
 }
-DETAIL = (
+BACKEND = (
     "projects/ores.logging/include/ores.logging/lifecycle_manager.hpp",
     "projects/ores.logging/src/lifecycle_manager.cpp",
     "projects/ores.telemetry/core/src/log/telemetry_sink_backend.cpp",
@@ -63,16 +63,16 @@ for p in sorted(pathlib.Path("projects").rglob("*")):
         p.write_text(text)
         stats["files"] += 1
 
-for rel in DETAIL:
+for rel in BACKEND:
     p = pathlib.Path(rel)
     if not p.exists():
         continue
     text = p.read_text()
-    text = text.replace("ores::logging::boost_severity", "ores::logging::detail::boost_severity")
-    text = text.replace("logging::boost_severity", "logging::detail::boost_severity")
-    text = text.replace(" boost_severity ", " detail::boost_severity ")
-    text = text.replace("(boost_severity ", "(detail::boost_severity ")
-    text = text.replace("boost_severity::", "detail::boost_severity::")
+    text = text.replace("ores::logging::boost_severity", "ores::logging::backend::boost_severity")
+    text = text.replace("logging::boost_severity", "logging::backend::boost_severity")
+    text = text.replace(" boost_severity ", " backend::boost_severity ")
+    text = text.replace("(boost_severity ", "(backend::boost_severity ")
+    text = text.replace("boost_severity::", "backend::boost_severity::")
     text = text.replace("detail::detail::", "detail::")
     p.write_text(text)
 

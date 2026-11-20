@@ -56,12 +56,12 @@ protected:
      * @brief Creates a boost log file sink.
      */
     static boost::shared_ptr<file_sink_type>
-    make_file_sink(std::filesystem::path path, detail::boost_severity severity, std::string tag);
+    make_file_sink(std::filesystem::path path, backend::boost_severity severity, std::string tag);
 
     /**
      * @brief Creates a boost log console sink.
      */
-    static boost::shared_ptr<console_sink_type> make_console_sink(detail::boost_severity severity,
+    static boost::shared_ptr<console_sink_type> make_console_sink(backend::boost_severity severity,
                                                                   std::string tag);
 
 public:

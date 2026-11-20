@@ -43,7 +43,7 @@ namespace {
  * immediately after the record is locked.
  */
 boost::log::record_view make_record(const std::string& message,
-                                    ores::logging::detail::boost_severity severity,
+                                    ores::logging::backend::boost_severity severity,
                                     const std::string& channel) {
     boost::log::attribute_value_set values;
     values.insert("Message", boost::log::attributes::make_attribute_value(message));
@@ -83,7 +83,7 @@ TEST_CASE("database_sink_backend_constructs_with_defaults", "[database_sink_back
 
     database_sink_backend backend(resource, handler);
     backend.consume(
-        make_record("default source message", detail::boost_severity::debug, "test.component"));
+        make_record("default source message", backend::boost_severity::debug, "test.component"));
 
     REQUIRE(captured_entries.size() == 1);
     const auto& entry = captured_entries[0];
@@ -110,7 +110,7 @@ TEST_CASE("database_sink_backend_constructs_with_custom_source", "[database_sink
 
     database_sink_backend backend(resource, handler, "server", "my-service");
     backend.consume(
-        make_record("custom source message", detail::boost_severity::warn, "custom.component"));
+        make_record("custom source message", backend::boost_severity::warn, "custom.component"));
 
     REQUIRE(captured_entries.size() == 1);
     const auto& entry = captured_entries[0];
@@ -141,7 +141,7 @@ TEST_CASE("database_sink_backend_accepts_session_and_account_ids", "[database_si
 
     backend.set_session_id(session_id);
     backend.set_account_id(account_id);
-    backend.consume(make_record("ids message", detail::boost_severity::info, "ids.component"));
+    backend.consume(make_record("ids message", backend::boost_severity::info, "ids.component"));
 
     REQUIRE(captured_entries.size() == 1);
     const auto& entry = captured_entries[0];

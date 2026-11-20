@@ -374,6 +374,7 @@ std::chrono::year_month_day date_of(const std::string& text) {
 tb::scripted_dates dated_list(const instrument_batch& batch,
                               std::string_view trade_type_code,
                               std::string_view source) {
+    // A list of date values alone states no calendar, so ORE takes its dates as listed.
     tb::scripted_dates out;
     bool adjusted = false;
     for (const auto part : parts_of(source, " and ")) {
@@ -401,12 +402,12 @@ tb::scripted_dates dated_list(const instrument_batch& batch,
     }
     // ORE reads a listed schedule's dates once each, so a repeated date would
     // shorten the event the script counts.
-    for (std::size_t i = 1; i < out.dates.size(); ++i)
-        if (std::ranges::find(out.dates.begin(), out.dates.begin() + i, out.dates[i]) !=
-            out.dates.begin() + i)
-            throw trade_population_error("The twin recipe source '" + std::string(source) +
-                                         "' lists " + std::format("{:%Y-%m-%d}", out.dates[i]) +
-                                         " twice, which ORE reads once.");
+    auto sorted = out.dates;
+    std::ranges::sort(sorted);
+    if (const auto repeated = std::ranges::adjacent_find(sorted); repeated != sorted.end())
+        throw trade_population_error("The twin recipe source '" + std::string(source) + "' lists " +
+                                     std::format("{:%Y-%m-%d}", *repeated) +
+                                     " twice, which ORE reads once.");
     return out;
 }
 

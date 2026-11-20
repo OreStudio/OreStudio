@@ -202,6 +202,12 @@ via its "Verifies task" field.
 | 4919.4 | The payoff limit of a million is a magic number | catalogue | Declined | The catalogue's recipe prose and the task notes state why it is not 0. |
 | 4919.5 | The two forms are not compared by NPV | tests | Declined | The native swaps have no engine here; the task Compare the two forms covers it. |
 | 4919.6 | The table realignment hides the change | catalogue | Declined | The diff with whitespace ignored shows only the new rows and prose. |
+| 4930.1 | The repeated-date check is quadratic | scripted_twins.cpp | Accepted | A sorted copy and adjacent_find. |
+| 4930.2 | A list of date values alone states no calendar | scripted_twins.cpp | Accepted | A comment says ORE then takes the dates as listed. |
+| 4930.3 | A base with a space gets a generic error | scripted_twins.cpp | Declined | The generator refuses such a source when the recipe is written. |
+| 4930.4 | CRLF line endings fail the correction | trading_script_library_corrections_populate.sql | Declined | The load fails loudly and says to review the correction, as intended. |
+| 4930.5 | The worst-of limits are not in the code | catalogue | Accepted | The catalogue prose the recipe is generated from states them; the header is generated. |
+| 4930.6 | No test of column[0] or an index past the end | tests | Declined | The source test already checks both. |
 
 * Result
 

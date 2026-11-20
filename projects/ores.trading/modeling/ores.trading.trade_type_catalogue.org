@@ -256,7 +256,10 @@ date of the script, then each period's coupons on the next, so the twin lists
 the initial fixed pay date before the pay dates. ORE's own class pays an absent
 initial fixed pay date on the first pay date, but ORE reads a listed schedule's
 dates once each, so the script cannot pay two amounts on one date: the twin
-pays it on the first period date, the trade's start. =<column>[<n>]= picks the n-th value of a column, and
+pays it on the first period date, the trade's start. The script reads one
+fixing of the floating index each period, where ORE's class compounds an
+overnight index over it, and it states no Bermudan knock-in and no accruing
+coupons, which the generated natives never state either. =<column>[<n>]= picks the n-th value of a column, and
 =instrument_schedules[<role>] based on <Input>= carries a derived schedule of
 the native trade over the input that states its base. The script's
 InitialFixedAmount, FloatingLeg, FixedCouponLeg and EquityAmountPayoff name the

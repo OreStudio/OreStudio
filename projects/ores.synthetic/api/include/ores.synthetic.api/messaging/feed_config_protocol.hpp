@@ -221,6 +221,12 @@ struct running_feed {
     std::string source_name;
     /** @brief Where the run's starting value came from; absent when the kind has no such start. */
     std::optional<feed_start> start;
+    /**
+     * @brief The vendor subjects the run's ticks land on, after its adapter and the
+     * market data ingest; empty for a run with no adapter. A screen of the feed
+     * watches these.
+     */
+    std::vector<std::string> watch_subjects;
 
     friend bool operator==(const running_feed&, const running_feed&) = default;
 };
@@ -634,6 +640,7 @@ struct review_variance_calibration_response {
     return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"source_name", &running_feed::source_name},
         ::ores::utility::codec::field{"start", &running_feed::start},
+        ::ores::utility::codec::field{"watch_subjects", &running_feed::watch_subjects},
     };
 }
 

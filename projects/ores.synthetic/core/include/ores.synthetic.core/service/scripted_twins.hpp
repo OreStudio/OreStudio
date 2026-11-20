@@ -36,7 +36,8 @@ namespace ores::synthetic::service {
  * A source is =product.<column>= for a column of the row whose trade type is
  * the native one, =<rows>[<role>].<column>= for a column of the rows under a
  * role, =<rows>.<column>= for a column of every row of the array, or a quoted
- * literal; =a or b= takes =b= when =a= names no value. A row's columns are found
+ * literal; =a or b= takes =b= when =a= names no value, and =a and b= lists the
+ * values of =a= then those of =b=. A row's columns are found
  * by the names its wire fields state, so no source needs code of its own.
  */
 ORES_SYNTHETIC_CORE_EXPORT std::vector<std::string>

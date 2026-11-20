@@ -75,11 +75,29 @@ def script_inputs():
     return inputs
 
 
+def split(source, separator):
+    """The parts of a source between each separator, a quoted literal being read whole."""
+    parts, quoted, start, i = [], False, 0, 0
+    while i < len(source):
+        if source[i] == "'":
+            quoted = not quoted
+        elif not quoted and source.startswith(separator, i):
+            parts.append(source[start:i])
+            start = i + len(separator)
+            i = start
+            continue
+        i += 1
+    parts.append(source[start:])
+    return parts
+
+
 def source_parts(source):
-    """The alternatives of an `a or b` source; a quoted literal is one part, whatever it holds."""
-    if len(source) >= 2 and source.startswith("'") and source.endswith("'"):
-        return [source]
-    return source.split(" or ")
+    """Each list part of an `a and b` source, as the alternatives of its `x or y`."""
+    return [split(listed, " or ") for listed in split(source, " and ")]
+
+
+SCHEDULE = re.compile(r"instrument_schedules\[\w+\]")
+DERIVED = re.compile(r"(\w+) shifted \w+ on \w+ \w+")
 
 
 def transforms(text):
@@ -104,11 +122,10 @@ def recipes():
     for code, name, source, transform in org_table(text, "Scripted twin recipes"):
         if transform and transform not in known:
             errors.append(f"{code}: {name} names the unknown transform {transform}")
-        for part in source_parts(source):
+        for part in (p for listed in source_parts(source) for p in listed):
             if part.startswith("'") != part.endswith("'"):
                 errors.append(f"{code}: {name} states an unclosed literal {part}")
         stated.setdefault(code, {})[name] = (source, transform or None)
-    schedule = re.compile(r"instrument_schedules\[\w+\]")
     # A type of the Scripted forms table with no recipe is not twinned yet: the
     # recipes land a few products at a time.
     for code in sorted(stated):
@@ -126,16 +143,24 @@ def recipes():
                 errors.append(f"{code}: the recipe states no source for {script}'s {name}")
                 continue
             source, transform = stated[code][name]
-            parts = source_parts(source)
+            listed = source_parts(source)
+            parts = [part for alternatives in listed for part in alternatives]
+            events = [part for part in parts if SCHEDULE.fullmatch(part) or DERIVED.fullmatch(part)]
             for part in parts:
-                if part.startswith("'") or "." in part:
+                if part.startswith("'") or part in events or "." in part:
                     continue
-                if not schedule.fullmatch(part):
-                    errors.append(f"{code}: {name} names no column in {part}")
-                elif typ != "Event":
-                    errors.append(f"{code}: {name} reads a schedule but is not an Event")
-                elif len(parts) > 1:
-                    errors.append(f"{code}: {name} reads a whole schedule, which takes no fallback")
+                errors.append(f"{code}: {name} names no column in {part}")
+            if events:
+                if typ != "Event":
+                    errors.append(f"{code}: {name} states an event but is not an Event")
+                if len(listed) > 1 or len(events) != len(parts):
+                    errors.append(f"{code}: {name} mixes an event with values")
+            for part in events:
+                base = DERIVED.fullmatch(part)
+                if base and (base.group(1) == name or
+                             (base.group(1), "Event") not in {(n, t) for n, t, _ in inputs}):
+                    errors.append(f"{code}: {name} derives from {base.group(1)}, "
+                                  f"which is no other Event of {script}")
             rows.append((code, sequence, script, name, typ, array, source, transform))
     if errors:
         sys.exit("\n".join(errors))

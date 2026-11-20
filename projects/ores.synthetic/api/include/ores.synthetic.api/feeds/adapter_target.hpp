@@ -36,6 +36,8 @@ namespace ores::synthetic::feed {
 struct adapter_target final {
     ores::marketdata::messaging::vendor_id id;
     std::string subject;
+    /// The provider whose notation wrote the id, whose feeds the ticks reach the market on.
+    std::string provider_code;
     /// The faults in force. Empty means none is ever injected.
     std::shared_ptr<const fault_state> faults;
 };

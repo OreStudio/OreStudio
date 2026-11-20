@@ -34,6 +34,8 @@
 #include <map>
 #include <memory>
 #include <optional>
+#include <set>
+#include <stdexcept>
 #include <string>
 #include <thread>
 #include <vector>
@@ -49,6 +51,16 @@ using namespace ores::logging;
 using namespace std::chrono_literals;
 
 namespace {
+
+/// A stand-in for the vendor subject a source's ticks land on.
+std::string vendor_subject(const std::string& source) {
+    return "marketdata.v1.ops.market_tick.demo.*.fx_spot." + source + ".*";
+}
+
+/// The subjects a running source names, here one.
+std::vector<std::string> on(const std::string& source) {
+    return {vendor_subject(source)};
+}
 
 /**
  * A transport that hands each subject's ticks to the buffer by hand, and counts
@@ -73,7 +85,7 @@ struct hand_transport final {
         tick.value = value;
         tick.observation_time = at;
         tick.oresmd_uri = "oresmd://" + source;
-        handlers.at("synthetic.v1.ops.feed_tick." + source)(tick);
+        handlers.at(vendor_subject(source))(tick);
     }
 };
 
@@ -117,8 +129,8 @@ TEST_CASE("feed_tick_buffers_keep_the_newest_ticks_of_a_watched_source", "[feed_
 
     hand_transport transport;
     feed_tick_buffers buffers(transport.subscriber());
-    buffers.watch("EURUSD");
-    buffers.watch("EURUSD");
+    buffers.watch("EURUSD", on("EURUSD"));
+    buffers.watch("EURUSD", on("EURUSD"));
     CHECK(*transport.open == 1);
     CHECK(buffers.size() == 1);
 
@@ -141,13 +153,80 @@ TEST_CASE("feed_tick_buffers_keep_the_newest_ticks_of_a_watched_source", "[feed_
     CHECK(full.back().value == static_cast<double>(feed_tick_buffers::capacity + 4));
 }
 
+TEST_CASE("feed_tick_buffers_follow_a_sources_subjects_and_keep_its_ticks", "[feed_ticks]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing a source that stops and one whose subjects change";
+
+    hand_transport transport;
+    feed_tick_buffers buffers(transport.subscriber());
+    buffers.watch("EURUSD", on("EURUSD"));
+    transport.send("EURUSD", "1.1", noon);
+
+    // A feed that stopped names no subjects: its buffer keeps what was heard.
+    CHECK(buffers.watch("EURUSD", {}));
+    CHECK(*transport.open == 1);
+    CHECK(buffers.ticks("EURUSD", 10).size() == 1);
+
+    // Started again through another adapter, it is heard on the new subjects only.
+    const std::vector<std::string> moved = {"marketdata.v1.ops.market_tick.ice.*.fx_spot.x.*"};
+    buffers.watch("EURUSD", moved);
+    CHECK(*transport.open == 1);
+    market_tick tick;
+    tick.value = "1.2";
+    tick.observation_time = noon + 1s;
+    transport.handlers.at(moved.front())(tick);
+    const auto both = buffers.ticks("EURUSD", 10);
+    REQUIRE(both.size() == 2);
+    CHECK(both.back().value == 1.2);
+
+    // A source first named while it does not run is known, and heard on nothing.
+    CHECK(buffers.watch("GBPUSD", {}));
+    CHECK(buffers.size() == 2);
+    CHECK(*transport.open == 1);
+}
+
+TEST_CASE("feed_tick_buffers_keep_a_source_whole_when_a_subscribe_fails", "[feed_ticks]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing a subscribe that throws, and subjects in another order";
+
+    hand_transport transport;
+    std::set<std::string> refused;
+    feed_tick_buffers buffers(
+        [&](const std::string& subject, feed_tick_buffers::tick_handler on_tick) {
+            if (refused.contains(subject))
+                throw std::runtime_error("not connected");
+            return transport.subscriber()(subject, std::move(on_tick));
+        });
+    const std::vector<std::string> first = {"a.1", "a.2"};
+    buffers.watch("EURUSD", first);
+    CHECK(*transport.open == 2);
+
+    // The same set in another order changes nothing.
+    buffers.watch("EURUSD", {"a.2", "a.1"});
+    CHECK(*transport.open == 2);
+
+    // A move that cannot subscribe to all of its subjects keeps the old ones, and is tried
+    // again at the next read.
+    refused.insert("b.2");
+    CHECK_THROWS(buffers.watch("EURUSD", {"b.1", "b.2"}));
+    CHECK(*transport.open == 2);
+    market_tick tick;
+    tick.value = "1.1";
+    tick.observation_time = noon;
+    transport.handlers.at("a.1")(tick);
+    CHECK(buffers.ticks("EURUSD", 10).size() == 1);
+    refused.clear();
+    buffers.watch("EURUSD", {"b.1", "b.2"});
+    CHECK(*transport.open == 2);
+}
+
 TEST_CASE("feed_tick_buffers_answer_arrivals_from_an_instant", "[feed_ticks]") {
     auto lg(make_logger(test_suite));
     ORES_LOG_SEV(lg, info) << "Testing the arrival times a raster reads";
 
     hand_transport transport;
     feed_tick_buffers buffers(transport.subscriber());
-    buffers.watch("EURUSD");
+    buffers.watch("EURUSD", on("EURUSD"));
     for (int i = 0; i < 5; ++i)
         transport.send("EURUSD", "1", noon + std::chrono::seconds(i));
     CHECK(buffers.arrival_times("EURUSD", noon + 2s).size() == 3);
@@ -163,9 +242,9 @@ TEST_CASE("feed_tick_buffers_stop_listening_to_sources_no_longer_named", "[feed_
 
     hand_transport transport;
     feed_tick_buffers buffers(transport.subscriber());
-    buffers.watch("EURUSD");
-    buffers.watch("GBPUSD");
-    buffers.watch("USDJPY");
+    buffers.watch("EURUSD", on("EURUSD"));
+    buffers.watch("GBPUSD", on("GBPUSD"));
+    buffers.watch("USDJPY", on("USDJPY"));
     CHECK(*transport.open == 3);
 
     buffers.keep_only({"GBPUSD"});
@@ -188,13 +267,13 @@ TEST_CASE("feed_tick_buffers_hear_at_most_a_thousand_sources", "[feed_ticks]") {
     hand_transport transport;
     feed_tick_buffers buffers(transport.subscriber());
     for (std::size_t i = 0; i < feed_tick_buffers::most_sources; ++i)
-        CHECK(buffers.watch("source-" + std::to_string(i)));
-    CHECK_FALSE(buffers.watch("one-too-many"));
-    CHECK(buffers.watch("source-0"));
+        CHECK(buffers.watch("source-" + std::to_string(i), on("source-" + std::to_string(i))));
+    CHECK_FALSE(buffers.watch("one-too-many", on("one-too-many")));
+    CHECK(buffers.watch("source-0", on("source-0")));
     CHECK(*transport.open == static_cast<int>(feed_tick_buffers::most_sources));
 
     buffers.keep_only({"source-0"});
-    CHECK(buffers.watch("one-too-many"));
+    CHECK(buffers.watch("one-too-many", on("one-too-many")));
 }
 
 TEST_CASE("feed_tick_buffers_take_ticks_while_sources_come_and_go", "[feed_ticks]") {
@@ -203,9 +282,9 @@ TEST_CASE("feed_tick_buffers_take_ticks_while_sources_come_and_go", "[feed_ticks
 
     hand_transport transport;
     feed_tick_buffers buffers(transport.subscriber());
-    buffers.watch("EURUSD");
+    buffers.watch("EURUSD", on("EURUSD"));
     // The handler is taken once, as a transport holds it, and called from another thread.
-    const auto handler = transport.handlers.at("synthetic.v1.ops.feed_tick.EURUSD");
+    const auto handler = transport.handlers.at(vendor_subject("EURUSD"));
     std::thread ticking([&handler] {
         market_tick tick;
         tick.value = "1.1";
@@ -217,7 +296,7 @@ TEST_CASE("feed_tick_buffers_take_ticks_while_sources_come_and_go", "[feed_ticks
     for (int i = 0; i < 2000; ++i) {
         CHECK(buffers.ticks("EURUSD", 10).size() <= 10);
         (void)buffers.arrival_times("EURUSD", noon);
-        buffers.watch("GBPUSD");
+        buffers.watch("GBPUSD", on("GBPUSD"));
         buffers.keep_only({"EURUSD"});
     }
     // Dropped while ticks may still arrive: they go to a run no one reads.

@@ -787,6 +787,8 @@ export type FeedStart = z.infer<typeof feedStartSchema>;
 const runningFeedSchema = z.object({
     source_name: z.string(),
     start: feedStartSchema.nullish(),
+    /** The vendor subjects the run's ticks land on, after its adapter and the ingest. */
+    watch_subjects: z.array(z.string()).default([]),
 });
 
 /** The feeds the service runs now, each with where it started, by source name. */
@@ -814,6 +816,14 @@ export async function readRunningFeeds(
 export async function runningSourceNames(session: LiveSession): Promise<ReadonlySet<string>> {
     const feeds = await readRunningFeeds(session);
     return new Set(feeds.map((feed) => feed.source_name));
+}
+
+/** The vendor subjects each run's ticks land on, by source name. */
+export async function runningWatchSubjects(
+    session: LiveSession,
+): Promise<ReadonlyMap<string, readonly string[]>> {
+    const feeds = await readRunningFeeds(session);
+    return new Map(feeds.map((feed) => [feed.source_name, feed.watch_subjects]));
 }
 
 /** Where each run of the service started, by source name; absent for a kind with no start. */
@@ -1310,7 +1320,8 @@ export function registerSyntheticRoutes(
         }
         const feed = await readByKey(session, feeds, paramId(request));
         const sourceName = z.string().parse(feed['source_name']);
-        ticks.watch(sourceName);
+        const running = await runningWatchSubjects(session);
+        ticks.watch(sourceName, running.get(sourceName) ?? []);
         return { sourceName, ticks: ticks.ticks(sourceName, limit) };
     });
 

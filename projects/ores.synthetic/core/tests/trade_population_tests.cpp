@@ -1951,12 +1951,14 @@ TEST_CASE("every_product_with_a_recipe_has_a_twin_over_its_library_script", "[tr
         {"EquityBasketVarianceSwap", "BasketVarianceSwap"},
         {"EquityBestEntryOption", "BestEntryOption"},
         {"EquityForwardVolatilityAgreement", "ForwardVolatilityAgreement"},
+        {"EquityPairwiseVarianceSwap", "PairwiseVarianceSwap"},
         {"EquityWindowBarrierOption", "WindowBarrierOption"},
         {"EquityRainbowOption", "MaxRainbowOption"},
         {"FxBasketOption", "VanillaBasketOption"},
         {"FxBasketVarianceSwap", "BasketVarianceSwap"},
         {"FxBestEntryOption", "BestEntryOption"},
         {"FxForwardVolatilityAgreement", "ForwardVolatilityAgreement"},
+        {"FxPairwiseVarianceSwap", "PairwiseVarianceSwap"},
         {"FxWindowBarrierOption", "WindowBarrierOption"},
         {"FxRainbowOption", "MaxRainbowOption"}};
     std::set<std::string> twinned;
@@ -2091,6 +2093,75 @@ TEST_CASE("a_twin_source_reads_a_column_a_role_a_fallback_and_a_literal", "[trad
     CHECK(twin_source_values(batch, "FxBasketOption", "'a or b'") ==
           std::vector<std::string>{"a or b"});
     CHECK(twin_source_values(batch, "EquityBasketOption", "product.currency").empty());
+    CHECK(twin_source_values(batch, "FxBasketOption", "product.currency and 'EUR'") ==
+          std::vector<std::string>{"USD", "EUR"});
+    CHECK(twin_source_values(batch,
+                             "FxBasketOption",
+                             "product.settlement_date or 'x and y' and product.currency") ==
+          std::vector<std::string>{"x and y", "USD"});
+}
+
+TEST_CASE("a_pairwise_twin_lists_both_members_and_derives_its_lag_as_ore_does",
+          "[trade_population]") {
+    namespace td = ores::trading::domain;
+    using ores::synthetic::service::scripted_twin_of;
+    auto scope = equity_scope();
+    scope.trades_per_book = 64;
+    const auto plan = plan_of(scope);
+    const auto native = std::ranges::find_if(plan.slots, [](const auto& s) {
+        return s.trade_type_code == "EquityPairwiseVarianceSwap";
+    });
+    REQUIRE(native != plan.slots.end());
+    REQUIRE(native->instruments.equity_pairwise_variance_swap_instruments.size() == 1u);
+    const auto& swap = native->instruments.equity_pairwise_variance_swap_instruments[0];
+    const auto twin = scripted_twin_of(*native);
+    REQUIRE(twin.has_value());
+    const auto& rows = twin->instruments;
+    const auto parameter = [&](const char* name) -> const td::scripted_parameter& {
+        const auto p = std::ranges::find_if(rows.scripted_parameters,
+                                            [&](const auto& p) { return p.name == name; });
+        REQUIRE(p != rows.scripted_parameters.end());
+        return *p;
+    };
+    const auto values = [&](const char* name) {
+        std::vector<std::string> out;
+        for (const auto& v : rows.scripted_parameter_values)
+            if (v.parameter_sequence_number == parameter(name).sequence_number)
+                out.push_back(v.value);
+        return out;
+    };
+    CHECK(values("Underlyings") ==
+          std::vector<std::string>{swap.first_underlying, swap.second_underlying});
+    CHECK(values("UnderlyingStrikes") ==
+          std::vector<std::string>{swap.first_strike.to_string(), swap.second_strike.to_string()});
+    CHECK(values("UnderlyingNotionals") ==
+          std::vector<std::string>{swap.first_notional.to_string(),
+                                   swap.second_notional.to_string()});
+    // ORE reads no payoff limit as none, and the script needs a positive one.
+    CHECK(parameter("PayoffLimit").value == "1000000");
+    CHECK(parameter("AccrualLag").value == "1");
+
+    // With no lagged schedule, ORE shifts the valuation dates one day, unadjusted.
+    const auto& lagged = parameter("LaggedValuationSchedule");
+    CHECK(lagged.shape == "derived_schedule");
+    CHECK(lagged.base_schedule == "ValuationSchedule");
+    CHECK(lagged.shift == "1D");
+    CHECK(lagged.calendar == "NullCalendar");
+    CHECK(lagged.convention == "Unadjusted");
+
+    auto stated = *native;
+    auto lag = *std::ranges::find(stated.instruments.instrument_schedules,
+                                  "valuation_schedule",
+                                  &td::instrument_schedule::schedule_role);
+    lag.schedule_role = "lagged_valuation_schedule";
+    stated.instruments.instrument_schedules.push_back(lag);
+    const auto read = scripted_twin_of(stated);
+    REQUIRE(read.has_value());
+    const auto own = std::ranges::find_if(read->instruments.scripted_parameters, [](const auto& p) {
+        return p.name == "LaggedValuationSchedule";
+    });
+    REQUIRE(own != read->instruments.scripted_parameters.end());
+    CHECK(own->shape == "schedule");
 }
 
 TEST_CASE("a_twin_that_finds_no_value_for_an_input_is_refused", "[trade_population]") {
@@ -2153,6 +2224,11 @@ TEST_CASE("a_twin_whose_schedule_it_cannot_carry_is_refused", "[trade_population
                         batch,
                         "EquityBasketVarianceSwap",
                         "product.settlement_date or instrument_schedules[valuation_schedule]"),
+                    trade_population_error);
+    CHECK_THROWS_AS(ores::synthetic::service::twin_source_values(
+                        batch,
+                        "EquityBasketVarianceSwap",
+                        "product.settlement_date or ValuationSchedule shifted 1D on A B"),
                     trade_population_error);
 }
 

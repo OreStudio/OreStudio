@@ -209,6 +209,8 @@ via its "Verifies task" field.
 | 4930.4 | CRLF line endings fail the correction | trading_script_library_corrections_populate.sql | Declined | The load fails loudly and says to review the correction, as intended. |
 | 4930.5 | The worst-of limits are not in the code | catalogue | Accepted | The catalogue prose the recipe is generated from states them; the header is generated. |
 | 4930.6 | No test of column[0] or an index past the end | tests | Declined | The source test already checks both. |
+| 4935.1 | fx_builders.cpp still calls add_underlying | fx_builders.cpp | Declined | It is one inline function in fx_builder_rows.hpp, with external linkage, so a unity build sees one definition. |
+| 4935.2 | The new names are not uniform | builders | Declined | Each name follows the prefix its file already uses, such as barrier_product_positive and worst_of_positive. |
 
 * Result
 

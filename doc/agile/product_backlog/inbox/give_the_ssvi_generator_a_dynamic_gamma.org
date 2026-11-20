@@ -57,6 +57,38 @@ because the consumers assume arbitrage-free quotes.
 - The calibration engine task, which fits gamma:
   =doc/agile/versions/v0/sprint_30/support_volatility_surfaces-remaining/task_build_the_ssvi_calibration_engine.org=
 
+* What QuantExt does
+
+Read from the ORE source (=QuantExt/qle/termstructures/sviparametricvolatility.cpp=
+and =svimodeltraits.cpp=), not run.
+
+- QuantExt calibrates. It does not simulate, so it has no dynamic gamma. Gamma
+  is fitted once for each calibration, on one as-of date.
+- =Gatheral2012SsviPowerLaw= has the parameters theta, rho, eta and gamma, with
+  phi = eta * theta^(-gamma). The defaults start eta and gamma at 0.5, and
+  theta is implied from the ATM quote. Gamma is bounded to (1e-6, 1 - 1e-6).
+- =SsviParametricVolatility::calibrate()= solves one global problem: one theta
+  for each expiry and one rho, eta and gamma shared by every expiry. That is the
+  surface our calibration engine fits.
+- With =enforceNoArbitrage= (on by default) a =PowerLawConstraint= tests both
+  Gatheral–Jacquier butterfly conditions on every theta: theta below
+  (4 / (eta (1 + |rho|)))^(1 / (1 - gamma)), and the second condition's bound,
+  which is an upper bound when gamma < 1/2, a lower bound when gamma > 1/2 and
+  eta^2 (1 + |rho|) <= 4 at gamma = 1/2. It has no calendar check, which agrees
+  with the assessment below: for this family there is nothing to check beyond
+  theta increasing.
+- Other variants: =Gatheral2012SsviHeston= (one lambda in place of eta and
+  gamma), the Hendriks–Martini eSSVI variants, where rho moves with theta and
+  the second one uses phi = eta * theta^(-lambda) * (1 + theta)^(lambda - 1),
+  and the Corbetta and Mingone global eSSVI fits.
+- /A probable defect./ The second condition's bound reads its eta, rho and gamma
+  at the fixed positions 2, 1 and 3, as if there were one theta. In the global
+  fit the array holds every theta first, so with two or more expiries those
+  positions hold thetas, and the second condition is tested against the wrong
+  values. The first condition reads them from the end of the array and is
+  right. Not reproduced; worth a test before relying on QuantExt's second
+  condition, and worth reporting upstream if it holds.
+
 * Assessment of the analysis
 
 Claude's opinion, 2026-11-20. The analysis is right about where the code changes

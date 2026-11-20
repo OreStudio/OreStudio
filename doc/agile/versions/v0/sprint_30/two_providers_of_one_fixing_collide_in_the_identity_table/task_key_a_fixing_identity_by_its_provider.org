@@ -117,6 +117,10 @@ via its "Verifies task" field.
 | 3 | Gate: the manual point message was not clang-formatted | =manual_point_service.cpp= | Accept | Formatted in its own commit |
 | 4 | Gate: ticks-smoke fails on a fresh database | fleet | Decline | The market data service misses its 90 s start timeout writing 5472 demand intervals; main tracks it as Ready the market data service before its usage sync |
 | 5 | Gate: ores.database.tests failed once on the listener reconnect case | =postgres_listener_service_tests.cpp= | Decline | Not touched by this branch; it ran beside the smoke's database recreate and passes alone |
+| 6 | PR #4924 review 1: no migration for the new not null column | =marketdata_market_series_identity_create.sql= | Decline | Migrations were removed (04dc337ab7); the schema fingerprint makes an old database be recreated |
+| 7 | PR #4924 review 1: the generator writes a fixed provider | =market_series_identity_generator.cpp= | Decline | Round-trip tests need no variety, as the review says |
+| 8 | PR #4924 review 1: released compass-ng v0.0.2 refuses context_columns | =compass_ng.pin= | Decline | The pin names 459f4a3; a v0.0.3 release is the user's call |
+| 9 | PR #4924 review 1: the message may name an input the request lacks | =manual_point_service.cpp= | Decline | resolve_series_identity_request carries provider_code, so the message names a real input |
 
 * Result
 

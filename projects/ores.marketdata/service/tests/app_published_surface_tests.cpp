@@ -17,12 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.marketdata.service/app/fx_vol_surface_publish_service.hpp"
 #include "ores.marketdata.service/app/staleness_policy.hpp"
+#include "ores.testing/uuid_of.hpp"
 #include "published_surface_fixture.hpp"
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <cstdint>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -46,6 +49,28 @@ struct threshold_guard final {
     }
 };
 
+}
+
+TEST_CASE("a_set_that_names_a_surface_twice_is_refused_in_words", published_surface_tags) {
+    const auto published_at =
+        std::chrono::system_clock::time_point{std::chrono::sys_days{std::chrono::year_month_day{
+            std::chrono::year{2026}, std::chrono::month{11}, std::chrono::day{9}}}};
+    const surface_fixture f(published_at);
+    REQUIRE(f.party.has_value());
+    const auto subject = ores::marketdata::service::app::surface_publish_subject{
+        .blueprint_id = ores::testing::uuid_of(f.blueprint_id()), .as_of = published_at};
+
+    // The store would refuse the repeat at the natural key, in words a caller
+    // cannot read, so the set is refused before anything is written.
+    try {
+        ores::marketdata::service::app::raise_surface_publish_set(
+            *f.party, *f.party->party_id(), {subject, subject}, "A set that repeats itself");
+        FAIL("A set that names one surface twice was raised.");
+    } catch (const std::invalid_argument& e) {
+        const auto message = std::string(e.what());
+        CHECK(message.find("twice") != std::string::npos);
+        CHECK(message.find(f.blueprint_id()) != std::string::npos);
+    }
 }
 
 TEST_CASE("the_published_surface_states_its_model_its_convention_and_its_grid",

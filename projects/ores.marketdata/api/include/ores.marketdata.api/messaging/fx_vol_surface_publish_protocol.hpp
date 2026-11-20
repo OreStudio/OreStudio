@@ -59,12 +59,12 @@ struct fx_vol_surface_publish_lookup {
 
 struct fx_vol_surface_publishes_filter {
     std::optional<boost::uuids::uuid> request_id;
-    std::optional<boost::uuids::uuid> party_id;
     std::optional<boost::uuids::uuid> blueprint_id;
+    std::optional<boost::uuids::uuid> party_id;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
     std::optional<std::vector<boost::uuids::uuid>> request_id_one_of;
-    std::optional<std::vector<boost::uuids::uuid>> party_id_one_of;
     std::optional<std::vector<boost::uuids::uuid>> blueprint_id_one_of;
+    std::optional<std::vector<boost::uuids::uuid>> party_id_one_of;
 
     friend bool operator==(const fx_vol_surface_publishes_filter&,
                            const fx_vol_surface_publishes_filter&) = default;
@@ -317,14 +317,14 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.fx_vol_surface
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_vol_surface_publishes_filter>) {
     return ::ores::utility::codec::field_list{
         utility::codec::field{"request_id", &fx_vol_surface_publishes_filter::request_id},
-        utility::codec::field{"party_id", &fx_vol_surface_publishes_filter::party_id},
         utility::codec::field{"blueprint_id", &fx_vol_surface_publishes_filter::blueprint_id},
+        utility::codec::field{"party_id", &fx_vol_surface_publishes_filter::party_id},
         utility::codec::field{"id_one_of", &fx_vol_surface_publishes_filter::id_one_of},
         utility::codec::field{"request_id_one_of",
                               &fx_vol_surface_publishes_filter::request_id_one_of},
-        utility::codec::field{"party_id_one_of", &fx_vol_surface_publishes_filter::party_id_one_of},
         utility::codec::field{"blueprint_id_one_of",
                               &fx_vol_surface_publishes_filter::blueprint_id_one_of},
+        utility::codec::field{"party_id_one_of", &fx_vol_surface_publishes_filter::party_id_one_of},
     };
 }
 

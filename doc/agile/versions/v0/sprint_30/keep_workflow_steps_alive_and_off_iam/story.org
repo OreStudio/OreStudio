@@ -46,10 +46,11 @@ Provisioning completes on a busy host. A step reports its progress as a heartbea
 | [[id:E96AA88B-1355-4957-996E-D0544735F092][Book every generated trade type through the database]] | DONE | 2026-11-13 | 2026-11-14 | A check books one trade of every generated type through the real tables, so a refused value fails the check rather than provisioning. |
 | [[id:4B6D5F00-12DD-4B73-8430-EE04316A7278][Let a database recreate wait for connections to drain]] | DONE | 2026-11-14 | 2026-11-14 | compass db recreate waits for the stopped services' connections to close, instead of refusing while they drain. |
 | [[id:C7F93153-89B9-4F0D-AA1F-06E5049C6661][Make the surface step's time go to its work]] | DONE | 2026-11-17 | 2026-11-19 | The surface publish step spends its twenty minutes waiting, not computing: it asks its own service four times per surface while the tick ingest and the due-curve sweep hold the process. It gathers a party's data once, fits the party's surfaces in parallel, and writes the results in batches. |
-| [[id:C756C87B-2284-4BCB-AAEC-F2EA4F2F6D6F][Approve a set of surfaces in one request]] | BACKLOG | | | Publishing is approval-gated per surface, so a party's set costs one raise and one close each. One request will authorise a named set of a party's surfaces, so a decider answers for the set and the trail names the set, not a hundred surfaces. |
+| [[id:C756C87B-2284-4BCB-AAEC-F2EA4F2F6D6F][Approve a set of surfaces in one request]] | DONE | 2026-11-19 | 2026-11-20 | Publishing is approval-gated per surface, so a party's set costs one raise and one close each. One request will authorise a named set of a party's surfaces, so a decider answers for the set and the trail names the set, not a hundred surfaces. |
 | [[id:06195DFF-0D7C-4298-A0CF-464338CE728E][Size the connection pool and the step's lanes together]] | BACKLOG | | | The marketdata service runs two provisioning steps at once and each step now runs four lanes, so up to eight units ask a connection pool that defaults to two connections for a statement. The retry rides it out; the sizing is unstated. State the pool and the lane count as one decision. |
 | [[id:080E57BE-EE17-4A8E-B19C-FC32D246339D][Prove the step, the screen and the sweep calibrate alike]] | BACKLOG | | | calibrate_from() is the one fit three callers reach: a request on the screen, the provisioning step, and the sweep. Nothing asserts that the two entry points answer the same for one recipe, and nothing asserts that a lane which throws is one surface lost instead of the party's step. |
 | [[id:011180BF-0407-49A8-B017-BE2FA38FD93F][Read only the quote series a party's surfaces fit]] | BACKLOG | | | The surface step reads one as-of snapshot of every series the party sees and keeps the ones that carry an expiry and a strike. The party also holds the curves, the fixings and the raw ticks, so the snapshot is mostly rows no surface reads. |
+| [[id:FD16644C-6F33-497A-A810-72013FB6F694][Approve a set of forwards in one request]] | BACKLOG | | | The forward publish was left on the one-request-one-subject key when curves and surfaces moved to a set. It raises a request per pair, about twenty a party, and its repository still reads a request's subject with read_latest_by_request. |
 
 * Decisions
 
@@ -158,6 +159,21 @@ Provisioning completes on a busy host. A step reports its progress as a heartbea
   whether the service's own role may be the maker of an installation-wide
   publish. Until someone states them, iam keeps the step and the impersonation
   it uses, and the task stays open.
+- *An approval request authorises the publish rows that name it,
+  2026-11-20.* A publish was per surface because the store said so: the row's
+  =request_id= was its natural key, so =UNIQUE (tenant_id, request_id)= refused a
+  second subject under one request. The fix is to say what a request is for: its
+  subject is a *set*, and the rows that name it are its members. The natural key
+  becomes the request and the subject, the gate reads the row of the subject it
+  is asked about, and a raise writes the request and every member in one
+  transaction. Everything a reader already relies on is untouched: one published
+  row per surface, curve and forward set, =published_at= to say which are in use,
+  and =request_id_one_of= to read a set. The apply stays per member, so the three
+  checks a publish makes -- approved, not yet applied, calibration unchanged --
+  are still answered for one subject at a time. It is worth stating what this
+  buys and what it does not: under the deployment's auto-approval the saving is a
+  request and a transaction per surface; under a manual policy the saving is a
+  person, who now answers once for a party's set instead of thirty-five times.
 - *A step reads where it stands and writes where the table's owner is,
   2026-11-18.* Moving a marketdata step onto its own process meant asking, of
   every call it made, who owns the table behind it. The reads answered the

@@ -49,8 +49,8 @@ domain::curve_publish curve_publish_mapper::map(const curve_publish_entity& v) {
     r.tenant_id = v.tenant_id;
     r.id = v.id;
     r.request_id = v.request_id;
-    r.party_id = v.party_id;
     r.bootstrap_config_id = v.bootstrap_config_id;
+    r.party_id = v.party_id;
     r.output_series_id = v.output_series_id;
     r.as_of = v.as_of;
     r.published_by = v.published_by;
@@ -80,8 +80,8 @@ curve_publish_entity curve_publish_mapper::map(const domain::curve_publish& v) {
     r.tenant_id = v.tenant_id;
     r.version = v.version;
     r.request_id = v.request_id;
-    r.party_id = v.party_id;
     r.bootstrap_config_id = v.bootstrap_config_id;
+    r.party_id = v.party_id;
     r.output_series_id = v.output_series_id;
     r.as_of = v.as_of;
     r.published_by = v.published_by;

@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :keep_workflow_steps_alive_and_off_iam:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/approve-a-set-of-surfaces-in-one-request
+#+pr: 4913
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-17
@@ -20,28 +20,95 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+One approval request authorises a set of publishes: a party's curves, or a
+party's surfaces, at one instant. A decider answers once for the set, and the
+trail names the set. A publish of one member stays the act it is today.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:A4D0E305-CEF6-4684-ABBA-0D09657479F1][Keep workflow steps alive while they work, and off iam]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | Nothing. |
+| Waiting on   | A PR, then the close.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-17                               |
 
 * Acceptance
 
--
+- One request authorises a named set of a party's subjects at one instant, and a
+  decider answers it once.
+- A raise writes the request and every subject it names in one transaction, so a
+  request that names a set the store half-wrote cannot exist.
+- A publish still names the request and one subject, and is refused when the
+  request does not name that subject, when the request is not approved, when the
+  subject's calibration moved after the raise, and when the subject was already
+  published under that request.
+- The published-sets a reader sees do not change shape: one row per published
+  surface, curve and forward set, sharing the request id of the set they belong
+  to.
+- A person's publish of one subject is a set of one, so there is one path and not
+  two.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+** What is in the way
+
+A publish is a row in =ores_marketdata_curve_publishes_tbl= or
+=ores_marketdata_fx_vol_surface_publishes_tbl=, written when the request is
+raised and stamped when it is applied. The row's =request_id= is the entity's
+natural key, so codegen writes =UNIQUE (tenant_id, request_id)= and the store
+itself refuses a second subject under one request. Every reader is happy with
+that shape: the gate reads the row by request, the published-set reads filter on
+=published_at=, and the list screens already accept =request_id_one_of=, so a
+set is already readable.
+
+So the obstruction is the uniqueness, and the whole design is to keep every row
+per subject and let the request name many.
+
+** The shape
+
+An *approval request authorises the publish rows that name it*. Its subject is
+the set, and the members are those rows.
+
+- The natural key of a publish row becomes the request **and** its subject:
+  =request_id, bootstrap_config_id= for a curve, =request_id, blueprint_id= for
+  a surface. The model already supports a composite natural key: two
+  =:natural_key: true= columns give =UNIQUE (tenant_id, request_id, subject)=,
+  and every reader of one row reads it by the pair.
+- The gate reads the row *for the subject it is asked about*, so "this request
+  authorises another subject" becomes "this request does not name this subject".
+  Nothing else about a publish changes: the state check, the applied check and
+  the calibration-version check stay exactly as they are and stay per member.
+- A raise writes the request and its members in one transaction. The inbox
+  lifecycle already raises under a transaction (=raise_under=), and the members
+  are rows written in that same one, so a request cannot name half a set.
+- The step raises once for the party, then publishes each member naming that
+  request. The person's screen raises a set of one, through the same call.
+
+** Slices
+
+1. Model: =request_id= and the subject are the natural key of a curve publish
+   and of a surface publish; the prose that says "one request, one publish"
+   becomes the set. Regenerate and read the SQL diff.
+2. Read: replace =read_latest_by_request= with
+   =read_latest_by_request_and_subject= on both repositories, and answer with
+   the row for the subject or none.
+3. Raise: =raise_publish_request_set= for curves and surfaces, one transaction,
+   N members; the single-subject raise becomes a set of one.
+4. Callers: the surface and curve steps raise the party's set once and publish
+   each member; the screens keep the single call.
+5. Proof: a request authorises three subjects; each applies once; a fourth is
+   refused; a second apply of one member is refused; the set is readable by
+   =request_id_one_of=.
+
+** Out of scope, and why
+
+The forward publish has the same shape and the same cost, about twenty raises a
+party. It is not in this task because curves and surfaces are the two kinds the
+story names; the shape this task settles is the one a forward would take, and
+its own task can say so in a sentence.
 
 * Measurements
 
@@ -55,7 +122,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The unique key of a publish row | =(tenant_id, request_id, bootstrap_config_id)= for a curve and =(tenant_id, request_id, blueprint_id)= for a surface, from =(tenant_id, request_id)= | =compass codegen regenerate --component marketdata --address ores.sql=, then reading the generated index | =b31c6e0706= |
+| The reads that show a request's subject | one per subject, by the request and the subject, from one per request | =read_latest_by_request_and_config= and =read_latest_by_request_and_blueprint= | =branch= |
+| The raises a party's surface step makes | 1, from 1 per surface (35 a party in the measured runs) | =raise_surface_publish_set= in =publish_party_surfaces= | =branch= |
+| The raises a party's curve step makes | 1, from 1 per curve (35 a party in the measured runs) | =raise_publish_request_set= in =publish_party_curves= | =branch= |
+| The set an approval request authorises | any number of subjects, written in the request's own transaction | the set test =one_request_authorises_a_set_and_each_member_publishes_once= | =branch= |
 
 * Notes
 
@@ -74,7 +145,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4913][#4913]] | [marketdata] Approve a party's set of publishes in one request |
 
 * Review
 
@@ -83,3 +154,39 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Delivered as #4913. One approval request authorises a set of publishes, and the
+rows that name it are its members.
+
+What changed, in the order it had to:
+
+- A publish row's natural key is the request and its subject, so the store
+  allows a request to name as many subjects as it has, and still refuses the
+  same two twice. For a curve, the pair is the request and the bootstrap
+  configuration; for a surface, the request and the blueprint.
+- A raise writes the request and every member in one transaction, so a request
+  cannot name half a set. Members the service would refuse - no calibration, a
+  blocking check, a raise already open - are left out and named, so a decider
+  never answers for a surface that would be refused at its apply.
+- The gate reads the row of the subject it is asked about, and a refusal names
+  what the request does authorise beside what was attempted.
+- The curve and surface steps preview the party's set at one instant in lanes,
+  raise once, and publish each member under it. A person's publish of one curve
+  or one surface is a set of one, through the same call.
+
+What a reader relies on did not move: one published row per surface, curve and
+forward set, =published_at= for the set in use, and =request_id_one_of= to read
+a set. The apply is still per member, so approved, not-yet-applied and
+calibration-unchanged are answered one subject at a time.
+
+What it buys: under the deployment's auto-approval, a request and a transaction
+per surface; under a manual policy, a person answering once for a party's set
+instead of thirty-five times.
+
+What is not delivered, and is named rather than implied:
+
+- A test of a *mixed* set - one member refused, its neighbours raised. It needs
+  a calibrated surface, and this component has no fixture that seeds one.
+- The forward publish, which has the same shape and the same cost. It is
+  [[id:FD16644C-6F33-497A-A810-72013FB6F694][its own task]] under this story,
+  because curves and surfaces are the two kinds this task names.

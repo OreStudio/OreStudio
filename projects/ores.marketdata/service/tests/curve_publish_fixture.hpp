@@ -204,10 +204,13 @@ public:
     }
 
     /// @brief Seeds a second curve of the same party, with its own output series.
-    boost::uuids::uuid seed_second_curve() {
+    ///
+    /// The name is the curve's, so a test that needs a third seeds one under its
+    /// own name rather than colliding on the series' unique key.
+    boost::uuids::uuid seed_second_curve(std::string_view name = "USD-SOFR-SECOND") {
         const auto id = uuid_gen();
         const auto series_id = uuid_gen();
-        write_series(series_id, output_series_uri("USD-SOFR-SECOND"));
+        write_series(series_id, output_series_uri(std::string(name)));
         write_config(id, series_id);
         return id;
     }

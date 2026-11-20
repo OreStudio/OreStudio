@@ -46,6 +46,7 @@
 #include "ores.marketdata.core/repository/subscription_repository.hpp"
 #include "ores.marketdata.core/service/route_service.hpp"
 #include "ores.marketdata.core/service/subscription_service.hpp"
+#include "ores.marketdata.service/app/curve_publish_gate.hpp"
 #include "ores.marketdata.service/app/curve_republish_service.hpp"
 #include "ores.marketdata.service/app/fx_forward_publish_service.hpp"
 #include "ores.marketdata.service/app/fx_vol_surface_calibration_service.hpp"
@@ -642,94 +643,52 @@ private:
     /// feed to tick, which no second attempt makes sooner.
     static constexpr int curve_attempts = 3;
 
+    /// One curve the party's set can carry, as the raise needs it.
+    struct curve_member {
+        ores::marketdata::service::app::publish_subject subject;
+        std::string config_id;
+        std::string name;
+    };
+
     /**
-     * @brief Computes and publishes one curve, where the step already is.
+     * @brief Computes one curve at the party's instant, without publishing it.
      *
-     * The bootstrap and the approved publish are the service's own work, so they
-     * are called rather than asked for: a request to itself would queue behind
-     * the tick ingest and the due-curve sweep, which is what the step spent most
-     * of its time doing.
-     *
-     * A curve whose quotes have not arrived is asked again every ten seconds
-     * until @p give_up, because its feeds may not have ticked yet. A curve whose
-     * request waits for a person is not asked again, since a second ask would
-     * raise a second request for one act.
+     * The preview is what decides whether the curve joins the party's set: a
+     * curve whose quotes have not arrived is deferred and named, and a curve the
+     * bootstrap refuses is refused and named, so neither takes the set with it.
      */
-    static curve_outcome compute_and_publish_curve(const ores::database::context& ctx,
-                                                   const std::string& config_id,
-                                                   const std::string& name,
-                                                   std::string_view publish_reason,
-                                                   std::chrono::steady_clock::time_point give_up) {
-        using ores::marketdata::service::app::publish_status_deferred;
-        using ores::marketdata::service::app::publish_status_published;
-        using ores::marketdata::service::app::publish_status_raised;
-
-        constexpr auto retry_interval = std::chrono::seconds{10};
-        const boost::uuids::string_generator parse;
-        const auto config_uuid = parse(config_id);
-        for (;;) {
-            // The as-of moves with each attempt, so quotes a feed writes while
-            // the step waits are inside the snapshot the next attempt reads. The
-            // preview and the publish state the same instant.
-            const auto as_of = std::chrono::system_clock::now();
+    static std::optional<curve_member>
+    preview_curve(const ores::database::context& ctx,
+                  const ores::marketdata::messaging::party_curve& curve,
+                  std::chrono::system_clock::time_point as_of,
+                  std::string& refusal) {
+        const auto config_id = boost::uuids::to_string(curve.config_id);
+        try {
             const auto computed = ores::marketdata::service::app::curve_republish_service::compute(
-                ctx, config_uuid, as_of);
-            // A deferral is an input the curve declares that is not there yet,
-            // so waiting is the only thing that puts it right.
-            std::optional<std::string> deferred;
-            std::size_t points = 0;
-            if (!computed)
-                deferred = computed.error().reason;
-            else
-                points = computed->size();
-
-            if (!deferred) {
-                ores::marketdata::messaging::publish_curve_request publish;
-                publish.bootstrap_config_id = config_id;
-                publish.as_of = as_of;
-                publish.reason = std::string(publish_reason);
-                ores::marketdata::messaging::publish_curve_response answer;
-                // The same path a person's publish and the sweep take, so the
-                // gate and the record cannot answer one act two ways.
-                ores::marketdata::messaging::approval_gated_curve_publish_handler::answer(
-                    ctx, publish, answer);
-                if (answer.status == publish_status_published)
-                    return {.how = curve_outcome::state::published,
-                            .name = name,
-                            .detail = "as of " +
-                                      ores::platform::time::datetime::to_iso8601_utc(as_of) + ", " +
-                                      std::to_string(points) + " point(s)"};
-                if (answer.status == publish_status_deferred)
-                    deferred = answer.message;
-                else if (answer.status == publish_status_raised)
-                    return {.how = curve_outcome::state::waiting_approval,
-                            .name = name,
-                            .detail = "the request " + answer.approval_request_id + " is " +
-                                      answer.state_code + " and no person has answered it"};
-                else
-                    return {.how = curve_outcome::state::not_published,
-                            .name = name,
-                            .detail = answer.message};
+                ctx, curve.config_id, as_of);
+            if (!computed) {
+                refusal = "Deferred. " + computed.error().reason;
+                return std::nullopt;
             }
-
-            if (std::chrono::steady_clock::now() + retry_interval >= give_up)
-                return {.how = curve_outcome::state::not_published,
-                        .name = name,
-                        .detail = "Deferred. " + *deferred};
-            std::this_thread::sleep_for(retry_interval);
+        } catch (const std::exception& e) {
+            refusal = e.what();
+            return std::nullopt;
         }
+        return curve_member{.subject = ores::marketdata::service::app::resolve_publish_subject(
+                                ctx, config_id, as_of),
+                            .config_id = config_id,
+                            .name = curve.name};
     }
 
     /// The same, offered twice more when the store made it wait.
-    static curve_outcome
-    compute_and_publish_curve_with_retry(const ores::database::context& ctx,
-                                         const std::string& config_id,
-                                         const std::string& name,
-                                         std::string_view publish_reason,
-                                         std::chrono::steady_clock::time_point give_up) {
+    static std::optional<curve_member>
+    preview_curve_with_retry(const ores::database::context& ctx,
+                             const ores::marketdata::messaging::party_curve& curve,
+                             std::chrono::system_clock::time_point as_of,
+                             std::string& refusal) {
         for (int attempt = 1;; ++attempt) {
             try {
-                return compute_and_publish_curve(ctx, config_id, name, publish_reason, give_up);
+                return preview_curve(ctx, curve, as_of, refusal);
             } catch (const ores::database::pq::store_error& e) {
                 if (!e.retryable() || attempt >= curve_attempts)
                     throw;
@@ -738,27 +697,34 @@ private:
         }
     }
 
+    /// What a party's preview came to: the members its set can carry, and the
+    /// curves it cannot, each named with its reason.
+    struct party_curve_preview {
+        std::vector<curve_member> members;
+        std::vector<std::string> left_out;
+        std::chrono::system_clock::time_point as_of{};
+    };
+
     /**
-     * @brief Computes and publishes a party's curves, several at a time.
+     * @brief Computes a party's curves at one instant, several at a time.
      *
      * A curve is the party's own work and no curve reads another's output, so
-     * the party's curves run in parallel lanes: the party costs the slowest lane
-     * and not the sum of them. Each lane reports the progress the engine reads as
-     * the step's heartbeat. A lane that throws is one curve that did not publish,
-     * named with its reason, so one bad curve cannot take the party's other
-     * curves with it.
+     * the preview runs in lanes: the party costs the slowest lane and not the
+     * sum of them. Each lane reports the progress the engine reads as the
+     * step's heartbeat, and a lane that throws is one curve left out.
      */
-    std::vector<curve_outcome>
-    run_party_curves(ores::service::messaging::workflow_step_context& wf,
-                     const ores::database::context& ctx,
-                     const std::vector<ores::marketdata::messaging::party_curve>& curves,
-                     std::string_view publish_reason,
-                     const std::string& party_name,
-                     std::chrono::seconds patience) const {
+    party_curve_preview
+    preview_party_curves(ores::service::messaging::workflow_step_context& wf,
+                         const ores::database::context& ctx,
+                         const std::vector<ores::marketdata::messaging::party_curve>& curves,
+                         const std::string& party_name) const {
+        party_curve_preview preview;
+        preview.as_of = std::chrono::system_clock::now();
         constexpr std::size_t lanes = 4;
         const auto lane_count = std::min(lanes, curves.size());
         const auto total = static_cast<std::int64_t>(curves.size());
-        std::vector<curve_outcome> outcomes(curves.size());
+        std::vector<std::optional<curve_member>> members(curves.size());
+        std::vector<std::string> refusals(curves.size());
         std::atomic<std::size_t> next{0};
         std::atomic<std::int64_t> done{0};
 
@@ -767,18 +733,11 @@ private:
                 const auto i = next.fetch_add(1);
                 if (i >= curves.size())
                     return;
-                const auto config_id = boost::uuids::to_string(curves[i].config_id);
                 try {
-                    outcomes[i] = compute_and_publish_curve_with_retry(
-                        ctx,
-                        config_id,
-                        curves[i].name,
-                        publish_reason,
-                        std::chrono::steady_clock::now() + patience);
+                    members[i] =
+                        preview_curve_with_retry(ctx, curves[i], preview.as_of, refusals[i]);
                 } catch (const std::exception& e) {
-                    outcomes[i] = {.how = curve_outcome::state::not_published,
-                                   .name = curves[i].name,
-                                   .detail = e.what()};
+                    refusals[i] = e.what();
                 }
                 const auto finished = done.fetch_add(1) + 1;
                 wf.progress(party_name + ": " + curves[i].name, finished, total);
@@ -791,6 +750,55 @@ private:
             workers.emplace_back(lane);
         for (auto& worker : workers)
             worker.join();
+
+        for (std::size_t i = 0; i < curves.size(); ++i)
+            if (members[i])
+                preview.members.push_back(std::move(*members[i]));
+            else
+                preview.left_out.push_back(party_name + ": " + curves[i].name + ": " + refusals[i]);
+        return preview;
+    }
+
+    /**
+     * @brief Publishes the members of an approved set, one act each.
+     *
+     * The set is one request the decider answered; each member is still its own
+     * publish, and each answers in the words the publish path uses, so a member
+     * the gate refuses is reported without taking its neighbours with it.
+     */
+    std::vector<curve_outcome> publish_party_curve_set(const ores::database::context& ctx,
+                                                       const party_curve_preview& preview,
+                                                       const std::string& request_id,
+                                                       std::string_view publish_reason) const {
+        std::vector<curve_outcome> outcomes;
+        outcomes.reserve(preview.members.size());
+        for (const auto& member : preview.members) {
+            ores::marketdata::messaging::publish_curve_request publish;
+            publish.bootstrap_config_id = member.config_id;
+            publish.as_of = preview.as_of;
+            publish.reason = std::string(publish_reason);
+            publish.approval_request_id = request_id;
+            ores::marketdata::messaging::publish_curve_response answer;
+            ores::marketdata::messaging::approval_gated_curve_publish_handler::answer(
+                ctx, publish, answer);
+            if (answer.success && answer.published_at) {
+                outcomes.push_back(
+                    {.how = curve_outcome::state::published,
+                     .name = member.name,
+                     .detail =
+                         "as of " + ores::platform::time::datetime::to_iso8601_utc(preview.as_of)});
+            } else if (answer.status == ores::marketdata::service::app::publish_status_raised) {
+                outcomes.push_back({.how = curve_outcome::state::waiting_approval,
+                                    .name = member.name,
+                                    .detail = "the request " + answer.approval_request_id + " is " +
+                                              answer.state_code +
+                                              " and no person has answered it"});
+            } else {
+                outcomes.push_back({.how = curve_outcome::state::not_published,
+                                    .name = member.name,
+                                    .detail = answer.message});
+            }
+        }
         return outcomes;
     }
 
@@ -897,8 +905,44 @@ private:
                     curves.push_back(curve);
 
             const auto already_published = plan.ready.size() - curves.size();
-            const auto outcomes = run_party_curves(
-                wf, party_ctx, curves, publish_reason, party_name, curve_quote_patience);
+
+            // One request for the party's set: a decider answers once for the
+            // curves the party can bootstrap, and each member is published
+            // under it.
+            auto preview = preview_party_curves(wf, party_ctx, curves, party_name);
+            // A curve whose quotes have not arrived is previewed again, whole set
+            // and all, so the set raised is one reading of the market at one
+            // instant rather than a mixture of rounds.
+            const auto preview_started = std::chrono::steady_clock::now();
+            while (!preview.left_out.empty() && !preview.members.empty() &&
+                   std::chrono::steady_clock::now() < preview_started + curve_quote_patience) {
+                const auto waiting = std::to_string(preview.left_out.size()) +
+                                     " curve(s) have no quotes yet, "
+                                     "asking again in " +
+                                     std::to_string(retry_interval.count()) + "s";
+                ORES_LOG_SEV(lg(), ores::logging::info)
+                    << "publish_party_curves: " << party_name << ": " << waiting;
+                step_log.push_back({.level = ores::workflow::messaging::step_log_level::info,
+                                    .message = party_name + ": " + waiting,
+                                    .context = {}});
+                std::this_thread::sleep_for(retry_interval);
+                preview = preview_party_curves(wf, party_ctx, curves, party_name);
+            }
+            for (const auto& left_out : preview.left_out)
+                result.curves_not_published.push_back(left_out);
+
+            std::vector<curve_outcome> outcomes;
+            if (!preview.members.empty()) {
+                std::vector<ores::marketdata::service::app::publish_subject> subjects;
+                subjects.reserve(preview.members.size());
+                for (const auto& member : preview.members)
+                    subjects.push_back(member.subject);
+                const auto raised = ores::marketdata::service::app::raise_publish_request_set(
+                    party_ctx, subjects, std::string(publish_reason));
+                outcomes = publish_party_curve_set(
+                    party_ctx, preview, boost::uuids::to_string(raised.id), publish_reason);
+            }
+
             std::size_t published_now = 0;
             for (const auto& outcome : outcomes) {
                 const auto line = party_name + ": " + outcome.name;
@@ -1431,21 +1475,45 @@ private:
         std::string detail;
     };
 
+    /// The most attempts one surface gets when the store makes it wait for a
+    /// connection. A pool that is full for a moment is not a surface that
+    /// cannot be published, and lanes share the pool with the ingest.
+    static constexpr int surface_attempts = 3;
+
+    /// One surface the party's set can carry: the subject the raise names, and
+    /// the names a person reads.
+    struct surface_member {
+        boost::uuids::uuid blueprint_id{};
+        std::string name;
+        std::chrono::system_clock::time_point as_of{};
+        std::string forward_publish_id;
+    };
+
+    /// What a party's preview came to: the members its set can carry, and the
+    /// surfaces already decided, each with its reason.
+    struct party_surface_preview {
+        std::vector<surface_member> members;
+        std::vector<surface_outcome> decided;
+    };
+
     /**
-     * @brief Calibrates and publishes one surface, where the step already is.
+     * @brief Calibrates one surface, where the step already is, without
+     * publishing it.
      *
-     * The calibration and the publish are the service's own work, so they are
-     * called rather than asked for: a request to itself would queue behind the
-     * tick ingest and the sweep, which is what the step spent most of its time
-     * doing.
+     * The calibration is the service's own work, so it is called rather than
+     * asked for: a request to itself would queue behind the tick ingest and the
+     * sweep. A surface an earlier run published is decided here and never joins
+     * the set, so a rerun raises no request for a set that is already there; a
+     * surface held back for a decider is named and left out, because
+     * provisioning has no decider to weigh it.
      */
-    static surface_outcome fit_and_publish_surface(
-        const ores::database::context& ctx,
-        const ores::marketdata::service::app::surface_calibration_recipe& recipe,
-        const std::map<boost::uuids::uuid, ores::marketdata::service::app::surface_series_quotes>&
-            quotes,
-        std::chrono::system_clock::time_point as_of,
-        std::string_view publish_reason) {
+    static std::optional<surface_member>
+    preview_surface(const ores::database::context& ctx,
+                    const ores::marketdata::service::app::surface_calibration_recipe& recipe,
+                    const std::map<boost::uuids::uuid,
+                                   ores::marketdata::service::app::surface_series_quotes>& quotes,
+                    std::chrono::system_clock::time_point as_of,
+                    surface_outcome& decided) {
         const auto& blueprint = recipe.blueprint;
         const auto id = boost::uuids::to_string(blueprint.id);
 
@@ -1458,10 +1526,12 @@ private:
         published_before.as_of = as_of;
         if (ores::marketdata::service::app::fx_vol_surface_publish_service::read_published(
                 ctx, published_before)
-                .success)
-            return {.how = surface_outcome::state::already_published,
-                    .name = blueprint.name,
-                    .detail = {}};
+                .success) {
+            decided = {.how = surface_outcome::state::already_published,
+                       .name = blueprint.name,
+                       .detail = {}};
+            return std::nullopt;
+        }
 
         ores::marketdata::messaging::calibrate_fx_vol_surface_request calibrate;
         calibrate.blueprint_id = id;
@@ -1469,61 +1539,35 @@ private:
         const auto calibrated =
             ores::marketdata::service::app::fx_vol_surface_calibration_service::calibrate_from(
                 ctx, recipe, quotes, calibrate);
-        if (!calibrated.success)
-            return {.how = surface_outcome::state::not_published,
-                    .name = blueprint.name,
-                    .detail = calibrated.message};
-        if (const auto reason = ores::marketdata::messaging::party_surface_hold_back(calibrated))
-            return {.how = surface_outcome::state::held_back,
-                    .name = blueprint.name,
-                    .detail = *reason};
-
-        ores::marketdata::messaging::publish_fx_vol_surface_request publish;
-        publish.blueprint_id = id;
-        publish.as_of = calibrated.as_of;
-        publish.reason = std::string(publish_reason);
-        const auto answer =
-            ores::marketdata::service::app::fx_vol_surface_publish_service::publish(ctx, publish);
-        if (answer.success && answer.published_at)
-            return {.how = surface_outcome::state::published,
-                    .name = blueprint.name,
-                    .detail = "as of " +
-                              ores::platform::time::datetime::to_iso8601_utc(calibrated.as_of) +
-                              ", from forward set " + calibrated.forward_publish_id};
-        if (answer.success)
-            return {.how = surface_outcome::state::not_published,
-                    .name = blueprint.name,
-                    .detail = "the request " + answer.approval_request_id + " is " +
-                              answer.state_code + " and no person has answered it"};
-        return {.how = surface_outcome::state::not_published,
-                .name = blueprint.name,
-                .detail = answer.message};
+        if (!calibrated.success) {
+            decided = {.how = surface_outcome::state::not_published,
+                       .name = blueprint.name,
+                       .detail = calibrated.message};
+            return std::nullopt;
+        }
+        if (const auto reason = ores::marketdata::messaging::party_surface_hold_back(calibrated)) {
+            decided = {.how = surface_outcome::state::held_back,
+                       .name = blueprint.name,
+                       .detail = *reason};
+            return std::nullopt;
+        }
+        return surface_member{.blueprint_id = blueprint.id,
+                              .name = blueprint.name,
+                              .as_of = calibrated.as_of,
+                              .forward_publish_id = calibrated.forward_publish_id};
     }
 
-    /// The most attempts one surface gets when the store makes it wait for a
-    /// connection. A pool that is full for a moment is not a surface that
-    /// cannot be published, and lanes share the pool with the ingest.
-    static constexpr int surface_attempts = 3;
-
-    /**
-     * @brief Fits and publishes one surface, asking again when the store was
-     * only busy.
-     *
-     * A lane holds a unit of work, and the service's other work holds its own,
-     * so a statement can wait for a connection and give up. That is the store
-     * saying "not now", not the surface saying "never", so the surface is
-     * offered again rather than taking the party's step down with it.
-     */
-    static surface_outcome fit_and_publish_surface_with_retry(
+    /// The same, offered twice more when the store made it wait.
+    static std::optional<surface_member> preview_surface_with_retry(
         const ores::database::context& ctx,
         const ores::marketdata::service::app::surface_calibration_recipe& recipe,
         const std::map<boost::uuids::uuid, ores::marketdata::service::app::surface_series_quotes>&
             quotes,
         std::chrono::system_clock::time_point as_of,
-        std::string_view publish_reason) {
+        surface_outcome& decided) {
         for (int attempt = 1;; ++attempt) {
             try {
-                return fit_and_publish_surface(ctx, recipe, quotes, as_of, publish_reason);
+                return preview_surface(ctx, recipe, quotes, as_of, decided);
             } catch (const ores::database::pq::store_error& e) {
                 if (!e.retryable() || attempt >= surface_attempts)
                     throw;
@@ -1532,30 +1576,28 @@ private:
         }
     }
 
-
     /**
-     * @brief Fits and publishes a party's surfaces, several at a time.
+     * @brief Calibrates a party's surfaces at one instant, several at a time.
      *
      * A surface is the party's own work and no surface reads another, so the
-     * party's surfaces run in parallel lanes: the party costs the slowest lane
-     * and not the sum of them. Each lane reports the progress the engine reads
-     * as the step's heartbeat. A lane that throws is one surface that did not
-     * publish, named with its reason, so one bad blueprint cannot take the
-     * party's other surfaces with it.
+     * preview runs in lanes: the party costs the slowest lane and not the sum of
+     * them. Each lane reports the progress the engine reads as the step's
+     * heartbeat, and a lane that throws is one surface that did not calibrate,
+     * named with its reason.
      */
-    std::vector<surface_outcome> run_party_surfaces(
+    party_surface_preview preview_party_surfaces(
         ores::service::messaging::workflow_step_context& wf,
-        const ores::database::context& party_ctx,
+        const ores::database::context& ctx,
         const std::vector<ores::marketdata::service::app::surface_calibration_recipe>& recipes,
         const std::map<boost::uuids::uuid, ores::marketdata::service::app::surface_series_quotes>&
             quotes,
         std::chrono::system_clock::time_point as_of,
-        std::string_view publish_reason,
         const std::string& party_name) const {
         constexpr std::size_t lanes = 4;
         const auto lane_count = std::min(lanes, recipes.size());
         const auto total = static_cast<std::int64_t>(recipes.size());
-        std::vector<surface_outcome> outcomes(recipes.size());
+        std::vector<std::optional<surface_member>> members(recipes.size());
+        std::vector<surface_outcome> decided(recipes.size());
         std::atomic<std::size_t> next{0};
         std::atomic<std::int64_t> done{0};
 
@@ -1565,12 +1607,12 @@ private:
                 if (i >= recipes.size())
                     return;
                 try {
-                    outcomes[i] = fit_and_publish_surface_with_retry(
-                        party_ctx, recipes[i], quotes, as_of, publish_reason);
+                    members[i] =
+                        preview_surface_with_retry(ctx, recipes[i], quotes, as_of, decided[i]);
                 } catch (const std::exception& e) {
-                    outcomes[i] = {.how = surface_outcome::state::not_published,
-                                   .name = recipes[i].blueprint.name,
-                                   .detail = e.what()};
+                    decided[i] = {.how = surface_outcome::state::not_published,
+                                  .name = recipes[i].blueprint.name,
+                                  .detail = e.what()};
                 }
                 const auto finished = done.fetch_add(1) + 1;
                 wf.progress(party_name + ": " + recipes[i].blueprint.name, finished, total);
@@ -1583,6 +1625,57 @@ private:
             workers.emplace_back(lane);
         for (auto& worker : workers)
             worker.join();
+
+        party_surface_preview preview;
+        for (std::size_t i = 0; i < recipes.size(); ++i)
+            if (members[i])
+                preview.members.push_back(std::move(*members[i]));
+            else
+                preview.decided.push_back(std::move(decided[i]));
+        return preview;
+    }
+
+    /**
+     * @brief Publishes the members of an approved set, one act each.
+     *
+     * The set is one request the decider answered; each member is still its own
+     * publish, and each answers in the words the publish path uses, so a member
+     * the gate refuses is reported without taking its neighbours with it.
+     */
+    std::vector<surface_outcome> publish_party_surface_set(const ores::database::context& ctx,
+                                                           const party_surface_preview& preview,
+                                                           const std::string& request_id,
+                                                           std::string_view publish_reason) const {
+        std::vector<surface_outcome> outcomes;
+        outcomes.reserve(preview.members.size());
+        for (const auto& member : preview.members) {
+            ores::marketdata::messaging::publish_fx_vol_surface_request publish;
+            publish.blueprint_id = boost::uuids::to_string(member.blueprint_id);
+            publish.as_of = member.as_of;
+            publish.reason = std::string(publish_reason);
+            publish.approval_request_id = request_id;
+            const auto answer =
+                ores::marketdata::service::app::fx_vol_surface_publish_service::publish(ctx,
+                                                                                        publish);
+            if (answer.success && answer.published_at) {
+                outcomes.push_back(
+                    {.how = surface_outcome::state::published,
+                     .name = member.name,
+                     .detail = "as of " +
+                               ores::platform::time::datetime::to_iso8601_utc(member.as_of) +
+                               ", from forward set " + member.forward_publish_id});
+            } else if (answer.success) {
+                outcomes.push_back({.how = surface_outcome::state::not_published,
+                                    .name = member.name,
+                                    .detail = "the request " + answer.approval_request_id + " is " +
+                                              answer.state_code +
+                                              " and no person has answered it"});
+            } else {
+                outcomes.push_back({.how = surface_outcome::state::not_published,
+                                    .name = member.name,
+                                    .detail = answer.message});
+            }
+        }
         return outcomes;
     }
 
@@ -1643,8 +1736,31 @@ private:
 
             const auto quotes = ores::marketdata::service::app::fx_vol_surface_calibration_service::
                 read_party_quotes(party_ctx, as_of);
-            const auto outcomes = run_party_surfaces(
-                wf, party_ctx, recipes, quotes, as_of, publish_reason, party_name);
+
+            // One request for the party's set: a decider answers once for the
+            // surfaces the party can calibrate, and each member is published
+            // under it.
+            auto preview =
+                preview_party_surfaces(wf, party_ctx, recipes, quotes, as_of, party_name);
+            std::vector<surface_outcome> outcomes;
+            if (!preview.members.empty()) {
+                std::vector<ores::marketdata::service::app::surface_publish_subject> subjects;
+                subjects.reserve(preview.members.size());
+                for (const auto& member : preview.members)
+                    subjects.push_back(
+                        {.blueprint_id = member.blueprint_id, .as_of = member.as_of});
+                const auto raised = ores::marketdata::service::app::raise_surface_publish_set(
+                    party_ctx, party->id, subjects, std::string(publish_reason));
+                for (const auto& refused : raised.refused)
+                    result.surfaces_not_published.push_back(party_name + ": " +
+                                                            boost::uuids::to_string(refused.first) +
+                                                            ": " + refused.second);
+                outcomes = publish_party_surface_set(
+                    party_ctx, preview, raised.request_id, publish_reason);
+            }
+            for (auto& decided : preview.decided)
+                outcomes.push_back(std::move(decided));
+
             std::size_t published = 0;
             for (const auto& outcome : outcomes) {
                 const auto line = party_name + ": " + outcome.name;

@@ -147,18 +147,18 @@ fx_vol_surface_publish_service::list_fx_vol_surface_publishes(
                    {.field = "request_id_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
-    if (request.filter && request.filter->party_id_one_of &&
-        request.filter->party_id_one_of->size() > max_batch_size) {
-        response.result =
-            refuse(outcome_code::filter_too_large,
-                   {.field = "party_id_one_of", .limit = std::to_string(max_batch_size)});
-        return response;
-    }
     if (request.filter && request.filter->blueprint_id_one_of &&
         request.filter->blueprint_id_one_of->size() > max_batch_size) {
         response.result =
             refuse(outcome_code::filter_too_large,
                    {.field = "blueprint_id_one_of", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
+    if (request.filter && request.filter->party_id_one_of &&
+        request.filter->party_id_one_of->size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::filter_too_large,
+                   {.field = "party_id_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     // A stated instant is checked here, so a malformed one is the caller's
@@ -202,18 +202,18 @@ fx_vol_surface_publish_service::list_by_request_id_fx_vol_surface_publishes(
                    {.field = "request_id_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
-    if (request.filter && request.filter->party_id_one_of &&
-        request.filter->party_id_one_of->size() > max_batch_size) {
-        response.result =
-            refuse(outcome_code::filter_too_large,
-                   {.field = "party_id_one_of", .limit = std::to_string(max_batch_size)});
-        return response;
-    }
     if (request.filter && request.filter->blueprint_id_one_of &&
         request.filter->blueprint_id_one_of->size() > max_batch_size) {
         response.result =
             refuse(outcome_code::filter_too_large,
                    {.field = "blueprint_id_one_of", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
+    if (request.filter && request.filter->party_id_one_of &&
+        request.filter->party_id_one_of->size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::filter_too_large,
+                   {.field = "party_id_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     if (request.scope == ores::utility::domain::scope::subtree) {

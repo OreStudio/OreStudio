@@ -29,7 +29,9 @@
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <set>
 #include <stdexcept>
 #include <string>
 
@@ -167,12 +169,25 @@ publish_subject resolve_publish_subject(const ores::database::context& ctx,
     return subject;
 }
 
-ores::inbox::domain::approval_request raise_publish_request(const ores::database::context& ctx,
-                                                            const publish_subject& subject,
-                                                            const std::string& reason) {
+ores::inbox::domain::approval_request
+raise_publish_request_set(const ores::database::context& ctx,
+                          const std::vector<publish_subject>& subjects,
+                          const std::string& reason) {
+    if (subjects.empty())
+        throw std::invalid_argument("A set of publishes names at least one curve to publish.");
     if (reason.empty())
         throw std::invalid_argument(
             "Say why the curve should be published, so the decider reads a reason.");
+
+    // A set names a curve once. The store would refuse the repeat at the
+    // natural key, in words a caller cannot read, so the repeat is refused here
+    // with the curve named.
+    std::set<boost::uuids::uuid> named;
+    for (const auto& subject : subjects)
+        if (!named.insert(subject.bootstrap_config_id).second)
+            throw std::invalid_argument("The set names the curve " +
+                                        boost::uuids::to_string(subject.bootstrap_config_id) +
+                                        " twice.");
 
     ores::inbox::service::approval_lifecycle lifecycle(ctx);
     const auto kind = lifecycle.kind(std::string(curve_publish_kind_code));
@@ -182,29 +197,42 @@ ores::inbox::domain::approval_request raise_publish_request(const ores::database
     const auto me = lifecycle.actor_account_id();
     if (!me)
         throw std::runtime_error("The signed-in account was not found.");
-    // Whether this raise closes without a person is the kind's policy and the
-    // deployment's, and the inbox reads both. A gate that decided it here would
-    // put a control where nobody looking at the approvals could see it.
-    const auto raised = lifecycle.raise(*kind, reason, *me);
+    const auto policy = lifecycle.policy_for(*kind, false);
 
-    domain::curve_publish record;
-    record.id = boost::uuids::random_generator{}();
-    record.tenant_id = ctx.tenant_id();
-    record.request_id = raised.id;
-    record.party_id = subject.party_id;
-    record.bootstrap_config_id = subject.bootstrap_config_id;
-    record.output_series_id = subject.output_series_id;
-    record.as_of = subject.as_of;
-    record.published_by = "";
-    record.published_at = std::nullopt;
-    record.modified_by = ores::service::messaging::delegated_actor(ctx);
-    record.performed_by = ctx.service_account();
-    record.change_reason_code = "system.new_record";
-    record.change_commentary =
-        "The subject that publish request " + boost::uuids::to_string(raised.id) + " authorises";
+    // The request and every subject it names are one act, so no request ever
+    // names half a set.
+    ores::database::repository::unit_of_work uow(ctx);
+    const auto& tx = uow.ctx();
+    const auto raised =
+        ores::inbox::service::approval_lifecycle(tx).raise_under(policy, *kind, reason, *me);
+
     repository::curve_publish_repository repo;
-    repo.write(ctx, record);
+    for (const auto& subject : subjects) {
+        domain::curve_publish record;
+        record.id = boost::uuids::random_generator{}();
+        record.tenant_id = ctx.tenant_id();
+        record.request_id = raised.id;
+        record.party_id = subject.party_id;
+        record.bootstrap_config_id = subject.bootstrap_config_id;
+        record.output_series_id = subject.output_series_id;
+        record.as_of = subject.as_of;
+        record.published_by = "";
+        record.published_at = std::nullopt;
+        record.modified_by = ores::service::messaging::delegated_actor(ctx);
+        record.performed_by = ctx.service_account();
+        record.change_reason_code = "system.new_record";
+        record.change_commentary = "The subject that publish request " +
+                                   boost::uuids::to_string(raised.id) + " authorises";
+        repo.write(tx, record);
+    }
+    uow.commit();
     return raised;
+}
+
+ores::inbox::domain::approval_request raise_publish_request(const ores::database::context& ctx,
+                                                            const publish_subject& subject,
+                                                            const std::string& reason) {
+    return raise_publish_request_set(ctx, {subject}, reason);
 }
 
 std::optional<std::chrono::system_clock::time_point>
@@ -255,16 +283,43 @@ publish_verdict verdict_on_publish(const ores::database::context& ctx,
                            " request, and a publish is permitted by a " +
                            std::string(curve_publish_kind_code) + " request."};
 
+    // The request names a set, and this is the member the publish asks about: a
+    // request that does not name this configuration authorises nothing here,
+    // which is the same answer a request that names no configuration at all
+    // gets.
     repository::curve_publish_repository repo;
-    auto record = repo.read_latest_by_request(ctx, request_id);
-    if (!record)
+    auto record = repo.read_latest_by_request_and_config(
+        ctx, request_id, boost::uuids::to_string(attempted.bootstrap_config_id));
+    if (!record) {
+        // The request names a set and this curve is not one of its members: the
+        // refusal says what the request does authorise and what was attempted, so
+        // a person reads both subjects rather than being told they differ.
+        ores::marketdata::messaging::curve_publishes_filter by_request;
+        by_request.request_id = boost::uuids::string_generator{}(request_id);
+        std::string authorised;
+        for (std::uint32_t offset = 0;; offset += 1000) {
+            const auto page = repo.read_latest(ctx, offset, 1000, {}, by_request);
+            for (const auto& member : page)
+                authorised +=
+                    (authorised.empty() ? "" : "; ") +
+                    describe(names_of(ctx, member.party_id, member.output_series_id, member.as_of));
+            if (page.size() < 1000)
+                break;
+        }
+        if (authorised.empty())
+            return {.approved = false,
+                    .state_code = request->state_code,
+                    .message = "The request is a " + std::string(curve_publish_kind_code) +
+                               " request that names no subject, so it authorises no publish."};
+        const auto tried = describe(
+            names_of(ctx, attempted.party_id, attempted.output_series_id, attempted.as_of));
         return {.approved = false,
                 .state_code = request->state_code,
-                .message = "The request is a " + std::string(curve_publish_kind_code) +
-                           " request that names no subject, so it authorises no publish."};
+                .message = "The request authorises " + authorised + ", and this publish is " +
+                           tried + "."};
+    }
 
-    if (record->bootstrap_config_id != attempted.bootstrap_config_id ||
-        at_store_precision(record->as_of) != at_store_precision(attempted.as_of) ||
+    if (at_store_precision(record->as_of) != at_store_precision(attempted.as_of) ||
         record->party_id != attempted.party_id) {
         const auto authorised =
             describe(names_of(ctx, record->party_id, record->output_series_id, record->as_of));

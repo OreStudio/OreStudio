@@ -39,8 +39,8 @@
  * A blueprint's output series holds one live surface. The apply ends every live set
  * of the series in the same act, as a curve publish does, so the superseded set and
  * its successor both stay in the history. published_at and published_by are the
- * publication record, empty while the request waits. request_id is the natural
- * key, so a request authorises one publish.
+ * publication record, empty while the request waits. request_id and the blueprint are the
+ * natural key, so a request authorises one publish of each surface it names.
  */
 
 create table if not exists "ores_marketdata_fx_vol_surface_publishes_tbl" (
@@ -48,8 +48,8 @@ create table if not exists "ores_marketdata_fx_vol_surface_publishes_tbl" (
     "tenant_id" uuid not null,
     "version" integer not null,
     "request_id" uuid not null,
-    "party_id" uuid not null,
     "blueprint_id" uuid not null,
+    "party_id" uuid not null,
     "as_of" timestamp with time zone not null,
     "output_series_id" uuid not null,
     "calibration_id" uuid not null,
@@ -87,9 +87,9 @@ create table if not exists "ores_marketdata_fx_vol_surface_publishes_tbl" (
     check ("violation_count" >= 0)
 );
 
--- Unique request_id for active records
-create unique index if not exists fx_vol_surface_publishes_request_id_uniq_idx
-on "ores_marketdata_fx_vol_surface_publishes_tbl" (tenant_id, request_id)
+-- Composite natural key: unique combination for active records
+create unique index if not exists fx_vol_surface_publishes_request_id_blueprint_id_uniq_idx
+on "ores_marketdata_fx_vol_surface_publishes_tbl" (tenant_id, request_id, blueprint_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Version uniqueness for optimistic concurrency

@@ -325,8 +325,10 @@ TEST_CASE("a_withdrawal_refuses_a_set_that_is_not_in_use_and_a_reason_cut_short"
     const auto subject = f.subject();
     const auto raised = raise_publish_request(maker.ctx, subject, "Not decided yet");
     const auto candidate =
-        ores::marketdata::repository::curve_publish_repository{}.read_latest_by_request(
-            maker.ctx, boost::uuids::to_string(raised.id));
+        ores::marketdata::repository::curve_publish_repository{}.read_latest_by_request_and_config(
+            maker.ctx,
+            boost::uuids::to_string(raised.id),
+            boost::uuids::to_string(subject.bootstrap_config_id));
     REQUIRE(candidate.has_value());
 
     ores::marketdata::messaging::withdraw_curve_request withdrawal;

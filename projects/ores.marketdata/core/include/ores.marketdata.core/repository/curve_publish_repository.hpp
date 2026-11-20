@@ -217,8 +217,8 @@ public:
      */
     void remove(const context& ctx, const std::vector<std::string>& ids);
 
-    std::optional<domain::curve_publish> read_latest_by_request(const context& ctx,
-                                                                const std::string& request_id);
+    std::optional<domain::curve_publish> read_latest_by_request_and_config(
+        const context& ctx, const std::string& request_id, const std::string& bootstrap_config_id);
 
     std::optional<domain::curve_publish>
     read_latest_published_for_series(const context& ctx, const boost::uuids::uuid& series_id);

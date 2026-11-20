@@ -29,6 +29,7 @@
 #include <optional>
 #include <string>
 #include <string_view>
+#include <vector>
 
 namespace ores::marketdata::service::app {
 
@@ -118,11 +119,8 @@ resolve_publish_subject(const ores::database::context& ctx,
 /**
  * @brief Raises the request a publish waits on, and writes the subject it names.
  *
- * The request is raised for the signed-in person, so four-eyes holds at the
- * record: whoever decides it must be somebody else. The subject is written as
- * the kind's detail row in the same act, so a request that names nothing cannot
- * exist, and the request identifier is that row's natural key, so a request
- * authorises one publish and no second row can name it.
+ * A publish of one curve is a set of one, so a person's publish and a party's
+ * set are raised by the same act and cannot drift apart.
  *
  * Whether the raise closes without a person is never this gate's to say: it is
  * the kind's policy and the deployment's, read by the inbox, so an auto-approved
@@ -135,6 +133,35 @@ resolve_publish_subject(const ores::database::context& ctx,
  */
 ORES_MARKETDATA_SERVICE_EXPORT ores::inbox::domain::approval_request raise_publish_request(
     const ores::database::context& ctx, const publish_subject& subject, const std::string& reason);
+
+/**
+ * @brief Raises one request that authorises a set of curve publishes.
+ *
+ * The request is raised for the signed-in person, so four-eyes holds at the
+ * record: whoever decides it must be somebody else. Every subject it names is
+ * written as the kind's detail row in the same transaction, so a request that
+ * names half a set cannot exist, and the pair of the request and the
+ * configuration is the row's natural key, so no second row can name the same two.
+ *
+ * Whether the raise closes without a person is never this gate's to say: it is
+ * the kind's policy and the deployment's, read by the inbox, so an auto-approved
+ * act is visible where the requests and the kinds are read rather than buried in
+ * the code that raises one.
+ *
+ * The raise writes every subject it is given and judges none of them: whether a
+ * curve may be published is the gate's to answer at the apply, and a caller that
+ * wants a set with no refusable member filters its subjects first, as the
+ * provisioning step does. The only subjects it refuses are ones it cannot write:
+ * a set that names the same curve twice.
+ *
+ * @throws std::invalid_argument when no subject is named, the reason is empty, or
+ * a curve is named twice.
+ * @throws std::runtime_error when the store refuses a detail row.
+ */
+ORES_MARKETDATA_SERVICE_EXPORT ores::inbox::domain::approval_request
+raise_publish_request_set(const ores::database::context& ctx,
+                          const std::vector<publish_subject>& subjects,
+                          const std::string& reason);
 
 /**
  * @brief The as-of of the set the series has in use, or nothing when it has none.

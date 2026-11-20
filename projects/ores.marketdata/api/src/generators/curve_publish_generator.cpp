@@ -46,8 +46,8 @@ generate_synthetic_curve_publish(utility::generation::generation_context& ctx) {
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
     r.request_id = ctx.generate_uuid();
-    r.party_id = ctx.generate_uuid();
     r.bootstrap_config_id = ctx.generate_uuid();
+    r.party_id = ctx.generate_uuid();
     r.output_series_id = ctx.generate_uuid();
     r.as_of = ctx.past_timepoint();
     r.published_by = std::string("");

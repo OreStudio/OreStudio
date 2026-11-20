@@ -1074,8 +1074,8 @@ void ensure_durable_consumer(jsCtx* js,
         return info;
     };
 
-    // Named `existing`, not `info`: `info` is a severity enumerator in this
-    // logging facade, and a local of that name shadows it inside BOOST_LOG_SEV.
+    // Named `existing`, not `info`: `info` is a severity constant of this
+    // logging facade, and a local of that name shadows it inside ORES_LOG_SEV.
     consumer_info_handle existing = read_consumer();
 
     if (existing == nullptr) {

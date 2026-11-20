@@ -113,6 +113,31 @@ multiplexes a request at a time onto them; the cap becomes pgbouncer's
 =default_pool_size= and =max_db_connections= rather than a sum of per-service
 sizes nobody can see.
 
+** Decision 0: a pooler is a deployment option, never a developer requirement
+
+The problem worth solving is a shared instance carrying ten environments and
+four hundred idle connections. A developer on macOS or Windows with their own
+PostgreSQL has none of it, and asking them to install and run a C daemon to work
+on ORE Studio would spend their time on a problem they do not have. So the
+pooler is chosen per environment and the default is *not* to use one:
+
+- The services read =ORES_<APP>_DB_HOST= and =ORES_<APP>_DB_PORT=, so a pooler
+  is a different host and port and nothing else. Direct and pooled are one
+  switch, not two code paths.
+- The administrative paths - =compass db recreate=, schema restore - connect
+  directly, as this task already says.
+- =postgres_listener_service= keeps its own direct connection for =LISTEN=, so
+  the notification path is identical in both setups.
+- What must hold in both setups is that the code depends on neither. Session
+  settings already do not, because they are =set_config(..., true)=. The one
+  remaining dependency is the named prepared statement, which is decision 1 and
+  the reason it matters: it is the only thing that can force a floor.
+
+The parity risk of a direct dev path and a pooled deployment is real but narrow:
+a behaviour that only appears through the pooler. It is paid for by running the
+suite through a pooler in CI, in transaction mode, so the pooled path is proven
+on every change and no developer has to carry the daemon to find it.
+
 ** Decision 1: prepared statements, which is the real blocker
 
 The repositories run *named* prepared statements. =detail::prepared(sql)= keeps a

@@ -37,6 +37,8 @@ ORES_LOG_SCOPED_TAG(lg, "Tag", test_name);
 | =#include <boost/log/sources/...>=          | =#include "ores.logging/logger.hpp"=   |
 | =#include <boost/log/trivial.hpp>=          | =#include "ores.logging/logger.hpp"=   |
 | =#include <boost/log/attributes/scoped_attribute.hpp>= | =#include "ores.logging/logger.hpp"= |
+| =BOOST_LOG_TRIVIAL=, =BOOST_LOG=, =BOOST_LOG_STREAM= and the other logging macros | =ORES_LOG_SEV(lg, sev)= |
+| =BOOST_LOG_SCOPED_THREAD_TAG= and the other scoped attributes | =ORES_LOG_SCOPED_TAG=, or =ores::logging::scoped_attribute= for a thread attribute |
 
 When you replace a macro, remove the Boost.Log include that served it. A call
 site that keeps the include still parses Boost.Log, even though it no longer
@@ -102,6 +104,19 @@ only.
 The handle has no =add_attribute=, so the Boost macro does not compile against
 it. =ORES_LOG_SCOPED_TAG= is the replacement.
 
+** other_boost_log_macros
+:PROPERTIES:
+:CPP_NAME: BOOST_LOG BOOST_LOG_TRIVIAL BOOST_LOG_STREAM BOOST_LOG_STREAM_SEV BOOST_LOG_STREAM_CHANNEL BOOST_LOG_STREAM_CHANNEL_SEV BOOST_LOG_CHANNEL BOOST_LOG_CHANNEL_SEV BOOST_LOG_STREAM_WITH_PARAMS BOOST_LOG_WITH_PARAMS BOOST_LOG_SCOPED_THREAD_TAG BOOST_LOG_SCOPED_THREAD_ATTR BOOST_LOG_SCOPED_LOGGER_ATTR BOOST_LOG_NAMED_SCOPE BOOST_LOG_FUNCTION BOOST_LOG_GLOBAL_LOGGER BOOST_LOG_INLINE_GLOBAL_LOGGER_DEFAULT BOOST_LOG_INLINE_GLOBAL_LOGGER_INIT BOOST_LOG_INLINE_GLOBAL_LOGGER_CTOR_ARGS
+:MESSAGE: {match} is a Boost.Log macro, and it bypasses the ORE logger handle
+:FIX: log with ORES_LOG_SEV(lg, severity) from "ores.logging/logger.hpp"; tag records with ORES_LOG_SCOPED_TAG, or ores::logging::scoped_attribute for a thread attribute; remove the Boost.Log include
+:END:
+
+The other Boost.Log macros that write records, make loggers or set scoped
+attributes. None is in the tree today. A component that makes its own logger
+with one of them, or writes through the trivial logger, has the same cost as
+=BOOST_LOG_SEV=: it needs the Boost.Log source headers, and its records skip
+the ORE channel and severity.
+
 ** boost_log_source_headers
 :PROPERTIES:
 :CPP_INCLUDE: <boost/log/sources/record_ostream.hpp> <boost/log/sources/severity_channel_logger.hpp> <boost/log/sources/severity_logger.hpp> <boost/log/sources/severity_feature.hpp> <boost/log/sources/channel_logger.hpp> <boost/log/sources/logger.hpp> <boost/log/sources/global_logger_storage.hpp> <boost/log/trivial.hpp> <boost/log/attributes/scoped_attribute.hpp>
@@ -126,6 +141,16 @@ The scoped tag is found.
 
 #+begin_src cpp :compass fires=boost_log_scoped_logger_tag :path projects/ores.example/tests/a_tests.cpp
 BOOST_LOG_SCOPED_LOGGER_TAG(lg, "Tag", std::string("a"));
+#+end_src
+
+The trivial logger and the thread tag are found.
+
+#+begin_src cpp :compass fires=other_boost_log_macros :path projects/ores.example/src/e.cpp
+BOOST_LOG_TRIVIAL(info) << "Loaded";
+#+end_src
+
+#+begin_src cpp :compass fires=other_boost_log_macros :path projects/ores.example/tests/e_tests.cpp
+BOOST_LOG_SCOPED_THREAD_TAG("Tag", std::string("a"));
 #+end_src
 
 An include the old macro needed is found.

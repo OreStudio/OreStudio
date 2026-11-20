@@ -223,6 +223,13 @@ via its "Verifies task" field.
 
 * Review
 
+The review of PR #4911 found no blocking issue and five notes. Each is answered
+here, and the two that asked for a change are in the branch.
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The generated exceptions seed grows by 26.8k lines, so its header could note the parse cost | =refdata_calendar_exceptions_seed_populate.sql= | Declined, with the number | Measured: the seed parses, clears and re-inserts its 26,780 rows in 1.4 s including the connection, once per recreate. A note in a generated file would state a cost smaller than reading it. |
+| 2 | The =USD= / =US.FOMC= row is hard-coded in the derivation, where a =values= list would scale | =refdata_currency_calendars_seed_populate.sql= | Fixed | The pair is now its own =second_calendars= CTE built from a =values= list, so a second currency adds one row and no new branch. |
+| 3 | The two C++ test files change only comments, and a host build is the real check | two test files | Noted | The diff touches no compiled source, and the build is the host's. |
+| 4 | The ACME cut-take role is still written twice | =check_single_writer.py= | Noted | Recorded as [[id:ECFD6B90-5AF1-450D-BFA8-550F430BC38C][An account cannot hold two roles from a dataset]], and named in the check's list. |
+| 5 | =ore-parameters-seed= fails | -- | Noted | It fails on =origin/main= in a clean worktree, so it is not this branch's. |

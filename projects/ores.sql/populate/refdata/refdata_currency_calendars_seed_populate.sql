@@ -177,6 +177,23 @@ begin
           and tenant_id = v_tenant_id
           and country_code <> 'ZZ'
     ),
+    -- A second calendar a currency holds beside the one its holiday_calendar
+    -- names, and that no country match finds. USD carries the FOMC meeting
+    -- calendar because the short end of the dollar curve steps on FOMC dates.
+    -- A row is written only where the currency does not already carry that
+    -- calendar, so the union below cannot produce a duplicate.
+    second_calendars as (
+        select v.currency_iso_code, v.calendar_code
+        from (values ('USD', 'US.FOMC')) as v(currency_iso_code, calendar_code)
+        where not exists (
+            select 1
+            from ores_dq_currencies_artefact_tbl
+            where dataset_id = v_currencies_dataset_id
+              and tenant_id = v_tenant_id
+              and iso_code = v.currency_iso_code
+              and holiday_calendar = v.calendar_code
+        )
+    ),
     curated as (
         -- 1. Currencies with an explicit holiday_calendar already set.
         select iso_code as currency_iso_code, holiday_calendar as calendar_code
@@ -185,19 +202,7 @@ begin
           and tenant_id = v_tenant_id
           and holiday_calendar is not null
         union all
-        -- And the one second calendar a currency holds: the dollar's FOMC
-        -- meeting calendar, which no country match finds. A currency whose
-        -- holiday_calendar is already US.FOMC would collide with this row,
-        -- so the row is stated only where the currency does not carry it.
-        select 'USD', 'US.FOMC'
-        where not exists (
-            select 1
-            from ores_dq_currencies_artefact_tbl
-            where dataset_id = v_currencies_dataset_id
-              and tenant_id = v_tenant_id
-              and iso_code = 'USD'
-              and holiday_calendar = 'US.FOMC'
-        )
+        select * from second_calendars
     ),
     ranked_currency_countries as (
         -- A currency with several countries (e.g. EUR) picks one

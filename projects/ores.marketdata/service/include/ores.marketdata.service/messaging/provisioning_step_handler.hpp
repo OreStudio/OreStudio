@@ -920,7 +920,7 @@ private:
                                      " curve(s) have no quotes yet, "
                                      "asking again in " +
                                      std::to_string(retry_interval.count()) + "s";
-                BOOST_LOG_SEV(lg(), ores::logging::info)
+                ORES_LOG_SEV(lg(), ores::logging::info)
                     << "publish_party_curves: " << party_name << ": " << waiting;
                 step_log.push_back({.level = ores::workflow::messaging::step_log_level::info,
                                     .message = party_name + ": " + waiting,

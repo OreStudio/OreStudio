@@ -26,12 +26,12 @@ A single typedef in make_logger.hpp pulls Boost.Log's sources into 565 objects. 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:2B6612F6-D9F8-4DFF-8952-61716D22C2CF][Break the large compilation dependencies]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-14                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-20                               |
 
 * Acceptance
 
@@ -41,10 +41,14 @@ A single typedef in make_logger.hpp pulls Boost.Log's sources into 565 objects. 
 
 * Plan
 
-make_logger.hpp is fifteen lines, and it costs 6.40 s to parse. Almost all of
-that is the three Boost.Log includes it needs to name its one type, and 604
-objects reach the header because every component's source calls =make_logger=
-to make its own static logger.
+make_logger.hpp is fifteen lines, and almost all of its cost is the three
+Boost.Log includes it needs to name its one type: 1.93 s per probe against
+1.10 s for the handle that replaces it, in one run at load 5.8. 604 objects
+reach the header because every component's source calls =make_logger= to make
+its own static logger.
+
+(An earlier probe of the old header read 6.40 s. It was taken while the machine
+was at load 48; the same-run pair above is what this task's record stands on.)
 
 The handle:
 
@@ -88,9 +92,38 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Parse cost of the old header against the handle, five runs each, one invocation at load 5.8 | Boost.Log's logger headers 1.93 s, =logger.hpp= 1.10 s | =python3 evidence/header_cost.py headers --build-dir build/output/linux-clang-release-ninja --runs 5 --header ...=, raw output in =evidence/header_cost_logger_2026-11-20.txt= | 9d168e0cc1 |
+| Reach after the change, objects and targets | =logger.hpp= 631/201, =severity_level.hpp= 633/203, =boost_severity.hpp= 125/125, =boost/log/sources/severity_channel_logger.hpp= 1/1, =severity_feature.hpp= 2/2, over 981 objects and 228 targets | =evidence/reach_logger_2026-11-20.txt= | 9d168e0cc1 |
+| The same three Boost.Log headers before the change | 604 objects reached =make_logger.hpp=, and through it =severity_channel_logger.hpp=; 2166 files included =boost_severity.hpp= and 2152 =severity_feature.hpp= | =git grep= at 9e18fb97d0, the merge base this task started from | 9e18fb97d0 |
+| Build | 0 h 45 min 59 s at =-j7= for the whole tree, then 9 min 06 s incrementally after the logging test fix | =compass build -j 7=, =compass build -j 6 -k 0= | 9d168e0cc1, bd12666de5 |
+| Suites the change reaches | 5 of 5 passed: logging, utility, telemetry.core, database, http.core; logging and telemetry.core re-run green after the last fix | =compass test run --preset linux-clang-release-ninja -- -j 4 -R "ores.logging.tests\|ores.utility.tests\|ores.telemetry.core.tests\|ores.database.tests\|ores.http.core.tests"= | bd12666de5 |
+| Services | 24 running, 0 failed, 26 log files, 19767 records; severities print as =[INFO]=, =[WARN]=, =[ERROR]=, channels are named, no record carries a numeric severity | =compass services start=, then a read of =publish/log= | bd12666de5 |
+| Local checks | format, lint, compass-ng and cmake-sources pass | =compass check --only format --only lint --only cmake-sources= | 9d168e0cc1 |
 
 * Notes
+
+The sweep is the task. =ORES_LOG_SEV= and =ORES_LOG_SCOPED_TAG= replace the two
+Boost macros at 57911 call sites across 7669 files, =ores.logging/logger.hpp=
+replaces =make_logger.hpp= in 5000 files, and the two backend includes leave the
+2263 and 2266 files that carried them only for the macro's benefit. The script
+that does it is idempotent and lives in =evidence/split_logger.py=; it rewrites
+the codegen templates and the model archetypes too, so a regeneration does not
+bring the old spelling back.
+
+Four things the build found that the script could not:
+
+- Boost's scoped logger tag calls =add_attribute= and =remove_attribute= on the
+  logger object. The handle has neither, so =ores.logging= gained its own
+  =scoped_tag=, and the six test sites that tag a run's records use it.
+- The handle's namespace was =detail=, which a file that opens its own =detail=
+  and does =using namespace ores::logging= cannot then name: the
+  change_stream test proved it. It is =backend= now.
+- Moving =boost_severity= into =backend= moved the stream operator out of the
+  argument's namespace, and argument-dependent lookup does not look upwards, so
+  a record printed the enumerator's value. The operator sits beside the enum.
+- The site routes mapped a level string to Boost's severity and handed it to the
+  macro; they map to the domain severity now. The local store names =<atomic>,
+  which it had been taking from the Boost.Log headers.
 
 * Test Scenarios
 
@@ -116,3 +149,20 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The logger is a handle of its own. =ores.logging/logger.hpp= costs 1.10 s to
+parse where the Boost.Log headers cost 1.93 s, the call sites are unchanged
+apart from the macro's name, and Boost.Log's logger header is reached by one
+object in the whole tree instead of 604.
+
+The log output is what it was. The 24 services start and write 19767 records
+with the timestamp, the severity word, the channel and the message in the
+places they were, and the generator's =[ERROR]= lines, the market data store's
+=[WARN]= lines and the test listener's =Tag= attribute all behave as before. The
+one line without a timestamp is the =Replica index= record, which the lifecycle
+manager writes before it adds the =TimeStamp= attribute; that is not new.
+
+The price is written down: a record is formatted whether or not a sink keeps it,
+because the header cannot name Boost's record type and so cannot defer the
+formatting. A filtered record therefore costs a string build where it used to
+cost a record that was never formatted.

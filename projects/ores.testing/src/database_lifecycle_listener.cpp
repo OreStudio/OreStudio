@@ -32,7 +32,7 @@ void database_lifecycle_listener::register_pre_run_sweep_table(std::string table
 }
 
 void database_lifecycle_listener::testRunStarting(Catch::TestRunInfo const& testRunInfo) {
-    BOOST_LOG_SCOPED_LOGGER_TAG(lg(), "Tag", "TestSuite");
+    ORES_LOG_SCOPED_TAG(lg(), "Tag", "TestSuite");
 
     ORES_LOG_SEV(lg(), info) << "Test run starting, provisioning test tenant";
 
@@ -65,7 +65,7 @@ void database_lifecycle_listener::testRunStarting(Catch::TestRunInfo const& test
 }
 
 void database_lifecycle_listener::testRunEnded(Catch::TestRunStats const& /*testRunStats*/) {
-    BOOST_LOG_SCOPED_LOGGER_TAG(lg(), "Tag", "TestSuite");
+    ORES_LOG_SCOPED_TAG(lg(), "Tag", "TestSuite");
 
     if (test_tenant_id_.empty()) {
         return;

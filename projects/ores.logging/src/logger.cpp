@@ -18,6 +18,8 @@
  */
 #include "ores.logging/logger.hpp"
 #include "ores.logging/boost_severity.hpp"
+#include <boost/log/attributes/attribute_set.hpp>
+#include <boost/log/attributes/constant.hpp>
 #include <boost/log/sources/record_ostream.hpp>
 #include <boost/log/sources/severity_channel_logger.hpp>
 #include <boost/log/sources/severity_feature.hpp>
@@ -43,6 +45,25 @@ logger::logger() = default;
 
 logger_t make_logger(std::string_view component_name) {
     return logger_t(std::make_shared<detail::logger_core>(component_name));
+}
+
+struct scoped_tag::state {
+    std::shared_ptr<detail::logger_core> core;
+    boost::log::attribute_set::iterator attribute;
+};
+
+scoped_tag::scoped_tag(logger_t& logger, std::string_view name, std::string_view value) {
+    const auto& core = logger.core();
+    if (!core)
+        return;
+    const auto added = core->backend.add_attribute(
+        std::string(name), boost::log::attributes::make_constant(std::string(value)));
+    state_ = std::make_shared<state>(state{core, added.first});
+}
+
+scoped_tag::~scoped_tag() {
+    if (state_)
+        state_->core->backend.remove_attribute(state_->attribute);
 }
 
 log_record::log_record(logger_t& logger, severity_level severity)

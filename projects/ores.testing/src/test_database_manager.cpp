@@ -109,7 +109,7 @@ database::database_options test_database_manager::make_database_options() {
 }
 
 std::string test_database_manager::generate_test_tenant_code(const std::string& test_suite_name) {
-    BOOST_LOG_SCOPED_LOGGER_TAG(lg(), "Tag", "TestSuite");
+    ORES_LOG_SCOPED_TAG(lg(), "Tag", "TestSuite");
 
     // Get current timestamp
     const auto now = ores::platform::time::datetime::to_local_display_string(
@@ -149,7 +149,7 @@ std::string test_database_manager::provision_test_tenant(database::context& ctx,
                                                          const std::string& tenant_code,
                                                          const std::string& description) {
     using database::service::tenant_context;
-    BOOST_LOG_SCOPED_LOGGER_TAG(lg(), "Tag", "TestSuite");
+    ORES_LOG_SCOPED_TAG(lg(), "Tag", "TestSuite");
 
     ORES_LOG_SEV(lg(), info) << "Provisioning test tenant: " << tenant_code << " (" << description
                              << ")";
@@ -189,7 +189,7 @@ std::string test_database_manager::provision_test_tenant(database::context& ctx,
 void test_database_manager::terminate_test_tenant(database::context& ctx,
                                                   const std::string& tenant_id) {
     using database::service::tenant_context;
-    BOOST_LOG_SCOPED_LOGGER_TAG(lg(), "Tag", "TestSuite");
+    ORES_LOG_SCOPED_TAG(lg(), "Tag", "TestSuite");
 
     ORES_LOG_SEV(lg(), info) << "Terminating test tenant: " << tenant_id;
 
@@ -221,7 +221,7 @@ void test_database_manager::terminate_test_tenant(database::context& ctx,
 
 void test_database_manager::close_orphaned_synthetic_rows(
     const database::context& ctx, const std::vector<std::string>& table_names) {
-    BOOST_LOG_SCOPED_LOGGER_TAG(lg(), "Tag", "TestSuite");
+    ORES_LOG_SCOPED_TAG(lg(), "Tag", "TestSuite");
 
     for (const auto& table_name : table_names) {
         const auto sql = "DELETE FROM \"" + table_name +

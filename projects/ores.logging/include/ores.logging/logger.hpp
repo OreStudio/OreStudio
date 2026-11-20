@@ -77,6 +77,27 @@ using logger_t = logger;
 ORES_LOGGING_EXPORT logger_t make_logger(std::string_view component_name);
 
 /**
+ * @brief A named attribute that lasts as long as the object.
+ *
+ * The sinks read attributes such as =Tag= to tell a test run's records from a
+ * service's, so a scope that wants one adds it here and drops it when it ends.
+ */
+class ORES_LOGGING_EXPORT scoped_tag final {
+public:
+    scoped_tag(logger_t& logger, std::string_view name, std::string_view value);
+
+    ~scoped_tag();
+
+    scoped_tag(const scoped_tag&) = delete;
+    scoped_tag& operator=(const scoped_tag&) = delete;
+
+private:
+    struct state;
+
+    std::shared_ptr<state> state_;
+};
+
+/**
  * @brief One record, streamed into and written when it goes out of scope.
  *
  * The record is formatted whether or not the sink keeps it, which is the price
@@ -104,6 +125,12 @@ private:
 };
 
 }
+
+/**
+ * @brief Adds @p name with @p value to @p logger for the enclosing scope.
+ */
+#define ORES_LOG_SCOPED_TAG(logger, name, value) \
+    ::ores::logging::scoped_tag ores_log_scoped_tag_##__LINE__(logger, name, value)
 
 /**
  * @brief Writes one record at @p severity through @p logger.

@@ -21,6 +21,7 @@
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import { subjects } from '@ores/wire-protocol/generated/marketdata/protocol/operations_protocol';
+import { subjects as fitSubjects } from '@ores/wire-protocol/generated/marketdata/protocol/fx_vol_quote_fit_operation_protocol';
 import { HttpFailure } from './errors.js';
 import { resultSchema } from './refdata-calls.js';
 import type { LiveSession } from './sessions.js';
@@ -277,6 +278,48 @@ const schemaReplySchema = z.looseObject({
     ),
 });
 
+/** The body of a fit: the pair, and each source's quotes as the screen holds them. */
+const fitBodySchema = z
+    .object({
+        pair_code: z.string().regex(/^[A-Z]{3}\/[A-Z]{3}$/),
+        sources: z
+            .array(
+                z.object({
+                    name: z.string().min(1),
+                    quotes: z.array(
+                        z.object({
+                            expiry: z.string().min(1),
+                            label: z.string().min(1),
+                            volatility: z.number(),
+                        }),
+                    ),
+                }),
+            )
+            .max(8),
+    })
+    .strict();
+
+/** Each source's smile by delta, or why it could not be fitted. */
+const fitReplySchema = z.looseObject({
+    success: z.boolean(),
+    message: z.string().default(''),
+    convention_id: z.string().default(''),
+    delta_type: z.string().default(''),
+    fits: z
+        .array(
+            z.looseObject({
+                name: z.string(),
+                fitted: z.boolean(),
+                message: z.string().default(''),
+                points: z.array(
+                    z.object({ expiry: z.string(), strike: z.string(), volatility: z.number() }),
+                ),
+                unfitted_expiries: z.array(z.string()).default([]),
+            }),
+        )
+        .default([]),
+});
+
 const ticksReplySchema = z.looseObject({
     result: resultSchema,
     coordinates: z.array(z.string()),
@@ -405,6 +448,30 @@ export function registerQuoteRoutes(
             });
         }
         return { sequence, quotes };
+    });
+
+    /**
+     * Sources' quotes of an FX volatility surface read as smiles by delta: the market data
+     * service fits each source in the pair's convention on the party's published forwards now,
+     * and writes nothing.
+     */
+    server.post('/api/marketdata/quotes/vols-by-delta', async (request) => {
+        const session = requireSession(request);
+        const body = fitBodySchema.safeParse(request.body);
+        if (!body.success || body.data.sources.length === 0)
+            throw new HttpFailure(400, {
+                code: 'invalid-request',
+                message: "A fit names the pair and each source's quotes.",
+            });
+        return session.client.callAuthenticated(
+            fitSubjects.fit_fx_vol_quotes_request,
+            {
+                pair_code: body.data.pair_code,
+                as_of: wireInstant(new Date().toISOString()),
+                sources: body.data.sources,
+            },
+            fitReplySchema,
+        );
     });
 
     server.get('/api/marketdata/quotes/history', async (request) => {

@@ -575,4 +575,72 @@ mm::calibrate_fx_vol_surface_response fx_vol_surface_calibration_service::calibr
     return out;
 }
 
+mm::fit_fx_vol_quotes_response
+fx_vol_surface_calibration_service::fit_quotes(const context& ctx,
+                                               const mm::fit_fx_vol_quotes_request& req) {
+    mm::fit_fx_vol_quotes_response out;
+    try {
+        const auto slash = req.pair_code.find('/');
+        if (slash == std::string::npos || slash == 0 || slash + 1 == req.pair_code.size())
+            throw std::invalid_argument("Name the pair as BASE/QUOTE, such as EUR/USD, not '" +
+                                        req.pair_code + "'.");
+        const auto base = req.pair_code.substr(0, slash);
+        const auto quote = req.pair_code.substr(slash + 1);
+        const auto as_of = std::chrono::floor<std::chrono::microseconds>(req.as_of);
+        if (as_of == time_point{})
+            throw std::invalid_argument("Name the as-of instant the forwards are read at.");
+        const auto convention_id = base + "-" + quote + "-FXOPTION";
+        const auto conventions =
+            refdata_repo::fx_option_convention_repository{}.read_latest(ctx, convention_id);
+        if (conventions.empty())
+            throw std::invalid_argument("There is no FX option convention " + convention_id +
+                                        ", so the quotes have no delta to be read at.");
+        const auto& convention = conventions.front();
+        out.convention_id = convention.id;
+        out.delta_type = convention.delta_type;
+
+        std::optional<surface_forward_set> forwards;
+        for (const auto& source : req.sources) {
+            mm::fx_vol_source_fit fit;
+            fit.name = source.name;
+            try {
+                std::vector<quoted_surface_point> quotes;
+                quotes.reserve(source.quotes.size());
+                for (const auto& q : source.quotes)
+                    quotes.push_back({q.expiry, q.label, q.volatility});
+                const auto made =
+                    make_quote_fit_recipe(base, quote, convention, source.name, quotes);
+                if (!made)
+                    throw std::invalid_argument(made.error());
+                const auto checked = check_recipe(made->recipe);
+                if (!checked)
+                    throw std::invalid_argument(checked.error());
+                if (!forwards)
+                    forwards = read_forwards(ctx, made->recipe, as_of);
+                const auto prepared = prepare_calibration(
+                    made->recipe, *checked, *forwards, made->quotes, pillar_tolerance, 1);
+                if (!prepared)
+                    throw std::invalid_argument(prepared.error());
+                const auto fitted = qs::calibrate_ssvi(prepared->request);
+                if (!fitted)
+                    throw std::invalid_argument(fitted.error());
+                for (const auto& point : fitted->grid)
+                    fit.points.push_back({.expiry = point.expiry_id,
+                                          .strike = delta_label(point.strike_id),
+                                          .volatility = point.volatility});
+                fit.unfitted_expiries = prepared->unfitted_expiries;
+                fit.fitted = true;
+            } catch (const std::exception& e) {
+                fit.message = e.what();
+            }
+            out.fits.push_back(std::move(fit));
+        }
+        out.success = true;
+    } catch (const std::exception& e) {
+        out.success = false;
+        out.message = e.what();
+    }
+    return out;
+}
+
 }

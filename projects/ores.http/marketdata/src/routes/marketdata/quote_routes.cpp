@@ -23,6 +23,7 @@
 #include "ores.http.nats/forwarding.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.utility/codec/json_codec.hpp"
+#include "ores.utility/codec/struct_codec.hpp"
 #include <boost/asio/awaitable.hpp>
 #include <charconv>
 #include <chrono>
@@ -35,6 +36,19 @@
 namespace ores::http::routes::marketdata {
 
 namespace {
+
+/// A fit's body: the pair and each source's quotes. The instant is the route's own, now.
+struct fit_body final {
+    std::string pair_code;
+    std::vector<ores::marketdata::messaging::fx_vol_quote_source> sources;
+};
+
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<fit_body>) {
+    return ores::utility::codec::field_list{
+        ores::utility::codec::field{"pair_code", &fit_body::pair_code},
+        ores::utility::codec::field{"sources", &fit_body::sources},
+    };
+}
 
 namespace json = ores::utility::codec::json;
 namespace rr = ores::http::net::record_routes;
@@ -123,6 +137,9 @@ void quote_routes::register_routes(std::shared_ptr<ores::http::net::router> rout
         },
         [&session](const http_request& req, const messaging::get_provider_ticks_request& msg) {
             return forwarding::forward(req, session, msg);
+        },
+        [&session](const http_request& req, const messaging::fit_fx_vol_quotes_request& msg) {
+            return forwarding::forward(req, session, msg);
         });
 }
 
@@ -130,7 +147,8 @@ void quote_routes::register_routes(std::shared_ptr<ores::http::net::router> rout
                                    std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
                                    std::shared_ptr<quote_board> board,
                                    entitled_feeds entitled,
-                                   provider_history history) {
+                                   provider_history history,
+                                   quote_fit fit) {
     using namespace quotes;
     using forwarding::guarded;
     const auto add = [&](ores::http::net::route_builder builder) {
@@ -219,6 +237,37 @@ void quote_routes::register_routes(std::shared_ptr<ores::http::net::router> rout
                     const auto reply = history(req, msg);
                     rr::require_ok(reply.result);
                     return http_response::json(history_json(reply));
+                });
+            }));
+
+    add(router->post("/api/marketdata/quotes/vols-by-delta")
+            .summary("Sources' quotes of an FX volatility surface, read as smiles by delta")
+            .description("The body names the pair and each source's quotes: its expiries, its "
+                         "labels such as ATM, 25RR and 10BF, and its volatilities. The market "
+                         "data service fits each source in the pair's FX option convention on the "
+                         "caller's party's published forwards now, and answers the volatility at "
+                         "10P, 25P, ATM, 25C and 10C of each expiry. It writes nothing.")
+            .handler([fit](const http_request& req) -> boost::asio::awaitable<http_response> {
+                co_return guarded<messaging::fit_fx_vol_quotes_request>([&] {
+                    if (!fit)
+                        rr::refuse(ores::http::domain::http_status::service_unavailable,
+                                   "upstream-unavailable",
+                                   "Vols by delta are not served here.");
+                    messaging::fit_fx_vol_quotes_request msg;
+                    try {
+                        auto body = ores::utility::codec::object::read_json<fit_body>(req.body);
+                        msg.pair_code = std::move(body.pair_code);
+                        msg.sources = std::move(body.sources);
+                    } catch (const std::exception&) {
+                        rr::invalid("A fit names the pair and each source's quotes.");
+                    }
+                    if (msg.pair_code.empty() || msg.sources.empty())
+                        rr::invalid("A fit names the pair and each source's quotes.");
+                    msg.as_of = std::chrono::system_clock::now();
+                    const auto reply = fit(req, msg);
+                    return http_response::json(
+                        ores::utility::codec::wire_traits<
+                            messaging::fit_fx_vol_quotes_response>::write_json(reply));
                 });
             }));
 }

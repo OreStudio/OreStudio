@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :market_data:fx:volatility:service:see_the_market_as_vendor_quotes:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/serve-an-fx-vol-surfaces-vols-by-delta
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,11 +26,11 @@ The quotes view compares two vendors' FX vol surfaces as vols by delta (10P, 25P
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:726A5326-E52C-44FB-9453-133D1E51C242][See the market as the vendors quote it]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-19                               |
 
 * Acceptance
@@ -95,3 +95,30 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+- The market data service answers =fit_fx_vol_quotes= (its own operation model,
+  =ores.marketdata.fx_vol_quote_fit_operations=, with no shell command, since a
+  list of quotes is not typed at a prompt): for each named source of a pair's
+  quotes it builds a recipe from the quotes (=make_quote_fit_recipe=: the
+  source's expiries in tenor order, its ATM, risk reversals and butterflies,
+  and an output grid of 10P, 25P, ATM, 25C and 10C in the convention's delta
+  type), reads the pair's convention =<BASE>-<QUOTE>-FXOPTION= and the party's
+  published forward set at now, and fits SSVI with the calibration's own
+  =check_recipe=, =prepare_calibration= and =calibrate_ssvi=. It writes
+  nothing, and needs =marketdata::fx_vol_surface_calibrations:read=. A source
+  that cannot be fitted is answered with why, and the others still are.
+- =ores.http= and the BFF answer =POST /api/marketdata/quotes/vols-by-delta=
+  with the pair and the sources; the instant is the route's own.
+- The quotes view's surface compare reads as quoted or by delta. By delta it
+  sends A's and B's quotes, B the consensus of the others as before, refits
+  every ten seconds, and draws A − B at each delta, the picked tenor's smile
+  and a delta by tenor, naming the convention and delta type the server used.
+- Checked on the running fleet as UK plc: a fit of two sources over 13 expiries
+  answered in 2 to 6 seconds; EUR/USD's derived surface read as a smile by
+  delta on EUR-USD-FXOPTION (spot deltas), and a synthetic source with a −0.4
+  risk reversal and a 0.2 butterfly fitted to wings 0.41 apart about a point
+  0.19 above ATM, as quoted.
+- Tests: the plan's quote fit (3 cases: the recipe, a flat smile, a skewed
+  one), the fit codec round trips (4), the vols-by-delta route (2), the
+  Playwright check of the by-delta compare (fitted in 5.4 s), and every web
+  workspace.

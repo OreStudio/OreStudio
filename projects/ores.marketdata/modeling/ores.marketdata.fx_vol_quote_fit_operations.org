@@ -1,0 +1,246 @@
+:PROPERTIES:
+:ID: 3761E089-E339-4CD7-915C-1C9D3F87DCEE
+:ores.cpp.wire-codec.enabled: true
+:ores.cpp.shell-command.enabled: nil
+:END:
+#+title: ores.marketdata.fx_vol_quote_fit_operations
+#+description: Codegen operation model for reading quoted FX volatility surfaces as smiles by delta: an SSVI fit of each source's ATM, risk reversals and butterflies in the pair's convention, which writes nothing.
+#+type: ores.codegen.operation
+#+component: marketdata
+#+subcomponent: api
+#+entity_singular: fx_vol_quote_fit_operation
+#+namespace: ores::marketdata::messaging
+#+brief: The fit of quoted FX volatility surfaces to smiles by delta, for display.
+#+filetags: :model:operation:marketdata:
+#+created: 2026-11-20
+#+updated: 2026-11-20
+
+A vendor quotes an FX volatility surface as an ATM volatility, risk reversals
+and butterflies at each expiry. A difference between two vendors' risk
+reversals is a difference in skew, not in a volatility, so a screen that
+compares them reads each source as a smile by delta. The conversion depends on
+the pair's delta convention, its ATM convention and a smile fitted to the
+strangles, which only the server knows: the service fits SSVI to each source's
+quotes on the party's published forward set and answers the volatility at the
+deltas of the smile. There is no shell command, because the sources are a list
+of quotes, which a command line does not carry.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#include <vector>
+#+end_src
+
+* Messages
+
+** fx_vol_quote
+
+#+begin_src cpp :name comment
+/**
+ * @brief One quoted point of a source's surface: its expiry, its strike label as quoted, such as
+ * ATM, 25RR or 10BF, and its volatility.
+ */
+#+end_src
+
+*** expiry
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** label
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** volatility
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+
+** fx_vol_quote_source
+
+#+begin_src cpp :name comment
+/**
+ * @brief The quotes of one source, such as a vendor or the consensus of others, fitted on their
+ * own.
+ */
+#+end_src
+
+*** name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** quotes
+:PROPERTIES:
+:cpp_type: std::vector<fx_vol_quote>
+:END:
+
+** fx_vol_delta_point
+
+#+begin_src cpp :name comment
+/**
+ * @brief One point of a source's smile by delta: its expiry, its delta label, such as 25P, ATM or
+ * 10C, and its volatility.
+ */
+#+end_src
+
+*** expiry
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** strike
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** volatility
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+
+** fx_vol_source_fit
+
+#+begin_src cpp :name comment
+/**
+ * @brief One source's smile by delta, expiry by expiry, or why it could not be fitted.
+ */
+#+end_src
+
+*** name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** fitted
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Why the source was not fitted; empty when it was.
+ */
+#+end_src
+
+*** points
+:PROPERTIES:
+:cpp_type: std::vector<fx_vol_delta_point>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The volatility at each delta of each fitted expiry, shortest expiry first and each
+ * expiry's strikes from the put wing to the call wing.
+ */
+#+end_src
+
+*** unfitted_expiries
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Each quoted expiry the fit left out, with why, such as "10Y: no pillar quoted".
+ */
+#+end_src
+
+** fit_fx_vol_quotes_request
+:PROPERTIES:
+:subject: marketdata.v1.ops.fit_fx_vol_quotes
+:response: fit_fx_vol_quotes_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Reads the quotes of each source as a smile by delta: fits SSVI to the source's ATM, risk
+ * reversals and butterflies in the pair's FX option convention, on the caller's party's published
+ * forward set, and answers the volatility at 10P, 25P, ATM, 25C and 10C of each expiry. Writes
+ * nothing.
+ */
+#+end_src
+
+*** pair_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The pair, such as EUR/USD.
+ */
+#+end_src
+
+*** as_of
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The instant the forward set is read at.
+ */
+#+end_src
+
+*** sources
+:PROPERTIES:
+:cpp_type: std::vector<fx_vol_quote_source>
+:END:
+
+** fit_fx_vol_quotes_response
+
+#+begin_src cpp :name comment
+/**
+ * @brief Each source's smile by delta, or why the request was refused.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** convention_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The FX option convention the quotes were read in, such as EUR-USD-FXOPTION.
+ */
+#+end_src
+
+*** delta_type
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The convention's delta type, such as PaSpot, which the deltas of the answer are in.
+ */
+#+end_src
+
+*** fits
+:PROPERTIES:
+:cpp_type: std::vector<fx_vol_source_fit>
+:END:

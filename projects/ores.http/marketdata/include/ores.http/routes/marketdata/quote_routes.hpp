@@ -24,6 +24,7 @@
 #include "ores.http.api/net/router.hpp"
 #include "ores.http.api/openapi/endpoint_registry.hpp"
 #include "ores.http/routes/marketdata/quote_board.hpp"
+#include "ores.marketdata.api/messaging/fx_vol_quote_fit_operation_protocol.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include <functional>
@@ -49,6 +50,11 @@ public:
         const ores::http::domain::http_request&,
         const ores::marketdata::messaging::get_provider_ticks_request&)>;
 
+    /// Sources' quotes of a surface read as smiles by delta, asked as the caller of a request.
+    using quote_fit = std::function<ores::marketdata::messaging::fit_fx_vol_quotes_response(
+        const ores::http::domain::http_request&,
+        const ores::marketdata::messaging::fit_fx_vol_quotes_request&)>;
+
     /// The most quotes one read of the board returns.
     static constexpr std::size_t most_quotes = 20'000;
 
@@ -65,7 +71,8 @@ public:
                                 std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
                                 std::shared_ptr<quote_board> board,
                                 entitled_feeds entitled,
-                                provider_history history);
+                                provider_history history,
+                                quote_fit fit = {});
 };
 
 }

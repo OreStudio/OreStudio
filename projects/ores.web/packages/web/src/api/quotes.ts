@@ -74,6 +74,32 @@ export const quoteHistorySchema = z.object({
 });
 export type QuoteHistory = z.infer<typeof quoteHistorySchema>;
 
+/** One quoted point of a source's surface, as the screen holds it. */
+export interface QuotedVol {
+    readonly expiry: string;
+    readonly label: string;
+    readonly volatility: number;
+}
+
+/** One source's smile by delta, or why it could not be fitted. */
+export const volFitSchema = z.object({
+    name: z.string(),
+    fitted: z.boolean(),
+    message: z.string().default(''),
+    points: z.array(z.object({ expiry: z.string(), strike: z.string(), volatility: z.number() })),
+    unfitted_expiries: z.array(z.string()).default([]),
+});
+export type VolFit = z.infer<typeof volFitSchema>;
+
+export const volFitsSchema = z.object({
+    success: z.boolean(),
+    message: z.string().default(''),
+    convention_id: z.string().default(''),
+    delta_type: z.string().default(''),
+    fits: z.array(volFitSchema).default([]),
+});
+export type VolFits = z.infer<typeof volFitsSchema>;
+
 export const quotes = {
     /** The feeds the session may watch for display, with each one's source and last tick. */
     async feeds(): Promise<readonly QuoteFeed[]> {
@@ -101,6 +127,23 @@ export const quotes = {
         return quoteHistorySchema.parse(
             await request(`${CPP}/api/marketdata/quotes/history?${query.toString()}`, {
                 method: 'GET',
+            }),
+        );
+    },
+
+    /**
+     * Each source's quotes of a pair's surface read as a smile by delta, fitted by the server in
+     * the pair's convention on the party's published forwards now.
+     */
+    async volsByDelta(
+        pairCode: string,
+        sources: readonly { readonly name: string; readonly quotes: readonly QuotedVol[] }[],
+    ): Promise<VolFits> {
+        return volFitsSchema.parse(
+            await request(`${CPP}/api/marketdata/quotes/vols-by-delta`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ pair_code: pairCode, sources }),
             }),
         );
     },

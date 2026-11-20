@@ -18,9 +18,9 @@
  *
  */
 
-import { useQueries } from '@tanstack/react-query';
-import { useRef, type ReactNode } from 'react';
-import { quotes } from '../api/quotes.js';
+import { useQueries, useQuery } from '@tanstack/react-query';
+import { useRef, useState, type ReactNode } from 'react';
+import { quotes, type QuotedVol, type VolFit } from '../api/quotes.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { Select, cx } from '../ui/Primitives.js';
 import { LineChart, SERIES_COLOURS } from './LineChart.js';
@@ -652,6 +652,224 @@ function mostShared(grid: Grid, vendors: readonly Vendor[]): string | undefined 
     return best?.key;
 }
 
+/** The deltas of a smile, put wing to call wing, as the server answers them. */
+const DELTAS = ['10P', '25P', 'ATM', '25C', '10C'] as const;
+
+/** How often a fit is asked again, so the smile by delta follows the quotes. */
+const REFIT_MS = 10_000;
+
+/**
+ * Two sources of a surface read as smiles by delta. The server fits each source's ATM, risk
+ * reversals and butterflies in the pair's convention on the party's published forwards, so a
+ * difference in skew shows as one in the wings rather than in a risk reversal.
+ */
+function DeltaCompare({
+    grid,
+    watch,
+    a,
+    b,
+    nameOf,
+    colourOf,
+    row,
+    onRow,
+}: {
+    readonly grid: Grid;
+    readonly watch: Watch;
+    readonly a: string;
+    readonly b: string;
+    readonly nameOf: (source: string, other: string) => string;
+    readonly colourOf: (source: string) => string;
+    readonly row: string;
+    readonly onRow: (row: string) => void;
+}): ReactNode {
+    const { t } = useTranslation();
+    const [column, setColumn] = useState<string>('ATM');
+    const quotesOf = (source: string, other: string): QuotedVol[] =>
+        grid.rows.flatMap((r) =>
+            grid.columns.flatMap((c) => {
+                const cell = grid.at(r, c);
+                if (cell === undefined) return [];
+                const value = compare(
+                    grid.kind,
+                    cell.point,
+                    source,
+                    other,
+                    watch.vendors,
+                    watch.shown,
+                    watch.now,
+                ).a;
+                return value === null ? [] : [{ expiry: r, label: c, volatility: value }];
+            }),
+        );
+    const qa = quotesOf(a, b);
+    const qb = quotesOf(b, a);
+    // The fit reads the newest quotes when it runs, so a refit follows the market while the
+    // key stays the surface and the two sources: a fit slower than the refit never loses its
+    // answer to a newer key.
+    const latest = useRef({ qa, qb });
+    latest.current = { qa, qb };
+    const fits = useQuery({
+        queryKey: ['vols-by-delta', grid.key, a, b],
+        queryFn: () =>
+            quotes.volsByDelta(grid.name, [
+                { name: nameOf(a, b), quotes: latest.current.qa },
+                { name: nameOf(b, a), quotes: latest.current.qb },
+            ]),
+        refetchInterval: REFIT_MS,
+        placeholderData: (previous) => previous,
+        retry: false,
+    });
+    const answer = fits.data;
+    // The answer holds a fit for each source asked, in the order asked.
+    const fitA = answer?.fits[0];
+    const fitB = answer?.fits[1];
+    const at = (fit: VolFit | undefined, expiry: string, strike: string): number | null =>
+        fit?.points.find((p) => p.expiry === expiry && p.strike === strike)?.volatility ?? null;
+    const expiries = grid.rows.filter((r) =>
+        DELTAS.some((d) => at(fitA, r, d) !== null || at(fitB, r, d) !== null),
+    );
+    const smileRow = expiries.includes(row) ? row : (expiries[0] ?? '');
+    const gap = (d: number | null): string =>
+        d === null ? '—' : differenceText(differenceOf('vol', d, 1));
+    if (fits.isPending)
+        return <p className="text-sm text-ink-faint">{t('marketdata.quotes.fitting')}</p>;
+    if (answer === undefined || !answer.success)
+        return (
+            <p className="rounded-md border border-line px-3 py-2 text-sm text-ink-muted">
+                {answer?.message ?? t('marketdata.quotes.fitFailed')}
+            </p>
+        );
+    const unfitted = [
+        { fit: fitA, name: nameOf(a, b) },
+        { fit: fitB, name: nameOf(b, a) },
+    ].filter((x) => x.fit !== undefined && !x.fit.fitted);
+    const lines = [
+        { source: a, fit: fitA, label: `${nameOf(a, b)} (A)` },
+        { source: b, fit: fitB, label: `${nameOf(b, a)} (B)` },
+    ];
+    return (
+        <div className="space-y-3">
+            <p className="text-xs text-ink-faint">
+                {t('marketdata.quotes.deltaConvention', {
+                    convention: answer.convention_id,
+                    delta: answer.delta_type,
+                })}
+            </p>
+            {unfitted.map((x) => (
+                <p
+                    key={x.name}
+                    className="rounded-md border border-line px-3 py-2 text-sm text-ink-muted"
+                >
+                    {x.fit?.message}
+                </p>
+            ))}
+            <div className="grid grid-cols-1 gap-4 2xl:grid-cols-[minmax(0,5fr)_minmax(0,4fr)]">
+                <div className={SCROLL}>
+                    <table className="w-full text-sm">
+                        <thead className="sticky top-0 bg-surface-base">
+                            <tr>
+                                <th className={HEAD_LEFT}>{t('marketdata.quotes.tenor')}</th>
+                                {DELTAS.map((d) => (
+                                    <th key={d} className={HEAD_RIGHT}>
+                                        <button
+                                            type="button"
+                                            className={cx(
+                                                'hover:text-ink',
+                                                d === column && 'text-accent',
+                                            )}
+                                            onClick={() => setColumn(d)}
+                                        >
+                                            {d}
+                                        </button>
+                                    </th>
+                                ))}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {expiries.map((r) => (
+                                <tr key={r} className={cx(ROW, r === smileRow && 'bg-accent/10')}>
+                                    <td className={cx(LEFT_CELL, 'font-mono')}>
+                                        <button
+                                            type="button"
+                                            className="hover:text-ink"
+                                            onClick={() => onRow(r)}
+                                        >
+                                            {r}
+                                        </button>
+                                    </td>
+                                    {DELTAS.map((d) => {
+                                        const va = at(fitA, r, d);
+                                        const vb = at(fitB, r, d);
+                                        const diff = va === null || vb === null ? null : va - vb;
+                                        const over =
+                                            va !== null && vb !== null && isOutlier('vol', va, vb);
+                                        return (
+                                            <td
+                                                key={d}
+                                                className={cx(DATA_CELL, over && 'font-bold')}
+                                                style={{ background: diverging('vol', diff, 1) }}
+                                                title={`${nameOf(a, b)} ${valueText('vol', va)} · ${nameOf(b, a)} ${valueText('vol', vb)}`}
+                                            >
+                                                {gap(diff)}
+                                                {over && ' ⚠'}
+                                            </td>
+                                        );
+                                    })}
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+                <div className="min-w-0 space-y-3">
+                    <h3 className="text-sm font-semibold">
+                        {t('marketdata.quotes.smileOf', { row: smileRow })}
+                    </h3>
+                    <LineChart
+                        categories={[...DELTAS]}
+                        series={lines.map((l) => ({
+                            colour: colourOf(l.source),
+                            strong: true,
+                            dots: true,
+                            ...(l.source === CONSENSUS ? { dashed: true } : {}),
+                            points: DELTAS.map((d) => at(l.fit, smileRow, d)),
+                        }))}
+                        format={(v) => valueText('vol', v)}
+                        label={t('marketdata.quotes.smileLabel', {
+                            name: grid.name,
+                            row: smileRow,
+                        })}
+                        price
+                    />
+                    <h3 className="text-sm font-semibold">
+                        {t('marketdata.quotes.termOf', { column })}
+                    </h3>
+                    <LineChart
+                        categories={expiries}
+                        series={lines.map((l) => ({
+                            colour: colourOf(l.source),
+                            strong: true,
+                            dots: true,
+                            ...(l.source === CONSENSUS ? { dashed: true } : {}),
+                            points: expiries.map((r) => at(l.fit, r, column)),
+                        }))}
+                        format={(v) => valueText('vol', v)}
+                        label={t('marketdata.quotes.termLabel', { name: grid.name, column })}
+                        price
+                    />
+                    <p className="flex flex-wrap gap-4 text-xs text-ink">
+                        {lines.map((l) => (
+                            <span key={l.label}>
+                                <Swatch colour={colourOf(l.source)} />
+                                {l.label}
+                            </span>
+                        ))}
+                    </p>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 /** Two sources of a grid: their differences cell by cell, a column by tenor, and a cell's every source. */
 function GridCompare({
     grid,
@@ -667,6 +885,9 @@ function GridCompare({
     const { t } = useTranslation();
     const kind = grid.kind;
     const unit = useUnit(kind);
+    const [readAs, setReadAs] = useState<'quoted' | 'delta'>('quoted');
+    const surface = kind === 'vol' && grid.series.length === 1;
+    const byDelta = surface && readAs === 'delta';
     const vendors = vendorsIn(grid.series, watch);
     const sources = [CONSENSUS, ...vendors.map((v) => v.key)];
     const a = sources.includes(comparison.a)
@@ -757,226 +978,281 @@ function GridCompare({
                             ))}
                     </Select>
                 </label>
+                {surface && (
+                    <div className="text-sm">
+                        <span className="mb-1 block text-xs text-ink-faint">
+                            {t('marketdata.quotes.readAs')}
+                        </span>
+                        <Choice
+                            label={t('marketdata.quotes.readAs')}
+                            options={['quoted', 'delta'] as const}
+                            value={readAs}
+                            titleOf={(o) =>
+                                o === 'quoted'
+                                    ? t('marketdata.quotes.asQuoted')
+                                    : t('marketdata.quotes.volByDelta')
+                            }
+                            onChoose={setReadAs}
+                        />
+                    </div>
+                )}
                 <p className="max-w-md text-xs text-ink-faint">
                     {t('marketdata.quotes.compareHint', { unit })}
                 </p>
             </div>
-            {measured.length === 0 && (
-                <p className="rounded-md border border-line px-3 py-2 text-sm text-ink-muted">
-                    {t('marketdata.quotes.nothingShared', {
-                        a: nameOf(a, b),
-                        b: nameOf(b, a),
-                        name: grid.name,
-                    })}
-                </p>
-            )}
-            <p className="flex flex-wrap gap-5 text-sm">
-                <span>
-                    <span className="text-ink-faint">
-                        {t('marketdata.quotes.columnGap', { column })}{' '}
-                    </span>
-                    <span className="font-mono">
-                        {gap(columnGap, inColumn[0]?.compared?.b ?? 1)}
-                    </span>
-                </span>
-                <span>
-                    <span className="text-ink-faint">{t('marketdata.quotes.widest')} </span>
-                    <span className="font-mono">
-                        {widest === null
-                            ? '—'
-                            : `${gap(widest.compared!.difference, widest.compared!.b!)} · ${widest.r} ${widest.c}`}
-                    </span>
-                </span>
-                <span>
-                    <span className="text-ink-faint">{t('marketdata.quotes.pastLimit')} </span>
-                    <span
-                        className={cx('font-mono', past > 0 && 'text-warn')}
-                    >{`${String(past)} / ${String(measured.length)}`}</span>
-                </span>
-            </p>
-            <div className="grid grid-cols-1 gap-4 2xl:grid-cols-[minmax(0,5fr)_minmax(0,4fr)]">
-                <div className="min-w-0 space-y-3">
-                    <div className={SCROLL}>
-                        <table className="w-full text-sm">
-                            <thead className="sticky top-0 bg-surface-base">
-                                <tr>
-                                    <th className={HEAD_LEFT}>{t('marketdata.quotes.tenor')}</th>
-                                    {grid.columns.map((c) => (
-                                        <th key={c} className={HEAD_RIGHT}>
-                                            <button
-                                                type="button"
-                                                className={cx(
-                                                    'hover:text-ink',
-                                                    c === column && 'text-accent',
-                                                )}
-                                                onClick={() => set({ column: c })}
-                                            >
-                                                {c}
-                                            </button>
-                                        </th>
-                                    ))}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {grid.rows.map((r) => (
-                                    <tr key={r} className={ROW}>
-                                        <td className={cx(LEFT_CELL, 'font-mono')}>{r}</td>
-                                        {grid.columns.map((c) => {
-                                            const cell = cells.find((x) => x.r === r && x.c === c)!;
-                                            const d = cell.compared?.difference ?? null;
-                                            const over =
-                                                d !== null &&
-                                                isOutlier(
-                                                    kind,
-                                                    cell.compared!.a!,
-                                                    cell.compared!.b!,
-                                                );
-                                            const on = r === row && c === column;
-                                            return (
-                                                <td
-                                                    key={c}
-                                                    onClick={() => set({ row: r, column: c })}
-                                                    className={cx(
-                                                        DATA_CELL,
-                                                        PICKABLE,
-                                                        over && 'font-bold',
-                                                        on &&
-                                                            'outline-2 -outline-offset-2 outline-accent',
-                                                    )}
-                                                    style={{
-                                                        background: diverging(
+            {byDelta ? (
+                <DeltaCompare
+                    grid={grid}
+                    watch={watch}
+                    a={a}
+                    b={b}
+                    nameOf={nameOf}
+                    colourOf={colourOf}
+                    row={row}
+                    onRow={(r) => set({ row: r })}
+                />
+            ) : (
+                <>
+                    {measured.length === 0 && (
+                        <p className="rounded-md border border-line px-3 py-2 text-sm text-ink-muted">
+                            {t('marketdata.quotes.nothingShared', {
+                                a: nameOf(a, b),
+                                b: nameOf(b, a),
+                                name: grid.name,
+                            })}
+                        </p>
+                    )}
+                    <p className="flex flex-wrap gap-5 text-sm">
+                        <span>
+                            <span className="text-ink-faint">
+                                {t('marketdata.quotes.columnGap', { column })}{' '}
+                            </span>
+                            <span className="font-mono">
+                                {gap(columnGap, inColumn[0]?.compared?.b ?? 1)}
+                            </span>
+                        </span>
+                        <span>
+                            <span className="text-ink-faint">{t('marketdata.quotes.widest')} </span>
+                            <span className="font-mono">
+                                {widest === null
+                                    ? '—'
+                                    : `${gap(widest.compared!.difference, widest.compared!.b!)} · ${widest.r} ${widest.c}`}
+                            </span>
+                        </span>
+                        <span>
+                            <span className="text-ink-faint">
+                                {t('marketdata.quotes.pastLimit')}{' '}
+                            </span>
+                            <span
+                                className={cx('font-mono', past > 0 && 'text-warn')}
+                            >{`${String(past)} / ${String(measured.length)}`}</span>
+                        </span>
+                    </p>
+                    <div className="grid grid-cols-1 gap-4 2xl:grid-cols-[minmax(0,5fr)_minmax(0,4fr)]">
+                        <div className="min-w-0 space-y-3">
+                            <div className={SCROLL}>
+                                <table className="w-full text-sm">
+                                    <thead className="sticky top-0 bg-surface-base">
+                                        <tr>
+                                            <th className={HEAD_LEFT}>
+                                                {t('marketdata.quotes.tenor')}
+                                            </th>
+                                            {grid.columns.map((c) => (
+                                                <th key={c} className={HEAD_RIGHT}>
+                                                    <button
+                                                        type="button"
+                                                        className={cx(
+                                                            'hover:text-ink',
+                                                            c === column && 'text-accent',
+                                                        )}
+                                                        onClick={() => set({ column: c })}
+                                                    >
+                                                        {c}
+                                                    </button>
+                                                </th>
+                                            ))}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {grid.rows.map((r) => (
+                                            <tr key={r} className={ROW}>
+                                                <td className={cx(LEFT_CELL, 'font-mono')}>{r}</td>
+                                                {grid.columns.map((c) => {
+                                                    const cell = cells.find(
+                                                        (x) => x.r === r && x.c === c,
+                                                    )!;
+                                                    const d = cell.compared?.difference ?? null;
+                                                    const over =
+                                                        d !== null &&
+                                                        isOutlier(
                                                             kind,
-                                                            d,
-                                                            cell.compared?.b ?? 1,
-                                                        ),
-                                                    }}
-                                                    title={`${nameOf(a, b)} ${valueText(kind, cell.compared?.a ?? null)} · ${nameOf(b, a)} ${valueText(kind, cell.compared?.b ?? null)}`}
+                                                            cell.compared!.a!,
+                                                            cell.compared!.b!,
+                                                        );
+                                                    const on = r === row && c === column;
+                                                    return (
+                                                        <td
+                                                            key={c}
+                                                            onClick={() =>
+                                                                set({ row: r, column: c })
+                                                            }
+                                                            className={cx(
+                                                                DATA_CELL,
+                                                                PICKABLE,
+                                                                over && 'font-bold',
+                                                                on &&
+                                                                    'outline-2 -outline-offset-2 outline-accent',
+                                                            )}
+                                                            style={{
+                                                                background: diverging(
+                                                                    kind,
+                                                                    d,
+                                                                    cell.compared?.b ?? 1,
+                                                                ),
+                                                            }}
+                                                            title={`${nameOf(a, b)} ${valueText(kind, cell.compared?.a ?? null)} · ${nameOf(b, a)} ${valueText(kind, cell.compared?.b ?? null)}`}
+                                                        >
+                                                            {d === null
+                                                                ? '·'
+                                                                : gap(d, cell.compared!.b!)}
+                                                            {over && ' ⚠'}
+                                                        </td>
+                                                    );
+                                                })}
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {picked !== undefined && (
+                                <table className="w-full text-sm">
+                                    <caption className="pb-1 text-left text-sm font-semibold">{`${row} ${column}`}</caption>
+                                    <thead>
+                                        <tr>
+                                            <th className={HEAD_LEFT}>
+                                                {t('marketdata.quotes.source')}
+                                            </th>
+                                            <th className={HEAD_RIGHT}>
+                                                {t('marketdata.quotes.value')}
+                                            </th>
+                                            <th className={HEAD_RIGHT}>
+                                                {withUnit(
+                                                    t('marketdata.quotes.toSource', {
+                                                        source: nameOf(b, a),
+                                                    }),
+                                                    unit,
+                                                )}
+                                            </th>
+                                            <th className={HEAD_RIGHT}>
+                                                {t('marketdata.quotes.age')}
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {drawn.map((s) => {
+                                            const c = compare(
+                                                kind,
+                                                picked,
+                                                s,
+                                                b,
+                                                watch.vendors,
+                                                watch.shown,
+                                                watch.now,
+                                            );
+                                            const q =
+                                                s === CONSENSUS ? undefined : picked.quotes.get(s);
+                                            return (
+                                                <tr
+                                                    key={s}
+                                                    className={cx(
+                                                        ROW,
+                                                        q !== undefined &&
+                                                            isStale(q.at, watch.now) &&
+                                                            'text-ink-faint',
+                                                    )}
                                                 >
-                                                    {d === null ? '·' : gap(d, cell.compared!.b!)}
-                                                    {over && ' ⚠'}
-                                                </td>
+                                                    <td className={LEFT_CELL}>
+                                                        <Swatch colour={colourOf(s)} />
+                                                        {labelOf(s)}
+                                                    </td>
+                                                    <td className={DATA_CELL}>
+                                                        {valueText(kind, s === b ? c.b : c.a)}
+                                                    </td>
+                                                    <td className={DATA_CELL}>
+                                                        {s === b ? '' : gap(c.difference, c.b ?? 1)}
+                                                    </td>
+                                                    <td className={DATA_CELL}>
+                                                        {q === undefined
+                                                            ? ''
+                                                            : age(q.at, watch.now)}
+                                                    </td>
+                                                </tr>
                                             );
                                         })}
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                    {picked !== undefined && (
-                        <table className="w-full text-sm">
-                            <caption className="pb-1 text-left text-sm font-semibold">{`${row} ${column}`}</caption>
-                            <thead>
-                                <tr>
-                                    <th className={HEAD_LEFT}>{t('marketdata.quotes.source')}</th>
-                                    <th className={HEAD_RIGHT}>{t('marketdata.quotes.value')}</th>
-                                    <th className={HEAD_RIGHT}>
-                                        {withUnit(
-                                            t('marketdata.quotes.toSource', {
-                                                source: nameOf(b, a),
-                                            }),
-                                            unit,
-                                        )}
-                                    </th>
-                                    <th className={HEAD_RIGHT}>{t('marketdata.quotes.age')}</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {drawn.map((s) => {
-                                    const c = compare(
-                                        kind,
-                                        picked,
-                                        s,
-                                        b,
-                                        watch.vendors,
-                                        watch.shown,
-                                        watch.now,
-                                    );
-                                    const q = s === CONSENSUS ? undefined : picked.quotes.get(s);
-                                    return (
-                                        <tr
-                                            key={s}
-                                            className={cx(
-                                                ROW,
-                                                q !== undefined &&
-                                                    isStale(q.at, watch.now) &&
-                                                    'text-ink-faint',
-                                            )}
-                                        >
-                                            <td className={LEFT_CELL}>
-                                                <Swatch colour={colourOf(s)} />
-                                                {labelOf(s)}
-                                            </td>
-                                            <td className={DATA_CELL}>
-                                                {valueText(kind, s === b ? c.b : c.a)}
-                                            </td>
-                                            <td className={DATA_CELL}>
-                                                {s === b ? '' : gap(c.difference, c.b ?? 1)}
-                                            </td>
-                                            <td className={DATA_CELL}>
-                                                {q === undefined ? '' : age(q.at, watch.now)}
-                                            </td>
-                                        </tr>
-                                    );
+                                    </tbody>
+                                </table>
+                            )}
+                        </div>
+                        <div className="min-w-0 space-y-2">
+                            <div className="flex flex-wrap items-center justify-between gap-2">
+                                <h3 className="text-sm font-semibold">
+                                    {t('marketdata.quotes.termOf', { column })}
+                                </h3>
+                                <label className="flex items-center gap-2 text-xs text-ink-faint">
+                                    {t('marketdata.quotes.plotColumn')}
+                                    <Select
+                                        value={column}
+                                        onChange={(event) => set({ column: event.target.value })}
+                                    >
+                                        {grid.columns.map((c) => (
+                                            <option key={c} value={c}>
+                                                {c}
+                                            </option>
+                                        ))}
+                                    </Select>
+                                </label>
+                            </div>
+                            <LineChart
+                                categories={grid.rows}
+                                series={drawn.map((s) => ({
+                                    colour: colourOf(s),
+                                    strong: s === a || s === b,
+                                    dots: s === a || s === b,
+                                    opacity: s === a || s === b ? 1 : 0.45,
+                                    ...(s === CONSENSUS ? { dashed: true } : {}),
+                                    points: grid.rows.map((r) => {
+                                        const cell = grid.at(r, column);
+                                        if (cell === undefined) return null;
+                                        return compare(
+                                            kind,
+                                            cell.point,
+                                            s,
+                                            s === b ? a : b,
+                                            watch.vendors,
+                                            watch.shown,
+                                            watch.now,
+                                        ).a;
+                                    }),
+                                }))}
+                                format={(v) => valueText(kind, v)}
+                                label={t('marketdata.quotes.termLabel', {
+                                    name: grid.name,
+                                    column,
                                 })}
-                            </tbody>
-                        </table>
-                    )}
-                </div>
-                <div className="min-w-0 space-y-2">
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                        <h3 className="text-sm font-semibold">
-                            {t('marketdata.quotes.termOf', { column })}
-                        </h3>
-                        <label className="flex items-center gap-2 text-xs text-ink-faint">
-                            {t('marketdata.quotes.plotColumn')}
-                            <Select
-                                value={column}
-                                onChange={(event) => set({ column: event.target.value })}
-                            >
-                                {grid.columns.map((c) => (
-                                    <option key={c} value={c}>
-                                        {c}
-                                    </option>
+                                price
+                            />
+                            <p className="flex flex-wrap gap-4 text-xs text-ink-muted">
+                                {drawn.map((s) => (
+                                    <span key={s} className={s === a || s === b ? 'text-ink' : ''}>
+                                        <Swatch colour={colourOf(s)} />
+                                        {labelOf(s)}
+                                    </span>
                                 ))}
-                            </Select>
-                        </label>
+                            </p>
+                        </div>
                     </div>
-                    <LineChart
-                        categories={grid.rows}
-                        series={drawn.map((s) => ({
-                            colour: colourOf(s),
-                            strong: s === a || s === b,
-                            dots: s === a || s === b,
-                            opacity: s === a || s === b ? 1 : 0.45,
-                            ...(s === CONSENSUS ? { dashed: true } : {}),
-                            points: grid.rows.map((r) => {
-                                const cell = grid.at(r, column);
-                                if (cell === undefined) return null;
-                                return compare(
-                                    kind,
-                                    cell.point,
-                                    s,
-                                    s === b ? a : b,
-                                    watch.vendors,
-                                    watch.shown,
-                                    watch.now,
-                                ).a;
-                            }),
-                        }))}
-                        format={(v) => valueText(kind, v)}
-                        label={t('marketdata.quotes.termLabel', { name: grid.name, column })}
-                        price
-                    />
-                    <p className="flex flex-wrap gap-4 text-xs text-ink-muted">
-                        {drawn.map((s) => (
-                            <span key={s} className={s === a || s === b ? 'text-ink' : ''}>
-                                <Swatch colour={colourOf(s)} />
-                                {labelOf(s)}
-                            </span>
-                        ))}
-                    </p>
-                </div>
-            </div>
+                </>
+            )}
         </div>
     );
 }

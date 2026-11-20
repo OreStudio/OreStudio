@@ -88,7 +88,8 @@ http_response quotes_answer(const std::string& path,
                             http_request req,
                             quotes_transport& transport,
                             std::vector<watchable_feed> entitled,
-                            ores::marketdata::messaging::get_series_ticks_response history = {}) {
+                            ores::marketdata::messaging::get_series_ticks_response history = {},
+                            quote_routes::quote_fit fit = {}) {
     auto table = std::make_shared<ores::http::net::router>();
     auto board = std::make_shared<quote_board>(transport.subscriber());
     board->start();
@@ -104,8 +105,10 @@ http_response quotes_answer(const std::string& path,
         [history](const http_request&,
                   const ores::marketdata::messaging::get_provider_ticks_request&) {
             return history;
-        });
-    const auto route = table->match(http_method::get, path, req.path_params);
+        },
+        fit);
+    const auto method = path.ends_with("vols-by-delta") ? http_method::post : http_method::get;
+    const auto route = table->match(method, path, req.path_params);
     REQUIRE(route.has_value());
     REQUIRE(route->requires_auth);
     boost::asio::io_context io;
@@ -364,4 +367,60 @@ TEST_CASE("a_read_over_the_ceiling_states_the_sequence_of_the_last_quote_it_sent
 
     const auto rest = read(std::to_string(quote_routes::most_quotes));
     CHECK(quotes_count(rest, "\"provider\":") == 5);
+}
+
+TEST_CASE("a_vols_by_delta_read_forwards_the_pair_and_sources_now", "[quotes]") {
+    auto lg(make_logger(test_suite));
+    quotes_transport transport;
+    std::optional<ores::marketdata::messaging::fit_fx_vol_quotes_request> asked;
+    const auto before = std::chrono::system_clock::now();
+    http_request req;
+    req.body = R"({"pair_code":"EUR/USD","sources":[)"
+               R"({"name":"ice","quotes":[{"expiry":"1M","label":"ATM","volatility":0.07}]}]})";
+
+    const auto answer = quotes_answer(
+        "/api/marketdata/quotes/vols-by-delta",
+        req,
+        transport,
+        {},
+        {},
+        [&](const http_request&, const ores::marketdata::messaging::fit_fx_vol_quotes_request& m) {
+            asked = m;
+            ores::marketdata::messaging::fit_fx_vol_quotes_response reply;
+            reply.success = true;
+            reply.delta_type = "PaSpot";
+            reply.fits.push_back({.name = "ice", .fitted = true});
+            return reply;
+        });
+
+    CHECK(answer.status == http_status::ok);
+    REQUIRE(asked.has_value());
+    CHECK(asked->pair_code == "EUR/USD");
+    REQUIRE(asked->sources.size() == 1);
+    CHECK(asked->sources.front().quotes.front().volatility == 0.07);
+    // The screen means now, and its body states no instant.
+    CHECK(asked->as_of >= before);
+    CHECK(answer.body.find("\"delta_type\":\"PaSpot\"") != std::string::npos);
+}
+
+TEST_CASE("a_vols_by_delta_read_with_no_sources_is_refused", "[quotes]") {
+    auto lg(make_logger(test_suite));
+    quotes_transport transport;
+    http_request req;
+    req.body = R"({"pair_code":"EUR/USD","sources":[]})";
+    bool asked = false;
+
+    const auto answer =
+        quotes_answer("/api/marketdata/quotes/vols-by-delta",
+                      req,
+                      transport,
+                      {},
+                      {},
+                      [&](const http_request&, const auto&) {
+                          asked = true;
+                          return ores::marketdata::messaging::fit_fx_vol_quotes_response{};
+                      });
+
+    CHECK(answer.status == http_status::bad_request);
+    CHECK_FALSE(asked);
 }

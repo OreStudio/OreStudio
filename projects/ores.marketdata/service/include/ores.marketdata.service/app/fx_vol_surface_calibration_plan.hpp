@@ -162,6 +162,42 @@ struct prepared_surface_calibration final {
                         double pillar_tolerance,
                         std::size_t minimum_expiries);
 
+/// One quoted point of a source's surface, as a screen holds it.
+struct quoted_surface_point final {
+    std::string expiry;
+    std::string label;
+    double volatility = 0.0;
+};
+
+/// A recipe made from one source's quotes, and the quotes keyed as the recipe reads them.
+struct quote_fit_recipe final {
+    surface_calibration_recipe recipe;
+    std::map<boost::uuids::uuid, surface_series_quotes> quotes;
+};
+
+/// The series id a quote fit's pillars read; it names no stored series.
+[[nodiscard]] ORES_MARKETDATA_SERVICE_EXPORT boost::uuids::uuid quote_fit_series();
+
+/**
+ * @brief A recipe that reads one source's quotes as a smile by delta.
+ *
+ * The blueprint is the source's own: its expiries are the ones the source quotes, in tenor
+ * order, and its output strikes are 10 and 25 delta puts, ATM and 25 and 10 delta calls in the
+ * convention's delta type. Each pillar is a quote whose label SSVI reads, ATM or a risk reversal
+ * or a butterfly at a delta, from the one source at weight one; a quote with any other label, or
+ * a volatility that is not a finite number, is left out. Refuses an expiry that is not a tenor,
+ * and a source left with no quote to fit.
+ */
+[[nodiscard]] ORES_MARKETDATA_SERVICE_EXPORT std::expected<quote_fit_recipe, std::string>
+make_quote_fit_recipe(const std::string& base_currency,
+                      const std::string& quote_currency,
+                      const refdata::domain::fx_option_convention& convention,
+                      const std::string& source_name,
+                      const std::vector<quoted_surface_point>& quotes);
+
+/// The display label of an output strike: 25P for DEL/PaSpot/Put/25, ATM for ATM.
+[[nodiscard]] ORES_MARKETDATA_SERVICE_EXPORT std::string delta_label(const std::string& strike);
+
 /// The items of a blueprint's comma-separated list, such as its output strikes, trimmed.
 [[nodiscard]] ORES_MARKETDATA_SERVICE_EXPORT std::vector<std::string>
 split_blueprint_list(const std::string& text);

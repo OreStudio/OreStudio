@@ -1,0 +1,68 @@
+:PROPERTIES:
+:ID: 2B553C18-5DC3-4443-AE79-2B3BBC071172
+:END:
+#+title: Story: Compute wrappers never release their disk
+#+description: The compute wrappers keep a new copy of one engine after each database recreate, and they keep every job folder. Together these fill the disk.
+#+type: story
+#+level: s2
+#+filetags: :sprint_30:v0:
+#+created: 2026-11-20
+#+updated: 2026-11-20
+#+environment: clever_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Each compute wrapper keeps one unpacked copy of each engine version, and it
+removes the folder of a job that is older than a configured age. A developer's
+disk then stays bounded however often the database is recreated and however
+many jobs run.
+
+On 2026-11-20 the disk of the development machine filled to 0 bytes free.
+Postgres and git both failed. The wrapper run folders of all worktrees held
+about 320 GB. Two leaks cause this:
+
+- The wrapper caches an engine under =packages/<app_version_id>/=. The seed
+  =compute_ore_app_seed.sql= makes that ID with =gen_random_uuid()=, so each
+  database recreate gives the same engine a new ID, and each wrapper downloads
+  and unpacks it again. The wrapper also keeps the downloaded =.tar.gz=.
+- The wrapper unpacks each job into =jobs/<result_id>/= and never removes it.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Analyse the existing wrapper folders before any is deleted. |
+| Last touched  | 2026-11-20                               |
+
+* Acceptance
+
+- One engine version has the same app version ID after every database
+  recreate, and a wrapper reuses its unpacked package after a recreate.
+- A wrapper keeps no downloaded package archive after it unpacks it.
+- A wrapper removes job folders older than a configured age, and the default
+  age is stated.
+- The size of the wrapper folders is measured before and after, on the same
+  workload.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:05F7CDA0-07BC-44A1-91F3-695AE79A3C19][Give one engine version one app version ID]] | BACKLOG | | | Make the seeded app version ID stable for one engine, so a wrapper reuses its unpacked package after a database recreate. |
+| [[id:A8E2FC93-6C14-4786-9B0C-A9BC4F25F6EE][Remove job folders older than a set age]] | BACKLOG | | | Make the wrapper remove job folders that are older than a configured age. |
+
+* Decisions
+
+* Out of scope
+
+- Removing a run's inputs and outputs from object storage. The story Give each
+  tenant its own buckets and scope the reaper owns that.
+- Deleting the folders that exist today. Keep them until both tasks have
+  analysed them; the user asked for this.

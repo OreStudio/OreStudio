@@ -260,19 +260,23 @@ bool is_event_source(std::string_view source) {
     });
 }
 
-/// The first alternative of an event source that states an event.
+/**
+ * @brief The first alternative of an event source that states an event. Every
+ * alternative must state an event. A derived event always states one, so an
+ * alternative after it is never read.
+ */
 std::optional<twin_event> event_of(const instrument_batch& batch, std::string_view source) {
-    for (const auto part : parts_of(source, " or ")) {
-        if (const auto role = schedule_role_of(part)) {
-            if (auto schedule = whole_schedule(batch, *role))
-                return std::visit([](auto& s) -> twin_event { return std::move(s); }, *schedule);
-        } else if (auto derived = derived_of(part)) {
-            return std::move(*derived);
-        } else {
+    const auto parts = parts_of(source, " or ");
+    for (const auto part : parts)
+        if (!schedule_role_of(part) && !derived_of(part))
             throw trade_population_error("The twin recipe source '" + std::string(source) +
                                          "' mixes an event with the value '" + std::string(part) +
                                          "'.");
-        }
+    for (const auto part : parts) {
+        if (auto derived = derived_of(part))
+            return std::move(*derived);
+        if (auto schedule = whole_schedule(batch, *schedule_role_of(part)))
+            return std::visit([](auto& s) -> twin_event { return std::move(s); }, *schedule);
     }
     return std::nullopt;
 }
@@ -375,6 +379,16 @@ scripted_twin_of(const domain::trade_population_slot& native) {
         // dates, or derived from another input as ORE derives it.
         if (is_event_source(row->source)) {
             auto event = event_of(native.instruments, row->source);
+            // A derived event names its base by input name, which ORE resolves
+            // only among the trade's other events.
+            if (const auto* derived = event ? std::get_if<tb::scripted_derived>(&*event) : nullptr;
+                derived && std::ranges::none_of(recipe, [&](const auto* other) {
+                    return other != row && other->input_name == derived->base &&
+                           other->data_type == "Event";
+                }))
+                throw trade_population_error("The " + native.trade_type_code + " twin derives " +
+                                             std::string(row->input_name) + " from " +
+                                             derived->base + ", which is no other Event input.");
             if (!event)
                 throw trade_population_error(
                     "The " + native.trade_type_code + " twin finds no schedule for " +

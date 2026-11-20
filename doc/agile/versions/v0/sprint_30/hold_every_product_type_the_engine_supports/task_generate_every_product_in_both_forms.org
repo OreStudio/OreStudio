@@ -163,6 +163,12 @@ via its "Verifies task" field.
 | 4912.3 | transformed() scans the table | scripted_twins.cpp | Declined | Eleven rows, read once per input. |
 | 4912.4 | The count of 16 is a magic number | tests | Declined | The count was already the test's; only twins are now excluded from it. |
 | 4912.5 | A stated premium is not exercised | tests | Accepted | A test injects a premium and checks its amount, currency and date on the twin. |
+| 4919.1 | The runtime does not check a derived base | scripted_twins.cpp | Accepted | The twin refuses a derived event whose base is no other Event input of its recipe. |
+| 4919.2 | A value after a resolved event is not checked | scripted_twins.cpp | Accepted | Every alternative of an event source is checked before any is resolved. |
+| 4919.3 | An alternative after a derived event is never read | scripted_twins.cpp | Accepted | The function's comment says so. |
+| 4919.4 | The payoff limit of a million is a magic number | catalogue | Declined | The catalogue's recipe prose and the task notes state why it is not 0. |
+| 4919.5 | The two forms are not compared by NPV | tests | Declined | The native swaps have no engine here; the task Compare the two forms covers it. |
+| 4919.6 | The table realignment hides the change | catalogue | Declined | The diff with whitespace ignored shows only the new rows and prose. |
 
 * Result
 

@@ -574,4 +574,48 @@ mm::calibrate_fx_vol_surface_response fx_vol_surface_calibration_service::calibr
     return out;
 }
 
+mm::fit_fx_vol_quotes_response
+fx_vol_surface_calibration_service::fit_quotes(const context& ctx,
+                                               const mm::fit_fx_vol_quotes_request& req) {
+    mm::fit_fx_vol_quotes_response out;
+    try {
+        const auto slash = req.pair_code.find('/');
+        if (slash == std::string::npos || slash == 0 || slash + 1 == req.pair_code.size())
+            throw std::invalid_argument("Name the pair as BASE/QUOTE, such as EUR/USD, not '" +
+                                        req.pair_code + "'.");
+        const auto base = req.pair_code.substr(0, slash);
+        const auto quote = req.pair_code.substr(slash + 1);
+        const auto as_of = std::chrono::floor<std::chrono::microseconds>(req.as_of);
+        if (as_of == time_point{})
+            throw std::invalid_argument("Name the as-of instant the forwards are read at.");
+        const auto convention_id = base + "-" + quote + "-FXOPTION";
+        const auto conventions =
+            refdata_repo::fx_option_convention_repository{}.read_latest(ctx, convention_id);
+        if (conventions.empty())
+            throw std::invalid_argument("There is no FX option convention " + convention_id +
+                                        ", so the quotes have no delta to be read at.");
+        const auto& convention = conventions.front();
+        out.convention_id = convention.id;
+        out.delta_type = convention.delta_type;
+
+        auto fits = fit_quote_sources(
+            base,
+            quote,
+            convention,
+            req.sources,
+            [&](const surface_calibration_recipe& recipe) {
+                return read_forwards(ctx, recipe, as_of);
+            },
+            pillar_tolerance);
+        if (!fits)
+            throw std::invalid_argument(fits.error());
+        out.fits = std::move(*fits);
+        out.success = true;
+    } catch (const std::exception& e) {
+        out.success = false;
+        out.message = e.what();
+    }
+    return out;
+}
+
 }

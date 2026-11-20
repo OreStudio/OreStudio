@@ -104,6 +104,8 @@ The vols by delta must come from the server. The conversion depends on the
 pair's delta convention (spot or forward delta, premium-adjusted or not, which
 ATM) and on a fitted smile; the prototype stands in with the simple strangle
 approximation, 25C = ATM + 25BF + 25RR/2, and labels the view as the server's.
+The built view reads them from the market data service's =fit_fx_vol_quotes=,
+an SSVI fit in the pair's convention (2026-11-20).
 
 =?pick=<series id>= opens a series, such as =spot-EURUSD=, =swap-USD-1D= or
 =vol-EUR/USD=; =?tab== chooses variant c's tab; =?surface=compare= opens a surface in compare

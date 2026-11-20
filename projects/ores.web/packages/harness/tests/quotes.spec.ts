@@ -28,6 +28,8 @@ import { expect, test } from '@playwright/test';
 test('the quotes view shows a board per asset class and shape, each vendor a column', async ({
     page,
 }) => {
+    // A surface's fit is the server's, and it reads a whole surface, so the test waits for it.
+    test.setTimeout(120_000);
     await page.goto('/market-data/quotes');
     await expect(page.getByRole('heading', { level: 1, name: 'Quotes' })).toBeVisible();
     const rail = page.getByRole('navigation', { name: 'Sources' });
@@ -50,7 +52,8 @@ test('the quotes view shows a board per asset class and shape, each vendor a col
     // Leaving a source out takes its column off every board, when there is another to show.
     if ((await rail.getByRole('checkbox').count()) > 1) {
         await rail.getByRole('checkbox').first().uncheck();
-        await expect(page.locator('table').first().locator('thead')).not.toContainText('bloomberg');
+        // Its column goes; a board that only it quoted goes empty.
+        await expect(page.locator('thead', { hasText: 'bloomberg' })).toHaveCount(0);
         await rail.getByRole('checkbox').first().check();
     }
 
@@ -67,5 +70,30 @@ test('the quotes view shows a board per asset class and shape, each vendor a col
         await expect(page.getByText(/^Past the limit/)).toBeVisible();
         await expect(page.getByRole('img', { name: /by tenor, each source/ })).toBeVisible();
         await page.screenshot({ path: '../../.runtime/harness/quotes-curves.png', fullPage: true });
+    }
+
+    // A surface's two sources read as smiles by delta, fitted by the server.
+    const surfaces = boards.getByRole('tab', { name: /surfaces/ });
+    if ((await surfaces.count()) > 0) {
+        await surfaces.first().click();
+        await page
+            .getByRole('group', { name: 'Show' })
+            .getByRole('button', { name: 'Compare' })
+            .click();
+        await page
+            .getByRole('group', { name: 'Read as' })
+            .getByRole('button', { name: 'Vol by delta' })
+            .click();
+        const asked = Date.now();
+        await expect(
+            page.getByText(/^Fitted by the server in [A-Z]{3}-[A-Z]{3}-FXOPTION/),
+        ).toBeVisible({
+            timeout: 60_000,
+        });
+        console.log(`The smiles were fitted in ${String(Date.now() - asked)} ms.`);
+        await page.screenshot({
+            path: '../../.runtime/harness/quotes-vol-by-delta.png',
+            fullPage: true,
+        });
     }
 });

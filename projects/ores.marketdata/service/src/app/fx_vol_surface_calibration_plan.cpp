@@ -27,6 +27,7 @@
 #include <cmath>
 #include <format>
 #include <set>
+#include <stdexcept>
 
 namespace ores::marketdata::service::app {
 
@@ -456,6 +457,158 @@ prepare_calibration(const surface_calibration_recipe& recipe,
                                              .convention = terms->convention});
     }
     out.request.grid_strikes = checked.grid_strikes;
+    return out;
+}
+
+boost::uuids::uuid quote_fit_series() {
+    return boost::uuids::uuid{{0x51,
+                               0x75,
+                               0x6f,
+                               0x74,
+                               0x65,
+                               0x46,
+                               0x69,
+                               0x74,
+                               0x00,
+                               0x00,
+                               0x00,
+                               0x00,
+                               0x00,
+                               0x00,
+                               0x00,
+                               0x01}};
+}
+
+std::expected<quote_fit_recipe, std::string>
+make_quote_fit_recipe(const std::string& base_currency,
+                      const std::string& quote_currency,
+                      const refdata::domain::fx_option_convention& convention,
+                      const std::string& source_name,
+                      const std::vector<quoted_surface_point>& quotes) {
+    quote_fit_recipe out;
+    auto& recipe = out.recipe;
+    auto& blueprint = recipe.blueprint;
+    blueprint.name = base_currency + quote_currency + " " + source_name;
+    blueprint.base_currency_code = base_currency;
+    blueprint.quote_currency_code = quote_currency;
+    blueprint.fx_option_convention_id = convention.id;
+    blueprint.smile_model = "ssvi";
+    blueprint.expiry_interpolation = "linear_total_variance";
+    recipe.convention = convention;
+
+    const auto series = quote_fit_series();
+    auto& held = out.quotes[series];
+    std::vector<recipe_expiry> expiries;
+    for (const auto& q : quotes) {
+        if (!std::isfinite(q.volatility) ||
+            !read_strike_label(pillar_key_of(q.expiry, q.label), q.label))
+            continue;
+        if (!std::ranges::any_of(expiries, [&](const auto& e) { return e.code == q.expiry; })) {
+            const auto period = mapping::parse_tenor_text(q.expiry);
+            if (!period)
+                return std::unexpected("expiry " + q.expiry + ": " + period.error());
+            expiries.push_back({q.expiry, *period});
+        }
+        if (held.contains({q.expiry, q.label}))
+            continue;
+        held[{q.expiry, q.label}] = q.volatility;
+        refdata::domain::fx_vol_surface_pillar pillar;
+        pillar.id = boost::uuids::uuid{};
+        pillar.id.data[15] = static_cast<std::uint8_t>(recipe.pillars.size() & 0xFF);
+        pillar.id.data[14] = static_cast<std::uint8_t>((recipe.pillars.size() >> 8) & 0xFF);
+        pillar.id.data[0] = 0x70;
+        pillar.expiry_code = q.expiry;
+        pillar.strike_label = q.label;
+        refdata::domain::fx_vol_surface_pillar_source source;
+        source.pillar_id = pillar.id;
+        source.market_series_id = series;
+        source.contributor_code = source_name;
+        source.weight = 1.0;
+        recipe.pillars.push_back(std::move(pillar));
+        recipe.sources.push_back(std::move(source));
+    }
+    if (recipe.pillars.empty())
+        return std::unexpected(source_name +
+                               " quotes no ATM, risk reversal or butterfly here, so there is no "
+                               "smile to fit");
+    std::ranges::sort(expiries, [](const auto& a, const auto& b) {
+        return qd::compare_periods(a.period, b.period) < 0;
+    });
+    std::string codes;
+    for (const auto& e : expiries)
+        codes += (codes.empty() ? "" : ",") + e.code;
+    blueprint.output_expiries = codes;
+    const auto& type = convention.delta_type;
+    blueprint.output_strikes = "DEL/" + type + "/Put/10,DEL/" + type + "/Put/25,ATM,DEL/" + type +
+                               "/Call/25,DEL/" + type + "/Call/10";
+    return out;
+}
+
+std::string delta_label(const std::string& strike) {
+    const auto parsed = datum::strike::parse(strike);
+    if (!parsed)
+        return strike;
+    if (std::holds_alternative<datum::atm_strike>(parsed->which()))
+        return "ATM";
+    const auto* delta = std::get_if<datum::delta_strike>(&parsed->which());
+    if (!delta)
+        return strike;
+    return delta->delta.text() + (delta->option_type == "Call" ? "C" : "P");
+}
+
+std::expected<std::vector<ores::marketdata::messaging::fx_vol_source_fit>, std::string>
+fit_quote_sources(const std::string& base_currency,
+                  const std::string& quote_currency,
+                  const refdata::domain::fx_option_convention& convention,
+                  const std::vector<ores::marketdata::messaging::fx_vol_quote_source>& sources,
+                  const quote_fit_forwards& forwards_of,
+                  double pillar_tolerance) {
+    if (sources.size() > most_fit_sources)
+        return std::unexpected(std::format(
+            "A fit reads at most {} sources, not {}.", most_fit_sources, sources.size()));
+    for (const auto& source : sources)
+        if (source.quotes.size() > most_fit_quotes)
+            return std::unexpected(std::format("A source holds at most {} quotes; {} holds {}.",
+                                               most_fit_quotes,
+                                               source.name,
+                                               source.quotes.size()));
+    std::vector<ores::marketdata::messaging::fx_vol_source_fit> out;
+    std::optional<surface_forward_set> forwards;
+    for (const auto& source : sources) {
+        ores::marketdata::messaging::fx_vol_source_fit fit;
+        fit.name = source.name;
+        try {
+            std::vector<quoted_surface_point> quotes;
+            quotes.reserve(source.quotes.size());
+            for (const auto& q : source.quotes)
+                quotes.push_back({q.expiry, q.label, q.volatility});
+            const auto made = make_quote_fit_recipe(
+                base_currency, quote_currency, convention, source.name, quotes);
+            if (!made)
+                throw std::invalid_argument(made.error());
+            const auto checked = check_recipe(made->recipe);
+            if (!checked)
+                throw std::invalid_argument(checked.error());
+            if (!forwards)
+                forwards = forwards_of(made->recipe);
+            const auto prepared = prepare_calibration(
+                made->recipe, *checked, *forwards, made->quotes, pillar_tolerance, 1);
+            if (!prepared)
+                throw std::invalid_argument(prepared.error());
+            const auto fitted = qs::calibrate_ssvi(prepared->request);
+            if (!fitted)
+                throw std::invalid_argument(fitted.error());
+            for (const auto& point : fitted->grid)
+                fit.points.push_back({.expiry = point.expiry_id,
+                                      .strike = delta_label(point.strike_id),
+                                      .volatility = point.volatility});
+            fit.unfitted_expiries = prepared->unfitted_expiries;
+            fit.fitted = true;
+        } catch (const std::exception& e) {
+            fit.message = e.what();
+        }
+        out.push_back(std::move(fit));
+    }
     return out;
 }
 

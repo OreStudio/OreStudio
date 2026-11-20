@@ -51,7 +51,7 @@ std::optional<build_error> dates_within(std::string term,
     return std::nullopt;
 }
 
-std::optional<build_error> refusal_of(const best_entry_option_terms& terms) {
+std::optional<build_error> entry_reset_refusal(const best_entry_option_terms& terms) {
     if (terms.currency.get().empty())
         return build_error{"currency", "must name a currency"};
     for (const auto& [term, value] : {std::pair{"notional", &terms.notional.get()},
@@ -75,7 +75,7 @@ std::optional<build_error> refusal_of(const best_entry_option_terms& terms) {
     return std::nullopt;
 }
 
-std::optional<build_error> refusal_of(const strike_resettable_option_terms& terms) {
+std::optional<build_error> entry_reset_refusal(const strike_resettable_option_terms& terms) {
     if (terms.currency.get().empty())
         return build_error{"currency", "must name a currency"};
     for (const auto& [term, value] : {std::pair{"quantity", &terms.quantity.get()},
@@ -137,11 +137,11 @@ Row strike_resettable_row(std::string_view trade_type,
 
 /// The underlying as an underlying row, and the observation dates as a dated schedule row.
 template <typename Data>
-void add_shared_rows(Data& out,
-                     std::string_view underlying_type,
-                     const marketdata::datum::market_reference& underlying,
-                     std::string_view schedule_role,
-                     const std::vector<ymd>& dates) {
+void add_entry_reset_rows(Data& out,
+                          std::string_view underlying_type,
+                          const marketdata::datum::market_reference& underlying,
+                          std::string_view schedule_role,
+                          const std::vector<ymd>& dates) {
     domain::instrument_underlying row{};
     row.underlying_role = "underlying";
     row.sequence_number = 1;
@@ -174,16 +174,16 @@ equity_best_entry_option_builder::equity_best_entry_option_builder(best_entry_op
     : terms_(std::move(terms)) {}
 
 equity_result equity_best_entry_option_builder::build() const {
-    if (auto refusal = refusal_of(terms_))
+    if (auto refusal = entry_reset_refusal(terms_))
         return std::unexpected(std::move(*refusal));
     domain::equity_instrument_data out{};
     out.instrument =
         best_entry_row<domain::equity_best_entry_option_instrument>(trade_type, terms_);
-    add_shared_rows(out,
-                    "Equity",
-                    terms_.underlying.get(),
-                    "strike_observation_schedule",
-                    terms_.strike_observation_dates.get());
+    add_entry_reset_rows(out,
+                         "Equity",
+                         terms_.underlying.get(),
+                         "strike_observation_schedule",
+                         terms_.strike_observation_dates.get());
     return out;
 }
 
@@ -191,16 +191,16 @@ fx_best_entry_option_builder::fx_best_entry_option_builder(best_entry_option_ter
     : terms_(std::move(terms)) {}
 
 fx_result fx_best_entry_option_builder::build() const {
-    if (auto refusal = refusal_of(terms_))
+    if (auto refusal = entry_reset_refusal(terms_))
         return std::unexpected(std::move(*refusal));
     domain::fx_instrument_data out{};
     out.best_entry_options.push_back(
         best_entry_row<domain::fx_best_entry_option_instrument>(trade_type, terms_));
-    add_shared_rows(out,
-                    "FX",
-                    terms_.underlying.get(),
-                    "strike_observation_schedule",
-                    terms_.strike_observation_dates.get());
+    add_entry_reset_rows(out,
+                         "FX",
+                         terms_.underlying.get(),
+                         "strike_observation_schedule",
+                         terms_.strike_observation_dates.get());
     return out;
 }
 
@@ -209,16 +209,16 @@ equity_strike_resettable_option_builder::equity_strike_resettable_option_builder
     : terms_(std::move(terms)) {}
 
 equity_result equity_strike_resettable_option_builder::build() const {
-    if (auto refusal = refusal_of(terms_))
+    if (auto refusal = entry_reset_refusal(terms_))
         return std::unexpected(std::move(*refusal));
     domain::equity_instrument_data out{};
     out.instrument = strike_resettable_row<domain::equity_strike_resettable_option_instrument>(
         trade_type, terms_);
-    add_shared_rows(out,
-                    "Equity",
-                    terms_.underlying.get(),
-                    "observation_schedule",
-                    terms_.observation_dates.get());
+    add_entry_reset_rows(out,
+                         "Equity",
+                         terms_.underlying.get(),
+                         "observation_schedule",
+                         terms_.observation_dates.get());
     return out;
 }
 
@@ -227,12 +227,12 @@ fx_strike_resettable_option_builder::fx_strike_resettable_option_builder(
     : terms_(std::move(terms)) {}
 
 fx_result fx_strike_resettable_option_builder::build() const {
-    if (auto refusal = refusal_of(terms_))
+    if (auto refusal = entry_reset_refusal(terms_))
         return std::unexpected(std::move(*refusal));
     domain::fx_instrument_data out{};
     out.strike_resettable_options.push_back(
         strike_resettable_row<domain::fx_strike_resettable_option_instrument>(trade_type, terms_));
-    add_shared_rows(
+    add_entry_reset_rows(
         out, "FX", terms_.underlying.get(), "observation_schedule", terms_.observation_dates.get());
     return out;
 }

@@ -28,7 +28,7 @@ namespace {
 
 using utility::decimal::decimal;
 
-std::optional<build_error> refusal_of(const basket_variance_swap_terms& terms) {
+std::optional<build_error> volatility_product_refusal(const basket_variance_swap_terms& terms) {
     if (terms.currency.get().empty())
         return build_error{"currency", "must name a currency"};
     if (!(terms.notional.get() > decimal{}))
@@ -52,7 +52,8 @@ std::optional<build_error> refusal_of(const basket_variance_swap_terms& terms) {
     return std::nullopt;
 }
 
-std::optional<build_error> refusal_of(const forward_volatility_agreement_terms& terms) {
+std::optional<build_error>
+volatility_product_refusal(const forward_volatility_agreement_terms& terms) {
     if (terms.pay_currency.get().empty())
         return build_error{"pay_currency", "must name a currency"};
     if (!(terms.quantity.get() > decimal{}))
@@ -145,7 +146,7 @@ equity_basket_variance_swap_builder::equity_basket_variance_swap_builder(
     : terms_(std::move(terms)) {}
 
 equity_result equity_basket_variance_swap_builder::build() const {
-    if (auto refusal = refusal_of(terms_))
+    if (auto refusal = volatility_product_refusal(terms_))
         return std::unexpected(std::move(*refusal));
     domain::equity_instrument_data out{};
     out.instrument =
@@ -158,7 +159,7 @@ fx_basket_variance_swap_builder::fx_basket_variance_swap_builder(basket_variance
     : terms_(std::move(terms)) {}
 
 fx_result fx_basket_variance_swap_builder::build() const {
-    if (auto refusal = refusal_of(terms_))
+    if (auto refusal = volatility_product_refusal(terms_))
         return std::unexpected(std::move(*refusal));
     domain::fx_instrument_data out{};
     out.basket_variance_swaps.push_back(
@@ -172,7 +173,7 @@ equity_forward_volatility_agreement_builder::equity_forward_volatility_agreement
     : terms_(std::move(terms)) {}
 
 equity_result equity_forward_volatility_agreement_builder::build() const {
-    if (auto refusal = refusal_of(terms_))
+    if (auto refusal = volatility_product_refusal(terms_))
         return std::unexpected(std::move(*refusal));
     domain::equity_instrument_data out{};
     out.instrument =
@@ -186,7 +187,7 @@ fx_forward_volatility_agreement_builder::fx_forward_volatility_agreement_builder
     : terms_(std::move(terms)) {}
 
 fx_result fx_forward_volatility_agreement_builder::build() const {
-    if (auto refusal = refusal_of(terms_))
+    if (auto refusal = volatility_product_refusal(terms_))
         return std::unexpected(std::move(*refusal));
     domain::fx_instrument_data out{};
     out.forward_volatility_agreements.push_back(

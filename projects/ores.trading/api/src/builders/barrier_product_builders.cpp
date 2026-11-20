@@ -44,7 +44,7 @@ std::optional<build_error> barrier_product_barrier_refusal(const scripted_barrie
     return barrier_product_positive("barrier", barrier.level);
 }
 
-std::optional<build_error> refusal_of(const window_barrier_option_terms& terms) {
+std::optional<build_error> barrier_product_refusal(const window_barrier_option_terms& terms) {
     if (terms.currency.get().empty())
         return build_error{"currency", "must name a currency"};
     if (auto refusal = barrier_product_positive("fixing_amount", terms.fixing_amount.get()))
@@ -59,7 +59,7 @@ std::optional<build_error> refusal_of(const window_barrier_option_terms& terms) 
     return std::nullopt;
 }
 
-std::optional<build_error> refusal_of(const generic_barrier_option_terms& terms) {
+std::optional<build_error> barrier_product_refusal(const generic_barrier_option_terms& terms) {
     if (terms.pay_currency.get().empty())
         return build_error{"pay_currency", "must name a currency"};
     if (auto refusal = barrier_product_positive("quantity", terms.quantity.get()))
@@ -114,9 +114,9 @@ void add_option(Data& out,
 }
 
 template <typename Data>
-void add_underlying(Data& out,
-                    std::string_view type,
-                    const marketdata::datum::market_reference& underlying) {
+void add_barrier_underlying(Data& out,
+                            std::string_view type,
+                            const marketdata::datum::market_reference& underlying) {
     domain::instrument_underlying row{};
     row.underlying_role = "underlying";
     row.sequence_number = 1;
@@ -156,7 +156,7 @@ Row window_row(std::string_view trade_type, const window_barrier_option_terms& t
 
 template <typename Data>
 void add_window_rows(Data& out, std::string_view type, const window_barrier_option_terms& terms) {
-    add_underlying(out, type, terms.underlying.get());
+    add_barrier_underlying(out, type, terms.underlying.get());
     add_option(out, terms.position.get(), terms.kind.get(), terms.expiry.get(), std::nullopt);
     add_barrier(out, terms.barrier.get());
 }
@@ -168,7 +168,7 @@ equity_window_barrier_option_builder::equity_window_barrier_option_builder(
     : terms_(std::move(terms)) {}
 
 equity_result equity_window_barrier_option_builder::build() const {
-    if (auto refusal = refusal_of(terms_))
+    if (auto refusal = barrier_product_refusal(terms_))
         return std::unexpected(std::move(*refusal));
     domain::equity_instrument_data out{};
     out.instrument =
@@ -182,7 +182,7 @@ fx_window_barrier_option_builder::fx_window_barrier_option_builder(
     : terms_(std::move(terms)) {}
 
 fx_result fx_window_barrier_option_builder::build() const {
-    if (auto refusal = refusal_of(terms_))
+    if (auto refusal = barrier_product_refusal(terms_))
         return std::unexpected(std::move(*refusal));
     domain::fx_instrument_data out{};
     out.window_barrier_options.push_back(
@@ -196,7 +196,7 @@ equity_generic_barrier_option_builder::equity_generic_barrier_option_builder(
     : terms_(std::move(terms)) {}
 
 equity_result equity_generic_barrier_option_builder::build() const {
-    if (auto refusal = refusal_of(terms_))
+    if (auto refusal = barrier_product_refusal(terms_))
         return std::unexpected(std::move(*refusal));
     domain::equity_instrument_data out{};
     domain::equity_generic_barrier_option_instrument row{};
@@ -207,7 +207,7 @@ equity_result equity_generic_barrier_option_builder::build() const {
     row.settlement_date = terms_.settlement.get();
     row.kiko_type = terms_.kiko_type;
     out.instrument = std::move(row);
-    add_underlying(out, "Equity", terms_.underlying.get());
+    add_barrier_underlying(out, "Equity", terms_.underlying.get());
     add_option(out, terms_.position.get(), terms_.kind.get(), terms_.expiry.get(), "Vanilla");
     domain::instrument_schedule schedule{};
     schedule.owner_role = "option";

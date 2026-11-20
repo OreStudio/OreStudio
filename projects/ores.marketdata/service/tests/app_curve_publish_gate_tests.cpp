@@ -191,6 +191,56 @@ TEST_CASE("the_market_risk_decider_sees_the_request_and_approving_it_permits_the
     CHECK(verdict.record->bootstrap_config_id == f.config_id);
 }
 
+TEST_CASE("one_request_authorises_a_set_and_each_member_publishes_once", tags) {
+    curve_fixture f;
+    const auto maker = seed_person(f.h);
+    const auto decider = seed_person(f.h);
+    const auto first = f.subject();
+    const auto second_config_id = f.seed_second_curve();
+    const auto second =
+        resolve_publish_subject(maker.ctx, boost::uuids::to_string(second_config_id), as_of);
+
+    // One raise for the party's two curves, and one decider for the set.
+    const auto raised =
+        raise_publish_request_set(maker.ctx, {first, second}, "The party's whole curve set");
+    const auto id = boost::uuids::to_string(raised.id);
+    REQUIRE(raised.state_code == "waiting");
+
+    // The set is readable by the request, which is what a decider is shown.
+    ores::marketdata::messaging::curve_publishes_filter by_request;
+    by_request.request_id = raised.id;
+    const auto members = ores::marketdata::repository::curve_publish_repository{}.read_latest(
+        maker.ctx, 0, 10, {}, by_request);
+    REQUIRE(members.size() == 2);
+
+    approval_lifecycle deciders_view(decider.ctx);
+    const auto decided =
+        deciders_view.decide(id, raised.version, "approve", decider.account.id, "");
+    REQUIRE(decided.outcome == "ok");
+
+    // One approval permits each member, in its own act.
+    const auto verdict_first = verdict_on_publish(maker.ctx, id, first);
+    CHECK(verdict_first.approved);
+    const auto verdict_second = verdict_on_publish(maker.ctx, id, second);
+    CHECK(verdict_second.approved);
+
+    // A curve the request does not name is refused, in words that name the set
+    // it does authorise.
+    const auto third_config_id = f.seed_second_curve("USD-SOFR-THIRD");
+    const auto third =
+        resolve_publish_subject(maker.ctx, boost::uuids::to_string(third_config_id), as_of);
+    const auto refused = verdict_on_publish(maker.ctx, id, third);
+    CHECK_FALSE(refused.approved);
+    CHECK(refused.message.find("authorises") != std::string::npos);
+
+    // A member that published is spent, and its neighbour is not.
+    record_publication(maker.ctx, *verdict_first.record, "maker");
+    const auto spent = verdict_on_publish(maker.ctx, id, first);
+    CHECK_FALSE(spent.approved);
+    CHECK(spent.message.find("already published") != std::string::npos);
+    CHECK(verdict_on_publish(maker.ctx, id, second).approved);
+}
+
 TEST_CASE("an_approved_subject_publishes_exactly_that_and_records_the_publisher", tags) {
     curve_fixture f;
     const auto maker = seed_person(f.h);

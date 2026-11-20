@@ -8,7 +8,7 @@
 #+filetags: :two_providers_of_one_fixing_collide_in_the_identity_table:sprint_30:v0:
 #+owner: marco
 #+branch: feature/two-providers-of-one-fixing-collide-in-the-identity-table
-#+pr:
+#+pr: 4924
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-20
@@ -106,7 +106,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4924][#4924]] | [marketdata] Key a fixing's identity by its provider |
 
 * Review
 

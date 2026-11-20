@@ -61,6 +61,10 @@ task and name that file in the Command column.
 
 * Notes
 
+- 2026-11-20: the refusal is on main. The identity projector checks each row
+  against the shape book and refuses it by series, family and field; see the
+  result of [[id:B003AE67-4F98-49AB-908E-13A1F7674E98][State the shape of each series class as data]]. Left here: measure that no existing fixing series is refused.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

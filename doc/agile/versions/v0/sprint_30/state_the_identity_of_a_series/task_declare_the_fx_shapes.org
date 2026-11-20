@@ -2,7 +2,7 @@
 :ID: 22B00026-4B86-447F-B8AB-9F5CE8F52ADA
 :END:
 #+title: Task: Declare the FX shapes and hold the CRM to them
-#+description: The FX level classes require ccy and unit_ccy; declare them and make the CRM topology factory refuse a level series whose identity is incomplete.
+#+description: The FX shapes are declared; make the CRM topology factory refuse a level series whose identity lacks ccy or unit_ccy.
 #+type: task
 #+level: s1
 #+filetags: :state_the_identity_of_a_series:sprint_30:v0:
@@ -60,6 +60,11 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+- 2026-11-20: the FX shapes are declared on main (=fx.spot=, =fx.forward=,
+  =fx.volatility= and =fx.index_fixing.fx= require =ccy= and =unit_ccy=); see
+  the result of [[id:B003AE67-4F98-49AB-908E-13A1F7674E98][State the shape of each series class as data]]. What is left is the CRM topology factory's refusal of a
+  level series whose identity lacks either field.
 
 * Test Scenarios
 

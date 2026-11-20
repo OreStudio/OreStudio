@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :state_the_identity_of_a_series:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/implement-state-the-identity-of-a-series
+#+pr: 4929
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-15
-#+updated: 2026-11-15
-#+environment:
+#+updated: 2026-11-20
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:663D745C-C7C3-48F7-A2E5-0BBE6B90C69A][State the identity of a market series]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ market_series_identity is one wide table of nullable columns with one shape per 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:663D745C-C7C3-48F7-A2E5-0BBE6B90C69A][State the identity of a market series]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-15                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-20                               |
 
 * Acceptance
 
@@ -41,9 +41,10 @@ market_series_identity is one wide table of nullable columns with one shape per 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Check what main already holds before building anything. Two tasks in other stories
+delivered the shapes while this one waited: [[id:BF673434-ABA7-473E-8550-FC0E7EDD9399][State the identity shape of a fixing]] and
+[[id:A535E477-3597-4FBD-AC81-AE6ECB5B1977][Make an identity shape a record with entries]]. If they meet this task's acceptance,
+close it on their evidence rather than build it twice.
 
 * Measurements
 
@@ -76,12 +77,41 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4929][#4929]] | [agile] Close State the shape of each series class as data |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The task's dates are stale | task | Accept | #+updated and Last touched are 2026-11-20. |
+| 2 | The Acceptance list is untouched | task | Decline | The list is plain bullets by the template; the Result says how each is met. |
+| 3 | The sibling tasks overlap the result | story, tasks | Accept | Each sibling's Notes points at this evidence; the FX task is narrowed to the CRM refusal. |
+| 4 | The writer's database tests were not run | task | Accept | Recorded as outstanding in the Result, to run on a database recreated from main. |
+| 5 | A long Now cell breaks the table's alignment | story | Decline | Org aligns the table on edit; the content is right. |
 
 * Result
+
+Delivered by the two tasks named in the plan; nothing new was built here.
+
+- The shapes are data: =ores_marketdata_series_identity_shapes_tbl= names each
+  family by its asset class, series subclass and index family, and
+  =ores_marketdata_series_identity_shape_entries_tbl= states each field the
+  family requires or forbids. Seeded: =ir.index_fixing.ibor=,
+  =ir.index_fixing.swap=, =ir.yield=, =fx.index_fixing.fx=, =fx.spot=,
+  =fx.forward= and =fx.volatility=.
+- The writer refuses: the identity projector checks every row against the
+  shape book (=identity_shape_book::check=) and =check_identity_kind=, and
+  the refusal names the series, the family and the field. A family no shape
+  states is written and reported, not refused.
+- Every FX family requires =ccy= and =unit_ccy=. The IBOR fixing requires
+  =ccy=, =index= and =index_name= and forbids =unit_ccy=.
+- Checked on main at a6264d8040: =ores.marketdata.core.tests
+  "[series_identity][shape]"= passed 11 cases (23 assertions), among them a
+  fixing missing a required field, and one carrying a unit currency, refused
+  by name. The database-backed writer tests were not run: this environment's
+  database predates main's =provider_code= column. Outstanding: run them
+  (=service_import_service_tests=, among them
+  =a_batch_with_a_series_the_shape_refuses_stores_none_of_it=) on a database
+  recreated from main.
+- Left to the story's other tasks: the CRM topology factory's refusal of an FX
+  level series that lacks =ccy= or =unit_ccy= is not built.

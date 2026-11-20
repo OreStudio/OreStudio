@@ -23,10 +23,10 @@ market_series_identity is one wide table of nullable columns with one shape per 
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
-| Now           | Not yet started.                       |
+| Now           | The shapes are stated as data and the writer refuses a row that breaks one. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-11-15                               |
+| Next          | Hold the CRM topology factory to the FX shapes. |
+| Last touched  | 2026-11-20 |
 
 * Acceptance
 
@@ -39,9 +39,9 @@ market_series_identity is one wide table of nullable columns with one shape per 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:B899C64E-29CA-4C98-80FA-329DAD9CBBF7][Scaffold story: State the identity of a market series]] | DONE | 2026-11-15 | 2026-11-15 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:B003AE67-4F98-49AB-908E-13A1F7674E98][State the shape of each series class as data]] | BACKLOG | | | Initial task for: State the identity of a market series |
+| [[id:B003AE67-4F98-49AB-908E-13A1F7674E98][State the shape of each series class as data]] | DONE | 2026-11-20 | 2026-11-20 | Initial task for: State the identity of a market series |
 | [[id:52F82265-4192-43EA-9EA7-56E06D7B7EE4][Refuse an identity row that misses its shape]] | BACKLOG | | | The writer that derives a series identity from its oresmd URI accepts a sparse row; make it validate against the declared shape and fail closed, naming the class and the field. |
-| [[id:22B00026-4B86-447F-B8AB-9F5CE8F52ADA][Declare the FX shapes and hold the CRM to them]] | BACKLOG | | | The FX level classes require ccy and unit_ccy; declare them and make the CRM topology factory refuse a level series whose identity is incomplete. |
+| [[id:22B00026-4B86-447F-B8AB-9F5CE8F52ADA][Declare the FX shapes and hold the CRM to them]] | BACKLOG | | | The FX shapes are declared; make the CRM topology factory refuse a level series whose identity lacks ccy or unit_ccy. |
 | [[id:DE0C9E63-C399-44D9-A388-F64183ABDB37][Declare the IBOR shapes and refuse a sparse fixing]] | BACKLOG | | | The nine IBOR fixings record ccy and correctly no unit currency; declare the IR shapes so a new one cannot arrive sparse, and collapse the duplicated index_fixing classification rule. |
 
 * Decisions

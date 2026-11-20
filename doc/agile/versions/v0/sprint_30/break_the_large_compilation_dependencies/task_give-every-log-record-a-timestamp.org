@@ -8,7 +8,7 @@
 #+filetags: :logging:break_the_large_compilation_dependencies:sprint_30:v0:
 #+owner: marco
 #+branch: feature/give-every-log-record-a-timestamp
-#+pr: 4926
+#+pr: 4927
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-20
@@ -149,6 +149,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4927][#4927]] | [docs] Close the break the large compilation dependencies story |
 | [[https://github.com/OreStudio/OreStudio/pull/4926][#4926]] | [logging] Give every record a timestamp |
 | [[https://github.com/OreStudio/OreStudio/pull/4923][#4923]] | [docs] Capture the missing timestamp on the first log record |
 

@@ -1,0 +1,132 @@
+:PROPERTIES:
+:ID: AB4D3509-DE98-4866-BB7B-B60E9381179A
+:END:
+#+title: Task: Key a fixing's identity by its provider
+#+description: Carry the series' provider on its identity row and in the fixing identity's unique index, so two providers' series of one fixing each keep an identity, as the series table already allows.
+#+type: task
+#+level: s1
+#+filetags: :two_providers_of_one_fixing_collide_in_the_identity_table:sprint_30:v0:
+#+owner: marco
+#+branch: feature/two-providers-of-one-fixing-collide-in-the-identity-table
+#+pr: 4924
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-20
+#+updated: 2026-11-20
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3B58C44F-5E31-4A30-B185-C06A75E6451C][Two providers of one fixing collide in the identity table]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A party holds one fixing from two providers, and both series have an identity a reader can find.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:3B58C44F-5E31-4A30-B185-C06A75E6451C][Two providers of one fixing collide in the identity table]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-20                               |
+
+* Acceptance
+
+- The identity row carries the provider of its series.
+- The fixing identity's unique index holds the provider, so two providers of one fixing write two identity rows and one provider cannot write the same fixing twice.
+- The repository case for two providers of one item writes a real fixing, and both identities are found.
+- Every reader that looks a fixing up by its fields states which provider it wants, or reads all of them on purpose.
+
+* Plan
+
+The series table's key is the documented rule: a series is one item of one
+provider held by one party. So the identity follows the series, and the series
+key stays as it is.
+
+1. Add =provider_code= to the identity model, after =party_id=, and put it in the
+   =fixing_identity= index. Regenerate the table, the domain type, the codec, the
+   generator, the entity, the mapper and the schema diagram.
+2. Copy the provider from the series in the projector.
+3. Make the repository case write a real EURIBOR 6M fixing for two providers, and
+   add a case that one provider cannot hold one fixing identity twice.
+4. Declare the identity check's context columns as data in =.compass.org=, which
+   the Python gate and compass-ng both read (compass PR #115), and pin the
+   compass-ng build that reads them.
+5. Check every reader that looks a series up by its identity fields.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Local checks passed | 57 of 60 | =./compass.sh check= | a37d823e8a |
+| ores.marketdata.core cases | 471 passed, 0 failed | =./compass.sh check= (ctest) | a37d823e8a |
+| CTest suites | 104 of 105; ores.database.tests failed once | =./compass.sh check= (ctest) | a37d823e8a |
+| ores.database.tests rerun alone | 1 of 1 passed | =./compass.sh test run -- -R ^ores.database.tests$= | a37d823e8a |
+| compass-ng new diagnostics | 0 | =compass-ng check --ratchet origin/main= | b60c3dd4cd |
+| Format | pass | =./compass.sh check --only format= | 96dc1ddff6 |
+
+* Notes
+
+- Readers. The snapshot, slice and evolution readers already refuse an
+  identity that names two series and ask for the party or the provider. The
+  manual point lookup asked only for the party; it now names the provider too.
+  No reader assumes one fixing row per identity.
+- The compass-ng port of the identity column check held the context columns in
+  code, so =provider_code= failed it with nothing ORE Studio could edit. On the
+  user's direction the fix is general: compass-85 made the list a codec option
+  (compass PR #115, commit 459f4a3), and both checks read the one row in
+  =.compass.org=.
+- The ORE CI job that installs compass-ng from releases still gets v0.0.2, which
+  refuses the new option. It needs a v0.0.3 release before it passes on this
+  setting.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4924][#4924]] | [marketdata] Key a fixing's identity by its provider |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Local review: an existing database has no provider_code column | =marketdata_market_series_identity_create.sql= | Decline | The migration scripts were removed (04dc337ab7); the schema fingerprint refuses an old database, which is recreated |
+| 2 | Local review: the changed files spell clean | all | Accept | misspell-fixer on the changed files exits 0 |
+| 3 | Gate: the manual point message was not clang-formatted | =manual_point_service.cpp= | Accept | Formatted in its own commit |
+| 4 | Gate: ticks-smoke fails on a fresh database | fleet | Decline | The market data service misses its 90 s start timeout writing 5472 demand intervals; main tracks it as Ready the market data service before its usage sync |
+| 5 | Gate: ores.database.tests failed once on the listener reconnect case | =postgres_listener_service_tests.cpp= | Decline | Not touched by this branch; it ran beside the smoke's database recreate and passes alone |
+| 6 | PR #4924 review 1: no migration for the new not null column | =marketdata_market_series_identity_create.sql= | Decline | Migrations were removed (04dc337ab7); the schema fingerprint makes an old database be recreated |
+| 7 | PR #4924 review 1: the generator writes a fixed provider | =market_series_identity_generator.cpp= | Decline | Round-trip tests need no variety, as the review says |
+| 8 | PR #4924 review 1: released compass-ng v0.0.2 refuses context_columns | =compass_ng.pin= | Decline | The pin names 459f4a3; a v0.0.3 release is the user's call |
+| 9 | PR #4924 review 1: the message may name an input the request lacks | =manual_point_service.cpp= | Decline | resolve_series_identity_request carries provider_code, so the message names a real input |
+
+* Result
+
+The identity row carries its series' provider, and the fixing identity's unique
+index holds it. Two providers of one fixing now write two series and two
+identity rows, and one provider still cannot write the same fixing twice. The
+repository case writes a real fixing, so it tests the index it claims to test.
+The identity check's context columns are data in =.compass.org=, read by the
+Python gate and by compass-ng 459f4a3, which the pin now names.

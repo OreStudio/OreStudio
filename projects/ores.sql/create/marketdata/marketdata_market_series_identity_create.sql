@@ -45,8 +45,9 @@
  * schema by build/scripts/check_marketdata_identity_columns.py, so the two cannot
  * drift.
  *
- * The identity the decomposed columns spell is unique per party, as the series URI
- * is. A fixing row states that at the table: a unique index over its context and
+ * The identity the decomposed columns spell is unique per party and provider, as
+ * the series is: the series table keys a series by party, URI and provider. A fixing
+ * row states that at the table: a unique index over its context and
  * its index-grammar columns, with nulls not distinct so an empty field counts as
  * equal to an empty field, refuses two fixings that spell one identity. A series
  * row cannot carry such an index, because its identity spans the whole instrument
@@ -58,6 +59,7 @@ create table if not exists "ores_marketdata_market_series_identity_tbl" (
     "series_id" uuid not null,
     "tenant_id" uuid not null,
     "party_id" uuid not null,
+    "provider_code" text not null,
     "identity_kind" text not null,
     "asset_class" text null,
     "instrument_type" text null,
@@ -135,7 +137,7 @@ on "ores_marketdata_market_series_identity_tbl" (tenant_id, unit_ccy)
 where unit_ccy is not null;
 
 create unique index if not exists market_series_identity_fixing_identity_idx
-on "ores_marketdata_market_series_identity_tbl" (tenant_id, party_id, asset_class, index, ccy, index_name, tenor, quote_tag, unit_ccy, security_id, contract, source, family, expiry, delivery, delivery_start, delivery_end) nulls not distinct
+on "ores_marketdata_market_series_identity_tbl" (tenant_id, party_id, provider_code, asset_class, index, ccy, index_name, tenor, quote_tag, unit_ccy, security_id, contract, source, family, expiry, delivery, delivery_start, delivery_end) nulls not distinct
 where identity_kind = 'index';
 
 create or replace function ores_marketdata_market_series_identity_insert_fn()

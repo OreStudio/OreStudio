@@ -46,6 +46,7 @@ market_series_identity_mapper::map(const market_series_identity_entity& v) {
     r.tenant_id = v.tenant_id;
     r.series_id = v.series_id;
     r.party_id = v.party_id;
+    r.provider_code = v.provider_code;
     r.identity_kind = v.identity_kind;
     r.asset_class = v.asset_class.value_or("");
     r.instrument_type = v.instrument_type.value_or("");
@@ -115,6 +116,7 @@ market_series_identity_mapper::map(const domain::market_series_identity& v) {
     r.series_id = v.series_id;
     r.tenant_id = v.tenant_id;
     r.party_id = v.party_id;
+    r.provider_code = v.provider_code;
     r.identity_kind = v.identity_kind;
     r.asset_class = v.asset_class.empty() ? std::nullopt : std::optional(v.asset_class);
     r.instrument_type = v.instrument_type.empty() ? std::nullopt : std::optional(v.instrument_type);

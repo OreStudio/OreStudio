@@ -823,6 +823,7 @@ package "marketdata" #E3F2FD {
         --
         * tenant_id : uuid <<FK>>
         * party_id : uuid <<FK>>
+        * provider_code : text
         * identity_kind : text
           asset_class : text
           instrument_type : text
@@ -904,8 +905,9 @@ package "marketdata" #E3F2FD {
     the primary key is the series. The column list is checked against the codec
     schema by build/scripts/check_marketdata_identity_columns.py, so the two cannot
     drift.
-    The identity the decomposed columns spell is unique per party, as the series URI
-    is. A fixing row states that at the table: a unique index over its context and
+    The identity the decomposed columns spell is unique per party and provider, as
+    the series is: the series table keys a series by party, URI and provider. A fixing
+    row states that at the table: a unique index over its context and
     its index-grammar columns, with nulls not distinct so an empty field counts as
     equal to an empty field, refuses two fixings that spell one identity. A series
     row cannot carry such an index, because its identity spans the whole instrument

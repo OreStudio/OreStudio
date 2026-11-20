@@ -44,6 +44,7 @@ generate_synthetic_market_series_identity(utility::generation::generation_contex
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.series_id = ctx.generate_uuid();
     r.party_id = ctx.generate_uuid();
+    r.provider_code = std::string("bloomberg");
     r.identity_kind = std::string(faker::word::noun());
     return r;
 }

@@ -1,0 +1,97 @@
+:PROPERTIES:
+:ID: 3B58C44F-5E31-4A30-B185-C06A75E6451C
+:END:
+#+title: Story: Two providers of one fixing collide in the identity table
+#+description: A party may hold one fixing from two providers, but the identity table's unique index for fixings leaves out the provider, so the second identity write fails after its series is stored.
+#+type: story
+#+level: s2
+#+filetags: :sprint_30:v0:
+#+created: 2026-11-20
+#+updated: 2026-11-20
+#+environment: clever_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The series table keys a series by party, URI and provider, so one party may hold
+the EURIBOR 6M fixing from Bloomberg and from LSEG. The identity table refuses
+that: its unique index over a fixing's decomposed fields is per tenant and party
+and does not hold the provider. The second series is stored, and its identity
+write then fails on the duplicate key. A caller without a transaction keeps a
+series that no identity reader can find.
+
+Decide which of the two is the rule. Either the identity row carries the
+provider, or one identity row serves every provider's series of that fixing and
+the series table's key loses the provider for fixings.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                                   |
+| Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
+| Now           | Done.                                  |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-11-20                               |
+
+* Acceptance
+
+- One party holds one fixing from two providers, and each series has an identity.
+- One provider cannot hold one fixing identity twice.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:AB4D3509-DE98-4866-BB7B-B60E9381179A][Key a fixing's identity by its provider]] | DONE | 2026-11-20 | 2026-11-20 | Carry the series' provider on its identity row and in the fixing identity's unique index, so two providers' series of one fixing each keep an identity, as the series table already allows. |
+
+* Decisions
+
+- The identity follows the series key. The series table keys a series by party,
+  URI and provider, so the identity row carries the provider and the fixing
+  index holds it. The series key does not lose the provider for fixings.
+- A check's column lists are data. The identity check's context columns live in
+  the codec's row of =.compass.org=, which compass-ng and the Python gate read.
+
+* Out of scope
+
+- A v0.0.3 compass release for the CI job that installs from releases.
+
+* Promoted from capture
+
+Captured 2026-11-19 in the product backlog; promoted preserving the UUID.
+
+** What
+
+The series table keys a series by party, URI and provider, so one party may hold
+the EURIBOR 6M fixing from Bloomberg and from LSEG. The identity table refuses
+that: its unique index over a fixing's decomposed fields is per tenant and party
+and does not hold the provider. The second series is stored, and its identity
+write then fails on the duplicate key. A caller without a transaction keeps a
+series that no identity reader can find.
+
+Decide which of the two is the rule. Either the identity row carries the
+provider, or one identity row serves every provider's series of that fixing and
+the series table's key loses the provider for fixings.
+
+** Why
+
+Found while making the test generator write real fixings. The repository case
+=two_providers_keep_two_series_for_one_item_and_party= holds a Bloomberg and an
+LSEG series of one item for one party. It passes only because its fixture writes an =oresmd://generic/= URI that no codec reads, so no
+fixing identity row is written. With a fixing URI, the second write fails.
+
+** References
+
+- =projects/ores.sql/create/marketdata/marketdata_market_series_identity_create.sql=:
+  the =market_series_identity_fixing_identity_idx= unique index.
+- =make_identity_test_series= in
+  =projects/ores.marketdata/core/tests/repository_market_series_repository_tests.cpp=.
+
+** See also
+
+- [[id:ABFE5452-57B4-4621-86A4-011CF2B03E6A][Write a series and its identity in one act]]
+- [[id:474E8968-C7B4-4740-839F-9328B93A5FEA][Generate a series that is an identity]]

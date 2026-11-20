@@ -8,7 +8,7 @@
 #+filetags: :hold_every_product_type_the_engine_supports:sprint_30:v0:
 #+owner: marco
 #+branch: feature/generate-every-product-in-both-forms
-#+pr: 4906
+#+pr: 4912
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-15
@@ -82,6 +82,29 @@ task and name that file in the Command column.
 
 * Notes
 
+** The generic barrier options and the FD variant of their script
+
+A recipe for EquityGenericBarrierOption and FxGenericBarrierOption was written
+and run, then held back. The engine run prices the =SingleAssetOptionBwd= tag
+with FD, so ORE runs the =FD= variant of the library's GenericBarrierOption
+script, and every twin failed there:
+
+- With barrier monitoring dates that start after the as-of date: "RandomVariable:
+  inconsistent times 0 and 0.558904 at L124 ... PAY( LongShort * BarrierRebate,
+  TODAY, SettlementDate, ...) - R_V". The backward loop rolls R_V back only to
+  the first monitoring date, not to today.
+- With an expiry on a holiday (2029-12-02, a Sunday) before the last adjusted
+  monitoring date: "AssetModel::npv(): can not roll back from t1= 4.81096 to
+  t0= 4.8137".
+
+The native trades price on the same engine, so ORE's own GenericBarrierOption
+class does not run this library code as the twin states it. With the engine set
+to MC for the tag, all four twins priced with no error, and each NPV equalled
+its native's exactly (for example -4772.758430 EUR and 19702.508881 USD), so
+the recipe itself was right. The open choice is how to book these twins under
+the FD engine: correct the FD variant of the script in the library seed, roll
+the twin's dates as ORE's native class does, or price the twins' tag by MC.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -97,6 +120,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4912][#4912]] | [synthetic] Twin the window barrier options |
 | [[https://github.com/OreStudio/OreStudio/pull/4906][#4906]] | [synthetic] Twin the variance swaps, forward vol agreements and best entry options |
 | [[https://github.com/OreStudio/OreStudio/pull/4898][#4898]] | [synthetic] Book the basket and rainbow options as scripted twins |
 

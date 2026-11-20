@@ -980,6 +980,8 @@ TEST_CASE("an_fx_population_states_the_row_its_type_routes_to", "[trade_populati
 
     REQUIRE(!plan.slots.empty());
     for (const auto& slot : plan.slots) {
+        if (is_scripted_twin(slot))
+            continue;
         /*
          * The family states its rows and no bag: exactly one routed row per
          * slot, and it is the row the type belongs to.
@@ -1185,7 +1187,8 @@ TEST_CASE("an_fx_population_anchored_on_a_months_last_day_states_only_dates_that
     scope.as_of_date = std::chrono::year{2026} / 10 / 31;
 
     const auto plan = plan_of(scope);
-    REQUIRE(plan.slots.size() == 16u);
+    REQUIRE(std::ranges::count_if(plan.slots, [](const auto& s) { return !is_scripted_twin(s); }) ==
+            16);
 
     bool saw_variance_swap = false;
     for (const auto& slot : plan.slots) {
@@ -1948,11 +1951,13 @@ TEST_CASE("every_product_with_a_recipe_has_a_twin_over_its_library_script", "[tr
         {"EquityBasketVarianceSwap", "BasketVarianceSwap"},
         {"EquityBestEntryOption", "BestEntryOption"},
         {"EquityForwardVolatilityAgreement", "ForwardVolatilityAgreement"},
+        {"EquityWindowBarrierOption", "WindowBarrierOption"},
         {"EquityRainbowOption", "MaxRainbowOption"},
         {"FxBasketOption", "VanillaBasketOption"},
         {"FxBasketVarianceSwap", "BasketVarianceSwap"},
         {"FxBestEntryOption", "BestEntryOption"},
         {"FxForwardVolatilityAgreement", "ForwardVolatilityAgreement"},
+        {"FxWindowBarrierOption", "WindowBarrierOption"},
         {"FxRainbowOption", "MaxRainbowOption"}};
     std::set<std::string> twinned;
     std::set<boost::uuids::uuid> twin_ids;
@@ -2149,4 +2154,80 @@ TEST_CASE("a_twin_whose_schedule_it_cannot_carry_is_refused", "[trade_population
                         "EquityBasketVarianceSwap",
                         "product.settlement_date or instrument_schedules[valuation_schedule]"),
                     trade_population_error);
+}
+
+TEST_CASE("a_window_barrier_twin_states_its_barrier_as_the_code_its_script_reads",
+          "[trade_population]") {
+    const std::map<std::string, std::string> code_of = {
+        {"DownAndIn", "1"}, {"UpAndIn", "2"}, {"DownAndOut", "3"}, {"UpAndOut", "4"}};
+    std::size_t seen = 0;
+    for (auto scope : {equity_scope(), fx_scope()}) {
+        scope.trades_per_book = 64;
+        const auto plan = plan_of(scope);
+        for (const auto& native : plan.slots) {
+            if (!native.trade_type_code.ends_with("WindowBarrierOption"))
+                continue;
+            INFO("trade type " << native.trade_type_code);
+            const auto twin = ores::synthetic::service::scripted_twin_of(native);
+            REQUIRE(twin.has_value());
+            const auto value_of = [&](const char* name) -> std::string {
+                for (const auto& p : twin->instruments.scripted_parameters)
+                    if (p.name == name)
+                        return p.value.value_or("");
+                return "<absent>";
+            };
+            REQUIRE(native.instruments.instrument_barriers.size() == 1u);
+            REQUIRE(native.instruments.instrument_barrier_levels.size() == 1u);
+            CHECK(value_of("BarrierType") ==
+                  code_of.at(native.instruments.instrument_barriers[0].barrier_type));
+            CHECK(value_of("BarrierLevel") ==
+                  native.instruments.instrument_barrier_levels[0].level.to_string());
+            // No premium is stated, so the twin pays none.
+            CHECK(value_of("PremiumAmount") == "0");
+            ++seen;
+        }
+    }
+    CHECK(seen > 0u);
+}
+
+TEST_CASE("a_transform_refuses_a_value_it_does_not_list", "[trade_population]") {
+    auto scope = equity_scope();
+    scope.trades_per_book = 64;
+    const auto plan = plan_of(scope);
+    const auto native = std::ranges::find_if(
+        plan.slots, [](const auto& s) { return s.trade_type_code == "EquityWindowBarrierOption"; });
+    REQUIRE(native != plan.slots.end());
+    auto broken = *native;
+    REQUIRE(broken.instruments.instrument_barriers.size() == 1u);
+    broken.instruments.instrument_barriers[0].barrier_type = "KnockOut";
+    CHECK_THROWS_AS(ores::synthetic::service::scripted_twin_of(broken), trade_population_error);
+}
+
+TEST_CASE("a_window_barrier_twin_states_the_premium_its_native_states", "[trade_population]") {
+    namespace td = ores::trading::domain;
+    auto scope = equity_scope();
+    scope.trades_per_book = 64;
+    const auto plan = plan_of(scope);
+    const auto native = std::ranges::find_if(
+        plan.slots, [](const auto& s) { return s.trade_type_code == "EquityWindowBarrierOption"; });
+    REQUIRE(native != plan.slots.end());
+    auto paid = *native;
+    td::instrument_option_premium premium;
+    premium.sequence_number = 1;
+    premium.amount = ores::utility::decimal::decimal::from_string("1250.5").value();
+    premium.currency = "EUR";
+    premium.pay_date = std::chrono::year{2026} / 3 / 4;
+    paid.instruments.instrument_option_premiums.push_back(premium);
+
+    const auto twin = ores::synthetic::service::scripted_twin_of(paid);
+    REQUIRE(twin.has_value());
+    const auto value_of = [&](const char* name) -> std::string {
+        for (const auto& p : twin->instruments.scripted_parameters)
+            if (p.name == name)
+                return p.value.value_or("");
+        return "<absent>";
+    };
+    CHECK(value_of("PremiumAmount") == premium.amount.to_string());
+    CHECK(value_of("PremiumCcy") == "EUR");
+    CHECK(value_of("PremiumPayDate") == "2026-03-04");
 }

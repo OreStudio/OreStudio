@@ -44,10 +44,27 @@ the raw helpers set today would leak to that client.
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
 | Parent story | [[id:4AD7DD1A-3E8C-4B97-BC38-149A66F59250][Carry one hundred thousand feeds on the data path — the remaining work]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | Analysed, not started. The first half of the goal is already true; the pooler is blocked on one compatibility question and one exclusion, both stated under Plan. |
+| Waiting on   | A decision on prepared statements (Plan, decision 1). |
+| Next         | Decide the statement name, then build the unit. |
 | Last touched | 2026-10-28                               |
+
+* What is already true, and was not when this task was written
+
+Measured on this tree, 2026-11-20, because the premise had gone stale:
+
+- The raw-SQL helpers no longer open a connection per call. They run through
+  =database::transact=, so they lease from the context's pool or join the unit of
+  work's transaction (=query_builder/query.cpp=, =execute_parameterized_*_query=).
+  The =bitemporal_operations.cpp= this task names does not exist.
+- Nothing sets a tenant, party, actor or timezone at session level. Every one is
+  =set_config(..., true)=, local to the transaction (=pq/transaction.cpp=), which
+  is what makes transaction pooling safe at all.
+- The tasks this one was going to close are ABANDONED because the work landed
+  elsewhere: =Run every hand-written query on a pooled connection= and =Set the
+  tenant context per transaction=.
+
+So the remaining work is the pooler, plus the two compatibility questions below.
 
 * Acceptance
 
@@ -75,9 +92,104 @@ the raw helpers set today would leak to that client.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+** Why bother, in numbers
+
+One PostgreSQL server carries six development databases and =max_connections =
+1500=. A fleet holds its connections for life: the pool opens every connection
+when it is made (=pq/pool.hpp=), and the default size is 2
+(=database_configuration.cpp=, =db-pool-size=, with no =ORES_*_DB_POOL_SIZE= in
+=.env=). Measured with =pg_stat_activity= while the fleets were idle:
+
+| Database | Connections | Idle |
+|----------+-------------+------|
+| ores_dev_clever_dijkstra | 38 | 38 |
+| ores_dev_festive_dijkstra | 37 | 37 |
+| ores_dev_bright_faraday | 13 | 12 |
+
+Thirty-eight idle server connections for one environment that is doing nothing,
+at two a service, and ten environments on one instance is four hundred. In
+transaction mode the same fleet keeps a handful of server connections and
+multiplexes a request at a time onto them; the cap becomes pgbouncer's
+=default_pool_size= and =max_db_connections= rather than a sum of per-service
+sizes nobody can see.
+
+** Decision 1: prepared statements, which is the real blocker
+
+The repositories run *named* prepared statements. =detail::prepared(sql)= keeps a
+per-process cache of =fixed_statement=s named =ores_q_N=, the transaction
+pipeline sends =PQsendPrepare= for a name the client connection has not prepared
+(=pq/transaction.cpp=, =connection::is_prepared=), and hand-written SQL is sent
+unnamed. A name lives on a *server* connection; transaction pooling hands a
+different server connection to the next transaction, so a name the client
+believes is prepared may not exist, and worse, a name is owned by whichever
+client prepared it on a connection both clients share.
+
+Two ways out, and this is the decision to take before the unit is written:
+
+1. *Let pgbouncer track the statements.* pgbouncer 1.21 and later implement
+   prepared-statement support for transaction pooling: the client's
+   =Prepare= and =Bind= are followed by pgbouncer, which re-prepares on the
+   server connection that actually serves the transaction. It needs
+   =max_prepared_statements= set to a non-zero value, and it costs memory per
+   client and a small protocol overhead. The distro offers 1.26.1.
+   Nothing in our code changes, which is most of its appeal.
+2. *Send repository statements unnamed too*, as hand-written SQL already does.
+   Then no name exists to be lost, and any pgbouncer version works. The cost is
+   that PostgreSQL parses and plans every execution, which the named cache was
+   there to avoid, and the benchmark that would say whether that cost is real has
+   not been run.
+
+Recommendation: 1, with 2 as the fallback if an environment cannot carry a
+current pgbouncer, and with the measurement that decides it written into the
+task that does it, not assumed.
+
+** Decision 2: the listener does not go through the pooler
+
+=postgres_listener_service= issues =LISTEN= and =NOTIFY= on its own dedicated
+connection, not one from the pool (=postgres_listener_service.cpp=,
+=connect_utc=), and the event source sits on it. A =LISTEN= belongs to a session,
+so transaction pooling would subscribe a server connection that is handed to
+somebody else on the next commit, and the notifications would arrive nowhere or
+everywhere. The listener therefore keeps a direct connection to PostgreSQL: the
+services' options name the pooler's port, and the listener's name PostgreSQL's.
+=pgbouncer= can also serve a second database entry in session mode for it, but a
+direct connection is one setting and no second pool.
+
+The administrative paths the task already names - =compass db recreate=, the
+schema restore - connect directly for the same reason.
+
+** Decision 3: pool sizes become client limits, so they are sized with the pooler
+
+This is why the pool-sizing task under
+[[id:A4D0E305-CEF6-4684-ABBA-0D09657479F1][Keep workflow steps alive while they
+work, and off iam]] has to be taken with this one rather than before it. Today
+=db-pool-size= is simultaneously the service's concurrency and its share of the
+server's =max_connections=, because a pooled connection *is* a server
+connection. Behind a transaction pooler the two separate:
+
+- the service's =db-pool-size= is how many statements it may have in flight;
+- pgbouncer's =default_pool_size= and =max_db_connections= are the server's
+  budget, per database and per environment.
+
+So the lanes a step runs (four, in the surfaces and curves and forwards steps)
+and the step workers a service runs (two, =provisioning_step_registrar.cpp=)
+argue for a *larger* client pool than two, while the server connection count is
+capped and shared. Sizing the pool before the pooler lands would size it to the
+wrong constraint, which is why that task is waiting on this one.
+
+** What to build
+
+1. The compatibility decision above, with its evidence.
+2. A pgbouncer unit per environment: =compass systemd generate= emits it, it
+   joins =ores-<env>.target=, starts before every service unit, and its
+   configuration lives under =build/config/= with its port in the environment's
+   =.env=. Transaction mode, =max_prepared_statements= per decision 1, and a
+   =default_pool_size= / =max_db_connections= that states the server's budget.
+3. The services' connection options name the pooler's port; the listener's and
+   the administrative paths' name PostgreSQL's.
+4. The proof: =pg_stat_activity= shows the fleet's connections arriving from
+   pgbouncer and the count of them dropping to the cap; a full build, ctest and
+   fleet start; Acme provisioning completing; no ERROR or FATAL in the journal.
 
 * Measurements
 

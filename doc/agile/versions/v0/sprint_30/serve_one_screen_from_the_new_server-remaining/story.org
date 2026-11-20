@@ -78,7 +78,7 @@ it lands, and the browser keeps calling the BFF until the last one does.
 | [[id:DB8C451C-87BE-40B0-A78F-3FC88BEC9D6C][Stand up the compute part and serve the grid resources]] | DONE | 2026-11-17 | 2026-11-17 | The gateway has no compute part. |
 | [[id:2577BE37-74B3-4F0E-8CD2-5918EAEE1E39][Stand up the workflow part and serve workflow and operations]] | DONE | 2026-11-17 | 2026-11-18 | The gateway has no workflow part. |
 | [[id:3727E9F4-3FE9-4B8A-A067-5F7AB6504CE0][Serve the sensitivity templates]] | STARTED | 2026-11-19 | | The analytics area has six BFF routes and no C++ route. |
-| [[id:46F3605C-09F6-469D-AC2A-BD0AE1751541][Decide an owner for the file-backed agile and QA routes]] | BACKLOG | | | Twelve BFF routes read the agile and QA files. No service owns them, and two of them are the sprint board and charts views. |
+| [[id:46F3605C-09F6-469D-AC2A-BD0AE1751541][Decide an owner for the file-backed agile and QA routes]] | STARTED | 2026-11-20 | | Twelve BFF routes read the agile and QA files. No service owns them, and two of them are the sprint board and charts views. |
 | [[id:B5C7B068-DA18-4D42-8FC9-D914FE521C77][Serve the reporting composed views]] | BACKLOG | | | Seven reporting views are answered only by the BFF. |
 | [[id:E3322004-3E88-448F-A5D1-75B705F8F148][Serve the market data composed views]] | BACKLOG | | | Six market data views are answered only by the BFF. |
 | [[id:ABDC11EE-7538-4BF0-A9A5-E73F553FBDBB][Serve the workflow composed views]] | DONE | 2026-11-18 | 2026-11-19 | Five workflow views and the authorisation queue are answered only by the BFF. |

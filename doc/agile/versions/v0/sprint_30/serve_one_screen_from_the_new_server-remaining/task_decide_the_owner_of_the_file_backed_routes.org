@@ -26,40 +26,81 @@ Decide whether each agile and QA route moves to an owner or is deleted, and reco
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                 |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Decided; the pairing change waits.     |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-09                               |
+| Next         | Record the deletions in the pairing data once the compass-ng port of that gate settles. |
+| Last touched | 2026-11-20                               |
 
 * Acceptance
 
-- Each of the 12 routes has a recorded owner or a recorded deletion.
-- Each route in scope names its C++ equivalent in the inventory.
+- Each of the 12 routes has a recorded owner or a recorded deletion, with the
+  reason it cannot be served.
+- The inventory stops counting a deleted route as one the port owes, once the
+  pairing data can state a deletion.
 - The local gate is green.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The design leaves two answers open for these twelve: move them behind a service, or
+keep them as an explicit filesystem adapter with its own directory and its own risk
+note. It forbids one thing either way: they must not be smuggled into the HTTP core
+or dressed up as resources they are not.
+
+The decision is to **delete them from the port's scope**, for a reason that is a
+fact about the routes and not a preference. Each of the twelve reads, or writes, the
+checkout the BFF itself runs in: the agile store walks =doc/agile=, the QA store
+reads and writes =doc/qa=, and the work trees shell out to =git=. A deployed gateway
+holds no checkout, so no service could answer them there, and a gateway that wrote a
+deployment's own repository would be a risk with no product value.
+
+The BFF already says the same thing in its own configuration, which is the strongest
+evidence available: =ORES_WEB_DOC_ROOT= is optional, and unset "means the runner is
+off"; the agile store is passed as =undefined= when there is no doc root and its
+routes answer not-found; and the screens that call them hang off the site's existing
+=developerTools= flag.
+
+So the owner is the tooling that already reads and writes those documents: the
+developer surface, not the product's API.
+
+What this task does not do, and why. The inventory's pairing data lives in
+=build/scripts/route_pairing.py=, and the compass-ng codec is what now renders the
+inventory from it. That gate is being ported by another story, and a change to its
+data model while it is in flight would collide with the port. Recording a deletion
+there is the follow-up this task names rather than performs; until it lands, the
+inventory still prints "none" against the twelve, which overstates what the port owes
+by twelve routes.
 
 * Measurements
 
-Every number this task claims about a tree, with the command that produced it
-and the commit it was measured at. A number without both is not a measurement,
-because a clean-up record describes a tree and trunk moves under a branch: a
-consumer count, a gate's component count and a suite's size all change with no
-code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
-
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The routes in scope | 12: 6 agile and 6 QA | the inventory's pairing table, searched for =/api/agile= and =/api/qa= | 0602d21734 |
+| What the port owes   | 39 unpaired of the BFF's 334, of which 12 are these | the inventory's *The coverage* | 0602d21734 |
+| What it owes after   | 27, once the pairing data can state a deletion | the same table, less the twelve | 0602d21734 |
 
 * Notes
+
+Each route and the reason it is not the gateway's:
+
+| Route | Why it is not the gateway's |
+|-------+------------------------------|
+| =GET /api/agile/sprints= | reads =doc/agile= from the checkout the server runs in |
+| =GET /api/agile/board= | reads =doc/agile=, and it is a view over that tree |
+| =GET /api/agile/charts= | reads =doc/agile=, and it is a view over that tree |
+| =GET /api/agile/trees= | reads =doc/agile= and shells out to =git= for the work trees |
+| =GET /api/agile/backlog= | reads =doc/agile= |
+| =GET /api/agile/docs/:id= | reads one document out of =doc/agile= |
+| =GET /api/qa/scenarios= | reads =doc/qa= |
+| =GET /api/qa/scenarios/:id= | reads =doc/qa= |
+| =GET /api/qa/scenarios/:id/files/:name= | reads a file out of =doc/qa= |
+| =GET /api/qa/docs/:id= | reads one document out of =doc/= |
+| =PUT /api/qa/scenarios/:id/run= | writes a run result into =doc/qa= |
+| =POST /api/qa/scenarios/:id/steps/:step/images= | writes an image into =doc/qa= |
+
+The four writes settle it: a product surface that writes the files of the repository
+it was built from is not a product surface, whatever the caller is.
 
 * Test Scenarios
 
@@ -85,3 +126,13 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The twelve file-backed routes have a decision: they are deleted from the port's
+scope, and their owner is the developer tooling that already reads and writes those
+documents. The reason is recorded per route, and the two facts that settle it are
+that the BFF itself makes them optional, since =ORES_WEB_DOC_ROOT= unset turns the QA
+runner off, and that four of them write into the checkout rather than read a tenant's
+data.
+
+The mechanical change to the pairing data is the one part left, and it is named
+above with the reason it waits.

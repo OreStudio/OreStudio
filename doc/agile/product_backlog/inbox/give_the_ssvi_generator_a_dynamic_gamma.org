@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: 79CEEAFE-AAFC-4E09-B948-E0D449C6F7F0
+:END:
+#+title: Give the synthetic FX vol surface a dynamic SSVI gamma
+#+description: The generator fixes gamma at one half and ignores the start's gamma; let gamma move, as a bounded driver, a function of the state or a regime, and hold each published slice to the no-arbitrage conditions that then depend on theta.
+#+type: capture
+#+level: cross
+#+filetags: :synthetic:volatility:ssvi:quantitative_finance:
+#+created: 2026-11-20
+#+updated: 2026-11-20
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=fx_vol_surface_generator= in =ores.analytics.quant= draws the synthetic FX
+volatility surface as SSVI with gamma fixed at 1/2, so the curvature is
+phi(theta) = eta / sqrt(theta). =make= ignores the start's gamma. Make gamma
+move. An analysis by Gemini, pasted on 2026-11-20, gives three ways to do it:
+
+1. /A bounded mean-reverting driver/, beside =skew_driver_= and
+   =curvature_driver_=. It reverts to the start's gamma and maps onto an open
+   interval such as (0.1, 0.9) or (0.25, 0.75) through a logistic function.
+   =fx_vol_surface_dynamics= gains =gamma_reversion= and =gamma_volatility=, the
+   correlation matrix and =factor_count()= grow by one (the gamma factor after
+   the curvature factor), =make= validates the start's gamma instead of
+   ignoring it, and =publish()= writes the driver into the surface's gamma.
+2. /A function of the existing state/, for example of eta or of the term
+   structure's slope. No new factor and no change to the correlation layout,
+   but gamma is then tied to the other parameters.
+3. /A gamma per regime or per path/: constant within a regime, switched
+   between discrete regimes such as calm and stressed, not stepped every dt.
+
+* Why
+
+The calibration engine already fits gamma, as QuantExt does (story decision of
+2026-11-09 in [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]]), and a fitted gamma on a real-shaped
+smile is far from 1/2 (0.28 on a Heston surface). A generator that only ever
+produces gamma = 1/2 does not test that fit across the range it will see.
+
+The cost is the no-arbitrage conditions. With gamma = 1/2 the butterfly
+condition theta * phi(theta) * (1 + |rho|) < 4 holds for every eta in (0, sqrt 2)
+while theta < 2. For a general gamma it becomes
+eta * theta^(1 - gamma) * (1 + |rho|) < 4, which depends on theta. So either it
+is checked on every expiry slice at every step, or gamma is held at or above
+1/2 and eta is bounded for the largest theta. A gamma and an eta that move
+while the forward variance increments are small can also make the total
+variance at a fixed log-moneyness fall with maturity. That is calendar
+arbitrage, so the published slices must be checked or constrained for it,
+because the consumers assume arbitrage-free quotes.
+
+* References
+
+- =projects/ores.analytics/quant/include/ores.analytics.quant/service/fx_vol_surface_generator.hpp=
+- The generator task, which kept gamma at 1/2 on purpose:
+  =doc/agile/versions/v0/sprint_30/support_volatility_surfaces-remaining/task_build_the_fx_vol_surface_generator.org=
+- The calibration engine task, which fits gamma:
+  =doc/agile/versions/v0/sprint_30/support_volatility_surfaces-remaining/task_build_the_ssvi_calibration_engine.org=
+
+* See also
+
+-

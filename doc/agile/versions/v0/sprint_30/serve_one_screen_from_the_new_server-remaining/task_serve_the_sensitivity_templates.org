@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/serve-the-sensitivity-templates
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
 #+updated: 2026-11-09
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ Port the 6 BFF routes of the analytics area to the C++ server. The routes read a
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                 |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Served; the PR is open.                |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-09                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-11-20                               |
 
 * Acceptance
 
@@ -42,23 +42,51 @@ Port the 6 BFF routes of the analytics area to the C++ server. The routes read a
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The analytics area had no C++ part, so the first step is the part itself:
+=ores.http.analytics=, an adapter of the gateway, copied from the plan
+[[id:3A61E5E2-CBD2-47D5-B70C-F656C214937C][How do I add an adapter part to ores.http?]] states. Its
+=CMakeLists.txt= files are hand-authored, codegen writes only its two file
+lists, and the part holds one hand-written unit rather than generated ones: the
+templates are read as a page with two lookups joined beside each row, which is a
+composed answer and not a collection.
+
+The unit answers the seven routes at the BFF's addresses and in its shapes. The
+two lookups are read from the tables that hold them rather than restated here, so
+a method or an asset class added to a table reaches the form without a change to
+the part, and the rule the methods table states - a method that needs no class
+states none - is applied before a write reaches the store, so the refusal names
+which of the two is wrong.
+
+The writes carry the preconditions the screen reads: a create states a key the
+table does not hold, and a correction and a removal state the version the screen
+read, so a key written meanwhile is refused rather than replaced. A removal
+answers the row it removed, whose versions stay behind it.
+
+The keys' history is read through the gateway's one history step, so this part
+does not derive a subject of its own.
 
 * Measurements
 
-Every number this task claims about a tree, with the command that produced it
-and the commit it was measured at. A number without both is not a measurement,
-because a clean-up record describes a tree and trunk moves under a branch: a
-consumer count, a gate's component count and a suite's size all change with no
-code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
-
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The part's suite       | 6 cases, 33 assertions                   | =publish/bin/ores.http.analytics.tests= | 3848f33332 |
+| The analytics area     | 12 routes: the 6 the BFF answered and the 6 resources the part serves, beside the lookups | =./compass.sh generate=, then the inventory's area table | 3848f33332 |
+| The paired routes      | 295 of 333, so 38 are unpaired           | the inventory's pairing table | 3848f33332 |
+| The check gate         | 52 of 52                                 | =./compass.sh check --exclude-heavy= | 3848f33332 |
+
+* Result
+
+The templates are served. The gateway has an eleventh adapter part,
+=ores.http.analytics=, and it answers the whole family at the BFF's addresses: the
+page, the two lookups, one key, its history, and the three writes. The analytics
+area is the seventh the gateway serves whole, and 295 of the BFF's 333 routes are
+now paired.
+
+What is proved: the part builds and the server links it, its six cases pass, the
+local gate is green, and the inventory regenerates to itself with every one of the
+seven routes paired. What is not proved: no route of this part was read against a
+live service, so the page, the lookups and the writes rest on their tests and on
+the shape the inventory states, and the store's own refusals were not exercised.
 
 * Notes
 

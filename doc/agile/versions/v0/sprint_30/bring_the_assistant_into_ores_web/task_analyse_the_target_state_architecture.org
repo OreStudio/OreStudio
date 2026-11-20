@@ -64,6 +64,28 @@ changes in this task.
    =inference-lock.json=), CPU and GPU, concurrency and queueing, whether
    one model serves every tenant, and what each costs to build and keep.
    Prefer the plain server unless an ORE service earns its place.
+
+   Settle how it scales before choosing, because the answer may decide
+   the choice:
+   - Does each user get a server, or do all users share a pool?
+     =llama-server= can serve several requests at once through parallel
+     slots with continuous batching, but each slot holds its own context
+     in memory. Measure what one server holds, and how the per-slot
+     context length trades against the number of slots.
+   - How many people can one server serve on a given CPU or GPU, at an
+     acceptable time to first token and tokens per second? Measure it
+     with a realistic conversation load, not one request.
+   - How a large setup grows: more replicas of the server behind a
+     router or queue, and how a request finds a free slot. What happens
+     when every slot is busy: queue, refuse, or tell the person to wait.
+   - Fairness between users and tenants: quotas, rate limits, and one
+     heavy user starving the rest.
+   - Whether a conversation must stay on one server to reuse its cached
+     context, or whether any replica can take any turn.
+   - Start-up time and memory of loading a model, and whether replicas
+     can start on demand or must run all the time.
+   - Whether every tenant shares one model, or a tenant can bring its
+     own.
 7. *Tenancy and data.* Which data the model may see, how a conversation
    is stored and for how long, and whether conversations are tenant
    records.

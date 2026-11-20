@@ -1,0 +1,47 @@
+:PROPERTIES:
+:ID: 70778DC7-4876-4C16-81E1-3A7F190DFC82
+:END:
+#+title: Story: CZEONIA days with no fixing fail the refresh
+#+description: The Czech National Bank's yearly CZEONIA files for 2018 to 2020 hold days with no volume and an empty rate. The parser refuses the whole file at the first such row, so a refresh that reaches those years stores no CZK overnight fixing.
+#+type: story
+#+level: s2
+#+filetags: :sprint_30:v0:
+#+created: 2026-11-20
+#+updated: 2026-11-20
+#+environment: clever_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The CNB adapter reads a day with an empty rate as a day with no fixing, so every yearly file parses and a refresh across any window stores the days the bank fixed.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-11-20                               |
+
+* Acceptance
+
+- A row with an empty rate gives no fixing and does not refuse the file.
+- A rate that is present but is not a number still refuses the file.
+- The CZEONIA refresh stores fixings on a fresh environment, and the CZK coverage names a series for its overnight rate.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:8E5BDABE-6926-4FEA-A20D-A507C59318D8][Read an empty CZEONIA rate as no fixing]] | STARTED | 2026-11-20 | | Skip a CZEONIA row whose rate is empty, as the bank writes for a day it set no rate, instead of refusing the whole yearly file. |
+
+* Decisions
+
+* Out of scope
+
+-

@@ -415,6 +415,11 @@ RULES = (
          BFF, NOT_API, NO_AREA,
          "The two lookups a template states, in the order the screen offers them, which is"
          " display order for a form."),
+    Rule("a template form's lookups",
+         ("exact", "GET /api/analytics/sensitivity-templates/choices"),
+         CPP, NOT_API, NO_AREA,
+         "The two lookups a template states, read from their own tables and answered by"
+         " ores.http at the address the BFF answered."),
     Rule("the pricing engine vocabulary",
          ("exact", "GET /api/reporting/pricing-engines/vocabulary"),
          None, NOT_API, NO_AREA,
@@ -1616,6 +1621,12 @@ RULES = (
          "A sensitivity template key: a page of the tenant's keys, one key, its history, and"
          " the create, correct and remove writes."),
 
+    Rule("the sensitivity templates",
+         ("regex", r"^(GET|POST|PUT|DELETE) /api/analytics/sensitivity-templates"),
+         CPP, RESOURCE, "analytics",
+         "A sensitivity template key, answered by ores.http at the address and in the shape"
+         " the BFF answered: a page of the tenant's keys, the two lookups a key names, one"
+         " key, its history, and the create, correct and remove writes."),
     Rule("the sprint list",
          ("exact", "GET /api/agile/sprints"),
          BFF, RESOURCE, "agile",

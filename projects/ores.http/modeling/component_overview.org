@@ -12,7 +12,7 @@
 #+full_name: ores.http
 #+brief: HTTP gateway
 #+component_kind: composite
-#+parts: api assets client compute core iam marketdata nats refdata reporting server synthetic trading workflow
+#+parts: analytics api assets client compute core iam marketdata nats refdata reporting server synthetic trading workflow
 
 * Summary
 
@@ -27,6 +27,7 @@ serves — and a client, through which the system reads outside HTTP APIs.
 
 | Sub-component | Brief |
 |---------------+-------|
+| [[id:577DB4C2-31AE-4168-A7AA-A88AD674C0E9][ores.http.analytics]] | Route units for the analytics domain. |
 | [[id:B0C9FDC8-F0B2-48FE-AE37-8FD79E6FD164][ores.http.api]] | Boost.Beast server, JWT authentication, routing and OpenAPI support. |
 | [[id:66E4F171-4D0C-4081-8C76-E5459AD2A516][ores.http.assets]] | Generated route units for the assets domain. |
 | [[id:2F5990E4-B2ED-4411-B81B-3374D55F2EC0][ores.http.compute]] | Route units for the compute grid. |

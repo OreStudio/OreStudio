@@ -382,6 +382,27 @@ PAIRS = {
     ("GET", "/api/requests"): ("GET", "/api/requests"),
     ("GET", "/api/requests/:id/story"): ("GET", "/api/requests/{id}/story"),
     ("GET", "/api/timeline"): ("GET", "/api/timeline"),
+    ("GET", "/api/analytics/sensitivity-templates"): (
+        "GET",
+        "/api/analytics/sensitivity-templates"),
+    ("GET", "/api/analytics/sensitivity-templates/choices"): (
+        "GET",
+        "/api/analytics/sensitivity-templates/choices"),
+    ("GET", "/api/analytics/sensitivity-templates/:code"): (
+        "GET",
+        "/api/analytics/sensitivity-templates/{code}"),
+    ("GET", "/api/analytics/sensitivity-templates/:code/history"): (
+        "GET",
+        "/api/analytics/sensitivity-templates/{code}/history"),
+    ("POST", "/api/analytics/sensitivity-templates"): (
+        "POST",
+        "/api/analytics/sensitivity-templates"),
+    ("PUT", "/api/analytics/sensitivity-templates/:code"): (
+        "PUT",
+        "/api/analytics/sensitivity-templates/{code}"),
+    ("DELETE", "/api/analytics/sensitivity-templates/:code"): (
+        "DELETE",
+        "/api/analytics/sensitivity-templates/{code}"),
     ("GET", "/api/requests/:id/changes"): ("GET", "/api/requests/{id}/changes"),
     ("GET", "/api/requests/:id/checks"): ("GET", "/api/requests/{id}/checks"),
     ("POST", "/api/workflow/:instanceId/retry"): (

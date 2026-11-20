@@ -130,7 +130,6 @@ TEST_CASE("the_ingest_consumes_an_adapters_tick_and_a_producers_tick",
     // subject the loop reads.
     CHECK_FALSE(ingest_consumes(adapter_announce_subject()));
     CHECK_FALSE(ingest_consumes(adapter_demand_subject("bloomberg-a")));
-    CHECK_FALSE(ingest_consumes(feed_display_subject_for("bloomberg-a")));
     CHECK_FALSE(ingest_consumes("synthetic.v1.ops.tick"));
 }
 

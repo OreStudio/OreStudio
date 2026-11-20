@@ -107,8 +107,6 @@ ir_curve_feed::ir_curve_feed(
         board_spot_date_ = curve_spot_date;
     }
 
-    display_subject_ = ores::marketdata::domain::feed_display_subject_for(source_name_);
-
     // One curve quotes every pillar, so the targets are matched to the entries here and an entry
     // with no id fails the build: a pillar the adapter cannot name has nowhere to publish.
     for (const auto& e : entries_) {
@@ -188,23 +186,6 @@ std::string ir_curve_feed::tick(const ores::analytics::quant::service::tick_cont
         const auto& e = entries_[i];
         const auto value = std::format("{}", price_ir_curve_entry(*process_, e));
 
-        // Each market tick names one pillar: the datum built at construction from the entry's own
-        // dates and the index tenor, so the series it lands in carries the instrument's identity
-        // rather than the pipeline's vocabulary. It goes out before the adapter branch, as a spot
-        // feed's does, because a screen reads this copy: a pillar served by an adapter is still a
-        // pillar the feed published, and dropping its market tick left the feed silent on every
-        // screen while its ticks were stored.
-        {
-            ores::marketdata::messaging::market_tick shown;
-            shown.oresmd_uri = datum_uris_[i];
-            shown.value = value;
-            shown.observation_time = now;
-            shown.source = source_name_;
-
-            const auto shown_encoded = ores::nats::default_wire_codec().encode(shown);
-            nats_.publish(display_subject_, shown_encoded);
-        }
-
         // A pillar that serves an adapter publishes the adapter's own tick under the pillar's
         // vendor id, as an adapter of a live provider does. The service maps the id to its datum
         // and finds the parties, so the tick names neither.
@@ -253,6 +234,15 @@ const std::string& ir_curve_feed::published_subject() const {
         if (target)
             return target->target.subject;
     return nats_subject_;
+}
+
+std::vector<std::string> ir_curve_feed::vendor_watch_subjects() const {
+    // Every pillar of a curve is quoted through the one adapter of its collection's provider.
+    for (const auto& target : adapter_targets_)
+        if (target)
+            return ores::marketdata::domain::provider_series_watch_subjects(
+                target->target.provider_code, series_uris_);
+    return {};
 }
 
 void ir_curve_feed::stop() {

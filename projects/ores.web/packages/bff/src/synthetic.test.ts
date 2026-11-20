@@ -1531,7 +1531,14 @@ describe('synthetic operations', () => {
         const replies: Record<string, unknown> = {
             'synthetic.v1.feed_configs.list': {
                 success: true,
-                running_feeds: [{ source_name: 'live.eurusd' }],
+                running_feeds: [
+                    {
+                        source_name: 'live.eurusd',
+                        watch_subjects: [
+                            'marketdata.v1.ops.market_tick.bloomberg.*.fx_spot.eurusd.*',
+                        ],
+                    },
+                ],
             },
             'synthetic.v1.fx_spot_generation_configs.list': {
                 result: ok,
@@ -1541,7 +1548,7 @@ describe('synthetic operations', () => {
         const { server, sessionId, publish } = buildTestServer(replies);
         await send(server, sessionId, 'GET', `/api/synthetic/feeds/${ID}/ticks`);
 
-        const subject = 'synthetic.v1.ops.feed_tick.live.eurusd';
+        const subject = 'marketdata.v1.ops.market_tick.bloomberg.*.fx_spot.eurusd.*';
         publish(subject, { value: '1.1', observation_time: '2026-10-11 09:00:00Z' });
         publish(subject, { value: 'not a price', observation_time: '2026-10-11 09:00:30Z' });
         publish(subject, { value: '1.2', observation_time: '2026-10-11 09:01:00Z' });
@@ -1566,7 +1573,14 @@ describe('synthetic operations', () => {
         const replies: Record<string, unknown> = {
             'synthetic.v1.feed_configs.list': {
                 success: true,
-                running_feeds: [{ source_name: 'live.eurusd' }],
+                running_feeds: [
+                    {
+                        source_name: 'live.eurusd',
+                        watch_subjects: [
+                            'marketdata.v1.ops.market_tick.bloomberg.*.fx_spot.eurusd.*',
+                        ],
+                    },
+                ],
             },
             'synthetic.v1.fx_spot_generation_configs.list': {
                 result: ok,
@@ -1574,7 +1588,7 @@ describe('synthetic operations', () => {
             },
         };
         const { server, sessionId, publish } = buildTestServer(replies);
-        const subject = 'synthetic.v1.ops.feed_tick.live.eurusd';
+        const subject = 'marketdata.v1.ops.market_tick.bloomberg.*.fx_spot.eurusd.*';
         await send(server, sessionId, 'GET', `/api/synthetic/feeds/${ID}/ticks`);
         publish(subject, { value: '1.1', observation_time: '2026-10-11 09:00:00Z' });
 
@@ -1583,7 +1597,7 @@ describe('synthetic operations', () => {
         expect(read.json().ticks).toEqual([{ at: '2026-10-11 09:00:00Z', value: 1.1, uri: '' }]);
     });
 
-    it('watches the source as soon as a read asks for it', async () => {
+    it('hears a feed that does not run on nothing, and its tab stays empty', async () => {
         const { server, sessionId, publish } = buildTestServer({
             'synthetic.v1.feed_configs.list': { success: true, running_feeds: [] },
             'synthetic.v1.fx_spot_generation_configs.list': {
@@ -1592,14 +1606,12 @@ describe('synthetic operations', () => {
             },
         });
         await send(server, sessionId, 'GET', `/api/synthetic/feeds/${ID}/ticks`);
-        publish('synthetic.v1.ops.feed_tick.live.eurusd', {
+        publish('marketdata.v1.ops.market_tick.bloomberg.*.fx_spot.eurusd.*', {
             value: '1.1',
             observation_time: '2026-10-11 09:00:00Z',
         });
         const response = await send(server, sessionId, 'GET', `/api/synthetic/feeds/${ID}/ticks`);
-        expect(response.json().ticks).toEqual([
-            { at: '2026-10-11 09:00:00Z', value: 1.1, uri: '' },
-        ]);
+        expect(response.json().ticks).toEqual([]);
     });
 
     it('answers 404 for the ticks of a feed the session cannot read', async () => {
@@ -1617,7 +1629,14 @@ describe('synthetic operations', () => {
         const replies: Record<string, unknown> = {
             'synthetic.v1.feed_configs.list': {
                 success: true,
-                running_feeds: [{ source_name: 'live.usdsofr' }],
+                running_feeds: [
+                    {
+                        source_name: 'live.usdsofr',
+                        watch_subjects: [
+                            'marketdata.v1.ops.market_tick.bloomberg.*.ir_swap.usdsofr.*',
+                        ],
+                    },
+                ],
             },
             'synthetic.v1.ir_curve_generation_configs.list': {
                 result: ok,
@@ -1634,7 +1653,7 @@ describe('synthetic operations', () => {
         const pillar = (end: string): string =>
             `oresmd://ir/USD?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D&term=${end}`;
 
-        const subject = 'synthetic.v1.ops.feed_tick.live.usdsofr';
+        const subject = 'marketdata.v1.ops.market_tick.bloomberg.*.ir_swap.usdsofr.*';
         publish(subject, {
             value: '0.04',
             observation_time: '2026-10-11 09:00:00Z',

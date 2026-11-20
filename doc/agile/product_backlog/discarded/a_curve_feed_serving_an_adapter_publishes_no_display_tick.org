@@ -11,6 +11,13 @@
 
 This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
+* Why discarded
+
+Moot since 2026-11-19: the task Retire the synthetic display tap removed the
+display subject. A feed's Ticks tab and the arrivals raster now read the vendor
+subjects its adapter's ticks land on, which the synthetic service names for each
+running feed, so a curve feed served by an adapter shows its ticks.
+
 * What
 
 An IR curve feed publishes one display tick for each pillar it prices, and skips

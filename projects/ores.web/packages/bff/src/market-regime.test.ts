@@ -281,7 +281,20 @@ describe('the market regime', () => {
         const { server, sessionId, publish } = buildTestServer({
             'synthetic.v1.feed_configs.list': {
                 success: true,
-                running_feeds: [{ source_name: 'live.eurusd' }, { source_name: 'live.usdsofr' }],
+                running_feeds: [
+                    {
+                        source_name: 'live.eurusd',
+                        watch_subjects: [
+                            'marketdata.v1.ops.market_tick.bloomberg.*.fx_spot.eurusd.*',
+                        ],
+                    },
+                    {
+                        source_name: 'live.usdsofr',
+                        watch_subjects: [
+                            'marketdata.v1.ops.market_tick.bloomberg.*.ir_swap.usdsofr.*',
+                        ],
+                    },
+                ],
             },
             'synthetic.v1.ops.list_folder_feeds': {
                 success: true,
@@ -306,19 +319,19 @@ describe('the market regime', () => {
         const at = (secondsAgo: number): string => new Date(now - secondsAgo * 1000).toISOString();
 
         await send(server, sessionId, 'GET', '/api/synthetic/feed-raster?seconds=60');
-        publish('synthetic.v1.ops.feed_tick.live.eurusd', {
+        publish('marketdata.v1.ops.market_tick.bloomberg.*.fx_spot.eurusd.*', {
             value: '1.1',
             observation_time: at(90),
         });
-        publish('synthetic.v1.ops.feed_tick.live.eurusd', {
+        publish('marketdata.v1.ops.market_tick.bloomberg.*.fx_spot.eurusd.*', {
             value: '1.2',
             observation_time: at(20),
         });
-        publish('synthetic.v1.ops.feed_tick.live.eurusd', {
+        publish('marketdata.v1.ops.market_tick.bloomberg.*.fx_spot.eurusd.*', {
             value: '1.3',
             observation_time: at(5),
         });
-        publish('synthetic.v1.ops.feed_tick.live.usdsofr', {
+        publish('marketdata.v1.ops.market_tick.bloomberg.*.ir_swap.usdsofr.*', {
             value: '4.1',
             observation_time: at(10),
         });
@@ -364,7 +377,14 @@ describe('the market regime', () => {
         const replies: Record<string, unknown> = {
             'synthetic.v1.feed_configs.list': {
                 success: true,
-                running_feeds: [{ source_name: 'live.eurusd' }],
+                running_feeds: [
+                    {
+                        source_name: 'live.eurusd',
+                        watch_subjects: [
+                            'marketdata.v1.ops.market_tick.bloomberg.*.fx_spot.eurusd.*',
+                        ],
+                    },
+                ],
             },
             'synthetic.v1.ops.list_folder_feeds': {
                 success: true,
@@ -381,14 +401,19 @@ describe('the market regime', () => {
         };
         const { server, sessionId, publish } = buildTestServer(replies);
         await send(server, sessionId, 'GET', '/api/synthetic/feed-raster');
-        publish('synthetic.v1.ops.feed_tick.live.eurusd', {
+        publish('marketdata.v1.ops.market_tick.bloomberg.*.fx_spot.eurusd.*', {
             value: '1.1',
             observation_time: new Date().toISOString(),
         });
 
         replies['synthetic.v1.feed_configs.list'] = {
             success: true,
-            running_feeds: [{ source_name: 'live.gbpusd' }],
+            running_feeds: [
+                {
+                    source_name: 'live.gbpusd',
+                    watch_subjects: ['marketdata.v1.ops.market_tick.bloomberg.*.fx_spot.gbpusd.*'],
+                },
+            ],
         };
         replies['synthetic.v1.ops.list_folder_feeds'] = {
             success: true,
@@ -411,7 +436,7 @@ describe('the market regime', () => {
         await send(server, sessionId, 'GET', '/api/synthetic/feed-raster');
         // The listener for the stopped feed is gone, so a publish for it is not
         // heard; the new feed's listener answers on the next read.
-        publish('synthetic.v1.ops.feed_tick.live.eurusd', {
+        publish('marketdata.v1.ops.market_tick.bloomberg.*.fx_spot.eurusd.*', {
             value: '1.2',
             observation_time: new Date().toISOString(),
         });
@@ -452,7 +477,14 @@ describe('the market regime', () => {
         const replies: Record<string, unknown> = {
             'synthetic.v1.feed_configs.list': {
                 success: true,
-                running_feeds: [{ source_name: 'live.eurusd' }],
+                running_feeds: [
+                    {
+                        source_name: 'live.eurusd',
+                        watch_subjects: [
+                            'marketdata.v1.ops.market_tick.bloomberg.*.fx_spot.eurusd.*',
+                        ],
+                    },
+                ],
             },
             'synthetic.v1.ops.list_folder_feeds': {
                 success: true,

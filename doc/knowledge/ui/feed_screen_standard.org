@@ -341,6 +341,16 @@ model, and it asks plain questions in place of the table.
   the rate, and each part as a card with its name highlighted, its note
   subdued, its weight in the part's colour, and its other numbers.
 - A running feed's ticks are read again every two seconds.
+- The ticks are the vendor's: what the feed published after its adapter and
+  the market data ingest, on the vendor subjects of the adapter's provider
+  (=marketdata.v1.ops.market_tick.<provider>.*.<type>.<series>.*=). The synthetic
+  service names those subjects for each running feed (=running_feed.watch_subjects=),
+  and the web server listens on them. So a fault the feed injects, a tick the
+  ingest conflates into the next, and a tick it refuses all show as the market
+  saw them, not as the simulator drew them. The simulator publishes no second
+  copy for screens. The subjects name the feed's series on every feed of the
+  provider, so two feeds that quote the same series, such as two curves that
+  share a pillar, each show the other's ticks of it. (2026-11-19.)
 - The tab says what it can and cannot show. The web server keeps the last 500
   ticks of each running feed from when it began to listen, and forgets a run
   when the feed stops, so the lead says so.

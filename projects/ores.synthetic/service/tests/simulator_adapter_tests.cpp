@@ -485,9 +485,8 @@ TEST_CASE("the runner rejects an id whose generator cannot be built",
 
 TEST_CASE("the runner survives a generator whose start throws", "[simulator_adapter][runner]") {
     generator_runner runner([] {
-        return std::vector{generator_offer{.id = bbg_id("EUR/USD"), .make = [] {
-                                               return std::make_shared<failing_generator>();
-                                           }}};
+        return std::vector{generator_offer{
+            .id = bbg_id("EUR/USD"), .make = [] { return std::make_shared<failing_generator>(); }}};
     });
 
     const auto out = runner.apply({bbg_id("EUR/USD")});
@@ -720,10 +719,7 @@ TEST_CASE("the offers are the startable system configs of the provider that have
             [](const auto&, const auto&) {
                 return std::optional<ores::synthetic::domain::market_data_generation_config>{};
             },
-        .containers =
-            [containers](const auto&) {
-                return containers();
-            }});
+        .containers = [containers](const auto&) { return containers(); }});
 
     svc::feed_kind kind;
     kind.kind = std::string(ores::synthetic::feed::fx_spot_feed_kind);
@@ -1083,21 +1079,31 @@ TEST_CASE("a curve publishes only where the ingest listens",
 
     // A pillar that serves an adapter travels on the adapter's ingress, which is the family the
     // market data ingest maps, stores and delivers.
-    const auto serving = make(
-        {{.start_tenor_code = "SPOT",
-          .end_tenor_code = "3M",
-          .target = {.id = id,
-                     .subject = domain::adapter_ingress_subject(adapter_id, id.external_id)}}});
+    const auto serving =
+        make({{.start_tenor_code = "SPOT",
+               .end_tenor_code = "3M",
+               .target = {.id = id,
+                          .subject = domain::adapter_ingress_subject(adapter_id, id.external_id),
+                          .provider_code = "demo"}}});
     CHECK(serving.published_subject() ==
           domain::adapter_ingress_subject(adapter_id, id.external_id));
     CHECK(domain::ingest_consumes(serving.published_subject()));
+
+    // The ingest delivers the adapter's ticks on the provider's feed subjects, so a screen
+    // watches the curve's series there, on any feed of the provider.
+    const auto watched = serving.vendor_watch_subjects();
+    REQUIRE(watched.size() == serving.series_uris().size());
+    CHECK(watched.front() ==
+          domain::provider_series_watch_subjects("demo", serving.series_uris()).front());
+    CHECK(watched.front().starts_with("marketdata.v1.ops.market_tick.demo.*.ir_swap."));
+    CHECK(watched.front().ends_with(".*"));
 
     // A pillar with no adapter still publishes on the producers' family, which the same loop
     // subscribes to, so a feed is never silent to the store.
     const auto bare = make({});
     CHECK(bare.published_subject() == bare.nats_subject());
     CHECK(domain::ingest_consumes(bare.published_subject()));
-    CHECK_FALSE(domain::ingest_consumes(domain::feed_display_subject_for("bloomberg-a")));
+    CHECK(bare.vendor_watch_subjects().empty());
 }
 
 TEST_CASE("a_feed_quotes_the_id_its_provider_writes", "[simulator_adapter][adapter][subjects]") {

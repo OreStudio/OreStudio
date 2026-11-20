@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID: E5314CD1-6AB9-4F65-8858-AF2B08FBAEAC
+:END:
+#+title: Story: Make a fresh environment ready quickly
+#+description: A fresh environment takes about 25 minutes to be ready with Acme: the market data service misses its start timeout, which fails the official rates service, and the tenant setup's critical path runs 18 minutes, with curves, surface blueprints and surfaces left unpublished.
+#+type: story
+#+level: s2
+#+filetags: :provisioning:environment:services:performance:acme:sprint_30:v0:
+#+created: 2026-11-20
+#+updated: 2026-11-20
+#+environment: bright_faraday
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A person who recreates the database, starts the services and provisions Acme has a working environment in a few minutes, with every service up and every curve, blueprint and surface the provisioning promises, on the first attempt.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-11-20                               |
+
+* Acceptance
+
+- Every service starts on a fresh database within its start timeout, and a service that depends on another starts once that one is ready.
+- Provisioning Acme on a fresh database completes with no step ending with warnings for want of something an earlier step makes.
+- The tenant setup's critical path is measured per step, and its longest steps are shortened, with the before and after recorded.
+
+* Notes
+
+Found on 2026-11-20 while readying =bright_faraday= after a check gate:
+=services start= waited 483 s and left =ores.marketdata.official= stopped, and
+provisioning Acme took about 18 minutes and ended with curves, blueprints and
+surfaces unpublished. Each task carries the evidence. Related: the capture
+[[id:C8714C54-91DF-4941-932D-303BFBB3DD0B][Speed up the ticks smoke gate]], whose slowest step is the same
+provisioning.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:B3BEA3D5-1ABA-444E-8C51-13EBD8E6DF5F][Ready the market data service before its usage sync]] | BACKLOG | | | On a fresh database the market data service writes thousands of demand intervals before it tells systemd it is ready, misses the 90-second start timeout, and takes the official rates service down with it. |
+| [[id:C39B96C7-8252-4262-9CBC-F7B9D9A73546][Publish a fresh tenant's market in dependency order]] | BACKLOG | | | On a fresh database Acme's provisioning leaves 12 party curves deferred on discount curves not yet published, 105 surface blueprints ungiven for want of the derived vol series, and so every party without a surface. |
+| [[id:1ACC41D9-2132-49B0-9ACB-B43D61AF39B1][Shorten the tenant setup's critical path]] | BACKLOG | | | The tenant setup workflow takes 18 minutes on a fresh database; publish_party_curves alone runs 12 minutes while the market data service misses its own adapters' heartbeats. |
+
+* Decisions
+
+* Out of scope
+
+-

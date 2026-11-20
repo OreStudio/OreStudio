@@ -69,20 +69,20 @@ does not derive a subject of its own.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| The part's suite       | 6 cases, 33 assertions                   | =publish/bin/ores.http.analytics.tests= | 3848f33332 |
+| The part's suite       | 7 cases, 38 assertions                   | =publish/bin/ores.http.analytics.tests= | 12caee553a |
 | The analytics area     | 12 routes: the 6 the BFF answered and the 6 resources the part serves, beside the lookups | =./compass.sh generate=, then the inventory's area table | 3848f33332 |
-| The paired routes      | 295 of 333, so 38 are unpaired           | the inventory's pairing table | 3848f33332 |
-| The check gate         | 52 of 52                                 | =./compass.sh check --exclude-heavy= | 3848f33332 |
+| The paired routes      | 295 of 334, so 39 are unpaired           | the inventory's pairing table | 12caee553a |
+| The check gate         | 52 of 52                                 | =./compass.sh check --exclude-heavy= | 12caee553a |
 
 * Result
 
 The templates are served. The gateway has an eleventh adapter part,
 =ores.http.analytics=, and it answers the whole family at the BFF's addresses: the
 page, the two lookups, one key, its history, and the three writes. The analytics
-area is the seventh the gateway serves whole, and 295 of the BFF's 333 routes are
+area is the eighth the gateway serves whole, and 295 of the BFF's 334 routes are
 now paired.
 
-What is proved: the part builds and the server links it, its six cases pass, the
+What is proved: the part builds and the server links it, its seven cases pass, the
 local gate is green, and the inventory regenerates to itself with every one of the
 seven routes paired. What is not proved: no route of this part was read against a
 live service, so the page, the lookups and the writes rest on their tests and on

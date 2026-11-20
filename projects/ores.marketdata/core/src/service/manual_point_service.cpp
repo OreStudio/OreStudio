@@ -62,7 +62,7 @@ std::expected<node, std::string> locate(const ores::database::context& ctx,
     if (found.empty())
         return std::unexpected("No series carries that identity.");
     if (found.size() > 1)
-        return std::unexpected("The identity names more than one series; state the party.");
+        return std::unexpected("The identity names more than one series; state the party or the provider.");
     const auto& series = found.front();
 
     // The observation takes the context's party, so a context for another party

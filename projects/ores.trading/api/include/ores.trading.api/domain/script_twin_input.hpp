@@ -97,8 +97,8 @@ struct script_twin_input final {
     std::string source;
 
     /**
-     * @brief How the value is turned into the one the script reads: sign turns Long, Call or true
-     * into 1 and Short, Put or false into -1; flag turns true into 1 and false into 0.
+     * @brief How the value is turned into the code the script reads, as the Scripted twin
+     * transforms table of the trade type catalogue states.
      */
     std::optional<std::string> transform;
 

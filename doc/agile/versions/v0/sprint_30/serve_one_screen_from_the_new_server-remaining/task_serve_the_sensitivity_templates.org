@@ -74,20 +74,6 @@ does not derive a subject of its own.
 | The paired routes      | 295 of 334, so 39 are unpaired           | the inventory's pairing table | 12caee553a |
 | The check gate         | 52 of 52                                 | =./compass.sh check --exclude-heavy= | 12caee553a |
 
-* Result
-
-The templates are served. The gateway has an eleventh adapter part,
-=ores.http.analytics=, and it answers the whole family at the BFF's addresses: the
-page, the two lookups, one key, its history, and the three writes. The analytics
-area is the eighth the gateway serves whole, and 295 of the BFF's 334 routes are
-now paired.
-
-What is proved: the part builds and the server links it, its seven cases pass, the
-local gate is green, and the inventory regenerates to itself with every one of the
-seven routes paired. What is not proved: no route of this part was read against a
-live service, so the page, the lookups and the writes rest on their tests and on
-the shape the inventory states, and the store's own refusals were not exercised.
-
 * Notes
 
 * Test Scenarios
@@ -114,3 +100,15 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The templates are served. The gateway has an eleventh adapter part,
+=ores.http.analytics=, and it answers the whole family at the BFF's addresses: the
+page, the two lookups, one key, its history, and the three writes. The analytics
+area is the eighth the gateway serves whole, and 295 of the BFF's 334 routes are
+now paired.
+
+What is proved: the part builds and the server links it, its seven cases pass, the
+local gate is green, and the inventory regenerates to itself with every one of the
+seven routes paired. What is not proved: no route of this part was read against a
+live service, so the page, the lookups and the writes rest on their tests and on
+the shape the inventory states, and the store's own refusals were not exercised.

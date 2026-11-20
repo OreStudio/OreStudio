@@ -89,19 +89,34 @@ export class FeedTickBuffers {
             run = { ticks: [], subjects: [], stops: [] };
             this.#runs.set(sourceName, run);
         }
-        if (subjects.length === 0 || sameSubjects(subjects, run.subjects)) return;
-        for (const stop of run.stops) stop();
+        // The same set in another order is the same subscription.
+        const wanted = [...subjects].sort();
+        if (wanted.length === 0 || sameSubjects(wanted, run.subjects)) return;
         const ticks = run.ticks;
-        run.subjects = [...subjects];
-        run.stops = subjects.map((subject) =>
-            this.#subscribe(subject, (tick) => {
-                const value = Number(tick.value);
-                if (!Number.isFinite(value)) return;
-                ticks.push({ at: tick.observation_time, value, uri: tick.oresmd_uri });
-                if (ticks.length > this.#capacity) ticks.splice(0, ticks.length - this.#capacity);
-            }),
-        );
+        // Every new subscription is made before any is kept, so one that throws leaves the
+        // source on its old subjects, and the next read tries again.
+        const stops: (() => void)[] = [];
+        try {
+            for (const subject of wanted) {
+                stops.push(
+                    this.#subscribe(subject, (tick) => {
+                        const value = Number(tick.value);
+                        if (!Number.isFinite(value)) return;
+                        ticks.push({ at: tick.observation_time, value, uri: tick.oresmd_uri });
+                        if (ticks.length > this.#capacity)
+                            ticks.splice(0, ticks.length - this.#capacity);
+                    }),
+                );
+            }
+        } catch (error) {
+            for (const stop of stops) stop();
+            throw error;
+        }
+        for (const stop of run.stops) stop();
+        run.subjects = wanted;
+        run.stops = stops;
     }
+
     /** The newest ticks of a feed's current run, at most `limit`, oldest first. */
     ticks(sourceName: string, limit: number): readonly FeedTick[] {
         const ticks = this.#runs.get(sourceName)?.ticks ?? [];

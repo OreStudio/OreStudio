@@ -52,7 +52,9 @@ struct feed_tick final {
  * on the vendor subjects the synthetic service names for it, and the buffers keep
  * the newest ones of each source a read has named, so a screen shows what the
  * vendor published: after the feed's faults, the adapter and the ingest's
- * conflation and refusals. A buffer holds ticks,
+ * conflation and refusals. A source's subjects name its series on every feed of
+ * its provider, so two sources that quote the same series, such as two curves
+ * that share a pillar, each hear the other's ticks of it. A buffer holds ticks,
  * not a run's state, so a read of a feed that stopped finds whatever was heard
  * while it ran, until a raster read stops listening to the feeds that no longer
  * run, as the BFF's did. At most a thousand sources are heard at once, so reads
@@ -101,7 +103,7 @@ public:
      * @return whether the source is heard: false when it is new and the buffers
      *         already hear as many sources as they may.
      */
-    bool watch(const std::string& source_name, const std::vector<std::string>& subjects);
+    bool watch(const std::string& source_name, std::vector<std::string> subjects);
 
     /// The newest ticks of a source, at most @p limit, oldest first.
     [[nodiscard]] std::vector<feed_tick> ticks(const std::string& source_name,

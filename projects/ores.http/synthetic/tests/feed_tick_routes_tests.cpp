@@ -34,6 +34,8 @@
 #include <map>
 #include <memory>
 #include <optional>
+#include <set>
+#include <stdexcept>
 #include <string>
 #include <thread>
 #include <vector>
@@ -181,6 +183,41 @@ TEST_CASE("feed_tick_buffers_follow_a_sources_subjects_and_keep_its_ticks", "[fe
     CHECK(buffers.watch("GBPUSD", {}));
     CHECK(buffers.size() == 2);
     CHECK(*transport.open == 1);
+}
+
+TEST_CASE("feed_tick_buffers_keep_a_source_whole_when_a_subscribe_fails", "[feed_ticks]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing a subscribe that throws, and subjects in another order";
+
+    hand_transport transport;
+    std::set<std::string> refused;
+    feed_tick_buffers buffers(
+        [&](const std::string& subject, feed_tick_buffers::tick_handler on_tick) {
+            if (refused.contains(subject))
+                throw std::runtime_error("not connected");
+            return transport.subscriber()(subject, std::move(on_tick));
+        });
+    const std::vector<std::string> first = {"a.1", "a.2"};
+    buffers.watch("EURUSD", first);
+    CHECK(*transport.open == 2);
+
+    // The same set in another order changes nothing.
+    buffers.watch("EURUSD", {"a.2", "a.1"});
+    CHECK(*transport.open == 2);
+
+    // A move that cannot subscribe to all of its subjects keeps the old ones, and is tried
+    // again at the next read.
+    refused.insert("b.2");
+    CHECK_THROWS(buffers.watch("EURUSD", {"b.1", "b.2"}));
+    CHECK(*transport.open == 2);
+    market_tick tick;
+    tick.value = "1.1";
+    tick.observation_time = noon;
+    transport.handlers.at("a.1")(tick);
+    CHECK(buffers.ticks("EURUSD", 10).size() == 1);
+    refused.clear();
+    buffers.watch("EURUSD", {"b.1", "b.2"});
+    CHECK(*transport.open == 2);
 }
 
 TEST_CASE("feed_tick_buffers_answer_arrivals_from_an_instant", "[feed_ticks]") {

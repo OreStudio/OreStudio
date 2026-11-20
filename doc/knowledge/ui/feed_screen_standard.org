@@ -348,7 +348,9 @@ model, and it asks plain questions in place of the table.
   and the web server listens on them. So a fault the feed injects, a tick the
   ingest conflates into the next, and a tick it refuses all show as the market
   saw them, not as the simulator drew them. The simulator publishes no second
-  copy for screens. (2026-11-19.)
+  copy for screens. The subjects name the feed's series on every feed of the
+  provider, so two feeds that quote the same series, such as two curves that
+  share a pillar, each show the other's ticks of it. (2026-11-19.)
 - The tab says what it can and cannot show. The web server keeps the last 500
   ticks of each running feed from when it began to listen, and forgets a run
   when the feed stops, so the lead says so.

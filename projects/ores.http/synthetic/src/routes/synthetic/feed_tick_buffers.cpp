@@ -46,8 +46,9 @@ feed_tick_buffers::nats_subscriber(ores::nats::service::nats_client& session) {
     };
 }
 
-bool feed_tick_buffers::watch(const std::string& source_name,
-                              const std::vector<std::string>& subjects) {
+bool feed_tick_buffers::watch(const std::string& source_name, std::vector<std::string> subjects) {
+    // The same set in another order is the same subscription.
+    std::ranges::sort(subjects);
     std::vector<std::shared_ptr<void>> replaced;
     {
         std::lock_guard lock(mutex_);
@@ -60,13 +61,14 @@ bool feed_tick_buffers::watch(const std::string& source_name,
         auto& one = found->second;
         if (subjects.empty() || subjects == one.subjects)
             return true;
-        replaced = std::move(one.stops);
-        one.stops.clear();
-        one.subjects = subjects;
+        // The new subscriptions are all made before any is kept, so a subscribe that throws
+        // leaves the source on its old subjects, and the next read tries again.
+        std::vector<std::shared_ptr<void>> stops;
+        stops.reserve(subjects.size());
         // The handler holds the run it fills, so a tick that arrives while the run is
         // being dropped writes to a buffer nobody reads rather than a freed one.
         for (const auto& subject : subjects)
-            one.stops.push_back(subscribe_(subject, [ticks = one.ticks](const market_tick& tick) {
+            stops.push_back(subscribe_(subject, [ticks = one.ticks](const market_tick& tick) {
                 double value = 0.0;
                 const auto [end, error] = std::from_chars(
                     tick.value.data(), tick.value.data() + tick.value.size(), value);
@@ -78,6 +80,8 @@ bool feed_tick_buffers::watch(const std::string& source_name,
                 while (ticks->ticks.size() > capacity)
                     ticks->ticks.pop_front();
             }));
+        replaced = std::exchange(one.stops, std::move(stops));
+        one.subjects = std::move(subjects);
     }
     // A subscription waits for its handlers when it stops, so the replaced ones stop
     // here, outside the lock a read needs.

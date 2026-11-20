@@ -91,4 +91,22 @@ describe('the tick buffers', () => {
         expect(buffers.size).toBe(2);
         expect(bus.open()).toEqual(moved);
     });
+
+    it("keeps a source whole when a subscribe fails, and ignores the subjects' order", () => {
+        const bus = subscriber();
+        const refused = new Set<string>();
+        const buffers = new FeedTickBuffers((subject, onTick) => {
+            if (refused.has(subject)) throw new Error('not connected');
+            return bus.subscribe(subject, onTick);
+        });
+        buffers.watch('a', ['a.2', 'a.1']);
+        buffers.watch('a', ['a.1', 'a.2']);
+        expect(bus.open()).toEqual(['a.1', 'a.2']);
+        refused.add('b.2');
+        expect(() => buffers.watch('a', ['b.1', 'b.2'])).toThrow('not connected');
+        expect(bus.open()).toEqual(['a.1', 'a.2']);
+        refused.clear();
+        buffers.watch('a', ['b.1', 'b.2']);
+        expect(bus.open()).toEqual(['b.1', 'b.2']);
+    });
 });

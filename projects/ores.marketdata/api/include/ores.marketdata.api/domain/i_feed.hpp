@@ -112,8 +112,11 @@ public:
      *
      * A feed that publishes through a provider's adapter reaches the market as that
      * provider's ticks, after the adapter and the ingest, on the provider's feed
-     * subjects; these name its series on every feed of the provider. A feed with no
-     * adapter reaches no vendor subject, and answers nothing.
+     * subjects; these name its series on every feed of the provider, so a watcher
+     * also hears another source of the provider that quotes the same series. A feed
+     * with no adapter reaches no vendor subject, and answers nothing; every run the
+     * synthetic service starts has one, because a start refuses a feed whose
+     * provider the catalogue serves with no simulated source.
      */
     virtual std::vector<std::string> vendor_watch_subjects() const;
 

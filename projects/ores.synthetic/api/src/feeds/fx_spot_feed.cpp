@@ -549,11 +549,6 @@ std::string fx_spot_feed::tick(const ores::analytics::quant::service::tick_conte
         market_.values().publish_spot(*board_member_, price, now);
 
     const auto& codec = ores::nats::default_wire_codec();
-    ores::marketdata::messaging::market_tick shown;
-    shown.oresmd_uri = quote_uri_;
-    shown.value = value;
-    shown.observation_time = now;
-    shown.source = source_name_;
     // A quote is perishable, so it goes out on core NATS without a wait for an
     // acknowledgement. A producer that waits limits its own rate to the round
     // trip of the broker.
@@ -570,7 +565,12 @@ std::string fx_spot_feed::tick(const ores::analytics::quant::service::tick_conte
             nats_.publish(adapter_->subject, codec.encode(out));
         return value;
     }
-    nats_.publish(nats_subject_, codec.encode(shown));
+    ores::marketdata::messaging::market_tick tick;
+    tick.oresmd_uri = quote_uri_;
+    tick.value = value;
+    tick.observation_time = now;
+    tick.source = source_name_;
+    nats_.publish(nats_subject_, codec.encode(tick));
     return value;
 }
 

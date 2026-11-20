@@ -8,7 +8,7 @@
 #+filetags: :hold_every_product_type_the_engine_supports:sprint_30:v0:
 #+owner: marco
 #+branch: feature/generate-every-product-in-both-forms
-#+pr: 4912
+#+pr: 4919
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-15
@@ -132,6 +132,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4919][#4919]] | [synthetic] Twin the pairwise variance swaps |
 | TBD | [synthetic] Twin the pairwise variance swaps |
 | [[https://github.com/OreStudio/OreStudio/pull/4912][#4912]] | [synthetic] Twin the window barrier options |
 | [[https://github.com/OreStudio/OreStudio/pull/4906][#4906]] | [synthetic] Twin the variance swaps, forward vol agreements and best entry options |

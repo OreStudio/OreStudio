@@ -166,3 +166,22 @@ TEST_CASE("a_watcher_of_a_series_receives_its_points_and_no_other_series",
         tick_subjects_feed_subject("oresmd://ir/USD?type=quote&instrument=ir_swap&quote=rate"
                                    "&fwd_start=0D&tenor=6M&term=5Y")));
 }
+
+TEST_CASE("a_watcher_of_a_providers_series_hears_every_feed_of_the_provider",
+          "[domain][tick_subjects]") {
+    using ores::marketdata::domain::provider_series_watch_subjects;
+    const std::string fx =
+        "oresmd://fx/EUR?type=series&instrument=fx_spot&quote=rate&ccy=USD";
+
+    const auto watched = provider_series_watch_subjects("bloomberg", {fx, "not a uri"});
+
+    REQUIRE(watched.size() == 1);
+    CHECK(watched.front() == "marketdata.v1.ops.market_tick.bloomberg.*.fx_spot." +
+                                 ores::marketdata::domain::subject_token(fx) + ".*");
+    // The subject a tick of the series travels on, on one of the provider's feeds, is one the
+    // watch covers: it differs only in the feed token and the coordinate token.
+    const auto heard = tick_subjects_feed_subject(
+        "oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD");
+    CHECK(heard.starts_with("marketdata.v1.ops.market_tick.bloomberg." + tick_subjects_feed +
+                            ".fx_spot." + ores::marketdata::domain::subject_token(fx) + "."));
+}

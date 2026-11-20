@@ -18,7 +18,6 @@
  *
  */
 #include "ores.http/routes/synthetic/feed_tick_buffers.hpp"
-#include "ores.marketdata.api/domain/tick_subjects.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/subscription.hpp"
@@ -47,30 +46,42 @@ feed_tick_buffers::nats_subscriber(ores::nats::service::nats_client& session) {
     };
 }
 
-bool feed_tick_buffers::watch(const std::string& source_name) {
-    std::lock_guard lock(mutex_);
-    if (runs_.contains(source_name))
-        return true;
-    if (runs_.size() >= most_sources)
-        return false;
-    auto ticks = std::make_shared<run>();
-    // The handler holds the run it fills, so a tick that arrives while the run
-    // is being dropped writes to a buffer nobody reads rather than a freed one.
-    auto stop =
-        subscribe_(ores::marketdata::domain::feed_display_subject_for(source_name),
-                   [ticks](const market_tick& tick) {
-                       double value = 0.0;
-                       const auto [end, error] = std::from_chars(
-                           tick.value.data(), tick.value.data() + tick.value.size(), value);
-                       if (error != std::errc{} || end != tick.value.data() + tick.value.size() ||
-                           !std::isfinite(value))
-                           return;
-                       std::lock_guard held(ticks->mutex);
-                       ticks->ticks.push_back({tick.observation_time, value, tick.oresmd_uri});
-                       while (ticks->ticks.size() > capacity)
-                           ticks->ticks.pop_front();
-                   });
-    runs_.emplace(source_name, heard{std::move(ticks), std::move(stop)});
+bool feed_tick_buffers::watch(const std::string& source_name,
+                              const std::vector<std::string>& subjects) {
+    std::vector<std::shared_ptr<void>> replaced;
+    {
+        std::lock_guard lock(mutex_);
+        auto found = runs_.find(source_name);
+        if (found == runs_.end()) {
+            if (runs_.size() >= most_sources)
+                return false;
+            found = runs_.emplace(source_name, heard{std::make_shared<run>(), {}, {}}).first;
+        }
+        auto& one = found->second;
+        if (subjects.empty() || subjects == one.subjects)
+            return true;
+        replaced = std::move(one.stops);
+        one.stops.clear();
+        one.subjects = subjects;
+        // The handler holds the run it fills, so a tick that arrives while the run is
+        // being dropped writes to a buffer nobody reads rather than a freed one.
+        for (const auto& subject : subjects)
+            one.stops.push_back(subscribe_(subject, [ticks = one.ticks](const market_tick& tick) {
+                double value = 0.0;
+                const auto [end, error] = std::from_chars(
+                    tick.value.data(), tick.value.data() + tick.value.size(), value);
+                if (error != std::errc{} || end != tick.value.data() + tick.value.size() ||
+                    !std::isfinite(value))
+                    return;
+                std::lock_guard held(ticks->mutex);
+                ticks->ticks.push_back({tick.observation_time, value, tick.oresmd_uri});
+                while (ticks->ticks.size() > capacity)
+                    ticks->ticks.pop_front();
+            }));
+    }
+    // A subscription waits for its handlers when it stops, so the replaced ones stop
+    // here, outside the lock a read needs.
+    replaced.clear();
     return true;
 }
 

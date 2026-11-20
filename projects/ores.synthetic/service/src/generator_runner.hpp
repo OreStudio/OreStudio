@@ -72,6 +72,8 @@ struct running_feed_start final {
     std::string source_name;
     /** Absent for a kind that starts from no published value. */
     std::optional<ores::marketdata::domain::feed_start> start;
+    /** The vendor subjects the feed's ticks land on, which a screen of the feed watches. */
+    std::vector<std::string> watch_subjects;
 };
 
 /**
@@ -230,8 +232,8 @@ public:
     /**
      * @brief Starts the feed an operator asked for, keyed by the id of its config.
      *
-     * A manual run builds the feed as a producer, with no adapter target, and no demand names its
-     * group, so the next demand set leaves it running. Returns false, and starts nothing, when a
+     * A manual run publishes through its collection's adapter as a demanded run does, and no
+     * demand names its group, so the next demand set leaves it running. Returns false, and starts nothing, when a
      * run of the feed's source name is already publishing it, whichever run started it.
      */
     bool start_manual(std::string group, std::shared_ptr<ores::marketdata::domain::i_feed> feed) {
@@ -313,7 +315,9 @@ public:
         for (const auto& [_, g] : running_) {
             if (!g.feed)
                 continue;
-            out.push_back({.source_name = g.source_name, .start = g.feed->start_source()});
+            out.push_back({.source_name = g.source_name,
+                           .start = g.feed->start_source(),
+                           .watch_subjects = g.feed->vendor_watch_subjects()});
         }
         return out;
     }

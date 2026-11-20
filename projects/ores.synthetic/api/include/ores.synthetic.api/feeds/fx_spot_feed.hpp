@@ -125,6 +125,7 @@ public:
     std::optional<ores::marketdata::domain::feed_start> start_source() const override {
         return start_source_;
     }
+    std::vector<std::string> vendor_watch_subjects() const override;
     void record_start_source(ores::marketdata::domain::feed_start s) {
         start_source_ = std::move(s);
     }
@@ -154,8 +155,6 @@ private:
     /// The arrival rate in ticks per second, the unit a step is counted in.
     double ticks_per_second_;
     std::string nats_subject_;
-    /// The subject the screen tails this feed's ticks on, beside the adapter ingress.
-    std::string display_subject_;
     std::optional<adapter_target> adapter_;
     std::optional<ores::marketdata::messaging::adapter_tick> previous_tick_;
     ores::marketdata::domain::feed_start start_source_;

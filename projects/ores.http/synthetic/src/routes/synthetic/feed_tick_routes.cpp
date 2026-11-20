@@ -33,6 +33,7 @@
 #include <algorithm>
 #include <charconv>
 #include <format>
+#include <map>
 #include <set>
 
 namespace ores::http::routes::synthetic {
@@ -84,17 +85,27 @@ std::string source_name_of(const http_request& req,
     return rows.front().source_name;
 }
 
-/// The source names of the feeds the service runs now, demanded or manual.
-std::set<std::string, std::less<>> running_sources(const http_request& req, nats_client& session) {
+/// The feeds the service runs now, demanded or manual, each with the vendor subjects its
+/// ticks land on.
+std::map<std::string, std::vector<std::string>, std::less<>>
+running_sources(const http_request& req, nats_client& session) {
     const auto reply = forwarding::forward(req, session, synthetic_messaging::list_feeds_request{});
     if (!reply.success)
         rr::refuse(http_status::bad_gateway,
                    "upstream-unavailable",
                    "The running feeds could not be read.");
-    std::set<std::string, std::less<>> out;
+    std::map<std::string, std::vector<std::string>, std::less<>> out;
     for (const auto& feed : reply.running_feeds)
-        out.insert(feed.source_name);
+        out.emplace(feed.source_name, feed.watch_subjects);
     return out;
+}
+
+/// The subjects a running source's ticks land on; none for a source that does not run.
+std::vector<std::string>
+subjects_of(const std::map<std::string, std::vector<std::string>, std::less<>>& runs,
+            const std::string& source) {
+    const auto found = runs.find(source);
+    return found == runs.end() ? std::vector<std::string>{} : found->second;
 }
 
 }
@@ -161,7 +172,7 @@ void feed_tick_routes::register_routes(
                             rr::invalid("A feed's ticks are read through fx-feeds or "
                                         "ir-curve-feeds.");
 
-                        buffers->watch(source);
+                        buffers->watch(source, subjects_of(running_sources(req, session), source));
                         std::string ticks = "[";
                         for (const auto& tick :
                              buffers->ticks(source, static_cast<std::size_t>(limit))) {
@@ -216,7 +227,7 @@ void feed_tick_routes::register_routes(
                         const bool runs_now = runs.contains(row.source_name);
                         std::string times = "[";
                         if (runs_now) {
-                            buffers->watch(row.source_name);
+                            buffers->watch(row.source_name, subjects_of(runs, row.source_name));
                             for (const auto& at : buffers->arrival_times(row.source_name, since))
                                 times +=
                                     (times.size() == 1 ? "" : ",") + json::write(instant_text(at));

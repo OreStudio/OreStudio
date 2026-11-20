@@ -48,8 +48,11 @@ struct feed_tick final {
  * @brief The recent ticks of the feeds a screen asked about, shared by every
  * session.
  *
- * A feed publishes its ticks on a subject a screen can tail, and the buffers
- * keep the newest ones of each source a read has named. A buffer holds ticks,
+ * A feed's ticks reach the market through its adapter and the market data ingest,
+ * on the vendor subjects the synthetic service names for it, and the buffers keep
+ * the newest ones of each source a read has named, so a screen shows what the
+ * vendor published: after the feed's faults, the adapter and the ingest's
+ * conflation and refusals. A buffer holds ticks,
  * not a run's state, so a read of a feed that stopped finds whatever was heard
  * while it ran, until a raster read stops listening to the feeds that no longer
  * run, as the BFF's did. At most a thousand sources are heard at once, so reads
@@ -88,12 +91,17 @@ public:
     [[nodiscard]] static subscriber nats_subscriber(ores::nats::service::nats_client& session);
 
     /**
-     * @brief Starts listening to one source the first time a read names it.
+     * @brief Listens to one source on the vendor subjects its ticks land on.
+     *
+     * The first read that names a source starts its buffer. A source whose subjects
+     * change, such as a feed started again through another adapter, is listened to
+     * on the new ones and keeps the ticks it has. A source with no subjects, a feed
+     * that does not run, keeps what was heard.
      *
      * @return whether the source is heard: false when it is new and the buffers
      *         already hear as many sources as they may.
      */
-    bool watch(const std::string& source_name);
+    bool watch(const std::string& source_name, const std::vector<std::string>& subjects);
 
     /// The newest ticks of a source, at most @p limit, oldest first.
     [[nodiscard]] std::vector<feed_tick> ticks(const std::string& source_name,
@@ -128,7 +136,8 @@ private:
 
     struct heard final {
         std::shared_ptr<run> ticks;
-        std::shared_ptr<void> stop;
+        std::vector<std::string> subjects;
+        std::vector<std::shared_ptr<void>> stops;
     };
 
     [[nodiscard]] std::shared_ptr<run> run_of(const std::string& source_name) const;

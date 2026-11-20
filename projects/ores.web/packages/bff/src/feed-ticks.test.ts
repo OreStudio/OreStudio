@@ -42,34 +42,53 @@ function subscriber(): {
     };
 }
 
+/** A stand-in for the vendor subject a source's ticks land on. */
+const on = (source: string): string[] => [
+    `marketdata.v1.ops.market_tick.demo.*.fx_spot.${source}.*`,
+];
+
 describe('the tick buffers', () => {
-    it('opens one subscription for each source it is asked about', () => {
+    it('opens a subscription on each subject a source names, once', () => {
         const bus = subscriber();
         const buffers = new FeedTickBuffers(bus.subscribe);
-        buffers.watch('a');
-        buffers.watch('b');
-        buffers.watch('a');
+        buffers.watch('a', on('a'));
+        buffers.watch('b', on('b'));
+        buffers.watch('a', on('a'));
         expect(buffers.size).toBe(2);
-        expect(bus.open()).toEqual([
-            'synthetic.v1.ops.feed_tick.a',
-            'synthetic.v1.ops.feed_tick.b',
-        ]);
+        expect(bus.open()).toEqual([...on('a'), ...on('b')]);
     });
 
     it('keeps the newest ticks up to its capacity', () => {
         const bus = subscriber();
         const buffers = new FeedTickBuffers(bus.subscribe, 2);
-        buffers.watch('a');
-        for (const value of ['1', '2', '3']) bus.publish('synthetic.v1.ops.feed_tick.a', value);
+        buffers.watch('a', on('a'));
+        for (const value of ['1', '2', '3']) bus.publish(on('a')[0]!, value);
         expect(buffers.ticks('a', 10).map((tick) => tick.value)).toEqual([2, 3]);
     });
 
     it('keeps the ticks it has heard when a read asks for the source again', () => {
         const bus = subscriber();
         const buffers = new FeedTickBuffers(bus.subscribe);
-        buffers.watch('a');
-        bus.publish('synthetic.v1.ops.feed_tick.a', '1');
-        buffers.watch('a');
+        buffers.watch('a', on('a'));
+        bus.publish(on('a')[0]!, '1');
+        buffers.watch('a', on('a'));
         expect(buffers.ticks('a', 10).map((tick) => tick.value)).toEqual([1]);
+    });
+
+    it("keeps a stopped feed's ticks, and follows a feed whose subjects change", () => {
+        const bus = subscriber();
+        const buffers = new FeedTickBuffers(bus.subscribe);
+        buffers.watch('a', on('a'));
+        bus.publish(on('a')[0]!, '1');
+        buffers.watch('a', []);
+        expect(bus.open()).toEqual(on('a'));
+        const moved = ['marketdata.v1.ops.market_tick.ice.*.fx_spot.a.*'];
+        buffers.watch('a', moved);
+        expect(bus.open()).toEqual(moved);
+        bus.publish(moved[0]!, '2');
+        expect(buffers.ticks('a', 10).map((tick) => tick.value)).toEqual([1, 2]);
+        buffers.watch('b', []);
+        expect(buffers.size).toBe(2);
+        expect(bus.open()).toEqual(moved);
     });
 });

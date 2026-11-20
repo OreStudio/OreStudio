@@ -366,6 +366,7 @@ public:
                 one.source_name = feed.source_name;
                 if (feed.start)
                     one.start = to_wire(*feed.start);
+                one.watch_subjects = feed.watch_subjects;
                 resp.running_feeds.push_back(std::move(one));
             }
             resp.success = true;

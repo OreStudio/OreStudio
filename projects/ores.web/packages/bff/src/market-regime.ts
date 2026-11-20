@@ -24,7 +24,7 @@ import { z } from 'zod';
 import { subjects as feedOverviewSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/feed_overview_protocol';
 import { invalidRequest } from './errors.js';
 import { input } from './refdata-calls.js';
-import { operationReplySchema, runningSourceNames, upstreamFailure } from './synthetic.js';
+import { operationReplySchema, runningWatchSubjects, upstreamFailure } from './synthetic.js';
 import type { LiveSession } from './sessions.js';
 import type { FeedTickBuffers } from './feed-ticks.js';
 
@@ -463,7 +463,7 @@ export function registerMarketRegimeRoutes(
                 { ...everyFeed, offset: 0, limit: RASTER_LANES },
                 feedPage,
             ),
-            runningSourceNames(session),
+            runningWatchSubjects(session),
         ]);
         if (!page.success) {
             throw upstreamFailure(page.message);
@@ -478,7 +478,7 @@ export function registerMarketRegimeRoutes(
         const since = Date.now() - query.seconds * 1000;
         const feeds: RasterRow[] = rows.map((row) => {
             if (row.running) {
-                ticks.watch(row.source_name);
+                ticks.watch(row.source_name, running.get(row.source_name) ?? []);
             }
             return {
                 id: row.id,

@@ -466,6 +466,18 @@ feeds it answers with, because a caller reads it beside the config list.
 /** @brief Where the run's starting value came from; absent when the kind has no such start. */
 #+end_src
 
+*** watch_subjects
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+#+begin_src cpp :name comment
+/**
+ * @brief The vendor subjects the run's ticks land on, after its adapter and the
+ * market data ingest; empty for a run with no adapter. A screen of the feed
+ * watches these.
+ */
+#+end_src
+
 ** list_feeds_request
 :PROPERTIES:
 :subject: synthetic.v1.feed_configs.list

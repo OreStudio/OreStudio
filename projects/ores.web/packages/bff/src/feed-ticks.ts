@@ -45,45 +45,63 @@ export type TickSubscriber = (
     onTick: (tick: z.infer<typeof marketTickSchema>) => void,
 ) => () => void;
 
-/** The subject a synthetic feed publishes its ticks on for a screen to tail. */
-export function tickSubjectFor(sourceName: string): string {
-    return `synthetic.v1.ops.feed_tick.${sourceName}`;
-}
-
 /** How many ticks a feed's buffer keeps, the newest last. */
 export const TICK_CAPACITY = 500;
+
+/** One source's buffer: its ticks, the subjects it is heard on, and the way to stop each. */
+interface Run {
+    readonly ticks: FeedTick[];
+    subjects: readonly string[];
+    stops: (() => void)[];
+}
 
 /**
  * The recent ticks of every feed that is running, shared by every session.
  *
- * A feed publishes its ticks on a subject a screen can tail, and the BFF keeps
- * the newest ones for each source that a read has asked about. A buffer holds
- * ticks, not a run's state, so a read of a feed that is not running finds
- * whatever was heard while it ran.
+ * A feed's ticks reach the market through its adapter and the market data
+ * ingest, on the vendor subjects the synthetic service names for it, and the BFF
+ * keeps the newest ones for each source a read has asked about. So a screen shows
+ * what the vendor published: after the feed's faults, the adapter, and the
+ * ingest's conflation and refusals. A buffer holds ticks, not a run's state, so a
+ * read of a feed that is not running finds whatever was heard while it ran.
  */
 export class FeedTickBuffers {
     readonly #subscribe: TickSubscriber;
     readonly #capacity: number;
-    readonly #runs = new Map<string, { readonly ticks: FeedTick[]; readonly stop: () => void }>();
+    readonly #runs = new Map<string, Run>();
 
     constructor(subscribe: TickSubscriber, capacity = TICK_CAPACITY) {
         this.#subscribe = subscribe;
         this.#capacity = capacity;
     }
 
-    /** Starts listening to one source the first time a read asks for it. */
-    watch(sourceName: string): void {
-        if (this.#runs.has(sourceName)) return;
-        const ticks: FeedTick[] = [];
-        const stop = this.#subscribe(tickSubjectFor(sourceName), (tick) => {
-            const value = Number(tick.value);
-            if (!Number.isFinite(value)) return;
-            ticks.push({ at: tick.observation_time, value, uri: tick.oresmd_uri });
-            if (ticks.length > this.#capacity) ticks.splice(0, ticks.length - this.#capacity);
-        });
-        this.#runs.set(sourceName, { ticks, stop });
+    /**
+     * Listens to one source on the vendor subjects its ticks land on.
+     *
+     * The first read that names a source starts its buffer. A source whose
+     * subjects change, such as a feed started again through another adapter, is
+     * heard on the new ones and keeps its ticks. A source with no subjects, a feed
+     * that does not run, keeps what was heard.
+     */
+    watch(sourceName: string, subjects: readonly string[]): void {
+        let run = this.#runs.get(sourceName);
+        if (run === undefined) {
+            run = { ticks: [], subjects: [], stops: [] };
+            this.#runs.set(sourceName, run);
+        }
+        if (subjects.length === 0 || sameSubjects(subjects, run.subjects)) return;
+        for (const stop of run.stops) stop();
+        const ticks = run.ticks;
+        run.subjects = [...subjects];
+        run.stops = subjects.map((subject) =>
+            this.#subscribe(subject, (tick) => {
+                const value = Number(tick.value);
+                if (!Number.isFinite(value)) return;
+                ticks.push({ at: tick.observation_time, value, uri: tick.oresmd_uri });
+                if (ticks.length > this.#capacity) ticks.splice(0, ticks.length - this.#capacity);
+            }),
+        );
     }
-
     /** The newest ticks of a feed's current run, at most `limit`, oldest first. */
     ticks(sourceName: string, limit: number): readonly FeedTick[] {
         const ticks = this.#runs.get(sourceName)?.ticks ?? [];
@@ -119,7 +137,7 @@ export class FeedTickBuffers {
             if (keep.has(sourceName)) {
                 continue;
             }
-            run.stop();
+            for (const stop of run.stops) stop();
             this.#runs.delete(sourceName);
         }
     }
@@ -131,7 +149,11 @@ export class FeedTickBuffers {
 
     /** Stops listening to everything, for a server that is closing. */
     close(): void {
-        for (const run of this.#runs.values()) run.stop();
+        for (const run of this.#runs.values()) for (const stop of run.stops) stop();
         this.#runs.clear();
     }
+}
+
+function sameSubjects(left: readonly string[], right: readonly string[]): boolean {
+    return left.length === right.length && left.every((subject, i) => subject === right[i]);
 }

@@ -169,6 +169,12 @@ export interface RunningFeed {
     source_name: string;
     /** @brief Where the run's starting value came from; absent when the kind has no such start. */
     start: FeedStart | null;
+    /**
+     * @brief The vendor subjects the run's ticks land on, after its adapter and the
+     * market data ingest; empty for a run with no adapter. A screen of the feed
+     * watches these.
+     */
+    watch_subjects: string[];
 }
 
 /**

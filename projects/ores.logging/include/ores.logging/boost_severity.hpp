@@ -43,10 +43,41 @@ namespace backend {
 /**
  * @brief The severity type Boost.Log's severity feature carries.
  *
- * It sits in =detail= because its enumerators spell the same words as the
+ * It sits in =backend= because its enumerators spell the same words as the
  * constants a call site writes, and both cannot live in =ores::logging=.
  */
 enum boost_severity { trace, debug, info, warn, error };
+
+/**
+ * @brief Inserter for boost_severity enum.
+ *
+ * Required for interoperability with Boost.Log.
+ */
+template <typename CharT, typename TraitsT>
+inline std::basic_ostream<CharT, TraitsT>& operator<<(std::basic_ostream<CharT, TraitsT>& stream,
+                                                      boost_severity level) {
+    switch (level) {
+        case boost_severity::trace:
+            stream << "TRACE";
+            break;
+        case boost_severity::debug:
+            stream << "DEBUG";
+            break;
+        case boost_severity::info:
+            stream << "INFO";
+            break;
+        case boost_severity::warn:
+            stream << "WARN";
+            break;
+        case boost_severity::error:
+            stream << "ERROR";
+            break;
+        default:
+            throw std::invalid_argument("Invalid or unexpected severity level");
+            break;
+    }
+    return stream;
+}
 
 }
 
@@ -75,36 +106,6 @@ ORES_LOGGING_EXPORT backend::boost_severity to_boost_severity(severity_level lev
  */
 ORES_LOGGING_EXPORT severity_level to_domain_severity(backend::boost_severity sev);
 
-/**
- * @brief Inserter for boost_severity enum.
- *
- * Required for interoperability with Boost.Log.
- */
-template <typename CharT, typename TraitsT>
-inline std::basic_ostream<CharT, TraitsT>& operator<<(std::basic_ostream<CharT, TraitsT>& stream,
-                                                      backend::boost_severity level) {
-    switch (level) {
-        case backend::boost_severity::trace:
-            stream << "TRACE";
-            break;
-        case backend::boost_severity::debug:
-            stream << "DEBUG";
-            break;
-        case backend::boost_severity::info:
-            stream << "INFO";
-            break;
-        case backend::boost_severity::warn:
-            stream << "WARN";
-            break;
-        case backend::boost_severity::error:
-            stream << "ERROR";
-            break;
-        default:
-            throw std::invalid_argument("Invalid or unexpected severity level");
-            break;
-    }
-    return stream;
-}
 
 }
 

@@ -8,7 +8,7 @@
 #+filetags: :move_codegen_and_gates_to_compass_ng:sprint_30:v0:
 #+owner: marco
 #+branch: feature/run-compass-check-in-ci
-#+pr: 4845
+#+pr: 4928
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-17
@@ -103,6 +103,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4928][#4928]] | [build] Pin compass-ng v0.0.3 |
 | [[https://github.com/OreStudio/OreStudio/pull/4845][#4845]] | [agile] Record the blocked compass-ng tasks and the story's state |
 
 * Review

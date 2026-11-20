@@ -64,6 +64,18 @@ task and name that file in the Command column.
 
 * Notes
 
+- 2026-11-20: ORE adopts the =wide_types= check from compass v0.0.2, on
+  the product owner's word. =compass/checks/wide_types.org= is compass-85's
+  draft for ORE at 76d6a65b85, with two rows lowered for main at f3cead5a8d:
+  =ir_curve_feed= from 22 to 21 and =fx_spot_feed= from 17 to 16. It
+  records 598 types over the ceiling of 15. It is a warning, so it fails no
+  gate. The pin's commit rises to 565ec69, the v0.0.2 commit, because the
+  =limit= engine is not in 96fdd24. The 2d167d1 build exits 2 on the new
+  check, so each environment must install v0.0.2 or later.
+- Proved with the v0.0.2 binary. The full =compass check= gave 0
+  diagnostics. A planted 16-field struct gave one
+  =wide_types/over_ceiling= warning and exit 0.
+
 - 2026-11-20: compass v0.0.2 shipped (compass main 565ec69, which contains
   the pinned 96fdd24). =build/scripts/compass_ng.pin= gains a =release:=
   line, and =.github/workflows/compass-check.yml= installs that release,

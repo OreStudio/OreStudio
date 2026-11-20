@@ -7,12 +7,12 @@
 #+level: s1
 #+filetags: :move_codegen_and_gates_to_compass_ng:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/run-compass-check-in-ci
 #+pr: 4845
-#+blocked_on: the compass story Publish installable binaries: CI and external developers install a release, never build compass
-#+blocked_since: 2026-11-18
+#+blocked_on:
+#+blocked_since:
 #+created: 2026-11-17
-#+updated: 2026-11-18
+#+updated: 2026-11-20
 #+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,17 +26,19 @@ CI runs every ported gate in one job of seconds, from the same binary and config
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BLOCKED |
+| State        | STARTED |
 | Parent story | [[id:E3BF90FE-43DF-4A30-9F2C-FF5E20128C88][Move codegen and the gates to compass-ng]] |
-| Now          | Blocked. |
-| Waiting on   | The compass story Publish installable binaries: CI and external developers install a release, never build compass. |
-| Next         | Install the first compass-ng release in CI once Publish installable binaries ships one. |
-| Last touched | 2026-11-17                               |
+| Now          | The Compass check workflow runs compass v0.0.2 on each push to main. |
+| Waiting on   | One week of the workflow agreeing with the single-gate workflows, to 2026-11-27. |
+| Next         | Remove the single-gate workflows it covers, after the week of agreement. |
+| Last touched | 2026-11-20 |
 
 * Acceptance
 
 - Waits on the compass story Publish installable binaries: CI installs a release and verifies its checksum, and never builds compass.
-- One workflow runs compass check --ratchet origin/main on each pull request.
+- One workflow runs compass check on each push to main. GitHub runs no
+  pull-request check, and check_no_pr_triggers.py refuses the trigger, so
+  the local gate covers a branch and this job covers main.
 - The ported single-gate workflows (codegen-drift, codegen-sweep, core-link-edges, entity-writes, event-registrar-composition, history-registrar-composition, portable-stop-types, rls-system-tenant-widenings, shell-command-composition, shell-recipe-provenance, shell-script-drift, template-drift, populate-reference-drift and the rest) are removed after one week of agreement.
 - A compass-ng failure in CI shows the --version output in the log.
 
@@ -61,6 +63,18 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+- 2026-11-20: compass v0.0.2 shipped (compass main 565ec69, which contains
+  the pinned 96fdd24). =build/scripts/compass_ng.pin= gains a =release:=
+  line, and =.github/workflows/compass-check.yml= installs that release,
+  checks its SHA-256, installs the ores.web dependencies for prettier, and
+  runs =compass check=.
+- Proved before the PR. A fresh clone of main at 81bcbc7b1b, with an empty
+  HOME and PATH=/usr/bin:/bin, ran the v0.0.2 binary cold: 0 diagnostics,
+  exit 0, 78 s. An unformatted line planted in =access.ts= gave 1
+  =typescript_format/unformatted= diagnostic and exit 1. The workflow's
+  install step, run as a script, fetched the asset, passed the checksum and
+  put =compass 0.0.2= on the path.
 
 * Test Scenarios
 

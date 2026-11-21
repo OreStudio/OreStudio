@@ -118,7 +118,8 @@ select ores_dq_methodologies_upsert_fn(ores_utility_system_tenant_id_fn(),
    Commands:
      python3 external/ore/tools/generate_script_library.py
      python3 external/ore/tools/generate_script_library.py --check
-   --shell PATH names another build of ores.shell; the default is
+   --shell PATH names another build of ores.shell, such as one of another
+   preset; the default is
    build/output/linux-clang-release-ninja/publish/bin/ores.shell. --check
    writes nothing and exits non-zero when a committed file differs from what
    the generator makes. No server, database or login is needed.

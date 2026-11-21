@@ -299,4 +299,6 @@ comment on function ores_trading_publish_script_library_from_dq_fn(uuid, uuid, t
 'Publishes the script library a dataset stages into the target tenant, one script at a
  time: a script whose staged rows equal the published ones is skipped, any other is
  written whole as a new version and its rows no longer staged are closed. Counts are of
- scripts.';
+ scripts. In insert_only mode a script the target already holds is skipped whatever its
+ staged rows. A published script the dataset no longer stages stays live: a booked
+ trade may name it, so it is retired deliberately rather than by a republish.';

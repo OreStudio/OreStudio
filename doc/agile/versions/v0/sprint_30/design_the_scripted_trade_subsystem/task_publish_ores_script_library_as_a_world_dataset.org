@@ -179,6 +179,13 @@ via its "Verifies task" field.
 | 4977.5 | a failed --out write can leave a partial file | payoff_script_commands.cpp | reject | the command fails and the generator stops on the non-zero exit |
 | 4977.6 | the success line counts every non-error as a warning | payoff_script_commands.cpp | accept | warnings are counted on their own |
 | 4977.7 | confirm the tests' coverage | tests | accept | unreadable file, malformed variables and merging were covered; --out - is added |
+| 4978.1 | a script the dataset drops stays live | trading_publish_from_dq_create.sql | accept | intended until a trade records its script's version (PR 4): a booked trade may name it; the function's comment says so |
+| 4978.2 | insert_only skips whole scripts | trading_publish_from_dq_create.sql | accept | the comment states it |
+| 4978.3 | any line ending in a colon ends the inputs section | generate_script_library.py | accept | only the five headings the library uses break a section; 71 inputs are undocumented in ORE's comments, so a missing description cannot be an error; no staged row changed |
+| 4978.4 | an unknown escape raises KeyError | generate_script_library.py | accept | a GenerationError naming the field |
+| 4978.5 | the default shell names one preset | external/ore/methodology.txt | accept | the methodology says --shell takes another preset's build |
+| 4978.6 | --check does not guard the library against upstream | none | reject | the examples move only by step 2, which the methodology says to follow with this step |
+| 4978.7 | the as-of date is hard-coded | generate_script_library.py | accept | a named AS_OF constant with a note to change it on regeneration |
 
 * Result
 

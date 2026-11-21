@@ -55,6 +55,12 @@ DATASET_CODE = "ore.script_library"
 METHODOLOGY_NAME = "ORE GitHub Extraction"
 ARTEFACT_TYPE = "script_library"
 INPUT_HEADINGS = ("Input Data:", "Inputs:")
+# Every heading the library's comments use. A line that ends in a colon and is
+# not one of them, such as a sentence, is text and ends no section.
+SECTION_HEADINGS = INPUT_HEADINGS + ("Result Data:", "Results:", "Requirements:")
+# The as-of date of the dataset: change it when the library is regenerated from
+# a newer ORE commit, so the dataset states when its rows were taken.
+AS_OF = "2026-11-21"
 
 LICENSE = """/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
@@ -114,7 +120,7 @@ def comment_description(comment):
     in_inputs = False
     for line in lines:
         text = line.strip()
-        if text.endswith(":"):
+        if text in SECTION_HEADINGS:
             in_inputs = text in INPUT_HEADINGS
             continue
         if not in_inputs or not text:
@@ -192,7 +198,10 @@ def unescape(field_text):
     while i < len(field_text):
         c = field_text[i]
         if c == "\\" and i + 1 < len(field_text):
-            out.append({"\\": "\\", "t": "\t", "r": "\r", "n": "\n"}[field_text[i + 1]])
+            escaped = {"\\": "\\", "t": "\t", "r": "\r", "n": "\n"}.get(field_text[i + 1])
+            if escaped is None:
+                raise GenerationError(f"the shell wrote an unknown escape in {field_text!r}")
+            out.append(escaped)
             i += 2
         else:
             out.append(c)
@@ -323,7 +332,7 @@ def render_dataset(scripts):
             f"    {literal(f'The {len(scripts)} payoff scripts of the library ORE distributes, with their variants, results, calibrations and inputs, as ORE Studio parses and corrects them.')},\n"
             "    'ORE',\n"
             "    'The payoff scripts every scripted trade names.',\n"
-            "    '2026-11-21'::date,\n"
+            f"    '{AS_OF}'::date,\n"
             "    'Modified BSD License',\n"
             f"    {literal(ARTEFACT_TYPE)});\n")
 

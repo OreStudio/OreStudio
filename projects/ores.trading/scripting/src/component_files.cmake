@@ -21,6 +21,7 @@
 # To modify, update the template and regenerate.
 set(files
     "diagnostic.cpp"
+    "inputs.cpp"
     "ore/ast.cpp"
     "ore/ast_printer.cpp"
     "ore/ast_to_script_converter.cpp"
@@ -34,6 +35,7 @@ set(files
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.scripting/diagnostic.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.scripting/export.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.scripting/inputs.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.scripting/ore/ast.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.scripting/ore/ast_printer.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.scripting/ore/ast_to_script_converter.hpp"

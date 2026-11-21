@@ -43,11 +43,17 @@ describes; its grammar is the one authority described in
 - A syntax tree, or the diagnostics of a script that does not parse, located by
   line and column as [[id:ECA442BB-48D7-47CB-9BAA-97FD1C0BBA9A][Diagnostic Reporting in Script Validation]] defines.
 - A script's text, printed from a syntax tree.
+- A script's inputs, derived from its syntax tree.
 
 * Entry points
 
 - =ores::trading::scripting::parse= — parses a script, returning its tree or its
   diagnostics.
+- =ores::trading::scripting::inputs_of= — the inputs of one variant of a script:
+  the variables it reads and neither declares nor assigns, with the type its use
+  implies, whether it is an array, and the rule its REQUIRE statements state.
+- =ores::trading::scripting::merge_inputs= — the inputs of a script with several
+  variants, the first variant's first.
 - =ores::trading::scripting::ast_to_script= — prints a tree as script text.
 - =ores::trading::scripting::print_ast= — prints a tree's structure.
 - =ores::trading::scripting::generate_random_ast= — writes a random tree, for

@@ -16,6 +16,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "library_files.hpp"
 #include "ores.trading.scripting/parse.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <filesystem>
@@ -30,20 +31,12 @@
 namespace {
 
 using namespace ores::trading::scripting;
+using ores::trading::scripting::tests::file_text;
+using ores::trading::scripting::tests::project_root;
 namespace fs = std::filesystem;
 
-const std::string tags = "[trading][scripting][parse]";
+const std::string parse_tags = "[trading][scripting][parse]";
 
-fs::path project_root() {
-    return fs::path(__FILE__).parent_path().parent_path().parent_path().parent_path().parent_path();
-}
-
-std::string text_of(const fs::path& path) {
-    std::ifstream in(path, std::ios::binary);
-    std::ostringstream out;
-    out << in.rdbuf();
-    return out.str();
-}
 
 /// One script of a library file: where it is, its name and purpose, its code.
 struct library_script {
@@ -65,7 +58,7 @@ std::vector<library_script> library_scripts(std::size_t* code_blocks = nullptr) 
         if (!entry.is_regular_file() || !file.starts_with("scriptlibrary") ||
             entry.path().extension() != ".xml")
             continue;
-        const auto text = text_of(entry.path());
+        const auto text = file_text(entry.path());
         const auto relative = fs::relative(entry.path(), examples).generic_string();
         if (code_blocks)
             for (auto at = text.find("<Code>"); at != std::string::npos;
@@ -92,7 +85,7 @@ std::vector<library_script> library_scripts(std::size_t* code_blocks = nullptr) 
 
 }
 
-TEST_CASE("every script ORE's examples ship parses, but the one ORE cannot", tags) {
+TEST_CASE("every script ORE's examples ship parses, but the one ORE cannot", parse_tags) {
     std::size_t code_blocks = 0;
     const auto scripts = library_scripts(&code_blocks);
     // Every code block of every library is read, so none escapes the test.
@@ -123,7 +116,7 @@ TEST_CASE("every script ORE's examples ship parses, but the one ORE cannot", tag
     CHECK(failed == known);
 }
 
-TEST_CASE("a parsed script reads back the same once written out", tags) {
+TEST_CASE("a parsed script reads back the same once written out", parse_tags) {
     for (const auto& s : library_scripts()) {
         const auto first = parse(s.code);
         if (!first.parsed())
@@ -137,7 +130,7 @@ TEST_CASE("a parsed script reads back the same once written out", tags) {
     }
 }
 
-TEST_CASE("a random tree written out parses to the same tree", tags) {
+TEST_CASE("a random tree written out parses to the same tree", parse_tags) {
     for (std::size_t seed = 1; seed <= 200; ++seed) {
         INFO("seed " << seed);
         const auto tree = generate_random_ast(6, 4, seed);
@@ -149,7 +142,7 @@ TEST_CASE("a random tree written out parses to the same tree", tags) {
     }
 }
 
-TEST_CASE("a syntax error is located by line and code point column", tags) {
+TEST_CASE("a syntax error is located by line and code point column", parse_tags) {
     // ORE reports a missing term where it begins: the space after the '=' on
     // line 3. Spirit widens the tab before it to four columns and reports column
     // 8; counted in code points, a tab as one, the column is 5.
@@ -167,7 +160,7 @@ TEST_CASE("a syntax error is located by line and code point column", tags) {
     CHECK(*d.start->column == 5u);
 }
 
-TEST_CASE("a script with Windows line endings is located as one without", tags) {
+TEST_CASE("a script with Windows line endings is located as one without", parse_tags) {
     const auto result = parse("NUMBER x;\r\nx = 1;\r\n\tx = + ;\r\n");
     REQUIRE_FALSE(result.parsed());
     REQUIRE(result.diagnostics.size() == 1u);
@@ -176,7 +169,7 @@ TEST_CASE("a script with Windows line endings is located as one without", tags) 
     CHECK(result.diagnostics[0].start->column == std::optional<std::size_t>{5});
 }
 
-TEST_CASE("a diagnostic prints as a compiler reports one", tags) {
+TEST_CASE("a diagnostic prints as a compiler reports one", parse_tags) {
     diagnostic d;
     d.code = "SCR1001";
     d.message = "expected <InstructionSequence>";
@@ -189,7 +182,7 @@ TEST_CASE("a diagnostic prints as a compiler reports one", tags) {
           "worst_of.ore:17: warning: expected <InstructionSequence> [SCR1001]");
 }
 
-TEST_CASE("every code a finding states has its meaning stated once", tags) {
+TEST_CASE("every code a finding states has its meaning stated once", parse_tags) {
     std::set<std::string> seen;
     for (const auto& c : diagnostic_codes()) {
         CHECK(seen.insert(std::string(c.code)).second);

@@ -74,10 +74,18 @@ describe('the fields a curve derives', () => {
         expect(completeIrFeed({ ...base, source_name: 'mine' })['source_name']).toBe('mine');
     });
 
-    it('keeps the tenor of a term index and of the FOMC variant, and drops any other', () => {
+    it('keeps the tenor as typed, for the server to check against the family', () => {
         expect(completeIrFeed({ ...EURIBOR_6M, price_source: 'fixed' })['tenor']).toBe('6M');
         expect(completeIrFeed({ ...base, tenor: 'FOMC' })['tenor']).toBe('FOMC');
-        expect(completeIrFeed({ ...base, index_family: 'estr', tenor: '3M' })['tenor']).toBe('');
+        expect(completeIrFeed({ ...base, index_family: 'estr', tenor: '3M' })['tenor']).toBe('3M');
+    });
+
+    it('puts the tenor in a derived source name', () => {
+        expect(
+            completeIrFeed({ ...EURIBOR_6M, source_name: '', price_source: 'fixed' })[
+                'source_name'
+            ],
+        ).toBe('synthetic.eureuribor6m');
     });
 });
 

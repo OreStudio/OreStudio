@@ -2222,6 +2222,7 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::ir_curve_generation_config_process_parameter_values:read', 'View ir curve generation config process parameter values');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::yield_curve_process_parameter_definitions:read', 'View yield curve process parameter definitions');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::yield_curve_process_types:read', 'View yield curve process types');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::ir_curve_index_families:read', 'View IR curve index families');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::booking_nature_types:read', 'View booking nature types');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::booking_nature_types:write', 'Create and modify booking nature types');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::booking_nature_types:delete', 'Delete booking nature types');

@@ -135,6 +135,10 @@ The hand-written recipes that predate the facet are catalogued separately in
 
 - [[id:65943862-77B0-5588-A6B3-3F2CB49AC089][How do I call the ir_curve_bootstrap_pillars endpoints over HTTP?]]
 
+* Ir Curve Index Families
+
+- [[id:BF13BB64-6E43-521F-8E2A-48A727208482][How do I call the ir_curve_index_families endpoints over HTTP?]]
+
 * Login
 
 - [[id:79338DD8-35B5-5905-9DCF-620DCB0161B1][How do I call the login endpoints over HTTP?]]

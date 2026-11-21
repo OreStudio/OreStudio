@@ -6916,7 +6916,9 @@ const pt: SourceCatalogue = {
             addTitle: 'Nova curva de taxas',
             priceSource: 'Taxa inicial vinda de',
             tenorNeeded: 'Um índice a prazo precisa de um prazo, como 3M ou 6M.',
-            tenorOnlyFomc: 'Só a variante com datas das reuniões do SOFR leva um prazo, e é FOMC.',
+            tenorNotAdmitted: 'Esta família é um índice overnight: uma curva dela não leva prazo.',
+            tenorOnlyDated:
+                'Esta família é um índice overnight; o seu único prazo datado é {tenor}.',
             help: {
                 tenor: 'O prazo de um índice a prazo, como 3M ou 6M. Deixe vazio para um índice overnight. FOMC marca a variante com datas das reuniões do SOFR.',
                 role: {

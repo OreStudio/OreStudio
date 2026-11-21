@@ -177,6 +177,7 @@ describe('synthetic resource routes', () => {
             'fx-vol-contributors',
             'fx-vol-surface-feed-contributors',
             'process-types',
+            'ir-curve-index-families',
             'parameter-definitions',
             'tenors',
             'instrument-codes',

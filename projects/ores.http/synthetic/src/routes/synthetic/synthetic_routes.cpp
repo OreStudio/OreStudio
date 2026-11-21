@@ -45,6 +45,8 @@
 #include "ores.http/routes/synthetic/variance_calibration_input_web_routes.hpp"
 #include "ores.http/routes/synthetic/variance_calibration_web_routes.hpp"
 #include "ores.http/routes/synthetic/yield_curve_process_parameter_definition_web_routes.hpp"
+#include "ores.http/routes/synthetic/ir_curve_index_family_routes.hpp"
+#include "ores.http/routes/synthetic/ir_curve_index_family_web_routes.hpp"
 #include "ores.http/routes/synthetic/yield_curve_process_type_routes.hpp"
 #include "ores.http/routes/synthetic/yield_curve_process_type_web_routes.hpp"
 #include <boost/asio/awaitable.hpp>
@@ -77,6 +79,7 @@ std::string catalogue_body(const ores::http::domain::http_request& req) {
         fx_vol_surface_feed_expiry_web_routes::catalogue_entry(req),
         fx_vol_surface_feed_contributor_web_routes::catalogue_entry(req),
         yield_curve_process_type_web_routes::catalogue_entry(req),
+        ir_curve_index_family_web_routes::catalogue_entry(req),
         yield_curve_process_parameter_definition_web_routes::catalogue_entry(req),
         ores::http::routes::refdata::tenor_web_routes::catalogue_entry(req),
         ores::http::routes::refdata::instrument_code_web_routes::catalogue_entry(req),
@@ -99,6 +102,7 @@ void synthetic_routes::register_routes(
     ores::nats::service::nats_client& session) {
 
     yield_curve_process_type_routes::register_routes(router, registry, session);
+    ir_curve_index_family_routes::register_routes(router, registry, session);
 
     // The record routes the screens name each resource by, and the two feeds'
     // key reads, which are composed views and so are written by hand. The three
@@ -121,6 +125,7 @@ void synthetic_routes::register_routes(
     fx_vol_surface_feed_expiry_web_routes::register_routes(router, registry, session);
     fx_vol_surface_feed_contributor_web_routes::register_routes(router, registry, session);
     yield_curve_process_type_web_routes::register_routes(router, registry, session);
+    ir_curve_index_family_web_routes::register_routes(router, registry, session);
     yield_curve_process_parameter_definition_web_routes::register_routes(router, registry, session);
     feed_key_routes::register_routes(router, registry, session);
     calibration_routes::register_routes(router, registry, session);

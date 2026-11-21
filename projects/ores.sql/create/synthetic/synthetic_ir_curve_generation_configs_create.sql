@@ -77,8 +77,6 @@ create table if not exists "ores_synthetic_ir_curve_generation_configs_tbl" (
     check ("valid_from" < "valid_to"),
     check ("id" <> ores_utility_nil_uuid_fn()),
     check ("currency_code" <> ''),
-    check ("index_family" in ('libor', 'euribor', 'sofr', 'estr', 'sonia', 'tona', 'saron', 'aonia', 'corra', 'honia', 'sora', 'swestr', 'nowa', 'kofr', 'mibor', 'zaronia', 'destr', 'polonia', 'nzonia', 'shibor', 'tiie', 'taibor', 'cdi', 'czeonia', 'buboron', 'telboron', 'tlref', 'camara', 'ibr', 'hibor', 'shir', 'hufonia')),
-    check (("index_family" in ('libor', 'euribor') and "tenor" <> '') or ("index_family" in ('estr', 'sonia', 'tona', 'saron', 'aonia', 'corra', 'honia', 'sora', 'swestr', 'nowa', 'kofr', 'mibor', 'zaronia', 'destr', 'polonia', 'nzonia', 'shibor', 'tiie', 'taibor', 'cdi', 'czeonia', 'buboron', 'telboron', 'tlref', 'camara', 'ibr', 'hibor', 'shir', 'hufonia') and "tenor" = '') or ("index_family" = 'sofr' and "tenor" in ('', 'FOMC'))),
     check ("role" in ('discount', 'projection', 'self_discounting')),
     check ("source_name" <> ''),
     check ("source_name" like 'synthetic.%'),
@@ -144,6 +142,9 @@ begin
 
     -- Validate asset_class_code
     NEW.asset_class_code := ores_refdata_validate_asset_class_code_fn(NEW.tenant_id, NEW.asset_class_code);
+
+    -- Validate index_family with tenor
+    NEW.index_family := ores_synthetic_validate_ir_curve_index_family_tenor_fn(NEW.tenant_id, NEW.index_family, NEW.tenor);
 
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);

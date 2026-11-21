@@ -39,6 +39,7 @@
 #include "ores.shell/app/commands/synthetic/variance_calibration_input_commands.hpp"
 #include "ores.shell/app/commands/synthetic/variance_calibration_input_point_commands.hpp"
 #include "ores.shell/app/commands/synthetic/yield_curve_process_parameter_definition_commands.hpp"
+#include "ores.shell/app/commands/synthetic/ir_curve_index_family_commands.hpp"
 #include "ores.shell/app/commands/synthetic/yield_curve_process_type_commands.hpp"
 
 namespace ores::shell::app::commands {
@@ -73,6 +74,7 @@ void synthetic_entity_commands::register_commands(cli::Menu& root_menu,
     fx_vol_surface_feed_contributor_commands::register_commands(root_menu, session);
     variance_calibration_commands::register_commands(root_menu, session);
     yield_curve_process_type_commands::register_commands(root_menu, session);
+    ir_curve_index_family_commands::register_commands(root_menu, session);
     yield_curve_process_parameter_definition_commands::register_commands(root_menu, session);
 }
 

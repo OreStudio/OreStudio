@@ -32,10 +32,16 @@ and it does not change how a report binds to a published set.
 
 The predecessor, [[id:9EFEAA52-D458-4CCF-A6C6-7C5A6A2EF6DC][Give every generated trade type its market data and pricing
 engines]], measured what the generated population names and what the market
-answers: 133 addresses, 124 unanswered, and the FX and IR half of that gap
-diagnosed against the architecture. Its raw record, with every query, is
-=evidence/fx_and_ir_publishing_setup.txt= in this story's evidence directory. It
-lands with that task's branch, which was unmerged when this page was written.
+answers: 133 addresses, 124 unanswered. This task reads that record rather than
+repeating it. Both live in this story's =evidence/= directory:
+
+- =market_data_supply.txt= with =market_data_suppliers.sql=,
+  =party_market_data_rights.sql= and =market_data_storage.sql= — who can supply
+  an item, who may read what, and where the data sits.
+- =fx_and_ir_publishing_setup.txt= — the same facts read against the
+  architecture, with the findings numbered.
+- =generated_population_gap.txt= with its two queries — what each generated trade
+  type needs and what no series answers.
 
 * Status
 
@@ -231,17 +237,17 @@ Steps 1 and 2 are independent. Step 3 needs 1 and 2. Steps 4 and 5 need 3. Step
 * Measurements
 
 Every number this task claims about a tree, with the command that produced it and
-the commit it was measured at. Where the raw output matters, it is in
-=evidence/fx_and_ir_publishing_setup.txt=, which names its own commands.
+the commit it was measured at. The queries are files in this story's =evidence/=
+directory, and =market_data_supply.txt= holds their output.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Fixing mappings, by supplier | ecb 44, imf 48, boc 27, tcmb 21, ore 2 (test rows), and one each for banxico, bcb, bcch, boe, boj, cnb, mas, norgesbank, nyfed, rba, riksbank. *No data vendor holds one.* | =compass sql -- -c "select v.provider_code, count(*) from ores_marketdata_market_data_mappings_tbl m join ores_marketdata_market_data_vendor_instruments_tbl v on v.id = m.vendor_instrument_id where m.valid_to > now() and m.oresmd_uri like '%type=fixing%' group by 1 order by 2 desc"= | 7bb52278f6 |
-| FX spot items the vendors supply | bloomberg 936, ice 910, tradeweb 910, derived 2275, lseg 14, demo 11 | the same query without the =type=fixing= filter | 7bb52278f6 |
+| Who can supply an item, by supplier, asset class and form | Every FX fixing mapping belongs to a public publisher: ecb 44, imf 48, boc 27, tcmb 21, and two =ore= test rows. The vendors supply FX spot only: bloomberg 936, ice 910, tradeweb 910, derived 2275, lseg 14, demo 11. | =compass sql -- -f doc/agile/versions/v0/sprint_30/run_a_report_with_market_data/evidence/market_data_suppliers.sql= | 7bb52278f6 |
+| Who may read what | 19 routes and 19 subscriptions across the four acme parties, every route =fx= and every one to a vendor or the derived feed; no public publisher and no interest rate publisher in either list. The system party routes 21 (publisher, asset class) pairs. | =compass sql -- -f doc/agile/versions/v0/sprint_30/run_a_report_with_market_data/evidence/party_market_data_rights.sql= | 7bb52278f6 |
+| Where the data sits | The acme tenant: 612 fx and 535 ir series, and no fixing series of any class. The system tenant: 132 fx fixing and 51 ir fixing series, and 325,571 durable fixings. | =compass sql -- -f doc/agile/versions/v0/sprint_30/run_a_report_with_market_data/evidence/market_data_storage.sql= | 7bb52278f6 |
 | The demo's subscription step | 18 (party, source, provider) rows, all vendor or derived, none public, none interest rate | =compass sql -- -c "select jsonb_pretty(s.arguments_json) from ores_iam_seed_profile_steps_tbl s join ores_iam_seed_profiles_tbl p on p.id = s.seed_profile_id where p.code = 'acme_demo' and s.step_kind = 'subscribe_market_data'"= | 7bb52278f6 |
-| The demand's narrowing hook | present, and called with no policy | =projects/ores.marketdata/service/src/app/adapter_supervisor.cpp:229= | 7bb52278f6 |
-| Durable fixings the installation holds | 325,571, all in the system tenant; the acme tenant holds none | =compass sql -- -c "select t.code, count(*) from ores_marketdata_market_fixings_tbl f join ores_iam_tenants_tbl t on t.id = f.tenant_id where f.valid_to > now() group by 1 order by 2 desc"= | b0add7a53e |
-| The population's requirement, answered and not | 133 addresses, 124 unanswered, 100 trade type and class rows | the measurement task's queries, in =evidence/generated_population_gap.sql= and =…_gap_class.sql= | 7bb52278f6 |
+| The demand's narrowing hook | Present, and called with no policy | =projects/ores.marketdata/service/src/app/adapter_supervisor.cpp:229= and =projects/ores.marketdata/service/src/app/demand_calculator.cpp:54= | 7bb52278f6 |
+| The population's requirement, answered and not | 133 addresses, 124 unanswered, 100 trade type and class rows | =compass sql -- -f doc/agile/versions/v0/sprint_30/run_a_report_with_market_data/evidence/generated_population_gap_class.sql= and =…_gap.sql= | 7bb52278f6 |
 
 * Notes
 

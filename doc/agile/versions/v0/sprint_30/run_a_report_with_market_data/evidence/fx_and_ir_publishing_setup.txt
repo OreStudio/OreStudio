@@ -1,0 +1,277 @@
+Why the FX and IR fixings are missing: the publishing setup, read against the tree
+==================================================================================
+
+Measured on the provisioned acme_demo tenant at commit b0add7a53e. Every count
+below names its query inline; the tenant ids are
+acme = 5c0e22e7-4893-4c3b-a06b-17dcb7860f86 and
+system = ffffffff-ffff-ffff-ffff-ffffffffffff.
+
+
+1. What the design says
+-----------------------
+Read in this order:
+
+- =doc/knowledge/architecture/market_data_architecture.org= — the structure note.
+- =doc/knowledge/architecture/public_source_fixings.org= — a public publisher's
+  daily rate is an FX index whose identity carries the publisher:
+  =oresmd://fx/EUR?type=fixing&index=fx&source=ECB&ccy=USD= is ORE's
+  =FX-ECB-EUR-USD=. The system party subscribes to each public provider and
+  routes to its source "so the items it calibrates from are in the demand"; a
+  tenant "may subscribe too, and reads the fixings through its own series and its
+  entitlement".
+- =doc/knowledge/architecture/market_data_demand.org= — a party's items come from
+  its subscriptions and routes; the demand set is the union over the parties
+  routed to an adapter.
+- =doc/knowledge/architecture/market_data_catalogue_install.org= — the catalogue
+  is the system bundle; "an id in the catalogue and not in the universe cannot be
+  demanded. The source screen lists it."
+- =doc/knowledge/domain/market_data_requirements_resolution_hub.org= — the step
+  this story has been missing. A requirement is symbolic and independent of any
+  source. Resolution, rho, maps it to exactly one physical identifier under a
+  *market data configuration*, and the physical fields it fills in include the
+  *source*. The resolved set is intersected with the universe U, and "a production
+  system needs to surface the difference … as an explicit error, rather than
+  letting the intersection quietly discard it".
+- =doc/knowledge/architecture/tracking_market_data_identity_from_fixing_to_report.org=
+  — the target chain, observation through to consumption.
+
+So the design expects two things of the FX and IR fixings. The publisher is part
+of an FX fixing's identity and is chosen by resolution, not by the trade. And a
+fixing may be read by item, from the installation's store, under the party's
+entitlement.
+
+
+2. What the publishing setup does
+---------------------------------
+It works. Measured:
+
+    compass sql -- -c "select f.publisher_code, count(*) as items,
+      count(*) filter (where s.item like '%type=fixing&index=fx%') as fx_fixings
+      from ores_marketdata_feeds_tbl f
+      join ores_marketdata_feed_scopes_tbl s on s.feed_id = f.id and s.valid_to > now()
+      where f.valid_to > now() and f.publisher_code <> 'ore' group by 1 order by 2 desc"
+
+   publisher    | items | fx fixings
+----------------+-------+------------
+ derived        |  2275 |           0     (an FX volatility surface, not fixings)
+ imf            |    48 |          48     oresmd://fx/USD?…&source=IMF&ccy=…
+ ecb            |    45 |          44     oresmd://fx/EUR?…&source=ECB&ccy=…
+ boc            |    28 |          27     oresmd://fx/CAD?…&source=BOC&ccy=…
+ tcmb           |    21 |          21     oresmd://fx/TRY?…&source=TCMB&ccy=…
+ banxico, bcch, boe, rba, norgesbank, cnb, riksbank, nyfed, bcb, mas, boj
+                |     1 |           0     one named overnight rate each
+
+140 FX fixing items are in scope, in four bases only: EUR, USD, CAD and TRY.
+Thirteen named overnight or Ibor rates are in scope. The store agrees: the system
+tenant holds 132 FX fixing series and 51 IR fixing series, and 325,571 durable
+fixings sit in =ores_marketdata_market_fixings_tbl=.
+
+    compass sql -- -c "select t.code, count(*) from ores_marketdata_market_fixings_tbl f
+      join ores_iam_tenants_tbl t on t.id = f.tenant_id
+      where f.valid_to > now() group by 1 order by 2 desc"
+
+    system  325571 | marketdata_corpus_…  13639 | test tenants  60
+
+The acme tenant holds none of them, and that is the shape the design intends: the
+fixings are installation data, stored once.
+
+
+3. What the tree does not do
+----------------------------
+Four findings, in order of how far each one reaches.
+
+** a. No acme party is entitled to a public publisher, or to any interest rate
+      feed at all.
+
+    compass sql -- -c "select p.short_code as party, r.publisher_code, r.asset_class
+      from ores_marketdata_routes_tbl r
+      join ores_refdata_parties_tbl p on p.id = r.party_id and p.valid_to > now()
+      where r.valid_to > now() and r.tenant_id = '<acme>' order by 1,2,3"
+
+    ACCOHK  bloomberg fx | derived fx | ice fx | tradeweb fx
+    ACCOUK  bloomberg fx | demo fx | derived fx | ice fx | tradeweb fx
+    ACCOUS  bloomberg fx | derived fx | ice fx | lseg fx | tradeweb fx
+    ACMCOR  bloomberg fx | derived fx | ice fx | tradeweb fx
+    acme_corporation_system  bloomberg fx
+
+Nineteen routes, every one =fx=, every one to a vendor publisher. The system
+party routes twenty-one (publisher, asset class) pairs, including =ecb/fx=,
+=imf/fx=, =boc/fx=, =tcmb/fx= and sixteen interest rate publishers. The
+subscriptions say the same: ACCOUK subscribes to bloomberg, demo, derived, ice and
+tradeweb, and to nothing else.
+
+So the installation receives and stores every public fixing, and no acme party is
+entitled to one. That is harmless only if a fixing is read by item under an
+entitlement derived from the party's *products*, which is what the target says.
+The export does not read by item: =series_to_export= selects the party's series
+and, for fixings, the system tenant's series, and then
+=market_fixing_repository::read_latest_for_series= reads by series id. A party
+with no public route holds no fixing series, so it reads no fixing.
+
+** b. The FX trades name a publisher the catalogue has never held.
+
+    projects/ores.synthetic/core/src/service/trade_population_planner.cpp:1937
+
+states =fx_fixing_source = "TR20H"=, with a comment that names the gap:
+
+    The fixing source ORE's examples state for every pair. The source belongs to
+    the tenant's market data configuration, which the market data task gives a
+    home; until then every generated trade observes this one.
+
+    compass sql -- -c "select count(*) from ores_marketdata_providers_tbl
+      where valid_to > now() and code ilike '%tr20h%'"                       -- 0
+    compass sql -- -c "select count(*) from ores_marketdata_market_data_vendor_instruments_tbl
+      where valid_to > now() and external_id ilike '%TR20H%'"                -- 0
+
+There is no TR20H provider, source, session, vendor instrument, mapping or feed
+scope. Per the catalogue-install rule the item cannot be demanded, so no adapter
+can serve it and the demand reply has nothing to reject it against. Nine of the
+twenty-four pairs are quoted by a feed under that feed's own source, and the
+trades name none of them.
+
+** c. The reference data the trades draw from is not intersected with the market
+      data universe.
+
+The IR index comes from the swap convention catalogue's own address
+(=swap_choices_of=, =trade_population_planner.cpp:433=), and the FX pair from the
+currency pair catalogue (=pair_for=, line 1911). The simulator's universe is
+separate: =ores_synthetic_ir_curve_generation_configs_tbl= states one curve per
+(currency, family, tenor). It holds no =HKD hibor=, no =PLN wibor=, no
+=JPY eytibor=, nothing for AOA, BWP, IDR, KRW, MYR, OMR, SAR or THB, and its
+=COP ibr= and =USD sofr= curves state no tenor where the trade states 3M and 1M.
+The refdata catalogue, meanwhile, offers 92 =GENERIC= Ibor conventions whose own
+addresses state no tenor.
+
+    compass sql -- -c "select currency_code, index_family, tenor, role
+      from ores_synthetic_ir_curve_generation_configs_tbl
+      where valid_to > now() order by 1,2,3"
+
+So the 15 IR gaps are the difference between the two catalogues, and nothing in
+the tree compares them.
+
+** d. There is no market data configuration for rho to read.
+
+    compass sql -- -c "select table_name from information_schema.tables
+      where table_schema = 'public' and table_name like 'ores_refdata_%configuration%'"
+
+returns curve configurations and nothing else. The resolution function, rho, the
+per-tenant configuration it resolves under, and the universe it intersects with
+have no rows, no schema and no code. In their place the trade stores rho's output
+— a publisher, or an index address with no publisher — frozen at booking time.
+
+
+4. Verdict
+----------
+The publishing setup is not the broken part. Feeds, scopes, catalogue, the
+durable fixing store and the derived fixing writer all do their jobs, and the
+system party receives 325,571 fixings from them.
+
+Three of the four findings are implementation defects:
+
+1. The demo provision gives the acme parties no public publisher route, and no
+   interest rate route at all. Every party's entitlement is FX-only and
+   vendor-only. (Finding a.)
+2. The FX trade generator freezes a publisher, =TR20H=, that no catalogue holds,
+   for every pair. The code says so and defers it. (Finding b.)
+3. The trade draw and the simulator universe are two catalogues with no check
+   between them, so the generator books indices and pairs nobody serves.
+   (Finding c.)
+
+One is an architectural gap: rho. The design names it, the resolution hub argues
+it, and one code comment states where it will live, but the schema and the code
+do not have it. Until a trade's requirement is resolved against the market data
+catalogue and the per-tenant configuration, every trade carries a frozen physical
+identifier, and the difference between what the trades ask for and what the
+market holds can only be detected at the export, as the refusal the previous task
+added — never at booking, where a person could act on it.
+
+The smallest change that removes the most of the gap, in order:
+
+1. Route and subscribe the demo parties to the public publishers for FX and IR,
+   the way the system party already is. Nothing else can work while a party holds
+   no entitlement to the data the installation already stores.
+2. Give the FX fixing source its home: resolve it per tenant from the catalogue,
+   defaulting to a publisher the tenant routes, instead of the constant.
+3. Intersect the trade draw with the simulator's universe, so a booked trade
+   always names an item the market answers, and refuse the rest with a reason at
+   generation time.
+4. Then widen the universe, or derive the crosses, for the pairs and indices no
+   publisher quotes: fifteen FX pairs are crosses of two published bases, which
+   is what the composite mechanism is for.
+
+
+5. The join that exists in code, and the one that does not
+----------------------------------------------------------
+Reading =demand_calculator.cpp= settles what the subscription machinery does
+today.
+
+- =compute_party_demand= walks the **routes**, and for each (party, feed) it
+  takes the items the feed's provider maps to, keeps those the feed scopes, and
+  keeps those the policy names. Entitlement is a subscription of that party to
+  that provider with any of the display, non-display or derived rights, plus the
+  provider's terms being accepted; otherwise it refuses the demand with
+  =not_entitled= or =terms_not_accepted=.
+- =demand_policy= carries a hook for exactly the join the user asks for:
+  =requirements(party, provider) -> optional<set<oresmd uri>>=, whose doc says a
+  function that returns nothing leaves the party with every item of the provider
+  a mapping reaches.
+- =adapter_supervisor.cpp:229= calls =compute_demand(snap->catalogue, now)= —
+  with no policy. So no party's demand is ever narrowed by what its trades need,
+  and every entitled route demands its provider's whole scoped catalogue.
+
+So the machinery is built and the subscription is checked. What is absent is the
+input: nothing computes a party's required items from the trades it carries, and
+nothing checks that the parties' subscriptions cover those items.
+
+    compass sql -- -c "select v.provider_code, count(*) from
+      ores_marketdata_market_data_mappings_tbl m
+      join ores_marketdata_market_data_vendor_instruments_tbl v
+        on v.id = m.vendor_instrument_id
+      where m.valid_to > now() and m.oresmd_uri like '%type=fixing%'
+      group by 1 order by 2 desc"
+
+    ecb 44 | imf 48 | boc 27 | tcmb 21 | ore 2 (test rows) | and one each for
+    banxico, bcb, bcch, boe, boj, cnb, mas, norgesbank, nyfed, rba, riksbank
+
+Every FX fixing mapping belongs to a public publisher, and to no data vendor.
+There is no supplier of a *vendor* FX fixing anywhere in the catalogue, so a
+trade naming the 4pm London convention (TR20H) names a convention with no
+supplier at all. The vendors supply FX spot only: bloomberg 936 items, ice 910,
+tradeweb 910, lseg 14, demo 11, derived 2275.
+
+
+6. The two axes, and where the model already carries them
+----------------------------------------------------------
+The vocabulary matters here, because one word is doing two jobs.
+
+- *The fixing convention* is the instrument: who calculates the rate, at what
+  time, by what method. The ECB's 14:15 reference rate, WM/Refinitiv's 4pm
+  London fix (ORE spells it TR20H), ICE's LIBOR, the New York Fed's SOFR. A trade
+  references a convention, because that is what its cashflows settle on.
+- *The fixing supplier* is who sells us that convention's values: LSEG, Bloomberg,
+  the ECB's own portal, or the platform's own derived feed. A firm may hold one
+  convention from several suppliers; the supplier is a commercial and operational
+  choice, not an economic one.
+- *The fixing series* is the stored data for one convention from one supplier for
+  one party.
+
+The model already carries both axes: the convention is inside the oresmd URI
+(=source= for FX, =name= and =tenor= for IR) and the supplier is
+=market_series.provider_code=. The word "source" names the convention in
+=market_series.oresmd_uri= and the supplier everywhere else, which is the reason
+this reads as one confusing field.
+
+So the end-to-end rule the tree is missing is a closure, in this order:
+
+    trades -> conventions -> catalogue items -> suppliers -> entitlements
+
+A party may book a trade only if, for every convention the trade names, some
+supplier in the catalogue serves it and the party holds a subscription with the
+rights that supplier requires. The demand is then the party's items, not the
+provider's catalogue. The supplier for each convention is chosen once, by a
+stated rank, and recorded, so a report reads the same value twice.
+
+None of the four joins in that chain exists today: the catalogue has no supplier
+for the vendor conventions (5), the generator states the convention and no
+supplier (3b), the demand is never narrowed by trades (5), and the read resolves
+by series rather than by convention plus supplier (3a).

@@ -8,7 +8,7 @@
 #+filetags: :move_codegen_and_gates_to_compass_ng:sprint_30:v0:
 #+owner: marco
 #+branch: feature/warn-when-a-branch-is-behind-main
-#+pr:
+#+pr: 4988
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-21
@@ -88,7 +88,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4988][#4988]] | [compass] Refuse to merge a branch behind main without --force |
 
 * Review
 

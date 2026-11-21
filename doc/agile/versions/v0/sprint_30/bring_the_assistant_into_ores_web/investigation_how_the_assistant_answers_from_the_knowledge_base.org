@@ -1,0 +1,125 @@
+:PROPERTIES:
+:ID: 3237D7CF-8EBA-4B9B-9B54-7135A4A7AA4A
+:END:
+#+title: Investigation: How the assistant answers from the knowledge base
+#+description: How the assistant finds the knowledge base's pages for a question, answers from them, and links each one as a page of ores.web, without Typesense.
+#+type: investigation
+#+level: s1
+#+filetags: :agent:llm:rag:knowledge:investigation:bring_the_assistant_into_ores_web:sprint_30:v0:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+
+A point-in-time record, written while the story that commissioned it was open, of an [[id:A7F8D9E2-3C4B-4A5D-B67C-8E9F0A1B2C3D][investigation]] into how the assistant finds the knowledge base's pages for a question, answers from them, and links each one as a page of ores.web.
+
+It is a snapshot, not a description of the system. Whatever it concludes that the code must keep doing belongs on the page that owns the subject; cite that page from code, recipes and models, not this one.
+
+* Context
+
+The prototype answered only from the operations it could call. ORE also has a
+large knowledge base, and the product owner wants the assistant to use it. Asked
+"what is volatility", it should answer from ORE's own pages and give a link to
+each page it used, which ores.web serves as a page. compass-ng can export the
+documents in any format, and a pass can load them into PostgreSQL. ORE has no
+Typesense; an earlier capture to add it for global search was discarded.
+
+* Methodology
+
+- The corpus sized from =doc/= at =23c075966b=: documents by =#+type= and
+  =#+filetags=, words outside source blocks, and headings, by a script.
+- The example question asked of the keyword search that already exists,
+  =compass search "what is volatility"=, which ranks by BM25 over SQLite FTS5.
+- The PostgreSQL server checked for the extensions retrieval would use
+  (=pg_available_extensions=).
+
+* Paths taken
+
+** The corpus
+
+| Set | Documents | Words | Tokens, about | Sections |
+|-----+-----------+-------+---------------+----------|
+| All knowledge pages | 785 | 1,087,767 | 1,447,000 | 8,840 |
+| Knowledge tagged =domain= | 259 | 257,279 | 342,000 | 2,583 |
+| User manual | 17 | 45,722 | 61,000 | 271 |
+
+A page is too long to hand a model whole (median about 900 words), and the
+knowledge base is far beyond any context. A section is about 130 tokens on
+average, which is the right size for a passage.
+
+** Keyword search on the example
+
+=compass search "what is volatility"= over the whole corpus ranks five shell
+recipes for the =*_volatility_configs= commands first, and the codegen models
+of those tables next. The pages that answer the question, the =Volatility=
+structure note, the =Volatility= concept page and =FX Volatility Surface=, come
+below them. Within the knowledge pages they rank first. So the corpus the
+assistant reads must be chosen, not everything compass indexes: the domain
+knowledge, the manual and the glossary, not the recipes, codegen models and
+agile records.
+
+** Where to search
+
+- *Typesense.* A new server to deploy, run, back up and secure, for a corpus of
+  a few thousand passages. It earns its place for typo tolerance and faceting
+  at scale, which this does not need yet.
+- *PostgreSQL full-text search.* Already running, already backed up, already
+  behind ORE's tenancy and roles. A =tsvector= per passage weighted by title,
+  description, heading and body, ranked with =ts_rank_cd=, is keyword search of
+  the kind compass already shows works on a chosen corpus. =pg_trgm= (available)
+  catches near spellings.
+- *Embeddings.* A meaning-based search finds "how much prices swing" for
+  "volatility". It needs a vector store, and =pgvector= is not available on the
+  server today, so adding it is a deployment change. The model server can
+  compute embeddings: llama.cpp's =llama-server= serves an embedding model.
+
+** How retrieval reaches the model
+
+- *As tools.* =find_knowledge= and =read_knowledge=, beside the operation
+  tools, and the knowledge pages as MCP resources (=resources/list= and
+  =resources/read=, one URI per page). This lets the model look further.
+- *Before the model is called.* The agent loop searches the knowledge base for
+  the question itself, puts the best passages in the prompt, numbered, and asks
+  the model to answer from them and cite their numbers. A very small model
+  cannot be trusted to decide to search, or to write a link, so the loop does
+  both: the links in the answer come from the passages it retrieved, never from
+  the model's text, and a citation of a passage that was not given is dropped.
+
+* Conclusions
+
+- Answering from the knowledge base is retrieval-augmented generation: find the
+  passages, give them to the model, answer from them, link their pages.
+- It fits the architecture already chosen. The pages are a resource of
+  ores.http like the operations, the search is one more discovery tool, and the
+  agent loop does the first search itself.
+- PostgreSQL is enough to start. Loading the documents there with a compass-ng
+  pass needs no new server, and its full-text search is the same kind that
+  ranks the right pages first once the corpus is chosen.
+- What to load matters more than the search engine. The recipes and codegen
+  models outrank the domain pages on a plain question.
+
+* Recommendations
+
+1. A compass-ng export of the user-facing corpus: the domain knowledge, the
+   manual and the glossary, each page with its org id, title, description, tags,
+   its links to other pages, its rendered HTML, and its sections as passages
+   with their headings. Which documents are user-facing is declared on the
+   document (a tag or a keyword), so the export does not guess.
+2. A pass that loads the export into PostgreSQL, as system data every tenant
+   reads, replaced whole on each load: pages, passages with a weighted
+   =tsvector=, and links.
+3. In ores.http: a route that serves a page by its id as HTML, which ores.web
+   shows as a page; a route that searches passages; and the same two as MCP
+   tools (=find_knowledge=, =read_knowledge=) and the pages as MCP resources.
+4. In the agent loop: retrieve before the model is called, give it the numbered
+   passages, and build the answer's links from what was retrieved.
+5. Measure before choosing more: a set of real questions with the pages that
+   should answer them, scored on whether those pages are in the first five.
+   Add embeddings (pgvector, with the model server computing them) only if
+   keyword search misses too often, and consider Typesense only if PostgreSQL
+   cannot keep up.
+
+* See also
+
+- [[id:BBEDFA8E-D43D-4F48-8FD7-1A3CC9F47E3E][Bring the assistant into ores.web on the target architecture]]
+- [[id:FC0847D1-9F09-42EF-A4BD-D5E3C34398EA][How ores.http serves MCP]]
+- [[id:6DFC4BF5-65AC-4E75-90EA-FBDC1272E01C][How the model sees ORE's operations]]
+- [[id:5B0BF2A0-912D-4501-8CA0-ED4E0F6ACCE3][Consider adding "global search" via typesense]] (discarded)

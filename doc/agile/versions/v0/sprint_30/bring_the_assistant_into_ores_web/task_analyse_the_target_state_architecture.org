@@ -127,8 +127,10 @@ product owner approves them. The order follows what the rest depends on:
    [[id:FC0847D1-9F09-42EF-A4BD-D5E3C34398EA][How ores.http serves MCP]].
 2. The tool catalogue and how it fits a small model's context. Started:
    [[id:6DFC4BF5-65AC-4E75-90EA-FBDC1272E01C][How the model sees ORE's operations]].
-3. User and machine operations, and how an outside MCP client authenticates.
-4. Where the agent loop runs, the chat in ores.web, confirmation of changes,
+3. Answering from the knowledge base, a requirement added on 2026-11-21:
+   [[id:3237D7CF-8EBA-4B9B-9B54-7135A4A7AA4A][How the assistant answers from the knowledge base]].
+4. User and machine operations, and how an outside MCP client authenticates.
+5. Where the agent loop runs, the chat in ores.web, confirmation of changes,
    the inference server, and the fate of the prototype.
 
 * Measurements

@@ -55,7 +55,7 @@ retires the prototype once ores.web does what it does.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
-| Now           | MCP decided; analysing the tool catalogue. |
+| Now           | MCP decided; catalogue and knowledge base analysed. |
 | Waiting on    | Nothing.                               |
 | Next          | Analyse the target-state architecture. |
 | Last touched  | 2026-11-20                               |
@@ -74,6 +74,8 @@ retires the prototype once ores.web does what it does.
 - Every operation the assistant performs is distinguishable from the
   person's own, in the audit trail and wherever ORE shows who did what.
 - An operation that changes data runs only after the person confirms it.
+- Asked about something the knowledge base covers, the assistant answers from
+  its pages and links each page it used, which ores.web shows as a page.
 - The gates cover the new code, and the prototype is retired or reduced
   to what the new design keeps.
 

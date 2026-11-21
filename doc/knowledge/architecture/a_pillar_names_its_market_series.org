@@ -217,9 +217,12 @@ Two instruments state the pair so that neither can drift unseen:
 - =ores_marketdata_curve_pillar_series_uri_fn(quote_text)= returns the address a
   quote names in SQL, and =ores_marketdata_curve_quote_coverage_fn(tenant,
   party)= lists the quotes of a party's curve configurations that no series
-  answers, one row per quote with its reason. A series of the party or of the
-  system tenant answers a quote, which is the rule the market data export
-  writes a run by.
+  answers, one row per quote with its kind and its reason. Only a series of the
+  party answers a quote: the export writes a run's market data from the party's
+  own quote series, and from the system tenant only its fixing series, which
+  answer an index rather than a quote. The reader is as strict as the codec, so
+  a key ORE would refuse is reported as unreadable rather than as a gap the
+  market could close.
 - =datum_market_reference_tests.cpp= asserts the same address against the codec,
   by reading the key and writing the series of the datum it names.
 

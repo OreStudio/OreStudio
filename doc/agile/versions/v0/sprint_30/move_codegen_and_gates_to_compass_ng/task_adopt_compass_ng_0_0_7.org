@@ -8,7 +8,7 @@
 #+filetags: :move_codegen_and_gates_to_compass_ng:sprint_30:v0:
 #+owner: marco
 #+branch: feature/adopt-compass-ng-0.0.7
-#+pr: 4979
+#+pr: 4987
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-21
@@ -107,6 +107,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4987][#4987]] | [synthetic] Regenerate the IR curve index family headers |
 | [[https://github.com/OreStudio/OreStudio/pull/4979][#4979]] | [build] Adopt compass-ng v0.0.7 with main green |
 | [[https://github.com/OreStudio/OreStudio/pull/4980][#4980]] | [docs] Regenerate the check inventory after script_library_seed turned off |
 

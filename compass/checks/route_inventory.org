@@ -505,6 +505,7 @@ cells in the inventory are empty.
 | the image map | ores.assets | which image every flagged record uses: currencies, countries, calendars and business centres in one code to image map, five reads, with a country fallback and a placeholder | ETag on the whole view, stale after 5 min |
 | the sprint board | no service, X1 decides | one sprint's work items and their states, read from the sprint file and the documents under it | ETag on the whole view, stale after 60 s |
 | the sprint charts | no service, X1 decides | one sprint's scope and the work remaining per day, computed from the sprint file and the state changes under it | ETag on the whole view, stale after 60 s |
+| the four market-data desk reads | regex | ^POST /api/market/(instruments\vert{}rate-ladder\vert{}fx-montage\vert{}curve-analytics)$ | ores.http | resource | market-data | The four reads the desk screens ask, answered by ores.http at the addresses and in the shapes the BFF answered: the session party's instrument catalogue, one currency's rate ladder, one base currency's FX montage and one curve's analytics. The gateway reads each body as the shape its screen sends, forwards one operation and answers the service's payload alone, or its refusal as a 422. |
 
 * Pairs
 
@@ -849,6 +850,10 @@ project from a check document of its own.
 * Exceptions
 
 | path | line | rule | expires | approver | reason |
+| POST | /api/market/curve-analytics | POST | /api/market/curve-analytics |
+| POST | /api/market/fx-montage | POST | /api/market/fx-montage |
+| POST | /api/market/instruments | POST | /api/market/instruments |
+| POST | /api/market/rate-ladder | POST | /api/market/rate-ladder |
 |------+------+------+---------+----------+--------|
 
 * See also

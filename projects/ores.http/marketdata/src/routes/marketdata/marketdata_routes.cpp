@@ -23,6 +23,7 @@
 #include "ores.http/routes/marketdata/connectivity_routes.hpp"
 #include "ores.http/routes/marketdata/curve_routes.hpp"
 #include "ores.http/routes/marketdata/fixing_series_routes.hpp"
+#include "ores.http/routes/marketdata/market_reads_routes.hpp"
 #include "ores.http/routes/marketdata/oresmd_routes.hpp"
 #include "ores.http/routes/marketdata/public_rate_routes.hpp"
 #include "ores.http/routes/marketdata/public_rates_views.hpp"
@@ -55,6 +56,7 @@ void marketdata_routes::register_routes(
     series_identity_shape_entry_web_routes::register_routes(router, registry, session);
     public_rate_routes::register_routes(router, registry, session);
     quote_routes::register_routes(router, registry, session);
+    market_reads_routes::register_routes(router, registry, session);
     shape_fields_routes::register_routes(router, registry, session);
     subscription_routes::register_routes(router, registry, session);
 }

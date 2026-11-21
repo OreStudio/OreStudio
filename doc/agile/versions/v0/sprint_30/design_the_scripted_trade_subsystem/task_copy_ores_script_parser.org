@@ -79,6 +79,18 @@ task and name that file in the Command column.
 
 * Notes
 
+** What the third PR found
+
+- =check= reports every finding of a parsed script against a trade's variables
+  together: a missing input (SCR2001), an unread variable (SCR2002), a wrong type
+  (SCR2003), a list where one value belongs or the reverse (SCR2004), a broken
+  REQUIRE (SCR3001) and an unused declaration (SCR4001), ordered by location,
+  then by variable.
+- A REQUIRE is evaluated only over the numbers a trade states and the sizes of its
+  lists; one that reads a date, an index or a computed variable is left to ORE.
+  A known side settles AND and OR on its own, so a quantity of zero breaks
+  =Expiry >= Start AND Quantity > 0= whatever the dates.
+
 ** What the second PR found
 
 - =inputs_of= walks ORE's syntax tree with the rules the library's inputs were

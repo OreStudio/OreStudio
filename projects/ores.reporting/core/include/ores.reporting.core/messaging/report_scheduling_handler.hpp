@@ -22,6 +22,7 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/logger.hpp"
+#include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
@@ -112,6 +113,24 @@ public:
         }
     }
 
+    /**
+     * @brief The client that acts for the caller the request names.
+     *
+     * A caller arrives with its own token, or, when a gateway forwards for a
+     * browser, with the session it delegated and no token at all. Both are in the
+     * message's headers, and the scheduler answers for the person either way, so
+     * the relay copies whichever it was given: a relay that read only the token
+     * acted for nobody when the caller was a browser session, and the scheduler
+     * refused it.
+     */
+    ores::nats::service::nats_client person_client(const ores::nats::message& msg) const {
+        auto delegated = svc_nats_.with_delegation(ores::nats::service::extract_actor_bearer(msg));
+        const auto it = msg.headers.find(std::string(ores::nats::headers::nats_session_id));
+        if (it != msg.headers.end() && !it->second.empty())
+            return delegated.with_session_id(it->second);
+        return delegated;
+    }
+
     void schedule(ores::nats::message msg) {
         ORES_LOG_SEV(report_scheduling_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
@@ -143,7 +162,7 @@ public:
                 return;
             }
             service::report_definition_service svc(req_ctx);
-            auto delegated = svc_nats_.with_delegation(ores::nats::service::extract_bearer(msg));
+            auto delegated = person_client(msg);
             service::report_scheduling_service scheduler(ctx_, svc_nats_, delegated);
             const auto& actor = delegated_actor(req_ctx);
             int scheduled_count = 0;
@@ -228,7 +247,7 @@ public:
         }
         if (auto req = decode<unschedule_report_definitions_request>(msg)) {
             service::report_definition_service svc(req_ctx);
-            auto delegated = svc_nats_.with_delegation(ores::nats::service::extract_bearer(msg));
+            auto delegated = person_client(msg);
             service::report_scheduling_service scheduler(ctx_, svc_nats_, delegated);
             const auto& actor = delegated_actor(req_ctx);
             int unscheduled_count = 0;
@@ -295,7 +314,7 @@ public:
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        auto delegated = svc_nats_.with_delegation(ores::nats::service::extract_bearer(msg));
+        auto delegated = person_client(msg);
         service::report_scheduling_service scheduler(ctx_, svc_nats_, delegated);
         get_next_fire_response response;
         try {

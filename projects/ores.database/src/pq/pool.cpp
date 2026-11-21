@@ -36,6 +36,9 @@ pool_settings normalised(const pool_settings& settings) {
     pool_settings r = settings;
     r.floor = std::max<std::size_t>(r.floor, 1);
     r.ceiling = std::max(r.ceiling, r.floor);
+    // A period of nothing would make every idle connection due on every pass,
+    // which is a reaper that spins rather than one that waits.
+    r.idle_after = std::max(r.idle_after, std::chrono::milliseconds(1));
     return r;
 }
 
@@ -215,11 +218,13 @@ void pool::reap() {
         // Closed outside the lock: a teardown that blocks must not block a lease.
         std::unique_ptr<connection> dying = std::move(idle_.front().connection);
         idle_.erase(idle_.begin());
-        --open_;
         lock.unlock();
         dying.reset();
-        available_.notify_one();
         lock.lock();
+        // The slot is given up only once the connection is closed, so a caller
+        // cannot open one more while the old socket is still open.
+        --open_;
+        available_.notify_one();
     }
 }
 

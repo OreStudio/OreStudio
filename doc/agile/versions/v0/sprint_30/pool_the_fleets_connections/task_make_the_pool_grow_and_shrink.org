@@ -63,9 +63,13 @@ change is local: open on demand up to the ceiling, timestamp a connection when i
 is given back, and reap above the floor on acquire or on a small timer.
 
 The settings replace =db-pool-size= with a floor, a ceiling and an idle period,
-read the way the others are (=ORES_<APP>_DB_POOL_*=), keeping a single-number
-form working as "floor = ceiling = that number" so an environment that states one
-number keeps its meaning.
+read the way the others are (=ORES_<APP>_DB_POOL_*=).
+
+The plan expected to keep a single-number form so that an environment stating one
+number kept its meaning. Measured before the work: no environment stated it, so
+the setting is replaced rather than aliased. What survives is the type-level
+form - =pq::pool= still takes one number and keeps exactly that many - which is
+what the tests and a deliberately fixed pool mean.
 
 Sizing is the other half and belongs with
 [[id:06195DFF-0D7C-4298-A0CF-464338CE728E][Size the connection pool and the
@@ -102,9 +106,11 @@ in =context_factory::configuration= and in the CLI:
 | =--db-pool-max= | =pool_max= | 8 | the ceiling a burst may reach |
 | =--db-pool-idle= | =pool_idle= | 30 | seconds an idle connection above the floor lives |
 
-A ceiling below the floor is raised to the floor rather than refused, and a
-non-positive floor or idle period is refused in words at the boundary, as
-=db-pool-size= was.
+A non-positive floor, a non-positive idle period, and a ceiling below the floor
+are each refused in words at the boundary, as =db-pool-size= was. The pool itself
+raises a ceiling below the floor, and treats an idle period of nothing as the
+shortest wait rather than as no wait, so a pool built directly from settings
+cannot hold a ceiling under its floor or a reaper that spins.
 
 The single-number form survives at the type level: =pq::pool= has a constructor
 that takes one number and keeps exactly that many, which is what every test that
@@ -128,7 +134,7 @@ task and name that file in the Command column.
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
 | Services whose generated =application.cpp= states the pool | 17 | =grep -rln "db_opts.pool_min" projects/*/service/src/app | wc -l= | on top of 9f30c82fb8 |
-| Remaining references to =pool_size= in the tree | 0 | =grep -rn "pool_size" --include=*.cpp --include=*.hpp --include=*.py projects | grep -v venv | wc -l= | on top of 9f30c82fb8 |
+| Remaining references to =pool_size= in the tree | 0 | =grep -rn "pool_size" --include=*.cpp --include=*.hpp --include=*.py --include=*.puml projects | grep -v venv | wc -l= | on top of 9f30c82fb8 |
 | Build of the targets the change reaches | 347 of 347, 28m02s, 0 warnings | =compass build ores.database.tests ores.iam.service.tests ores.marketdata.service.tests ores.inbox.core.tests ores.refdata.core.tests ores.workflow.core.tests ores.synthetic.service.tests ores.http.server ores.compute.service= | 177587f9e9 |
 | Suites the change reaches | 7 suites, 1221 test cases, all pass | =compass test run -- -R "ores.database.tests|ores.iam.service.tests|ores.inbox.core.tests|ores.refdata.core.tests|ores.workflow.core.tests|ores.synthetic.service.tests|ores.marketdata.service.tests"= | 177587f9e9 |
 
@@ -164,7 +170,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:36FDD33A-6406-4CF6-9687-807BF36A172E][Four lanes of a provisioning step meet no acquisition failure]] | PENDING | The fleet-run proof of the last acceptance line: a provisioned party's three publish steps record no acquisition failure. |
 
 * PRs
 
@@ -196,5 +202,7 @@ Evidence, at =177587f9e9=:
 What is still owed: the acceptance line that the marketdata service runs a
 provisioning step with its four lanes and records no acquisition failure. The
 pool can now serve that burst, but proving it means running a provisioned party
-against the fleet, which is a fleet run and not a unit test. It stays open on
-purpose rather than claimed.
+against the fleet, which is a fleet run and not a unit test. It is carried by
+[[id:36FDD33A-6406-4CF6-9687-807BF36A172E][Four lanes of a provisioning step meet
+no acquisition failure]] rather than claimed here, and that scenario is PENDING
+until somebody runs it.

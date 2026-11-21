@@ -1,0 +1,78 @@
+:PROPERTIES:
+:ID: 36FDD33A-6406-4CF6-9687-807BF36A172E
+:END:
+#+title: Test Scenario: Four lanes of a provisioning step meet no acquisition failure
+#+description: A provisioned party is published through the marketdata service's steps, and the journal records no acquisition failure where the pool of two used to record one.
+#+type: test_scenario
+#+level: s1
+#+filetags: :make_the_pool_grow_and_shrink:pool_the_fleets_connections:sprint_30:v0:
+#+target_dialog:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+#+environment: merry_newton
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:CE661B08-A485-4326-9558-3AE58C5208CD][Make the pool grow and shrink]] in [[id:A75C3063-896F-4DD5-A9BC-893A59EDFF7E][Pool the fleet's connections]]. It is filled in with the target screen and checklist of steps before testing starts; record the outcome by hand in =* Results=.
+
+* Before you start
+
+- Build the tree and start the fleet: =compass build=, then
+  =compass services start=.
+- The database must hold a provisioned tenant whose parties have market data to
+  publish. Recreate it only if it is stale (=compass db recreate -y -k=), then
+  run the provisioning script named in Step 2. No step may have failed before
+  this scenario starts.
+- The marketdata service must be the build under test: the pool states
+  =ORES_MARKETDATA_SERVICE_DB_POOL_MIN= and =..._MAX= in the environment's
+  =.env=, and =..._MAX= is sixteen.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:CE661B08-A485-4326-9558-3AE58C5208CD][Make the pool grow and shrink]] |
+| Parent story  | [[id:A75C3063-896F-4DD5-A9BC-893A59EDFF7E][Pool the fleet's connections]]   |
+| Target screen | None: this scenario reads the fleet's journal. |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Steps
+
+** Log in as the Acme tenant administrator
+
+- In a terminal: =compass shell -u tenant_admin@acme_corporation -p
+  Secure-Password-123=
+- The shell answers with its prompt. A refused login fails the step.
+
+** Publish a party's curves, forwards and surfaces
+
+- In the same shell, run the provisioning script:
+  =compass shell -f projects/ores.shell/scripts/library/provisioning/how_do_i_provision_the_system_with_acme_corporation_holding_group.ores=
+- Let it finish. The workflow's =publish_party_curves=,
+  =publish_party_forwards= and =publish_party_surfaces= steps reach
+  =completed_at=:
+  #+begin_src sh
+  compass sql -- -c "select name, completed_at - started_at as took from ores_workflow_workflow_steps_tbl where name like 'publish_party_%' and completed_at is not null order by completed_at desc limit 3"
+  #+end_src
+
+** Read the journal for an acquisition failure
+
+- Read what the marketdata service recorded during the run:
+  #+begin_src sh
+  journalctl --user -u ores.marketdata.service-merry_newton --since "-30 min" | grep -c "No connection came free"
+  #+end_src
+- The count is zero. Before this change the same run recorded the line, because
+  two steps with four lanes each asked a pool of two for a connection.
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        |       |
+| Completed at  |       |
+| Branch        |       |
+| Commit        |       |
+| Worktree      |       |
+
+* Notes

@@ -51,7 +51,7 @@ namespace ores #F2F2F2 {
             +with_tenant(utility::uuid::tenant_id tenant_id, string actor) : [[nodiscard]] context
             +with_party(utility::uuid::tenant_id tenant_id, boost::uuids::uuid party_id, vector<boost::uuids::uuid> visible_party_ids, string actor) : [[nodiscard]] context
             +pq_pool() : ORES_DATABASE_EXPORT pq::pool&
-            +set_pq_pool_size(size_t size) : void
+            +set_pq_pool_settings(pq::pool_settings settings) : void
             +pq_session() : ORES_DATABASE_EXPORT pq::session_context
         }
         class database_options <<struct>> {
@@ -61,7 +61,9 @@ namespace ores #F2F2F2 {
             +database : string
             +port : int
             +tenant : string
-            +pool_size : int
+            +pool_min : int
+            +pool_max : int
+            +pool_idle : int
             +pool_backoff : string
         }
         class db_connection_exception {

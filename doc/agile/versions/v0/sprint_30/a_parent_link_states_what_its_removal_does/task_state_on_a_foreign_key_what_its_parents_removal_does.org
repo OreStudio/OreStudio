@@ -8,7 +8,7 @@
 #+filetags: :a_parent_link_states_what_its_removal_does:sprint_30:v0:
 #+owner: marco
 #+branch:
-#+pr:
+#+pr: 4941
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-21
@@ -98,7 +98,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4941][#4941]] | [agile] Add the story A parent link states what its removal does |
 
 * Review
 

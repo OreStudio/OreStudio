@@ -1,0 +1,34 @@
+:PROPERTIES:
+:ID: 3F6E0E12-63E8-4DF3-BBAF-AF9F9C31B580
+:END:
+#+title: Prove the trade tests catch defects
+#+description: The roundtrip and engine tests prove what the samples and the generator state. Two checks would prove the tests themselves: a property-based roundtrip that reaches values neither states, and mutation testing that lists every reader or writer line no test watches.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-11-21
+#+updated: 2026-11-21
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Two checks that prove the trade tests themselves: a property-based roundtrip
+that writes and reads back values neither the samples nor the generator state,
+and mutation testing that lists every reader or writer line no test watches.
+
+* Why
+
+The roundtrip and ORE engine tests prove only what the samples and the
+generator happen to state, so a reader or writer line no test reaches can be
+wrong unseen. The work was a task of [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine
+supports]], which was abandoned for the scripted trade redesign; it is kept here
+so it is not lost.
+
+* References
+
+- [[id:E1E6C776-190A-4D8F-AB98-1163E1F485A0][Task: Prove the trade tests catch defects]], the abandoned task
+
+* See also
+
+- [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Story: Hold every product type the engine supports]]

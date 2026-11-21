@@ -26,12 +26,12 @@ Every equity, FX and commodity script in ORE's library that has no element of it
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | ABANDONED |
 | Parent story | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-15                               |
+| Now          | Abandoned on 2026-11-21; see Result. |
+| Waiting on   | Nothing. |
+| Next         | None. |
+| Last touched | 2026-11-21 |
 
 * Acceptance
 
@@ -152,3 +152,5 @@ CorridorVarianceSwap, KIKOCorridorVarianceSwap, ConditionalVarianceSwap01 and
 table states how each of the library's 54 scripts is held, and the generator
 fails when one is missing or held otherwise than the recipes state. The rainbow,
 dispersion and option families follow.
+
+Abandoned on 2026-11-21, superseded by [[id:E6359881-7919-4BBC-9B9C-03A8EEDB8A03][Design the scripted trade subsystem]]: a script-only product is to be booked against a schema of its own, not from a carrier native type's rows. The first PR, #4948, is on main and stays until the new story replaces it.

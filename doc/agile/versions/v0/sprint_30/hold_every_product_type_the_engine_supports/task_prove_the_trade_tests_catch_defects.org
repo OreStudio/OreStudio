@@ -26,12 +26,12 @@ A property-based roundtrip writes and reads many generated instruments of each t
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED |
 | Parent story | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-15                               |
+| Now          | Abandoned on 2026-11-21; see Result. |
+| Waiting on   | Nothing. |
+| Next         | None. |
+| Last touched | 2026-11-21 |
 
 * Acceptance
 
@@ -95,3 +95,5 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Abandoned on 2026-11-21 with its story, and kept as the inbox capture [[id:3F6E0E12-63E8-4DF3-BBAF-AF9F9C31B580][Prove the trade tests catch defects]].

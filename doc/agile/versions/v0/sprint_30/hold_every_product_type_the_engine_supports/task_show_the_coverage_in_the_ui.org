@@ -26,12 +26,12 @@ A person can open one page and see every product type with the form ORE reads it
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED |
 | Parent story | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-15                               |
+| Now          | Abandoned on 2026-11-21; see Result. |
+| Waiting on   | Nothing. |
+| Next         | None. |
+| Last touched | 2026-11-21 |
 
 * Acceptance
 
@@ -92,3 +92,5 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Abandoned on 2026-11-21 with its story, and kept as the inbox capture [[id:6FDC57EE-46FD-4BF8-B107-083F26803464][Show the trade type coverage in the UI]].

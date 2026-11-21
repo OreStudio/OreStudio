@@ -1,0 +1,85 @@
+:PROPERTIES:
+:ID: E6359881-7919-4BBC-9B9C-03A8EEDB8A03
+:END:
+#+title: Story: Design the scripted trade subsystem
+#+description: ORE Studio books a product as its own element or as a ScriptedTrade over a script. Booking, editing, validating, generating and valuing scripted trades need one subsystem, with a product schema for every product, one booking API for both forms, and validation by ORE's own grammar, inside ores.trading and free of dependency cycles.
+#+type: story
+#+level: s2
+#+filetags: :scripting:trading:sprint_30:v0:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+#+environment: jolly_knuth
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+One scripted trade subsystem serves every way a scripted trade enters ORE Studio: a product-specific booking form that books a product natively or as scripted, a free-form scripted trade editor validated on the server, import, and the generator that proves every product books and values. It lives in ores.trading, with ORE's script parser in ores.trading.scripting, and its components depend on each other without a cycle.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
+| Now           | The story is scaffolded; the architecture is not yet documented. |
+| Waiting on    | Nothing.                               |
+| Next          | Document the scripted trade architecture. |
+| Last touched  | 2026-11-21                               |
+
+* Acceptance
+
+- the scripted trade architecture is documented to the project's knowledge standard: one page per claim, linked by org-roam to each other and to the existing pages, stating the target state; it gives the use cases, the components, their dependency graph with no cycle, and each component's public API
+- ores.trading.scripting holds ORE's script parser, copied with its authorship, diffable against ORE's, and shaped to ORE Studio's standards
+- every product, native or script only, has a schema of its fields and the forms it can be booked in
+- a product is booked through one API in either of its forms, and the server validates a scripted trade with ORE's grammar
+- ores.shell has commands to parse and validate scripts and describe products, some of which need no login
+- the generator books every product and form through the same API, and ORE values each
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:31CB7BE4-C241-4FCC-BFA2-3AFF7839DE15][Scaffold story: Design the scripted trade subsystem]] | DONE | 2026-11-21 | 2026-11-21 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:0A53E698-5A04-4A3E-B76E-3DFCA69E36A7][Document the scripted trade architecture]] | BACKLOG | | | The target architecture of scripted trades, documented to the knowledge standard before any of it is built. |
+| [[id:179E60E8-59B5-456A-B2CC-55323052E234][Edit a scripted trade on its own screen]] | BACKLOG |  |  | A scripted trade is a script plus the variables it reads. Without an editor a person can only see it as rows, and a free text box would let them state a variable the script never reads or miss one it needs. |
+
+* Decisions
+
+Agreed with the user on 2026-11-21, superseding the script-only work of
+[[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]]:
+
+- *The use cases.* A product-specific booking form shows every field of a
+  product and books it natively or as scripted, with the cost of each form
+  shown. A free-form scripted trade editor, with syntax highlighting and errors
+  as one types, books a script the server validates. ORE Studio books and
+  values every trade type. Also served: import and export of ORE portfolios,
+  amending a trade in the form it was booked in, managing the script library
+  as versioned reference data, governing who may book a free-form script,
+  reporting a scripted trade under its product, the pricing configuration and
+  its cost per form, and comparing a product's two forms.
+- *A product schema for every product.* A native product's fields come from its
+  element; a script with no element of its own takes its inputs as its fields.
+  One API describes a product and books it in either of its forms. This
+  replaces booking a script-only product from a carrier native type's rows.
+- *The engine is given the script's text.* ORE interprets a script over path
+  vectors, and compiles a computation graph into device kernels within one run
+  only. No compiled form of a script is stored: the stored artefact is the
+  script's text and version.
+- *ORE's grammar is the authority.* ORE's Boost Spirit parser is copied into
+  =ores.trading.scripting=, a subcomponent of =ores.trading=, not a component of
+  its own. The copy keeps its authorship, stays easy to diff against ORE's, and
+  is shaped to ORE Studio's standards. ORE Studio writes no grammar of its own
+  but the editor's tree-sitter grammar, which is tested against ORE's parser.
+- *Shell commands.* ores.shell has commands for scripted trades; the ones that
+  read no store, such as parsing or validating a script's text, need no login.
+- *Dependencies.* The subsystem's components are laid out so their dependency
+  graph has no cycle.
+- *The first task documents the architecture* to the project's knowledge
+  standard, as the target state, reusing and refactoring the existing pages.
+
+* Out of scope
+
+- compiling a script ahead of time, such as into a DLL handed to the engine
+- a Boost Spirit grammar of ORE Studio's own

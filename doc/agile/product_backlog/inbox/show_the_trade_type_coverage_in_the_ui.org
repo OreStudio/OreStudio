@@ -1,0 +1,36 @@
+:PROPERTIES:
+:ID: 6FDC57EE-46FD-4BF8-B107-083F26803464
+:END:
+#+title: Show the trade type coverage in the UI
+#+description: Nothing shows a person which product types exist, which form ORE reads each one as, which table holds it, whether a builder and a generator exist for it, and which types the engine cannot carry. That answer belongs on the catalogue's own page.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-11-21
+#+updated: 2026-11-21
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The trade type catalogue states, for every product type, the form ORE reads it
+as, the table that holds it, its builder, its generator and whether the engine
+can carry it. A page of the UI shows that answer to a person, from the
+catalogue as the server serves it.
+
+* Why
+
+A person choosing how to book a product, or checking what ORE Studio can hold,
+has to read the catalogue's org file today. The work was a task of
+[[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]], which was abandoned for the
+scripted trade redesign; it is kept here so it is not lost.
+
+* References
+
+- [[id:4017DBBE-006E-4D37-BA93-E44182D53517][Task: Show the coverage in the UI]], the abandoned task
+- [[id:CC7CC29C-9413-4DF3-BC32-D1C8A978D295][Which trade types ORE carries and ORE Studio holds]]
+
+* See also
+
+- [[id:E6359881-7919-4BBC-9B9C-03A8EEDB8A03][Story: Design the scripted trade subsystem]], whose product schema would feed
+  the page

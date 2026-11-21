@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :every_floating_index_has_a_curve_and_fixings:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/write-the-derived-fixings-once-the-market-data-service-answers
 #+pr: 4956
 #+blocked_on:
 #+blocked_since:
@@ -31,7 +31,7 @@ already skips the days a series holds, so a run is safe to repeat.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:0F936789-FEBE-4330-97B9-DFE0837E4466][Every index a generated trade floats on has a curve and fixings]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

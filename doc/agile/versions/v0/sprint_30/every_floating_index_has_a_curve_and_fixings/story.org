@@ -68,7 +68,7 @@ problem from the market data side.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -94,7 +94,7 @@ problem from the market data side.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:232932EB-9DA3-4004-B6A7-699DC1133610][Write the derived fixings once the market data service answers]] | BACKLOG | | | Make the fixing writer a reconciler: it waits for the market data service, writes what is missing, and runs again when that service returns, so no series is lost to start order. |
+| [[id:232932EB-9DA3-4004-B6A7-699DC1133610][Write the derived fixings once the market data service answers]] | STARTED | 2026-11-21 | | Make the fixing writer a reconciler: it waits for the market data service, writes what is missing, and runs again when that service returns, so no series is lost to start order. |
 | [[id:83EBCA67-D67E-4D70-AD52-BAA9CDAEC2EE][Bootstrap the HKD HIBOR term curves]] | BACKLOG | | | Add HKD HIBOR curves at 2W, 1M and 3M, built from HONIA and a stated spread as the other term curves are, so the 127 HKD trades of ACCOHK have a curve and fixings. |
 | [[id:53634267-4331-4416-BA39-57102F99EEC8][Draw only the indices the market can serve]] | BACKLOG | | | The trade planner draws a floating index only from a data list of the indices that have a curve or a derivation, and a check refuses a population config that can draw outside it. |
 | [[id:1993E4E7-A59B-4473-8635-C9F6DF974EB5][Derive a term index from its overnight curve]] | BACKLOG | | | Give a term index of a currency that has an overnight curve its curve and fixings from that curve: term SOFR and IBR from the compounded overnight forward, EYTIBOR, WIBOR and the generic indices with a stated spread. |

@@ -137,6 +137,24 @@ server.
 already carries the NATS URL and TLS paths, so a remote provision works
 without a hand-passed flag.
 
+** The grid engine needs three facts no profile carries
+
+Bringing the engine up on pauli took three hand-written facts and one
+code fix, so a second host repeats the work:
+
+- The profile carries no =ORES_COMPUTE_*= block. The deploy refuses
+  without the tenant, the NATS URL, the subject prefix, the wire format
+  and the TLS trio, and the profile generator writes none of them.
+- The wrapper downloads its engine package over HTTP and is given a
+  *path*, not a URL. Without =ORES_COMPUTE_HTTP_BASE_URL= it retries
+  =only http:// URLs supported: /api/v1/storage/...= and every claimed
+  job fails. Two reports were failed by this before the value was set;
+  nine completed after it.
+- The compute Quadlet unit always asked for =UserNS=keep-id=, which on a
+  rootful host stops crun at =mount `sysfs` to `sys`=. Fixed in
+  =docker/remote-run.sh=, which now asks for it only where podman is
+  rootless — the same guard the runtime path already had.
+
 * Why
 
 The provision is the fastest way to exercise the market data path end to

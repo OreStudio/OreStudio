@@ -35,5 +35,6 @@ set(files
     "series_identity_shape_routes_tests.cpp"
     "series_identity_shape_web_routes_tests.cpp"
     "series_routes_tests.cpp"
+    "shape_fields_routes_tests.cpp"
     "subscription_routes_tests.cpp"
 )

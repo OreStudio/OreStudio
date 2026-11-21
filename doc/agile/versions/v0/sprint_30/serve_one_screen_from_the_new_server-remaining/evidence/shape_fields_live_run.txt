@@ -1,0 +1,84 @@
+The two identity shape views, proved against the running fleet and against the
+BFF's own answer.
+
+Commit under test : the branch head, built from this checkout
+Database          : ores_dev_brave_hopper, as the fleet found it
+Gateway           : ores.http.server-brave_hopper, http://localhost:20401
+BFF               : ores.web.service-brave_hopper, http://localhost:20402
+Services running  : the whole fleet, started by compass services start
+Account           : tenant_admin, in Acme Corporation, acting as its party
+
+The fleet reported that the database schema does not match this checkout
+(fingerprint e35394619a33cc5b against 05737a1eabc8dd05). The branch moves no
+table, and both views read tables that moved in neither: the shapes, their
+entries and the classification rules.
+
+What the run shows. The classification rules answer 43 rules whose members are
+the four the BFF sent, and the shape fields answer 29 fields across 7 families,
+joined from 7 shapes and their entries. Both carry an ETag, answer 304 to the
+same tag, and state Cache-Control: private, no-cache with Vary: Authorization,
+Cookie. Both refuse a query parameter the BFF refused, with a 400 naming it.
+
+The comparison run signs in to each server on its own and asks both the same
+address. The two answers hold the same rows: 43 rules and 29 fields, identical
+as sets, with the same member names. They differ in one thing only: the gateway
+orders the rows (the rules by key kind, instrument and quote; the fields by
+family and then field) where the BFF passed on the service's order.
+
+--- 8< ---
+
+=== the two views on the gateway
+=== signing in ===
+signed in as: tenant_admin  outcome: party-required  tenant: Acme Corporation
+choose party: 200
+
+=== the classification rules
+HTTP 200
+Content-Type: application/json
+Cache-Control: private, no-cache
+Vary: Authorization, Cookie
+ETag: "ee308e53d1dd5d22-f77"
+rules: 43
+  datum    basis_swap   (any)    -> basis
+  datum    bma_swap     (any)    -> basis
+  datum    bond         (any)    -> price
+  members: ['instrument', 'key_kind', 'quote', 'series_subclass_code']
+the same tag again: HTTP 304
+
+=== the identity shape fields
+HTTP 200
+Content-Type: application/json
+Cache-Control: private, no-cache
+Vary: Authorization, Cookie
+ETag: "68fbd9a5cb51728d-16c5"
+fields: 29  families: 7
+  fx / forward                   ccy (required), instrument_type (required), quote_type (required), unit_ccy (required)
+  fx / index_fixing / fx         ccy (required), index (required), source (required), unit_ccy (required)
+  fx / spot                      ccy (required), instrument_type (required), quote_type (required), unit_ccy (required)
+  fx / volatility                ccy (required), instrument_type (required), quote_type (required), unit_ccy (required)
+  members: ['asset_class', 'description', 'field', 'index_family', 'requirement', 'series_subclass']
+the same tag again: HTTP 304
+
+=== the addresses refuse what the BFF refused
+/api/marketdata/series-classification-rules?asOf=x       HTTP 400  {"code":"invalid-request","message":"This read cannot take asOf."}
+/api/marketdata/series-identity-shape-fields?limit=1     HTTP 400  {"code":"invalid-request","message":"This read cannot take limit."}
+
+--- 8< ---
+
+=== the gateway's answer beside the BFF's
+=== signing in to the gateway
+  choose party: 200
+=== signing in to the BFF
+  choose party: 200
+=== series-classification-rules
+cpp HTTP 200  bff HTTP 200
+members: ['instrument', 'key_kind', 'quote', 'series_subclass_code']  the BFF's: ['instrument', 'key_kind', 'quote', 'series_subclass_code']
+cpp rows: 43  bff rows: 43  identical as a set: True
+cpp order is the gateway's: [{'instrument': 'basis_swap', 'quote': '', 'key_kind': 'datum', 'series_subclass_code': 'basis'}]
+bff order is the service's: [{'instrument': '', 'quote': '', 'key_kind': 'index', 'series_subclass_code': 'index_fixing'}]
+=== series-identity-shape-fields
+cpp HTTP 200  bff HTTP 200
+members: ['asset_class', 'description', 'field', 'index_family', 'requirement', 'series_subclass']  the BFF's: ['asset_class', 'description', 'field', 'index_family', 'requirement', 'series_subclass']
+cpp rows: 29  bff rows: 29  identical as a set: True
+cpp order is the gateway's: [{'asset_class': 'fx', 'series_subclass': 'forward', 'index_family': '', 'field': 'ccy', 'requirement': 'required', 'description': 'A forward is named by the pair it is for.'}]
+bff order is the service's: [{'asset_class': 'fx', 'series_subclass': 'index_fixing', 'index_family': 'fx', 'field': 'ccy', 'requirement': 'required', 'description': 'An FX fixing is the price of one currency in another, so both are part of its identity.'}]

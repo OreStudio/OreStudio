@@ -26,10 +26,12 @@
 #define ORES_SYNTHETIC_CORE_MESSAGING_GMM_COMPONENT_HISTORY_PROVIDER_REGISTRAR_HPP
 
 #include "ores.history.core/service/dispatch_registry.hpp"
+#include "ores.synthetic.core/export.hpp"
 
 namespace ores::synthetic::messaging {
 
-void register_gmm_component_history_provider(ores::history::service::dispatch_registry& registry);
+ORES_SYNTHETIC_CORE_EXPORT void
+register_gmm_component_history_provider(ores::history::service::dispatch_registry& registry);
 
 }
 

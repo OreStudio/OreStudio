@@ -27,6 +27,7 @@
 
 #include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
+#include "ores.dq.core/export.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <chrono>
 #include <optional>
@@ -127,7 +128,7 @@ struct lei_entity_entity {
     }
 };
 
-std::ostream& operator<<(std::ostream& s, const lei_entity_entity& v);
+ORES_DQ_CORE_EXPORT std::ostream& operator<<(std::ostream& s, const lei_entity_entity& v);
 
 }
 

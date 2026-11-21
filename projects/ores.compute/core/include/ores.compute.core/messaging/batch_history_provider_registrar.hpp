@@ -25,11 +25,13 @@
 #ifndef ORES_COMPUTE_CORE_MESSAGING_BATCH_HISTORY_PROVIDER_REGISTRAR_HPP
 #define ORES_COMPUTE_CORE_MESSAGING_BATCH_HISTORY_PROVIDER_REGISTRAR_HPP
 
+#include "ores.compute.core/export.hpp"
 #include "ores.history.core/service/dispatch_registry.hpp"
 
 namespace ores::compute::messaging {
 
-void register_batch_history_provider(ores::history::service::dispatch_registry& registry);
+ORES_COMPUTE_CORE_EXPORT void
+register_batch_history_provider(ores::history::service::dispatch_registry& registry);
 
 }
 

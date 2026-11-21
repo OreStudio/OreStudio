@@ -22,6 +22,7 @@
 
 #include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
+#include "ores.telemetry.database/export.hpp"
 #include <cstdint>
 #include <iosfwd>
 #include <optional>
@@ -122,7 +123,7 @@ struct telemetry_entity {
     }
 };
 
-std::ostream& operator<<(std::ostream& s, const telemetry_entity& v);
+ORES_TELEMETRY_DATABASE_EXPORT std::ostream& operator<<(std::ostream& s, const telemetry_entity& v);
 
 /**
  * @brief Entity for hourly telemetry statistics from continuous aggregates.
@@ -154,7 +155,8 @@ struct telemetry_stats_hourly_entity {
     }
 };
 
-std::ostream& operator<<(std::ostream& s, const telemetry_stats_hourly_entity& v);
+ORES_TELEMETRY_DATABASE_EXPORT std::ostream& operator<<(std::ostream& s,
+                                                        const telemetry_stats_hourly_entity& v);
 
 /**
  * @brief Entity for daily telemetry statistics from continuous aggregates.
@@ -188,7 +190,8 @@ struct telemetry_stats_daily_entity {
     }
 };
 
-std::ostream& operator<<(std::ostream& s, const telemetry_stats_daily_entity& v);
+ORES_TELEMETRY_DATABASE_EXPORT std::ostream& operator<<(std::ostream& s,
+                                                        const telemetry_stats_daily_entity& v);
 
 /**
  * @brief Entity for a NATS server-level metrics sample.

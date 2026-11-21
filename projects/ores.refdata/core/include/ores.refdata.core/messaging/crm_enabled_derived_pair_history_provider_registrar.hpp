@@ -26,10 +26,11 @@
 #define ORES_REFDATA_CORE_MESSAGING_CRM_ENABLED_DERIVED_PAIR_HISTORY_PROVIDER_REGISTRAR_HPP
 
 #include "ores.history.core/service/dispatch_registry.hpp"
+#include "ores.refdata.core/export.hpp"
 
 namespace ores::refdata::messaging {
 
-void register_crm_enabled_derived_pair_history_provider(
+ORES_REFDATA_CORE_EXPORT void register_crm_enabled_derived_pair_history_provider(
     ores::history::service::dispatch_registry& registry);
 
 }

@@ -25,6 +25,7 @@
 #ifndef ORES_COMPUTE_CORE_MESSAGING_APP_VERSION_PLATFORM_REGISTRAR_HPP
 #define ORES_COMPUTE_CORE_MESSAGING_APP_VERSION_PLATFORM_REGISTRAR_HPP
 
+#include "ores.compute.core/export.hpp"
 #include "ores.database/domain/context_fwd.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/subscription.hpp"
@@ -34,7 +35,8 @@
 
 namespace ores::compute::messaging {
 
-std::vector<ores::nats::service::subscription> register_app_version_platform_handlers(
+ORES_COMPUTE_CORE_EXPORT std::vector<ores::nats::service::subscription>
+register_app_version_platform_handlers(
     ores::nats::service::client& nats,
     const ores::database::context& ctx,
     std::optional<ores::security::jwt::jwt_authenticator> verifier);

@@ -27,6 +27,7 @@
 
 #include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
+#include "ores.refdata.core/export.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
@@ -88,7 +89,7 @@ struct portfolio_right_entity {
     }
 };
 
-std::ostream& operator<<(std::ostream& s, const portfolio_right_entity& v);
+ORES_REFDATA_CORE_EXPORT std::ostream& operator<<(std::ostream& s, const portfolio_right_entity& v);
 
 }
 

@@ -29,12 +29,13 @@
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/subscription.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
+#include "ores.workflow.core/export.hpp"
 #include <optional>
 #include <vector>
 
 namespace ores::workflow::messaging {
 
-std::vector<ores::nats::service::subscription>
+ORES_WORKFLOW_CORE_EXPORT std::vector<ores::nats::service::subscription>
 register_workflow_instance_handlers(ores::nats::service::client& nats,
                                     const ores::database::context& ctx,
                                     std::optional<ores::security::jwt::jwt_authenticator> verifier);

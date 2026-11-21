@@ -26,10 +26,11 @@
 #define ORES_REFDATA_CORE_MESSAGING_FX_VOL_SURFACE_BLUEPRINT_HISTORY_PROVIDER_REGISTRAR_HPP
 
 #include "ores.history.core/service/dispatch_registry.hpp"
+#include "ores.refdata.core/export.hpp"
 
 namespace ores::refdata::messaging {
 
-void register_fx_vol_surface_blueprint_history_provider(
+ORES_REFDATA_CORE_EXPORT void register_fx_vol_surface_blueprint_history_provider(
     ores::history::service::dispatch_registry& registry);
 
 }

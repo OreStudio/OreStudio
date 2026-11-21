@@ -35,6 +35,7 @@ The full template source. Edit here and re-tangle with
 #include <chrono>
 #include "ores.database/repository/db_types.hpp"
 #include "ores.database/query_builder/columns.hpp"
+#include "ores.{{component_core}}/export.hpp"
 {{#has_uuid_columns}}
 #include <boost/uuid/uuid.hpp>
 {{/has_uuid_columns}}
@@ -227,7 +228,7 @@ struct {{entity_singular}}_entity {
     }
 };
 
-std::ostream& operator<<(std::ostream& s, const {{entity_singular}}_entity& v);
+ORES_{{component_core_upper}}_EXPORT std::ostream& operator<<(std::ostream& s, const {{entity_singular}}_entity& v);
 
 }
 
@@ -243,6 +244,7 @@ std::ostream& operator<<(std::ostream& s, const {{entity_singular}}_entity& v);
 #include <chrono>
 #include "ores.database/repository/db_types.hpp"
 #include "ores.database/query_builder/columns.hpp"
+#include "ores.{{component_core}}/export.hpp"
 {{#has_uuid_left_or_right}}
 #include <boost/uuid/uuid.hpp>
 {{/has_uuid_left_or_right}}
@@ -360,7 +362,7 @@ struct {{name_singular}}_entity {
     }
 };
 
-std::ostream& operator<<(std::ostream& s, const {{name_singular}}_entity& v);
+ORES_{{component_core_upper}}_EXPORT std::ostream& operator<<(std::ostream& s, const {{name_singular}}_entity& v);
 
 }
 

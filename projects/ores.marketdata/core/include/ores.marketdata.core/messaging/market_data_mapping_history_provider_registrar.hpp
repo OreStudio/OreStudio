@@ -26,11 +26,12 @@
 #define ORES_MARKETDATA_CORE_MESSAGING_MARKET_DATA_MAPPING_HISTORY_PROVIDER_REGISTRAR_HPP
 
 #include "ores.history.core/service/dispatch_registry.hpp"
+#include "ores.marketdata.core/export.hpp"
 
 namespace ores::marketdata::messaging {
 
-void register_market_data_mapping_history_provider(
-    ores::history::service::dispatch_registry& registry);
+ORES_MARKETDATA_CORE_EXPORT void
+register_market_data_mapping_history_provider(ores::history::service::dispatch_registry& registry);
 
 }
 

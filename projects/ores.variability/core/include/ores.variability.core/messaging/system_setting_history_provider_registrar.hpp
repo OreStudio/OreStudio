@@ -26,10 +26,12 @@
 #define ORES_VARIABILITY_CORE_MESSAGING_SYSTEM_SETTING_HISTORY_PROVIDER_REGISTRAR_HPP
 
 #include "ores.history.core/service/dispatch_registry.hpp"
+#include "ores.variability.core/export.hpp"
 
 namespace ores::variability::messaging {
 
-void register_system_setting_history_provider(ores::history::service::dispatch_registry& registry);
+ORES_VARIABILITY_CORE_EXPORT void
+register_system_setting_history_provider(ores::history::service::dispatch_registry& registry);
 
 }
 

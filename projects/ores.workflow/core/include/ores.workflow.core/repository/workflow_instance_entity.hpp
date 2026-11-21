@@ -28,6 +28,7 @@
 #include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
+#include "ores.workflow.core/export.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <optional>
@@ -101,7 +102,8 @@ struct workflow_instance_entity {
     }
 };
 
-std::ostream& operator<<(std::ostream& s, const workflow_instance_entity& v);
+ORES_WORKFLOW_CORE_EXPORT std::ostream& operator<<(std::ostream& s,
+                                                   const workflow_instance_entity& v);
 
 }
 

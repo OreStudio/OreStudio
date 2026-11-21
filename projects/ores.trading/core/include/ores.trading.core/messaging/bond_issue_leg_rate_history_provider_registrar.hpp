@@ -26,11 +26,12 @@
 #define ORES_TRADING_CORE_MESSAGING_BOND_ISSUE_LEG_RATE_HISTORY_PROVIDER_REGISTRAR_HPP
 
 #include "ores.history.core/service/dispatch_registry.hpp"
+#include "ores.trading.core/export.hpp"
 
 namespace ores::trading::messaging {
 
-void register_bond_issue_leg_rate_history_provider(
-    ores::history::service::dispatch_registry& registry);
+ORES_TRADING_CORE_EXPORT void
+register_bond_issue_leg_rate_history_provider(ores::history::service::dispatch_registry& registry);
 
 }
 

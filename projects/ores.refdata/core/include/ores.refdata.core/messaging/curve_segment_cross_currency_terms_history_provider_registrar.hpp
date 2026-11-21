@@ -26,10 +26,11 @@
 #define ORES_REFDATA_CORE_MESSAGING_CURVE_SEGMENT_CROSS_CURRENCY_TERMS_HISTORY_PROVIDER_REGISTRAR_HPP
 
 #include "ores.history.core/service/dispatch_registry.hpp"
+#include "ores.refdata.core/export.hpp"
 
 namespace ores::refdata::messaging {
 
-void register_curve_segment_cross_currency_terms_history_provider(
+ORES_REFDATA_CORE_EXPORT void register_curve_segment_cross_currency_terms_history_provider(
     ores::history::service::dispatch_registry& registry);
 
 }

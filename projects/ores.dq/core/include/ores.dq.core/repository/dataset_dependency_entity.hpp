@@ -22,6 +22,7 @@
 
 #include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
+#include "ores.dq.core/export.hpp"
 #include <string>
 
 namespace ores::dq::repository {
@@ -63,7 +64,7 @@ struct dataset_dependency_entity {
     }
 };
 
-std::ostream& operator<<(std::ostream& s, const dataset_dependency_entity& v);
+ORES_DQ_CORE_EXPORT std::ostream& operator<<(std::ostream& s, const dataset_dependency_entity& v);
 
 }
 

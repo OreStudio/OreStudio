@@ -26,6 +26,7 @@
 #define ORES_MARKETDATA_CORE_MESSAGING_DEMAND_INTERVAL_REGISTRAR_HPP
 
 #include "ores.database/domain/context_fwd.hpp"
+#include "ores.marketdata.core/export.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/subscription.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
@@ -34,7 +35,7 @@
 
 namespace ores::marketdata::messaging {
 
-std::vector<ores::nats::service::subscription>
+ORES_MARKETDATA_CORE_EXPORT std::vector<ores::nats::service::subscription>
 register_demand_interval_handlers(ores::nats::service::client& nats,
                                   const ores::database::context& ctx,
                                   std::optional<ores::security::jwt::jwt_authenticator> verifier);

@@ -26,10 +26,12 @@
 #define ORES_TRADING_CORE_MESSAGING_LIFECYCLE_EVENT_HISTORY_PROVIDER_REGISTRAR_HPP
 
 #include "ores.history.core/service/dispatch_registry.hpp"
+#include "ores.trading.core/export.hpp"
 
 namespace ores::trading::messaging {
 
-void register_lifecycle_event_history_provider(ores::history::service::dispatch_registry& registry);
+ORES_TRADING_CORE_EXPORT void
+register_lifecycle_event_history_provider(ores::history::service::dispatch_registry& registry);
 
 }
 

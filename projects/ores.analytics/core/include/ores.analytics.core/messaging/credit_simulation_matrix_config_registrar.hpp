@@ -25,6 +25,7 @@
 #ifndef ORES_ANALYTICS_CORE_MESSAGING_CREDIT_SIMULATION_MATRIX_CONFIG_REGISTRAR_HPP
 #define ORES_ANALYTICS_CORE_MESSAGING_CREDIT_SIMULATION_MATRIX_CONFIG_REGISTRAR_HPP
 
+#include "ores.analytics.core/export.hpp"
 #include "ores.database/domain/context_fwd.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/subscription.hpp"
@@ -34,7 +35,8 @@
 
 namespace ores::analytics::messaging {
 
-std::vector<ores::nats::service::subscription> register_credit_simulation_matrix_config_handlers(
+ORES_ANALYTICS_CORE_EXPORT std::vector<ores::nats::service::subscription>
+register_credit_simulation_matrix_config_handlers(
     ores::nats::service::client& nats,
     const ores::database::context& ctx,
     std::optional<ores::security::jwt::jwt_authenticator> verifier);

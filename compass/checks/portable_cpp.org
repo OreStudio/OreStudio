@@ -99,3 +99,7 @@ std::atomic<std::shared_ptr<snapshot>> current_;
 | path | line | rule | expires | approver | reason |
 |------+------+------+---------+----------+--------|
 | projects/ores.service/tests/systemd_notify_tests.cpp | 44 | posix_headers | 2027-05-18 | marco | the include sits under #if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS), which MSVC never defines; the check treats only #if 0 code as dead |
+
+* See also
+
+- [[id:A1D08435-9DCB-4B63-A33F-2E1A87DA62A2][Check inventory]]: every check compass runs here, with this one among them.

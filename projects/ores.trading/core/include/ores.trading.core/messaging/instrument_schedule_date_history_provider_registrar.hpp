@@ -26,10 +26,11 @@
 #define ORES_TRADING_CORE_MESSAGING_INSTRUMENT_SCHEDULE_DATE_HISTORY_PROVIDER_REGISTRAR_HPP
 
 #include "ores.history.core/service/dispatch_registry.hpp"
+#include "ores.trading.core/export.hpp"
 
 namespace ores::trading::messaging {
 
-void register_instrument_schedule_date_history_provider(
+ORES_TRADING_CORE_EXPORT void register_instrument_schedule_date_history_provider(
     ores::history::service::dispatch_registry& registry);
 
 }

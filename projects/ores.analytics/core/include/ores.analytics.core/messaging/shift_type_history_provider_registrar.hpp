@@ -25,11 +25,13 @@
 #ifndef ORES_ANALYTICS_CORE_MESSAGING_SHIFT_TYPE_HISTORY_PROVIDER_REGISTRAR_HPP
 #define ORES_ANALYTICS_CORE_MESSAGING_SHIFT_TYPE_HISTORY_PROVIDER_REGISTRAR_HPP
 
+#include "ores.analytics.core/export.hpp"
 #include "ores.history.core/service/dispatch_registry.hpp"
 
 namespace ores::analytics::messaging {
 
-void register_shift_type_history_provider(ores::history::service::dispatch_registry& registry);
+ORES_ANALYTICS_CORE_EXPORT void
+register_shift_type_history_provider(ores::history::service::dispatch_registry& registry);
 
 }
 

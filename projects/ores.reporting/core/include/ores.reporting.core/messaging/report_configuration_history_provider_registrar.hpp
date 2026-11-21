@@ -26,11 +26,12 @@
 #define ORES_REPORTING_CORE_MESSAGING_REPORT_CONFIGURATION_HISTORY_PROVIDER_REGISTRAR_HPP
 
 #include "ores.history.core/service/dispatch_registry.hpp"
+#include "ores.reporting.core/export.hpp"
 
 namespace ores::reporting::messaging {
 
-void register_report_configuration_history_provider(
-    ores::history::service::dispatch_registry& registry);
+ORES_REPORTING_CORE_EXPORT void
+register_report_configuration_history_provider(ores::history::service::dispatch_registry& registry);
 
 }
 

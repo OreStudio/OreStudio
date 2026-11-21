@@ -440,3 +440,4 @@ None here: the codecs' cases are their tests, in compass's
   =ore_renderings.json=, =ore_parameter_vocabularies.json= and
   =curve_value_set_curation.json=, the extracted and curated JSON the codecs
   also read.
+- [[id:A1D08435-9DCB-4B63-A33F-2E1A87DA62A2][Check inventory]]: every check compass runs here, with this one among them.

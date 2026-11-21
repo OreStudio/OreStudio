@@ -654,3 +654,7 @@ when its type sheds fields; remove it when the type is at or under fifteen.
 
 | path | line | rule | expires | approver | reason |
 |------+------+------+---------+----------+--------|
+
+* See also
+
+- [[id:A1D08435-9DCB-4B63-A33F-2E1A87DA62A2][Check inventory]]: every check compass runs here, with this one among them.

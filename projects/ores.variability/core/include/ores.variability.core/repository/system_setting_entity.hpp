@@ -28,6 +28,7 @@
 #include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
+#include "ores.variability.core/export.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <optional>
@@ -90,7 +91,8 @@ struct system_setting_entity {
     }
 };
 
-std::ostream& operator<<(std::ostream& s, const system_setting_entity& v);
+ORES_VARIABILITY_CORE_EXPORT std::ostream& operator<<(std::ostream& s,
+                                                      const system_setting_entity& v);
 
 }
 

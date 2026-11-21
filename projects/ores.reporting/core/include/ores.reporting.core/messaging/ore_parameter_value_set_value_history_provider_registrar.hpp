@@ -26,10 +26,11 @@
 #define ORES_REPORTING_CORE_MESSAGING_ORE_PARAMETER_VALUE_SET_VALUE_HISTORY_PROVIDER_REGISTRAR_HPP
 
 #include "ores.history.core/service/dispatch_registry.hpp"
+#include "ores.reporting.core/export.hpp"
 
 namespace ores::reporting::messaging {
 
-void register_ore_parameter_value_set_value_history_provider(
+ORES_REPORTING_CORE_EXPORT void register_ore_parameter_value_set_value_history_provider(
     ores::history::service::dispatch_registry& registry);
 
 }

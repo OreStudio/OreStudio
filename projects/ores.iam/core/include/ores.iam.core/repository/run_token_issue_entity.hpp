@@ -27,6 +27,7 @@
 
 #include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
+#include "ores.iam.core/export.hpp"
 #include <chrono>
 #include <optional>
 #include <ostream>
@@ -78,7 +79,7 @@ struct run_token_issue_entity {
     }
 };
 
-std::ostream& operator<<(std::ostream& s, const run_token_issue_entity& v);
+ORES_IAM_CORE_EXPORT std::ostream& operator<<(std::ostream& s, const run_token_issue_entity& v);
 
 }
 

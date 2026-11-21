@@ -26,11 +26,12 @@
 #define ORES_SYNTHETIC_CORE_MESSAGING_FX_SPOT_FIXING_ITEM_HISTORY_PROVIDER_REGISTRAR_HPP
 
 #include "ores.history.core/service/dispatch_registry.hpp"
+#include "ores.synthetic.core/export.hpp"
 
 namespace ores::synthetic::messaging {
 
-void register_fx_spot_fixing_item_history_provider(
-    ores::history::service::dispatch_registry& registry);
+ORES_SYNTHETIC_CORE_EXPORT void
+register_fx_spot_fixing_item_history_provider(ores::history::service::dispatch_registry& registry);
 
 }
 

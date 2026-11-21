@@ -74,3 +74,20 @@ begin
         'Correct a statement ORE''s library states with no semicolon');
 end;
 $$;
+
+-- The backward loop rolls the values back only to the first barrier monitoring
+-- date, so a trade monitored from a later date fails at the sum on TODAY. ORE's
+-- own GenericBarrierOption class rolls them back to TODAY first, as here.
+do $$
+begin
+    perform pg_temp.correct_script_variant(
+        'GenericBarrierOption', 'FD',
+        '        END;' || chr(10) || chr(10) || chr(9) || 'rebate = rebate + (',
+        '        END;' || chr(10) || chr(10)
+            || '        rebate = NPV(rebate, TODAY);' || chr(10)
+            || '        R_V = NPV(R_V, TODAY);' || chr(10)
+            || '        V_V = NPV(V_V, TODAY);' || chr(10)
+            || chr(9) || 'rebate = rebate + (',
+        'Roll the FD values back to TODAY before their sum, as ORE''s own class does');
+end;
+$$;

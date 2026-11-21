@@ -29,6 +29,7 @@
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_string.hpp>
+#include <charconv>
 #include <chrono>
 #include <format>
 #include <map>
@@ -1951,6 +1952,7 @@ TEST_CASE("every_product_with_a_recipe_has_a_twin_over_its_library_script", "[tr
         {"EquityBasketVarianceSwap", "BasketVarianceSwap"},
         {"EquityBestEntryOption", "BestEntryOption"},
         {"EquityForwardVolatilityAgreement", "ForwardVolatilityAgreement"},
+        {"EquityGenericBarrierOption", "GenericBarrierOption"},
         {"EquityPairwiseVarianceSwap", "PairwiseVarianceSwap"},
         {"EquityWindowBarrierOption", "WindowBarrierOption"},
         {"EquityRainbowOption", "MaxRainbowOption"},
@@ -1958,6 +1960,7 @@ TEST_CASE("every_product_with_a_recipe_has_a_twin_over_its_library_script", "[tr
         {"FxBasketVarianceSwap", "BasketVarianceSwap"},
         {"FxBestEntryOption", "BestEntryOption"},
         {"FxForwardVolatilityAgreement", "ForwardVolatilityAgreement"},
+        {"FxGenericBarrierOption", "GenericBarrierOption"},
         {"FxPairwiseVarianceSwap", "PairwiseVarianceSwap"},
         {"FxWindowBarrierOption", "WindowBarrierOption"},
         {"FxWorstOfBasketSwap", "WorstOfBasketSwap"},
@@ -2348,6 +2351,91 @@ TEST_CASE("a_window_barrier_twin_states_its_barrier_as_the_code_its_script_reads
                   native.instruments.instrument_barrier_levels[0].level.to_string());
             // No premium is stated, so the twin pays none.
             CHECK(value_of("PremiumAmount") == "0");
+            ++seen;
+        }
+    }
+    CHECK(seen > 0u);
+}
+
+TEST_CASE("a_target_business_day_skips_weekends_and_the_target_holidays", "[trade_population]") {
+    using namespace std::chrono;
+    using ores::synthetic::service::target_business_day;
+    // A business day stays.
+    CHECK(target_business_day(year{2027} / March / 25) == year{2027} / March / 25);
+    // A Saturday and a Sunday go to the Monday.
+    CHECK(target_business_day(year{2029} / December / 1) == year{2029} / December / 3);
+    CHECK(target_business_day(year{2029} / December / 2) == year{2029} / December / 3);
+    // Good Friday 2027 goes past the weekend and Easter Monday to the Tuesday.
+    CHECK(target_business_day(year{2027} / March / 26) == year{2027} / March / 30);
+    CHECK(target_business_day(year{2027} / March / 29) == year{2027} / March / 30);
+    // Easter 2030 falls on 21 April.
+    CHECK(target_business_day(year{2030} / April / 19) == year{2030} / April / 23);
+    CHECK(target_business_day(year{2030} / January / 1) == year{2030} / January / 2);
+    CHECK(target_business_day(year{2029} / May / 1) == year{2029} / May / 2);
+    // Christmas Day and Boxing Day on weekdays close two days together.
+    CHECK(target_business_day(year{2029} / December / 25) == year{2029} / December / 27);
+}
+
+TEST_CASE("a_generic_barrier_twin_states_its_codes_and_expires_on_a_business_day",
+          "[trade_population]") {
+    std::size_t seen = 0;
+    for (auto scope : {equity_scope(), fx_scope()}) {
+        scope.trades_per_book = 64;
+        const auto plan = plan_of(scope);
+        for (const auto& native : plan.slots) {
+            if (!native.trade_type_code.ends_with("GenericBarrierOption"))
+                continue;
+            INFO("trade type " << native.trade_type_code);
+            const auto twin = ores::synthetic::service::scripted_twin_of(native);
+            REQUIRE(twin.has_value());
+            const auto& rows = twin->instruments;
+            const auto parameter = [&](const char* name) {
+                const auto p = std::ranges::find_if(rows.scripted_parameters,
+                                                    [&](const auto& p) { return p.name == name; });
+                REQUIRE(p != rows.scripted_parameters.end());
+                return *p;
+            };
+            const auto values_of = [&](const char* name) {
+                const auto owner = parameter(name).sequence_number;
+                std::vector<std::string> out;
+                for (const auto& v : rows.scripted_parameter_values)
+                    if (v.parameter_sequence_number == owner)
+                        out.push_back(v.value);
+                return out;
+            };
+            REQUIRE(native.instruments.instrument_barriers.size() == 1u);
+            const auto& barrier = native.instruments.instrument_barriers[0];
+            const std::map<std::string, std::string> code_of = {
+                {"DownAndIn", "1"}, {"UpAndIn", "2"}, {"DownAndOut", "3"}, {"UpAndOut", "4"}};
+            CHECK(values_of("BarrierTypes") ==
+                  std::vector<std::string>{code_of.at(barrier.barrier_type)});
+            CHECK(values_of("BarrierRebatePayTimes") == std::vector<std::string>{"1"});
+            CHECK(parameter("PayoffType").value == "0");
+            CHECK(parameter("KikoType").value == "1");
+            CHECK(parameter("TransatlanticBarrierType").value == "0");
+            REQUIRE(native.instruments.instrument_barrier_levels.size() == 1u);
+            CHECK(values_of("BarrierLevels") ==
+                  std::vector<std::string>{
+                      native.instruments.instrument_barrier_levels[0].level.to_string()});
+            CHECK(values_of("BarrierRebates") == std::vector<std::string>{"0"});
+            CHECK(parameter("BarrierRebate").value == "0");
+            CHECK(parameter("TransatlanticBarrierLevel").value == "0");
+
+            // ORE moves the native's expiry off a holiday and the script does not.
+            const auto expiry = parameter("ExpiryDate").value.value_or("");
+            REQUIRE(expiry.size() == 10u);
+            const auto number = [&](std::size_t at, std::size_t length) {
+                int out = 0;
+                const auto* first = expiry.data() + at;
+                REQUIRE(std::from_chars(first, first + length, out).ec == std::errc{});
+                return out;
+            };
+            const int y = number(0, 4);
+            const auto m = static_cast<unsigned>(number(5, 2));
+            const auto d = static_cast<unsigned>(number(8, 2));
+            const std::chrono::year_month_day date{
+                std::chrono::year{y}, std::chrono::month{m}, std::chrono::day{d}};
+            CHECK(ores::synthetic::service::target_business_day(date) == date);
             ++seen;
         }
     }

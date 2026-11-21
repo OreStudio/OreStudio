@@ -8,7 +8,7 @@
 #+filetags: :hold_every_product_type_the_engine_supports:sprint_30:v0:
 #+owner: marco
 #+branch: feature/generate-every-product-in-both-forms
-#+pr: 4935
+#+pr: 4937
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-15
@@ -26,11 +26,11 @@ Every product ORE carries in both forms is booked in both: once as its own eleme
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-15                               |
 
 * Acceptance
@@ -76,34 +76,44 @@ code changing, and the reader of a bare number cannot tell which tree it came
 from. Where the raw output matters, put it in an =evidence/= file beside the
 task and name that file in the Command column.
 
-| What | Value | Command | Commit |
-|------+-------+---------+--------|
-|      |       |         |        |
+| What                                                  | Value               | Command                                                                                                               | Commit     |
+|-------------------------------------------------------+---------------------+-----------------------------------------------------------------------------------------------------------------------+------------|
+| Products with a scripted form that have a twin recipe | 17 of 17            | count the codes of the =Scripted twin recipes= and =Scripted forms= tables in =ores.trading.trade_type_catalogue.org= | d89d152919 |
+| Recipe rows                                           | 232                 | the same count, by row                                                                                                | d89d152919 |
+| Twins in the recorded population                      | 34, two per product | count =ScriptName= in =ScriptedTrade.xml=, less the two native AsianBasketOption trades                               | d89d152919 |
+| Generic barrier pairs equal by NPV under FD           | 4 of 4              | ORE on the recorded natives and twins, with the corrected library                                                     | d89d152919 |
+| ores.synthetic.core.tests with ORE                    | 161 of 161          | =ores.synthetic.core.tests= after a fresh =db recreate=                                                               | d89d152919 |
 
 * Notes
 
 ** The generic barrier options and the FD variant of their script
 
-A recipe for EquityGenericBarrierOption and FxGenericBarrierOption was written
-and run, then held back. The engine run prices the =SingleAssetOptionBwd= tag
-with FD, so ORE runs the =FD= variant of the library's GenericBarrierOption
-script, and every twin failed there:
+The engine run prices the =SingleAssetOptionBwd= tag by FD, so ORE runs the
+=FD= variant of the library's GenericBarrierOption script. Every twin failed
+there at first:
 
 - With barrier monitoring dates that start after the as-of date: "RandomVariable:
   inconsistent times 0 and 0.558904 at L124 ... PAY( LongShort * BarrierRebate,
-  TODAY, SettlementDate, ...) - R_V". The backward loop rolls R_V back only to
-  the first monitoring date, not to today.
-- With an expiry on a holiday (2029-12-02, a Sunday) before the last adjusted
-  monitoring date: "AssetModel::npv(): can not roll back from t1= 4.81096 to
-  t0= 4.8137".
+  TODAY, SettlementDate, ...) - R_V". The backward loop rolls its values back
+  only to the first monitoring date, not to today.
+- With an expiry on a holiday (2029-12-02, a Sunday): "AssetModel::npv(): can
+  not roll back from t1= 4.81096 to t0= 4.8137". The monitoring schedule ends on
+  the adjusted date, after the expiry the twin states.
 
-The native trades price on the same engine, so ORE's own GenericBarrierOption
-class does not run this library code as the twin states it. With the engine set
-to MC for the tag, all four twins priced with no error, and each NPV equalled
-its native's exactly (for example -4772.758430 EUR and 19702.508881 USD), so
-the recipe itself was right. The open choice is how to book these twins under
-the FD engine: correct the FD variant of the script in the library seed, roll
-the twin's dates as ORE's native class does, or price the twins' tag by MC.
+ORE's own class (=OREData/ored/portfolio/genericbarrieroption.cpp=) does two
+things the library does not. Its FD script rolls =rebate=, =R_V= and =V_V= back
+to =TODAY= before their sum, and in C++ it moves an expiry off a holiday as the
+schedule moves its end. Decided with the user on 2026-11-21: correct the
+library's FD script. =trading_script_library_corrections_populate.sql= adds the
+three roll-backs. The twin cannot adjust a date with no calendar, so the
+planner books both natives' expiry on a TARGET business day, where ORE moves
+nothing and the two forms agree. ORE's adjustment of a holiday expiry is
+therefore not exercised by the generated natives.
+
+Under FD each of the four twins prices to its native's NPV exactly:
+-6406.610780 EUR, 19238.214040 USD, -3.550129 USD and 0 USD. The zero is a put
+on .NDX whose up-and-out barrier, 1476.61, is far below the index, so both
+forms knock out at once.
 
 ** The pairwise variance swaps: a derived lag and an unlimited payoff
 
@@ -164,6 +174,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4937][#4937]] | [synthetic] Twin the generic barrier options; correct the FD script |
 | [[https://github.com/OreStudio/OreStudio/pull/4935][#4935]] | [trading] Name the product builders' helpers after their families |
 | [[https://github.com/OreStudio/OreStudio/pull/4930][#4930]] | [synthetic] Twin the FX worst-of basket swap; correct its library script |
 | [[https://github.com/OreStudio/OreStudio/pull/4919][#4919]] | [synthetic] Twin the pairwise variance swaps |
@@ -211,17 +222,37 @@ via its "Verifies task" field.
 | 4930.6 | No test of column[0] or an index past the end | tests | Declined | The source test already checks both. |
 | 4935.1 | fx_builders.cpp still calls add_underlying | fx_builders.cpp | Declined | It is one inline function in fx_builder_rows.hpp, with external linkage, so a unity build sees one definition. |
 | 4935.2 | The new names are not uniform | builders | Declined | Each name follows the prefix its file already uses, such as barrier_product_positive and worst_of_positive. |
+| 4937.1 | FX settlement can fall before the moved expiry | trade_population_planner.cpp | Declined | The FX generic barrier native states no settlement date, so the twin falls back to the moved expiry. |
+| 4937.2 | The test does not check the TARGET holidays | tests | Accepted | target_business_day is declared in the header and tested on weekends, two Easters, New Year, Labour Day and Christmas. |
+| 4937.3 | std::chrono::parse is not portable | tests | Accepted | The test parses the date with std::from_chars; compass-ng refuses sscanf as deprecated under MSVC. |
+| 4937.4 | The SQL correction depends on exact whitespace | trading_script_library_corrections_populate.sql | Declined | A missing match raises and fails the load; it does not pass silently. The inserted lines use the spaces of the lines around them. |
+| 4937.5 | Regenerate the hand-edited SQL after the release | create SQL | Deferred | To run once the compass-ng release is in; the order of the C++ table does not matter to the check. |
+| 4937.6 | The transforms table is packed three per line | script_twin_recipes.hpp | Declined | It is clang-format's layout of the generated header, not a hand layout. |
+| 4937.7 | target_business_day(end) is called twice | trade_population_planner.cpp | Accepted | The equity planner computes it once. |
+| 4937.8 | Levels and rebates are not tested | tests | Accepted | The twin test checks BarrierLevels, BarrierRebates, BarrierRebate and TransatlanticBarrierLevel. |
 
 * Result
 
-First PR: the machinery and the first recipes. The catalogue's =Scripted twin
-recipes= table states, for each product with a scripted form, where each input
-of its script takes its value from in the native trade's rows. The generator
-script =generate_script_twins.py= joins it with the mined script inputs, refuses
-a recipe that misses or invents an input, and writes the seed of the new
-=script_twin_inputs= reference table and the table the trade generator compiles
-in. One evaluator reads a recipe over the native trade's rows through their
-wire fields, and the FX and equity planners book each such product again as its
-generic ScriptedTrade through the scripted trade builder. The equity and FX
-basket and rainbow options are twinned: the twins book, export, and ORE builds
-them with no error of the trade kind. The remaining products' recipes follow.
+Every product ORE carries in both forms is now booked in both. The catalogue's
+=Scripted twin recipes= table states a recipe for each of the 17 products in its
+=Scripted forms= table, 232 rows in all, and =generate_script_twins.py= turns it
+into the =script_twin_inputs= seed and the table the trade generator compiles in.
+The FX and equity planners book each native trade a second time as its generic
+ScriptedTrade through the scripted builder, so the recorded population holds 34
+twins, two per product.
+
+The recipe grammar grew with the products: a fallback (=a or b=), a list
+(=a and b=), a selector (=COL[n]=), a whole schedule, a schedule derived from
+another input (=based on=, =shifted=), and transforms from the native's words to
+the script's codes. The generator and the runtime refuse the same malformed
+recipes.
+
+Two scripts of ORE's library do not run as ORE ships them: WorstOfBasketSwap
+does not parse, and the FD variant of GenericBarrierOption rolls back only to its
+first monitoring date. =trading_script_library_corrections_populate.sql= corrects
+each after the seed, and fails the load if ORE changes the text it corrects.
+
+Where this task compared the two forms by NPV, the four generic barrier pairs
+are equal under FD, and the worst-of swaps differ by 0.6% and 3% for the reasons
+the notes give. The full comparison of every pair is the next task. The pairwise variance
+swaps have no native engine, so their twins are checked only to price.

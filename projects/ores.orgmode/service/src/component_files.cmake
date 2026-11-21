@@ -25,6 +25,7 @@ set(files
     "config/options.cpp"
     "config/parser.cpp"
     "main.cpp"
+    "messaging/knowledge_page_event_registrar.cpp"
 )
 
 # The headers are listed for the install and IDE targets.
@@ -36,5 +37,6 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.orgmode.service/config/parser.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.orgmode.service/config/parser_exception.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.orgmode.service/export.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.orgmode.service/messaging/knowledge_page_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.orgmode.service/ores.orgmode.service.hpp"
 )

@@ -12,7 +12,7 @@
 #+full_name: ores.orgmode
 #+brief: Org-mode parsing and the knowledge service
 #+component_kind: composite
-#+parts: parser
+#+parts: api core parser service
 
 * Diagram
 

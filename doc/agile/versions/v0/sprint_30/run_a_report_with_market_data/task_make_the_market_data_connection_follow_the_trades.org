@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :run_a_report_with_market_data:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/make-the-market-data-connection-follow-the-trades
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -47,7 +47,7 @@ repeating it. Both live in this story's =evidence/= directory:
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:0E718054-03B7-43A5-9289-61E505235BBD][Run a report on the generated trades with the market data they need]] |
 | Now          | Scaffolded. The chain is stated and measured; no code changed. |
 | Waiting on   | Nothing.                               |

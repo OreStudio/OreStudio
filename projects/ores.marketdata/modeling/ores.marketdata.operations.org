@@ -3526,6 +3526,23 @@ reads, so the engine can be handed the file its run document names.
  */
 #+end_src
 
+*** requirements
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The oresmd addresses the run needs, or empty for every series of the tenant.
+ *
+ * A run gathers the market data its trade set resolves to, so the body carries the series
+ * that answer those addresses and no others. An address no series answers fails the export
+ * and is named, because a run that quietly lacks a quote fails much later, in an engine that
+ * can only report a curve it could not build. An empty list keeps the whole-tenant export,
+ * which is what a caller that names no set still needs.
+ */
+#+end_src
+
 ** export_market_data_to_storage_response
 
 *** success

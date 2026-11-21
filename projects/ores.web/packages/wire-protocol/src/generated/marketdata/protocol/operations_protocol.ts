@@ -1251,6 +1251,16 @@ export interface ExportMarketDataToStorageRequest {
      * these datums.
      */
     max_age_days: number | null;
+    /**
+     * @brief The oresmd addresses the run needs, or empty for every series of the tenant.
+     *
+     * A run gathers the market data its trade set resolves to, so the body carries the series
+     * that answer those addresses and no others. An address no series answers fails the export
+     * and is named, because a run that quietly lacks a quote fails much later, in an engine that
+     * can only report a curve it could not build. An empty list keeps the whole-tenant export,
+     * which is what a caller that names no set still needs.
+     */
+    requirements: string[];
 }
 
 export interface ExportMarketDataToStorageResponse {

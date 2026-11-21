@@ -29,6 +29,7 @@
 #include "ores.marketdata.core/repository/fx_vol_surface_publish_repository.hpp"
 #include "ores.marketdata.core/repository/market_observation_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
+#include "ores.marketdata.core/repository/requirement_coverage_repository.hpp"
 #include "ores.marketdata.core/repository/tick_coords_repository.hpp"
 #include "ores.marketdata.core/service/import_service.hpp"
 #include "ores.marketdata.core/service/ore_export_service.hpp"
@@ -50,6 +51,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <iterator>
+#include <set>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -791,4 +793,98 @@ TEST_CASE("an_export_with_no_party_writes_every_series_of_its_tenant", "[service
     const auto chosen =
         ores::marketdata::service::series_to_export(series, own.tenant_id, std::nullopt);
     CHECK(chosen_uris(chosen) == std::vector<std::string>{world_sonia, world_estr});
+}
+
+TEST_CASE("a narrowed export writes the series that answer the run's requirements",
+          "[service][ore_export]") {
+    auto lg(make_logger(test_suite));
+
+    /*
+     * A run gathers the market data its trade set resolves to, so the export is narrowed to
+     * the addresses that set named. The selection keeps the party's own series for each of
+     * them and, for a fixing, the world's series of an index the party holds none of, which
+     * is the rule an unnarrowed export applies to every series it reads.
+     */
+    const auto party = boost::uuids::random_generator{}();
+    const auto other = boost::uuids::random_generator{}();
+
+    const std::string eur_swap =
+        "oresmd://ir/EUR?type=series&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D";
+    const std::string gbp_swap =
+        "oresmd://ir/GBP?type=series&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D";
+    const std::string sonia_fixing = "oresmd://ir/GBP?type=fixing&index=ibor&name=SONIA";
+    const std::string libor_fixing = "oresmd://ir/GBP?type=fixing&index=ibor&name=LIBOR&tenor=6M";
+
+    std::vector<ores::marketdata::domain::market_series> series{
+        series_of(party, false, eur_swap),
+        series_of(party, false, gbp_swap),
+        // The world's fixings sit in the system tenant, as the public sources write them.
+        series_of(other, true, sonia_fixing),
+        series_of(other, true, libor_fixing)};
+
+    const auto uris = [](const std::vector<const ores::marketdata::domain::market_series*>& v) {
+        std::vector<std::string> out;
+        for (const auto* s : v)
+            out.push_back(s->oresmd_uri);
+        return out;
+    };
+
+    // One quote and one fixing: the party's own quote, and the world's fixing it holds none of.
+    const std::set<std::string> required{gbp_swap, sonia_fixing};
+    const auto narrowed = ores::marketdata::service::series_to_export(
+        series, ores::utility::uuid::tenant_id::system(), party, required);
+    CHECK(uris(narrowed) == std::vector<std::string>{gbp_swap, sonia_fixing});
+
+    // A fixing the party holds its own series of is written from the party, not the world.
+    const std::set<std::string> also_libor{libor_fixing};
+    const auto libor = ores::marketdata::service::series_to_export(
+        series, ores::utility::uuid::tenant_id::system(), party, also_libor);
+    CHECK(uris(libor) == std::vector<std::string>{libor_fixing});
+
+    // No requirement set writes every series the party's export writes, as before.
+    const auto all = ores::marketdata::service::series_to_export(
+        series, ores::utility::uuid::tenant_id::system(), party);
+    CHECK(all.size() == 4);
+}
+
+TEST_CASE("a requirement the market cannot answer is reported unanswered",
+          "[service][ore_export][coverage]") {
+    auto lg(make_logger(test_suite));
+
+    /*
+     * The export refuses a run whose requirements the market cannot answer, so the read that
+     * decides it states, for each address, whether a series answers it. The party's own series
+     * answers; an address no series of the party holds is reported unanswered rather than
+     * dropped, which is what lets the export name it.
+     */
+    export_tenant t;
+    ores::testing::database_helper h;
+    auto gen_ctx = ores::testing::make_generation_context(h);
+    auto party = ores::refdata::generators::generate_synthetic_party(gen_ctx);
+    party.tenant_id = t.ctx.tenant_id();
+    for (const auto& existing : ores::refdata::repository::party_repository().read_latest(t.ctx)) {
+        party.parent_party_id = existing.id;
+        break;
+    }
+    ores::refdata::repository::party_repository{}.write(t.ctx, party);
+    t.ctx = t.ctx.with_party(t.ctx.tenant_id(), party.id, {party.id}, t.ctx.actor());
+
+    const std::string held = "oresmd://fx/EUR?type=series&instrument=fx_spot&quote=rate&ccy=USD";
+    write_fx_row(
+        t, held, "oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD", "1.10");
+
+    const std::string unanswered =
+        "oresmd://fx/EUR?type=series&instrument=fx_spot&quote=rate&ccy=JPY";
+    ores::marketdata::repository::requirement_coverage_repository repo;
+    const auto coverage = repo.read(t.ctx, {held, unanswered}, std::nullopt);
+
+    REQUIRE(coverage.size() == 2);
+    const auto answered = [&](const std::string& uri) {
+        for (const auto& one : coverage)
+            if (one.oresmd_uri == uri)
+                return one.answered;
+        return false;
+    };
+    CHECK(answered(held));
+    CHECK(!answered(unanswered));
 }

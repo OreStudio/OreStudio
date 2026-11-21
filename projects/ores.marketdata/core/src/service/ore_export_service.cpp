@@ -152,27 +152,35 @@ std::optional<std::string> fixing_index(const std::string& uri) {
 std::vector<const domain::market_series*>
 series_to_export(const std::vector<domain::market_series>& series,
                  const utility::uuid::tenant_id& tenant,
-                 const std::optional<boost::uuids::uuid>& party) {
+                 const std::optional<boost::uuids::uuid>& party,
+                 const std::optional<std::set<std::string>>& requirement_uris) {
+    // A run that names its requirements writes only the series that answer them. The
+    // narrowing is applied to every candidate, so the choice between the party's own fixing
+    // series and the world's is made over the required ones alone.
+    const auto wanted = [&requirement_uris](const domain::market_series& s) {
+        return !requirement_uris || requirement_uris->contains(s.oresmd_uri);
+    };
     std::vector<const domain::market_series*> out;
     if (!party) {
         for (const auto& s : series)
-            if (s.tenant_id == tenant)
+            if (s.tenant_id == tenant && wanted(s))
                 out.push_back(&s);
         return out;
     }
     std::set<std::string> held;
     for (const auto& s : series)
-        if (s.party_id == *party)
+        if (s.party_id == *party && wanted(s))
             if (const auto index = fixing_index(s.oresmd_uri))
                 held.insert(*index);
     std::set<std::string> world;
     for (const auto& s : series) {
         // A party id belongs to one tenant, so the party's series need no tenant check.
         if (s.party_id == *party) {
-            out.push_back(&s);
+            if (wanted(s))
+                out.push_back(&s);
             continue;
         }
-        if (!s.tenant_id.is_system())
+        if (!s.tenant_id.is_system() || !wanted(s))
             continue;
         const auto index = fixing_index(s.oresmd_uri);
         if (index && !held.contains(*index) && world.insert(*index).second)
@@ -181,8 +189,10 @@ series_to_export(const std::vector<domain::market_series>& series,
     return out;
 }
 
-ore_export_result ore_export_service::write_all(const std::optional<std::string>& valuation_date,
-                                                const std::optional<int>& max_age_days) const {
+ore_export_result
+ore_export_service::write_all(const std::optional<std::string>& valuation_date,
+                              const std::optional<int>& max_age_days,
+                              const std::optional<std::set<std::string>>& requirement_uris) const {
     if (max_age_days && *max_age_days < 0)
         throw std::invalid_argument("market data export: the limit of " +
                                     std::to_string(*max_age_days) + " days is negative");
@@ -217,10 +227,11 @@ ore_export_result ore_export_service::write_all(const std::optional<std::string>
     repository::market_fixing_repository fixings_repo;
     repository::fx_vol_surface_publish_repository surface_repo;
 
-    const auto series = series_repo.read_latest(ctx_);
-    ORES_LOG_SEV(lg(), info) << "market data export: read " << series.size() << " series in "
+    const auto all_series = series_repo.read_latest(ctx_);
+    ORES_LOG_SEV(lg(), info) << "market data export: read " << all_series.size() << " series in "
                              << lapped() << " ms"
                              << (date ? ", valuing at the close of the day" : ", with no date");
+
 
     // One read for the tenant answers every series, because a read for each series
     // pays the planner once for every chunk of the observation and tick tables.
@@ -257,7 +268,8 @@ ore_export_result ore_export_service::write_all(const std::optional<std::string>
     std::map<std::pair<boost::uuids::uuid, boost::uuids::uuid>, std::vector<std::string>>
         fixing_series;
     std::map<boost::uuids::uuid, utility::uuid::tenant_id> tenants;
-    const auto exported = series_to_export(series, ctx_.tenant_id(), ctx_.party_id());
+    const auto exported =
+        series_to_export(all_series, ctx_.tenant_id(), ctx_.party_id(), requirement_uris);
     const auto exported_series = static_cast<int>(exported.size());
     for (const auto* sp : exported) {
         const auto& s = *sp;

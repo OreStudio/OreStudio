@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/serve-the-grid-views
+#+pr: 4955
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
 #+updated: 2026-11-09
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ Serve these composed views from ores.compute: the grid series, the grid summary 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-09                               |
+| Now          | Served, gated and proved on a live gateway; waiting on the build and the PR. |
+| Waiting on   | The tree build.                        |
+| Next         | Raise the PR, then merge when main is green. |
+| Last touched | 2026-11-21                               |
 
 * Acceptance
 
@@ -42,9 +42,58 @@ Serve these composed views from ores.compute: the grid series, the grid summary 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The three views are served from =ores.http.compute=, in a new unit beside
+=grid_views=, because the part already answers the grid's resources and the
+inventory names =ores.compute= as their owner. Each view answers one call at the
+BFF's address and in the BFF's shape, and none of them computes: the service
+counts and the gateway joins.
+
+Two boundaries the design says to keep are the whole difficulty of this task,
+and each is decided here rather than discovered later.
+
+*The deployment read.* The BFF asks =installation::deployment:read= on every
+cross-tenant route and re-reads it per call, so a grant taken away stops the next
+request. The gateway has no such gate yet: the three telemetry views it already
+serves lean on the service's own permission instead, which is a wider door than
+the BFF's. The design says to keep this boundary, so the port gains it once, as
+=forwarding::require_deployment_read= beside the other forwarding steps: one
+read of =iam.v1.ops.get_my_roles= as the caller, the codes flattened, and
+=ores::security::authorization::grants= deciding — the one rule the services,
+the BFF and the browser already share. A caller it refuses is answered =403=
+with the BFF's sentence.
+
+*Tenant entry.* The usage view groups by tenant for an operator and by party for
+everyone else. No policy lets the system tenant read another tenant's work, so
+the operator's groups are read the only way the design allows: =enter_tenant=
+mints a session for each tenant, the gateway reads that tenant's usage with it,
+and a tenant that cannot be entered or read is carried as =unavailable= rather
+than as a tenant that runs nothing. The tenants are read from
+=iam.v1.tenants.list= with the automation tenants left out, as the BFF leaves
+them out.
+
+The compositions, one read each where they can run together:
+
+| View | Gate | Reads |
+|------+------+-------|
+| the grid summary | the deployment read | =get_grid_stats=, =hosts.list=, the service roster |
+| the grid series | the deployment read for an operator; the service's own for a tenant | =get_grid_series= and, for an operator only, =get_node_series= and =hosts.list= |
+| the grid usage | the deployment read for an operator; the service's own for a tenant | =tenants.list= and =get_grid_usage= inside each tenant, or =get_grid_usage= for the caller's own parties |
+
+A session acts on the installation when it is in the system tenant, which is the
+one thing the gateway can tell without reading another service: the BFF's
+=system-administration= mode is that session.
+
+What the views state rather than compute: the summary's =sampled_at= is null when
+the grid has no sample; a series bucket with no sample keeps its place and its
+zeros, and the browser reads =samples= before it draws a value; a tenant that
+cannot be read is unavailable. The cache policies are the inventory's: an ETag
+and ten seconds on the summary and the series, thirty on the usage.
+
+The tests prove what a test can prove without a service behind it: the range the
+series takes, the refusal of a query field, the reach of each read, the shape of
+each answer built from a stated reply, and the ETag with its freshness. The
+deployment read's refusal and the cross-tenant groups are proved on a live
+gateway, as the bus view was, because a test cannot mint an IAM answer.
 
 * Measurements
 
@@ -58,7 +107,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The routes in scope | 3: the summary, the series and the usage | the inventory's pairing table, searched for =/api/operations/grid= | 17275b9609 |
+| What the port owed | 3 of the BFF's 334 unpaired routes | the inventory's * The coverage* | 17275b9609 |
+| What it owes after | 0 of these, and 1400 routes became 1433 | the same table, and =python3 build/scripts/route_inventory.py --check= | 17275b9609 |
+| The suite | 5 cases, 82 assertions | =ores.http.compute.tests "[compute_grid_views]"= | this branch |
 
 * Notes
 
@@ -77,7 +129,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4955][#4955]] | [http,compute] Serve the grid composed views |
 
 * Review
 
@@ -86,3 +138,33 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+* Result
+
+The three views are served from =ores.http.compute= at the BFF's addresses and in
+the BFF's shapes, and none of them computes: the compute service counts and the
+gateway joins.
+
+Two boundaries the design names were the work of the task rather than an
+afterthought.
+
+- *The deployment read is ported once.* =forwarding::require_deployment_read=
+  reads the caller's own codes from =iam.v1.ops.get_my_roles=, re-read at each
+  call, and =ores::security::authorization::grants= decides them, so the gateway
+  states no role table of its own. A tenant's administrator holds =*= and is
+  refused, which is the rule the services and the browser already share.
+- *A tenant is entered, not guessed.* The usage view's tenant groups are read by
+  entering each tenant, and the operation that mints a session reads the caller
+  from the authorization rather than from a delegation, so =forward_as= sends the
+  token as the bearer for those two calls. The session's own tenant is read where
+  it stands, as the BFF reads it.
+
+The live run is in [[file:evidence/grid_views_live_run.txt][evidence/grid_views_live_run.txt]]. The installation's
+administrator reads all three views, with every node joined to its machine, its
+hardware and its runner; a session in one tenant is refused the summary in the
+BFF's sentence and reads its own series and usage, with no machines shown.
+
+Five tests cover what a test can reach without a service behind it: the query
+each view refuses, the range the series takes, the reach of each read, and the
+ETag with the freshness of each view — ten seconds for the summary and the
+series, thirty for the usage.

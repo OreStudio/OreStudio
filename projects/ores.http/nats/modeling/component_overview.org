@@ -77,7 +77,9 @@ its symbols by default and exports the functions its header declares.
 - =ores.history.api= -- one record's versions, read as the caller.
 
 The core profile's baseline links the HTTP, NATS and utility parts; the model
-adds =ores.logging= and =ores.history.api=.
+adds =ores.logging=, =ores.history.api= and =ores.iam.api=. The IAM protocol is
+what the deployment read speaks: the gateway asks IAM which codes the caller
+holds, and =ores::security::authorization::grants= decides them.
 
 * See also
 
@@ -89,6 +91,8 @@ adds =ores.logging= and =ores.history.api=.
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.logging.lib
-        ores.history.api.lib)
+        ores.history.api.lib
+    PRIVATE
+        ores.iam.api.lib)
 #+end_src
 

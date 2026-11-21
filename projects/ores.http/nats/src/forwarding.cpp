@@ -18,9 +18,13 @@
  *
  */
 #include "ores.http.nats/forwarding.hpp"
+#include "ores.iam.api/messaging/authorization_protocol.hpp"
 #include "ores.logging/logger.hpp"
+#include "ores.security/authorization/grants.hpp"
 #include <array>
+#include <string>
 #include <utility>
+#include <vector>
 
 namespace ores::http::forwarding {
 
@@ -40,6 +44,9 @@ ores::nats::service::nats_client caller_client(const ores::http::domain::http_re
 }
 
 using namespace ores::logging;
+
+/// The one code that says a session acts on the deployment rather than on a tenant.
+constexpr std::string_view deployment_read = "installation::deployment:read";
 using ores::http::domain::http_response;
 using ores::http::domain::http_status;
 namespace rr = ores::http::net::record_routes;
@@ -87,6 +94,22 @@ void refuse_undecodable(std::string_view subject, const std::string& detail) {
 
 void refuse_lapsed(const ores::nats::service::session_expired_error& e) {
     rr::refuse(http_status::unauthorized, "session-expired", e.what());
+}
+
+void require_deployment_read(const ores::http::domain::http_request& req,
+                             ores::nats::service::nats_client& session,
+                             std::string_view what) {
+    const auto reply = forward(req, session, ores::iam::messaging::get_my_roles_request{});
+    rr::require_done(reply.result);
+
+    std::vector<std::string> granted;
+    for (const auto& role : reply.roles)
+        granted.insert(granted.end(), role.permission_codes.begin(), role.permission_codes.end());
+    if (ores::security::authorization::grants(granted, deployment_read))
+        return;
+    rr::refuse(http_status::forbidden,
+               "forbidden",
+               std::string(what) + " needs the read of the deployment as a whole.");
 }
 
 http_response unanswered(std::string_view subject, const std::exception& e) {

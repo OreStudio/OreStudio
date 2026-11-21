@@ -503,6 +503,25 @@ RULES = (
          BFF, COMPOSED, "grid",
          "Who uses the grid, the results grouped by tenant or by party with each group's"
          " share, the results read and the party names beside them."),
+    Rule("the grid summary",
+         ("exact", "GET /api/operations/grid"),
+         CPP, COMPOSED, "grid",
+         "The grid summary answered by ores.http at the address and in the shape the BFF"
+         " answered: the newest stored sample, each node with the name of its machine and its"
+         " hardware, and the runner that serves it, kept for the interval a page asks again."),
+    Rule("the grid series",
+         ("exact", "GET /api/operations/grid/series"),
+         CPP, COMPOSED, "grid",
+         "The grid series answered by ores.http at the address and in the shape the BFF"
+         " answered: the counters per bucket, and for an operator one row of buckets per node"
+         " joined onto the host registry, kept for the interval a page asks again."),
+    Rule("the grid usage",
+         ("exact", "GET /api/operations/grid/usage"),
+         CPP, COMPOSED, "grid",
+         "The grid usage answered by ores.http at the address and in the shape the BFF"
+         " answered: a group for each tenant, read by entering each in turn, or for each of"
+         " the caller's parties, with each group's share and a tenant that could not be read"
+         " carried as unavailable."),
     Rule("the message bus",
          ("exact", "GET /api/operations/bus"),
          BFF, COMPOSED, "operations",

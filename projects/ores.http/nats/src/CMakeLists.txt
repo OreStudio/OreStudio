@@ -60,6 +60,8 @@ target_link_libraries(${lib_target_name}
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.logging.lib
-        ores.history.api.lib)
+        ores.history.api.lib
+    PRIVATE
+        ores.iam.api.lib)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

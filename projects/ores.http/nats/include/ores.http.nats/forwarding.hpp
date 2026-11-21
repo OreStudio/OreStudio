@@ -189,6 +189,57 @@ auto forward_all(const ores::http::domain::http_request& req,
 }
 
 /**
+ * @brief Send one canonical request as the holder of a bearer token.
+ *
+ * Most services read the caller from the delegation the forwarding step adds.
+ * One of them cannot: =enter_tenant= reads the caller from the =Authorization=
+ * header, because it is the operation that mints a session, and the tenant reads
+ * that follow run inside the session it minted. This sends the token as the
+ * bearer for those, on the same connection, so the caller's own token and the
+ * entered one are each the authorization the service expects.
+ *
+ * A refusal, a lapsed session or a reply that does not decode is thrown as a
+ * record_routes::refusal.
+ */
+template <typename Request>
+typename Request::response_type
+forward_as(ores::nats::service::nats_client& session, std::string_view token, const Request& msg) {
+    const std::string held(token);
+    ores::nats::service::nats_client bearer(session.transport(), [held](bool) { return held; });
+    try {
+        auto reply =
+            ores::nats::service::authenticated_request_and_decode<typename Request::response_type>(
+                bearer, Request::nats_subject, msg, ores::nats::service::default_request_timeout);
+        if (!reply)
+            refuse_undecodable(Request::nats_subject, reply.error().what());
+        return std::move(*reply);
+    } catch (const ores::nats::service::request_refused_error& e) {
+        refuse_refused(e);
+    } catch (const ores::nats::service::session_expired_error& e) {
+        refuse_lapsed(e);
+    }
+}
+
+/**
+ * @brief Refuse a caller who does not act on the deployment as a whole.
+ *
+ * A cross-tenant read reaches every tenant's rows, so the design keeps the
+ * BFF's boundary: the caller must hold =installation::deployment:read=, read
+ * again at each call so a grant taken away stops the next request. The codes
+ * come from IAM as the caller, and =ores::security::authorization::grants=
+ * decides them, which is the one rule the services, the BFF and the browser
+ * already share.
+ *
+ * A wildcard does not cover an installation code: a tenant's administrator
+ * holds =*=, and the deployment's own read is granted by its name.
+ *
+ * @throws refusal naming @p what and the refusal when the caller lacks it.
+ */
+ORES_HTTP_NATS_EXPORT void require_deployment_read(const ores::http::domain::http_request& req,
+                                                   ores::nats::service::nats_client& session,
+                                                   std::string_view what);
+
+/**
  * @brief The response a failure that is not a refusal states, its detail logged.
  */
 [[nodiscard]] ORES_HTTP_NATS_EXPORT ores::http::domain::http_response

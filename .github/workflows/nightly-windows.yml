@@ -132,7 +132,11 @@ jobs:
         uses: KyleMayes/install-llvm-action@v2
         if: ${{ matrix.compiler == 'clang' }}
         with:
-          version: "20"
+          # The runner image ships an MSVC STL that refuses any compiler older
+          # than Clang 22 (error STL1000 in yvals_core.h), so the toolchain
+          # asked for here has to keep up with it. Bumping this is how the leg
+          # follows the image; pinning it lower fails before our code compiles.
+          version: "22"
           arch: x64
 
       - name: Install NSIS

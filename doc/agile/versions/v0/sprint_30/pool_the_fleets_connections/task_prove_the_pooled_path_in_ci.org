@@ -8,7 +8,7 @@
 #+filetags: :pool_the_fleets_connections:sprint_30:v0:
 #+owner: marco
 #+branch: feature/prove-the-pooled-path-in-ci
-#+pr:
+#+pr: 4962
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-21
@@ -162,7 +162,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4962][#4962]] | [ci] Run the database suite through a transaction pooler |
 
 * Review
 

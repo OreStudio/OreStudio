@@ -126,11 +126,9 @@ All four kinds consume the same model type =component=, read
 from a =component_overview.org= via =load_org_component_overview_model=.
 Full template list is in [[id:08FBD248-257A-A474-DD43-DB08949978F1][ORE Studio Codegen]]§"Profile catalogue".
 
-The codegen-side scaffold flow is exercised by
-[[proj:projects/ores.codegen/tests/component_scaffold/verify.py][=projects/ores.codegen/tests/component_scaffold/verify.py=]] — two
-fixture components (flat + composite) plus prior-art checks
-against =ores.nats= (flat) and =ores.controller= (composite
-group + 3 subs).
+compass-ng's own tests scaffold a flat, a composite and a
+hidden-visibility component; on ORE, =./compass.sh check= proves a new
+component's generated files and its registration.
 
 * Reference
 

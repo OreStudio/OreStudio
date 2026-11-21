@@ -1,0 +1,101 @@
+:PROPERTIES:
+:ID: 336C7CA6-4C22-4062-9414-969CBCDA0C7D
+:END:
+#+title: Task: Retire the component scaffold verifier
+#+description: Delete projects/ores.codegen/tests/component_scaffold (verify.py and its four fixture overviews), which compass-ng's own scaffold tests replace, and update the runbook, skill and codegen overview that named them.
+#+type: task
+#+level: s1
+#+filetags: :move_codegen_and_gates_to_compass_ng:sprint_30:v0:
+#+owner: marco
+#+branch: feature/retire-the-component-scaffold-verifier
+#+pr: 4985
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E3BF90FE-43DF-4A30-9F2C-FF5E20128C88][Move codegen and the gates to compass-ng]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The hand-run verify.py and its fixture components are gone, because compass-ng's own tests scaffold flat, composite and hidden-visibility components and its checks prove a real component's generated files.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:E3BF90FE-43DF-4A30-9F2C-FF5E20128C88][Move codegen and the gates to compass-ng]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-21                               |
+
+* Acceptance
+
+- =projects/ores.codegen/tests/component_scaffold/= is gone.
+- The new-component runbook, the add-component skill and the codegen
+  overview no longer name it.
+- The codegen suite passes and the ratchet reports nothing new.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+- verify.py was run by hand only: no workflow, gate or test called it, and
+  only its own fixtures and three documents named it.
+- compass-ng v0.0.7's tests scaffold a flat, a composite and a
+  hidden-visibility component, and on ORE the codegen and service integrity
+  checks prove a new component's generated files and registration (report
+  item 1.6 of bright_faraday's gate report).
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4985][#4985]] | [codegen] Retire the component scaffold verifier |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+verify.py, its four fixture overviews and the codegen overview's Test fixtures
+section are gone; the runbook and skill point at =./compass.sh check=. The
+codegen suite passes (1663) and the ratchet reports nothing new. This closes
+compass-85's v0.0.7 steps for ORE; the pooler-off form of env_format waits on
+compass v0.0.9.

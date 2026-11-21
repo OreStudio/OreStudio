@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :pool_the_fleets_connections:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/make-the-pool-grow-and-shrink
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -30,11 +30,11 @@ service holds only its floor.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:A75C3063-896F-4DD5-A9BC-893A59EDFF7E][Pool the fleet's connections]] |
-| Now          | Not yet started.                       |
+| Now          | The pool grows, reaps and refuses at its ceiling; the tree builds. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Run the suites the change reaches.     |
 | Last touched | 2026-11-21                               |
 
 * Acceptance
@@ -71,6 +71,50 @@ Sizing is the other half and belongs with
 [[id:06195DFF-0D7C-4298-A0CF-464338CE728E][Size the connection pool and the
 step's lanes together]], which owns the numbers this task only carries.
 
+** What the pool became
+
+=pq::pool= now carries =pool_settings= - a floor, a ceiling and an idle period -
+and its constructor opens the floor under the open policy, as it always did.
+=acquire= takes one of two paths under the lock: it takes an idle connection if
+there is one, and otherwise reserves a slot when =open_ < ceiling= and opens a
+connection outside the lock, so a slow login does not hold the pool for everyone
+else. A reserve that fails gives the slot back and rethrows.
+
+The reap is a thread the pool owns, started only when the ceiling is above the
+floor: it waits on its own condition variable until the oldest idle connection
+has been idle for the period, moves it out, unlocks, closes it, and takes the
+lock again. Closing outside the lock is what keeps a teardown that blocks from
+blocking a lease. A connection above the floor is reaped; the floor never is.
+
+=give_back= stamps the connection as idle now and pushes it to the back, so
+=acquire= takes the hottest and the reaper closes the coldest from the front.
+The wait an acquirer does is on "something is idle, or a slot is free", so a
+caller cannot sleep through a reap that made room.
+
+** What the settings became
+
+=db-pool-size= is gone. Three settings replace it, in the model, in =database_options=,
+in =context_factory::configuration= and in the CLI:
+
+| Setting | Field | Default | Means |
+|---------+-------+---------+-------|
+| =--db-pool-min= | =pool_min= | 2 | the connections the pool keeps |
+| =--db-pool-max= | =pool_max= | 8 | the ceiling a burst may reach |
+| =--db-pool-idle= | =pool_idle= | 30 | seconds an idle connection above the floor lives |
+
+A ceiling below the floor is raised to the floor rather than refused, and a
+non-positive floor or idle period is refused in words at the boundary, as
+=db-pool-size= was.
+
+The single-number form survives at the type level: =pq::pool= has a constructor
+that takes one number and keeps exactly that many, which is what every test that
+says =pool(options, 1)= means.
+
+The .env states all three per service, in =env_init.py=: every service keeps two
+and bursts to eight, the marketdata service bursts to sixteen because it runs two
+provisioning steps with four lanes each, and the gateway bursts to sixteen because
+it serves every HTTP request of the environment. The .env format version is 34.
+
 * Measurements
 
 Every number this task claims about a tree, with the command that produced it
@@ -83,7 +127,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Services whose generated =application.cpp= states the pool | 17 | =grep -rln "db_opts.pool_min" projects/*/service/src/app | wc -l= | on top of 9f30c82fb8 |
+| Remaining references to =pool_size= in the tree | 0 | =grep -rn "pool_size" --include=*.cpp --include=*.hpp --include=*.py projects | grep -v venv | wc -l= | on top of 9f30c82fb8 |
+
+Both were measured on this branch before its own commit existed, so they name
+the commit the branch stands on rather than one that contains the change.
 
 * Notes
 

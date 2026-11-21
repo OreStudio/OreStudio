@@ -47,6 +47,17 @@ outside the pool ([[id:BCD7D253-8B1E-4887-B476-EDD3EDE01BE6][Ticks reach the sto
 *instance* carries is a different number: the pooler's cap for each environment,
 where a pooler stands ([[id:42930B6A-544A-4F7E-ACF4-9ABC60F2B408][The environments share the database through a transaction pooler]]).
 
+** Changing what a service holds
+
+A service states both numbers in its environment, as
+=ORES_<APP>_DB_POOL_MIN=, =ORES_<APP>_DB_POOL_MAX= and
+=ORES_<APP>_DB_POOL_IDLE=, which set the floor, the ceiling and the idle period
+in seconds. The floor defaults to two, the ceiling to eight, and the idle
+period to thirty seconds, so a service that states nothing holds two idle
+connections and bursts no wider than eight. A service whose work grows states a
+larger ceiling and changes no code; a service asked to hold fewer connections
+lowers its floor, which is the number an idle process keeps.
+
 ** When a connection breaks
 
 The pool replaces a broken connection in the background. The transaction that

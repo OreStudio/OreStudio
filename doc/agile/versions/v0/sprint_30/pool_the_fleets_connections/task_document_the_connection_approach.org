@@ -8,7 +8,7 @@
 #+filetags: :pool_the_fleets_connections:sprint_30:v0:
 #+owner: marco
 #+branch: feature/document-the-connection-approach
-#+pr:
+#+pr: 4936
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-21
@@ -100,7 +100,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4936][#4936]] | [docs] State the connection approach as it is meant to be |
 
 * Review
 

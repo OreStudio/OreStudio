@@ -21,6 +21,7 @@
 #define ORES_DQ_CORE_MESSAGING_PUBLISH_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
+#include "ores.database/service/tenant_context.hpp"
 #include "ores.dq.api/messaging/publish_bundle_protocol.hpp"
 #include "ores.dq.api/messaging/publish_datasets_protocol.hpp"
 #include "ores.dq.api/messaging/publish_params.hpp"
@@ -171,6 +172,46 @@ public:
 
         try {
             service::publish_service svc(ctx);
+
+            // The level decides the target tenant. A platform or world bundle
+            // writes into the system tenant once, and a tenant reads those rows
+            // where they lie, so admitting only the system tenant keeps the
+            // second copy the model forbids from ever existing. A tenant bundle
+            // writes into the tenant that asked, which is the caller's.
+            const auto level = svc.bundle_level(req->bundle_code);
+            if (!level) {
+                publish_bundle_response resp;
+                resp.success = false;
+                resp.error_message = "No such bundle: " + req->bundle_code;
+                reply(nats_, msg, resp);
+                return;
+            }
+            const bool shared = *level == "platform" || *level == "world";
+            if (!shared && *level != "tenant") {
+                publish_bundle_response resp;
+                resp.success = false;
+                resp.error_message =
+                    "Bundle " + req->bundle_code + " states an unknown level: " + *level;
+                reply(nats_, msg, resp);
+                return;
+            }
+            if (shared) {
+                const auto caller = boost::uuids::to_string(ctx.tenant_id().to_uuid());
+                if (caller != ores::database::service::tenant_context::system_tenant_id) {
+                    ORES_LOG_SEV(publish_handler_lg(), warn)
+                        << "Refused bundle publish: bundle=" << req->bundle_code
+                        << " level=" << *level << " caller=" << caller;
+                    publish_bundle_response resp;
+                    resp.success = false;
+                    resp.error_message = "Bundle " + req->bundle_code +
+                                         " publishes into the system tenant, and a " + *level +
+                                         " bundle is published only by it. A tenant reads these "
+                                         "rows where they lie.";
+                    reply(nats_, msg, resp);
+                    return;
+                }
+            }
+
             auto entries = svc.list_bundle_publishable_datasets(req->bundle_code);
 
             // A bundle's optional members never publish by default -- only its

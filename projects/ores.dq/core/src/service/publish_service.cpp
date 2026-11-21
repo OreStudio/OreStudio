@@ -450,6 +450,16 @@ publish_service::list_publishable_datasets(const std::vector<boost::uuids::uuid>
     return result;
 }
 
+std::optional<std::string> publish_service::bundle_level(const std::string& bundle_code) {
+    const auto sql = "SELECT level FROM ores_dq_dataset_bundles_tbl "
+                     "WHERE code = $1 AND valid_to = ores_utility_infinity_timestamp_fn()";
+    auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
+        ctx_, sql, {bundle_code}, lg(), std::format("Reading the level of bundle {}", bundle_code));
+    if (rows.empty() || rows.front().empty() || !rows.front().front().has_value())
+        return std::nullopt;
+    return *rows.front().front();
+}
+
 std::vector<bundle_publishable_dataset>
 publish_service::list_bundle_publishable_datasets(const std::string& bundle_code,
                                                   bool resolve_dependencies) {
@@ -465,6 +475,22 @@ publish_service::list_bundle_publishable_datasets(const std::string& bundle_code
     // flag is merged back in afterwards by dataset_id).
     const auto sql = "SELECT dataset_id, optional FROM ores_dq_bundle_datasets_list_fn($1) "
                      "WHERE dataset_id IS NOT NULL ORDER BY display_order";
+
+    // A member whose code names no dataset row is refused rather than skipped:
+    // a silently smaller publish reports success, and the caller has no way to
+    // learn that part of the bundle never ran.
+    const auto missing_sql = "SELECT dataset_code FROM ores_dq_bundle_datasets_list_fn($1) "
+                             "WHERE NOT has_artefacts ORDER BY display_order";
+    auto missing_rows = ores::database::query_builder::execute_parameterized_multi_column_query(
+        ctx_,
+        missing_sql,
+        {bundle_code},
+        lg(),
+        std::format("Listing unresolved bundle members for {}", bundle_code));
+    if (!missing_rows.empty() && missing_rows.front().front().has_value())
+        throw std::runtime_error(std::format("Bundle {} names a dataset that does not exist: {}",
+                                             bundle_code,
+                                             *missing_rows.front().front()));
 
     auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx_, sql, {bundle_code}, lg(), std::format("Listing bundle members for {}", bundle_code));

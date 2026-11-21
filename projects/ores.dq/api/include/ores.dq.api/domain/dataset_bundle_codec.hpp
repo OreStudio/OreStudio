@@ -52,6 +52,7 @@ namespace ores::dq::domain {
         utility::codec::field{"id", &dataset_bundle::id},
         utility::codec::field{"code", &dataset_bundle::code},
         utility::codec::field{"name", &dataset_bundle::name},
+        utility::codec::field{"level", &dataset_bundle::level},
         utility::codec::field{"description", &dataset_bundle::description},
         utility::codec::field{"modified_by", &dataset_bundle::modified_by},
         utility::codec::field{"performed_by", &dataset_bundle::performed_by},

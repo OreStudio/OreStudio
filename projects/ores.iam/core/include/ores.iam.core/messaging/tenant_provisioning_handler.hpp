@@ -1916,7 +1916,6 @@ private:
         dq::messaging::publish_bundle_request req;
         req.bundle_code = bundle_code;
         req.published_by = username;
-        req.atomic = true;
         req.params_json = params_json;
 
         auto pub = client.request(req);

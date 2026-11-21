@@ -118,7 +118,6 @@ void bundles_commands::process_publish(std::ostream& out,
     req.bundle_code = code;
     req.mode = "upsert";
     req.published_by = session.auth().username;
-    req.atomic = true;
     const bool has_params = !params.opted_in_datasets.empty() || params.lei_parties.has_value() ||
                             params.party_id.has_value() || params.tiers.has_value() ||
                             params.jurisdiction.has_value();

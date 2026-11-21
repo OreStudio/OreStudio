@@ -18,12 +18,15 @@ Installing a bundle gets the system into a ready state with a coherent set
 of reference data. Bundles provide a way to group related datasets that
 should be installed together.
 
-A bundle belongs to one level and one scope, and the two decide the tenant it
-writes into: a platform or world bundle publishes into the system tenant once,
-a tenant-wide bundle into a tenant, and a party bundle into the tenant that
-holds the party. The table does not carry either as a column yet: the bundle's
-documentation states them, and the knowledge page "Reference data classification
-by publication level" holds the rule that assigns them.
+A bundle belongs to one level and one scope. The level is a column, and it
+decides the tenant the publication writes into: a platform or world bundle
+publishes into the system tenant once, and a tenant bundle into the tenant that
+asked. The scope is not a column, because it decides the publication's
+parameters rather than its target: a tenant-wide bundle writes the tenant's own
+rows, and a party bundle writes one party's and takes the party as a parameter.
+The knowledge page "Reference data classification by publication level" holds
+the rule that assigns both, and the handler refuses a caller whose tenant the
+level does not admit.
 
 Examples:
 - "system_core": the platform's own vocabulary, published at bring-up
@@ -80,6 +83,24 @@ Human-readable name for the bundle.
 std::string(faker::word::adjective()) + " " + std::string(faker::word::noun()) + " Bundle"
 #+end_src
 
+** level
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The publication level this bundle belongs to: =platform=, =world= or =tenant=.
+
+The level decides the tenant the publication writes into and the callers it
+admits. A =platform= or =world= bundle publishes into the system tenant once,
+and only the system tenant may ask for it. A =tenant= bundle publishes into the
+tenant that asked.
+
+#+begin_src cpp :name generator
+std::string("tenant")
+#+end_src
+
 ** description
 :PROPERTIES:
 :type:     text
@@ -99,6 +120,12 @@ std::string(faker::lorem::sentence())
 :PROPERTIES:
 :tablename: ores_dq_dataset_bundles_tbl
 :END:
+
+** Checks
+
+| expression |
+|---|
+| "level" in ('platform', 'world', 'tenant') |
 
 * C++
 
@@ -140,6 +167,7 @@ std::string(faker::lorem::sentence())
 |-------------+-------------|
 | code        | Code        |
 | name        | Name        |
+| level       | Level       |
 | description | Description |
 | modified_by | Modified By |
 | version     | Version     |
@@ -160,6 +188,7 @@ std::string(faker::lorem::sentence())
 |-------------+-------------+-------------+-----------+-------|
 | Code        | code        | Code        | string    | 150   |
 | Name        | name        | Name        | string    | 200   |
+| Level       | level       | Level       | string    | 100   |
 | Description | description | Description | string    | 300   |
 | Version     | version     | Version     | int       | 80    |
 | ModifiedBy  | modified_by | Modified By | string    | 120   |

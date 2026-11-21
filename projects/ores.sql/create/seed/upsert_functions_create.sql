@@ -1138,6 +1138,7 @@ create or replace function ores_dq_dataset_bundles_upsert_fn(
     p_tenant_id uuid,
     p_code text,
     p_name text,
+    p_level text,
     p_description text
 ) returns void as $$
 begin
@@ -1158,12 +1159,12 @@ begin
     end if;
 
     insert into ores_dq_dataset_bundles_tbl (
-        tenant_id, id, version, code, name, description,
+        tenant_id, id, version, code, name, level, description,
         modified_by, performed_by, change_reason_code, change_commentary,
         valid_from, valid_to
     )
     values (
-        p_tenant_id, gen_random_uuid(), 0, p_code, p_name, p_description,
+        p_tenant_id, gen_random_uuid(), 0, p_code, p_name, p_level, p_description,
         current_user, current_user, 'system.new_record', 'System seed data - dataset bundle',
         current_timestamp, ores_utility_infinity_timestamp_fn()
     );

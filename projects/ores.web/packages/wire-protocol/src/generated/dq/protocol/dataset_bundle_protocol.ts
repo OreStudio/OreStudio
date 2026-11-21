@@ -36,6 +36,7 @@ export interface DatasetBundleWrite {
     id: string;
     code: string;
     name: string;
+    level: string;
     description: string;
 }
 

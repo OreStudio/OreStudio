@@ -19,12 +19,15 @@
  */
 
 /**
- * Dataset Bundle Publication Functions
+ * Dataset Bundle Discovery Functions
  *
- * Audit table and read-only list/preview functions for bundle publications.
- * Actual publication is handled by the workflow engine: the dq service
- * dispatches each dataset to its target_subject NATS endpoint, and each
- * target service handles publish-from-dq in its own SQL tree.
+ * Read-only list and preview functions over the bundles and their members.
+ * No table holds a publication history: a bundle is a run and not a
+ * transaction, so a run leaves no audit row and the record of what it wrote is
+ * the provenance on each published row. Actual publication is handled by the
+ * workflow engine: the dq service dispatches each dataset to its target_subject
+ * NATS endpoint, and each target service handles publish-from-dq in its own SQL
+ * tree.
  *
  * Usage:
  *   -- List available bundles
@@ -33,46 +36,6 @@
  *   -- Preview what will be published
  *   SELECT * FROM ores_dq_bundle_preview_fn('base');
  */
-
--- =============================================================================
--- Bundle Publication Audit Table
--- =============================================================================
-
-create table if not exists "ores_dq_bundle_publications_tbl" (
-    "id" uuid not null default gen_random_uuid(),
-    "tenant_id" uuid not null,
-    "bundle_code" text not null,
-    "bundle_name" text not null,
-    "mode" text not null,
-    "atomic" boolean not null default false,
-    "datasets_processed" integer not null default 0,
-    "datasets_succeeded" integer not null default 0,
-    "datasets_failed" integer not null default 0,
-    "datasets_skipped" integer not null default 0,
-    "total_records_inserted" bigint not null default 0,
-    "total_records_updated" bigint not null default 0,
-    "total_records_skipped" bigint not null default 0,
-    "total_records_deleted" bigint not null default 0,
-    "published_by" text not null,
-    "published_at" timestamp with time zone not null default current_timestamp,
-    "completed_at" timestamp with time zone,
-    primary key (id),
-    check ("id" <> ores_utility_nil_uuid_fn()),
-    check ("bundle_code" <> ''),
-    check ("mode" in ('upsert', 'insert_only', 'replace_all')),
-    check ("published_by" <> '')
-);
-
-comment on table ores_dq_bundle_publications_tbl is
-    'Audit table for tracking bundle publication history.';
-
--- Index for querying by bundle
-create index if not exists bundle_publications_bundle_code_idx
-    on ores_dq_bundle_publications_tbl(bundle_code);
-
--- Index for querying by time
-create index if not exists bundle_publications_published_at_idx
-    on ores_dq_bundle_publications_tbl(published_at);
 
 -- =============================================================================
 -- Discovery Functions
@@ -190,48 +153,5 @@ begin
     union all
     select 'no_target_subject', count(*)::bigint from bundle_members
         where dataset_id is not null and (target_subject is null or artefact_type = 'none');
-end;
-$$ language plpgsql;
-
-/**
- * Gets publication history for a specific bundle.
- */
-create or replace function ores_dq_get_bundle_publication_history_fn(
-    p_bundle_code text,
-    p_limit integer default 10
-)
-returns table (
-    publication_id uuid,
-    bundle_code text,
-    bundle_name text,
-    mode text,
-    datasets_processed integer,
-    datasets_succeeded integer,
-    datasets_failed integer,
-    total_inserted bigint,
-    total_updated bigint,
-    published_by text,
-    published_at timestamp with time zone,
-    completed_at timestamp with time zone
-) as $$
-begin
-    return query
-    select
-        bp.id,
-        bp.bundle_code,
-        bp.bundle_name,
-        bp.mode,
-        bp.datasets_processed,
-        bp.datasets_succeeded,
-        bp.datasets_failed,
-        bp.total_records_inserted,
-        bp.total_records_updated,
-        bp.published_by,
-        bp.published_at,
-        bp.completed_at
-    from ores_dq_bundle_publications_tbl bp
-    where bp.bundle_code = p_bundle_code
-    order by bp.published_at desc
-    limit p_limit;
 end;
 $$ language plpgsql;

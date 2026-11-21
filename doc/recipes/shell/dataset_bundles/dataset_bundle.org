@@ -86,14 +86,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-dataset_bundles add <code> <name> <description> <reason> <commentary>
+dataset_bundles add <code> <name> <level> <description> <reason> <commentary>
 #+end_example
 
 It is addressed at =dq.v1.dataset_bundles.put=.
 
 #+name: dataset_bundles-add
 #+begin_src ores-shell :tangle dataset_bundles-add.ores :exports none
-dataset_bundles add __none__ __none__ __none__ system.new_record generated_script
+dataset_bundles add __none__ __none__ __none__ __none__ system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -107,14 +107,14 @@ Writes a row. The change states no precondition, so it replaces whatever row the
 The command is shaped like this:
 
 #+begin_example
-dataset_bundles set <id> <code> <name> <description> <reason> <commentary> [--version <n>]
+dataset_bundles set <id> <code> <name> <level> <description> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =dq.v1.dataset_bundles.put=.
 
 #+name: dataset_bundles-set
 #+begin_src ores-shell :tangle dataset_bundles-set.ores :exports none
-dataset_bundles set 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ system.new_record generated_script
+dataset_bundles set 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -128,14 +128,14 @@ Writes several rows in one request. The count states how many field groups follo
 The command is shaped like this:
 
 #+begin_example
-dataset_bundles put-many --count <n> <id> <code> <name> <description> <reason> <commentary>
+dataset_bundles put-many --count <n> <id> <code> <name> <level> <description> <reason> <commentary>
 #+end_example
 
 It is addressed at =dq.v1.dataset_bundles.put_many=.
 
 #+name: dataset_bundles-put-many
 #+begin_src ores-shell :tangle dataset_bundles-put-many.ores :exports none
-dataset_bundles put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ system.new_record generated_script
+dataset_bundles put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ system.new_record generated_script
 #+end_src
 
 ** =delete=

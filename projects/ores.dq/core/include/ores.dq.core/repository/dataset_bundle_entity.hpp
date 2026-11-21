@@ -60,6 +60,7 @@ struct dataset_bundle_entity {
 
     std::string name;
 
+    std::string level;
     std::string description;
     std::string modified_by;
     std::string performed_by;
@@ -77,7 +78,7 @@ struct dataset_bundle_entity {
         return query_builder::columns<e>() | query_builder::key("id", &e::id) |
                query_builder::bind("tenant_id", &e::tenant_id) |
                query_builder::bind("version", &e::version) | query_builder::bind("code", &e::code) |
-               query_builder::bind("name", &e::name) |
+               query_builder::bind("name", &e::name) | query_builder::bind("level", &e::level) |
                query_builder::bind("description", &e::description) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |

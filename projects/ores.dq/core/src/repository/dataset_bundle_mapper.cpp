@@ -46,6 +46,7 @@ domain::dataset_bundle dataset_bundle_mapper::map(const dataset_bundle_entity& v
     r.id = v.id;
     r.code = v.code;
     r.name = v.name;
+    r.level = v.level;
     r.description = v.description;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
@@ -66,6 +67,7 @@ dataset_bundle_entity dataset_bundle_mapper::map(const domain::dataset_bundle& v
     r.version = v.version;
     r.code = v.code;
     r.name = v.name;
+    r.level = v.level;
     r.description = v.description;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

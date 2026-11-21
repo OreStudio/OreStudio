@@ -8,7 +8,7 @@
 #+filetags: :move_codegen_and_gates_to_compass_ng:sprint_30:v0:
 #+owner: marco
 #+branch: feature/retire-the-component-scaffold-verifier
-#+pr:
+#+pr: 4985
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-21
@@ -84,7 +84,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4985][#4985]] | [codegen] Retire the component scaffold verifier |
 
 * Review
 

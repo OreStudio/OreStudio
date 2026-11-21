@@ -8,7 +8,7 @@
 #+filetags: :pool_the_fleets_connections:sprint_30:v0:
 #+owner: marco
 #+branch: feature/package-the-pooler-for-pauli
-#+pr:
+#+pr: 4972
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-21
@@ -129,7 +129,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4972][#4972]] | [compass] Build the pooler as an image for the fleet's host |
 
 * Review
 

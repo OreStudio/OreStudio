@@ -103,7 +103,9 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
     ORES_LOG_SEV(lg(), info) << "Initializing database connection...";
     database::context_factory::configuration db_cfg{
         .database_options = cfg.database,
-        .pool_size = static_cast<std::size_t>(cfg.database.pool_size),
+        .pool_min = static_cast<std::size_t>(cfg.database.pool_min),
+        .pool_max = static_cast<std::size_t>(cfg.database.pool_max),
+        .pool_idle_seconds = static_cast<std::size_t>(cfg.database.pool_idle),
         .num_attempts = 10,
         .wait_time_in_seconds = 1,
         .service_account = cfg.database.user};

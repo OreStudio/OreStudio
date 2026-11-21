@@ -18,6 +18,7 @@
  *
  */
 #include "ores.database/domain/context_transact.hpp"
+#include "ores.database/pq/options.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/unit_of_work.hpp"
 #include "ores.logging/logger.hpp"
@@ -28,6 +29,7 @@
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <chrono>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -159,7 +161,8 @@ TEST_CASE("a committed unit of work returns its connection before it goes out of
     const auto opened = ores::testing::test_database_manager::make_context();
     ores::database::context ctx(
         opened.connection_options(), opened.tenant_id(), opened.actor(), opened.service_account());
-    ctx.set_pq_pool_size(1);
+    ctx.set_pq_pool_settings(ores::database::pq::pool_settings{
+        .floor = 1, .ceiling = 1, .idle_after = std::chrono::seconds(30)});
 
     unit_of_work first(ctx);
     ores::database::query_builder::execute_raw_multi_column_query(

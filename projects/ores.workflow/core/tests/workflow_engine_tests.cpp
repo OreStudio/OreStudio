@@ -205,7 +205,9 @@ struct fixture {
             .port = environment::get_int_value_or_default("ORES_WORKFLOW_SERVICE_DB_PORT", 5432),
             .tenant = ores::database::service::tenant_context::system_tenant_id};
         const ores::database::context_factory::configuration config{.database_options = options,
-                                                                    .pool_size = 2,
+                                                                    .pool_min = 2,
+                                                                    .pool_max = 2,
+                                                                    .pool_idle_seconds = 30,
                                                                     .num_attempts = 3,
                                                                     .wait_time_in_seconds = 1,
                                                                     .service_account =

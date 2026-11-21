@@ -75,13 +75,31 @@ Tenant code or ID for multi-tenant isolation.
 Can be either a tenant code (e.g., "system", "acme") or a tenant UUID.
 Required for all operations in a multi-tenant environment.
 
-** pool_size
+** pool_min
 :PROPERTIES:
 :cpp_type: int
 :default_value: 2
 :END:
 
-Number of connections in this service's connection pool.
+The connections the pool keeps, so a request arriving after a quiet spell
+does not wait for a login.
+
+** pool_max
+:PROPERTIES:
+:cpp_type: int
+:default_value: 8
+:END:
+
+The connections a burst may open. Never below =pool_min=.
+
+** pool_idle
+:PROPERTIES:
+:cpp_type: int
+:default_value: 30
+:END:
+
+How long, in seconds, a connection above =pool_min= lives once it is idle.
+A service that is doing nothing holds its floor and no more.
 
 ** pool_backoff
 :PROPERTIES:

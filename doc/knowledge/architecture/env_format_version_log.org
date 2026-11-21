@@ -62,6 +62,7 @@ The table is machine-parsed: each data row is =| <integer> | <date> |
 | 31 | 2026-10-13 | bind the web interface to every interface by default |
 | 32 | 2026-10-16 | Added ORES_WEB_DOC_ROOT, the folder holding the org documents the BFF reads. Sprint 27 built the QA validation runner and the agile browser on it, but the variable was never written into a generated .env, so both were off on every fresh checkout. |
 | 33 | 2026-10-21 | Add ORES_MARKETDATA_SERVICE_WRITER_DB_USER and ORES_MARKETDATA_SERVICE_WRITER_DB_PASSWORD for the tick writer role |
+| 34 | 2026-11-21 | Added the per-service ORES_<APP>_DB_POOL_MIN/MAX/IDLE pool settings, replacing ORES_<APP>_DB_POOL_SIZE; a service now states the connections it keeps and the ones a burst may reach |
 
 * See also
 

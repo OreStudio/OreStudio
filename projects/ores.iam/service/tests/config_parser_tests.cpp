@@ -50,7 +50,9 @@ TEST_CASE("parse_defaults_returns_expected_values", "[config]") {
     CHECK(result->nats.subject_prefix.empty());
     CHECK(result->database.host == "localhost");
     CHECK(result->database.port == 5432);
-    CHECK(result->database.pool_size == 2);
+    CHECK(result->database.pool_min == 2);
+    CHECK(result->database.pool_max == 8);
+    CHECK(result->database.pool_idle == 30);
     CHECK_FALSE(result->logging.has_value());
 }
 
@@ -121,21 +123,42 @@ TEST_CASE("parse_custom_database_name", "[config]") {
     CHECK(result->database.database == "ores_prod");
 }
 
-TEST_CASE("parse_custom_database_pool_size", "[config]") {
+TEST_CASE("parse_custom_database_pool_settings", "[config]") {
     auto lg(ores::logging::make_logger(test_suite));
 
-    const std::vector<std::string> args{"--db-pool-size", "8"};
+    const std::vector<std::string> args{
+        "--db-pool-min", "4", "--db-pool-max", "16", "--db-pool-idle", "5"};
     std::ostringstream info, err;
     const auto result = parser{}.parse(args, info, err);
 
     REQUIRE(result.has_value());
-    CHECK(result->database.pool_size == 8);
+    CHECK(result->database.pool_min == 4);
+    CHECK(result->database.pool_max == 16);
+    CHECK(result->database.pool_idle == 5);
 }
 
-TEST_CASE("parse_rejects_non_positive_database_pool_size", "[config]") {
+TEST_CASE("parse_rejects_non_positive_database_pool_min", "[config]") {
     auto lg(ores::logging::make_logger(test_suite));
 
-    const std::vector<std::string> args{"--db-pool-size", "0"};
+    const std::vector<std::string> args{"--db-pool-min", "0"};
+    std::ostringstream info, err;
+
+    REQUIRE_THROWS_AS(parser{}.parse(args, info, err), std::runtime_error);
+}
+
+TEST_CASE("parse_rejects_a_ceiling_below_the_floor", "[config]") {
+    auto lg(ores::logging::make_logger(test_suite));
+
+    const std::vector<std::string> args{"--db-pool-min", "8", "--db-pool-max", "4"};
+    std::ostringstream info, err;
+
+    REQUIRE_THROWS_AS(parser{}.parse(args, info, err), std::runtime_error);
+}
+
+TEST_CASE("parse_rejects_a_non_positive_idle_period", "[config]") {
+    auto lg(ores::logging::make_logger(test_suite));
+
+    const std::vector<std::string> args{"--db-pool-idle", "0"};
     std::ostringstream info, err;
 
     REQUIRE_THROWS_AS(parser{}.parse(args, info, err), std::runtime_error);

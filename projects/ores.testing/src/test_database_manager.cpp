@@ -81,7 +81,9 @@ using ores::platform::environment::environment;
 context test_database_manager::make_context() {
     const auto opts = make_database_options();
     context_factory::configuration db_cfg{.database_options = opts,
-                                          .pool_size = 4,
+                                          .pool_min = 4,
+                                          .pool_max = 4,
+                                          .pool_idle_seconds = 30,
                                           .num_attempts = 10,
                                           .wait_time_in_seconds = 1,
                                           .service_account = opts.user};

@@ -67,9 +67,19 @@ struct database_options final {
      */
     std::string tenant;
     /**
-     * @brief Number of connections in this service's connection pool.
+     * @brief The connections the pool keeps, so a request arriving after a quiet spell
+     * does not wait for a login.
      */
-    int pool_size{2};
+    int pool_min{2};
+    /**
+     * @brief The connections a burst may open. Never below pool_min.
+     */
+    int pool_max{8};
+    /**
+     * @brief How long, in seconds, a connection above pool_min lives once it is idle.
+     * A service that is doing nothing holds its floor and no more.
+     */
+    int pool_idle{30};
     /**
      * @brief Backoff strategy for pool acquisition retries.
      *
@@ -86,7 +96,9 @@ struct database_options final {
         ::ores::utility::codec::field{"database", &database_options::database},
         ::ores::utility::codec::field{"port", &database_options::port},
         ::ores::utility::codec::field{"tenant", &database_options::tenant},
-        ::ores::utility::codec::field{"pool_size", &database_options::pool_size},
+        ::ores::utility::codec::field{"pool_min", &database_options::pool_min},
+        ::ores::utility::codec::field{"pool_max", &database_options::pool_max},
+        ::ores::utility::codec::field{"pool_idle", &database_options::pool_idle},
         ::ores::utility::codec::field{"pool_backoff", &database_options::pool_backoff},
     };
 }

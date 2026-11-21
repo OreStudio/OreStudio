@@ -55,7 +55,7 @@ How do I rebuild the ORE market datum catalogue?
    [[id:CC7CC29C-9413-4DF3-BC32-D1C8A978D295][Which trade types ORE carries and ORE Studio holds]]:
 
    #+begin_src sh :results verbatim
-   python3 build/scripts/generate_trade_type_coverage.py --write
+   ./compass.sh generate
    #+end_src
 
 5. /Add a form./ When ORE gains a key form, add one key for it to

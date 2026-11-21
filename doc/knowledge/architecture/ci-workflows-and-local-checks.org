@@ -186,8 +186,8 @@ order fails:
 =entity-writes= is the cautionary case. It was merged with the trigger the
 same evening the other twelve lost theirs, and nothing failed: the workflow
 files are read by nothing but GitHub. A guard now fails on the plain trigger,
-=build/scripts/check_no_pr_triggers.py=, and the runner runs it under the =ci=
-class, so the next one fails locally before it reaches main.
+compass-ng's =no_pr_triggers= check, which =./compass.sh check= runs, so the
+next one fails locally before it reaches main.
 
 * See also
 

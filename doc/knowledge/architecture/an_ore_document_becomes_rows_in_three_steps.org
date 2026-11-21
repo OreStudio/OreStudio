@@ -49,8 +49,8 @@ The code, in order:
 - =projects/ores.sql/utility/ore_renderings.json= states the mapping: for each
   table, the form a configuration holds and every rendering that means it.
 - =projects/ores.ore/core/src/domain/conventions_renderings.hpp= holds the C++
-  tables, generated from that file by
-  =projects/ores.ore/scripts/generate_renderings_tables.py=. The check fails when
+  tables, generated from that file by compass-ng's =ore_renderings_tables=
+  codec (=./compass.sh generate=). The check fails when
   the committed header differs from the file, and when a hand-written table
   appears beside it.
 - =…/conventions_fields.cpp:207=: =code_of= looks a rendering up in a table and

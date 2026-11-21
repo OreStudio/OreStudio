@@ -165,7 +165,7 @@ kept it, but the work was no longer wanted. The day is a delivery backstop, not
 a promise that the work is still useful.
 
 The subject a durable consumer reads needs a stream that covers it.
-`build/scripts/check_stream_coverage.py` fails when that stream is missing, and
+compass-ng's `stream_coverage` check fails when that stream is missing, and
 when two streams claim one subject.
 
 * Related patterns

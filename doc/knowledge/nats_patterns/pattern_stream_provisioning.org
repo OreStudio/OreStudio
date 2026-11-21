@@ -126,7 +126,7 @@ a bound, failing service, not five minutes of downtime. The catalogue is
 [[id:45D4751E-5089-4C82-9B37-63EFBD4A0B18][JetStream streams and durable
 consumers]].
 
-`build/scripts/check_stream_coverage.py` reads every stream and every durable
+compass-ng's `stream_coverage` check reads every stream and every durable
 consumer in the tree. It fails when a consumed subject has no stream that covers
 it, when two streams claim the same subject, and when a declaration it cannot
 read exists. The server refuses both defects at creation, so a running broker

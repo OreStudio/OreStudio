@@ -50,8 +50,8 @@ The criteria this rule adds are in the Regime 2 checklist of
 and /One-way numeric conversion/.
 
 The rule is also enforced by the build, not only by review.
-=build/scripts/check_money_decimal_columns.py= runs as the
-=money-decimal-columns= check from =build/scripts/local_checks.py=. It reads
+compass-ng's =model_rules= codec checks it, and =./compass.sh check= runs
+it. It reads
 the models, classifies each column by name, and checks both halves of the
 rule: a money column fails when its SQL type is floating point, when its SQL
 type is text, or when its SQL type is exact with a =double= in the domain; a

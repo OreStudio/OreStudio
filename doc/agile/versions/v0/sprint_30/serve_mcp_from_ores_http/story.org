@@ -1,0 +1,82 @@
+:PROPERTIES:
+:ID: 008127D7-B897-4CF7-854B-6DDFB89AC7F4
+:END:
+#+title: Story: Serve ORE's API to LLM agents over MCP
+#+description: Make ores.http an MCP server: the Streamable HTTP transport written in ores.http with boost.taar as the reference, and a catalogue of its operations a very small model can browse in small steps and search, each operation declaring its name, its place and whether it writes.
+#+type: story
+#+level: s2
+#+filetags: :mcp:llm:agent:http:sprint_30:v0:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+#+environment: bright_faraday
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+An MCP client, Claude Code, Claude Desktop or a small local model's agent,
+connects to ores.http, works as a person who signed in, finds the operations
+that person may call, and calls them. The catalogue is shown in small steps
+with a way to discover what exists, because the models may be very small.
+
+ores.http speaks MCP itself, with boost.taar as the reference implementation.
+The analysis is in [[id:FC0847D1-9F09-42EF-A4BD-D5E3C34398EA][How ores.http serves MCP]] and
+[[id:6DFC4BF5-65AC-4E75-90EA-FBDC1272E01C][How the model sees ORE's operations]].
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks. |
+| Last touched  | 2026-11-21                               |
+
+* Acceptance
+
+- =/mcp= on ores.http serves MCP's Streamable HTTP transport: =POST=, =GET=
+  and =DELETE=, sessions by =Mcp-Session-Id=, JSON-RPC through ORE's codec,
+  and =initialize=, =ping=, =tools/list= and =tools/call=. It passes the
+  official MCP conformance runner for what it implements.
+- =tools/list= answers a fixed set of tools whatever the catalogue holds: list
+  the areas, list an area's entities, list an entity's operations, find
+  operations by words, and call an operation. Every answer is short and lists
+  only what the person may call.
+- Every route declares its tool name, its area and entity, and whether it
+  writes, and a gate refuses a route that does not. Every route that takes a
+  body declares its schema with =body<T>()=.
+- An operation that writes is marked as writing and does not run unless the
+  call states that the person confirmed it.
+- An outside MCP client authenticates as a person, by a means this story
+  decides, and a call made over MCP is recorded as made over MCP, for that
+  person, so it is never mistaken for one made in ores.web.
+- A set of real requests, each run with a small model through browsing and
+  through search, records how often it reaches the right operation and in how
+  many steps.
+- The gates cover the new code.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* Decisions
+
+- *ores.http speaks MCP itself, with boost.taar as the reference* (2026-11-21),
+  carried over from [[id:BBEDFA8E-D43D-4F48-8FD7-1A3CC9F47E3E][Bring the assistant into ores.web on the target architecture]].
+- *The catalogue is browsed in small steps, with search beside it*
+  (2026-11-21): a declared hierarchy of areas, entities and operations, each
+  step a short list, because the full catalogue is about 107,000 tokens and the
+  models may be very small.
+
+* Out of scope
+
+- The knowledge base; see [[id:70A4D585-8A56-475D-BE32-803D08A5D0CF][Answer from the knowledge base over MCP]].
+- The chat in ores.web, the agent loop and the inference server; see
+  [[id:BBEDFA8E-D43D-4F48-8FD7-1A3CC9F47E3E][Bring the assistant into ores.web on the target architecture]].
+- MCP resources, prompts, sampling and the other optional capabilities, until a
+  client needs them.

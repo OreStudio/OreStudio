@@ -55,7 +55,7 @@ retires the prototype once ores.web does what it does.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
-| Now           | MCP decided; catalogue and knowledge base analysed. |
+| Now           | Split into three stories; MCP and knowledge search go first. |
 | Waiting on    | Nothing.                               |
 | Next          | Analyse the target-state architecture. |
 | Last touched  | 2026-11-20                               |
@@ -99,6 +99,13 @@ retires the prototype once ores.web does what it does.
   boost.taar for how each part of the protocol is handled. Consequences: no new
   dependency; the catalogue comes from ores.http's route registry; conformance
   is tested against the official MCP conformance runner. See [[id:FC0847D1-9F09-42EF-A4BD-D5E3C34398EA][How ores.http serves MCP]].
+- *Split into three stories* (2026-11-21). The knowledge base is a feature
+  without any model, and MCP is useful without the assistant. So they are their
+  own stories: [[id:05FE6068-3CBD-4B93-B6AE-47A5689F1FCB][Search the knowledge base from ores.web]],
+  [[id:008127D7-B897-4CF7-854B-6DDFB89AC7F4][Serve ORE's API to LLM agents over MCP]], and, when both are done,
+  [[id:70A4D585-8A56-475D-BE32-803D08A5D0CF][Answer from the knowledge base over MCP]]. This story keeps the
+  chat in ores.web, the agent loop, the inference server, the confirmation of
+  changes in the chat, and the prototype, and builds on the three.
 
 * Out of scope
 

@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: 70A4D585-8A56-475D-BE32-803D08A5D0CF
+:END:
+#+title: Story: Answer from the knowledge base over MCP
+#+description: Once the knowledge base is searchable and ores.http serves MCP, expose the knowledge search and pages through MCP so an agent answers from ORE's own pages and links each one it used.
+#+type: story
+#+level: s2
+#+filetags: :mcp:llm:agent:knowledge:search:sprint_30:v0:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+#+environment: bright_faraday
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+An agent connected to ores.http over MCP is asked "what is volatility". It
+finds ORE's own pages on volatility, answers from them, and gives a link to each
+page it used, which opens as a page of ores.web.
+
+This joins two stories and starts when both are done:
+[[id:05FE6068-3CBD-4B93-B6AE-47A5689F1FCB][Search the knowledge base from ores.web]] and
+[[id:008127D7-B897-4CF7-854B-6DDFB89AC7F4][Serve ORE's API to LLM agents over MCP]]. The analysis is in
+[[id:3237D7CF-8EBA-4B9B-9B54-7135A4A7AA4A][How the assistant answers from the knowledge base]].
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
+| Now           | Not yet started.                       |
+| Waiting on    | The knowledge search and MCP stories. |
+| Next          | Waiting on the two stories it joins. |
+| Last touched  | 2026-11-21                               |
+
+* Acceptance
+
+- MCP offers the knowledge search and the page reads as tools, and the pages as
+  MCP resources, through the knowledge service.
+- A section given to a model is written as Markdown, with its page's title, its
+  heading path and the ores.web address of its page at its anchor.
+- Asked a question the knowledge base covers, an MCP client answers from the
+  pages and links each page it used.
+- The set of questions from the knowledge story is run through an MCP client,
+  and how often its answer cites the right page is recorded.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* Decisions
+
+
+
+* Out of scope
+
+- Retrieval before the model is called, and links built from what was
+  retrieved: that is the agent loop's, in [[id:BBEDFA8E-D43D-4F48-8FD7-1A3CC9F47E3E][Bring the assistant into ores.web on the target architecture]].
+- Embeddings.

@@ -29,7 +29,7 @@ sync methodology (this directory doesn't repeat it).
 Never hand-edit any `.xsd` file here. See `external/ore/methodology.txt`
 for the full sync + validate methodology (one script call syncs both
 directories together), and remember to also re-run
-`projects/ores.ore/scripts/regenerate_xml_bindings.sh` afterwards --
+`./compass.sh generate` afterwards --
 `projects/ores.ore`'s generated record tables are schema-derived.
 
 ## Related Files
@@ -37,4 +37,4 @@ directories together), and remember to also re-run
 - Sync script: `external/ore/tools/update_ore_samples.sh`
 - Validation: `scripts/validate_ore_examples.sh`
 - Examples (synced in lockstep): `external/ore/examples/`
-- Codegen consumer: `projects/ores.ore/scripts/regenerate_xml_bindings.sh`
+- Codegen consumer: compass-ng's `xml_bindings` codec, configured by `compass/checks/xml_bindings.org`

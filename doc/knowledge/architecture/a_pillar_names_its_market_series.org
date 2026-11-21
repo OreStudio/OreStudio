@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :marketdata:curves:bootstrap:architecture:decision:
 #+created: 2026-10-28
-#+updated: 2026-10-29
+#+updated: 2026-11-21
 
 * Summary
 
@@ -192,6 +192,44 @@ derives from the pillar's end tenor, the feed builds its datums from the market
 data model, the classifier is keyed by the oresmd identity, and the codec accepts
 every datum the model admits. The four places /Today/ lists above are the state
 this page replaced.
+
+* The quote a curve configuration holds, and the series that answers it
+
+A curve configuration is still an ORE document: each curve states the quotes it
+bootstraps from, in ORE's spelling, and only the blueprint names series. The two
+spellings still meet at one point, and this page states it because a run reads
+both: the configuration states a quote, the market holds series, and a quote the
+market cannot answer is a curve ORE refuses to build.
+
+The key's tokens are the datum's fields in schema order. For an interest rate
+swap rate the tokens after the instrument and the quote are the currency, an
+optional index name, the forward start, the index tenor and the term. Every one
+of those but the term is identity, so the series a quote reads is the address
+with those fields and no term: the term is the point within the series.
+
+#+begin_example
+IR_SWAP/RATE/GBP/0D/1D/1M
+  -> oresmd://ir/GBP?type=series&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D
+#+end_example
+
+Two instruments state the pair so that neither can drift unseen:
+
+- =ores_marketdata_curve_pillar_series_uri_fn(quote_text)= returns the address a
+  quote names in SQL, and =ores_marketdata_curve_quote_coverage_fn(tenant,
+  party)= lists the quotes of a party's curve configurations that no series
+  answers, one row per quote with its kind and its reason. Only a series of the
+  party answers a quote: the export writes a run's market data from the party's
+  own quote series, and from the system tenant only its fixing series, which
+  answer an index rather than a quote. The reader is as strict as the codec, so
+  a key ORE would refuse is reported as unreadable rather than as a gap the
+  market could close.
+- =datum_market_reference_tests.cpp= asserts the same address against the codec,
+  by reading the key and writing the series of the datum it names.
+
+Measured on a fresh acme_demo provision of 2026-11-21: 420 quotes across the
+four configurations (ACCOUK 204, ACCOHK 84, ACCOUS 84, ACMCOR 48) and no gaps.
+The configurations bootstrap from the index series the synthetic IR curves
+publish, so every quote a provisioned ACME holds is answered.
 
 * What this does not settle
 

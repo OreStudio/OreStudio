@@ -22,7 +22,7 @@ The SQL projection of the system: DDL for entity and junction tables
 (=ores.sql.service=), and reference-data INSERTs
 (=ores.sql.populate=). Schema and service facets are profile-driven
 with outputs under =projects/ores.sql/=; the populate family is
-invoked directly by =generator.py='s dataset pipeline.
+invoked directly by the =codegen= codec's dataset pipeline.
 
 * Shared conventions
 

@@ -371,7 +371,7 @@ TEST_CASE("a store error says whether to retry", "[pq]") {
           }) == ctx.tenant.to_string());
 }
 
-TEST_CASE("a batch goes out in one pipeline and a bulk load through copy", "[pq]") {
+TEST_CASE("a batch goes out in one pipeline and a bulk load through copy", "[pq][direct]") {
     ores::testing::scoped_database_helper h;
     pool p(options_of(h), 1);
     const auto ctx = context_of(h);
@@ -503,7 +503,7 @@ TEST_CASE("a connection given back inside a transaction is reset before its next
     CHECK(lease.get().idle());
 }
 
-TEST_CASE("a connection the server closed is reset before its next lease", "[pq]") {
+TEST_CASE("a connection the server closed is reset before its next lease", "[pq][direct]") {
     ores::testing::scoped_database_helper h;
     pool p(options_of(h), 1);
     const auto pid_of = [](const pool::lease& lease) {
@@ -533,7 +533,7 @@ TEST_CASE("a connection the server closed is reset before its next lease", "[pq]
 }
 
 TEST_CASE("a statement that fails to prepare reports its own error, not the abort after it",
-          "[pq]") {
+          "[pq][direct]") {
     ores::testing::scoped_database_helper h;
     pool p(options_of(h), 1);
     const auto ctx = context_of(h);

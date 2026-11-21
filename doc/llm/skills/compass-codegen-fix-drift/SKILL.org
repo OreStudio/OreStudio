@@ -131,11 +131,9 @@ the work.
    family unwired and unrecorded.
 
 8. *Extend the drift gate last.* Add the component to the
-   =COMPONENTS_UNDER_TEST= list in component_registry.py. Two things
-   then run =check_component_drift.py --all= over that list: the
-   =codegen-drift.yml= workflow, which gates a PR on
-   =projects/*/modeling/**= and =projects/ores.codegen/**=, and the
-   compass-pr-raise skill's local codegen-drift check. The gate lands
+   =COMPONENTS_UNDER_TEST= list in component_registry.py. compass-ng's
+   =codegen= codec then checks that list: =./compass.sh check= runs it
+   before a PR, and =compass-check.yml= runs it on every push to main. The gate lands
    only on a component at verified zero drift: it enforces the method,
    it does not replace it. Run =--all= once more before the PR that
    lands the gate.

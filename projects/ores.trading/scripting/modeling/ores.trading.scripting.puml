@@ -1,0 +1,66 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+@startuml
+
+title ores.trading.scripting
+
+skinparam shadowing false
+
+package "ores.trading.scripting" {
+  package "façade" {
+    class parse_result {
+      +tree : ASTNodePtr
+      +diagnostics : vector<diagnostic>
+      +parsed() : bool
+    }
+    class diagnostic {
+      +severity : severity
+      +code : string
+      +start : optional<position>
+      +end : optional<position>
+      +message : string
+      +subject : optional<string>
+    }
+    class diagnostic_code {
+      +code : string_view
+      +severity : severity
+      +title : string_view
+      +explanation : string_view
+    }
+    class "parse()" as parse_fn << (F,#AADDFF) function >>
+    class "to_compiler_format()" as fmt_fn << (F,#AADDFF) function >>
+  }
+  package "ore (copied from ORE)" {
+    class ScriptParser
+    class ScriptGrammar
+    class ASTNode
+    class "to_script()" as to_script << (F,#DDDDDD) function >>
+    class "generateRandomAST()" as gen << (F,#DDDDDD) function >>
+  }
+}
+
+parse_fn --> ScriptParser : parses with
+ScriptParser --> ScriptGrammar
+ScriptGrammar --> ASTNode : builds
+parse_fn --> parse_result
+parse_result o-- diagnostic
+diagnostic ..> diagnostic_code : code of
+fmt_fn ..> diagnostic
+
+@enduml

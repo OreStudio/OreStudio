@@ -41,7 +41,7 @@ The full template source. Edit here and re-tangle with
 -- Uses a temporary helper function to grant DML on all tables matching a
 -- prefix, so grants automatically cover new tables added to a component.
 --
--- Variables (passed via psql -v from setup_database.sh):
+-- Variables (passed via psql -v by compass db recreate, compass_db.py):
 --   One {name}_service_user variable per service (see service_vars.sh).
 
 -- ---------------------------------------------------------------------------

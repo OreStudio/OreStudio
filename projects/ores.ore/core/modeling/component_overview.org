@@ -30,8 +30,8 @@ and the directory round trip, readers for ORE's market data text formats,
 the import planner and directory scanner, and the generated series key
 shape entity with its repository.
 
-The record tables are generated from the vendored schemas by
-=projects/ores.ore/scripts/regenerate_xml_bindings.sh=, and a drift check
+The record tables are generated from the vendored schemas by compass-ng's
+=xml_bindings= codec, configured by [[id:37EB318F-FFCE-58FF-B5E0-0A70BB1E7379][the XML bindings check]], and its drift check
 fails when the committed tables differ from what the schemas produce.
 
 * Inputs

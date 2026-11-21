@@ -23,7 +23,7 @@ DDL templates owning the table layer: bi-temporal entity tables in the
 =domain_entity= format, junction tables, drop scripts, the NOTIFY
 trigger pair, and the artefact/staging table. Most are wired to the
 =sql= profile (=projects/ores.sql/create/= and =drop/= outputs); the
-artefact-staging template is invoked directly by =generator.py=
+artefact-staging template is invoked directly by the =codegen= codec
 rather than via a profile.
 
 * The ores.sql.schema facet

@@ -70,8 +70,9 @@ auto diagnose(const std::expected<void, bind_error>& result) -> std::string {
 }
 
 // The calendar family's records and tables are generated from the schema by
-// projects/ores.ore/scripts/regenerate_xml_bindings.sh, and the generated names
-// are the schema's names. Nothing about that family is written by hand here.
+// compass's xml_bindings codec (compass/checks/xml_bindings.org), and the
+// generated names are the schema's names. Nothing about that family is written
+// by hand here.
 
 // The two shapes below have no generator mapping yet, so they are hand-written
 // to exercise the engine directly: a residual field for content the schema does

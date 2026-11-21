@@ -1,0 +1,222 @@
+:PROPERTIES:
+:ID: 37EB318F-FFCE-58FF-B5E0-0A70BB1E7379
+:END:
+#+title: Check: XML bindings
+#+description: The document families, exact decimals, schema errata and settings compass-ng's xml_bindings codec generates ORE Studio's XML bindings from.
+#+type: check
+#+level: cross
+#+filetags: :compass:check:ore:xml:generator:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+#+options: prop:t
+
+This page gives the data of compass-ng's =xml_bindings= codec, the generator of
+ORE Studio's XML bindings: the C++ records and codec tables each ORE document
+family is read and written with. The =* Definition= names the codec; each table
+below is data the codec reads, and the prose says what it is for. The tables
+were the command lines of =projects/ores.ore/scripts/regenerate_xml_bindings.sh=
+and literals of =generate_xml_bindings.py=, from which compass-ng's generator is
+ported; the code that walks the schemas is compass's, and nothing of ORE Studio
+is left in it.
+
+* Rule
+
+Each family of the Families table is a header under
+=projects/ores.ore/core/include/ores.ore.core/xml/generated= and a source under
+=projects/ores.ore/core/src/xml/generated=, generated from its schemas under
+=external/ore/xsd= and formatted by clang-format with the checkout's
+=.clang-format=. =compass check= reports a generated file that differs from what
+the tables and the schemas generate, and =compass generate= writes it.
+
+* Why
+
+The schemas are the authority for the shape of each document, and generating the
+bindings from them means a new ORE release changes the records by regenerating,
+not by hand. The schemas cannot say which family a document is, which schemas
+resolve it, which numbers must keep the digits the document wrote, nor where the
+project keeps its files; this page says so, beside the reasons, so changing any
+of it is an edit here and a regeneration, not a release of compass.
+
+* Definition
+:PROPERTIES:
+:CODEC: xml_bindings
+:END:
+
+* Families
+
+One row per document family, in the order they are generated. The =stem= names
+everything of the family: the accessor =<stem>_document=, the namespace, the
+include and the two files. The =root element= is the element a document of the
+family opens with, and the =root type= the =complexType= it has. The =schemas=
+are read in order; the first states the family, and the others are read only to
+resolve what the first reaches.
+
+| stem                       | root element              | root type                 | schemas                                                                                                                                                                              |
+|----------------------------+---------------------------+---------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| =calendar_adjustments=     | =CalendarAdjustments=     | =calendaradjustment=      | calendaradjustment.xsd ore_types.xsd                                                                                                                                                 |
+| =ibor_fallback_config=     | =IborFallbackConfig=      | =IborFallbackConfig=      | iborfallbackconfig.xsd ore_types.xsd                                                                                                                                                 |
+| =counterparty_information= | =CounterpartyInformation= | =counterpartyInformation= | counterparty.xsd simulation.xsd ore_types.xsd                                                                                                                                        |
+| =todays_market=            | =TodaysMarket=            | =todaysmarket=            | todaysmarket.xsd ore_types.xsd                                                                                                                                                       |
+| =netting_set_definitions=  | =NettingSetDefinitions=   | =nettingsetdefinitions=   | nettingsetdefinitions.xsd instruments.xsd ore_types.xsd                                                                                                                              |
+| =conventions=              | =Conventions=             | =conventions=             | conventions.xsd intradaypowerloaddata.xsd ore_types.xsd                                                                                                                              |
+| =currency_config=          | =CurrencyConfig=          | =currencyConfig=          | currencyconfig.xsd ore_types.xsd                                                                                                                                                     |
+| =pricing_engines=          | =PricingEngines=          | =pricingengines=          | pricingengines.xsd ore_types.xsd                                                                                                                                                     |
+| =curve_configuration=      | =CurveConfiguration=      | =curveconfiguration=      | curveconfig.xsd ore_types.xsd                                                                                                                                                        |
+| =portfolio=                | =Portfolio=               | =portfolio=               | input.xsd instruments.xsd referencedata.xsd simulation.xsd scriptlibrary.xsd simmcalibration.xsd historicalreturnconfig.xsd counterparty.xsd intradaypowerloaddata.xsd ore_types.xsd |
+| =ore=                      | =ORE=                     | =ore=                     | ore.xsd                                                                                                                                                                              |
+| =stress_testing=           | =StressTesting=           | =stresstesting=           | stress.xsd sensitivity.xsd ore_types.xsd                                                                                                                                             |
+| =credit_simulation=        | =CreditSimulation=        | =creditsimulation=        | creditsimulation.xsd ore_types.xsd                                                                                                                                                   |
+
+Why a family reads more than its first schema, or reads as it does:
+
+- =ibor_fallback_config= :: Spread is xs:float in the schema and money in our
+  model, which is the same shape as the bond review's defect and the reason the
+  exact-decimal list exists.
+- =counterparty_information= :: The correlation value type lives in
+  simulation.xsd, so that schema is read only to resolve it. Nothing else from
+  it is emitted here.
+- =netting_set_definitions= :: The netting set group is an abstract element in
+  instruments.xsd with two substitution members, so that schema is read only to
+  resolve it.
+- =curve_configuration= :: The curve configuration writes the IBOR fallback
+  spread as xs:float as well, and it is the same amount the fallback
+  configuration document states, so it is carried as an exact decimal here too.
+- =portfolio= :: The portfolio document reaches the instrument types, which live
+  in instruments.xsd and reach the reference data, simulation, script library
+  and power load schemas, so all of them are read with input.xsd. It also
+  reaches a model group, substitution members that write their own types, and
+  types that hold themselves, which are carried as index rows into an arena.
+  Every real in this family is carried as an exact decimal. ORE writes a rate, a
+  spread or a strike from a double, which spells 7342.8000000000002 and
+  0.050000000000000003, and the shortest spelling of the same double is 7342.8
+  and 0.05. The value a document states is its text, so the table keeps the
+  digits rather than the nearest double. A text element is not a real and keeps
+  its text, which is how the same name can be a script variable in one type and
+  a number in another.
+- =ore= :: The corpus names the run document 235 ways, six of them without the
+  "ore" prefix, so the harness finds the family by its root element. The family
+  keeps the schema's name; the product calls it the run document.
+- =stress_testing= :: shiftTypeEntry lives in sensitivity.xsd, which stress.xsd
+  references but does not include, so that schema is read with it.
+
+To add a family, add its row here, then run =./compass.sh generate=, which
+writes its header and source. To retire one, take its row out, and its rows out
+of the Exact decimals table: =compass check= reports its files as ones the codec
+no longer generates, and =./compass.sh generate= removes them.
+
+* Exact decimals
+
+The real elements a family carries as exact decimals (the =decimal_type=
+setting), one row per member: the family's stem and the element's name. ORE
+types the same quantity as =xs:float=, =xs:double= and =xs:string= in different
+places, and a double cannot keep the digits a document wrote, so this table, not
+the schema, says which numbers must. An element of =*= carries every real of the
+family. A text element is not a real and keeps its text. The notes under the
+Families table say why each row is here.
+
+| family                 | element  |
+|------------------------+----------|
+| =ibor_fallback_config= | =Spread= |
+| =curve_configuration=  | =Spread= |
+| =portfolio=            | =*=      |
+
+To carry another money member as an exact decimal, add a member to the Exact
+decimals table, then ./compass.sh generate: the member's type becomes the
+decimal type and its row =field_kind::decimal=, in the family's header and
+source.
+
+* Schema errata
+
+Element names the vendored schemas state wrongly, as written and as ORE's reader
+reads them. The generator renames each element before it reads the schemas, so
+the bindings read what ORE writes. This was =SCHEMA_ERRATA= of
+=generate_xml_bindings.py=.
+
+| written                           | read                               |
+|-----------------------------------+------------------------------------|
+| =CommodityWindowBarierOptionData= | =CommodityWindowBarrierOptionData= |
+
+* Settings
+
+Where the schemas are and the files go, and what the generated files name of ORE
+Studio, one row per setting. Every setting has a row. They are a table rather
+than options of the codec in =.compass.org= because they describe the project as
+the families do: one page states everything the bindings are generated from, and
+an edit to it runs the codec again as an edit to any table does.
+
+| setting            | value                                                        |
+|--------------------+--------------------------------------------------------------|
+| =schema_directory= | =external/ore/xsd=                                           |
+| =header_directory= | =projects/ores.ore/core/include/ores.ore.core/xml/generated= |
+| =source_directory= | =projects/ores.ore/core/src/xml/generated=                   |
+| =include_prefix=   | =ores.ore.core/xml/generated=                                |
+| =namespace_prefix= | =ores::ore::xml::generated=                                  |
+| =engine_include=   | =ores.ore.core/xml/binding.hpp=                              |
+| =decimal_include=  | =ores.utility/decimal/decimal.hpp=                           |
+| =decimal_type=     | =ores::utility::decimal::decimal=                            |
+| =export_macro=     | =ORES_ORE_CORE_EXPORT=                                       |
+
+- =schema_directory= :: The directory of the schemas, under the checkout. The
+  schemas of the Families table are file names under it.
+- =header_directory= :: Where the header of each family goes: =<stem>.hpp= under
+  it.
+- =source_directory= :: Where the source of each family goes: =<stem>.cpp= under
+  it.
+- =include_prefix= :: How the source includes its header:
+  =<include_prefix>/<stem>.hpp=. The header's include guard is that path in
+  upper case, every character but a letter or digit an underscore.
+- =namespace_prefix= :: The namespace of each family is
+  =<namespace_prefix>::<stem>=.
+- =engine_include= :: The header of the binding engine the generated tables
+  describe documents to: =document_type=, =record_type=, =field= and the rest.
+- =decimal_include= :: The header of the exact decimal type.
+- =decimal_type= :: The type of an =xs:decimal= member, and of a real the Exact
+  decimals table names.
+- =export_macro= :: The macro that exports each family's accessor from the
+  library; a project that exports nothing leaves the value empty.
+
+* Licence
+
+The licence comment that heads every generated file, one row per line, up to the
+banner that says compass generated the file. A row holds the line's text;
+compass writes the comment's =/*= and =*= around it, and an empty row is a line
+of its own. This was the =LICENCE= of =generate_xml_bindings.py=.
+
+| line                                                                           |
+|--------------------------------------------------------------------------------|
+| -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-      |
+|                                                                                |
+| Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>                   |
+|                                                                                |
+| This program is free software; you can redistribute it and/or modify it under  |
+| the terms of the GNU General Public License as published by the Free Software  |
+| Foundation; either version 3 of the License, or (at your option) any later     |
+| version.                                                                       |
+|                                                                                |
+| This program is distributed in the hope that it will be useful, but WITHOUT    |
+| ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS  |
+| FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details. |
+|                                                                                |
+| You should have received a copy of the GNU General Public License along with   |
+| this program; if not, write to the Free Software Foundation, Inc., 51          |
+| Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.                      |
+|                                                                                |
+| AUTO-GENERATED FILE - DO NOT EDIT MANUALLY                                     |
+
+* Examples
+
+None here: the codec's cases are its tests, in compass's
+=codecs_xml_bindings_tests.cpp=, which also generate the bindings of a made-up
+project from a check document of its own.
+
+* Exceptions
+
+| path | line | rule | expires | approver | reason |
+|------+------+------+---------+----------+--------|
+
+* See also
+
+- =compass-ng='s =xml_bindings= codec, in the compass repository.
+- =projects/ores.ore/core/include/ores.ore.core/xml/binding.hpp=, the
+  engine the generated tables describe documents to.
+- =external/ore/xsd=, ORE's schemas.

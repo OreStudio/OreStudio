@@ -15,33 +15,51 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-(Describe the user-visible outcome this story delivers.)
+A recreated database reaches a running fleet: the synthetic service registers,
+announces ready, and starts its adapters, and a start-up failure reports itself
+instead of hanging.
 
 * Status
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-11-13                               |
+| Next          | Nothing. |
+| Last touched  | 2026-11-21                               |
 
 * Acceptance
 
--
+- A kind whose registration states no simulate subject is skipped, so the registrar builds no subject with an empty last token.
+- A registration failure unwinds without hanging, so the service reports the failure to the supervisor.
+- `compass services start` on a recreated database reports the synthetic service running.
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:75EF50B6-00B2-4C77-B737-E56F0A1480AE][Scaffold story: Start the synthetic service on a fresh database]] | DONE | 2026-11-13 | 2026-11-13 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:61CA1B8D-000F-4E0D-871C-16D372D35D56][Skip a kind with no simulator and let the clock stop]] | BACKLOG | | | Initial task for: Start the synthetic service on a fresh database |
+| [[id:61CA1B8D-000F-4E0D-871C-16D372D35D56][Skip a kind with no simulator and let the clock stop]] | DONE | | 2026-11-21 | Initial task for: Start the synthetic service on a fresh database |
 | [[id:B036AA61-F8F3-4EA3-98FC-CAFE1F9ED75E][Stop the scheduler the portable way]] | DONE | | 2026-11-13 | The first fix named std::stop_callback, which the portable-stop gate refuses, and left the file unformatted. Stop the scheduler from a guard declared after the thread instead. |
 
 * Decisions
 
+- The registrar reads the simulate subject from each kind's registration and
+  skips an empty one, so a new kind needs no edit in the registrar.
+- The scheduler is stopped from a guard declared after its thread, because the
+  portable-stop gate refuses a service that names a C++20 stop type.
+
 * Out of scope
 
 -
+
+* Result
+
+The fleet starts on a recreated database. PR #4684 (=e457dc5095=) made the
+registrar skip a kind whose registration states no simulate subject, and wired
+the scheduler's stop token to its own stop, so a start-up failure reports
+itself instead of hanging. PR #4687 (=20dc3d6133=) stopped the scheduler from a
+guard declared after the thread, which is the form the portable-stop gate
+accepts.

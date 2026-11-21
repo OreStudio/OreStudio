@@ -103,6 +103,7 @@ cell covers every finding of the rule in the file.
 
 | path | line | rule | expires | approver | reason |
 |------+------+------+---------+----------+--------|
+| projects/ores.trading/scripting/src/ore/grammar.hpp | | wide_types/over_ceiling | 2027-11-21 | marco | ORE's ScriptGrammar, copied by import_ore_scripting.py; its grammar rules are its fields, and reshaping it would break the diff against ORE |
 | projects/ores.codegen/library/templates/cpp_domain_type_entity.hpp.mustache | | template_sections/chained_tags | 2027-05-18 | marco | 8 chained section lines, recorded in template_section_baseline.json until the tags are split |
 | projects/ores.marketdata/modeling/ores.marketdata.fx_forward_publish.org | | model_rules/money_not_exact | 2027-05-18 | marco | the column is typed inexactly until its model moves to an exact decimal; recorded in money_decimal_columns.baseline |
 | projects/ores.marketdata/modeling/ores.marketdata.fx_forward_publish_point.org | | model_rules/money_not_exact | 2027-05-18 | marco | the column is typed inexactly until its model moves to an exact decimal; recorded in money_decimal_columns.baseline |

@@ -9,7 +9,7 @@
 #+created: 2026-06-08
 #+updated: 2026-10-01
 
-Variables are injected by =generator.py= from the Stencil context, which is
+Variables are injected by compass's =codegen= codec from the Stencil context, which is
 assembled from the model metadata (=modeling/*.org= entity files) and the
 generation configuration (the [[id:D7D53D71-C9E8-43AE-AA42-E58E57CD76C8][ores physical-space graph]]). Triple-braces ={{{var}}}= suppress
 HTML escaping; double-braces ={{var}}= escape. Section tags ={{#var}}=…={{/var}}=
@@ -454,4 +454,4 @@ Variables specific to sprint and agile document archetypes.
 * See also
 
 - [[id:3B6B9F75-BDC9-4AE9-B16E-5A05FFC3A4B5][Codegen template library]] — the groups overview.
-- [[proj:projects/ores.codegen/generator.py][generator.py]] — the generator that injects these variables into templates.
+- compass's =codegen= codec — the generator that injects these variables into templates.

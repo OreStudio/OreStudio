@@ -122,7 +122,7 @@ Current composite components and their active sub-components:
 | =ores.shell= | =api=, =application=, =iam=, =refdata=, =synthetic=, =trading=, =modeling= |
 | =ores.synthetic= | =api=, =core=, =service=, =modeling= |
 | =ores.telemetry= | =core=, =service=, =database= |
-| =ores.trading= | =api=, =core=, =service=, =modeling= |
+| =ores.trading= | =scripting=, =api=, =core=, =service=, =modeling= |
 | =ores.variability= | =api=, =core=, =service= |
 | =ores.workflow= | =api=, =core=, =service=, =modeling= |
 
@@ -174,6 +174,7 @@ protocol types.
 | =wrapper= | =ores.compute= | External process wrapper/bridge — executes ORE risk runs as a child process and reports results back to =core=. |
 | =database= | =ores.telemetry= | Database persistence layer — owns the DB schema and repository for the group when the persistence concern is large enough to separate from =core=. |
 | =quant= | =ores.analytics= | Dependency-light quantitative math library — CRM spanning-tree topology, the derived-rate engine and stochastic price processes. It carries no database or NATS dependency and is consumed for its mathematics alone, by =ores.refdata.core=, the =ores.synthetic= api and service, and =ores.marketdata.service=. No part of =ores.analytics= links it today, so its placement here records where the mathematics belongs by subject rather than an existing dependency. |
+| =scripting= | =ores.trading= | ORE's payoff script grammar, syntax tree and parser, copied from ORE by an import script that records the ORE commit, with a façade that reports diagnostics. It carries no database, messaging or QuantLib dependency and knows no trading type, so =ores.trading.api= and the other readers of scripts depend on it without a cycle; see [[id:4E135FB5-6E0A-45CC-A805-F5B70F29DDB4][Component Architecture of the Scripted Trade Subsystem]]. |
 
 ** Application-layer roles (=ores.shell=)
 

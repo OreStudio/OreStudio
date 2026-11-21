@@ -85,7 +85,7 @@ using namespace ores::logging;
 using namespace ores::database::service;
 using ores::testing::database_helper;
 
-TEST_CASE("postgres_listener_service_lifecycle", "[service][postgres_listener]") {
+TEST_CASE("postgres_listener_service_lifecycle", "[service][postgres_listener][direct]") {
     auto lg(make_logger(test_suite));
 
     auto callback = [&](const std::string&, const std::string&) {
@@ -106,7 +106,8 @@ TEST_CASE("postgres_listener_service_lifecycle", "[service][postgres_listener]")
     SUCCEED("Listener started and stopped without crashing.");
 }
 
-TEST_CASE("postgres_listener_service_notification_reception", "[service][postgres_listener]") {
+TEST_CASE("postgres_listener_service_notification_reception",
+          "[service][postgres_listener][direct]") {
     auto lg(make_logger(test_suite));
 
     std::string channel_name =
@@ -150,7 +151,7 @@ TEST_CASE("postgres_listener_service_notification_reception", "[service][postgre
 }
 
 TEST_CASE("postgres_listener_service_no_notification_without_subscribe",
-          "[service][postgres_listener]") {
+          "[service][postgres_listener][direct]") {
     auto lg(make_logger(test_suite));
 
     std::string channel_name =
@@ -184,7 +185,8 @@ TEST_CASE("postgres_listener_service_no_notification_without_subscribe",
     listener.stop();
 }
 
-TEST_CASE("postgres_listener_service_subscribe_before_start", "[service][postgres_listener]") {
+TEST_CASE("postgres_listener_service_subscribe_before_start",
+          "[service][postgres_listener][direct]") {
     auto lg(make_logger(test_suite));
 
     std::string channel_name =
@@ -230,7 +232,7 @@ TEST_CASE("postgres_listener_service_subscribe_before_start", "[service][postgre
     listener.stop();
 }
 
-TEST_CASE("postgres_listener_service_notify_method", "[service][postgres_listener]") {
+TEST_CASE("postgres_listener_service_notify_method", "[service][postgres_listener][direct]") {
     auto lg(make_logger(test_suite));
 
     std::string channel_name =
@@ -272,7 +274,8 @@ TEST_CASE("postgres_listener_service_notify_method", "[service][postgres_listene
     listener.stop();
 }
 
-TEST_CASE("postgres_listener_service_connect_forces_utc_session", "[service][postgres_listener]") {
+TEST_CASE("postgres_listener_service_connect_forces_utc_session",
+          "[service][postgres_listener][direct]") {
     database_helper h;
     const auto& credentials = h.context().connection_options();
 
@@ -291,7 +294,7 @@ TEST_CASE("postgres_listener_service_connect_forces_utc_session", "[service][pos
 }
 
 TEST_CASE("postgres_listener_service_reconnect_surfaces_loss_window",
-          "[service][postgres_listener]") {
+          "[service][postgres_listener][direct]") {
     std::string channel_name =
         "test_channel_reconnect_" +
         std::to_string(std::hash<std::thread::id>{}(std::this_thread::get_id()));
@@ -385,7 +388,7 @@ TEST_CASE("postgres_listener_service_reconnect_surfaces_loss_window",
 }
 
 TEST_CASE("postgres_listener_service_drains_a_burst_of_notifications",
-          "[service][postgres_listener]") {
+          "[service][postgres_listener][direct]") {
     auto lg(make_logger(test_suite));
 
     // A bulk import fires one notification per row. The listener must drain a

@@ -87,6 +87,7 @@ RUN curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc \
  && apt-get install -y -q -o Acquire::Retries=3 --no-install-recommends \
         "postgresql-${PG_MAJOR}" "postgresql-${PG_MAJOR}-timescaledb" \
         "postgresql-client-${PG_MAJOR}" libpq-dev \
+        pgbouncer \
  && rm -rf /var/lib/apt/lists/* \
  && echo "shared_preload_libraries = 'timescaledb'" \
         > "/etc/postgresql/${PG_MAJOR}/main/conf.d/timescaledb.conf"

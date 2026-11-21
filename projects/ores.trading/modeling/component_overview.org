@@ -12,7 +12,7 @@
 #+full_name: ores.trading
 #+brief: Trading domain component
 #+component_kind: composite
-#+parts: api core service
+#+parts: scripting api core service
 
 * Diagram
 
@@ -36,13 +36,14 @@ their recipes.
 
 | Sub-component | Brief |
 |---------------+-------|
+| [[id:3861DA99-704C-4CEB-84EC-B829E2BDD2B0][ores.trading.scripting]] | ORE's payoff script grammar, syntax tree and parser, copied from ORE, with diagnostics; no database, messaging or QuantLib. |
 | [[id:FD34A3B5-0E24-467A-A9D7-A2F2E7480E1B][ores.trading.api]] | Protocol types, domain entities, JSON/table I/O, and NATS message schemas for the tradi… |
 | [[id:E9A3F7B2-6C14-4D8E-A5B9-3F2D1C0E7A6B][ores.trading.core]] | Trade booking and lifecycle management — domain model, repositories, services, and NATS… |
 | [[id:0EBAD7F6-F0DF-4FF5-8404-C3F0EA8E8BBD][ores.trading.service]] | NATS service entrypoint for the trading domain — wires handlers, repositories, and conf… |
 
-The scripted trade subsystem introduces =ores.trading.scripting=, which holds
-ORE's script parser beneath =ores.trading.api=; its position and the dependency
-graph are described in [[id:4E135FB5-6E0A-45CC-A805-F5B70F29DDB4][Component Architecture of the Scripted Trade Subsystem]].
+=ores.trading.scripting= sits beneath =ores.trading.api= and knows no trading type;
+its place in the scripted trade subsystem is described in
+[[id:4E135FB5-6E0A-45CC-A805-F5B70F29DDB4][Component Architecture of the Scripted Trade Subsystem]].
 
 * Entity modules
 

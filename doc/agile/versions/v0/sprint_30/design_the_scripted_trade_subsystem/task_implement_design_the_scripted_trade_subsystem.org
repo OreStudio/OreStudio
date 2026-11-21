@@ -177,6 +177,13 @@ via its "Verifies task" field.
 | 4954.8 | no Review row for the second round | this task | accept | these rows |
 | user.1 | titles read as assertions, as if unit test names | architecture pages | accept | retitled in academic style as signed off; files renamed; the capture records the 76 existing pages |
 | user.2 | the prose is informal | architecture pages | accept | rewritten in an academic register, and the linking sentences on other pages recast |
+| 4954.9 | the order of diagnostics with no location is undefined | diagnostic page | accept | located diagnostics by line and column, then those about a variable by its name |
+| 4954.10 | the unit of a column is unstated | diagnostic page | accept | Unicode code points from one, a tab as one; the parser converts Spirit's byte positions, Emacs reads character columns, the editor converts to its own offsets |
+| 4954.11 | numbered means both the code and the position | diagnostic page | accept | numbered by the stable code; the position is the index |
+| 4954.12 | REQUIRE findings over trade values overlap SCR2 and SCR3 | diagnostic page | accept | a REQUIRE violation is SCR3, whether the value is a literal or a trade variable |
+| 4954.13 | when the editor asks for diagnostics is unstated | editor task | accept | after a pause in typing and on save |
+| user.3 | the validator must report numbered errors and warnings with line and column, as a compiler does, for Emacs and the editor | diagnostic page, four tasks | accept | Diagnostic Reporting in Script Validation, and the parser, booking, shell and editor tasks' acceptance |
+| user.4 | the pages must state only the target state | architecture pages | accept | the Divergence sections are removed; every gap is a task's acceptance |
 
 * Result
 

@@ -30,14 +30,16 @@ that finds no error succeeds, whatever warnings it reports.
 | severity | =error= or =warning=; an error prevents booking, a warning does not |
 | code | a stable number identifying the kind of finding, such as =SCR1001= |
 | line | the one-based line of the script at which the finding is located |
-| column | the one-based column, where it can be determined; otherwise absent |
+| column | the one-based column, where it can be determined; otherwise absent. Columns count Unicode code points, a tab counting as one |
 | end | the line and column at which the finding ends, where known, so that an editor may mark a range |
 | message | a statement of the finding, naming the construct, input or variable concerned |
 | subject | for a finding about a trade's variables rather than the script's text, the variable concerned, in place of a location |
 
-Diagnostics are reported in order of location, and each is numbered by its
-position in the list, so that a consumer may refer to a finding by ordinal as
-well as by code. The codes are held as data, each with its severity, a title and
+A diagnostic is numbered by its code, which identifies the kind of finding and
+does not change between releases. Diagnostics are ordered by location: those
+located in the text first, by line and then by column, followed by those
+concerning a variable, by the variable's name. A consumer may refer to a
+diagnostic by its index, its position in that order, within one validation. The codes are held as data, each with its severity, a title and
 an explanation, so that a code's meaning is documented once and its severity is
 not decided anew at each point of report.
 
@@ -47,11 +49,12 @@ not decided anew at each point of report.
 |-------+------+----------+--------|
 | =SCR1xxx= | syntax | error | ORE's grammar ([[id:8FD7BD95-AAEC-4CF9-A9F4-D609A9DEFBD8][Script Parsing with ORE's Grammar]]) |
 | =SCR2xxx= | inputs and variables | error or warning | the comparison of a trade's variables with the script's inputs ([[id:92449D70-09E2-4391-B716-A1001F22B271][Derivation of Script Inputs from Free Variables]]) |
-| =SCR3xxx= | value rules | error | the script's =REQUIRE= statements, applied to literal values |
+| =SCR3xxx= | value rules | error | the script's =REQUIRE= statements, applied to the literal values in the script and to the values the trade supplies |
 | =SCR4xxx= | usage | warning | the static analysis of the syntax tree |
 
-A missing input, a variable of the wrong type and a value that violates a rule
-are errors. A variable the script never reads, and a declared variable the script
+A missing input and a variable of the wrong type are =SCR2xxx= errors; a value
+that violates a =REQUIRE= statement is an =SCR3xxx= error, whether the value is a
+literal of the script or a variable of the trade. A variable the script never reads, and a declared variable the script
 never uses, are warnings.
 
 ** Limits of syntax reporting
@@ -62,6 +65,16 @@ with several syntax errors therefore yields one syntax diagnostic per validation
 the remaining errors are reported once the first is corrected. The checks of
 inputs, values and usage operate on a parsed tree, and are therefore reported
 only for a script that parses, in which case all of them are reported together.
+
+** Columns
+
+A column counts Unicode code points from one, a tab counting as one, so that the
+shell, Emacs and the editor agree on non-ASCII text. Spirit's position-tracking
+iterator counts the bytes of the script's UTF-8 text, and the parser converts its
+positions to code points before reporting them. An Emacs checker reads the
+columns as characters, which for =compilation-mode= means setting
+=compilation-error-screen-columns= to =nil=; the editor converts code points to
+the offsets of its own text model.
 
 ** Consumers
 

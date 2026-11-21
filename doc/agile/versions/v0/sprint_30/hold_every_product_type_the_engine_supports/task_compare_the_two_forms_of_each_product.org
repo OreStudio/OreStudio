@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :hold_every_product_type_the_engine_supports:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/compare-the-two-forms-of-each-product
+#+pr: 4942
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-17
@@ -28,11 +28,11 @@ between the native and the scripted implementation is seen and explained.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | The both-forms task, which books the twins, and the valuation story, which prices them. |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-17                               |
 
 * Acceptance
@@ -51,9 +51,27 @@ between the native and the scripted implementation is seen and explained.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The both-forms task already books every pair, and the ORE engine test already
+runs ORE over every recorded trade with the Products example's configuration,
+which writes =npv.csv=. The comparison reads that run, not a run of its own.
+
+- The engine test runs ORE once for both of its tests. The run is held in
+  memory, and its directory is removed when it succeeds.
+- Merging the recorded trades renames each by its file, because the recorded
+  trades of each asset class share ids. The merge keeps each run id's trade
+  type and recorded id.
+- A pair is a recorded native trade and the ScriptedTrade whose id
+  =twin_id_for= draws from the native's id and type. =twin_id_for= moves to the
+  scripted twins header for this.
+- The values come from =npv.csv= through ores.ore's =read_metrics_for_file=. A
+  trade ORE names =Failed= has no value.
+- A pair agrees when both are valued, in the same currency, and differ by no
+  more than a millionth of the larger value or by a cent.
+- =generated_trades_twin_differences.txt= lists each trade type whose pairs do
+  not agree, with the reason. The test fails on a differing type the list does
+  not hold, and on a listed type whose pairs now agree.
+- =ORES_UPDATE_GENERATED_TRADES=1= writes =generated_trades_twin_values.tsv=:
+  each pair's two values, their difference and whether they agree.
 
 * Measurements
 
@@ -65,9 +83,13 @@ code changing, and the reader of a bare number cannot tell which tree it came
 from. Where the raw output matters, put it in an =evidence/= file beside the
 task and name that file in the Command column.
 
-| What | Value | Command | Commit |
-|------+-------+---------+--------|
-|      |       |         |        |
+| What                                    | Value      | Command                                                                                              | Commit     |
+|-----------------------------------------+------------+------------------------------------------------------------------------------------------------------+------------|
+| Twin pairs the ORE run values           | 34         | =ores.synthetic.core.tests "[ore_engine]"= with =ORES_UPDATE_GENERATED_TRADES=1=, rows of the report | e01e9295ab |
+| Pairs that agree to the cent            | 28 of 34   | the =agrees= column of =generated_trades_twin_values.tsv=                                            | e01e9295ab |
+| Trade types on the known list           | 3 of 17    | =generated_trades_twin_differences.txt=                                                              | e01e9295ab |
+| Trade types that need a wider tolerance | 0          | every agreeing pair differs by 0.00                                                                  | e01e9295ab |
+| ores.synthetic.core.tests with ORE      | 163 of 163 | =ores.synthetic.core.tests=                                                                          | e01e9295ab |
 
 * Notes
 
@@ -75,6 +97,24 @@ Depends on [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in 
 twins, and on the valuation story, because a pair can be compared only when the
 engine prices both forms: today several element forms raise an engine
 configuration error in the Products example configuration.
+
+** What the comparison found
+
+Every pair whose two trades are both valued agrees to the cent, except the FX
+worst-of basket swap, so no product needs a wider tolerance than the default.
+Both forms price through ORE's scripted engines on the same market, so equal
+terms give equal values.
+
+- *EquityPairwiseVarianceSwap, FxPairwiseVarianceSwap*: the native trade is not
+  valued, because the Products example states no pricing engine for either type
+  (the known errors list holds the message). The twins price.
+- *FxWorstOfBasketSwap*: ORE's class runs a script of its own. The twin reads
+  one fixing per period where the class compounds, and pays the initial fixed
+  amount on the first period date. The twins differ by 3.2% (-651335.18 against
+  -630811.63 USD) and 0.6% (266454.13 against 264880.01 USD).
+
+The planted check: with the worst-of line removed from the known list and an
+EquityBasketOption line added, the test fails and names both.
 
 * Test Scenarios
 
@@ -91,6 +131,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4942][#4942]] | [synthetic] Compare each scripted twin with its native trade |
 | [[https://github.com/OreStudio/OreStudio/pull/4815][#4815]] | [agile] Plan holding both forms on tables and comparing them (planning; this task is not delivered by it) |
 
 * Review
@@ -102,5 +143,22 @@ via its "Verifies task" field.
 | 3 | does a stale known entry fail | task_compare_the_two_forms_of_each_product.org | accept | yes, stated |
 | 4 | near-identical task pages | - | decline | the repo's task template |
 | 5 | branch and PR fields only on one task | - | decline | each hold task records its own when it starts |
+| 4942.1 | A listed type hides all its pairs | generated_trades_twin_differences.txt | accept | each line states a bound, a relative difference or unvalued; a pair beyond it fails. Planted at 1%, the 3.2% pair fails |
+| 4942.2 | The report is not asserted | generated_trade_ore_engine_tests.cpp | accept | outside a recording run, each pair's type, id and agreement must match the report |
+| 4942.3 | Unpaired natives are skipped silently | generated_trade_ore_engine_tests.cpp | accept | every recorded native of a twinned type must have its twin |
+| 4942.4 | Twin ids can collide | generated_trade_ore_engine_tests.cpp | accept | a repeated ScriptedTrade id fails the pairing |
+| 4942.5 | The static initialiser retries | generated_trade_ore_engine_tests.cpp | decline | only on a failed run, and the retry fails for the same reason |
+| 4942.6 | -0.00 in the report | generated_trade_ore_engine_tests.cpp | accept | half a cent either way prints as 0.00 |
+| 4942.7 | The run directory INFO is misleading | generated_trade_ore_engine_tests.cpp | accept | it says the directory is kept when the run fails |
+| 4942.8 | Tolerance wording; currency of an unvalued trade | generated_trade_ore_engine_tests.cpp | accept | the comment says at least a cent; an unvalued trade states no currency |
 
 * Result
+
+The ORE engine test now compares each product's two forms. One ORE run over the
+recorded trades values both; the test pairs each native trade with its scripted
+twin by =twin_id_for=, and requires each pair to agree, or its trade type to be
+on a known list with the reason, asserted exactly. Of the 34 pairs, 28 agree to
+the cent. The pairwise variance swaps' natives are not valued in the example's
+configuration, and the worst-of basket swap's twin differs by a few percent for
+reasons the notes state. A recording run writes each pair's two values and their
+difference to =generated_trades_twin_values.tsv=.

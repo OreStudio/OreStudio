@@ -18,8 +18,9 @@ Compute wrappers never release their disk, took this capture over on
 2026-11-21. Its goal and acceptance now carry the cache key from the package's
 identity and the pruning of the entries no published version claims. The task
 found the same leak on 2026-11-20, when the wrapper folders filled a
-development disk. The line numbers below are from 2026-10-13; the cache path
-is now at =application.cpp:772=.
+development disk. The line numbers below are from 2026-10-13. On 2026-11-21
+the cache path is at =application.cpp:772=, the lock file and archive names at
+=:662= and =:674=, and the SHA256 check at =:692=.
 
 * What
 

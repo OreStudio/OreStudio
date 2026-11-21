@@ -389,7 +389,7 @@ def image_names(project_root: Path) -> list[str]:
     ores.iam.service.
     """
     names = ["ores-service-base", "ores-service-libs", "ores-nats",
-             "ores-compute-wrapper", "ores-web", "ores-shell"]
+             "ores-pgbouncer", "ores-compute-wrapper", "ores-web", "ores-shell"]
     names += runtime_services(project_root)
     return names
 

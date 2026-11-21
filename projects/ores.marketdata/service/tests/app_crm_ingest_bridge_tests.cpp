@@ -117,7 +117,7 @@ struct fixture {
 std::string insert_sparse_fx_fixing(const ores::database::context& ctx,
                                     const boost::uuids::uuid& party) {
     const auto id = boost::uuids::to_string(boost::uuids::random_generator{}());
-    const auto uri = "oresmd://fx/EUR?type=fixing&index=fx&name=TEST" + id.substr(0, 8);
+    const auto uri = "oresmd://fx/EUR?type=fixing&index=fx&name=TEST" + id;
     auto lg = ores::logging::make_logger("ores.marketdata.service.tests.app_crm_ingest_bridge");
     ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx,
@@ -493,6 +493,7 @@ TEST_CASE("a fixing series without its unit currency is refused by name",
         sources->find({f.h.tenant_id().to_string(), boost::uuids::to_string(f.party_id)});
     REQUIRE(held != sources->end());
     CHECK_THAT(held->second.refusal, Catch::Matchers::ContainsSubstring(uri));
+    CHECK_THAT(held->second.refusal, Catch::Matchers::ContainsSubstring("unit_ccy=''"));
     CHECK(held->second.sources.empty());
 }
 

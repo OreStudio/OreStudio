@@ -112,6 +112,13 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 | 1 | Local review: the sparse rows the tests write stay in their test tenants and show in a whole-database audit. | =app_crm_ingest_bridge_tests.cpp= | Accept as is | Every DB test leaves its tenant behind; the note says to filter the audit by tenant. |
 | 2 | Local review: misspell check on the changed files. | all | Clean | =misspell-fixer= exit 0. |
+| 3 | PR review: the helper uses a read-query helper for an insert that returns a row. | =app_crm_ingest_bridge_tests.cpp= | Declined | The backfill tests insert their SQL rows the same way. |
+| 4 | PR review: the provider =ore= and the change reason are hard-coded. | =app_crm_ingest_bridge_tests.cpp= | Declined | The same values the backfill tests use; neither is a key a lookup refuses. |
+| 5 | PR review: check that the refusal names the missing field. | =app_crm_ingest_bridge_tests.cpp= | Fixed | The test also checks for =unit_ccy=''=. |
+| 6 | PR review: could rows of other tests make =sources.empty()= flaky? | =app_crm_ingest_bridge_tests.cpp= | No change | Each fixture has its own random party, and the result is keyed by tenant and party. |
+| 7 | PR review: the second test's control is the first =REQUIRE=. | =app_crm_ingest_bridge_tests.cpp= | No change | Confirmation. |
+| 8 | PR review: use the full id in the URI. | =app_crm_ingest_bridge_tests.cpp= | Fixed | |
+| 9 | PR review: post the gate result before merge. | all | Accept | Posted. |
 
 * Result
 

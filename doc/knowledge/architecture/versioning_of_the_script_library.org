@@ -33,8 +33,8 @@ valuation of a booked trade.
   been loaded (=trading_script_library_corrections_populate.sql=). A correction
   applies only when its text occurs exactly once, has no effect once the code
   already contains its replacement, and otherwise causes the load to fail, so
-  that any change ORE makes to the script is reviewed. At present it corrects a
-  missing semicolon in =WorstOfBasketSwap= and the =FD= variant of
+  that any change ORE makes to the script is reviewed. The corrections comprise
+  a missing semicolon in =WorstOfBasketSwap= and the =FD= variant of
   =GenericBarrierOption=, which rolled its values back only as far as the first
   monitoring date.
 - *User scripts.* The publication of a user's script is a change to reference
@@ -52,10 +52,3 @@ column reported by ORE's grammar. Its inputs are derived from its text
 Each run writes the library from the stored rows, so that a script absent from
 the store causes the failure of any run that requires it, and the engine reads
 the stored versions rather than the copy distributed with ORE ([[id:708554F7-FA3A-49E1-8A11-4AE968C76758][Script Execution and Compilation in ORE]]).
-
-** Divergence from the current implementation
-
-The inputs are extracted into the seed by a text-processing script rather than
-derived by a parser, and no script is parsed before ORE parses it; the syntax
-error in =WorstOfBasketSwap= was discovered through a failed ORE run. A trade
-records no library version.

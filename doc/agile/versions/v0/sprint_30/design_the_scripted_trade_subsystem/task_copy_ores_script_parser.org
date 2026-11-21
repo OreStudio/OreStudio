@@ -39,6 +39,9 @@ ores.trading.scripting holds ORE's script grammar, syntax tree, printer, static 
 - every copied file keeps ORE's copyright header and names the ORE commit it was copied from, and a script diffs the copy against ORE's files at that commit
 - parse returns ORE's error with its line and column, and every script of the library parses
 - inputs_of agrees with the library's stored inputs for every script, and each difference is explained
+- parse and check report their findings as diagnostics: an error or a warning, a stable code such as SCR1001, the one-based line, the column where it can be determined, the end of the range where known, and a message naming the construct, input or variable concerned
+- the diagnostics are ordered by location and numbered by position, and the codes are held as data with their severity, title and explanation; a test reports each code at least once
+- check reports every input, value and usage finding of a parsed script together, and parse reports the first syntax error with its position, as ORE's grammar does
 
 * Plan
 
@@ -61,6 +64,8 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+The form of validation findings, numbered errors and warnings with line and column, is [[id:ECA442BB-48D7-47CB-9BAA-97FD1C0BBA9A][Diagnostic Reporting in Script Validation]].
 
 Cut from [[id:8FD7BD95-AAEC-4CF9-A9F4-D609A9DEFBD8][Script Parsing with ORE's Grammar]], which states the target this task builds to; the components it touches are [[id:4E135FB5-6E0A-45CC-A805-F5B70F29DDB4][Component Architecture of the Scripted Trade Subsystem]].
 

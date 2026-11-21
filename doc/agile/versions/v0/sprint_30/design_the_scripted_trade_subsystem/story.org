@@ -33,7 +33,7 @@ One scripted trade subsystem serves every way a scripted trade enters ORE Studio
 - the scripted trade architecture is documented to the project's knowledge standard: one page per claim, linked by org-roam to each other and to the existing pages, stating the target state; it gives the use cases, the components, their dependency graph with no cycle, and each component's public API
 - ores.trading.scripting holds ORE's script parser, copied with its authorship, diffable against ORE's, and shaped to ORE Studio's standards
 - every product, native or script only, has a schema of its fields and the forms it can be booked in
-- a product is booked through one API in either of its forms, and the server validates a scripted trade with ORE's grammar
+- a product is booked through one API in either of its forms, and the server validates a scripted trade with ORE's grammar, reporting numbered errors and warnings with line and column, as a compiler does, to the shell for use in Emacs and to the scripted trade editor
 - ores.shell has commands to parse and validate scripts and describe products, some of which need no login
 - the generator books every product and form through the same API, and ORE values each
 

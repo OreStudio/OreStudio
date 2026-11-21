@@ -49,10 +49,3 @@ twin recipe ([[id:206312C0-6398-4B9D-86F8-D8AEC9A5CEAD][Twin Recipes: Mapping Na
 | ores.shell | presentation of a product's description ([[id:B01292A4-0394-40E8-A0B4-2DBA3F46C052][Scripted Trade Commands in the Shell]]) |
 | import | validation of a document's terms |
 | synthetic generation | field-by-field drawing of terms ([[id:8BA8D977-46CC-4DC6-9EFE-3FBE56B76A37][Synthetic Generation of Products in Every Form]]) |
-
-** Divergence from the current implementation
-
-No schema is served. A native product's fields exist only as the C++ terms of
-its builder, and a script's inputs exist as rows of [[id:F08D458F-B694-4B2F-A945-E22544A9222F][ores.trading.script_input]] that only
-the scripted builder consults; no interface reads either as the fields of a
-product.

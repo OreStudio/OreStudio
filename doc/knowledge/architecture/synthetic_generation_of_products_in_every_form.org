@@ -38,10 +38,3 @@ A barrier or strike stated as a fixed literal is reached for some underlyings
 and never for others. A level drawn at a stated distance from the underlying's
 price is reached as the product intends, so that the barrier logic of a script is
 exercised.
-
-** Divergence from the current implementation
-
-The generator books native trades through their builders and then books their
-scripted forms by evaluating recipes over the native rows within
-=ores.synthetic.core=. Scripted-only products are booked from the rows of a
-carrier type, with barriers set at levels that no underlying reaches.

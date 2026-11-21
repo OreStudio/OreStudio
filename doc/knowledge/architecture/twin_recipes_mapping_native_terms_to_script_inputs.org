@@ -49,10 +49,3 @@ native class departs from its library script, the two forms are priced
 differently, and the ORE engine test lists the product with the reason and a
 bound. In the case of the FX worst-of basket swap, the library script reads one
 fixing per period, whereas ORE's class compounds the overnight index.
-
-** Divergence from the current implementation
-
-The recipe is evaluated within =ores.synthetic.core= for synthetic generation
-only, so no booking path books a product in its scripted form from its terms.
-The same evaluator also books scripted-only products from the rows of a carrier
-type, an arrangement that [[id:290A1069-A1EE-4DD1-8D23-1C60F76F8949][Product Schemas for Native and Scripted Products]] supersedes.

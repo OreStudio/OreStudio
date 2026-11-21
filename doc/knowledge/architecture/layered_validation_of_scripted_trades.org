@@ -37,6 +37,13 @@ market data and the pricing configuration permit a trade to be priced. Each
 layer is authoritative for the decisions within its competence and makes no
 claim beyond them.
 
+** The form of the findings
+
+The server reports its findings as numbered errors and warnings, each located by
+line and, where possible, column, in the convention of a compiler
+([[id:ECA442BB-48D7-47CB-9BAA-97FD1C0BBA9A][Diagnostic Reporting in Script Validation]]). The same list is printed by the shell for use in Emacs,
+displayed by the editor beside the text, and carried by a rejected booking.
+
 ** Validation prior to booking
 
 The booking API's =validate_script= operation performs the server's validation
@@ -44,8 +51,3 @@ without booking, which allows the editor to offer an explicit check and the
 shell to validate a file ([[id:B01292A4-0394-40E8-A0B4-2DBA3F46C052][Scripted Trade Commands in the Shell]]). A trial construction in ORE, which
 brings the engine's validation forward to before booking, is a separate and
 slower request.
-
-** Divergence from the current implementation
-
-The server compares a library script's variables with its extracted inputs, but
-parses nothing, and no editor exists.

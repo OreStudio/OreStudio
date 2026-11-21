@@ -38,6 +38,8 @@ ores.shell.trading parses, lists the inputs of and prints a script with no login
 - script parse, script inputs and script print run with no session and no server
 - script validate, product describe and trade book go to the trading service and need a login
 - a recipe of the shell topic covers each command
+- script check prints each diagnostic as FILE:LINE:COLUMN: severity: message [code], needs no login, and exits with a non-zero status when any error is reported
+- a recipe binds script check as an Emacs compilation command and as a flymake or flycheck checker, so a script edited by hand is checked as it is saved
 
 * Plan
 
@@ -60,6 +62,8 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+The form of validation findings, numbered errors and warnings with line and column, is [[id:ECA442BB-48D7-47CB-9BAA-97FD1C0BBA9A][Diagnostic Reporting in Script Validation]].
 
 Cut from [[id:B01292A4-0394-40E8-A0B4-2DBA3F46C052][Scripted Trade Commands in the Shell]], which states the target this task builds to; the components it touches are [[id:4E135FB5-6E0A-45CC-A805-F5B70F29DDB4][Component Architecture of the Scripted Trade Subsystem]].
 

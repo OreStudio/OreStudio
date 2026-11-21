@@ -57,7 +57,7 @@ note right of scripting
   ORE's grammar, syntax tree,
   printer and static analysis,
   copied with ORE's authorship.
-  parse, inputs_of, print.
+  parse, inputs_of, check, print.
 end note
 
 @enduml

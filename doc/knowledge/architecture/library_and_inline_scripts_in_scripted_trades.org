@@ -43,9 +43,3 @@ unreviewed model, the right to book one is governed by a permission of its own.
 In both cases the trade states the variables the script reads, as rows of
 [[id:8D12E0ED-B6D9-4FDC-A98C-35AE84B8045F][ores.trading.scripted_parameter]] beneath the trade's [[id:B3FBDD1A-8FC6-4702-9600-B75581FC6494][ores.trading.scripted_instrument]], and
 each variable is validated against the script's inputs by name and type.
-
-** Divergence from the current implementation
-
-A trade references a library script by name alone, without a version, so that a
-change to the library alters the valuation of trades already booked. No booking
-path accepts an inline script.

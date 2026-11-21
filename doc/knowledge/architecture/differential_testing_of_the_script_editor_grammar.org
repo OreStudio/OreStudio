@@ -34,8 +34,6 @@ is not limited to the forms ORE's authors happened to use.
 The grammar serves highlighting, folding and error reporting during
 composition in the editor described by [[id:179E60E8-59B5-456A-B2CC-55323052E234][Edit a scripted trade on its own screen]]. It takes no part in
 the decision to accept a booking, which rests with the server's application of
-ORE's grammar ([[id:C2A45123-A9B3-49BA-BEFD-07E1703F7B84][Layered Validation of Scripted Trades]]).
-
-** Divergence from the current implementation
-
-Neither the editor nor the tree-sitter grammar exists.
+ORE's grammar ([[id:C2A45123-A9B3-49BA-BEFD-07E1703F7B84][Layered Validation of Scripted Trades]]). The editor displays the server's
+diagnostics alongside its own markings and moves to the location of a selected
+diagnostic ([[id:ECA442BB-48D7-47CB-9BAA-97FD1C0BBA9A][Diagnostic Reporting in Script Validation]]).

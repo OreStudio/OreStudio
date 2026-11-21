@@ -45,9 +45,3 @@ The comment block of a library script may enumerate its inputs, but comments
 are not maintained with the code. That of =WindowBarrierOption= lists
 =ObservationDates=, whereas its code reads =StartDate= and =EndDate=. The code
 is therefore authoritative, and a comment contributes only a description.
-
-** Divergence from the current implementation
-
-The inputs are extracted from the code into the seed by a text-processing
-script rather than by a parser, and a user's own script has no means of stating
-its inputs.

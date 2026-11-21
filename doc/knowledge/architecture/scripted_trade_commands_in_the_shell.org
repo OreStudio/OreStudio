@@ -25,16 +25,16 @@ command, and require authentication.
 | Command | Authentication | Effect |
 |---------+----------------+--------|
 | =script parse <file>= | not required | parses with ORE's grammar and reports any error with its line and column |
+| =script check <file> [variables]= | not required | prints every diagnostic as =FILE:LINE:COLUMN: severity: message [code]= and exits with a non-zero status on any error ([[id:ECA442BB-48D7-47CB-9BAA-97FD1C0BBA9A][Diagnostic Reporting in Script Validation]]) |
 | =script inputs <file>= | not required | lists the free variables with their types, multiplicities and rules ([[id:92449D70-09E2-4391-B716-A1001F22B271][Derivation of Script Inputs from Free Variables]]) |
 | =script print <file>= | not required | prints the script in normalised form |
 | =script validate <file> <variables>= | required | applies the server's validation against the store ([[id:C2A45123-A9B3-49BA-BEFD-07E1703F7B84][Layered Validation of Scripted Trades]]) |
 | =product describe <code>= | required | prints the product's schema ([[id:290A1069-A1EE-4DD1-8D23-1C60F76F8949][Product Schemas for Native and Scripted Products]]) |
 | =trade book ...= | required | books through the booking API ([[id:3085E65E-413B-4E7A-B60A-5844A124C999][The Product Booking API]]) |
 
+The output of =script check= follows the convention Emacs's =compilation-mode=
+recognises, so that the command may be bound as a =flymake= or =flycheck= checker
+and used while a script is edited by hand.
+
 The commands reside in =ores.shell.trading=, the part of the shell that projects
 =ores.trading= ([[id:D0876A24-69BA-F484-ED9B-71CD3AA8710C][ores.shell]]).
-
-** Divergence from the current implementation
-
-ores.shell provides no command for scripts or products, and every command
-requires a session.

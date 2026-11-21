@@ -40,6 +40,8 @@ A person books or changes a generic ScriptedTrade on a screen of its own: they p
 - the script's code shows read-only beside the form
 - an inline script is edited in a code editor, its inputs are read from it, and the form follows them
 - a trade of each form the generator books opens, edits and saves through the screen
+- the editor asks the server's validate_script for the diagnostics, marks each one's range in the text, lists them with their codes, and moves to a diagnostic's line and column when it is selected
+- a diagnostic about a variable is shown on the form field of that variable
 
 * Plan
 
@@ -62,6 +64,8 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+The form of validation findings, numbered errors and warnings with line and column, is [[id:ECA442BB-48D7-47CB-9BAA-97FD1C0BBA9A][Diagnostic Reporting in Script Validation]].
 
 * Test Scenarios
 

@@ -47,17 +47,16 @@ scripts itself ([[id:708554F7-FA3A-49E1-8A11-4AE968C76758][Script Execution and 
 
 ** Interface
 
-- =parse(text)= returns a syntax tree, or ORE's error with its line and column.
+- =parse(text)= returns a syntax tree, or a syntax diagnostic carrying ORE's
+  error with its line and column ([[id:ECA442BB-48D7-47CB-9BAA-97FD1C0BBA9A][Diagnostic Reporting in Script Validation]]).
 - =inputs_of(tree)= returns the free variables with their types, multiplicities
   and rules ([[id:92449D70-09E2-4391-B716-A1001F22B271][Derivation of Script Inputs from Free Variables]]).
 - =print(tree)= returns the script's text in normalised form.
+- =check(tree, variables)= returns the diagnostics of the input, value and usage
+  checks, as [[id:ECA442BB-48D7-47CB-9BAA-97FD1C0BBA9A][Diagnostic Reporting in Script Validation]] defines them.
 
 ** Consumers
 
 The parser is used by the script library at publication ([[id:CCA8090C-26E0-4571-84BA-9115C110376C][Versioning of the Script Library]]), by the
 booking API when a scripted trade is validated ([[id:3085E65E-413B-4E7A-B60A-5844A124C999][The Product Booking API]]), and by those
 shell commands that require no authentication ([[id:B01292A4-0394-40E8-A0B4-2DBA3F46C052][Scripted Trade Commands in the Shell]]).
-
-** Divergence from the current implementation
-
-ORE Studio contains no parser; a script is first parsed by ORE during a run.

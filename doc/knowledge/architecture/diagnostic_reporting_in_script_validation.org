@@ -1,0 +1,82 @@
+:PROPERTIES:
+:ID: ECA442BB-48D7-47CB-9BAA-97FD1C0BBA9A
+:END:
+#+title: Diagnostic Reporting in Script Validation
+#+description: The form in which script validation reports its findings: numbered errors and warnings with line and column, in the convention of a compiler, consumed alike by Emacs, the shell and the scripted trade editor.
+#+type: knowledge
+#+level: cross
+#+filetags: :scripting:trading:architecture:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+
+* Summary
+
+Script validation reports its findings as a compiler does: as a list of
+diagnostics, each an error or a warning, identified by a stable number and
+located by line and, where it can be determined, by column. A single
+representation serves three consumers. The shell prints it in the conventional
+=file:line:column: severity: message= form, so that Emacs can act as a checker
+while a script is edited by hand; the booking API returns it as structured data,
+so that the scripted trade editor can mark each finding in the text and move to
+it; and a rejected booking states it as the reason for rejection. A validation
+that finds no error succeeds, whatever warnings it reports.
+
+* Detail
+
+** The diagnostic
+
+| Element | Content |
+|---------+---------|
+| severity | =error= or =warning=; an error prevents booking, a warning does not |
+| code | a stable number identifying the kind of finding, such as =SCR1001= |
+| line | the one-based line of the script at which the finding is located |
+| column | the one-based column, where it can be determined; otherwise absent |
+| end | the line and column at which the finding ends, where known, so that an editor may mark a range |
+| message | a statement of the finding, naming the construct, input or variable concerned |
+| subject | for a finding about a trade's variables rather than the script's text, the variable concerned, in place of a location |
+
+Diagnostics are reported in order of location, and each is numbered by its
+position in the list, so that a consumer may refer to a finding by ordinal as
+well as by code. The codes are held as data, each with its severity, a title and
+an explanation, so that a code's meaning is documented once and its severity is
+not decided anew at each point of report.
+
+** Kinds of finding
+
+| Range | Kind | Severity | Source |
+|-------+------+----------+--------|
+| =SCR1xxx= | syntax | error | ORE's grammar ([[id:8FD7BD95-AAEC-4CF9-A9F4-D609A9DEFBD8][Script Parsing with ORE's Grammar]]) |
+| =SCR2xxx= | inputs and variables | error or warning | the comparison of a trade's variables with the script's inputs ([[id:92449D70-09E2-4391-B716-A1001F22B271][Derivation of Script Inputs from Free Variables]]) |
+| =SCR3xxx= | value rules | error | the script's =REQUIRE= statements, applied to literal values |
+| =SCR4xxx= | usage | warning | the static analysis of the syntax tree |
+
+A missing input, a variable of the wrong type and a value that violates a rule
+are errors. A variable the script never reads, and a declared variable the script
+never uses, are warnings.
+
+** Limits of syntax reporting
+
+ORE's grammar stops at the first syntax error it encounters, and reports its
+position by line and column through Spirit's position-tracking iterator. A script
+with several syntax errors therefore yields one syntax diagnostic per validation;
+the remaining errors are reported once the first is corrected. The checks of
+inputs, values and usage operate on a parsed tree, and are therefore reported
+only for a script that parses, in which case all of them are reported together.
+
+** Consumers
+
+- *Emacs.* The shell's =script check= command ([[id:B01292A4-0394-40E8-A0B4-2DBA3F46C052][Scripted Trade Commands in the Shell]]) prints each
+  diagnostic as =FILE:LINE:COLUMN: error: MESSAGE [SCR1001]=, the form that
+  Emacs's =compilation-mode= recognises and to which a =flymake= or =flycheck=
+  checker can be bound, and exits with a non-zero status when any error is
+  reported. The command requires no authentication, since it reads only the
+  script's text.
+- *The scripted trade editor.* The booking API's =validate_script= operation
+  ([[id:3085E65E-413B-4E7A-B60A-5844A124C999][The Product Booking API]]) returns the diagnostics as structured data. The editor marks
+  each range in the text, lists the diagnostics beside it, and moves the cursor
+  to a diagnostic's location when it is selected ([[id:179E60E8-59B5-456A-B2CC-55323052E234][Edit a scripted trade on its own screen]]). Findings
+  about variables are attached to the corresponding field of the form rather
+  than to the text.
+- *Booking.* A booking rejected by the server's validation ([[id:C2A45123-A9B3-49BA-BEFD-07E1703F7B84][Layered Validation of Scripted Trades]])
+  carries its diagnostics, so that the reason for rejection is stated in the same
+  terms as in the editor and the shell.

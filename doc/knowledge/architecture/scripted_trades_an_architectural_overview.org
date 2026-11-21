@@ -20,9 +20,8 @@ and validated, and how the booking and valuation of every product is
 demonstrated. Each question is treated in a document of its own; this note
 establishes their order. The scripting module as ORE defines it, including the
 script language and the two locations a script may occupy, is described in
-[[id:2F5B28D9-9AB7-401E-8EF3-612712F626C1][Generic Scripted Products]]. The documents describe the target architecture towards which
-[[id:E6359881-7919-4BBC-9B9C-03A8EEDB8A03][Design the scripted trade subsystem]] is directed, and each records where the current implementation
-diverges from it.
+[[id:2F5B28D9-9AB7-401E-8EF3-612712F626C1][Generic Scripted Products]]. The documents describe the architecture as it stands once
+[[id:E6359881-7919-4BBC-9B9C-03A8EEDB8A03][Design the scripted trade subsystem]] is complete.
 
 * Detail
 
@@ -50,6 +49,8 @@ diverges from it.
   =ores.trading.scripting=, as the sole authority on syntax.
 - [[id:C2A45123-A9B3-49BA-BEFD-07E1703F7B84][Layered Validation of Scripted Trades]] assigns each validation decision to the layer competent to make
   it.
+- [[id:ECA442BB-48D7-47CB-9BAA-97FD1C0BBA9A][Diagnostic Reporting in Script Validation]] defines the numbered errors and warnings, located by line and
+  column, in which validation reports its findings.
 - [[id:8CF94EFE-4699-4F7D-B59B-E695AFD723CA][Differential Testing of the Script Editor Grammar]] describes how the one grammar ORE Studio authors is kept
   consistent with ORE's.
 - [[id:708554F7-FA3A-49E1-8A11-4AE968C76758][Script Execution and Compilation in ORE]] describes what the engine receives, and why no compiled form of

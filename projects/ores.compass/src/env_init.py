@@ -20,70 +20,20 @@ import argparse
 import json
 import os
 import re
-import secrets
-import string
+import shutil
 import subprocess
 import sys
-from datetime import datetime, timezone
 from pathlib import Path
 
-# The canonical .env-format version is the highest row in the org-mode log
-# at doc/knowledge/architecture/env_format_version_log.org — read by both
-# `compass env configure` (writes ORES_ENV_VERSION) and the version check.
-# `compass env new-version` appends a row; no version constant lives in code.
-def _env_version_doc(project_root: Path) -> Path:
-    return (project_root / "doc" / "knowledge" / "architecture" /
-            "env_format_version_log.org")
-
-
-def _parse_version_rows(doc: Path):
-    """Parse the version table: returns [(version:int, date:str, desc:str), ...]."""
-    rows = []
-    for line in doc.read_text().splitlines():
-        s = line.strip()
-        if not s.startswith("|"):
-            continue
-        cells = [c.strip() for c in s.strip("|").split("|")]
-        if cells and cells[0].isdigit():
-            rows.append((int(cells[0]),
-                         cells[1] if len(cells) > 1 else "",
-                         cells[2] if len(cells) > 2 else ""))
-    return rows
-
-
 def current_version(project_root: Path) -> int:
-    """Highest version in the log — the canonical .env-format version."""
-    rows = _parse_version_rows(_env_version_doc(project_root))
-    if not rows:
-        raise ValueError("no versions found in env_format_version_log.org")
-    return max(r[0] for r in rows)
-
-
-_PW_ALPHABET = string.ascii_letters + string.digits
-
-
-def _gen_password() -> str:
-    """32-char alphanumeric secret (matches the shell generator's shape)."""
-    return "".join(secrets.choice(_PW_ALPHABET) for _ in range(32))
-
-
-# A public source's key, user or password, such as ORES_MARKETDATA_BANXICO_API_KEY.
-# Configure does not generate these: a person registers each with its publisher.
-# The service's own database variables are ORES_MARKETDATA_SERVICE_*, and
-# configure generates them, so they are left out.
-_SOURCE_CREDENTIAL = re.compile(
-    r"^ORES_MARKETDATA_(?!SERVICE_)[A-Z0-9_]+_(API_KEY|USER|PASSWORD)$")
-
-
-def _source_credentials(existing: dict) -> str:
-    """The .env section that keeps the public source credentials of an existing .env."""
-    names = sorted(k for k, v in existing.items()
-                   if _SOURCE_CREDENTIAL.match(k) and v)
-    if not names:
-        return ""
-    body = "".join(f"{k}={existing[k]}\n" for k in names)
-    return ("\n# Public source credentials. A person registers each with its publisher;\n"
-            "# a provider row names one as env:NAME. Configure keeps them.\n" + body)
+    """The .env format's current version, which compass-ng reads from
+    compass/checks/env_format.org."""
+    exe = shutil.which("compass-ng")
+    if exe is None:
+        raise RuntimeError("compass-ng is not on the PATH; it holds the .env format versions")
+    out = subprocess.run([exe, "-C", str(project_root), "env", "version"],
+                         capture_output=True, text=True, check=True).stdout
+    return int(out.strip().splitlines()[-1])
 
 
 def _read_env(env_file: Path) -> dict:
@@ -135,23 +85,17 @@ BASE_PORT_STEP = 200
 # top offset would land at or past this floor rather than silently
 # reproducing the exact collision BASE_PORT_START was moved to avoid.
 EPHEMERAL_PORT_FLOOR = 32768
-HTTP_PORT_OFFSET_DEBUG = 0
-HTTP_PORT_OFFSET_RELEASE = 1
 # The TypeScript web interface (ores.web). Offset 2 held the retired Wt
 # client, so it is free again: the BFF listens here and serves both the HTTP
 # API and the built browser bundle.
-WEB_PORT_OFFSET = 2
-SITE_PORT_OFFSET = 4
 NATS_PORT_OFFSET = 5
 NATS_MONITOR_PORT_OFFSET = 6
-POOLER_PORT_OFFSET = 7
 
 # The ores.web site config declares one entry per environment instance. The
 # BFF resolves its entry by id, so a checkout binds its label to a declared
 # id through ORES_WEB_ENV.
 WEB_ENVIRONMENTS_RELATIVE_PATH = (Path("projects") / "ores.web" / "config"
                                   / "environments.json")
-WEB_ENVIRONMENT_ID_VARIABLE = "ORES_WEB_ENV"
 # Hosts that mean "this machine". Several instances of one environment share
 # a port and subject prefix and differ only by host, so the local instance is
 # the one a local checkout serves.
@@ -192,11 +136,6 @@ def _scan_ports(parent_dir: Path) -> tuple[int, int, int]:
     return base_port, nats_port, nats_monitor_port
 
 
-def _get_or_gen(existing: dict, key: str) -> str:
-    val = existing.get(key)
-    return val if val else _gen_password()
-
-
 def _env_value(existing: dict, key: str, fallback: str) -> str:
     """Value for a generated .env entry, in precedence order.
 
@@ -207,19 +146,6 @@ def _env_value(existing: dict, key: str, fallback: str) -> str:
     which environment a command touches, so a stale exported value can point
     a command at another worktree's database."""
     return existing.get(key) or os.environ.get(key) or fallback
-
-
-def _busctl_setting(existing: dict, flag: bool | None) -> str:
-    """Value for ORES_USE_BUSCTL.
-
-    An explicit --use-busctl or --no-use-busctl wins, so an operator can flip
-    the transport on a checkout that already configured. Without a flag the
-    checkout's own value stands. A fresh checkout defaults to on, because
-    compass drives the fleet with systemctl --user and that cannot reach the
-    user manager from inside the DSH sandbox."""
-    if flag is None:
-        return _env_value(existing, "ORES_USE_BUSCTL", "1")
-    return "1" if flag else "0"
 
 
 def _underscored(label: str) -> str:
@@ -271,39 +197,6 @@ def _resolve_web_env_id(checkout_root: Path, nats_port: int,
     return resolved[0].get("id")
 
 
-def _upper(component: str) -> str:
-    """Mirror tr '[:lower:]-' '[:upper:]_': uppercase, hyphens to underscores."""
-    return component.upper().replace("-", "_")
-
-
-def _service_names(registry: Path) -> list:
-    """Component keys (used to derive ORES_<KEY>_SERVICE_DB_* env vars and
-    the matching ores_<label>_<key>_service postgres role) for every
-    service_registry entry that has the DB-access aspect (:psql_var:).
-
-    Routes through codegen.org_loader instead of independently regexing
-    heading text: service_registry.org's headings are now the full binary
-    name (e.g. ores.iam.service), not a bare component key, and some
-    entries (e.g. ores.http.server) are deployment-only with no DB role at
-    all -- both of those the old regex-based approach got wrong. psql_var
-    is always "<key>_service" (e.g. "iam_service"); stripping the suffix
-    recovers the short key this function has always returned."""
-    src = str(registry.parent.parent / "ores.codegen" / "src")
-    if src not in sys.path:
-        sys.path.insert(0, src)
-    from codegen.org_loader import load_org_service_registry_model  # noqa: PLC0415
-
-    model = load_org_service_registry_model(registry)
-    names = []
-    for svc in model["service_registry"]["services"]:
-        psql_var = svc.get("psql_var")
-        if not psql_var:
-            continue
-        suffix = "_service"
-        names.append(psql_var[: -len(suffix)] if psql_var.endswith(suffix) else psql_var)
-    return names
-
-
 def _logging_only(env_file: Path, op: str, level: str) -> int:
     """--enable-logging / --disable-logging: touch only the logging vars."""
     if not env_file.is_file():
@@ -328,35 +221,6 @@ def _logging_only(env_file: Path, op: str, level: str) -> int:
     env_file.chmod(0o600)
     print("Picked up automatically on the next build/test run "
           "(.env is a CMake configure dependency).")
-    return 0
-
-
-def new_version(project_root: Path, description: str) -> int:
-    """compass env new-version — append a new .env-format version row.
-
-    Computes the next version (current + 1), appends a dated row to the
-    version log table with the given description, and writes it back. Run
-    this after a change that alters the .env (a new service in the registry,
-    a new/renamed variable); then re-run 'compass env configure' so existing
-    checkouts' version check flags the change.
-    """
-    doc = _env_version_doc(project_root)
-    if not doc.is_file():
-        print(f"Error: env version log not found: {doc}", file=sys.stderr)
-        return 1
-    lines = doc.read_text().splitlines()
-    table_idx = [i for i, ln in enumerate(lines) if ln.strip().startswith("|")]
-    if not table_idx:
-        print(f"Error: no version table found in {doc}", file=sys.stderr)
-        return 1
-    nxt = current_version(project_root) + 1
-    date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    row = f"| {nxt} | {date} | {description} |"
-    lines.insert(table_idx[-1] + 1, row)
-    doc.write_text("\n".join(lines) + "\n")
-    print(f"Recorded .env-format version {nxt} ({date}): {description}")
-    print("Now re-run 'compass env configure --preset <preset> -y' to write the new "
-          "version into .env (older checkouts will then fail the version check).")
     return 0
 
 
@@ -586,12 +450,6 @@ def run(argv, project_root: Path) -> int:
     nats_port = base_port + NATS_PORT_OFFSET
     nats_monitor_port = base_port + NATS_MONITOR_PORT_OFFSET
 
-    if "release" in preset:
-        http_port = base_port + HTTP_PORT_OFFSET_RELEASE
-    else:
-        http_port = base_port + HTTP_PORT_OFFSET_DEBUG
-    site_port = base_port + SITE_PORT_OFFSET
-    web_port = base_port + WEB_PORT_OFFSET
 
     nats_url = f"nats://localhost:{nats_port}"
     nats_monitor_url = f"http://localhost:{nats_monitor_port}"
@@ -646,444 +504,42 @@ def run(argv, project_root: Path) -> int:
             print("Error: postgres password cannot be empty.", file=sys.stderr)
             return 1
 
-    registry = (checkout_root / "projects" / "modeling" /
-                "service_registry.org")
-    if not registry.is_file():
-        print(f"Error: service registry not found: {registry}", file=sys.stderr)
+    # compass-ng writes .env from compass/checks/env_format.org: every variable,
+    # its default and the format version. This keeps choosing the environment.
+    exe = shutil.which("compass-ng")
+    if exe is None:
+        print("Error: compass-ng is not on the PATH; it writes .env. "
+              "See compass bearings for how to install it.", file=sys.stderr)
         return 1
-    service_components = _service_names(registry)
-    if not service_components:
-        print(f"Error: no services read from registry {registry}", file=sys.stderr)
-        return 1
-    print(f"Detected services: {' '.join(service_components)}")
-
-    # Role / user names — always derived from the label, never read from .env.
-    owner_role = f"ores_{label_lower}_owner"
-    rw_role = f"ores_{label_lower}_rw"
-    ro_role = f"ores_{label_lower}_ro"
-    service_role = f"ores_{label_lower}_service"
-    ddl_user = f"ores_{label_lower}_ddl_user"
-    http_user = f"ores_{label_lower}_http_user"
-    shell_user = f"ores_{label_lower}_shell_user"
-    compute_wrapper_user = f"ores_{label_lower}_compute_wrapper_user"
-    readonly_user = f"ores_{label_lower}_readonly_user"
-    test_ddl_user = f"ores_{label_lower}_test_ddl_user"
-    test_dml_user = f"ores_{label_lower}_test_dml_user"
-
-    db_host = existing.get("ORES_DB_HOST") or "localhost"
-    # PGPORT is libpq's own env var (psql and every libpq-based service read
-    # it natively) — only written when the DB lives on a non-default port
-    # (e.g. a remote host), so local setups keep relying on 5432 implicitly.
-    db_port = existing.get("PGPORT") or existing.get("ORES_DB_PORT") or ""
-    db_port_line = f"PGPORT={db_port}\n" if db_port else ""
-    # Every service/client reads its own ORES_<APP>_DB_HOST/PORT (C++
-    # make_mapper convention) and otherwise silently defaults to
-    # localhost:5432 — so each one is stamped from this single source of
-    # truth, keeping local and remote (e.g. WSL-hosted) Postgres switchable
-    # by editing ORES_DB_HOST/PGPORT alone.
-    db_port_effective = db_port or "5432"
-
-    # SSH agent directory (optional): compass.sh exports SSH_AUTH_SOCK from
-    # the sole socket in this directory when the calling environment does not
-    # provide a live one (e.g. sandboxed LLM sessions).
-    ssh_agent_dir = (existing.get("ORES_SSH_AGENT_DIR")
-                     or str(Path.home() / ".ssh" / "agent"))
-
-    # Build parallelism: per-machine tuning, not per-checkout, so always
-    # preserve whatever is already in .env; only default it on first write.
-    cmake_build_parallel_level = existing.get("CMAKE_BUILD_PARALLEL_LEVEL") or "2"
-
-    # Compiler cache: local dev choice between ccache/sccache, read by
-    # build/scripts/compiler_cache_wrapper.sh. CI never reads this (it sets
-    # SCCACHE_DIR directly and doesn't run `compass env configure`), so the
-    # default here has no effect on CI behaviour.
-    #
-    # Defaults to ccache: /mnt/development is btrfs, and ccache's
-    # file_clone=true stores results as reflinks, so a cache hit costs no
-    # extra disk and concurrent worktrees cannot corrupt a shared inode the
-    # way hard_link=true allowed. sccache has no reflink equivalent and its
-    # store lives outside the SSD. See story 03831B51.
-    compiler_cache = (args.compiler_cache
-                       or existing.get("ORES_COMPILER_CACHE")
-                       or "ccache")
-
-    print("Resolving passwords...")
-    ddl_pw = _get_or_gen(existing, "ORES_DB_DDL_PASSWORD")
-    http_pw = _get_or_gen(existing, "ORES_DB_HTTP_PASSWORD")
-    shell_pw = _get_or_gen(existing, "ORES_DB_SHELL_PASSWORD")
-    readonly_pw = _get_or_gen(existing, "ORES_DB_READONLY_PASSWORD")
-    test_ddl_pw = _get_or_gen(existing, "ORES_TEST_DB_DDL_PASSWORD")
-    test_pw = _get_or_gen(existing, "ORES_TEST_DB_PASSWORD")
-    # Not _env_value: the bind address is a deployment default rather than
-    # checkout identity, so it does not take the ".env wins" precedence the
-    # rest of these entries take. An environment provisioned when the default
-    # was loopback-only would otherwise keep it forever and the change would
-    # never reach it. Only an explicit process-environment value overrides it.
-    web_bff_host = os.environ.get("ORES_WEB_BFF_HOST") or "0.0.0.0"
-    service_log_level = _env_value(existing, "ORES_SERVICE_LOG_LEVEL", "info")
-    web_log_level = _env_value(existing, "ORES_WEB_LOG_LEVEL", "info")
-    use_busctl = _busctl_setting(existing, args.use_busctl)
-    web_env = (existing.get(WEB_ENVIRONMENT_ID_VARIABLE)
-               or _resolve_web_env_id(checkout_root, nats_port, nats_prefix,
-                                      env_name))
-    web_env_block = (f"# Declared ores.web site configuration this checkout serves\n"
-                     f"{WEB_ENVIRONMENT_ID_VARIABLE}={web_env}\n") if web_env else ""
-
-    service_pw = {c: _get_or_gen(existing, f"ORES_{_upper(c)}_SERVICE_DB_PASSWORD")
-                  for c in service_components}
-    tick_writer_pw = _get_or_gen(existing, "ORES_MARKETDATA_SERVICE_WRITER_DB_PASSWORD")
-    print("All credentials resolved.")
-
-    # PEM as a single line with literal \n separators (awk '{printf "%s\\n",$0}').
-    jwt_key_oneline = "".join(l + "\\n" for l in iam_key.read_text().splitlines())
-
-    is_fresh_env = not env_file.is_file()
-    if env_file.is_file():
-        (env_file.parent / ".env.old").write_text(env_file.read_text())
-        print("Backed up existing .env to .env.old")
-
-    env_version = current_version(checkout_root)
-    # Unlike ORES_ENV_VERSION (always stamped to latest — configure self-heals
-    # .env schema drift), ORES_ENV_ACTIVITY is preserved across regenerations
-    # like a reused secret: activities are often manual/privileged steps
-    # configure cannot safely re-apply, so only a genuinely fresh .env (no
-    # .env file existed before this run) is stamped to "caught up as of
-    # now". An *existing* checkout whose .env simply predates this variable
-    # must default to 0, not "caught up" — otherwise re-running configure
-    # for an unrelated reason (rotating a password, switching a preset)
-    # would silently mark outstanding activities as acknowledged without
-    # anyone having performed them. See
-    # doc/knowledge/architecture/environment_activity_log.org.
     import env_activity
-    if is_fresh_env:
-        env_activity_num = str(env_activity.current_activity(checkout_root))
-    else:
-        env_activity_num = existing.get("ORES_ENV_ACTIVITY") or "0"
-    print(f"Writing {env_file}...")
-    ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
-    out = []
-    out.append(f"""\
-# ORE Studio Environment: {env_name}
-# Generated by compass env configure on {ts}
-# DO NOT COMMIT — this file contains secrets.
-
-# ---------------------------------------------------------------------------
-# .env format version — checked by projects/ores.sql/utility/validate_env_version.sh
-# at the start of compass db recreate.  If this file is out of date, re-run:
-#   compass env configure --preset <preset> -y
-# ---------------------------------------------------------------------------
-ORES_ENV_VERSION={env_version}
-
-# ---------------------------------------------------------------------------
-# Environment activity — one-off manual setup steps this checkout has
-# acknowledged. See doc/knowledge/architecture/environment_activity_log.org.
-# Preserved across regenerations; bump with: compass env activity ack <N>
-# ---------------------------------------------------------------------------
-ORES_ENV_ACTIVITY={env_activity_num}
-
-# ---------------------------------------------------------------------------
-# Checkout identity
-# ---------------------------------------------------------------------------
-ORES_ENV_NAME={env_name}
-ORES_PROVISION_TYPE={provision_type}
-ORES_CHECKOUT_LABEL={label_lower}
-ORES_ENV_TYPE={env_type}
-ORES_BASE_PORT={base_port}
-""")
-    if preset:
-        out.append(f"ORES_PRESET={preset}\n")
-    out.append(f"""\
-ORES_DATABASE_NAME={db_name}
-
-# ---------------------------------------------------------------------------
-# SSH agent directory (optional) — compass.sh exports SSH_AUTH_SOCK from the
-# sole socket in this directory when the calling environment does not provide
-# a live one (e.g. sandboxed LLM sessions).
-# ---------------------------------------------------------------------------
-ORES_SSH_AGENT_DIR={ssh_agent_dir}
-
-# ---------------------------------------------------------------------------
-# Build parallelism. Read by `compass build` as the default -j when --jobs is
-# not passed explicitly.
-# ---------------------------------------------------------------------------
-CMAKE_BUILD_PARALLEL_LEVEL={cmake_build_parallel_level}
-
-# ---------------------------------------------------------------------------
-# Compiler cache for local builds. Read by
-# build/scripts/compiler_cache_wrapper.sh. Change with:
-#   compass env configure --compiler-cache {{ccache,sccache}}
-#
-# ccache is the default and the supported local choice: /mnt/development is
-# btrfs, and ccache's file_clone=true stores cache entries as reflinks, so a
-# hit costs no extra disk. sccache has no equivalent, and its store lives off
-# the SSD. See story 03831B51 (btrfs migration).
-# ---------------------------------------------------------------------------
-ORES_COMPILER_CACHE={compiler_cache}
-
-# ---------------------------------------------------------------------------
-# systemd transport. compass drives the fleet with systemctl --user, which
-# cannot reach the user manager from inside the DSH sandbox: the namespace
-# leaves the peer credentials unrepresentable, so the manager drops the
-# connection. busctl reaches the same manager over the session bus. Change:
-#   compass env configure --use-busctl | --no-use-busctl
-# ---------------------------------------------------------------------------
-ORES_USE_BUSCTL={use_busctl}
-
-# ---------------------------------------------------------------------------
-# NATS (per-environment: assigned by compass env create; preserved on re-run)
-# Run build/scripts/init-nats.sh to generate the server config and store dir.
-# ---------------------------------------------------------------------------
-ORES_HTTP_PORT={http_port}
-ORES_CONTROLLER_SERVICE_HTTP_PORT={http_port}
-ORES_SITE_PORT={site_port}
-# The TypeScript web interface (ores.web). One process serves the browser
-# bundle and the HTTP API on this port.
-ORES_WEB_PORT={web_port}
-# Interface the process binds. 0.0.0.0 serves a browser on another machine
-# on the local network; 127.0.0.1 keeps it on this host.
-ORES_WEB_BFF_HOST={web_bff_host}
-# Log level for the ores.web BFF (pino: trace, debug, info, warn or error).
-ORES_WEB_LOG_LEVEL={web_log_level}
-# The folder holding the org documents the BFF reads: the QA scenarios and the
-# agile tree. Without it the QA validation runner and the agile browser are
-# off, because the BFF has no tree to serve.
-ORES_WEB_DOC_ROOT={checkout_root}/doc
-# Log level for every generated compiled-service unit (trace, debug, info,
-# warn or error). `compass systemd generate` bakes it into each unit's
-# --log-level, so `compass services restart` applies a change. Raise it to
-# debug or trace while diagnosing; every service writes its own log file
-# under the preset's publish/log directory.
-ORES_SERVICE_LOG_LEVEL={service_log_level}
-{web_env_block}ORES_NATS_PORT={nats_port}
-ORES_NATS_URL={nats_url}
-ORES_NATS_MONITOR_PORT={nats_monitor_port}
-ORES_NATS_MONITOR_URL={nats_monitor_url}
-ORES_NATS_SUBJECT_PREFIX={nats_prefix}
-ORES_NATS_STORE_DIR={nats_store_dir}
-# Wire payload encoding for every NATS request/reply and publish/subscribe:
-# msgpack (default, compact binary, native byte support -- no base64
-# inflation for image/blob fields) or json (human-readable). Decided once
-# per process at startup; see doc/knowledge/architecture/nats_wire_format.org.
-ORES_NATS_WIRE_FORMAT={nats_wire_format}
-# mTLS: auto-enabled when certificates exist in build/keys/nats/.
-# Run `compass nats certs` to generate them.
-# Shared client identity. systemd units take only the CA from here and pass
-# their own per-service cert/key as CLI args; nats.sh and the integration-test
-# harness use all three.
-ORES_NATS_TLS_CA={nats_tls_ca}
-ORES_NATS_TLS_CERT={nats_tls_cert}
-ORES_NATS_TLS_KEY={nats_tls_key}
-
-# ---------------------------------------------------------------------------
-# Database admin (postgres superuser — for compass db recreate and psql)
-# ---------------------------------------------------------------------------
-PGPASSWORD={pgpassword}
-ORES_DB_HOST={db_host}
-{db_port_line}ORES_TEST_DB_DATABASE={db_name}
-ORES_TEST_DB_HOST={db_host}
-
-# ---------------------------------------------------------------------------
-# Database roles and users (env-prefixed for isolation between environments)
-# ---------------------------------------------------------------------------
-ORES_DB_OWNER_ROLE={owner_role}
-ORES_DB_RW_ROLE={rw_role}
-ORES_DB_RO_ROLE={ro_role}
-ORES_DB_SERVICE_ROLE={service_role}
-ORES_DB_DDL_USER={ddl_user}
-ORES_DB_HTTP_USER={http_user}
-ORES_DB_SHELL_USER={shell_user}
-ORES_DB_READONLY_USER={readonly_user}
-ORES_TEST_DB_DDL_USER={test_ddl_user}
-
-# ---------------------------------------------------------------------------
-# Script / DDL passwords (used by compass db recreate)
-# ---------------------------------------------------------------------------
-ORES_DB_DDL_PASSWORD={ddl_pw}
-ORES_DB_HTTP_PASSWORD={http_pw}
-ORES_DB_SHELL_PASSWORD={shell_pw}
-ORES_DB_READONLY_PASSWORD={readonly_pw}
-
-# ---------------------------------------------------------------------------
-# Test connection credentials (read by compass db recreate and C++ tests)
-# ---------------------------------------------------------------------------
-ORES_TEST_DB_USER={test_dml_user}
-ORES_TEST_DB_PASSWORD={test_pw}
-ORES_TEST_DB_DDL_PASSWORD={test_ddl_pw}
-
-""")
-
-    # NATS service DB credentials.
-    out.append("\n# ---------------------------------------------------------------------------\n")
-    out.append("# NATS service DB credentials (read by C++ make_mapper)\n")
-    out.append("# ---------------------------------------------------------------------------\n")
-    # Registry "Extra args" supplied as env, not container CLI args (the
-    # per-service containers pass no service-specific flags).  Keys follow
-    # the make_mapper("<UP>_SERVICE") naming: ORES_<UP>_SERVICE_<OPT>.
-    # The services that move objects through the storage HTTP API read its
-    # address from http-base-url, whose default is localhost:8080. No
-    # environment serves 8080, so a service left without this variable fails
-    # every export with "Connection refused" while looking healthy.
-    http_base_url = f"http://localhost:{http_port}"
-    service_extra_opts = {
-        "telemetry": [("NATS_MONITOR_URL", nats_monitor_url)],
-        "ore": [
-            ("WORK_DIR", "../var/ore-service/work"),
-            ("HTTP_BASE_URL", http_base_url),
-        ],
-        "marketdata": [("HTTP_BASE_URL", http_base_url)],
-        "reporting": [("HTTP_BASE_URL", http_base_url)],
-        "trading": [("HTTP_BASE_URL", http_base_url)],
+    fresh = not env_file.is_file()
+    web_env = _resolve_web_env_id(checkout_root, nats_port, nats_prefix, env_name) or ""
+    inputs = {
+        "env_name": env_name,
+        "label": label_lower,
+        "base_port": str(base_port),
+        "http_port_offset": "1" if "release" in preset else "0",
+        "preset": preset,
+        "env_activity": (str(env_activity.current_activity(checkout_root))
+                         if fresh else "0"),
+        "nats_subject_prefix": f"ores.dev.{env_name.replace('-', '.')}",
+        "nats_tls_ca": nats_tls_ca,
+        "nats_tls_cert": nats_tls_cert,
+        "nats_tls_key": nats_tls_key,
+        "web_env": web_env,
+        "db_port": existing.get("ORES_DB_PORT", ""),
     }
-    # Every service's pool keeps a floor and may burst to a ceiling, and a
-    # connection above the floor closes once it has been idle for DB_POOL_IDLE
-    # seconds. The ceiling is the concurrency the work has, not a share of the
-    # server: the marketdata service runs two provisioning steps at once with
-    # four lanes each, so its ceiling is above the rest. On a host without a
-    # pooler the fleet's ceilings are the server's worst case, which is why
-    # they are stated here rather than in each service's code.
-    service_pool_ceiling = {"marketdata": 16}
-
-    # Where several environments share one PostgreSQL, their connections
-    # terminate at a pooler that caps what reaches the server. The environment
-    # states whether it runs one; with none, every service names the database
-    # directly, which is what a developer's own instance needs.
-    pooler_port = base_port + POOLER_PORT_OFFSET
-    # On by default: every environment this generator provisions lives on a host
-    # that shares its PostgreSQL with others, which is the case a pooler exists
-    # for. A developer's own instance sets this to 0 and keeps the direct path,
-    # and an existing .env keeps whatever it already states.
-    pooler_enabled = existing.get("ORES_DB_POOLER_ENABLED", "1") == "1"
-    out.append("\n# ---------------------------------------------------------------------------\n")
-    out.append("# Transaction pooler. A shared instance sees its cap rather than the sum\n")
-    out.append("# of every service's pool; an environment without one stays direct.\n")
-    out.append("# ---------------------------------------------------------------------------\n")
-    out.append(f"ORES_DB_POOLER_PORT={pooler_port}\n")
-    out.append(f"ORES_DB_POOLER_ENABLED={'1' if pooler_enabled else '0'}\n")
-
-    for c in service_components:
-        up = _upper(c)
-        out.append("\n")
-        out.append(f"ORES_{up}_SERVICE_DB_USER=ores_{label_lower}_{c}_service\n")
-        out.append(f"ORES_{up}_SERVICE_DB_PASSWORD={service_pw[c]}\n")
-        out.append(f"ORES_{up}_SERVICE_DB_DATABASE={db_name}\n")
-        out.append(f"ORES_{up}_SERVICE_DB_HOST={db_host}\n")
-        if pooler_enabled:
-            # The service's requests go to the pooler; the listener stays on the
-            # database, because transaction pooling hands a LISTEN to another
-            # session at the next commit.
-            out.append(f"ORES_{up}_SERVICE_DB_PORT={pooler_port}\n")
-            out.append(f"ORES_{up}_SERVICE_DB_LISTENER_HOST={db_host}\n")
-            out.append(f"ORES_{up}_SERVICE_DB_LISTENER_PORT={db_port_effective}\n")
-        else:
-            out.append(f"ORES_{up}_SERVICE_DB_PORT={db_port_effective}\n")
-        out.append(f"ORES_{up}_SERVICE_DB_POOL_MIN=2\n")
-        out.append(
-            f"ORES_{up}_SERVICE_DB_POOL_MAX={service_pool_ceiling.get(c, 8)}\n")
-        out.append(f"ORES_{up}_SERVICE_DB_POOL_IDLE=30\n")
-        for opt, val in service_extra_opts.get(c, []):
-            out.append(f"ORES_{up}_SERVICE_{opt}={val}\n")
-    out.append(
-        "\n# ---------------------------------------------------------------------------\n"
-        "# Marketdata tick writer DB credentials. The role has BYPASSRLS and INSERT only,\n"
-        "# and the marketdata service uses it for COPY into the tick table.\n"
-        "# ---------------------------------------------------------------------------\n"
-        f"ORES_MARKETDATA_SERVICE_WRITER_DB_USER=ores_{label_lower}_marketdata_writer\n"
-        f"ORES_MARKETDATA_SERVICE_WRITER_DB_PASSWORD={tick_writer_pw}\n")
-    # Front-end client apps that read their config from the environment via the
-    # C++ make_mapper("<APP>") convention. `uses_db` marks whether the app opens
-    # a direct database connection. NATS-only clients (the shell, like the
-    # compute wrapper) must NOT get DB creds: ores.shell registers no db-*
-    # options, so boost::program_options parse_environment would reject
-    # ORES_SHELL_DB_* as unrecognised options. This is the per-client flag — the
-    # client analogue of the backend service registry, which only catalogues
-    # DB-writing NATS services.
-    client_apps = [
-        {"mapper": "SHELL", "user": shell_user, "pw": shell_pw, "uses_db": False},
-        {"mapper": "HTTP_SERVER", "user": http_user, "pw": http_pw, "uses_db": True},
-    ]
-    for app in client_apps:
-        if not app["uses_db"]:
-            continue
-        m = app["mapper"]
-        out.append(
-            "\n# ---------------------------------------------------------------------------\n"
-            f'# {m} DB credentials (read by C++ make_mapper("{m}"))\n'
-            "# ---------------------------------------------------------------------------\n"
-            f"ORES_{m}_DB_USER={app['user']}\n"
-            f"ORES_{m}_DB_PASSWORD={app['pw']}\n"
-            f"ORES_{m}_DB_DATABASE={db_name}\n"
-            f"ORES_{m}_DB_HOST={db_host}\n"
-            f"ORES_{m}_DB_PORT={pooler_port if pooler_enabled else db_port_effective}\n"
-            # The gateway serves every HTTP request of the environment, so its
-            # pool bursts wider than the services behind it.
-            f"ORES_{m}_DB_POOL_MIN=2\n"
-            f"ORES_{m}_DB_POOL_MAX=16\n"
-            f"ORES_{m}_DB_POOL_IDLE=30\n")
-
-    out.append(f"""
-# ---------------------------------------------------------------------------
-# Shell NATS credentials (read by C++ make_mapper("SHELL"))
-# Note: the shell is a pure NATS client and has NO DB credentials (uses_db=False
-# above) — it reaches data only through the backend services over NATS.
-# ---------------------------------------------------------------------------
-ORES_SHELL_NATS_URL={nats_url}
-ORES_SHELL_NATS_SUBJECT_PREFIX={nats_prefix}
-ORES_SHELL_NATS_TLS_CA={nats_tls_ca}
-ORES_SHELL_NATS_TLS_CERT={nats_tls_cert}
-ORES_SHELL_NATS_TLS_KEY={nats_tls_key}
-ORES_SHELL_NATS_WIRE_FORMAT={nats_wire_format}
-
-# ---------------------------------------------------------------------------
-# Shell login defaults (read by `compass shell` when -u/-p are omitted --
-# see cmd_shell in compass.py). Acme Corporation's tenant_admin, the demo
-# entity every environment provisions by default; not a secret, just the
-# well-known shared demo password used throughout doc/recipes.
-# ---------------------------------------------------------------------------
-ORES_SHELL_LOGIN_USERNAME=tenant_admin@acme_corporation
-ORES_SHELL_LOGIN_PASSWORD=Secure-Password-123
-
-# ---------------------------------------------------------------------------
-# HTTP server config (read by C++ make_mapper("HTTP_SERVER")).  The
-# registry's "Extra args" for http.server are supplied as env here so the
-# container runs need no per-service CLI args: --port {http_port} and
-# --storage-dir ../storage (resolved against WORKDIR /app/bin; the runner
-# bind-mounts a host dir over /app/storage — see docker/remote-run.sh).
-# ---------------------------------------------------------------------------
-ORES_HTTP_SERVER_PORT={http_port}
-ORES_HTTP_SERVER_STORAGE_DIR=../storage
-
-# ---------------------------------------------------------------------------
-# Compute Wrapper IAM service account name (no DB connection — NATS/TLS only)
-# ---------------------------------------------------------------------------
-ORES_DB_COMPUTE_WRAPPER_USER={compute_wrapper_user}
-
-# ---------------------------------------------------------------------------
-# IAM JWT signing key (PEM encoded as single line, \\n = newline)
-# Note: excluded from GITHUB_ENV export since services don't run in CI.
-# ---------------------------------------------------------------------------
-ORES_IAM_SERVICE_JWT_PRIVATE_KEY="{jwt_key_oneline}"
-""")
-
-    # Preserve any previously-set logging vars.
-    print("Checking for existing logging configuration...")
-    log_level = existing.get("ORES_TEST_LOG_LEVEL")
-    if log_level:
-        print(f"Preserving test logging (level={log_level})")
-        log_console = existing.get("ORES_TEST_LOG_CONSOLE") or "true"
-        out.append(f"\n# Test logging\nORES_TEST_LOG_LEVEL={log_level}\n"
-                   f"ORES_TEST_LOG_CONSOLE={log_console}\n")
-    else:
-        print("No test logging configuration found; skipping.")
-
-    credentials = _source_credentials(existing)
-    if credentials:
-        print("Preserving public source credentials")
-        out.append(credentials)
-
-    print("Setting file permissions...")
-    env_file.write_text("".join(out))
-    env_file.chmod(0o600)
-    print("Done.")
+    cmd = [exe, "-C", str(checkout_root), "env", "generate"]
+    for key, value in inputs.items():
+        cmd += ["--input", f"{key}={value}"]
+    if args.compiler_cache:
+        cmd += ["--var", f"ORES_COMPILER_CACHE={args.compiler_cache}"]
+    if args.use_busctl is not None:
+        cmd += ["--var", f"ORES_USE_BUSCTL={'1' if args.use_busctl else '0'}"]
+    # PGPASSWORD goes through the environment, so it never appears in ps.
+    rc = subprocess.run(cmd, env=dict(os.environ, PGPASSWORD=pgpassword)).returncode
+    if rc:
+        return rc
 
     # NATS setup — per-environment server config + JetStream store dir.
     # Use label_lower (underscored) so this matches `compass nats init`,

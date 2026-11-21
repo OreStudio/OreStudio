@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :compass:env:provision:version:recipe:
 #+created: 2026-06-02
-#+updated: 2026-07-12
+#+updated: 2026-11-21
 
 The =.env= has a /shape/ — the set of variables every service, the CLI,
 and the test suite expect. =ORES_ENV_VERSION= records which shape a given
@@ -42,19 +42,22 @@ Run this whenever you make a change that alters the =.env='s shape:
 
 - add (or remove) a service in the [[id:CB7713BA-544A-43CD-AEB3-30C2157CBBCC][service registry]] — each service
   contributes DB-credential variables;
-- add or rename a variable that =compass env configure= writes.
+- add or rename a variable in the Variables table of =compass/checks/env_format.org=.
 
 #+begin_src sh :results verbatim
-./projects/ores.compass/compass.sh env version new "added analytics service DB creds"
+./projects/ores.compass/compass.sh env version new "added ORES_EXAMPLE_TIMEOUT" --adds ORES_EXAMPLE_TIMEOUT
 #+end_src
 
-This computes the next version (current + 1) and appends a dated row to
-the [[id:BFE330BD-2AF8-43A4-BE8C-D066BD3FB1FD][environment format version log]]. It does *not* touch any =.env= —
-recording the version and regenerating the file are separate steps.
+compass-ng computes the next version and appends a dated row to the
+Versions table of [[id:BFE330BD-2AF8-43A4-BE8C-D066BD3FB1FD][the environment file format check]] (=compass/checks/env_format.org=). Name what the version
+changes: =--adds NAME= and =--removes NAME= for variables, or =--format-only=
+for a change of values or layout. =compass check= fails a variable that no
+version names. It does *not* touch any =.env= — recording the version and
+regenerating the file are separate steps.
 
 ** The full workflow
 
-1. Make the change (e.g. add a service, add a variable to =env_init=).
+1. Make the change (e.g. add a service, add a row to the Variables table).
 2. =compass env version new "<what changed>"= — record the bump.
 3. =compass env configure --preset <p> -y= — regenerate your own =.env=, which
    now carries the new =ORES_ENV_VERSION=.
@@ -65,10 +68,9 @@ recording the version and regenerating the file are separate steps.
 * Script
 
 =projects/ores.compass/compass.sh env version [new]= → =src/compass.py=
-(=cmd_env=) → =src/env_init.py= (=current_version= / =new_version=). The
-canonical log is the parseable org table in
-[[proj:doc/knowledge/architecture/env_format_version_log.org][=doc/knowledge/architecture/env_format_version_log.org=]]; =env version new=
-appends a row to it. While =recreate_database= remains a shell script,
+(=cmd_env=) → =compass-ng env version [new]=. The canonical versions are the
+Versions table of [[id:BFE330BD-2AF8-43A4-BE8C-D066BD3FB1FD][the environment file format check]]; =env version new= appends a row to it, and
+=compass env configure= writes the file with =compass-ng env generate=. While =recreate_database= remains a shell script,
 [[proj:projects/ores.sql/utility/validate_env_version.sh][=projects/ores.sql/utility/validate_env_version.sh=]] reads the version via
 =compass env version= (same source); it is deleted when that step becomes
 =compass db recreate=.

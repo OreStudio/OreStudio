@@ -1,0 +1,116 @@
+:PROPERTIES:
+:ID: 3ED6B006-F1EF-4A30-A9D7-5194D2E0825D
+:END:
+#+title: Task: Generate .env with compass-ng
+#+description: Hand .env writing and the format versions to compass-ng: commit env_format.org, replace env_init.py's writer with compass-ng env generate, and point the version commands at compass-ng.
+#+type: task
+#+level: s1
+#+filetags: :move_codegen_and_gates_to_compass_ng:sprint_30:v0:
+#+owner: marco
+#+branch: feature/generate-env-with-compass
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E3BF90FE-43DF-4A30-9F2C-FF5E20128C88][Move codegen and the gates to compass-ng]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+compass-ng writes every environment's .env from compass/checks/env_format.org, which holds each variable, its default and the format version that added it, so a new variable is one row plus one recorded version.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:E3BF90FE-43DF-4A30-9F2C-FF5E20128C88][Move codegen and the gates to compass-ng]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-21                               |
+
+* Acceptance
+
+- =compass/checks/env_format.org= holds all 36 versions and every variable,
+  keeps the version log's ID, and =env_format= is on; the old log page is gone.
+- =compass env configure= writes =.env= with =compass-ng env generate=, and
+  keeps choosing the environment (ports, certificates, the IAM key, the
+  overwrite guard, the PostgreSQL password, NATS).
+- =compass env version [new]=, =compass env status= and the database version
+  check read the version from compass-ng.
+- The pin names v0.0.8.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+- compass-85's v0.0.7 draft of =env_format.org= predated the pooler
+  (7954155392, 3d29ef6c09), so it held 34 versions and no pooler or listener
+  variables; =env generate= would have dropped them. compass-85 rebuilt it
+  from main d81d470785 with versions 35 and 36 and re-ran its byte-identity
+  proofs (=compass_v0.0.8_env/PROOF.md=): the same existing .env, from
+  scratch (251 keys, secrets differ), and every option variant.
+- Version 36 declares =ORES_TEST_LOG_ENABLED=, as the product owner decided.
+  Regenerating a logging-enabled file now keeps it, where env_init.py dropped
+  it.
+- Known gap, in compass: the document cannot express the pooler turned off,
+  because a row's =when= only tests for empty. No environment or workflow sets
+  =ORES_DB_POOLER_ENABLED=0= (all ten worktrees checked); compass-85 is adding
+  a comparing =when= in v0.0.9.
+- =current_version= keeps its name in env_init.py and now asks compass-ng, so
+  compass_env_status.py, compass_db.py and the status test need no change.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+=compass env configure= writes .env with compass-ng. Run on solid_dirac's
+own .env (version 33): version 36, 252 variables; no variable removed and no
+secret changed; the 93 added are versions 34 to 36 (pool settings, the
+pooler and its listeners); each service's DB port moved to the pooler port,
+as main's env_init.py would also do. =compass-ng env status= reports it
+current. env_init.py is 587 lines, from 1126. The compass suite passes (559),
+and the ratchet reports nothing new.

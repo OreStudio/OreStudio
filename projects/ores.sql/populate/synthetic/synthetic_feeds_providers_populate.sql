@@ -48,8 +48,8 @@
  * component of weight 0.95 and a per-tick stdev of the pair's annualised vol / 3970.9, at
  * 1800 ticks an hour, and a tail of four times that stdev at weight 0.05. The levels are
  * illustrative, not sourced quotes. IR curves are Cox-Ingersoll-Ross short-rate
- * processes with the seven-pillar template Bloomberg's use, and a curve whose index tenor is
- * shorter than one month starts with a spot deposit at that tenor.
+ * processes with the seven-pillar template Bloomberg's use, and a curve whose index tenor no
+ * deposit or FRA of the template ends at starts with a spot deposit at that tenor.
  *
  * This script is idempotent.
  */
@@ -153,6 +153,19 @@ begin
         ('synthetic.feeds.tradeweb', 'tradeweb', 'Tradeweb', 'HKD', 'hibor', '1M', 0.50, 0.009, 0.0470),
         ('synthetic.feeds.tradeweb', 'tradeweb', 'Tradeweb', 'HKD', 'hibor', '3M', 0.50, 0.009, 0.0485);
 
+    create temporary table t_ir_template (
+        sequence_index integer, start_tenor_code text, end_tenor_code text, instrument_code text
+    ) on commit drop;
+
+    insert into t_ir_template values
+        (0, 'SPOT', '1M', 'DEPO'),
+        (1, 'SPOT', '3M', 'DEPO'),
+        (2, '3M', '6M', 'FRA'),
+        (3, '6M', '12M', 'FRA'),
+        (4, 'SPOT', '2Y', 'IRS'),
+        (5, 'SPOT', '5Y', 'IRS'),
+        (6, 'SPOT', '10Y', 'IRS');
+
     for v_dataset in
         select d.id, d.code
         from ores_dq_datasets_tbl d
@@ -229,23 +242,21 @@ begin
         from t_provider_ir c
         cross join lateral (
             -- A curve states its index's fixings from the deposit or FRA that ends at the
-            -- index tenor. A tenor shorter than the first deposit, such as 1W or 2W, has
-            -- neither, so its curve starts with a spot deposit at that tenor.
+            -- index tenor. When no entry of the template does, as for 1W or 2W, the curve
+            -- starts with a spot deposit at that tenor.
             select 0 as sequence_index, 'SPOT' as start_tenor_code,
                    c.tenor as end_tenor_code, 'DEPO' as instrument_code
-            where c.tenor not in ('1M', '3M', '6M', '12M')
+            where not exists (select 1 from t_ir_template t
+                              where t.end_tenor_code = c.tenor
+                                and t.instrument_code in ('DEPO', 'FRA'))
             union all
-            select t.sequence_index + case when c.tenor in ('1M', '3M', '6M', '12M') then 0 else 1 end,
+            select t.sequence_index
+                   + case when exists (select 1 from t_ir_template x
+                                       where x.end_tenor_code = c.tenor
+                                         and x.instrument_code in ('DEPO', 'FRA'))
+                          then 0 else 1 end,
                    t.start_tenor_code, t.end_tenor_code, t.instrument_code
-            from (values
-                (0, 'SPOT', '1M', 'DEPO'),
-                (1, 'SPOT', '3M', 'DEPO'),
-                (2, '3M', '6M', 'FRA'),
-                (3, '6M', '12M', 'FRA'),
-                (4, 'SPOT', '2Y', 'IRS'),
-                (5, 'SPOT', '5Y', 'IRS'),
-                (6, 'SPOT', '10Y', 'IRS')
-            ) as t(sequence_index, start_tenor_code, end_tenor_code, instrument_code)
+            from t_ir_template t
         ) as e
         where c.dataset_code = v_dataset.code;
     end loop;

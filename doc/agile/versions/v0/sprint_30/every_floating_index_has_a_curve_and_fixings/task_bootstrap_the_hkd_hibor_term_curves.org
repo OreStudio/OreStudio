@@ -117,6 +117,10 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The 2W config's pillars start at 1M, not at the 2W deposit the feed adds | =refdata_ir_curve_bootstrap_ibor_configs_populate.sql= | Decline | The same as GBP-LIBOR-1W and EUR-EURIBOR-1W. The feed states the fixings from its own deposit; the bootstrap keeps the shared seven pillars. |
+| 2 | The tenor list treats any other tenor as shorter than one month | =synthetic_feeds_providers_populate.sql= | Accept | The deposit is now added when no deposit or FRA of the template ends at the tenor, read from the template itself. The ladders are the same for 1W, 2W, 1M, 3M, 6M and 12M. |
+| 3 | The header's reason for no term SOFR may not hold | =synthetic_feeds_providers_populate.sql= | Decline | The catalogue's sofr row has admits_term false, so the header holds. |
+| 4 | Post the provision, fixing-gap and gate results | PR | Accept | Posted on the PR when they finish. |
+| 5 | The pooler story doc could go in a separate PR | =run_the_tests_through_the_pooler= | Decline | Kept on this branch on purpose, so the story is reviewed with the work in flight. |
 
 * Result

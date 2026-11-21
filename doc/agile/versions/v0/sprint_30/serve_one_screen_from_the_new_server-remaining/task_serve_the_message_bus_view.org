@@ -28,10 +28,10 @@ Serve these composed views from ores.telemetry: the message bus. Each view state
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Served and gated; waiting on the build and the live run. |
-| Waiting on   | The tree build.                        |
-| Next         | Prove the route against a running gateway, then raise the PR. |
-| Last touched | 2026-11-20                               |
+| Now          | Served, gated and proved on a live gateway; the logs read's gate waits on a rebuild. |
+| Waiting on   | A rebuild of the telemetry service.    |
+| Next         | Re-run the live check for the logs read, then merge the PR. |
+| Last touched | 2026-11-21                               |
 
 * Acceptance
 
@@ -129,3 +129,28 @@ The inventory is regenerated: 1400 routes, 296 of the BFF's 334 paired, 38
 unpaired. Six tests cover the route and the shape: the range it takes, the
 field it does not, the service it reaches, the members of its answer, the null
 instant of an empty window, and the ETag with its ten seconds.
+
+* The live run
+
+The route is proved against the gateway the environment's systemd unit runs,
+not only against its tests. The transcript is in
+[[file:evidence/message_bus_live_run.txt][evidence/message_bus_live_run.txt]].
+
+- Three ranges answer =200= with the members =sampled_at=, =samples= and
+  =streams=, the ETag and =private, max-age=10=, and a revalidation answers
+  =304=.
+- Two streams carry a row. The other three are absent because the services
+  that create them were stopped, which is the rule the plan states: a stream
+  with no sample in the window contributes no row rather than a row of zeros.
+- =range=1y= and an unknown member are refused with the sentences the BFF used.
+- A person who does not hold the telemetry read is refused with =403=. The live
+  run is what found the third read: =telemetry.v1.logs.list= still served any
+  signed-in account, so =GET /api/operations/logs= answered =200= to that
+  person. =logs_list= now checks the same permission, which is the gap the bus
+  journey said was not these reads' alone.
+
+A bare =?= answers =400 "This read cannot take ."= rather than the range
+sentence, because the query parser keeps a parameter with an empty key. That is
+a message defect of every route and not of this one, so it is captured in the
+backlog rather than fixed here:
+[[file:../../../product_backlog/inbox/an-empty-query-parameter-is-refused-as-a-name-that-is-empty.org][an empty query parameter is refused as a name that is empty]].

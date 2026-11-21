@@ -57,10 +57,12 @@ service holds only its floor.
 
 * Plan
 
-=pq::pool= is one class with one mutex, one condition variable and a vector of
-idle connections; its constructor opens everything and =acquire= only waits. The
-change is local: open on demand up to the ceiling, timestamp a connection when it
-is given back, and reap above the floor on acquire or on a small timer.
+=pq::pool= is one class with one mutex and a vector of idle connections; its
+constructor opens everything and =acquire= only waits. The change is local: open
+on demand up to the ceiling, timestamp a connection when it is given back, and
+reap above the floor on a small timer. The timer needs a second condition
+variable, because the reaper waits for a period while an acquirer waits for a
+connection, and one wakeup cannot serve both.
 
 The settings replace =db-pool-size= with a floor, a ceiling and an idle period,
 read the way the others are (=ORES_<APP>_DB_POOL_*=).

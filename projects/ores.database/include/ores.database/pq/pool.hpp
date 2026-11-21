@@ -106,7 +106,8 @@ public:
     [[nodiscard]] lease acquire();
 
     /**
-     * @brief The connections the pool holds open now, idle and leased.
+     * @brief The connections the pool holds or is opening: idle, leased, and a
+     * slot reserved for a caller whose login has not finished.
      */
     [[nodiscard]] std::size_t size() const;
 
@@ -134,7 +135,7 @@ private:
     std::chrono::milliseconds acquire_timeout_;
     mutable std::mutex mutex_;
     std::condition_variable available_;
-    std::condition_variable ticker_;
+    std::condition_variable reaper_wakeup_;
     std::vector<idle_connection> idle_;
     std::size_t open_ = 0;
     bool stopping_ = false;

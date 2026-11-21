@@ -21,6 +21,7 @@
 #include "ores.database/pq/store_error.hpp"
 #include "ores.logging/logger.hpp"
 #include <algorithm>
+#include <system_error>
 #include <thread>
 
 namespace ores::database::pq {
@@ -167,12 +168,14 @@ void pool::give_back(std::unique_ptr<connection> c) noexcept {
     bool above_floor = false;
     {
         std::scoped_lock lock(mutex_);
+        // The back is the hottest and the front the coldest, which is what lets a
+        // lease take the back and the reaper close the front.
         idle_.push_back({std::move(c), std::chrono::steady_clock::now()});
         above_floor = idle_.size() > settings_.floor;
     }
     available_.notify_one();
     if (above_floor)
-        ticker_.notify_one();
+        reaper_wakeup_.notify_one();
 }
 
 void pool::release_slot() noexcept {
@@ -187,7 +190,17 @@ void pool::start_reaper() {
     // A pool that cannot grow has nothing to close.
     if (settings_.ceiling <= settings_.floor)
         return;
-    reaper_ = std::thread([this] { reap(); });
+    try {
+        reaper_ = std::thread([this] { reap(); });
+    } catch (const std::system_error& e) {
+        // A pool that cannot start its reaper keeps its floor and its ceiling
+        // and never shrinks. That is worse than the alternative, not fatal, so
+        // it is logged rather than thrown past the caller's open policy.
+        ORES_LOG_SEV(pool_lg(), logging::warn)
+            << "The pool could not start its reaper, so connections above the floor "
+               "will not be closed: "
+            << e.what();
+    }
 }
 
 void pool::stop_reaper() noexcept {
@@ -195,7 +208,7 @@ void pool::stop_reaper() noexcept {
         std::scoped_lock lock(mutex_);
         stopping_ = true;
     }
-    ticker_.notify_all();
+    reaper_wakeup_.notify_all();
     if (reaper_.joinable())
         reaper_.join();
 }
@@ -204,17 +217,18 @@ void pool::reap() {
     std::unique_lock lock(mutex_);
     while (!stopping_) {
         if (idle_.size() <= settings_.floor) {
-            ticker_.wait_for(lock, settings_.idle_after);
+            reaper_wakeup_.wait_for(lock, settings_.idle_after);
             continue;
         }
 
         const auto due = idle_.front().since + settings_.idle_after;
         const auto now = std::chrono::steady_clock::now();
         if (due > now) {
-            ticker_.wait_until(lock, due);
+            reaper_wakeup_.wait_until(lock, due);
             continue;
         }
 
+        // The front is the coldest, so it is the one that has been idle longest.
         // Closed outside the lock: a teardown that blocks must not block a lease.
         std::unique_ptr<connection> dying = std::move(idle_.front().connection);
         idle_.erase(idle_.begin());

@@ -8,7 +8,7 @@
 #+filetags: :pool_the_fleets_connections:sprint_30:v0:
 #+owner: marco
 #+branch: feature/run-a-pooler-beside-a-shared-fleet
-#+pr:
+#+pr: 4969
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-21
@@ -246,7 +246,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4969][#4969]] | [database,compass] Give the listener its own endpoint and the fleet a pooler unit |
 
 * Review
 

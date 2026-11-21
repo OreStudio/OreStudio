@@ -374,8 +374,11 @@ void run_routes::register_routes(std::shared_ptr<ores::http::net::router> router
                     if (!rr::is_uuid(raw))
                         rr::invalid("The address names an id that is not a uuid.");
                     rr::refuse_unknown_params(req, {});
-                    return http_response::json(runs_json(
-                        runs_of_definition(req, session, boost::uuids::string_generator()(raw))));
+                    return http_response::json(
+                        "{\"runs\":" +
+                        runs_json(runs_of_definition(
+                            req, session, boost::uuids::string_generator()(raw))) +
+                        "}");
                 });
             }));
 

@@ -65,7 +65,6 @@ an API publishes no area, so it is counted under =(none)=.
 
 | Area | Owner components | Routes | Kinds |
 |------+------------------+--------+-------|
-|  | marketdata, quotes | 2 | unclassified 2 |
 | access | iam, server | 109 | composed view 2, resource 107 |
 | agile | agile-routes | 6 | composed view 2, resource 4 |
 | analytics | analytics, sensitivity-templates | 12 | resource 12 |
@@ -73,7 +72,7 @@ an API publishes no area, so it is counted under =(none)=.
 | auth | audit, iam, server | 65 | resource 60, transport capability 5 |
 | changes | core, server | 5 | transport capability 5 |
 | grid | compute, grid-app-versions, grid-downloads, grid-jobs, operations | 25 | composed view 3, resource 22 |
-| market-data | adapters, connectivity, curves, fixing-series, market-reads, marketdata, public-rates, quotes, series, series-identity-shapes, subscriptions | 68 | composed view 8, resource 60 |
+| market-data | adapters, connectivity, curves, fixing-series, market-reads, marketdata, public-rates, quotes, series, series-identity-shapes, subscriptions | 91 | composed view 8, resource 83 |
 | operations | core, inbox, operations, server, workflow | 10 | composed view 3, resource 5, transport capability 2 |
 | qa | qa | 6 | resource 6 |
 | reference-data | conventions, core, counterparties, curve-configuration, records, refdata, server, tenors | 306 | composed view 2, resource 304 |
@@ -82,7 +81,7 @@ an API publishes no area, so it is counted under =(none)=.
 | tenancy | iam, refdata, server | 83 | composed view 4, resource 79 |
 | trading | blotter, book-changes, booking, books, structures, trades, trading | 48 | composed view 4, resource 44 |
 | workflow | inbox, server, timeline, workflow | 36 | composed view 12, resource 24 |
-| (none) | analytics, books, classifications, conventions, core, counterparties, marketdata, oresmd, pricing-engines, records, refdata, reporting, sensitivity-templates, server, synthetic, tenors | 430 | not an API 408, transport capability 22 |
+| (none) | analytics, books, classifications, conventions, core, counterparties, marketdata, oresmd, pricing-engines, records, refdata, reporting, sensitivity-templates, server, synthetic, tenors | 439 | not an API 417, transport capability 22 |
 
 * The composed views
 
@@ -118,7 +117,7 @@ change of its own, not part of the port.
 | the grid summary | GET /api/operations/grid | web/src/api/client.ts | ores.compute | the stored summary, the host registry with its hardware rows, and the service roster, three reads | ETag on the whole view, stale after 10 s |
 | the grid usage | GET /api/operations/grid/usage | web/src/api/client.ts | ores.compute | the results grouped by tenant or by party with each group's share, and the party names beside them | ETag on the whole view, stale after 30 s |
 | the hand take | POST /api/reporting/cuts/take | web/src/api/client.ts | ores.reporting | the body assembled from the trading, market data, compute and reporting reads, answered part by part with the gaps it could not fill, and the cut the press wrote with the approval request it raised | no cache: the call writes when it does not preview |
-| the identity shape fields | GET /api/marketdata/series-classification-rules, GET /api/marketdata/series-identity-shape-fields | harness/tests/identity-shapes.spec.ts |  |  |  |
+| the identity shape fields | GET /api/marketdata/series-classification-rules, GET /api/marketdata/series-identity-shape-fields | harness/tests/identity-shapes.spec.ts | ores.marketdata | the shapes and their entries read whole and joined one row per field with its family's parts, and the rules that give a series its subclass, three collection reads | No cache: an editor's save changes the shapes, so each read answers from the store as it stands |
 | the image map | GET /api/image-map | web/src/api/client.ts | ores.assets | which image every flagged record uses: currencies, countries, calendars and business centres in one code to image map, five reads, with a country fallback and a placeholder | ETag on the whole view, stale after 5 min |
 | the kinds of cut | DELETE /api/reporting/cut-kinds/:code, GET /api/reporting/cut-kinds, GET /api/reporting/cut-kinds/:code, PUT /api/reporting/cut-kinds/:code | web/src/api/client.ts | ores.reporting | the cut kinds with their family and resolution rule names, the approval kinds the kinds point at, and one cut read for the counts, four reads | ETag on the whole view, stale after 60 s |
 | the lookups a cut kind names | GET /api/reporting/cut-kind-choices | web/src/api/client.ts | ores.reporting | the cut families, the cut resolution rules and the inbox approval kinds, three collection reads | ETag on the whole view, stale after 5 min |
@@ -152,7 +151,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | auth | 18 | 18 | 0 |
 | changes | 2 | 2 | 0 |
 | grid | 14 | 11 | 3 |
-| market-data | 40 | 25 | 15 |
+| market-data | 41 | 25 | 16 |
 | operations | 5 | 4 | 1 |
 | qa | 6 | 0 | 6 |
 | reference-data | 30 | 30 | 0 |
@@ -161,7 +160,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | tenancy | 21 | 21 | 0 |
 | trading | 24 | 24 | 0 |
 | workflow | 18 | 18 | 0 |
-| (none) | 36 | 29 | 7 |
+| (none) | 35 | 29 | 6 |
 | total | 334 | 296 | 38 |
 
 * The pairing
@@ -505,7 +504,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 
 * The inventory
 
-1400 routes: 334 answered by the BFF and 1066 by ores.http.
+1430 routes: 334 answered by the BFF and 1096 by ores.http.
 
 | Kind | Area | Method | Path | Server | Where | Note |
 |------+------+--------+------+--------+-------+------|
@@ -879,8 +878,8 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | resource | market-data | get | =/api/marketdata/quotes/feeds= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/quote_routes.cpp:160 | The feeds the caller may watch for display, the latest quote of each datum on them from the board each server fills by listening to every feed subject once, and one point of a provider's series over a span; every read asks the market data service which feeds the caller may watch. |
 | resource | market-data | get | =/api/marketdata/quotes/history= | bff | projects/ores.web/packages/bff/src/quotes.ts:477 | The feeds the caller may watch for display, the latest quote of each datum on them from the board each server fills by listening to every feed subject once, and one point of a provider's series over a span; every read asks the market data service which feeds the caller may watch. |
 | resource | market-data | get | =/api/marketdata/quotes/history= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/quote_routes.cpp:218 | The feeds the caller may watch for display, the latest quote of each datum on them from the board each server fills by listening to every feed subject once, and one point of a provider's series over a span; every read asks the market data service which feeds the caller may watch. |
-|  |  | post | =/api/marketdata/quotes/vols-by-delta= | bff | projects/ores.web/packages/bff/src/quotes.ts:458 |  |
-|  |  | post | =/api/marketdata/quotes/vols-by-delta= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/quote_routes.cpp:243 |  |
+| resource | market-data | post | =/api/marketdata/quotes/vols-by-delta= | bff | projects/ores.web/packages/bff/src/quotes.ts:458 | Each source's quotes of one pair read as a smile, at ten, twenty-five and ten delta of every expiry the body names: the market data service fits each source in the pair's own convention on the party's published forwards, and stores nothing. |
+| resource | market-data | post | =/api/marketdata/quotes/vols-by-delta= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/quote_routes.cpp:243 | Each source's quotes of one pair read as a smile, at ten, twenty-five and ten delta of every expiry the body names: the market data service fits each source in the pair's own convention on the party's published forwards, and stores nothing. |
 | resource | market-data | get | =/api/marketdata/routes= | bff | projects/ores.web/packages/bff/src/subscriptions.ts:165 | A subscription or a route the session party holds, with the feed that serves it, read as a page and written or removed one at a time. |
 | resource | market-data | get | =/api/marketdata/routes= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/subscription_routes.cpp:218 | The subscriptions and routes screens at the address and in the shape the BFF answered: every subscription and route the caller's party holds, the two creates that name a provider or a feed, and the removals that name the version they read. |
 | resource | market-data | post | =/api/marketdata/routes= | bff | projects/ores.web/packages/bff/src/subscriptions.ts:257 | A subscription or a route the session party holds, with the feed that serves it, read as a page and written or removed one at a time. |
@@ -1118,6 +1117,15 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | not an API | (none) | put | =/api/refdata/party-identifiers= | ores.http | projects/ores.http/refdata/src/routes/refdata/party_identifier_web_routes.cpp:364 | The generic router's addresses, one generated unit per resource in the BFF's shapes, kept so the screens work when the BFF goes; the published collection per resource is the API. |
 | not an API | (none) | get | =/api/refdata/party-identifiers/by/{parent}= | ores.http | projects/ores.http/refdata/src/routes/refdata/party_identifier_web_routes.cpp:353 | The generic router's addresses, one generated unit per resource in the BFF's shapes, kept so the screens work when the BFF goes; the published collection per resource is the API. |
 | not an API | (none) | get | =/api/refdata/party-identifiers/key/{key}= | ores.http | projects/ores.http/refdata/src/routes/refdata/party_identifier_web_routes.cpp:342 | The generic router's addresses, one generated unit per resource in the BFF's shapes, kept so the screens work when the BFF goes; the published collection per resource is the API. |
+| not an API | (none) | delete | =/api/refdata/series-identity-shape-entries= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/series_identity_shape_entry_web_routes.cpp:382 | The generic router's addresses, one generated unit per resource in the BFF's shapes, kept so the screens work when the BFF goes; the published collection per resource is the API. |
+| not an API | (none) | get | =/api/refdata/series-identity-shape-entries= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/series_identity_shape_entry_web_routes.cpp:338 | The generic router's addresses, one generated unit per resource in the BFF's shapes, kept so the screens work when the BFF goes; the published collection per resource is the API. |
+| not an API | (none) | put | =/api/refdata/series-identity-shape-entries= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/series_identity_shape_entry_web_routes.cpp:371 | The generic router's addresses, one generated unit per resource in the BFF's shapes, kept so the screens work when the BFF goes; the published collection per resource is the API. |
+| not an API | (none) | get | =/api/refdata/series-identity-shape-entries/by/{parent}= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/series_identity_shape_entry_web_routes.cpp:360 | The generic router's addresses, one generated unit per resource in the BFF's shapes, kept so the screens work when the BFF goes; the published collection per resource is the API. |
+| not an API | (none) | get | =/api/refdata/series-identity-shape-entries/key/{key}= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/series_identity_shape_entry_web_routes.cpp:349 | The generic router's addresses, one generated unit per resource in the BFF's shapes, kept so the screens work when the BFF goes; the published collection per resource is the API. |
+| not an API | (none) | delete | =/api/refdata/series-identity-shapes= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/series_identity_shape_web_routes.cpp:330 | The generic router's addresses, one generated unit per resource in the BFF's shapes, kept so the screens work when the BFF goes; the published collection per resource is the API. |
+| not an API | (none) | get | =/api/refdata/series-identity-shapes= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/series_identity_shape_web_routes.cpp:297 | The generic router's addresses, one generated unit per resource in the BFF's shapes, kept so the screens work when the BFF goes; the published collection per resource is the API. |
+| not an API | (none) | put | =/api/refdata/series-identity-shapes= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/series_identity_shape_web_routes.cpp:319 | The generic router's addresses, one generated unit per resource in the BFF's shapes, kept so the screens work when the BFF goes; the published collection per resource is the API. |
+| not an API | (none) | get | =/api/refdata/series-identity-shapes/key/{key}= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/series_identity_shape_web_routes.cpp:308 | The generic router's addresses, one generated unit per resource in the BFF's shapes, kept so the screens work when the BFF goes; the published collection per resource is the API. |
 | resource | tenancy | get | =/api/registration-policy= | bff | projects/ores.web/packages/bff/src/server.ts:825 | What the deployment offers somebody not in it yet: the switch, the destination and whether a registration can be used at once. |
 | resource | tenancy | get | =/api/registration-policy= | ores.http | projects/ores.http/iam/src/routes/iam/bootstrap_screen_routes.cpp:255 | The deployment's setup state, the first administrator, the end of first-run setup, a tenant's own setup run and the registration policy, at the address and in the shape the BFF answered. |
 | resource | access | get | =/api/reporting-tree= | bff | projects/ores.web/packages/bff/src/server.ts:1293 | The tenant's reporting shape in one read, or one account's branch of it. |
@@ -1601,6 +1609,27 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | resource | auth | post | =/api/v1/iam/ops/update_my_email= | ores.http | projects/ores.http/iam/src/routes/iam/account_operations_routes.cpp:279 | An RPC-shaped write to one credential or account: the caller's password or email, an administrator's reset, or the account a stranger registers. |
 | resource | access | post | =/api/v1/iam/roles_permissions/put= | ores.http | projects/ores.http/iam/src/routes/iam/authorization_routes.cpp:204 | Replaces the permissions one role grants with exactly the set sent. |
 | transport capability | (none) | get | =/api/v1/info= | ores.http | projects/ores.http/server/src/app/application.cpp:169 | The name, version and running state the API states about itself, the readiness answer beside the metrics. |
+| resource | market-data | get | =/api/v1/market-data/series_identity_shape_entries= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/series_identity_shape_entry_routes.cpp:378 | A generated market data collection, answering under the published market data area: the list, one row by key, its versions, and the bulk get. |
+| resource | market-data | post | =/api/v1/market-data/series_identity_shape_entries= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/series_identity_shape_entry_routes.cpp:433 | A generated write of a market data collection: create, replace, remove, or one of the bulk put and delete calls. |
+| resource | market-data | put | =/api/v1/market-data/series_identity_shape_entries= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/series_identity_shape_entry_routes.cpp:447 | A generated write of a market data collection: create, replace, remove, or one of the bulk put and delete calls. |
+| resource | market-data | get | =/api/v1/market-data/series_identity_shape_entries/by-shape-code/{shape_code}= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/series_identity_shape_entry_routes.cpp:507 | A generated market data collection, answering under the published market data area: the list, one row by key, its versions, and the bulk get. |
+| resource | market-data | post | =/api/v1/market-data/series_identity_shape_entries/delete-many= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/series_identity_shape_entry_routes.cpp:492 | A generated write of a market data collection: create, replace, remove, or one of the bulk put and delete calls. |
+| resource | market-data | post | =/api/v1/market-data/series_identity_shape_entries/get-many= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/series_identity_shape_entry_routes.cpp:419 | A generated write of a market data collection: create, replace, remove, or one of the bulk put and delete calls. |
+| resource | market-data | post | =/api/v1/market-data/series_identity_shape_entries/put-many= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/series_identity_shape_entry_routes.cpp:462 | A generated write of a market data collection: create, replace, remove, or one of the bulk put and delete calls. |
+| resource | market-data | delete | =/api/v1/market-data/series_identity_shape_entries/{id}= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/series_identity_shape_entry_routes.cpp:476 | A generated write of a market data collection: create, replace, remove, or one of the bulk put and delete calls. |
+| resource | market-data | get | =/api/v1/market-data/series_identity_shape_entries/{id}= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/series_identity_shape_entry_routes.cpp:406 | A generated market data collection, answering under the published market data area: the list, one row by key, its versions, and the bulk get. |
+| resource | market-data | get | =/api/v1/market-data/series_identity_shape_entries/{id}/versions= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/series_identity_shape_entry_routes.cpp:527 | A generated market data collection, answering under the published market data area: the list, one row by key, its versions, and the bulk get. |
+| resource | market-data | get | =/api/v1/market-data/series_identity_shape_entries/{id}/versions/{version}= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/series_identity_shape_entry_routes.cpp:544 | A generated market data collection, answering under the published market data area: the list, one row by key, its versions, and the bulk get. |
+| resource | market-data | get | =/api/v1/market-data/series_identity_shapes= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/series_identity_shape_routes.cpp:347 | A generated market data collection, answering under the published market data area: the list, one row by key, its versions, and the bulk get. |
+| resource | market-data | post | =/api/v1/market-data/series_identity_shapes= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/series_identity_shape_routes.cpp:394 | A generated write of a market data collection: create, replace, remove, or one of the bulk put and delete calls. |
+| resource | market-data | put | =/api/v1/market-data/series_identity_shapes= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/series_identity_shape_routes.cpp:407 | A generated write of a market data collection: create, replace, remove, or one of the bulk put and delete calls. |
+| resource | market-data | post | =/api/v1/market-data/series_identity_shapes/delete-many= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/series_identity_shape_routes.cpp:449 | A generated write of a market data collection: create, replace, remove, or one of the bulk put and delete calls. |
+| resource | market-data | post | =/api/v1/market-data/series_identity_shapes/get-many= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/series_identity_shape_routes.cpp:381 | A generated write of a market data collection: create, replace, remove, or one of the bulk put and delete calls. |
+| resource | market-data | post | =/api/v1/market-data/series_identity_shapes/put-many= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/series_identity_shape_routes.cpp:421 | A generated write of a market data collection: create, replace, remove, or one of the bulk put and delete calls. |
+| resource | market-data | delete | =/api/v1/market-data/series_identity_shapes/{code}= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/series_identity_shape_routes.cpp:434 | A generated write of a market data collection: create, replace, remove, or one of the bulk put and delete calls. |
+| resource | market-data | get | =/api/v1/market-data/series_identity_shapes/{code}= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/series_identity_shape_routes.cpp:369 | A generated market data collection, answering under the published market data area: the list, one row by key, its versions, and the bulk get. |
+| resource | market-data | get | =/api/v1/market-data/series_identity_shapes/{code}/versions= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/series_identity_shape_routes.cpp:464 | A generated market data collection, answering under the published market data area: the list, one row by key, its versions, and the bulk get. |
+| resource | market-data | get | =/api/v1/market-data/series_identity_shapes/{code}/versions/{version}= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/series_identity_shape_routes.cpp:481 | A generated market data collection, answering under the published market data area: the list, one row by key, its versions, and the bulk get. |
 | resource | reference-data | get | =/api/v1/reference-data/business_centres= | ores.http | projects/ores.http/refdata/src/routes/refdata/business_centre_routes.cpp:340 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
 | resource | reference-data | post | =/api/v1/reference-data/business_centres= | ores.http | projects/ores.http/refdata/src/routes/refdata/business_centre_routes.cpp:386 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
 | resource | reference-data | put | =/api/v1/reference-data/business_centres= | ores.http | projects/ores.http/refdata/src/routes/refdata/business_centre_routes.cpp:399 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |

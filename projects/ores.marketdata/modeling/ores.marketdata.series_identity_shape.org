@@ -1,11 +1,15 @@
 :PROPERTIES:
 :ID: D5C3B146-66FC-4EDA-83B4-A6BAF3F67BD7
 :ores.cpp.wire-codec.enabled: true
+:ores.cpp.http-route.enabled: true
 :END:
 #+title: ores.marketdata.series_identity_shape
 #+description: The shape of a series family's identity: which family it is, and what it is for. Its entries state the fields it requires and forbids.
 #+type: ores.codegen.entity
 #+component: marketdata
+#+http_area: market-data
+#+web_area: refdata
+#+web_resource: series-identity-shapes
 #+filetags: :model:entity:marketdata:
 #+entity_singular: series_identity_shape
 #+entity_plural: series_identity_shapes

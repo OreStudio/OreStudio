@@ -183,6 +183,14 @@ The hand-written recipes that predate the facet are catalogued separately in
 
 - [[id:449D18D1-633D-52B3-85A3-4E2240CA46F0][How do I call the seed_profiles endpoints over HTTP?]]
 
+* Series Identity Shape Entries
+
+- [[id:5811BEEE-5EEE-593C-AC1E-0377036D8DD5][How do I call the series_identity_shape_entries endpoints over HTTP?]]
+
+* Series Identity Shapes
+
+- [[id:424D435E-B5A9-5042-8D95-615970844601][How do I call the series_identity_shapes endpoints over HTTP?]]
+
 * Session Operations
 
 - [[id:84B782E8-D992-574E-8094-29E6454141D7][How do I call the session_operations endpoints over HTTP?]]

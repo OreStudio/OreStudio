@@ -61,6 +61,7 @@ them.
 | [[id:3D23B905-359A-4DE0-9F35-1B047A54385B][Run a pooler beside a shared fleet]] | DONE | 2026-11-21 | 2026-11-21 | Where several environments share one PostgreSQL, the fleet's connections terminate at a pooler that caps what reaches the server. A systemd unit and a configuration, with the listener and the administrative paths left direct. |
 | [[id:24C47B49-2A5C-42D0-87C2-5E514D8BC9B3][Package the pooler for pauli]] | STARTED | 2026-11-21 | | pauli runs the fleet as podman containers pulled from the registry, NATS among them. The pooler joins it: an image, a configuration, and the services' options pointing at it. |
 | [[id:83C4FD4E-888C-4C3F-BE3D-50136487B458][Prove the pooled path in CI]] | DONE | 2026-11-21 | 2026-11-21 | Developers keep a direct connection, so the pooled path is only proven if something runs it. One CI job runs the marketdata suite through a transaction pooler on every change. |
+| [[id:04CD1C47-0893-4D5F-B812-2DD1E907F921][Pass the environment to the option parser]] | BACKLOG | | | Every defaults test hand-clears the environment variables the parser reads, one name at a time, so each new environment-read option breaks every defaults suite at gate time. Make the environment an explicit input to parse, so a defaults test passes nothing and an env-wins test states the value it expects. |
 
 * Decisions
 

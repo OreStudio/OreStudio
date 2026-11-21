@@ -1,0 +1,162 @@
+:PROPERTIES:
+:ID: A5B29E87-1163-4DAD-A36E-B2EDD9740F2B
+:END:
+#+title: The Acme provision leaves warnings that retry cannot fix
+#+description: A full Acme provision on pauli left five steps with warnings: one is a retry gap, one is a missing fan-out of derived series, and two are gaps in the starting point's data.
+#+type: capture
+#+level: cross
+#+filetags: :provisioning:market-data:workflow:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+A full Acme provision on pauli left 5 of 17 steps with warnings. The
+retry logic and the service dependencies cover the wait for quotes, and
+that part worked. They do not cover three of the five failures below.
+Two are gaps in the data the starting point carries, so no amount of
+waiting closes them.
+
+The run was `bootstrap setup super_admin ... --profile acme_demo` from
+the shell against the remote environment, on branch
+=feature/package-the-pooler-for-pauli=, image tag =0.0.30-c5a68a85a9=,
+against a freshly recreated database on pauli. The tenant ended
+=active= with 6 parties, 98 accounts, 927 trades and 486,540 calendar
+days.
+
+The five steps: =attach_photos=, =publish_party_curves=,
+=give_party_surface_blueprints=, =publish_party_surfaces=,
+=generate_trades=.
+
+** The curve deferral is decided once and never re-examined
+
+Every party holds *20 of 35* curves. The 15 missing ones are the LIBOR
+curves that discount off GBP-SONIA, USD-SOFR-FOMC, EUR-ESTR, JPY-TONA
+and CHF-SARON.
+
+The log shows the dependency arriving just after the step gave up:
+
+#+begin_src text
+18:01:52.67  Deferred bootstrap config ...: curve 'GBP-LIBOR-3M'
+            discounts off 'GBP-SONIA', which has published nothing yet
+18:01:55.33  Declared shape of series ...curve_id=GBP-SONIA: 1 axes,
+            7 new values
+18:01:55.94  Step answers the engine: failed: 60 party curve(s) were
+            not published
+#+end_src
+
+All five discount curves are published for every party now, so the data
+is there. The wait for quotes retries ("asking again in 10s"); the wait
+for another *curve* does not. The deferral is computed once, and the
+step reports failure on that same pass.
+
+*Fix*: publish the deferred set in a loop while it shrinks, then report.
+The step already promises that a rerun is safe, which is the same
+contract.
+
+** The derived series never reach a tenant party
+
+=give_party_surface_blueprints= asked for 35 surfaces per party and got
+none: every party holds *0 of 35*. This one is not a timing problem.
+
+The resolver requires each party to hold its own =derived= fx_option
+=rate_lnvol= series. Its own test states the rule:
+=a party's surface blueprint reads its own delivered volatility quotes=
+in =projects/ores.marketdata/core/tests/messaging_party_surface_blueprints_tests.cpp=.
+
+What the database holds:
+
+| Party                   | bloomberg | ice | tradeweb | derived |
+|-------------------------+-----------+-----+----------+---------|
+| Acme Corporation Plc    |        63 |  63 |       63 |       0 |
+| ACME Corporation UK plc |        63 |  63 |       63 |       0 |
+| ACME Corporation US Inc |        63 |  63 |       63 |       0 |
+| ACME Corporation HK Ltd |        63 |  63 |       63 |       0 |
+| System Party            |        23 |  14 |       14 |      35 |
+
+The routes are there: each Acme party holds 7 =derived= routes to the
+=derived-fx-vol= feed, service =end_of_day=. Nothing serves them:
+
+#+begin_src text
+Adapter 'composite-derived' of provider 'composite' announced: ready (0 served)
+Dropping ticks for unknown source 'synthetic.bloomberg.vol.nzdusd.7cb9dd4b-...':
+  the catalogue names no feed for it
+#+end_src
+
+A tick whose source the feed catalogue does not name is dropped, so no
+series is created, so the blueprint waits for ever. Only the System
+Party, whose quotes came with the system provision, holds derived
+series.
+
+*Fix*: find why the derivation names a source the catalogue does not
+hold, and why the composite adapter serves nothing to a tenant party.
+Until then, no retry in the step can succeed.
+
+** The starting point names an image the seed does not hold
+
+=attach_photos= attached 24 of 25 images. One was refused:
+
+#+begin_src text
+The picture was not attached to the account 'adrian.vance': Repository
+error: Invalid image_id: 89b3bc34-78ad-5998-b935-23fb06a692da. Image
+must exist.
+#+end_src
+
+*Fix*: either the staff bundle names a stale image id, or the image
+catalogue is missing one row. Decide which, then make the other match.
+
+** Two trade populations are drawn with conventions ORE cannot build
+
+=generate_trades= wrote 14 of 16 populations, 927 trades in total. Two
+were refused:
+
+- A cross-currency swap drawn with PKR =KIBOR=: "no Ibor or overnight
+  index convention defines it".
+- A forward rate agreement drawn without an Ibor index: "a forward rate
+  agreement needs an Ibor index".
+
+Both refuse the same way on any host, so they are gaps in the draw, not
+in the environment.
+
+*Fix*: exclude those pairs from the draw, or seed the convention the
+draw needs.
+
+** A remote provision cannot publish its engine packages
+
+Not one of the five warnings, but it stops the same recipe. The shell
+uploads packages over HTTP and defaults to
+=http://localhost:$ORES_HTTP_PORT= (20600 when the variable is unset),
+so against a remote host every =compute publish-package= fails with
+=connect: Connection refused=. The three packages published only after
+passing =--http-base-url= through an ssh tunnel to the host's HTTP
+server.
+
+*Fix*: let the host profile carry the shell's HTTP base URL, the way it
+already carries the NATS URL and TLS paths, so a remote provision works
+without a hand-passed flag.
+
+* Why
+
+The provision is the fastest way to exercise the market data path end to
+end, so its warnings are the cheapest signal that a dependency or a
+retry rule has a hole. The retry work closed the wait for quotes. These
+five show what it does not yet close, and separate the two that no retry
+can fix.
+
+* References
+
+- =projects/ores.marketdata/core/tests/messaging_party_surface_blueprints_tests.cpp=
+  — the rule that a party reads its own delivered quotes.
+- =projects/ores.marketdata/service/src/app/feed_ingest_loop.cpp= — the
+  dropped-tick warning and where a series is created.
+- =projects/ores.shell/api/include/ores.shell/app/http_base_url.hpp= —
+  the default that points a remote provision at the local host.
+- =doc/recipes/shell/provisioning/how_do_i_provision_the_system_with_acme_corporation_holding_group.org=
+  — the recipe that produced the run.
+
+* See also
+
+- [[id:A75C3063-896F-4DD5-A9BC-893A59EDFF7E][Pool the fleet's connections]] — the story whose environment
+  produced this run.

@@ -31,11 +31,11 @@ generation and valuation, and the components with their dependency graph.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:E6359881-7919-4BBC-9B9C-03A8EEDB8A03][Design the scripted trade subsystem]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-21                               |
 
 * Acceptance
@@ -108,13 +108,13 @@ code changing, and the reader of a bare number cannot tell which tree it came
 from. Where the raw output matters, put it in an =evidence/= file beside the
 task and name that file in the Command column.
 
-| What                                 | Value                              | Command                                                                           | Commit          |
-|--------------------------------------+------------------------------------+-----------------------------------------------------------------------------------+-----------------|
-| Architecture pages written           | 15: a structure note and 14 claims | ls doc/knowledge/architecture, the pages this PR adds                             | HEAD of this PR |
-| Existing pages refactored to link in | 10                                 | git diff --stat, the pages under doc/knowledge and projects/ores.trading/modeling | HEAD of this PR |
-| Story tasks cut from the pages       | 7, beside the editor task          | the story's Tasks table                                                           | HEAD of this PR |
-| Unresolved id links the PR adds      | 0                                  | a scan of every id link in the changed files against every :ID:                   | HEAD of this PR |
-| compass-ng new diagnostics           | 0                                  | compass-ng check --ratchet origin/main                                            | HEAD of this PR |
+| What                                 |                              Value | Command                                                                           |     Commit |
+|--------------------------------------+------------------------------------+-----------------------------------------------------------------------------------+------------|
+| Architecture pages written           | 15: a structure note and 14 claims | ls doc/knowledge/architecture, the pages this PR adds                             | 5d662e0091 |
+| Existing pages refactored to link in |                                 10 | git diff --stat, the pages under doc/knowledge and projects/ores.trading/modeling | 5d662e0091 |
+| Story tasks cut from the pages       |          7, beside the editor task | the story's Tasks table                                                           | 5d662e0091 |
+| Unresolved id links the PR adds      |                                  0 | a scan of every id link in the changed files against every :ID:                   | 5d662e0091 |
+| compass-ng new diagnostics           |                                  0 | compass-ng check --ratchet origin/main                                            | 5d662e0091 |
 
 * Notes
 

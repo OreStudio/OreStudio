@@ -1,8 +1,11 @@
 name: Agent CPU evaluation
 
+# The daily schedule is off. The prototype pins a fingerprint of the C++
+# headers it calls (backend-contract.json), which ORE changes almost every
+# day, so the job failed on every run. The assistant moves onto the target
+# architecture in the story "Bring the assistant into ores.web on the
+# target architecture"; run it by hand until then.
 on:
-  schedule:
-    - cron: '17 3 * * *'
   workflow_dispatch:
     inputs:
       corpus:

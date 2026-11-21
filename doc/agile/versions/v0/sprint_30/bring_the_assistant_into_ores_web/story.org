@@ -107,6 +107,18 @@ retires the prototype once ores.web does what it does.
   [[id:70A4D585-8A56-475D-BE32-803D08A5D0CF][Answer from the knowledge base over MCP]]. This story keeps the
   chat in ores.web, the agent loop, the inference server, the confirmation of
   changes in the chat, and the prototype, and builds on the three.
+- *The prototype's CI runs by hand only* (2026-11-21). Context: Agent component
+  and Agent CPU evaluation failed on every daily run from at least 2026-11-14,
+  each with "Backend contract source changed". The prototype pins one
+  fingerprint of the C++ headers it calls and everything they include
+  (=projects/ores.agent/backend-contract.json=, recorded at 26f6bef7c0), and
+  ORE changes those headers almost every day. Re-recording needs a live codec
+  check against the services and breaks again with the next header change.
+  Decision: the product owner turned off both workflows' daily schedule and
+  kept =workflow_dispatch=, because the prototype is being ported to the target
+  architecture. Consequence: nothing checks the prototype on a schedule; the
+  target design derives its catalogue from the protocol, so it carries no such
+  pin.
 
 * Out of scope
 

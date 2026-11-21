@@ -62,7 +62,7 @@ Data Sourcing and Generation Steps:
 4. CODE GENERATION
    Regenerate the codec's record tables from the (freshly synced) XSD
    schemas:
-     ./projects/ores.ore/scripts/regenerate_xml_bindings.sh
+     ./compass.sh generate
    This regenerates the files under:
      - projects/ores.ore/core/include/ores.ore.core/xml/generated
      - projects/ores.ore/core/src/xml/generated

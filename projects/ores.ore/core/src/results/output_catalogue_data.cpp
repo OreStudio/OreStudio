@@ -14,8 +14,8 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Generator: projects/ores.ore/scripts/generate_output_catalogue.py
- * To modify, update the generator and regenerate.
+ * Generator: compass, from compass/checks/ore_output_catalogue.org
+ * To modify, edit that document and run ./compass.sh generate.
  *
  * Every output file ORE writes, as its samples state it. One line for each
  * family, its fields separated by a tab: family, file pattern, the parameter

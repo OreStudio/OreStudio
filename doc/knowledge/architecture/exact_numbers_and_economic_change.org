@@ -72,9 +72,9 @@ that goes stale.
 ORE types the same money concept as =xs:float=, =xs:double= and =xs:string= in
 different places, so the schema cannot say which numbers are money. The
 generator takes the shape of each record from the schema and the kind of each
-number from this project's money vocabulary: the =--exact-decimal= list in
-=projects/ores.ore/scripts/regenerate_xml_bindings.sh=. A member on the list,
-or every number of a family when the list holds =*=, is held as an exact
+number from this project's money vocabulary: the Exact decimals table of
+[[id:37EB318F-FFCE-58FF-B5E0-0A70BB1E7379][the XML bindings check]] (=compass/checks/xml_bindings.org=). A member in the table,
+or every number of a family when its row holds =*=, is held as an exact
 decimal. A number that is not on the list stays a binary float, which is right
 for a continuous quantity.
 
@@ -92,8 +92,8 @@ decimals.
 
 A new money member needs three steps:
 
-1. Name the member in the =--exact-decimal= list.
-2. Regenerate the tables with =regenerate_xml_bindings.sh=.
+1. Add the member to the Exact decimals table of =compass/checks/xml_bindings.org=.
+2. Regenerate the tables with =./compass.sh generate=.
 3. Add a mapper test that holds the digits of the member.
 
 compass-ng's =xml_bindings= codec fails when a

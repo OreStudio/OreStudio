@@ -8,7 +8,7 @@
 #+filetags: :move_codegen_and_gates_to_compass_ng:sprint_30:v0:
 #+owner: marco
 #+branch: feature/delete-the-python-gates-compass-ng-replaced
-#+pr: 4950
+#+pr: 4963
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-17
@@ -105,8 +105,32 @@ task and name that file in the Command column.
   leave local_checks.py; compass-ng's own result fails on their findings.
   The pin moves to v0.0.5 in the same change, because an older compass-ng
   stops on a check document.
-- =generate_xml_bindings.py=, =regenerate_xml_bindings.sh= and
-  =test_generate_xml_bindings_derivation.py= are dead as code: compass-ng's
+- 2026-11-21, tier 2 workflows: main was red on Compass check, Codegen
+  drift and Codegen sweep. Compass check was route inventory drift on main,
+  which this branch's regenerate fixes. Codegen drift and sweep failed because
+  =check_component_drift.py= stages its dry run under the git directory and
+  prettier 3.9.8 refuses any path inside =.git= ("No matching files", exit 2,
+  reproduced with a probe file). A worktree, whose git directory is
+  =ores.git=, never shows it. The product owner chose to delete the
+  single-gate workflows compass-check.yml covers: codegen-drift (its unit
+  suite kept as codegen-tests.yml), codegen-sweep, core-link-edges, doc-lint,
+  entity-writes, event- and history-registrar-composition, header-hygiene,
+  populate-reference-drift, portable-stop-types, rls-system-tenant-widenings,
+  shell-command-composition, shell-recipe-provenance, shell-script-drift and
+  template-drift. Their scripts are the tier 2 deletion. The staging bug
+  stays in =check_component_drift.py= until tier 3 retires it.
+- 2026-11-21, compass-ng v0.0.6: =compass/checks/xml_bindings.org= holds
+  the family table compass had compiled in (Families, Exact decimals,
+  Schema errata, Settings, Licence), so a money member is one Exact decimals
+  row and =./compass.sh generate=. That retires =generate_xml_bindings.py=,
+  =regenerate_xml_bindings.sh= and =test_generate_xml_bindings_derivation.py=.
+  The regenerate rewrote only banner lines, plus a route inventory line
+  number already stale on main. v0.0.6's =names_missing_file= rule also
+  found four template sources naming =generator.py= (folded into the
+  =codegen= package in 9d24a8ff52) and =setup_database.sh= (gone); their
+  org sources now name compass's =codegen= codec and =compass db recreate=.
+- Before v0.0.6: =generate_xml_bindings.py=, =regenerate_xml_bindings.sh= and
+  =test_generate_xml_bindings_derivation.py= were dead as code: compass-ng's
   =xml_bindings= codec writes the 26 binding files byte for byte. They stay
   for now, because compass compiles the family table, the =--exact-decimal=
   money members among it, into =xml_bindings.cpp=. With the codec on, a
@@ -143,6 +167,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4963][#4963]] | [build] Adopt compass-ng v0.0.6 and own the XML binding table |
 | [[https://github.com/OreStudio/OreStudio/pull/4950][#4950]] | [build] Adopt compass-ng v0.0.5 and delete the Python it replaces |
 | [[https://github.com/OreStudio/OreStudio/pull/4946][#4946]] | [build] Delete the Python gates compass-ng replaced |
 

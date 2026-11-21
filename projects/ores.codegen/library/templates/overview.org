@@ -17,7 +17,7 @@ facet docs hold the template sources themselves.
 
 * Summary
 
-The mustache templates consumed by =generator.py= are organised as
+The mustache templates consumed by compass's =codegen= codec are organised as
 the [[id:D7D53D71-C9E8-43AE-AA42-E58E57CD76C8][ores physical-space graph]]: a root node fanning out to technical
 spaces, each containing one or more /facets/ in the [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]] sense —
 coherent families of artefacts projected from a model element. Every
@@ -33,7 +33,7 @@ their source.
 | Groups overview        | this page                      | How the library is organised and maintained.    |
 | Technical-space doc    | =ores.<space>.org=             | Namespace: indexes the space's facets.          |
 | Facet doc              | =ores.<space>.<facet>.org=     | Literate source: prose + Archetypes table (per-template =mustache= blocks pending migration for some facets). |
-| Archetype/Template     | =<name>.mustache=              | Tangled artefact consumed by =generator.py=.    |
+| Archetype/Template     | =<name>.mustache=              | Tangled artefact consumed by compass's =codegen= codec.    |
 
 The technical spaces:
 

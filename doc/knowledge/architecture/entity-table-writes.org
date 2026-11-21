@@ -49,11 +49,12 @@ up the state it needs. They are not application code.
 =projects/ores.codegen/scripts/check_entity_table_writes.py= reads every SQL
 function under =projects/ores.sql/create/= and every hand-written C++ file
 under =projects/ores.*/=. It fails on a writer of an entity table that is not
-a repository, the purge or a fixture. It runs in
-=.github/workflows/codegen-drift.yml= and locally:
+a repository, the purge or a fixture. compass-ng's =entity_writes= codec
+runs it, in =.github/workflows/compass-check.yml= on every push to main and
+locally:
 
 #+begin_src sh
-python3 projects/ores.codegen/scripts/check_entity_table_writes.py
+compass-ng check --codec entity_writes
 #+end_src
 
 ** The ratchet baseline

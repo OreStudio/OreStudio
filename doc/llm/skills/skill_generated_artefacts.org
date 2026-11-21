@@ -94,9 +94,9 @@ All three checks exist and all three are enforced in CI.
 #+ATTR_HTML: :class hug-leading
 | Kind           | What happened                                                | Guarded by                                       | Enforced                       |
 |----------------+--------------------------------------------------------------+--------------------------------------------------+--------------------------------|
-| Template drift | A =.mustache= was edited instead of its literate org source  | =template-drift.yml=                             | Yes, on every push and PR      |
-| Artefact drift | A generated file was hand-edited, or a model or template changed and the code built from it was never regenerated | =check_component_drift.py=, run by =codegen-drift.yml= | Yes, over the drift-free registry |
-| Model drift    | An entity names a profile and then declares a feature the profile fixes to another value | =check_model_drift.py=, run by =codegen-drift.yml= | Yes, with named exceptions     |
+| Template drift | A =.mustache= was edited instead of its literate org source  | compass-ng's =tangle= codec                      | Yes, on every push to main     |
+| Artefact drift | A generated file was hand-edited, or a model or template changed and the code built from it was never regenerated | compass-ng's =codegen= codec | Yes, over the drift-free registry |
+| Model drift    | An entity names a profile and then declares a feature the profile fixes to another value | compass-ng's =model_rules= codec | Yes, with named exceptions     |
 
 Artefact drift is the one whose second cause is easy to miss. Nobody has
 to hand-edit anything: change a template, regenerate the components you

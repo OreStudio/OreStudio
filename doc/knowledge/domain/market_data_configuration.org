@@ -4,6 +4,7 @@
 #+title: Market Data Configuration
 #+description: The named, ordered set of rules mapping logical market data requirements onto physical identifiers in the market data universe -- resolution -- and why one requirement resolving to exactly one identifier is the defining property that makes a valuation reproducible.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:domain:marketdata:resolution:configuration:
 #+created: 2026-07-23

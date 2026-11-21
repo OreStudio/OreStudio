@@ -4,6 +4,7 @@
 #+title: A client's forward rate folds the sales margin into the all-in rate
 #+description: The market forward points are separate from the provider's margin, and the client sees one rate.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:fx:fx_forward:
 #+created: 2026-11-09

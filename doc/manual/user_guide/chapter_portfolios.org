@@ -4,6 +4,7 @@
 #+title: Portfolios
 #+description: Portfolio management in ORE Studio: what a portfolio represents relative to books, the Qt UI, the status and purpose classifications, and history and revert.
 #+type: manual
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:manual:portfolios:refdata:user_guide:
 #+created: 2026-07-17

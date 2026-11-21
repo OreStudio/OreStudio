@@ -4,6 +4,7 @@
 #+title: Valuation spot date and overnight
 #+description: Reval date vs spot date vs valuation spot date vs overnight, and the O/N and T/N outright formulas that underpin theta on settled cash.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :marketdata:fx:crm:domain:
 #+created: 2026-07-04

@@ -4,6 +4,7 @@
 #+title: Collateral Bond Obligation
 #+description: A tranched securitisation of a portfolio of corporate bonds or loans; ORE's CBO product.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:cbodata:
 #+created: 2026-09-06

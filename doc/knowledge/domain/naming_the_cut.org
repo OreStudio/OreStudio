@@ -4,6 +4,7 @@
 #+title: Naming the cut
 #+description: The naming decision for the cuts cluster: what the prior art calls the fixed body of a valuation, why the word cut is kept for the general concept, what each component is called, and what a change of term would cost.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:domain:cut:naming:
 #+created: 2026-10-30

@@ -4,6 +4,7 @@
 #+title: FX Variance Swap
 #+description: An FX derivative on realised variance or volatility; ORE's FxVarianceSwap product.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:fxvarianceswap:
 #+created: 2026-09-06

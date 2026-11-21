@@ -4,6 +4,7 @@
 #+title: Forward points follow from two money market rates
 #+description: Covered interest parity on discrete money market rates with separate day-count bases, and its inverse.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:fx:fx_forward:
 #+created: 2026-11-09

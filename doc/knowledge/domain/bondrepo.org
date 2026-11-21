@@ -4,6 +4,7 @@
 #+title: Bond Repo
 #+description: A cash borrowing with a bond posted as collateral; ORE's BondRepo product.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:bondrepo:
 #+created: 2026-09-06

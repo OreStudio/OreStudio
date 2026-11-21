@@ -4,6 +4,7 @@
 #+title: Hull-White Process
 #+description: The time-varying generalisation of Vasicek behind hull_white_process — its piecewise-constant theta(t), why that lets it fit an observed yield curve exactly, and the "target level" vs "drift intercept" form choice.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:domain:quantitative_finance:stochastic_processes:interest_rates:ore:
 #+created: 2026-07-16

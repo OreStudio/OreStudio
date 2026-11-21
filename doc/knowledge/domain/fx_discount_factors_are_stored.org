@@ -4,6 +4,7 @@
 #+title: FX forward calculations run on discount factors and not quoted rates
 #+description: Why a forward computed from discount factor ratios does not depend on day count.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:fx:fx_forward:
 #+created: 2026-11-09

@@ -62,6 +62,7 @@ Every document under [[proj:doc][=doc/=]] begins with this block. Fields marked
 ,#+pr: <number-or-url>                              ; once a PR is open
 ,#+blocked_on: <review|ci|local_build|external|none> ; for executing tasks
 ,#+blocked_since: <YYYY-MM-DD HH:MM>                ; when blocked_on != none
+,#+audience: user                                 ; optional — the page is user-facing
 #+end_src
 
 State is /not/ a frontmatter field. State lives as an org-mode TODO
@@ -94,6 +95,10 @@ writing "yesterday" or "next week", convert it.
 - =#+todo:= — declares the TODO state vocabulary used by the document.
   Stateful documents use TODO keywords on their =* Status= headline; the
   folder structure carries /no/ state information.
+- =#+audience: user= — the page is written for the people who use ORE
+  Studio, so the knowledge base loads it and ores.web can show it to any
+  tenant. It is opt-in: a page without it is never loaded, so an internal
+  page cannot reach a tenant by omission. =user= is the only value.
 - No =#+links:= keyword — links live in the document body as id: links
   (see /Linking between documents/ below). Org-roam picks them up
   automatically.

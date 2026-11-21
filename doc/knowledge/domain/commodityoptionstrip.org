@@ -4,6 +4,7 @@
 #+title: Commodity Option Strip
 #+description: A strip of commodity APOs or European options over periods; ORE's CommodityOptionStrip product.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:commodityoptionstrip:
 #+created: 2026-09-06

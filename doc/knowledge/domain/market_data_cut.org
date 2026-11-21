@@ -4,6 +4,7 @@
 #+title: Market data cut
 #+description: The market data component of a cut: the values a valuation reads at the timepoint, the resolution that fixes them, the published sets and their provenance, approved rates and overrides, and where ORE Studio stands.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:domain:marketdata:cut:valuation:
 #+created: 2026-10-30

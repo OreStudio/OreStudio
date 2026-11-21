@@ -4,6 +4,7 @@
 #+title: SVI Volatility Parameterisation
 #+description: The SVI family of implied-variance parameterisations: raw, natural and jump-wings SVI for one expiry, SSVI and extended SSVI for a whole surface, what each parameter does, and which forms carry closed-form conditions for the absence of static arbitrage.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:domain:volatility:svi:ssvi:
 #+created: 2026-11-03

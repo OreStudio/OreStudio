@@ -4,6 +4,7 @@
 #+title: A forward carries net fair value on balance sheet and its notional off it
 #+description: Forwards are derivatives recorded at net fair value; the notional is a memorandum amount.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:fx:fx_forward:
 #+created: 2026-11-09

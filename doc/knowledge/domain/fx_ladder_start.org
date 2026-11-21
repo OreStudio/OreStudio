@@ -4,6 +4,7 @@
 #+title: A forward ladder can start from today, tomorrow or spot
 #+description: Choosing the near date of a ladder's rows, and how forward-forward quotes generalise it.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:fx:fx_forward:
 #+created: 2026-11-09

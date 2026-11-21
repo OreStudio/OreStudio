@@ -4,6 +4,7 @@
 #+title: Parties
 #+description: Party management in ORE Studio: what an internal legal entity represents, legal-entity identification, the party hierarchy and its house-root rule, the Qt UI, identifiers, contact information, and history and revert.
 #+type: manual
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:manual:parties:refdata:user_guide:
 #+created: 2026-07-16

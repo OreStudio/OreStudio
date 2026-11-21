@@ -4,6 +4,7 @@
 #+title: Market Data Build Order
 #+description: The order in which the producer builds market data: each artefact declares the artefacts it reads, a plan orders them, and a node whose input is not live is deferred rather than failed.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:domain:marketdata:build:order:
 #+created: 2026-11-13

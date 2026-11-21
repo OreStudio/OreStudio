@@ -4,6 +4,7 @@
 #+title: Book lifecycle
 #+description: The lifecycle of a book: the multi-party opening workflow, moving deals between books, and the flat-balance requirement for closing a book.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:trading:book:finance:
 #+created: 2026-07-08

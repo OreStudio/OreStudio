@@ -4,6 +4,7 @@
 #+title: A time option forward settles inside a window at one agreed rate
 #+description: A forward whose delivery date the client picks inside a window; the holder must still complete the whole amount.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:fx:fx_forward:
 #+created: 2026-11-09

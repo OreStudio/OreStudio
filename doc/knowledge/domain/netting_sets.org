@@ -4,6 +4,7 @@
 #+title: Netting sets
 #+description: The trades with a counterparty that may legally offset each other for credit exposure: the legal basis, what determines a set, how it changes aggregation and collateral, and how ORE represents it.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:domain:finance:trading:netting:
 #+created: 2026-10-02

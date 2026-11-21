@@ -4,6 +4,7 @@
 #+title: Reference Data
 #+description: Introduction to reference data in OreStudio: what it is, how it differs from market data and trades, and how OreStudio ensures its quality through the DQ-6 framework, bitemporality, versioning, provenance, and change management.
 #+type: manual
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:manual:reference_data:refdata:user_guide:
 #+created: 2026-06-03

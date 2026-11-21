@@ -4,6 +4,7 @@
 #+title: Liquidity
 #+description: Liquidity as the ease of converting an asset into cash -- a dynamic spectrum, not a binary -- and its extension to an entity's own ability to pay debts as they fall due.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:currency:
 #+created: 2026-07-15

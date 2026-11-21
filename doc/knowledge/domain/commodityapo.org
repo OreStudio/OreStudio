@@ -4,6 +4,7 @@
 #+title: Commodity Average Price Option
 #+description: An Asian option on daily commodity price fixings; ORE's CommodityAveragePriceOption product.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:commodityapo:
 #+created: 2026-09-06

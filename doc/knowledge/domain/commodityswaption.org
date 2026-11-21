@@ -4,6 +4,7 @@
 #+title: Commodity Swaption
 #+description: A European option on a forward-starting commodity swap; ORE's CommoditySwaption product.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:commodityswaption:
 #+created: 2026-09-06

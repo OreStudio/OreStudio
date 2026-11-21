@@ -4,6 +4,7 @@
 #+title: Functional Currency
 #+description: The accounting currency of a book or entity -- the currency its P&L and Balance Sheet are expressed in, the functional currency balance, and facility/utilisation currency.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:currency:trading:book:
 #+created: 2026-07-14

@@ -4,6 +4,7 @@
 #+title: An end-of-day FX rate set must be complete and independently verified
 #+description: End-of-day rates form one consistent set, and rates sourced from the desk need independent price verification.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:fx:fx_forward:
 #+created: 2026-11-09

@@ -4,6 +4,7 @@
 #+title: Book moves
 #+description: Moving a trade from one book to another: which moves the regulatory and accounting rules allow, why some systems cannot move a trade at all, how the ledger sees a move, and what follows for the model.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:domain:finance:trading:book:
 #+created: 2026-10-02

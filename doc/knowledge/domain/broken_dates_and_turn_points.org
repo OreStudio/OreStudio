@@ -4,6 +4,7 @@
 #+title: Broken Dates and Turn Points
 #+description: Odd-date maturities that fall between standard tenor pillars, and the fixed-calendar-time discontinuities (turn points) that require special interpolation handling.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:domain:finance:rates:curves:tenors:ore:
 #+created: 2026-07-12

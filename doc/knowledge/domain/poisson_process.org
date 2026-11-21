@@ -4,6 +4,7 @@
 #+title: Poisson Process
 #+description: The point process with a constant intensity — memoryless exponential gaps between events, and the baseline every clustered arrival model is measured against.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:domain:quantitative_finance:stochastic_processes:point_process:ore:
 #+created: 2026-10-23

@@ -4,6 +4,7 @@
 #+title: Cuts
 #+description: Structure note for the cuts cluster: the definition of a cut as a body of data fixed at one timepoint, the body a cut must hold including the reference data, the two halves the body divides into, and the pages that own each.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:domain:structure_note:cut:valuation:
 #+created: 2026-10-30

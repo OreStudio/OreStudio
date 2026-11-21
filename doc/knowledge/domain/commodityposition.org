@@ -4,6 +4,7 @@
 #+title: Commodity Position
 #+description: A position in a commodity or weighted commodity basket; ORE's CommodityPosition product.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:commodityposition:
 #+created: 2026-09-06

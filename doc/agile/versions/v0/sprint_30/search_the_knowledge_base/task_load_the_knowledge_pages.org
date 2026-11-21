@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :search_the_knowledge_base:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/load-the-knowledge-pages
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,7 +26,7 @@ Declare on each page whether it is user-facing, with a tag or a keyword, and mar
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:05FE6068-3CBD-4B93-B6AE-47A5689F1FCB][Search the knowledge base from ores.web]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -49,9 +49,31 @@ Declare on each page whether it is user-facing, with a tag or a keyword, and mar
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The pages reach PostgreSQL the way ORE's other system reference data does, as a
+DQ dataset published into the system tenant at bring-up, with one difference
+the product owner chose on 2026-11-21: the dataset's populate SQL is generated
+by the build and never committed. A committed seed would hold every page's
+text, a few megabytes, and every edit to a user-facing page would need it
+regenerated or its check would fail.
+
+1. *Declare.* A page opts in with =#+audience: user=; no keyword means not
+   user-facing. Mark the domain knowledge, the manual and the glossary. A check
+   refuses a malformed value.
+2. *Model.* A codegen entity, =ores.orgmode.knowledge_page=, in a new
+   =ores.orgmode.core=: org id as the key, the source path, the org text,
+   system-tenant rows every tenant reads (=rls_own_or_system_tenant_rows=), and
+   its DQ artefact table. A publish function copies the artefact rows into the
+   live table and closes the rows of pages no longer loaded, so a load replaces
+   the previous one. A dataset, =orgmode.knowledge_pages=, in the =system_core=
+   bundle.
+3. *Generate.* A generator reads every page that declares =#+audience: user=
+   and writes the dataset's populate SQL into =build/output=, listing every page
+   it writes. =compass db recreate= runs it and passes its path to the recreate
+   script as a psql variable, so the populate runs it with the rest.
+4. *Serve.* =ores.orgmode.service= joins, registered as in commits
+   =05e0419674= and =b0887787b9=, linking the new core.
+
+Measure: the number of pages declared, loaded and readable from a tenant.
 
 * Measurements
 

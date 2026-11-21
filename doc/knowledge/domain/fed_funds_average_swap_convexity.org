@@ -4,6 +4,7 @@
 #+title: Fed Funds Average Swap Convexity
 #+description: Why Fed Funds Average Swaps (arithmetic-average floating leg) inject a convexity bias relative to compounded OIS (geometric), per Jensen's inequality, and why naive bootstrapping mis-prices the long end of the Fed Funds curve.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:domain:finance:rates:curves:ore:convexity:
 #+created: 2026-07-25

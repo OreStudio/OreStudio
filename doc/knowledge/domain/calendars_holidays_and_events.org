@@ -4,6 +4,7 @@
 #+title: Calendars, Holidays and Events
 #+description: Hub note for calendar reference data: the Diary/Effects architectural split, Template/Instance recurrence, holiday calendar administration, and calendar-anchored events with a time point.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:domain:finance:calendar:refdata:ore:
 #+created: 2026-07-13

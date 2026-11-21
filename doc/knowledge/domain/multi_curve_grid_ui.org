@@ -4,6 +4,7 @@
 #+title: Multicurve Management
 #+description: What reviewing an entire curve family at once entails, and a tenor x curve-identity lookup grid as one way of organising that review.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:domain:finance:rates:curves:ore:ui:
 #+created: 2026-07-11

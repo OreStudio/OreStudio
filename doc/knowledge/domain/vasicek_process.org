@@ -4,6 +4,7 @@
 #+title: Vasicek Process
 #+description: The first mean-reverting short-rate model, its SDE, closed-form bond price, and why it can (and does) produce negative rates.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:domain:quantitative_finance:stochastic_processes:interest_rates:ore:
 #+created: 2026-07-16

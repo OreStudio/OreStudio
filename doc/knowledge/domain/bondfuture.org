@@ -4,6 +4,7 @@
 #+title: Bond Future
 #+description: A contract to buy or sell an underlying bond at expiry at an agreed price; ORE's BondFuture product.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:bondfuture:
 #+created: 2026-09-06

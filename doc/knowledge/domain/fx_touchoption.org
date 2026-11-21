@@ -4,6 +4,7 @@
 #+title: FX Touch Option
 #+description: An FX option paying when spot touches a level before expiry; ORE's FxTouchOption product.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:fx_touchoption:
 #+created: 2026-09-06

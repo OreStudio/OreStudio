@@ -4,6 +4,7 @@
 #+title: Assets
 #+description: An asset as any owned or controlled resource representing convertible economic value, and the narrower category of financial assets whose value derives from a contractual claim.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:currency:
 #+created: 2026-07-15

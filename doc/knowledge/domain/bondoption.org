@@ -4,6 +4,7 @@
 #+title: Bond Option
 #+description: A right to buy or sell a given bond at a fixed price; ORE's BondOption product.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:bondoption:
 #+created: 2026-09-06

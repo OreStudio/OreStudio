@@ -4,6 +4,7 @@
 #+title: A forward ladder shows each pair's tenors as outrights and points
 #+description: What a forward ladder shows: the tenors of one pair, in several measures, including broken dates and turns.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:fx:fx_forward:
 #+created: 2026-11-09

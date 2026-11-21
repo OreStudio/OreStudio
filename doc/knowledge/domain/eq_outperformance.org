@@ -4,6 +4,7 @@
 #+title: Equity Outperformance Option
 #+description: An option paying the outperformance of one asset over another; ORE's Equity Outperformance Option product.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:eq_outperformance:
 #+created: 2026-09-07

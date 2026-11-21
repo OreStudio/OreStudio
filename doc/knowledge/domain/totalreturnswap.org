@@ -4,6 +4,7 @@
 #+title: Total Return Swap
 #+description: A swap paying the total return of an asset against a funding leg; ORE's generic TRS product.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:totalreturnswap:
 #+created: 2026-09-07

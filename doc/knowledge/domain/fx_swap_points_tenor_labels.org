@@ -4,6 +4,7 @@
 #+title: Short-date swap points run between their own two value dates
 #+description: Overnight, tom-next and spot-next are one-day swaps, so their points differ from forward points measured from spot.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:fx:fx_forward:
 #+created: 2026-11-09

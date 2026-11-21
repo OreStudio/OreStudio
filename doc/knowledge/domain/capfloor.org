@@ -4,6 +4,7 @@
 #+title: Cap/Floor
 #+description: A strip of interest rate caplets or floorlets bounding a floating leg; ORE's CapFloor product.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:capfloor:
 #+created: 2026-09-06

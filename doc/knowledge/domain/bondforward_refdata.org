@@ -4,6 +4,7 @@
 #+title: Bond Forward (Reference Data)
 #+description: A forward contract on a bond with the underlying set by reference data; ORE's ForwardBond product.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:bondforward_refdata:
 #+created: 2026-09-06

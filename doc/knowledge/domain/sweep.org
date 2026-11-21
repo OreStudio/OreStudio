@@ -4,6 +4,7 @@
 #+title: Sweep
 #+description: Hub note for 'sweep' as a general concept in ORE Studio's domain model -- a process that goes through every book (or an eligible subset) and centralises or converts something -- and the two distinct sweep types built on it.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:trading:book:finance:currency:
 #+created: 2026-07-11

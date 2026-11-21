@@ -4,6 +4,7 @@
 #+title: The option-expiry cut code
 #+description: A cut code names the time of day at which an option expires: why an expiry needs an instant, what the label is, why the instant enters the price, how the label relates to the cut time and timezone, and where ORE Studio stands.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:domain:fx:cut:valuation:
 #+created: 2026-10-30

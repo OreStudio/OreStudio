@@ -4,6 +4,7 @@
 #+title: A spot position is rolled forward with a tom-next swap
 #+description: Tom-next rollover of open spot positions and how its swap points carry the interest differential.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:fx:fx_forward:
 #+created: 2026-11-09

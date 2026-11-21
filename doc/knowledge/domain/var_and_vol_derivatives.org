@@ -4,6 +4,7 @@
 #+title: Exotic Variance and Volatility Derivatives
 #+description: Variance and volatility swaps and options with barriers, corridors, baskets and optionality; ORE's exotic variance product family.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:var_and_vol_derivatives:
 #+created: 2026-09-07

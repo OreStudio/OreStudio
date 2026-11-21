@@ -4,6 +4,7 @@
 #+title: Cross-rates matrix (CRM)
 #+description: The central FX market-data structure holding spot rates for every currency pair as a no-arbitrage spanning-tree graph of driver and derived rates; lives in ores.marketdata.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :marketdata:fx:crm:domain:
 #+created: 2026-06-28

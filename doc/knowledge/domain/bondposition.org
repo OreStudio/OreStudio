@@ -4,6 +4,7 @@
 #+title: Bond Position
 #+description: A position in a weighted basket of underlying bonds; ORE's BondPosition product.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:bondposition:
 #+created: 2026-09-06

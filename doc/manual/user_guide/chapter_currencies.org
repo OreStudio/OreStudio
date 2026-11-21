@@ -4,6 +4,7 @@
 #+title: Currencies
 #+description: Currency management in ORE Studio: ISO 4217, the Qt UI, auxiliary data (rounding types, market tiers, monetary natures), shell commands.
 #+type: manual
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:manual:currencies:refdata:user_guide:
 #+created: 2026-06-03

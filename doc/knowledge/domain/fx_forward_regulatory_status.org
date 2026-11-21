@@ -4,6 +4,7 @@
 #+title: The regulatory treatment of an FX forward turns on settlement and purpose
 #+description: The US Treasury exemption for deliverable FX swaps and forwards, and the EU spot and means-of-payment exclusions.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:fx:fx_forward:
 #+created: 2026-11-09

@@ -4,6 +4,7 @@
 #+title: Bond Option (Reference Data)
 #+description: A bond option with the underlying bond set by reference data; ORE's BondOption product.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:bondoption_refdata:
 #+created: 2026-09-06

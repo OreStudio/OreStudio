@@ -4,6 +4,7 @@
 #+title: The Diary/Effects Model
 #+description: The architectural split between the diary (a bare timeline of time points) and effects (typed, pluggable, per-occurrence impacts instantiated from a template) — the cleanest statement of what a calendar is.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:domain:finance:calendar:refdata:ore:
 #+created: 2026-07-13

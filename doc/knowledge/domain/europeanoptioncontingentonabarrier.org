@@ -4,6 +4,7 @@
 #+title: European Option Contingent on a Barrier
 #+description: A plain vanilla European option whose payoff depends on a barrier on another underlying; ORE's EuropeanOptionBarrier product.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:europeanoptioncontingentonabarrier:
 #+created: 2026-09-07

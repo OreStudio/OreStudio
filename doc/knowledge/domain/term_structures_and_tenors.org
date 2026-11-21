@@ -4,6 +4,7 @@
 #+title: Term Structures and Tenors
 #+description: Hub note for the time-dependence of market data: scalar vs tenor vs term structure, and the atomic docs covering tenor labels, horizon date, date rolling, broken dates/turn points, IMM dates, and FOMC dates.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:domain:finance:tenors:curves:ore:
 #+created: 2026-05-25

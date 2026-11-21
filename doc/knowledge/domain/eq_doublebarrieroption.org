@@ -4,6 +4,7 @@
 #+title: Equity Double Barrier Option
 #+description: A double barrier option on an equity price; ORE's EquityDoubleBarrierOption product.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:eq_doublebarrieroption:
 #+created: 2026-09-06

@@ -4,6 +4,7 @@
 #+title: Spot rate governance
 #+description: Local vs global rates, the absence of spot IPV, spot verification against market, and finance approval of spot rate sets.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :marketdata:fx:crm:governance:domain:
 #+created: 2026-06-28

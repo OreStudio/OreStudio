@@ -4,6 +4,7 @@
 #+title: Aggregation Currency
 #+description: The currency a risk engine converts every amount into so deals with different denominated currencies can be compared -- a conversion proven to be mathematically non-neutral for capital-adequacy risk metrics, not merely a display choice.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:currency:trading:book:risk:
 #+created: 2026-07-14

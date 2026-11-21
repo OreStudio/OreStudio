@@ -4,6 +4,7 @@
 #+title: Basket Option
 #+description: An option on a basket of underlying assets; ORE's BasketOption product.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:basketoption:
 #+created: 2026-09-07

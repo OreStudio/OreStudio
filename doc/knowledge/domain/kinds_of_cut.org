@@ -4,6 +4,7 @@
 #+title: Kinds of cut
 #+description: The classification of cuts by the occasion they are taken for: the official end-of-day valuation, the independent verification of prices, the intraday flash view and the start of the day, with what each is for, what it fixes, the attributes its occasion gives it, and its relation to the components.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:domain:cut:valuation:
 #+created: 2026-10-30

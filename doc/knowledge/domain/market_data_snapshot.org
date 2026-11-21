@@ -4,6 +4,7 @@
 #+title: Market Data Snapshot
 #+description: The materialisation of a resolved market data set's values at a point in time, fixed or floating, for reproducibility -- an ORE-Studio-specific concept with no confirmed equivalent in ORE or OpenGamma Strata.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:domain:marketdata:snapshot:
 #+created: 2026-07-23

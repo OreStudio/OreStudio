@@ -4,6 +4,7 @@
 #+title: Trade allocation
 #+description: Splitting a block trade across the accounts it was dealt for: when it happens, what the block and its allocations are, the no-residual rule, and why each allocation has an identity.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:domain:finance:trading:allocation:
 #+created: 2026-10-02

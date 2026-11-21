@@ -4,6 +4,7 @@
 #+title: Pip, tick size, and pip factor
 #+description: Pip conventions (4dp vs JPY 2dp), tick size, the pip factor that scales pips to absolute rate moves, and the forward-points sanity check.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :marketdata:fx:crm:domain:
 #+created: 2026-07-04

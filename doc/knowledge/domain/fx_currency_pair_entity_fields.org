@@ -4,6 +4,7 @@
 #+title: Currency pair and currency entity fields
 #+description: Field-by-field reference for the currency pair and currency entities: pair code, spot days, pip factor, deliverability, classification, cut code, and the underlying currency attributes.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :marketdata:fx:crm:domain:
 #+created: 2026-07-04

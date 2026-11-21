@@ -4,6 +4,7 @@
 #+title: Horizon Date
 #+description: The reference date from which tenored dates in a term structure are computed, and how it differs from the reval date it usually, but not always, coincides with.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:domain:finance:rates:curves:tenors:ore:
 #+created: 2026-07-12

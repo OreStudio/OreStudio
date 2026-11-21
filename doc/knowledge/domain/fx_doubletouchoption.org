@@ -4,6 +4,7 @@
 #+title: FX Double Touch Option
 #+description: An FX option paying on one or two spot touches before expiry; ORE's FxDoubleTouchOption product.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:fx_doubletouchoption:
 #+created: 2026-09-06

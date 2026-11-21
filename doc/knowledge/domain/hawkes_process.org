@@ -4,6 +4,7 @@
 #+title: Hawkes Process
 #+description: The self-exciting point process — each event raises the rate of further events for a while — its exponential-kernel form, the branching ratio that decides stability, and two exact ways to simulate it.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:domain:quantitative_finance:stochastic_processes:point_process:hawkes:ore:
 #+created: 2026-10-23

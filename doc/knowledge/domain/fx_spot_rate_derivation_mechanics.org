@@ -4,6 +4,7 @@
 #+title: Spot rate derivation mechanics
 #+description: How spot/forward numbers are derived: covered interest-rate parity, forward points, discount-factor storage, and pip scaling (pip factor).
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :marketdata:fx:crm:domain:
 #+created: 2026-06-28

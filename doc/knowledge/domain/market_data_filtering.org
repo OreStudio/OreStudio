@@ -4,6 +4,7 @@
 #+title: Market Data Filtering
 #+description: Three distinct, easily-conflated senses of 'filtering' market data: narrowing a resolved set by configured valuation engines, aggregating stored risk output by dimension, and ranking/waterfalling source quality for IPV curation.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:domain:marketdata:filtering:
 #+created: 2026-07-23

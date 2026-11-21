@@ -4,6 +4,7 @@
 #+title: Trade Structures and Deal Composition
 #+description: How a deal is built from its parts: the composition ladder, deal topology, structure operations, and the place of structures among the groups and links between trades.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:domain:finance:trading:structures:deal_composition:
 #+created: 2026-09-11

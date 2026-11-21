@@ -4,6 +4,7 @@
 #+title: A dealer hedges an outright forward with a spot trade and an FX swap
 #+description: Why an outright is a spot trade plus an FX swap, and why forward points sit in a separate book.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:fx:fx_forward:
 #+created: 2026-11-09

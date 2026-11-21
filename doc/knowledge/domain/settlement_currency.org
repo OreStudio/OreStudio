@@ -4,6 +4,7 @@
 #+title: Settlement Currency
 #+description: The currency that governs a trade's settlement-day holiday calendar and, for cash-settled instruments, the currency actual settlement payments are made in.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:currency:trading:
 #+created: 2026-07-14

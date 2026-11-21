@@ -4,6 +4,7 @@
 #+title: ISO 4217 Currency Codes
 #+description: The ISO 4217 standard for currency codes, its regular and 'other' code patterns, its numeric codes and minor units, and the non-standard currencies it leaves out.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:currency:
 #+created: 2026-07-14

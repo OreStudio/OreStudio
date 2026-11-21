@@ -4,6 +4,7 @@
 #+title: Trade cut
 #+description: The deal population component of a cut: the deals a valuation values at the timepoint, the properties the population must carry, why it is fixed by its own act, and where ORE Studio stands against it.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:domain:trade:cut:valuation:
 #+created: 2026-10-30

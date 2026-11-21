@@ -331,6 +331,13 @@ CATALOGUE: tuple[Check, ...] = (
             " and the key itself lives only in .env.",
     ),
     Check(
+        id="audience",
+        title="Every page's audience declaration is well formed",
+        argv=("python3", "build/scripts/check_audience.py"),
+        classes=("docs", "tooling"),
+        fix="Write #+audience: user once, or remove the line; user is the only value.",
+    ),
+    Check(
         id="script-twins",
         title="The scripted twin recipes' seed and compiled table match the catalogue",
         argv=("python3", "projects/ores.sql/utility/generate_script_twins.py", "--check"),

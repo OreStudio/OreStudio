@@ -4,6 +4,7 @@
 #+title: Onshore/Offshore Curve Namespacing
 #+description: How onshore-restricted currencies get parallel discount curves selected by booking jurisdiction, via pseudo-currency codes or namespacing.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:domain:finance:rates:curves:ore:
 #+created: 2026-07-11

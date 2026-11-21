@@ -4,6 +4,7 @@
 #+title: Books and portfolios
 #+description: The core distinction between books (an accounting concept, one ledger-defined hierarchy) and portfolios (a trading concept, an arbitrary risk-management hierarchy), and the rules that keep every book reachable from the tree.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:trading:book:finance:
 #+created: 2026-07-08

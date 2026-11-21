@@ -4,6 +4,7 @@
 #+title: Business Unit
 #+description: The FpML BusinessUnit type and ORE Studio's organisational hierarchy: a self-referencing tree of units a legal entity is subdivided into, and the business centre, cost centre, and aggregation currency properties its nodes and books may carry.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:trading:book:organisation:
 #+created: 2026-07-14

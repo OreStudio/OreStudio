@@ -86,27 +86,32 @@ public:
 
         get_grid_stats_response resp;
         try {
-            // The newest stored sample, which the entity model generates as
-            // read_newest: a paged read walks the key from its oldest end.
+            // The machines are the installation's and the work is the caller's, so
+            // the answer is composed from two samples: the installation's for the
+            // machines, which every session may read, and the caller's own for the
+            // work, which the tenant policies keep in the tenant.
             repository::grid_sample_repository grid_repo;
-            const auto grid = grid_repo.read_newest(ctx);
-            repository::compute_telemetry_repository repo;
-            if (grid) {
-                resp.total_hosts = grid->total_hosts;
-                resp.online_hosts = grid->online_hosts;
-                resp.idle_hosts = grid->idle_hosts;
-                resp.results_inactive = grid->results_inactive;
-                resp.results_unsent = grid->results_unsent;
-                resp.results_in_progress = grid->results_in_progress;
-                resp.results_done = grid->results_done;
-                resp.total_workunits = grid->total_workunits;
-                resp.total_batches = grid->total_batches;
-                resp.active_batches = grid->active_batches;
-                resp.outcomes_success = grid->outcomes_success;
-                resp.outcomes_client_error = grid->outcomes_client_error;
-                resp.outcomes_no_reply = grid->outcomes_no_reply;
-
-                resp.sampled_at = grid->sampled_at;
+            const auto installation_ctx =
+                ctx_.with_tenant(ores::utility::uuid::tenant_id::system(), "telemetry_handler");
+            const auto fleet = grid_repo.read_newest(installation_ctx);
+            if (fleet) {
+                resp.total_hosts = fleet->total_hosts;
+                resp.online_hosts = fleet->online_hosts;
+                resp.idle_hosts = fleet->idle_hosts;
+                resp.sampled_at = fleet->sampled_at;
+            }
+            if (const auto own =
+                    grid_repo.read_newest_of_tenant(ctx, ctx.tenant_id().to_string())) {
+                resp.results_inactive = own->results_inactive;
+                resp.results_unsent = own->results_unsent;
+                resp.results_in_progress = own->results_in_progress;
+                resp.results_done = own->results_done;
+                resp.total_workunits = own->total_workunits;
+                resp.total_batches = own->total_batches;
+                resp.active_batches = own->active_batches;
+                resp.outcomes_success = own->outcomes_success;
+                resp.outcomes_client_error = own->outcomes_client_error;
+                resp.outcomes_no_reply = own->outcomes_no_reply;
             }
 
             // The work of every tenant is the installation's total, which only a session of the
@@ -127,6 +132,9 @@ public:
                 }
             }
 
+            // The nodes are the installation's too, and the shared-reference read
+            // policy shows them to every tenant.
+            repository::compute_telemetry_repository repo;
             const auto nodes = repo.latest_node_samples(ctx);
             resp.node_summaries.reserve(nodes.size());
             for (const auto& n : nodes) {
@@ -356,18 +364,15 @@ public:
 
             repository::node_sample_repository node_repo;
 
-            // The wrapper's --tenant-id is a NATS routing label (e.g.
-            // "ores.dev.local1"), not a database UUID.  Attempt to parse it as
-            // a UUID; if that fails, fall back to the service's own context.
-            const auto tid = utility::uuid::tenant_id::from_string(parsed->tenant_id);
-            if (tid) {
-                s.tenant_id = *tid;
-                auto write_ctx = ctx_.with_tenant(*tid, "telemetry_handler");
-                node_repo.write(write_ctx, s);
-            } else {
-                s.tenant_id = ctx_.tenant_id();
-                node_repo.write(ctx_, s);
-            }
+            // The wrapper's --tenant-id selects whose work it runs; it does not
+            // say whom the machine belongs to. A node is part of the
+            // installation, so its sample is recorded under the installation's
+            // tenant, which is this service's, and every tenant reads it through
+            // the shared-reference read policy. Recording it under the served
+            // tenant hid it from the fleet count, which reads the installation's
+            // point of view, and the grid then reported no node online.
+            s.tenant_id = ctx_.tenant_id();
+            node_repo.write(ctx_, s);
         } catch (const std::exception& e) {
             ORES_LOG_SEV(telemetry_handler_lg(), error)
                 << "Failed to persist node sample: " << e.what();

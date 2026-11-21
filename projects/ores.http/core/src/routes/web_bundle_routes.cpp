@@ -89,17 +89,16 @@ void web_bundle_routes::register_routes(std::shared_ptr<web_bundle_routes> self,
      * carries the whole path. A screen path with four segments has to reach the
      * application shell, so the pattern may not stop at the first slash.
      */
-    router->add_route(
-        router->get("/")
-            .summary("The application")
-            .description("The built browser bundle's index")
-            .tags({"web"})
-            .auth_optional()
-            .handler([self](const http::domain::http_request& req)
-                         -> asio::awaitable<http::domain::http_response> {
-                co_return self->index(req);
-            })
-            .build());
+    router->add_route(router->get("/")
+                          .summary("The application")
+                          .description("The built browser bundle's index")
+                          .tags({"web"})
+                          .auth_optional()
+                          .handler([self](const http::domain::http_request& req)
+                                       -> asio::awaitable<http::domain::http_response> {
+                              co_return self->index(req);
+                          })
+                          .build());
 
     router->add_route(
         router->get("/{path}")

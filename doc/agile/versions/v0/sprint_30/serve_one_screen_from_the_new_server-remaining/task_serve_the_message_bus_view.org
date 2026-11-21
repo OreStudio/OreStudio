@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/serve-the-message-bus-view
+#+pr: 4938
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
 #+updated: 2026-11-09
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ Serve these composed views from ores.telemetry: the message bus. Each view state
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-09                               |
+| Now          | Served, gated and proved on a live gateway; the logs read's gate waits on a rebuild. |
+| Waiting on   | A rebuild of the telemetry service.    |
+| Next         | Re-run the live check for the logs read, then merge the PR. |
+| Last touched | 2026-11-21                               |
 
 * Acceptance
 
@@ -42,25 +42,40 @@ Serve these composed views from ores.telemetry: the message bus. Each view state
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The view answers =GET /api/operations/bus= and takes one query member, =range=, of
+15m, 1h or 6h. The window is derived from the deployment's own clock rather than
+stated by the browser, start-inclusive and end-exclusive so adjacent windows tile,
+which is the rule the operations logs route already states beside it.
 
-* Measurements
+The composition is two reads of the telemetry service and no computation:
 
-Every number this task claims about a tree, with the command that produced it
-and the commit it was measured at. A number without both is not a measurement,
-because a clean-up record describes a tree and trunk moves under a branch: a
-consumer count, a gate's component count and a suite's size all change with no
-code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
+- =telemetry.v1.nats_server_samples.list= once, for the window. The samples travel
+  whole and newest first, because the vitals and the movement across the range are
+  two readings of one series and the counters are running totals that only a
+  subtraction over the range turns into movement.
+- =telemetry.v1.nats_stream_samples.list= once per stream, keeping the newest row of
+  each. The streams are named rather than discovered, because no read lists them:
+  the broker's subject prefix with its dots turned into underscores, then one of
+  =marketdata_ticks=, =synthetic_ticks=, =synthetic_sandbox_ticks=, =workflow= and
+  =compute_assignments=. A stream with no sample in the window contributes no row
+  rather than a row of zeros.
 
-| What | Value | Command | Commit |
-|------+-------+---------+--------|
-|      |       |         |        |
+The answer is ={sampled_at, samples, streams}=, where =sampled_at= is the newest
+server sample's instant or null, and it carries an ETag and stays fresh for 10
+seconds, as the inventory records for this view.
 
-* Notes
+Two things the plan settles before the first line of code. The permission is the
+deployment read, which the BFF asks for by reading the caller's own access and
+testing the granted codes; the gateway already has that helper for the operations
+roster, and this view uses it rather than inventing a second check. And the
+messages live in =ores.telemetry.core= rather than in an =.api= library, so the
+part that serves the route must link that library; which part owns the route is the
+first decision, because the roster and the logs sit in =ores.http.workflow= while
+the inventory names =ores.telemetry= as this view's owner.
+
+The gap the screen states is the stream list: a stream created after this code was
+written is not read, so its row is missing from the answer. The view says so in the
+same way the others state what they cannot show.
 
 * Test Scenarios
 
@@ -77,7 +92,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4938][#4938]] | [http] Serve the message bus composed view |
 
 * Review
 
@@ -86,3 +101,56 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The view is served at =GET /api/operations/bus= in =ores.http.workflow=, in the
+address and the shape the BFF answers: the server samples the window holds,
+whole and newest first, and the newest sample of each of the five declared
+streams. The answer carries an ETag and stays fresh for 10 seconds.
+
+Four decisions the work took, each recorded where it belongs:
+
+- *The part is =ores.http.workflow=.* The roster and the logs already live
+  there, and the part's own model states =/api/operations= among the paths it
+  serves. A new part for the third telemetry view would split three sibling
+  routes that read the same service.
+- *The gate is the service's.* Both list subjects served any signed-in account,
+  which the bus journey recorded as a gap. They now check
+  =telemetry::samples:read=, the code the roster names, so the gateway forwards
+  and the telemetry service judges. The gateway states no permission of its own
+  and holds no copy of the role table.
+- *A stream name comes from the session.* =nats_client= now states
+  =make_stream_name= beside the connection's, because a stream name is not a
+  subject: the caller sends it in a query rather than on it.
+- *The streams are declared, not discovered.* No operation lists them, so a
+  stream created after this list was written is not read. The route's
+  description and the screen state that gap.
+
+The inventory is regenerated: 1400 routes, 296 of the BFF's 334 paired, 38
+unpaired. Six tests cover the route and the shape: the range it takes, the
+field it does not, the service it reaches, the members of its answer, the null
+instant of an empty window, and the ETag with its ten seconds.
+
+* The live run
+
+The route is proved against the gateway the environment's systemd unit runs,
+not only against its tests. The transcript is in
+[[file:evidence/message_bus_live_run.txt][evidence/message_bus_live_run.txt]].
+
+- Three ranges answer =200= with the members =sampled_at=, =samples= and
+  =streams=, the ETag and =private, max-age=10=, and a revalidation answers
+  =304=.
+- Two streams carry a row. The other three are absent because the services
+  that create them were stopped, which is the rule the plan states: a stream
+  with no sample in the window contributes no row rather than a row of zeros.
+- =range=1y= and an unknown member are refused with the sentences the BFF used.
+- A person who does not hold the telemetry read is refused with =403=. The live
+  run is what found the third read: =telemetry.v1.logs.list= still served any
+  signed-in account, so =GET /api/operations/logs= answered =200= to that
+  person. =logs_list= now checks the same permission, which is the gap the bus
+  journey said was not these reads' alone.
+
+A bare =?= answers =400 "This read cannot take ."= rather than the range
+sentence, because the query parser keeps a parameter with an empty key. That is
+a message defect of every route and not of this one, so it is captured in the
+backlog rather than fixed here:
+[[file:../../../product_backlog/inbox/an-empty-query-parameter-is-refused-as-a-name-that-is-empty.org][an empty query parameter is refused as a name that is empty]].

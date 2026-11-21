@@ -138,9 +138,10 @@ finds. The endpoint and the interval are configuration, with
 =http://localhost:8222= and 30 seconds as the defaults.
 
 The browser reads them through hand-written BFF routes on the
-[[id:6A63AAC7-4869-493A-97E7-55B919874784][journey runtime]]. No route serves
-the operations screens yet; the prototype adds =GET /api/operations/bus=,
-which reads both lists and marks the running totals.
+[[id:6A63AAC7-4869-493A-97E7-55B919874784][journey runtime]]. Both surfaces
+answer =GET /api/operations/bus=, which reads both lists and marks the running
+totals: the BFF until the screens move, and =ores.http= at the same address and
+in the same shape beside it.
 
 * What is missing
 
@@ -161,11 +162,13 @@ which reads both lists and marks the running totals.
    running count, and the monitoring API knows which connection is slow. The
    screen can show that slow consumers exist, not which ones. The candidate is
    per-connection detail on the sample, or a current count beside the total.
-5. *The reads check no permission.* The handlers authenticate the token and
-   then serve any signed-in account. The candidate is a dedicated permission
-   the model guards, as the tenant reads guard =iam::tenants:read=. The gap
-   is not these reads' alone
-   ([[id:CCB1D9D1-B5F8-43D5-B5E5-A6A3A5BDC9E7][Nothing gates a hand-written operation handler]]).
+5. *The reads check no permission.* Closed by
+   [[id:878A1153-2C81-4857-8CB8-A619EE74A7BE][Serve the message bus composed
+   view]]: both list subjects are gated on =telemetry::samples:read=, the code
+   the roster names, so a service states who may read an installation's vitals
+   rather than each surface deciding. The tree-wide gap the original item named
+   ([[id:CCB1D9D1-B5F8-43D5-B5E5-A6A3A5BDC9E7][Nothing gates a hand-written operation handler]])
+   is not these reads' alone.
 
 * Related journeys
 

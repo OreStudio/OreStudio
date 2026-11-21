@@ -1,0 +1,43 @@
+:PROPERTIES:
+:ID: EE06797D-32E9-4351-A56A-01A27D921AA6
+:END:
+#+title: An empty query parameter is refused as a member with no name
+#+description: A URL that ends in a question mark answers a 400 whose sentence names nothing, because the query parser keeps one parameter with an empty key and the unknown-parameter check reads it as an unknown member.
+#+type: capture
+#+level: cross
+#+filetags: :http:gateway:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+A read whose URL ends in a question mark answers a 400 whose message names no
+member: =This read cannot take .=
+
+* Why
+
+The query parser keeps one parameter with an empty key for a target such as
+=/api/operations/bus?=, and =refuse_unknown_params= reads that key as an
+unknown member and builds its sentence from it. The route's own sentence —
+"The message bus read takes a range of 15m, 1h or 6h." — never runs, because
+the unknown-parameter check stands before it.
+
+The BFF answered the same address with the route's own sentence. It read an
+empty query as no query, and only an empty *name* as a member.
+
+Every route that calls =refuse_unknown_params= has this shape, so the fix
+belongs in one place: the parser drops a parameter whose key is empty, or the
+check states a sentence for it. Found by the live run of
+=GET /api/operations/bus= on 2026-11-21; it is a message defect and not a
+security or data defect, which is why it did not hold that route back.
+
+* References
+
+- =projects/ores.http/api/src/net/http_session.cpp=, =parse_query_params=
+- =projects/ores.http/api/src/net/record_routes.cpp=, =refuse_unknown_params=
+
+* See also
+
+-

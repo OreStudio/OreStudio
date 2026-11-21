@@ -46,6 +46,7 @@ target_link_libraries(${lib_target_name}
         ores.marketdata.api.lib
         ores.refdata.api.lib
         ores.reporting.api.lib
+        ores.telemetry.core.lib
         ores.http.nats.lib
     PRIVATE
         ores.utility.lib)

@@ -1,0 +1,79 @@
+GET /api/operations/bus, proved against the environment the systemd unit runs.
+
+Commit under test : f16a207837 (the PR head, before the logs gate below)
+Built from        : the gateway reports f16a207837; the telemetry service was
+                    rebuilt at 02:15 on this checkout for the logs gate
+Database          : ores_dev_brave_hopper, built 2026-11-19 21:50, fingerprint
+                    cabc2ecdbf1f608e; the work changes no SQL
+Gateway           : ores.http.server-brave_hopper, http://localhost:20401
+Services running  : http.server, iam, telemetry. The market data, synthetic and
+                    compute services are stopped, so their streams hold no sample
+Tenant            : acme_corporation, active
+
+What the run shows. The three ranges answer 200 in the shape the BFF answers,
+with an ETag, private max-age=10 and a 304 on revalidation. Two of the five
+streams carry a row, and the other three are absent rather than zero: a stream
+with no sample in the window contributes no row. The address refuses a range it
+does not offer and a member it does not take, with the BFF's own sentences.
+
+The last section is why this file exists at all. A person holding Member and
+Viewer and no telemetry code read the roster and the bus as forbidden, and read
+the logs as 200 with a page, before the fix: telemetry.v1.logs.list checked
+only that a token was present. That page was empty, because nothing has written
+a log entry to this database yet; the permission it should have asked for was
+missing all the same. logs_list now checks telemetry::samples:read with the
+other two reads, and the same person is refused all three.
+
+--- 8< ---
+
+=== signing in as an administrator ===
+outcome: party-required  version: v0.0.30 [x64-linux] (local f16a207837)  db: d9e983dd95
+choose party: 200
+the administrator's roles include: SuperAdmin,TenantAdmin,SuperAdmin,TenantAdmin
+
+=== range=15m
+HTTP 200
+Cache-Control: private, max-age=10
+Vary: Authorization, Cookie
+ETag: "9bc28cb84d4ba35c-f0f"
+members: ['sampled_at', 'samples', 'streams']
+sampled_at: 2026-11-21 02:16:17.864464Z  samples: 21  streams: 2
+  ores_dev_brave_hopper_workflow               msgs 872      bytes 1090077    consumers 2
+  ores_dev_brave_hopper_compute_assignments    msgs 0        bytes 0          consumers 2
+  newest sample: 2026-11-21 02:16:17.864464Z  connections 3  mem_bytes 30113792  in_msgs 395  slow_consumers 0
+
+=== range=1h
+HTTP 200
+Cache-Control: private, max-age=10
+Vary: Authorization, Cookie
+ETag: "9bc28cb84d4ba35c-f0f"
+members: ['sampled_at', 'samples', 'streams']
+sampled_at: 2026-11-21 02:16:17.864464Z  samples: 21  streams: 2
+  ores_dev_brave_hopper_workflow               msgs 872      bytes 1090077    consumers 2
+  ores_dev_brave_hopper_compute_assignments    msgs 0        bytes 0          consumers 2
+  newest sample: 2026-11-21 02:16:17.864464Z  connections 3  mem_bytes 30113792  in_msgs 395  slow_consumers 0
+
+=== range=6h
+HTTP 200
+Cache-Control: private, max-age=10
+Vary: Authorization, Cookie
+ETag: "9bc28cb84d4ba35c-f0f"
+members: ['sampled_at', 'samples', 'streams']
+sampled_at: 2026-11-21 02:16:17.864464Z  samples: 21  streams: 2
+  ores_dev_brave_hopper_workflow               msgs 872      bytes 1090077    consumers 2
+  ores_dev_brave_hopper_compute_assignments    msgs 0        bytes 0          consumers 2
+  newest sample: 2026-11-21 02:16:17.864464Z  connections 3  mem_bytes 30113792  in_msgs 395  slow_consumers 0
+
+=== the answer revalidates
+first read: HTTP 200, ETag "9bc28cb84d4ba35c-f0f"
+revalidation with If-None-Match: HTTP 304
+
+=== the address refuses what the BFF refused
+?range=1y              HTTP 400  {"code":"invalid-request","message":"The message bus read takes a range of 15m, 1h or 6h."}
+?range=1h&stream=x     HTTP 400  {"code":"invalid-request","message":"This read cannot take stream."}
+
+=== a person who does not hold the telemetry read ===
+signed in as: ashley.moore  outcome: active
+/api/operations/services           HTTP 403  {"code":"forbidden","message":"forbidden"}
+/api/operations/logs?range=1h      HTTP 403  {"code":"forbidden","message":"forbidden"}
+/api/operations/bus?range=1h       HTTP 403  {"code":"forbidden","message":"forbidden"}

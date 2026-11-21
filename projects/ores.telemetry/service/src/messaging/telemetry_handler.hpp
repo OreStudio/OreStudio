@@ -72,12 +72,10 @@ public:
 
     void logs_list(ores::nats::message msg) {
         ORES_LOG_SEV(telemetry_handler_lg(), debug) << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
+        const auto authorised = authorise(nats_, ctx_, msg, verifier_, samples_read_permission);
+        if (!authorised)
             return;
-        }
-        const auto& ctx = *ctx_expected;
+        const auto& ctx = *authorised;
         get_telemetry_logs_response resp;
         if (auto req = decode<get_telemetry_logs_request>(msg)) {
             try {
@@ -104,12 +102,10 @@ public:
 
     void nats_server_samples_list(ores::nats::message msg) {
         ORES_LOG_SEV(telemetry_handler_lg(), debug) << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
+        const auto authorised = authorise(nats_, ctx_, msg, verifier_, samples_read_permission);
+        if (!authorised)
             return;
-        }
-        const auto& ctx = *ctx_expected;
+        const auto& ctx = *authorised;
         get_nats_server_samples_response resp;
         if (auto req = decode<get_nats_server_samples_request>(msg)) {
             try {
@@ -261,12 +257,10 @@ public:
 
     void nats_stream_samples_list(ores::nats::message msg) {
         ORES_LOG_SEV(telemetry_handler_lg(), debug) << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
+        const auto authorised = authorise(nats_, ctx_, msg, verifier_, samples_read_permission);
+        if (!authorised)
             return;
-        }
-        const auto& ctx = *ctx_expected;
+        const auto& ctx = *authorised;
         get_nats_stream_samples_response resp;
         if (auto req = decode<get_nats_stream_samples_request>(msg)) {
             try {

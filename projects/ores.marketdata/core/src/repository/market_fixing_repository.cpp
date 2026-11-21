@@ -60,7 +60,9 @@ std::string market_fixing_repository::sql() {
 }
 
 bool market_fixing_repository::is_sortable(std::string_view field) {
-    const std::initializer_list<std::string_view> sortable = {};
+    const std::initializer_list<std::string_view> sortable = {
+        "fixing_date",
+    };
     return std::ranges::find(sortable, field) != sortable.end();
 }
 

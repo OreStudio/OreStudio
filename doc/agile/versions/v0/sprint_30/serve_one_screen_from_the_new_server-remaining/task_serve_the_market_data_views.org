@@ -28,9 +28,9 @@ Serve these composed views from ores.marketdata: an item's fixing series, the co
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | All six views served, tested and paired; the live run waits on a rebuilt database. |
-| Waiting on   | A database recreated from this checkout, so the market data service starts. |
-| Next         | Prove the six on a live gateway, then raise the PR. |
+| Now          | Served, tested, paired and proved on a live gateway; waiting on the PR. |
+| Waiting on   | Nothing.                               |
+| Next         | Raise the PR, then merge when main is green. |
 | Last touched | 2026-11-21                               |
 
 * Acceptance
@@ -161,8 +161,27 @@ What the work settled:
 - *A series without a pair is left out of the publishers' answer*, because a
   screen there draws a pair and has nowhere to put a series without one.
 
-The live run is not made. The market data service refuses to start against the
-database on this machine — =column "provider_code" does not exist= — because the
-database was built on 2026-11-19 from a commit older than this checkout. The
-proof therefore rests on the suite and the gate until a database is recreated
-from this tree, which is the environment's call rather than the task's.
+* The live run
+
+The six views are proved against the gateway the systemd unit runs, on a database
+recreated from this checkout and provisioned from the acme_demo profile, whose
+adapters ingested 966 ICE, 959 Tradeweb and 48 Frankfurter values. The transcript
+is in [[file:evidence/market_data_views_live_run.txt][evidence/market_data_views_live_run.txt]].
+
+The run found two things the code had to answer, and both are worth recording.
+
+- *A series' first and last value could not be read.* The market data service's
+  fixing list refused an order by =fixing_date=, so the only way to state a
+  series' coverage was to read every value: 608,334 rows for the public
+  catalogue, which no HTTP call survives. The model now marks the column
+  =sortable=, and the coverage reads two values for each series and the count the
+  service states beside them.
+- *A view must read only what it answers.* The public publishers need each
+  series' pair but never its values, the coverage needs three facts for each
+  series, and the file needs one publisher's values inside a range. The catalogue
+  builder now reads the collections alone, and each view reads the values it
+  needs, in the order and the window it states.
+
+Two other facts the live run settled: the public catalogue is 15 publishers and
+142 series, and an item the store does not hold answers a null series rather
+than an error.

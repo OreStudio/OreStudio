@@ -137,7 +137,7 @@ struct fixing_row final {
     std::string value;
 };
 
-/// The public publishers, their feeds and series, and the fixings behind them.
+/// The public publishers, their feeds and their series.
 struct public_catalogue final {
     std::vector<marketdata_domain::provider> providers;
     std::vector<marketdata_domain::feed> feeds;
@@ -145,16 +145,17 @@ struct public_catalogue final {
     std::vector<marketdata_domain::session> sessions;
     std::vector<marketdata_domain::supplier> suppliers;
     std::vector<marketdata_domain::market_series> series;
-    std::map<std::string, std::vector<fixing_row>> fixings;
 };
 
 /**
- * The catalogue the three public views read.
+ * The catalogue the three public views read: the publishers that state a terms
+ * page, and the feeds, scopes, sessions, suppliers and series behind them.
  *
  * A publisher is public when it states a terms page, because only such a
- * publisher is read through the official adapter. The series and the fixings
- * are then read for those publishers alone, so a private publisher's rows never
- * travel to a screen that cannot show them.
+ * publisher is read through the official adapter. The series are read for those
+ * publishers alone, so a private publisher's rows never travel to a screen that
+ * cannot show them. The fixings are not read here: a screen reads a series'
+ * coverage or one publisher's file, and each of those reads only what it needs.
  */
 public_catalogue read_public_catalogue(const http_request& req, nats_client& session) {
     public_catalogue out;
@@ -200,33 +201,44 @@ public_catalogue read_public_catalogue(const http_request& req, nats_client& ses
                                 session,
                                 marketdata_messaging::list_suppliers_request{},
                                 &marketdata_messaging::list_suppliers_response::suppliers);
-
-    std::vector<boost::uuids::uuid> ids;
-    ids.reserve(out.series.size());
-    for (const auto& series : out.series)
-        ids.push_back(series.id);
-    for (std::size_t at = 0; at < ids.size(); at += series_batch) {
-        const auto end = std::min(ids.size(), at + series_batch);
-        marketdata_messaging::list_market_fixings_request fixings_read;
-        fixings_read.filter.emplace();
-        fixings_read.filter->series_id_one_of =
-            std::vector<boost::uuids::uuid>(ids.begin() + static_cast<std::ptrdiff_t>(at),
-                                            ids.begin() + static_cast<std::ptrdiff_t>(end));
-        auto rows = forwarding::forward_all(
-            req,
-            session,
-            fixings_read,
-            &marketdata_messaging::list_market_fixings_response::market_fixings);
-        for (const auto& fixing : rows) {
-            out.fixings[boost::uuids::to_string(fixing.series_id)].push_back(
-                {ores::utility::codec::text_form<std::chrono::year_month_day>::to_text(
-                     fixing.fixing_date),
-                 fixing.value});
-        }
-    }
-    for (auto& [id, rows] : out.fixings)
-        std::ranges::sort(rows, {}, &fixing_row::date);
     return out;
+}
+
+/// One page of a series' fixings, and how many the series holds.
+struct fixing_page final {
+    std::vector<fixing_row> rows;
+    std::uint64_t total = 0;
+};
+
+/**
+ * One page of one series' fixings, in date order.
+ *
+ * A series holds thousands of values, so a read takes what it needs: its first
+ * value, its last, or the window a file states. The order is the service's, and
+ * the count is the one it states beside the page.
+ */
+fixing_page fixings_of_series(const http_request& req,
+                              nats_client& session,
+                              const boost::uuids::uuid& series_id,
+                              bool descending,
+                              std::uint32_t offset,
+                              std::uint32_t limit) {
+    marketdata_messaging::list_market_fixings_request msg;
+    msg.offset = offset;
+    msg.limit = limit;
+    msg.order = {.field = "fixing_date", .descending = descending};
+    msg.filter.emplace();
+    msg.filter->series_id_one_of = std::vector<boost::uuids::uuid>{series_id};
+    const auto reply = forwarding::forward(req, session, msg);
+    rr::require_ok(reply.result);
+    fixing_page page;
+    page.total = reply.total;
+    for (const auto& fixing : reply.market_fixings) {
+        page.rows.push_back({ores::utility::codec::text_form<std::chrono::year_month_day>::to_text(
+                                 fixing.fixing_date),
+                             fixing.value});
+    }
+    return page;
 }
 
 /// The name a person reads for a publisher's file.
@@ -397,13 +409,20 @@ void public_rates_views::register_routes(
                     const auto catalogue = read_public_catalogue(req, session);
 
                     std::vector<std::string> written;
-                    for (const auto& [id, rows] : catalogue.fixings) {
-                        if (rows.empty())
+                    for (const auto& one : catalogue.series) {
+                        // A series holds thousands of values, so its coverage is
+                        // read from its first and last value and the count the
+                        // service states, never from the values themselves.
+                        const auto first = fixings_of_series(req, session, one.id, false, 0, 1);
+                        if (first.total == 0 || first.rows.empty())
                             continue;
-                        written.push_back(json::write(id) +
-                                          ":{\"first\":" + json::write(rows.front().date) +
-                                          ",\"last\":" + json::write(rows.back().date) +
-                                          ",\"count\":" + std::to_string(rows.size()) + "}");
+                        const auto last = fixings_of_series(req, session, one.id, true, 0, 1);
+                        if (last.rows.empty())
+                            continue;
+                        written.push_back(json::write(boost::uuids::to_string(one.id)) +
+                                          ":{\"first\":" + json::write(first.rows.front().date) +
+                                          ",\"last\":" + json::write(last.rows.front().date) +
+                                          ",\"count\":" + std::to_string(first.total) + "}");
                     }
 
                     std::string series("{");
@@ -447,28 +466,39 @@ void public_rates_views::register_routes(
 
                     std::string csv("publisher,date,pair,item,value");
                     std::size_t rows = 0;
-                    for (const auto& series : catalogue.series) {
-                        if (series.provider_code != found->code)
+                    for (const auto& one : catalogue.series) {
+                        if (one.provider_code != found->code)
                             continue;
-                        if (!item.empty() && item != series.oresmd_uri)
+                        if (!item.empty() && item != one.oresmd_uri)
                             continue;
-                        const auto pair = pairs.of(series.oresmd_uri);
+                        const auto pair = pairs.of(one.oresmd_uri);
                         const auto named = pair ? pair->base + "/" + pair->quote : std::string{};
-                        const auto held =
-                            catalogue.fixings.find(boost::uuids::to_string(series.id));
-                        if (held == catalogue.fixings.end())
-                            continue;
-                        for (const auto& fixing : held->second) {
-                            if (!from.empty() && fixing.date < from)
-                                continue;
-                            if (!to.empty() && fixing.date > to)
-                                continue;
-                            csv += "\n" + cell(found->code) + "," + cell(fixing.date) + "," +
-                                   cell(named) + "," + cell(series.oresmd_uri) + "," +
-                                   cell(fixing.value);
-                            ++rows;
+
+                        // The file states a range, and the rows outside it are
+                        // never read: the pages run in date order and stop at the
+                        // first value past the end of it.
+                        std::uint32_t offset = 0;
+                        while (true) {
+                            const auto page =
+                                fixings_of_series(req, session, one.id, false, offset, 1000);
+                            for (const auto& fixing : page.rows) {
+                                if (!from.empty() && fixing.date < from)
+                                    continue;
+                                if (!to.empty() && fixing.date > to)
+                                    continue;
+                                csv += "\n" + cell(found->code) + "," + cell(fixing.date) + "," +
+                                       cell(named) + "," + cell(one.oresmd_uri) + "," +
+                                       cell(fixing.value);
+                                ++rows;
+                            }
+                            const auto past =
+                                !page.rows.empty() && !to.empty() && page.rows.back().date > to;
+                            if (page.rows.size() < 1000 || past)
+                                break;
+                            offset += static_cast<std::uint32_t>(page.rows.size());
                         }
                     }
+
                     csv += "\n";
 
                     http_response answer;

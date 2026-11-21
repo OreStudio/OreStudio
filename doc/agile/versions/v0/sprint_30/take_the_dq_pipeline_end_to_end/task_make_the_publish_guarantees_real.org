@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-14
-#+updated: 2026-11-14
+#+updated: 2026-11-21
 #+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,12 +26,12 @@ A bundle publish either reports the audit row it claims or no longer claims one.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:7D2BBBBC-36A3-4BFB-9673-0F9005991D94][Take the DQ pipeline end to end, from a seeded artefact table to a published system]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-14                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-21                               |
 
 * Acceptance
 
@@ -58,6 +58,16 @@ A bundle publish either reports the audit row it claims or no longer claims one.
 |------+-------+---------+--------|
 | Publish functions with no dataset | 2 | `dq_artefact_types_populate.sql:185-186, 249-251` | e050a2d239 |
 | Inserts into the bundle audit table | 0 | tree-wide grep | e050a2d239 |
+| Bundle audit tables after this task | 0 | `to_regclass` in `dq_publish_guarantees_test.sql` | |
+| Readers of a publication history after this task | 0 | `to_regprocedure` in `dq_publish_guarantees_test.sql` | |
+| Bundles that state their level | 20 of 20 | `dq_dataset_bundle_populate.sql` and the three other seed files | |
+| Publish functions with no dataset after this task | 1, retired | `dq_artefact_types_populate.sql` | |
+| Catalogue checks scoped to the caller | 1 function, 3 branches | `trading_basket_constituent_functions_create.sql` | |
+| pgTAP | 964 assertions in 101 files | `projects/ores.sql/test/run_tests.sh` | |
+| ctest | 107 of 107 suites, 891.8 s | `compass test run` | |
+| Ticks smoke | 38 subscriptions, 38 routes, 42,304 ticks, 24 adapters, 0 rejected | `compass smoke ticks` | |
+| Build | succeeded, 659 targets | `compass build` | |
+| Light checks | 57 of 59 | `compass check --exclude-heavy`; the two failures reproduce on origin/main | |
 
 * Notes
 
@@ -96,3 +106,87 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The goal was one sentence: a bundle publish either reports the audit row it
+claims or no longer claims one. Both halves of that promise are now decided, and
+so are the four other defects the task inherited.
+
+**The audit row left, and so did =atomic=**
+
+The table held no row, no code wrote one, and the page that owns the level model
+already said the publication history is held by no table. Rather than give the
+table a writer, the task removed the claim: =ores_dq_bundle_publications_tbl=,
+its two indexes, =ores_dq_get_bundle_publication_history_fn= and their drop
+statements are gone. The three discovery and preview functions that shared the
+file stay, and the file's header now states what a run records and what it does
+not.
+
+=atomic= left the request for the same reason. It was declared in the model, set
+to true by the shell and by the tenant provisioner, and read by nobody. A bundle
+is a run and not a transaction: each step commits its own function call, and a
+step that fails halts the run without undoing the steps before it. The request
+now says that, and B14 of the owner-count page reads *Implemented* instead of
+*half-implemented*.
+
+**The four promises that became true**
+
+- *The level decides the target tenant.* A bundle carries =level=, one of
+  =platform=, =world= and =tenant=, with a check constraint on the table and one
+  stated by each of the twenty seeded bundles. The handler refuses a platform or
+  world bundle from any caller but the system tenant, and refuses a level it
+  does not know. Before this the handler served both publish verbs and the bundle
+  had no level, so a tenant administrator holding =dq::datasets:write= could
+  publish the world catalogue into its own tenant and recreate the second copy
+  the model forbids.
+- *The calendars declare no dependency on the coding schemes.* The calendars'
+  insert check reads =ores_dq_coding_schemes_tbl= directly, which the dataset
+  load writes before any publish runs, so the edge ordered a publish that wrote
+  the coding schemes into every tenant and nothing read them there. The edge is
+  gone, and a database that predates its removal closes the live row on the next
+  populate run.
+- *The catalogue checks read the caller's tenant.* The basket constituent check
+  is a security definer function, so no policy binds it and it states the
+  shared-reference predicate itself: the code names a row of the caller's tenant
+  or a shared row of the system tenant. All three branches, equity, FX and
+  commodity, now say so.
+- *A bundle that names a dataset that does not exist is refused.* The listing
+  used to drop the member and report success on a smaller publish; the service
+  now raises and names the dataset. D10's other half, the missing tenant
+  predicate on the dataset join, needed no change: the function is not security
+  definer, so the datasets read policy already admits only the caller's tenant
+  and the system tenant.
+
+**What the measurements corrected**
+
+=payment_frequencies= was not merely unreachable, it was reachable and wrong: it
+registered an artefact type whose publish would write a tenant copy of a
+vocabulary every tenant already reads from the system tenant. The artefact type
+is retired, and the table keeps the shared-reference read and its populate
+script.
+
+=legal_entities= was already reachable. The three =gleif.lei_entities.*=
+datasets carry the =lei_entities= artefact type and are members of
+=lei_hierarchy=, and the publish function writes =ores_refdata_legal_entities_tbl=.
+The investigation's claim was stale rather than the code.
+
+**How it was proved**
+
+The database was recreated from the tree, which loads the new column, the check
+constraint, the twenty seeded levels and the bring-up publish. The pgTAP suites
+then ran on it, including two new files: one asserts that no table holds a
+publication history and that every bundle states a level from the closed set,
+the other provisions a tenant, publishes a commodity only that tenant holds, and
+proves the system tenant cannot resolve it while the tenant can. The C++ suites
+ran on the same database, and the ticks smoke provisioned a full ACME tenant
+through the handler that now enforces the level: 38 subscriptions, 38 routes,
+42,304 ticks and no rejected record.
+
+**What this leaves open**
+
+Two doors stay open on purpose, each recorded where it is decided:
+
+- The publish *datasets* verb names datasets, and a dataset row carries no level,
+  so the same second copy is still reachable through the other verb. Capture
+  B14DE752 records it.
+- The per-dataset publication log has no live writer: its only writer sits on
+  the retired in-process path. Capture 5C20BEF9 records it.

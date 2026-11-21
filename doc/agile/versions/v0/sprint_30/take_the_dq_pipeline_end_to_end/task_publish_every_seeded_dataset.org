@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-14
-#+updated: 2026-11-14
+#+updated: 2026-11-21
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,11 +26,11 @@ A recreated database carries every dataset a trade needs, published at the right
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                            |
 | Parent story | [[id:7D2BBBBC-36A3-4BFB-9673-0F9005991D94][Take the DQ pipeline end to end, from a seeded artefact table to a published system]] |
-| Now          | Not yet started.                       |
+| Now          | Superseded. Its scope is the six mop-up tasks. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing: nothing here survives the split. |
 | Last touched | 2026-11-14                               |
 
 * Acceptance
@@ -83,3 +83,8 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Abandoned, not done. The task's scope is what the six mop-up tasks deliver: the
+levels and the bundle map took the classification, the bring-up publish took
+D1 and D12, and the collapse of the double writers took D5 and D14. It stayed
+open as history while those ran, and it closes here with nothing of its own.

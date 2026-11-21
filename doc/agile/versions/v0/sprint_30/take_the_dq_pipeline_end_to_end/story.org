@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :dq:data:architecture:publishing:web:sprint_30:v0:
 #+created: 2026-11-14
-#+updated: 2026-11-14
+#+updated: 2026-11-21
 #+environment: swift_curie
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -30,7 +30,7 @@ driven.
 | Now           | The end-to-end review of the publishing pipeline is running. |
 | Waiting on    | Nothing.                               |
 | Next          | Review the findings, then sequence the two implementation tasks. |
-| Last touched  | 2026-11-14                               |
+| Last touched  | 2026-11-21                               |
 
 * Acceptance
 
@@ -68,8 +68,8 @@ least one defect in the investigation, and none depends on the screen work.
 
 The earlier task *Publish every seeded dataset at the level it belongs* is
 superseded by these six: its scope is now split across settling the levels,
-publishing at bring-up and collapsing the double writers. It stays in the
-backlog as history until it is closed as abandoned.
+publishing at bring-up and collapsing the double writers. It is closed as
+abandoned rather than done, because none of its own work survives the split.
 
 The screens task stays last. "Is my reference data complete?" is a question about
 levels, so it can only be designed once 1 and 2 have an answer.
@@ -80,16 +80,16 @@ levels, so it can only be designed once 1 and 2 have an answer.
 | [[id:56FB3A5C-FDC7-4F98-A5F3-CE46DB551882][Publish the world at database bring-up]] | DONE | | 2026-11-14 | Closes D1 and D12. |
 | [[id:2A720F12-FA8F-4625-A178-76E9E93444D2][Declare the tenant bootstrap and retire the silent copy]] | DONE | | 2026-11-14 | Flow D, undocumented. |
 | [[id:A611C520-54AA-4562-9BA6-768278E5DDEE][Collapse the tables written both ways]] | STARTED | 2026-11-16 | | Defect D5 and D14. |
-| [[id:16127025-230A-4723-A04E-02906ED26CCC][Make the publish guarantees real]] | BACKLOG | | | Defects D2, D4, D6, D7. |
+| [[id:16127025-230A-4723-A04E-02906ED26CCC][Make the publish guarantees real]] | STARTED | 2026-11-21 | | Defects D2, D4, D6, D7. |
 | [[id:9D8A7038-FF2B-4F09-9BD3-E487B5ED0A48][Retire the legacy patterns and align the documentation]] | BACKLOG | | | Defects D8 and D9, plus the legacy catalogue. |
 | [[id:34A4373F-1BD1-4710-885B-95B3C3A3B8F7][Design and build the DQ screens from the journeys]] | BACKLOG | | | Journeys first, prototypes, then screens. |
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:22B17001-2467-4CE2-9E70-583420BDF74F][Scaffold story: Take the DQ pipeline end to end]] | STARTED | 2026-11-14 | | Story scaffolding rides this task. |
-| [[id:B8609EB8-C1C1-4280-A487-C76D78AC8877][Review the publishing pipeline end to end]] | STARTED | 2026-11-14 | | The analysis: documented model, implemented model, inventories, defects. |
-| [[id:E9BBFCCD-8E21-4C92-AAD1-A07941AD1C8B][Publish every seeded dataset at the level it belongs]] | BACKLOG | | | The implementation: base-system publication at recreate, ACME per tenant. |
+| [[id:22B17001-2467-4CE2-9E70-583420BDF74F][Scaffold story: Take the DQ pipeline end to end]] | DONE | 2026-11-14 | 2026-11-21 | Story scaffolding rides this task. |
+| [[id:B8609EB8-C1C1-4280-A487-C76D78AC8877][Review the publishing pipeline end to end]] | DONE | 2026-11-14 | 2026-11-21 | The analysis: documented model, implemented model, inventories, defects. |
+| [[id:E9BBFCCD-8E21-4C92-AAD1-A07941AD1C8B][Publish every seeded dataset at the level it belongs]] | ABANDONED | | | Superseded: its scope is the six mop-up tasks below. |
 | [[id:34A4373F-1BD1-4710-885B-95B3C3A3B8F7][Design and build the DQ screens from the journeys]] | BACKLOG | | | Journeys first, prototypes, then screens built from the shared parts. Not a port. |
 | [[id:7F37FF2D-EDF1-4F69-AAA5-EA57B91DAF53][Settle the three levels and the bundle map]] | DONE | 2026-11-14 | 2026-11-14 | One documented level model, one bundle per level, and no name that means two opposite things. |
 | [[id:56FB3A5C-FDC7-4F98-A5F3-CE46DB551882][Publish the world at database bring-up]] | DONE | 2026-11-14 | 2026-11-14 | A recreated database carries the canonical reference data, so no test has to provision or publish for itself. |

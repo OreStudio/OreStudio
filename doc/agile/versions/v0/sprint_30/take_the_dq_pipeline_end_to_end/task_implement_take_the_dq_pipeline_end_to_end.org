@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-11-14
 #+updated: 2026-11-14
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7D2BBBBC-36A3-4BFB-9673-0F9005991D94][Take the DQ pipeline end to end, from a seeded artefact table to a published system]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -27,11 +27,11 @@ the code does, which datasets exist, where each is published, and what is broken
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:7D2BBBBC-36A3-4BFB-9673-0F9005991D94][Take the DQ pipeline end to end]] |
-| Now          | The review is running.                 |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Read the findings and sequence the implementation. |
+| Next         | Nothing. |
 | Last touched | 2026-11-14                               |
 
 * Acceptance
@@ -93,3 +93,18 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The investigation is the deliverable: [[id:16920F25-F0EF-4031-9C2D-DF57B5865072][Investigation: publishing pipeline]]
+records the five flows a row can arrive by and the one dead path, the inventory
+(17 seeded datasets, 57 publish functions, 57 direct-insert files, the bundle
+levels), the four requirements, fifteen defects D1 to D15, and a recommendation
+per defect.
+
+Its own conclusion is that the defects answer one question -- what turns a blank
+database into a usable one -- and that no task can be sequenced until it is
+answered. So the review produced the six mop-up tasks the story now carries
+rather than an implementation, and it closes with them.
+
+PR #4713 filed the architecture review, #4715 recorded it as an investigation,
+#4716 opened the mop-up tasks, and #4718 linked the story to the analysis
+already in the backlog.

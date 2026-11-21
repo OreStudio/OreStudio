@@ -8,7 +8,7 @@
 #+filetags: :design_the_scripted_trade_subsystem:sprint_30:v0:
 #+owner: marco
 #+branch: feature/copy-ores-script-parser
-#+pr: 4966
+#+pr: 4967
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-21
@@ -148,6 +148,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4967][#4967]] | [trading] Check a scripted trade's variables against its script |
 | [[https://github.com/OreStudio/OreStudio/pull/4966][#4966]] | [trading] Derive a script's inputs from ORE's syntax tree |
 | [[https://github.com/OreStudio/OreStudio/pull/4964][#4964]] | [trading] Copy ORE's script parser into ores.trading.scripting |
 

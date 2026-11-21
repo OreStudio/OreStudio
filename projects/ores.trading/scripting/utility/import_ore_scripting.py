@@ -69,6 +69,11 @@ PATCHES = [
      # The engine caches a variable's value on its node. ORE Studio never
      # evaluates a script, and the value types bring in the engine.
      ""),
+    ("asttoscriptconverter.cpp",
+     "    void visit(ASTNode& n) override {",
+     # The base visitor's fallback names a parameter it never reads, which
+     # ORE Studio's -Werror refuses as an unused parameter.
+     "    void visit(ASTNode&) override {"),
 ]
 
 

@@ -155,17 +155,6 @@ public:
     std::optional<domain::grid_sample> read_newest(const context& ctx);
 
     /**
-     * @brief Reads the newest sample one tenant wrote for its own work.
-     *
-     * The fleet's sample is the system tenant's and every session may read it,
-     * so "the newest" can answer with the installation's machines rather than
-     * with the work of the tenant that asked. A caller that needs its own work
-     * names the tenant it wants.
-     */
-    std::optional<domain::grid_sample> read_newest_of_tenant(const context& ctx,
-                                                             const std::string& tenant_id);
-
-    /**
      * @brief Gets the total count of active grid samples.
      * @param ctx Repository context with database connection
      * @return Total number of active grid samples

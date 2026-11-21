@@ -344,23 +344,6 @@ std::optional<domain::grid_sample> grid_sample_repository::read_newest(const con
     return rows.front();
 }
 
-std::optional<domain::grid_sample>
-grid_sample_repository::read_newest_of_tenant(const context& ctx, const std::string& tenant_id) {
-    ORES_LOG_SEV(lg(), debug) << "Reading newest sample of tenant " << tenant_id;
-    const auto query = query_builder::read<std::vector<grid_sample_entity>> |
-                       query_builder::where("tenant_id"_c == tenant_id) |
-                       query_builder::order_by("sampled_at"_c.desc()) | query_builder::limit(1);
-    const auto rows = query_builder::execute_read_query<grid_sample_entity, domain::grid_sample>(
-        ctx,
-        query,
-        [](const auto& entities) { return grid_sample_mapper::map(entities); },
-        lg(),
-        "Reading the newest sample of one tenant.");
-    if (rows.empty())
-        return std::nullopt;
-    return rows.front();
-}
-
 std::uint32_t grid_sample_repository::get_total__count(const context& ctx) {
     ORES_LOG_SEV(lg(), debug) << "Retrieving total active sample count";
 

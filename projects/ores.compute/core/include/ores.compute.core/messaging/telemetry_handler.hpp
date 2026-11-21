@@ -86,10 +86,10 @@ public:
 
         get_grid_stats_response resp;
         try {
-            // The machines are the installation's and the work is the caller's, so
-            // the answer is composed from two samples: the installation's for the
-            // machines, which every session may read, and the caller's own for the
-            // work, which the tenant policies keep in the tenant.
+            // The grid is the installation's and this read serves the deployment, so
+            // the machines come from the installation's own sample. That sample also
+            // carries the job counters, which the work totals below replace for the
+            // session that reads the whole grid.
             repository::grid_sample_repository grid_repo;
             const auto installation_ctx =
                 ctx_.with_tenant(ores::utility::uuid::tenant_id::system(), "telemetry_handler");
@@ -100,8 +100,7 @@ public:
                 resp.idle_hosts = fleet->idle_hosts;
                 resp.sampled_at = fleet->sampled_at;
             }
-            if (const auto own =
-                    grid_repo.read_newest_of_tenant(ctx, ctx.tenant_id().to_string())) {
+            if (const auto own = grid_repo.read_newest(ctx)) {
                 resp.results_inactive = own->results_inactive;
                 resp.results_unsent = own->results_unsent;
                 resp.results_in_progress = own->results_in_progress;

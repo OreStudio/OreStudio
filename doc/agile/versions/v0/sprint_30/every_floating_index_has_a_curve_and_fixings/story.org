@@ -1,0 +1,117 @@
+:PROPERTIES:
+:ID: 0F936789-FEBE-4330-97B9-DFE0837E4466
+:END:
+#+title: Story: Every index a generated trade floats on has a curve and fixings
+#+description: Of the 21 interest rate fixing addresses the acme_demo trades name, 15 have no fixings: 127 HKD HIBOR trades of ACCOHK, 11 cross-currency foreign legs and one term SOFR bond leg. On a fresh environment the fixing writer runs once, before the market data service answers, and loses 7 more series, 3 of them named by trades.
+#+type: story
+#+level: s2
+#+filetags: :sprint_30:v0:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+#+environment: clever_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A report over the generated trades finds the fixings and the curve of every
+index a trade floats on. Each index a population can draw is one the market
+can serve, and a fresh environment holds the same fixings as a restarted one.
+
+** What is missing
+
+The acme_demo provision on main at c0f6ed8c38 booked 899 trades. They name 21
+interest rate fixing addresses, and 15 have no fixings
+(=evidence/fixing_gap_by_trade.txt=):
+
+- *HKD HIBOR at 2W, 1M and 3M.* HKD is the home currency of ACCOHK. These
+  three addresses are the floating index of 127 of its 252 trades: swaps,
+  swaptions, caps, FRAs, callable, flexi, knock-out and balance-guaranteed
+  swaps, and one Ascot. HKD has its overnight HONIA curve and no HIBOR term
+  curve.
+- *11 cross-currency foreign legs*, one trade each, all ACCOHK. The planner
+  draws a cross-currency swap's foreign leg evenly over every foreign swap
+  convention of the tenant (=trade_population_planner.cpp=, the
+  =CrossCurrencySwap= branch), so it reaches indices no curve covers. Seven
+  are currencies with no curve at all: AOA, BWP, IDR, MYR, OMR, SAR and THB.
+  Four are currencies with an overnight curve but not this index: COP IBR 3M,
+  JPY EYTIBOR 3M, KRW GENERIC 3M and PLN WIBOR 6M.
+- *USD SOFR 1M*, one ACCOUS Ascot whose bond leg floats on term SOFR.
+
+A fixing is derived from the curve of its index and tenor, so the curve is
+the gap in each case, and a trade without the curve cannot be valued either.
+
+The count understates the problem. The same provision refused the ACCOUK
+and ACCOUS rates configs, for a PKR KIBOR cross-currency leg and an FRA on an
+index that is not an Ibor. Once those configs book, the UK and US parties draw
+the same uncovered foreign legs.
+
+** A fresh environment loses more
+
+The first reading after the provision found 18, not 15. At 03:17 the fixing
+writer asked for the series of 7 term indices before the market data service
+answered, logged =no service is handling subject ...market_series.list=, and
+did not ask again: GBP LIBOR 3M, 6M and 12M, USD LIBOR 1M and 6M, CHF LIBOR
+3M and JPY LIBOR 3M. Their curves were published. A restart of the synthetic
+service wrote all 7. The 15 the task Generate the historical fixings the
+generated trades need recorded were also read after a restart.
+
+This is one case of a general gap. A service's startup work that calls
+another service runs once, and the service registry declares only
+=ores.iam.service= as the dependency of almost every service: the synthetic
+service calls market data and does not declare it. The story
+[[id:E5314CD1-6AB9-4F65-8858-AF2B08FBAEAC][Make a fresh environment ready quickly]] meets the same order
+problem from the market data side.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Make the fixing writer wait for the market data service. |
+| Last touched  | 2026-11-21                               |
+
+* Acceptance
+
+- On a fresh environment, without a restart, the derived fixing series are
+  the same as after a restart.
+- The query in =evidence/fixing_gap_by_trade.sql= reports no empty interest
+  rate fixing address on a fresh acme_demo provision. The currencies with no
+  curve meet this by leaving the draw, under the task Draw only the indices
+  the market can serve.
+- ACCOHK's HKD HIBOR trades have a curve and fixings at each tenor they use.
+- No population config can draw an index the market cannot serve, and a check
+  says so before a provision does.
+- The ACCOUK and ACCOUS rates configs book, or the reason they cannot is a
+  named gap with its own task. The task Draw only the indices the market can
+  serve owns this.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:232932EB-9DA3-4004-B6A7-699DC1133610][Write the derived fixings once the market data service answers]] | BACKLOG | | | Make the fixing writer a reconciler: it waits for the market data service, writes what is missing, and runs again when that service returns, so no series is lost to start order. |
+| [[id:83EBCA67-D67E-4D70-AD52-BAA9CDAEC2EE][Bootstrap the HKD HIBOR term curves]] | BACKLOG | | | Add HKD HIBOR curves at 2W, 1M and 3M, built from HONIA and a stated spread as the other term curves are, so the 127 HKD trades of ACCOHK have a curve and fixings. |
+| [[id:53634267-4331-4416-BA39-57102F99EEC8][Draw only the indices the market can serve]] | BACKLOG | | | The trade planner draws a floating index only from a data list of the indices that have a curve or a derivation, and a check refuses a population config that can draw outside it. |
+| [[id:1993E4E7-A59B-4473-8635-C9F6DF974EB5][Derive a term index from its overnight curve]] | BACKLOG | | | Give a term index of a currency that has an overnight curve its curve and fixings from that curve: term SOFR and IBR from the compounded overnight forward, EYTIBOR, WIBOR and the generic indices with a stated spread. |
+
+* Decisions
+
+- The curve is the gap, not the fixing: a fixing comes from the curve of its
+  index and tenor, so each task adds or derives a curve, or stops the draw.
+- The writer is fixed first, because every later measurement depends on it.
+- The capture [[id:D88ED203-3FCC-434E-86AA-A564EADC4D51][The generated population floats on indices no generated curve covers]]
+  recorded the 15 on 2026-11-20; this story took it over.
+
+* Out of scope
+
+- A curve for AOA, BWP, IDR, MYR, OMR, SAR or THB. These leave the draw until
+  someone needs them.
+- The generic wait for a service's dependencies across every service. Task 1
+  makes the fixing writer the first case; the general mechanism is the story
+  [[id:1DB97F87-9AE4-4848-94CC-3CC9D0B46430][A service waits for its dependencies and recovers when they return]].
+- Equity, commodity, FX and inflation fixings.

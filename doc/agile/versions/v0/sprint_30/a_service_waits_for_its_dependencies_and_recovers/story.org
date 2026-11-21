@@ -1,0 +1,125 @@
+:PROPERTIES:
+:ID: 1DB97F87-9AE4-4848-94CC-3CC9D0B46430
+:END:
+#+title: Story: A service waits for its dependencies and recovers when they return
+#+description: A service states every service it depends on, reports ready only when they answer, becomes degraded rather than failing when one is lost, and runs its startup work as reconcilers that repeat when a dependency returns.
+#+type: story
+#+level: s2
+#+filetags: :sprint_30:v0:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+#+environment: clever_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A service that needs another service waits for it, and does not report
+itself started until it answers. When a service it needs is lost later, it
+keeps running in a degraded state, refuses only the work that needs the lost
+service, and resumes that work when the service returns. Every service gets
+this from the shared runner in =ores.service=, from its dependencies stated
+as data, and no service writes its own wait.
+
+** The problem
+
+Start order decides today whether a service's startup work succeeds:
+
+- On a fresh environment, the synthetic service's fixing writer asked the
+  market data service for 7 series before that service answered, and never
+  asked again. The fixings of GBP, USD, CHF and JPY LIBOR curves were lost
+  until a restart. See the story
+  [[id:0F936789-FEBE-4330-97B9-DFE0837E4466][Every index a generated trade floats on has a curve and fixings]].
+- The market data service writes thousands of demand intervals before it
+  sends =READY=, misses systemd's 90-second start timeout, and its official
+  rates adapter fails on the dependency. See
+  [[id:B3BEA3D5-1ABA-444E-8C51-13EBD8E6DF5F][Ready the market data service before its usage sync]].
+- The CZK curve starts before the first CNB refresh lands and keeps its fixed
+  rate until the synthetic service starts again.
+
+** What exists
+
+- systemd units with =Type=notify=, =After== and =Requires==, generated from
+  the =:depends_on:= of =projects/modeling/service_registry.org=.
+- =READY=1= in =systemd_notify.cpp=, sent from the shared runner.
+- The =heartbeat_publisher=, and telemetry's =service_state= with =running=
+  and =lost=.
+- The client credentials provider, which already retries the start race with
+  a backoff.
+- The two bootstrap phases in [[id:1D02DB5B-1E50-4AA0-9780-A3F1CF237349][Service bootstrap phases]]: phase 1 subscribes,
+  phase 2 calls other services once.
+
+What is missing: =:depends_on:= holds one service, and 19 of the 21 services
+in the registry name only =ores.iam.service=, although many call others; the
+synthetic service calls market data and does not say so. =READY= does not
+mean the dependencies answer. Nothing watches a dependency once a service
+runs. And phase 2 runs once, so a failed call is never repeated.
+
+** The pattern
+
+This is the split between liveness and readiness that service platforms
+make, with a reconciler loop for the work a service does on its own:
+
+1. The dependencies are data: a list per service in the registry.
+2. At start the runner waits, then reports ready: starting, waiting for the
+   dependencies, ready.
+3. At run time the runner watches the dependencies: ready, degraded when one
+   is lost, ready again when it returns.
+4. Startup work runs as reconcilers: each one reads what is there, writes
+   what is missing, and is safe to repeat; the runner runs them on ready, on
+   each return from degraded, and at an interval.
+
+systemd's =BindsTo== would restart a service when its dependency stops. That
+is not the answer: a short loss of market data would restart every service
+that uses it, and the remote compute hosts run without systemd.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Make depends_on a list and fill it from the calls each service makes. |
+| Last touched  | 2026-11-21                               |
+
+* Acceptance
+
+- Every service in the registry lists each service it calls, and the systemd
+  units follow the list.
+- On a fresh environment, =compass services start= completes with every unit
+  active on the first attempt, and no service logs a startup call to a
+  service that does not answer.
+- A stopped dependency leaves its dependents running and degraded; when it
+  starts again, they return to ready and their reconcilers complete their
+  work, with no restart of the dependents.
+- The derived fixings of a fresh environment equal those after a restart.
+- =service_bootstrap_phases.org= describes the states and the reconcilers.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:72DFABCD-C1B2-470A-B474-524E2CEDB6CF][Declare every service a service depends on]] | BACKLOG | | | The service registry's depends_on becomes a list of every service a service calls, and the systemd units and the service runner both read it. |
+| [[id:11B23578-98E0-40D4-82E8-53E234D53C68][Report ready only when the dependencies answer]] | BACKLOG | | | The service runner holds a waiting state until each declared dependency answers, tells systemd what it waits for and extends its start timeout, and only then sends READY. |
+| [[id:EB0FF23D-6BD8-4DDF-B54A-A669DF33A542][Degrade when a dependency is lost and recover when it returns]] | BACKLOG | | | The service runner watches each dependency's heartbeat, marks the service degraded when one is lost, refuses the requests that need it with a stated outcome, and returns to ready when it comes back. |
+| [[id:037AF811-1B9D-4E51-805D-5C3BB002621D][Run a service's startup work as reconcilers]] | BACKLOG | | | A service registers its startup work with the runner as reconcilers that are safe to repeat; the runner runs them when the service is ready, each time it leaves the degraded state, and at an interval. |
+
+* Decisions
+
+- The service degrades and does not restart when a dependency is lost. A
+  restart cascades, and it cannot be done where systemd does not run.
+- The wait and the watch live in the shared runner, so a service gets them by
+  declaring its dependencies and registering its reconcilers.
+- The dependencies are data in the service registry, which already generates
+  the systemd units, so the units and the runner cannot disagree.
+
+* Out of scope
+
+- Recording service starts and stops and showing them in system health. The
+  story [[id:C2B93338-407F-44ED-B8FE-E7484390F421][Record service lifecycle events and surface them in system health]]
+  owns that; its events and this story's states can share a vocabulary.
+- The order in which a tenant's market is published. The story
+  [[id:E5314CD1-6AB9-4F65-8858-AF2B08FBAEAC][Make a fresh environment ready quickly]] owns that.

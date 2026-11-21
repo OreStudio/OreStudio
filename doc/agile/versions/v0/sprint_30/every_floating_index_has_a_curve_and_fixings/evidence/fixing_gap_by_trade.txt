@@ -1,0 +1,98 @@
+The interest rate fixing addresses the acme_demo trades name and no fixing
+answers, by trade type, party and source column. The query is
+fixing_gap_by_trade.sql beside this file.
+
+Environment clever_dijkstra, main at c0f6ed8c38, 2026-11-21: a fresh
+database (compass db recreate), the services started, and Acme provisioned
+with how_do_i_provision_the_system_with_acme_corporation_holding_group.ores
+(profile acme_demo).
+
+The branch this file was added on is based on e65e3da29f, later than the
+measured commit. Between the two, main changed the scripted trade recipes and
+two lines in each of the IR curve series seeds. The readings were not taken
+again on the later commit; the first task of the story measures again before
+it changes anything.
+
+== Trades by party
+
+ party  | centre | trades
+--------+--------+--------
+ ACCOHK | HKHK   |    252
+ ACCOUK | GBLO   |    467
+ ACCOUS | USNY   |    100
+ ACMCOR | GBLO   |     80
+
+The provision refused two rates configs, as it did before:
+  ACME ACCOUK rates: the CrossCurrencySwap builder refuses the drawn
+    foreign.index oresmd://ir/PKR?type=fixing&index=ibor&name=KIBOR&tenor=6M
+  ACME ACCOUS rates: the ForwardRateAgreement builder refuses the drawn
+    index: a forward rate agreement needs an Ibor index
+
+== First reading, after the provision
+
+ trades | ir_fixing_addresses | empty_ir_fixing_addresses
+--------+---------------------+---------------------------
+    899 |                  21 |                        18
+
+The three more than the second reading are GBP LIBOR 3M (1 CrossCurrencySwap
+of ACCOHK, 4 TotalReturnSwap of ACCOUK), GBP LIBOR 12M (1 Ascot of ACCOUK) and
+USD LIBOR 1M (2 CommodityWorstOfBasketSwap, 4 EquitySwap and 4
+EquityWorstOfBasketSwap of ACCOUK). Each has a published curve. The
+synthetic service log says why they had no fixings: at 03:17:04 the fixing
+writer asked for the series of 7 indices before the market data service
+answered, and did not ask again.
+
+  [WARN] [ores.synthetic.service.fixing_history_writer] The fixings of
+  'oresmd://ir/GBP?type=fixing&index=ibor&name=LIBOR&tenor=3M' have no
+  series: NATS request failed: no service is handling subject
+  'ores.dev.clever_dijkstra.marketdata.v1.market_series.list'
+
+The same line names CHF LIBOR 3M, GBP LIBOR 6M, GBP LIBOR 12M, JPY LIBOR 3M,
+USD LIBOR 1M and USD LIBOR 6M. Before the restart the tenant held 34 derived
+interest rate fixing series.
+
+== Second reading, after systemctl --user restart of the synthetic service
+
+The writer stated 520 fixings of each of the 7 series, and:
+
+ trades | ir_fixing_addresses | empty_ir_fixing_addresses
+--------+---------------------+---------------------------
+    899 |                  21 |                        15
+
+ oresmd_uri                                                   | trade types                         | party  | trades
+--------------------------------------------------------------+-------------------------------------+--------+-------
+ oresmd://ir/HKD?type=fixing&index=ibor&name=HIBOR&tenor=1M   | 9 rate types and 1 Ascot            | ACCOHK |     43
+ oresmd://ir/HKD?type=fixing&index=ibor&name=HIBOR&tenor=2W   | 9 rate types                        | ACCOHK |     41
+ oresmd://ir/HKD?type=fixing&index=ibor&name=HIBOR&tenor=3M   | 9 rate types                        | ACCOHK |     43
+ oresmd://ir/AOA?type=fixing&index=ibor&name=GENERIC&tenor=3M | CrossCurrencySwap, foreign leg      | ACCOHK |      1
+ oresmd://ir/BWP?type=fixing&index=ibor&name=GENERIC&tenor=3M | CrossCurrencySwap, foreign leg      | ACCOHK |      1
+ oresmd://ir/COP?type=fixing&index=ibor&name=IBR&tenor=3M     | CrossCurrencySwap, foreign leg      | ACCOHK |      1
+ oresmd://ir/IDR?type=fixing&index=ibor&name=GENERIC&tenor=3M | CrossCurrencySwap, foreign leg      | ACCOHK |      1
+ oresmd://ir/JPY?type=fixing&index=ibor&name=EYTIBOR&tenor=3M | CrossCurrencySwap, foreign leg      | ACCOHK |      1
+ oresmd://ir/KRW?type=fixing&index=ibor&name=GENERIC&tenor=3M | CrossCurrencySwap, foreign leg      | ACCOHK |      1
+ oresmd://ir/MYR?type=fixing&index=ibor&name=GENERIC&tenor=3M | CrossCurrencySwap, foreign leg      | ACCOHK |      1
+ oresmd://ir/OMR?type=fixing&index=ibor&name=GENERIC&tenor=3M | CrossCurrencySwap, foreign leg      | ACCOHK |      1
+ oresmd://ir/PLN?type=fixing&index=ibor&name=WIBOR&tenor=6M   | CrossCurrencySwap, foreign leg      | ACCOHK |      1
+ oresmd://ir/SAR?type=fixing&index=ibor&name=SAIBOR&tenor=3M  | CrossCurrencySwap, foreign leg      | ACCOHK |      1
+ oresmd://ir/THB?type=fixing&index=ibor&name=BIBOR&tenor=3M   | CrossCurrencySwap, foreign leg      | ACCOHK |      1
+ oresmd://ir/USD?type=fixing&index=ibor&name=SOFR&tenor=1M    | Ascot, bond leg rate                | ACCOUS |      1
+
+The 9 rate types are BalanceGuaranteedSwap, CallableSwap, CapFloor,
+FlexiSwap, ForwardRateAgreement, KnockOutSwap, Swap, Swaption and
+SwaptionStraddle, 4 or 5 trades of each per tenor. The HKD HIBOR addresses
+are the floating index of 127 of ACCOHK's 252 trades.
+
+== The curves the currencies hold (derived fixing series, second reading)
+
+Each of these currencies has a derived overnight fixing series, so an
+overnight curve: AUD AONIA, BRL CDI, CAD CORRA, CHF SARON, CLP CAMARA,
+CNH HIBOR, CNY SHIBOR, COP IBR, CZK CZEONIA, DKK DESTR, EUR ESTR, GBP SONIA,
+HKD HONIA, HUF HUFONIA, ILS SHIR, INR MIBOR, JPY TONA, KRW KOFR, MXN TIIE,
+NOK NOWA, NZD NZONIA, PLN POLONIA, SEK SWESTR, SGD SORA, TRY TLREF,
+TWD TAIBOR, USD SOFR, ZAR ZARONIA.
+
+Term curves exist for CHF LIBOR 3M and 6M, EUR EURIBOR 1W, 1M, 6M and 12M,
+GBP LIBOR 1W, 1M, 3M, 6M and 12M, JPY LIBOR 1M and 3M, USD LIBOR 1M and 6M.
+GBP LIBOR 1W states no fixings: "it has no deposit at the index tenor".
+
+No curve exists for AOA, BWP, IDR, MYR, OMR, SAR or THB.

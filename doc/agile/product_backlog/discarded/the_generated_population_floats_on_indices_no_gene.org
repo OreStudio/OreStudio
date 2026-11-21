@@ -7,17 +7,25 @@
 #+level: cross
 #+filetags: :capture:
 #+created: 2026-11-20
-#+updated: 2026-11-20
+#+updated: 2026-11-21
 
 This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
+* Why this is discarded
+
+The story [[id:0F936789-FEBE-4330-97B9-DFE0837E4466][Every index a generated trade floats on has a curve and fixings]]
+took this capture over on 2026-11-21. It measured the 15 addresses again on a
+fresh provision, grouped them by trade type and party, and split the work
+into four tasks. The capture's What and Why were never written; the
+description above and the story hold them.
+
 * What
 
-(One paragraph: the idea.)
+See the description.
 
 * Why
 
-(Motivation, problem being solved, related context.)
+See the description.
 
 * References
 

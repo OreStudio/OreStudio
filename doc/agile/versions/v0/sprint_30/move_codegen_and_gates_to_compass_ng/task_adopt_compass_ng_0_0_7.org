@@ -26,11 +26,11 @@ ORE runs compass-ng v0.0.7 with main green: the grants hand edits live in the te
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:E3BF90FE-43DF-4A30-9F2C-FF5E20128C88][Move codegen and the gates to compass-ng]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-21                               |
 
 * Acceptance
@@ -116,3 +116,13 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+ORE runs compass-ng v0.0.7 with main green. The service grants file is
+generated from the template and the registry and holds exactly the grants
+main held. Every function a hidden-visibility part declares carries its
+export macro: three templates and twelve hand-written declarations, 1,714
+files in all. The check inventory page lists 81 checks and generators, 75
+enabled, and the knowledge index, the CI page and each check document link
+to it. compass-ng check reports only the two known wide_types warnings. The
+product owner's full build passed on 2026-11-21 in 36 minutes. Windows and
+macOS are proved by their nightly builds.

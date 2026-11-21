@@ -20,6 +20,7 @@
 # Template: cmake_component_files_src.mustache
 # To modify, update the template and regenerate.
 set(files
+    "check.cpp"
     "diagnostic.cpp"
     "inputs.cpp"
     "ore/ast.cpp"
@@ -33,6 +34,7 @@ set(files
 
 # The headers are listed for the install and IDE targets.
 set(HEADERS
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.scripting/check.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.scripting/diagnostic.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.scripting/export.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.scripting/inputs.hpp"

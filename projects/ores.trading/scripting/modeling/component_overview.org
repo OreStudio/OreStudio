@@ -44,6 +44,7 @@ describes; its grammar is the one authority described in
   line and column as [[id:ECA442BB-48D7-47CB-9BAA-97FD1C0BBA9A][Diagnostic Reporting in Script Validation]] defines.
 - A script's text, printed from a syntax tree.
 - A script's inputs, derived from its syntax tree.
+- The diagnostics of a script against a trade's variables.
 
 * Entry points
 
@@ -54,6 +55,9 @@ describes; its grammar is the one authority described in
   implies, whether it is an array, and the rule its REQUIRE statements state.
 - =ores::trading::scripting::merge_inputs= — the inputs of a script with several
   variants, the first variant's first.
+- =ores::trading::scripting::check= — the findings of a parsed script against the
+  variables a trade states: missing, unread, mistyped and mis-sized variables,
+  broken REQUIRE statements, and unused declarations, as diagnostics.
 - =ores::trading::scripting::ast_to_script= — prints a tree as script text.
 - =ores::trading::scripting::print_ast= — prints a tree's structure.
 - =ores::trading::scripting::generate_random_ast= — writes a random tree, for

@@ -8,7 +8,7 @@
 #+filetags: :design_the_scripted_trade_subsystem:sprint_30:v0:
 #+owner: marco
 #+branch: feature/copy-ores-script-parser
-#+pr: 4966
+#+pr: 4967
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-21
@@ -26,11 +26,11 @@ ores.trading.scripting holds ORE's script grammar, syntax tree, printer, static 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:E6359881-7919-4BBC-9B9C-03A8EEDB8A03][Design the scripted trade subsystem]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-21                               |
 
 * Acceptance
@@ -78,6 +78,18 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+** What the third PR found
+
+- =check= reports every finding of a parsed script against a trade's variables
+  together: a missing input (SCR2001), an unread variable (SCR2002), a wrong type
+  (SCR2003), a list where one value belongs or the reverse (SCR2004), a broken
+  REQUIRE (SCR3001) and an unused declaration (SCR4001), ordered by location,
+  then by variable.
+- A REQUIRE is evaluated only over the numbers a trade states and the sizes of its
+  lists; one that reads a date, an index or a computed variable is left to ORE.
+  A known side settles AND and OR on its own, so a quantity of zero breaks
+  =Expiry >= Start AND Quantity > 0= whatever the dates.
 
 ** What the second PR found
 
@@ -136,6 +148,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4967][#4967]] | [trading] Check a scripted trade's variables against its script |
 | [[https://github.com/OreStudio/OreStudio/pull/4966][#4966]] | [trading] Derive a script's inputs from ORE's syntax tree |
 | [[https://github.com/OreStudio/OreStudio/pull/4964][#4964]] | [trading] Copy ORE's script parser into ores.trading.scripting |
 
@@ -156,14 +169,30 @@ via its "Verifies task" field.
 | 4966.4 | includes come through the header | inputs.cpp | accept | included directly |
 | 4966.5 | line_of signals the end by a null view | spirit_columns.hpp | accept | it returns an optional |
 | 4966.6 | the type precedence relies on no call passing Number | inputs.cpp | accept | untyped is an absent type; Number is only the default |
+| 4967.1 | a REQUIRE inside an IF or loop is judged as if it always runs | check.cpp | accept | only statements outside any IF and loop are evaluated; a test with a false guard |
+| 4967.2 | a name the script assigns is evaluated at the trade's value | check.cpp | accept | assigned names and loop variables are the script's own; a test |
+| 4967.3 | floating-point from_chars is not portable | check.cpp | accept | read with a classic-locale stream; text not wholly a number is left to ORE |
+| 4967.4 | a zero divisor gives NaN | check.cpp | accept | a zero divisor leaves the statement to ORE; a test |
+| 4967.5 | exact equality on doubles | check.cpp | accept | QuantLib's close_enough, as ORE's scripts compare; a test of 0.1 + 0.2 == 0.3 |
+| 4967.6 | a duplicate variable name is ignored silently | check.hpp | accept | the header states the first is checked |
+| 4967.7 | child accesses are unchecked | check.cpp | accept | guarded |
+| 4967.8 | a wrong type and shape give two findings | tests | accept | a test confirms both are reported |
 
 * Result
 
-First PR: the sub-component and the copy. =ores.trading.scripting= holds ORE's
-grammar, syntax tree, parser, printer, converter back to text and random tree
-generator, copied from ORE at =c3ffbae78= by =utility/import_ore_scripting.py=,
-whose =--check= fails when the copy differs from what it makes. =parse= reports a
-syntax error as an =SCR1001= diagnostic located by line and code point column.
-Every one of the 198 code blocks in ORE's example libraries parses but
-WorstOfBasketSwap, whose diagnostic matches ORE's own report. =inputs_of= and
-=check= follow in the second PR.
+=ores.trading.scripting= holds ORE's payoff script grammar, syntax tree, parser,
+printer, converter back to text and random tree generator, copied from ORE at
+=c3ffbae78= by =utility/import_ore_scripting.py=, which keeps ORE's authorship and
+whose =--check= fails when the copy differs from what it makes of ORE's files.
+The component sits beneath =ores.trading.api=, links no QuantLib, database or
+messaging, and the component catalogue lists it.
+
+Three PRs. The first copied the parser and reported a syntax error as an
+=SCR1001= diagnostic located by line and code point column: every one of the 198
+code blocks of ORE's example libraries parses but WorstOfBasketSwap, whose
+diagnostic matches ORE's own report. The second derived a script's inputs from
+the syntax tree: over every script the store is seeded with, they equal the
+stored ones but one, Accumulator02's ObservationPeriodEndDates, which the store
+holds as a Number list and is a list of Events. The third checked a trade's
+variables against its script and reported every finding as a numbered, located
+error or warning, in the form Emacs and the editor read.

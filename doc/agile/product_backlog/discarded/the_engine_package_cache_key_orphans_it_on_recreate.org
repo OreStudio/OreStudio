@@ -7,9 +7,20 @@
 #+level: cross
 #+filetags: :compute:grid:storage:devops:
 #+created: 2026-10-13
-#+updated: 2026-10-13
+#+updated: 2026-11-21
 
 This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* Why this is discarded
+
+The task [[id:05F7CDA0-07BC-44A1-91F3-695AE79A3C19][Give one engine version one app version ID]], in the story
+Compute wrappers never release their disk, took this capture over on
+2026-11-21. Its goal and acceptance now carry the cache key from the package's
+identity and the pruning of the entries no published version claims. The task
+found the same leak on 2026-11-20, when the wrapper folders filled a
+development disk. The line numbers below are from 2026-10-13. On 2026-11-21
+the cache path is at =application.cpp:772=, the lock file and archive names at
+=:662= and =:674=, and the SHA256 check at =:692=.
 
 * What
 

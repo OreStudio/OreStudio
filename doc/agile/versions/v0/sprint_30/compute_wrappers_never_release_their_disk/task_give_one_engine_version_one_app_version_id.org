@@ -8,7 +8,7 @@
 #+filetags: :compute_wrappers_never_release_their_disk:sprint_30:v0:
 #+owner: marco
 #+branch:
-#+pr:
+#+pr: 4947
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-20
@@ -26,6 +26,19 @@ and the engine version, or a hash of the package archive. A wrapper then finds
 its unpacked package after a database recreate and does not download it again.
 The wrapper also removes the =.tar.gz= after it unpacks it.
 
+The wrapper's cache key comes from the package itself: the engine version and
+platform the serving environment publishes, and the package's SHA256. A
+stable ID alone is not enough. The same version string can be built again with
+different content, and only the SHA256 tells the two apart. A key from the
+package also lets the environments on one host share one cache, which no
+environment can do today because no two agree on an =app_version_id=.
+
+The wrapper removes cache entries that no published version claims, so the
+cache does not keep an engine no environment serves.
+
+The capture [[id:316D8899-AC22-49C9-BB95-CDB31E184D3F][The compute engine package cache is keyed by app version id, so a database recreate orphans it]]
+found this leak on newton on 2026-10-13, and this task took it over.
+
 * Status
 
 | Field        | Value                                  |
@@ -42,10 +55,17 @@ The wrapper also removes the =.tar.gz= after it unpacks it.
 - Two database recreates seed the same app version ID for the same engine.
 - After a recreate, a wrapper runs a job without a new package download.
 - A changed engine gets a new ID, so a wrapper never runs a stale package.
+- The cache key is the package's version, platform and SHA256, so two
+  environments that use one package folder and serve the same package share
+  one entry.
+- Decide, when the task starts, whether the package folder becomes one per
+  host. Today =docker/remote-run.sh= gives each environment its own; a shared
+  folder is a change to that script, and without it the sharing above has no
+  effect.
 - No =.tar.gz= stays in =packages/= after a package is unpacked.
-- Decide what removes the copies that other IDs left behind. When the task
-  starts, make this testable, for example: after the change, the number of
-  package folders equals the number of distinct engine versions.
+- The wrapper removes cache entries that no published version claims. After
+  the change, in each package folder, the number of entries equals the number
+  of distinct packages that the environments using that folder publish.
 
 * Plan
 
@@ -75,8 +95,14 @@ task and name that file in the Command column.
 - The cache key is set in =projects/ores.compute/wrapper/src/app/application.cpp=,
   in =ensure_package= and its caller.
 - The seed is =projects/ores.sql/populate/compute/compute_ore_app_seed.sql=.
-- The existing folders are kept for this analysis. Do not delete them before
-  the task has used them.
+- The download is already checked against the serving environment's SHA256,
+  so a stale entry is never taken for a good one; it is dead weight.
+- =docker/remote-run.sh= gives the compute role a per-environment
+  =compute/<label>/work/packages/=. See the acceptance item on a host-wide
+  folder.
+- The existing folders are kept for this analysis until the task starts. Do
+  not delete them by hand; the pruning this task adds removes them once the
+  task has analysed them.
 
 * Test Scenarios
 
@@ -93,12 +119,15 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4947][#4947]] | [agile] Fold the package cache capture into the app version task |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | PR #4947 review: a shared cache and per-environment folders cannot both hold | this task | Accept | Sharing is scoped to one package folder; whether the folder becomes one per host is an acceptance decision for the task's start |
+| 2 | PR #4947 review: say whether the pruning count is per host or per environment | this task | Accept | Stated per package folder |
+| 3 | PR #4947 review: keeping the folders and pruning them seem to disagree | this task | Accept | The note keeps them until the task starts, and the pruning removes them after its analysis |
+| 4 | PR #4947 review: the capture's other line numbers may be stale | capture | Accept | All four dated 2026-10-13, and the 2026-11-21 lines given: :772, :662, :674, :692 |
 
 * Result

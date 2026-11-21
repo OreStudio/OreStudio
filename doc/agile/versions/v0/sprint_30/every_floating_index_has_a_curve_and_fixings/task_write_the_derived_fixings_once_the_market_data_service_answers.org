@@ -8,7 +8,7 @@
 #+filetags: :every_floating_index_has_a_curve_and_fixings:sprint_30:v0:
 #+owner: marco
 #+branch: feature/write-the-derived-fixings-once-the-market-data-service-answers
-#+pr: 4956
+#+pr: 4965
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-21
@@ -118,6 +118,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4965][#4965]] | [service,synthetic] Retry the fixing history until market data answers |
 | [[https://github.com/OreStudio/OreStudio/pull/4956][#4956]] | [agile] Add the floating index and service dependency stories |
 
 * Review

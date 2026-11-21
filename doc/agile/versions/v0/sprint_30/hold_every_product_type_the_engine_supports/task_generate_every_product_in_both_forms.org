@@ -8,7 +8,7 @@
 #+filetags: :hold_every_product_type_the_engine_supports:sprint_30:v0:
 #+owner: marco
 #+branch: feature/generate-every-product-in-both-forms
-#+pr: 4935
+#+pr: 4937
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-15
@@ -174,6 +174,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4937][#4937]] | [synthetic] Twin the generic barrier options; correct the FD script |
 | [[https://github.com/OreStudio/OreStudio/pull/4935][#4935]] | [trading] Name the product builders' helpers after their families |
 | [[https://github.com/OreStudio/OreStudio/pull/4930][#4930]] | [synthetic] Twin the FX worst-of basket swap; correct its library script |
 | [[https://github.com/OreStudio/OreStudio/pull/4919][#4919]] | [synthetic] Twin the pairwise variance swaps |

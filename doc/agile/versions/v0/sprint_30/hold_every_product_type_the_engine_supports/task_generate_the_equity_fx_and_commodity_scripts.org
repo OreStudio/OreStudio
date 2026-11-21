@@ -141,3 +141,14 @@ via its "Verifies task" field.
 | 4948.7 | no barrier bites, so barrier logic is not tested | - | defer | noted in the task; a carrier with a level near its underlying is a follow-up |
 
 * Result
+
+First PR: the machinery and the single-name variance family. A native type the
+generator books carries each script with no element of its own: the catalogue's
+=Script-only recipes= table states where each input comes from in the carrier's
+rows, in the twin recipes' grammar, and the generator checks it as it checks the
+twins. EquityBasketVarianceSwap carries VarianceOption, KIKOVarianceSwap,
+CorridorVarianceSwap, KIKOCorridorVarianceSwap, ConditionalVarianceSwap01 and
+02, and GammaSwap; ORE reads, builds and values each. The =Library scripts=
+table states how each of the library's 54 scripts is held, and the generator
+fails when one is missing or held otherwise than the recipes state. The rainbow,
+dispersion and option families follow.

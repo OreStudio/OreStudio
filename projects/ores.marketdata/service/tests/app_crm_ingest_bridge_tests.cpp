@@ -18,7 +18,10 @@
  *
  */
 #include "ores.analytics.quant/domain/rate_status.hpp"
+#include "ores.database/query_builder/execute.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.service/app/crm_ingest_bridge.hpp"
+#include "ores.marketdata.service/app/fixing_sources.hpp"
 #include "ores.refdata.api/domain/crm_driver_pair.hpp"
 #include "ores.refdata.api/domain/crm_enabled_derived_pair.hpp"
 #include "ores.refdata.api/domain/crm_topology_config.hpp"
@@ -31,6 +34,7 @@
 #include <algorithm>
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_string.hpp>
 #include <chrono>
 
 namespace {
@@ -102,6 +106,40 @@ struct fixture {
         return p;
     }
 };
+
+/**
+ * @brief Stores an FX fixing series whose identity has no unit currency, in SQL.
+ *
+ * The identity writer refuses such a row by its shape, so a test that needs one
+ * left in the store writes it the way a restore or a SQL publish would. Returns
+ * the series' oresmd URI.
+ */
+std::string insert_sparse_fx_fixing(const ores::database::context& ctx,
+                                    const boost::uuids::uuid& party) {
+    const auto id = boost::uuids::to_string(boost::uuids::random_generator{}());
+    const auto uri = "oresmd://fx/EUR?type=fixing&index=fx&name=TEST" + id;
+    auto lg = ores::logging::make_logger("ores.marketdata.service.tests.app_crm_ingest_bridge");
+    ores::database::query_builder::execute_parameterized_multi_column_query(
+        ctx,
+        "with s as (insert into ores_marketdata_market_series_tbl ("
+        "    tenant_id, id, version, party_id, oresmd_uri, series_subclass,"
+        "    provider_code, derivation_kind, derivation_config_id, derivation_config_version,"
+        "    modified_by, performed_by, change_reason_code, change_commentary)"
+        " values ($1::uuid, $2::uuid, 0, $3::uuid, $4, 'index_fixing',"
+        "    'ore', 'OBSERVED', ores_utility_nil_uuid_fn(), 0,"
+        "    current_user, current_user, 'system.external_data_import',"
+        "    'a sparse fixing inserted in SQL by a CRM test')"
+        " returning id, tenant_id, party_id)"
+        " insert into ores_marketdata_market_series_identity_tbl ("
+        "    series_id, tenant_id, party_id, provider_code, identity_kind, asset_class,"
+        "    ccy, unit_ccy, \"index\")"
+        " select id, tenant_id, party_id, 'ore', 'index', 'fx', 'EUR', '', 'fx' from s"
+        " returning series_id::text",
+        {ctx.tenant_id().to_string(), id, boost::uuids::to_string(party), uri},
+        lg,
+        "Inserting a sparse FX fixing series");
+    return uri;
+}
 
 }
 
@@ -441,4 +479,38 @@ TEST_CASE("the DB rejects a second active crm_topology_config sharing a party's 
     auto second = f.make_config("USD", "majors");
     second.id = boost::uuids::random_generator{}();
     CHECK_THROWS(config_repo.write(f.h.context(), second));
+}
+
+TEST_CASE("a fixing series without its unit currency is refused by name",
+          "[app][crm][fixing_sources]") {
+    fixture f;
+    const auto uri = insert_sparse_fx_fixing(f.h.context(), f.party_id);
+
+    const auto sources = ores::marketdata::service::app::read_fixing_sources(f.h.context());
+
+    REQUIRE(sources.has_value());
+    const auto held =
+        sources->find({f.h.tenant_id().to_string(), boost::uuids::to_string(f.party_id)});
+    REQUIRE(held != sources->end());
+    CHECK_THAT(held->second.refusal, Catch::Matchers::ContainsSubstring(uri));
+    CHECK_THAT(held->second.refusal, Catch::Matchers::ContainsSubstring("unit_ccy=''"));
+    CHECK(held->second.sources.empty());
+}
+
+TEST_CASE("a party with a fixing series without its unit currency gets no CRM engine",
+          "[app][crm][fixing_sources]") {
+    fixture f;
+    crm_topology_config_repository{}.write(f.h.context(), f.make_config());
+    crm_driver_pair_repository{}.write(f.h.context(), f.make_driver_pair("EUR", "USD"));
+    const auto tenant_id_str = f.h.tenant_id().to_string();
+    const auto party_id_str = boost::uuids::to_string(f.party_id);
+
+    crm_ingest_bridge bridge(f.h.context());
+    bridge.refresh();
+    REQUIRE(bridge.rate(tenant_id_str, party_id_str, "test", "EUR", "USD").has_value());
+
+    insert_sparse_fx_fixing(f.h.context(), f.party_id);
+    bridge.refresh();
+
+    CHECK_FALSE(bridge.rate(tenant_id_str, party_id_str, "test", "EUR", "USD").has_value());
 }

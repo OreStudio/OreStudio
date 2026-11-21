@@ -39,13 +39,14 @@
 -- pair, so the two spellings are checked against each other rather than
 -- assumed to agree.
 --
--- The reader is as strict as the codec, because a key the codec refuses names
--- no datum and a series cannot answer it. The type and quote tokens must be
--- spelled as ORE spells them (the codec compares them exactly, so a lower-case
--- key is not a key); a token may not be empty; and a key that starts at a date
--- must end at one, which is the rule read_ir_swap applies. A key that fails
--- any of these states no address, and the caller reports it as unreadable
--- rather than as a gap the market could close.
+-- The reader applies the checks the codec applies to this key, because a key
+-- the codec refuses names no datum and a series cannot answer it: the token
+-- count, the exact spelling of the instrument and quote tokens (the codec
+-- compares them with ==, so a lower-case key is not a key), no empty field, a
+-- period where read_ir_swap requires one, a date that exists where it requires
+-- a date, and a start and end of the same kind. A key that fails any of these
+-- states no address, and the caller reports it as unreadable rather than as a
+-- gap the market could close.
 --
 -- A field value is written as the key spells it, without percent-encoding. A
 -- value that needs encoding names no series here, and the quote is reported as
@@ -57,6 +58,40 @@
 -- form is reported as one this check cannot answer rather than passed over,
 -- because a check that stays silent about what it does not read is a check
 -- that reports the wrong answer.
+
+-- =============================================================================
+-- The shape of an ORE key token
+-- =============================================================================
+
+-- Whether a token is a date, as datum/value.cpp's is_date reads one: a
+-- four-digit year and a real month and day, written with or without dashes.
+-- to_date() rolls an impossible day into the next month, so the round trip is
+-- what refuses 20261399.
+create or replace function ores_marketdata_curve_is_date_fn(
+    p_text text
+) returns boolean as $$
+declare
+    v_date date;
+begin
+    if p_text ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}$' then
+        v_date := to_date(p_text, 'YYYY-MM-DD');
+    elsif p_text ~ '^[0-9]{8}$' then
+        v_date := to_date(p_text, 'YYYYMMDD');
+    else
+        return false;
+    end if;
+    return to_char(v_date,
+                   case when p_text like '%-%' then 'YYYY-MM-DD' else 'YYYYMMDD' end) = p_text;
+exception
+    when others then
+        return false;
+end;
+$$ language plpgsql immutable;
+
+comment on function ores_marketdata_curve_is_date_fn(text) is
+'Whether the token is a date the codec reads, which is eight digits or a year,
+ month and day with dashes, naming a day that exists.';
+
 create or replace function ores_marketdata_curve_pillar_series_uri_fn(
     p_quote_text text
 ) returns text as $$
@@ -66,6 +101,7 @@ declare
     v_ccy text;
     v_index_name text;
     v_fwd_start text;
+    v_tenor text;
     v_term text;
 begin
     if p_quote_text is null or p_quote_text = '' then
@@ -87,24 +123,42 @@ begin
     if v_count = 6 then
         v_ccy := v_parts[3];
         v_fwd_start := v_parts[4];
+        v_tenor := v_parts[5];
         v_term := v_parts[6];
     elsif v_count = 7 then
         v_ccy := v_parts[3];
         v_index_name := v_parts[4];
         v_fwd_start := v_parts[5];
+        v_tenor := v_parts[6];
         v_term := v_parts[7];
     else
         return null;
     end if;
 
-    -- A token that holds nothing names no field, and a key whose start and end
-    -- are of different kinds is one the codec refuses.
+    -- A token that holds nothing names no field.
     if v_ccy is null or v_ccy = ''
        or v_fwd_start is null or v_fwd_start = ''
-       or v_index_name = '' then
+       or v_index_name = ''
+       or v_tenor is null or v_tenor = ''
+       or v_term is null or v_term = '' then
         return null;
     end if;
-    if (v_fwd_start ~ '^[0-9]{8}$') <> (v_term ~ '^[0-9]{8}$') then
+
+    -- The start is a period or a date, the index tenor is a period, and the
+    -- term is of the start's kind: the checks read_ir_swap applies.
+    if not (ores_marketdata_curve_is_date_fn(v_fwd_start)
+            or v_fwd_start ~ '^([0-9]+[DdWwMmYy])+$') then
+        return null;
+    end if;
+    if v_tenor !~ '^([0-9]+[DdWwMmYy])+$' then
+        return null;
+    end if;
+    if ores_marketdata_curve_is_date_fn(v_fwd_start)
+       <> ores_marketdata_curve_is_date_fn(v_term) then
+        return null;
+    end if;
+    if not ores_marketdata_curve_is_date_fn(v_term)
+       and v_term !~ '^([0-9]+[DdWwMmYy])+$' then
         return null;
     end if;
 
@@ -112,7 +166,7 @@ begin
            '?type=series&instrument=ir_swap&quote=rate' ||
            coalesce('&index_name=' || v_index_name, '') ||
            '&fwd_start=' || v_fwd_start ||
-           '&tenor=' || v_parts[case when v_count = 6 then 5 else 6 end];
+           '&tenor=' || v_tenor;
 end;
 $$ language plpgsql immutable;
 
@@ -152,6 +206,11 @@ returns table (
     reason                   text
 ) as $$
 begin
+    if p_party_id is null then
+        raise exception 'The check reads one party''s curve configuration, and a null party would return no rows, which reads as no gaps.'
+            using errcode = '22023';
+    end if;
+
     if ores_iam_visible_party_ids_fn() is not null
        and not (p_party_id = any(ores_iam_visible_party_ids_fn())) then
         raise exception 'The session cannot see party %, so the quotes of its curve configuration cannot be read and the check would report no gaps for a configuration it cannot see.', p_party_id

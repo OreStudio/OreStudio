@@ -72,7 +72,7 @@ select (select id from ores_refdata_parties_tbl
 
 -- Ten assertions, and one more when the tenant holds a second party for the
 -- cross-party case to use.
-select plan(12 + (select count(*) from t_ctx where other_party_id is not null)::integer);
+select plan(16 + (select count(*) from t_ctx where other_party_id is not null)::integer);
 
 do $$
 begin
@@ -162,6 +162,21 @@ select is(
     'oresmd://ir/USD?type=series&instrument=ir_swap&quote=rate&fwd_start=20261120&tenor=3M',
     'a meeting-dated quote keeps its start date and drops its end date');
 
+select is(
+    ores_marketdata_curve_pillar_series_uri_fn('IR_SWAP/RATE/USD/2026-11-20/3M/2027-11-20'),
+    'oresmd://ir/USD?type=series&instrument=ir_swap&quote=rate&fwd_start=2026-11-20&tenor=3M',
+    'a date written with dashes is a date the codec reads, so it maps the same way');
+
+select is(
+    ores_marketdata_curve_pillar_series_uri_fn('IR_SWAP/RATE/GBP/20261399/1D/20271301'),
+    null::text,
+    'a day that does not exist names no series, as the codec refuses it');
+
+select is(
+    ores_marketdata_curve_pillar_series_uri_fn('IR_SWAP/RATE/GBP/0D/20261120/1M'),
+    null::text,
+    'a key whose index tenor is a date names no series');
+
 -- A published configuration whose quote no series answers is one row, and the
 -- row says which work it asks for.
 select results_eq(
@@ -222,6 +237,16 @@ select throws_ok(
     '42501',
     null,
     'a party the session cannot see is refused rather than reported as having no gaps'
+);
+
+-- A null party would read a configuration it cannot name, and its empty result
+-- would be read as "no gaps".
+select throws_ok(
+    $$select * from ores_marketdata_curve_quote_coverage_fn(
+        ores_utility_system_tenant_id_fn(), null::uuid)$$,
+    '22023',
+    null,
+    'a null party is refused rather than reported as having no gaps'
 );
 
 select * from finish();

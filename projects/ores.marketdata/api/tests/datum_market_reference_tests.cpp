@@ -137,3 +137,32 @@ TEST_CASE("a curve pillar's quote names a series that drops the term",
     CHECK(*series ==
           "oresmd://ir/GBP?type=series&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D");
 }
+
+TEST_CASE("a curve pillar's quote may start and end at a date", "[marketdata][datum][reference]") {
+    auto lg(make_logger(test_suite));
+
+    /*
+     * ORE reads a swap whose start and end are both periods or both dates, and a
+     * date may be written with or without dashes. The series keeps the start as
+     * it is spelled and not the end, because the end is the point.
+     */
+    for (const auto* key :
+         {"IR_SWAP/RATE/USD/20261120/3M/20271120", "IR_SWAP/RATE/USD/2026-11-20/3M/2027-11-20"}) {
+        INFO("key: " << key);
+        const auto quote = ores::marketdata::datum::ore_key_codec::read(key);
+        if (!quote)
+            FAIL("ORE's grammar refused the key: " << quote.error());
+
+        const auto series = ores::marketdata::datum::oresmd_uri_codec::write(
+            ores::marketdata::datum::series_of(*quote));
+        if (!series)
+            FAIL("the codec refused the series: " << series.error());
+
+        CHECK(*series == std::string("oresmd://ir/USD?type=series&instrument=ir_swap&quote=rate"
+                                     "&fwd_start=") +
+                             (std::string_view(key).find('-') == std::string_view::npos ?
+                                  "20261120" :
+                                  "2026-11-20") +
+                             "&tenor=3M");
+    }
+}

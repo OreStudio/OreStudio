@@ -20,3 +20,4 @@
 
 drop function if exists ores_marketdata_curve_quote_coverage_fn;
 drop function if exists ores_marketdata_curve_pillar_series_uri_fn;
+drop function if exists ores_marketdata_curve_is_date_fn;

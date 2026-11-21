@@ -53,6 +53,13 @@ constexpr int fixing_history_days = 520;
 /// How many fixings one write carries.
 constexpr std::size_t fixing_write_batch = 500;
 
+/// How the writer waits for a market data service that does not answer.
+ores::service::service::reconciler_options writer_reconciler() {
+    return {.name = "fixing history",
+            .first_delay = std::chrono::seconds(1),
+            .max_delay = std::chrono::seconds(60)};
+}
+
 /// How wide a window the read of the days already held asks for.
 constexpr int held_window_days = 800;
 
@@ -67,7 +74,7 @@ fixing_history_writer::fixing_history_writer(const ores::database::context& db_c
                                              ores::nats::service::nats_client& svc_nats)
     : db_ctx_(db_ctx)
     , svc_nats_(svc_nats)
-    , thread_([this] { run(); }) {}
+    , reconciler_(writer_reconciler(), [this] { return write_pending(); }) {}
 
 fixing_history_writer::~fixing_history_writer() {
     stop();
@@ -76,42 +83,50 @@ fixing_history_writer::~fixing_history_writer() {
 void fixing_history_writer::enqueue(feed::ir_curve_feed::fixing_plan plan) {
     {
         std::lock_guard lock(mu_);
-        if (stopping_)
-            return;
-        queued_.push_back(std::move(plan));
+        auto key = plan.index_uri;
+        pending_[std::move(key)] = {.plan = std::move(plan), .generation = ++generation_};
     }
-    ready_.notify_one();
+    reconciler_.kick();
 }
 
 void fixing_history_writer::stop() {
-    {
-        std::lock_guard lock(mu_);
-        stopping_ = true;
-    }
-    ready_.notify_all();
-    if (thread_.joinable())
-        thread_.join();
+    reconciler_.stop();
 }
 
-void fixing_history_writer::run() {
-    while (true) {
-        feed::ir_curve_feed::fixing_plan plan;
-        {
-            std::unique_lock lock(mu_);
-            while (!stopping_ && queued_.empty())
-                ready_.wait(lock);
-            if (queued_.empty())
-                return;
-            plan = std::move(queued_.front());
-            queued_.pop_front();
-        }
-        try {
-            write(plan);
-        } catch (const std::exception& e) {
-            ORES_LOG_SEV(lg(), warn)
-                << "The fixings of '" << plan.index_uri << "' are not written: " << e.what();
-        }
+ores::service::service::reconcile_result fixing_history_writer::write_pending() {
+    std::map<std::string, pending_plan> snapshot;
+    {
+        std::lock_guard lock(mu_);
+        snapshot = pending_;
     }
+
+    std::size_t left = 0;
+    std::string first_reason;
+    for (const auto& [index_uri, entry] : snapshot) {
+        std::expected<void, std::string> written;
+        try {
+            written = write(entry.plan);
+        } catch (const std::exception& e) {
+            written = std::unexpected(std::string(e.what()));
+        }
+        if (!written) {
+            ORES_LOG_SEV(lg(), debug)
+                << "The fixings of '" << index_uri << "' are not written: " << written.error();
+            if (left++ == 0)
+                first_reason =
+                    "the fixings of '" + index_uri + "' are not written: " + written.error();
+            continue;
+        }
+        std::lock_guard lock(mu_);
+        const auto it = pending_.find(index_uri);
+        if (it != pending_.end() && it->second.generation == entry.generation)
+            pending_.erase(it);
+    }
+
+    if (left == 0)
+        return ores::service::service::reconcile_result::finished();
+    return ores::service::service::reconcile_result::pending(std::to_string(left) +
+                                                             " plan(s) left; " + first_reason);
 }
 
 std::expected<boost::uuids::uuid, std::string> fixing_history_writer::system_party() {
@@ -180,36 +195,32 @@ std::set<std::chrono::year_month_day> fixing_history_writer::held_days(
     return {window->dates.begin(), window->dates.end()};
 }
 
-void fixing_history_writer::write(const feed::ir_curve_feed::fixing_plan& plan) {
+std::expected<void, std::string>
+fixing_history_writer::write(const feed::ir_curve_feed::fixing_plan& plan) {
     const auto started = std::chrono::steady_clock::now();
     const auto party = system_party();
-    if (!party) {
-        ORES_LOG_SEV(lg(), warn) << "The fixings of '" << plan.index_uri
-                                 << "' are not written: " << party.error();
-        return;
-    }
+    if (!party)
+        return std::unexpected(party.error());
     const auto held = held_days(plan.index_uri, *party, plan.as_of);
     const auto history = feed::derive_fixing_history(
         plan.level, plan.as_of, fixing_history_days, plan.run_seed, plan.index_uri, held);
     if (!history) {
         ORES_LOG_SEV(lg(), warn) << "The fixings of '" << plan.index_uri
                                  << "' are not stated: " << history.error();
-        return;
+        return {};
     }
     if (history->empty())
-        return;
+        return {};
 
     const auto series = series_for(plan.index_uri, *party);
-    if (!series) {
-        ORES_LOG_SEV(lg(), warn) << "The fixings of '" << plan.index_uri
-                                 << "' have no series: " << series.error();
-        return;
-    }
+    if (!series)
+        return std::unexpected("it has no series: " + series.error());
 
     ores::marketdata::client::market_data_client md(svc_nats_);
     boost::uuids::random_generator ids;
     std::vector<ores::marketdata::messaging::market_fixing_write> batch;
     std::size_t written = 0;
+    std::string store_error;
     const auto flush = [&]() -> bool {
         if (batch.empty())
             return true;
@@ -219,8 +230,7 @@ void fixing_history_writer::write(const feed::ir_curve_feed::fixing_plan& plan) 
                             .commentary = "The fixings a simulated run states for its curves"});
         batch.clear();
         if (!stored) {
-            ORES_LOG_SEV(lg(), warn)
-                << "The fixings of '" << plan.index_uri << "' are not stored: " << stored.error();
+            store_error = "they are not stored: " + stored.error();
             return false;
         }
         written += *stored;
@@ -234,15 +244,16 @@ void fixing_history_writer::write(const feed::ir_curve_feed::fixing_plan& plan) 
                          .value = fixing.value,
                          .source = "synthetic"});
         if (batch.size() >= fixing_write_batch && !flush())
-            return;
+            return std::unexpected(store_error);
     }
     if (!flush())
-        return;
+        return std::unexpected(store_error);
     ORES_LOG_SEV(lg(), info)
         << "Stated " << written << " fixing(s) of '" << plan.index_uri << "' to " << plan.as_of
         << " in "
         << std::chrono::duration<double>(std::chrono::steady_clock::now() - started).count()
         << "s, of " << history->size() << " day(s) the market did not hold";
+    return {};
 }
 
 }

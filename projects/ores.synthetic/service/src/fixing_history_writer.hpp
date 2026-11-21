@@ -22,17 +22,17 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.nats/service/nats_client.hpp"
+#include "ores.service/service/reconciler.hpp"
 #include "ores.synthetic.api/feeds/ir_curve_feed.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
-#include <condition_variable>
-#include <deque>
+#include <cstdint>
 #include <expected>
+#include <map>
 #include <mutex>
 #include <optional>
 #include <set>
 #include <string>
-#include <thread>
 
 namespace ores::synthetic::service {
 
@@ -45,6 +45,12 @@ namespace ores::synthetic::service {
  * where a publisher's own fixings sit, and it is what a party's export falls back to, so
  * every party reads the run's history without the simulator knowing which parties will
  * read it.
+ *
+ * The writes call the market data service, which may not answer yet when the
+ * curves start, or may be away for a while later. A plan stays with the writer
+ * until it is written, and a reconciler runs the plans again with a growing
+ * wait until each one is, so the history does not depend on which service
+ * started first.
  */
 class fixing_history_writer final {
 private:
@@ -61,25 +67,27 @@ public:
     fixing_history_writer& operator=(const fixing_history_writer&) = delete;
 
     /**
-     * @brief Queues @p plan, which a thread of the writer's own writes.
+     * @brief Keeps @p plan until it is written, and asks for a pass now.
      *
-     * The queue is unbounded and never sheds: one plan is one curve's history, so a run that
-     * starts a hundred curves queues a hundred, which the thread writes one after another.
+     * One plan is one curve's history, so a run that starts a hundred curves keeps a hundred.
+     * A later plan for the same index replaces the one before it.
      */
     void enqueue(feed::ir_curve_feed::fixing_plan plan);
 
-    /// Writes what is queued and stops the thread.
+    /// Stops after the pass that is running; the plans not yet written are dropped.
     void stop();
 
 private:
+    /// Writes each plan not yet written, and keeps those that fail.
+    ores::service::service::reconcile_result write_pending();
+
     /**
      * @brief Writes the days of @p plan the index's series does not hold.
      *
-     * A fault is logged and nothing else: a run whose history cannot be written has no
-     * fixings, and the feed it belongs to still ticks.
+     * The error is the reason to try again. A history the plan cannot state is logged and
+     * counts as written, because a second attempt states the same nothing.
      */
-    void write(const feed::ir_curve_feed::fixing_plan& plan);
-    void run();
+    std::expected<void, std::string> write(const feed::ir_curve_feed::fixing_plan& plan);
 
     [[nodiscard]] std::expected<boost::uuids::uuid, std::string> system_party();
     [[nodiscard]] std::expected<boost::uuids::uuid, std::string>
@@ -91,11 +99,17 @@ private:
     ores::database::context db_ctx_;
     ores::nats::service::nats_client& svc_nats_;
     std::optional<boost::uuids::uuid> system_party_;
-    mutable std::mutex mu_;
-    std::condition_variable ready_;
-    std::deque<feed::ir_curve_feed::fixing_plan> queued_;
-    bool stopping_ = false;
-    std::thread thread_;
+
+    struct pending_plan final {
+        feed::ir_curve_feed::fixing_plan plan;
+        /// Which enqueue the plan came from, so a pass removes only the plan it wrote.
+        std::uint64_t generation = 0;
+    };
+    std::mutex mu_;
+    std::map<std::string, pending_plan> pending_;
+    std::uint64_t generation_ = 0;
+    /// Last, so its thread starts after every member it reads and stops before any goes.
+    ores::service::service::reconciler reconciler_;
 };
 
 }

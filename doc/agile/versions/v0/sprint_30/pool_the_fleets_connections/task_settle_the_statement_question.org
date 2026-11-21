@@ -1,0 +1,108 @@
+:PROPERTIES:
+:ID: 5C2A4734-FE8D-4097-9720-31515FA03CA5
+:END:
+#+title: Task: Settle the statement question
+#+description: Named prepared statements work directly and through pgbouncer 1.21 and later, and through nothing else in transaction mode. Measure what keeping them is worth, and decide between the version floor and unnamed statements.
+#+type: task
+#+level: s1
+#+filetags: :pool_the_fleets_connections:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A75C3063-896F-4DD5-A9BC-893A59EDFF7E][Pool the fleet's connections]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The repositories' prepared statements are either kept, with a stated minimum
+pooler version wherever a pooler is used, or sent unnamed, with the planning cost
+measured and accepted. One of the two is decided on evidence, and the other is
+recorded as rejected with the number that rejected it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:A75C3063-896F-4DD5-A9BC-893A59EDFF7E][Pool the fleet's connections]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-21                               |
+
+* Acceptance
+
+- The cost of sending repository statements unnamed is measured: the same
+  statement, the same rows, prepared once and sent unnamed, against a real
+  database, with the numbers recorded on the task.
+- If the measured cost is acceptable, =detail::prepared= stops naming statements
+  and the pooler has no version floor; if it is not, the floor is stated as
+  pgbouncer 1.21 or later with =max_prepared_statements=, and every environment
+  that runs a pooler states its version in one place.
+- The choice is proven through a transaction pooler in both directions: a named
+  statement fails behind a pooler without support, and the chosen arrangement
+  passes.
+- The hand-written SQL path, which already sends unnamed statements, is unchanged
+  by the decision.
+- The decision is recorded in the story, and the number that decided it with it.
+
+* Plan
+
+Both halves need a running pooler, which the host cannot install (no root) and
+which the development environment does not carry yet, so the measurement starts
+from the container or unit that
+[[id:3D23B905-359A-4DE0-9F35-1B047A54385B][Run a pooler beside a shared fleet]]
+builds, or from the pauli image.
+
+The two candidate measurements are a prepared statement executed N times against
+an unnamed one on the same table, timed end to end from the client, and the total
+statement time from =pg_stat_statements= for a provisioning run in each mode. The
+first is cheap and answers the shape; the second is the one that decides, because
+it weighs planning against the mix of statements a service really runs.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

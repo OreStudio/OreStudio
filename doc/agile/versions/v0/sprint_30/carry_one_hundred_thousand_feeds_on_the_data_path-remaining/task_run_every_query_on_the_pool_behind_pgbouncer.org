@@ -44,10 +44,27 @@ the raw helpers set today would leak to that client.
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
 | Parent story | [[id:4AD7DD1A-3E8C-4B97-BC38-149A66F59250][Carry one hundred thousand feeds on the data path — the remaining work]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | Analysed, not started. The first half of the goal is already true; the pooler is blocked on one compatibility question and one exclusion, both stated under Plan. |
+| Waiting on   | A decision on prepared statements (Plan, decision 1). |
+| Next         | Decide the statement name, then build the unit. |
 | Last touched | 2026-10-28                               |
+
+* What is already true, and was not when this task was written
+
+Measured on this tree, 2026-11-20, because the premise had gone stale:
+
+- The raw-SQL helpers no longer open a connection per call. They run through
+  =database::transact=, so they lease from the context's pool or join the unit of
+  work's transaction (=query_builder/query.cpp=, =execute_parameterized_*_query=).
+  The =bitemporal_operations.cpp= this task names does not exist.
+- Nothing sets a tenant, party, actor or timezone at session level. Every one is
+  =set_config(..., true)=, local to the transaction (=pq/transaction.cpp=), which
+  is what makes transaction pooling safe at all.
+- The tasks this one was going to close are ABANDONED because the work landed
+  elsewhere: =Run every hand-written query on a pooled connection= and =Set the
+  tenant context per transaction=.
+
+So the remaining work is the pooler, plus the two compatibility questions below.
 
 * Acceptance
 
@@ -75,9 +92,175 @@ the raw helpers set today would leak to that client.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+** Why bother, in numbers
+
+One PostgreSQL server carries six development databases and =max_connections =
+1500=. A fleet holds its connections for life: the pool opens every connection
+when it is made (=pq/pool.hpp=), and the default size is 2
+(=database_configuration.cpp=, =db-pool-size=, with no =ORES_*_DB_POOL_SIZE= in
+=.env=). Measured with =pg_stat_activity= while the fleets were idle:
+
+| Database | Connections | Idle |
+|----------+-------------+------|
+| ores_dev_clever_dijkstra | 38 | 38 |
+| ores_dev_festive_dijkstra | 37 | 37 |
+| ores_dev_bright_faraday | 13 | 12 |
+
+Thirty-eight idle server connections for one environment that is doing nothing,
+at two a service, and ten environments on one instance is four hundred. In
+transaction mode the same fleet keeps a handful of server connections and
+multiplexes a request at a time onto them; the cap becomes pgbouncer's
+=default_pool_size= and =max_db_connections= rather than a sum of per-service
+sizes nobody can see.
+
+What that is worth, stated as expectation and not as measurement until the unit
+exists: the services' own connections do not shrink - they terminate at the
+pooler instead of at the server - so the whole saving is on the server side.
+
+| | Today | Behind a transaction pooler |
+|--+-------+------------------------------|
+| Server connections, one idle environment | 38, held for life | 0 once =server_idle_timeout= closes them |
+| Server connections, one busy environment | 38, whatever it is doing | at most =max_db_connections=, queued beyond it |
+| Ten environments, idle | about 380 of the server's 1500 | near 0 |
+| Concurrency a service may offer | its pool, 2 | its pool, sized to its work, without touching the server |
+
+The point of the last row is that the two questions separate: a step may run four
+lanes and the service two steps without the server seeing eight backends, and one
+environment can no longer starve another because its ceiling is stated per
+environment rather than summed across services that nobody counts.
+
+** Decision 0: a pooler is a deployment option, never a developer requirement
+
+The problem worth solving is a shared instance carrying ten environments and
+four hundred idle connections. A developer on macOS or Windows with their own
+PostgreSQL has none of it, and asking them to install and run a C daemon to work
+on ORE Studio would spend their time on a problem they do not have. So the
+pooler is chosen per environment and the default is *not* to use one:
+
+- The services read =ORES_<APP>_DB_HOST= and =ORES_<APP>_DB_PORT=, so a pooler
+  is a different host and port and nothing else. Direct and pooled are one
+  switch, not two code paths.
+- The administrative paths - =compass db recreate=, schema restore - connect
+  directly, as this task already says.
+- =postgres_listener_service= keeps its own direct connection for =LISTEN=, so
+  the notification path is identical in both setups.
+- What must hold in both setups is that the code depends on neither. Session
+  settings already do not, because they are =set_config(..., true)=. The one
+  remaining dependency is the named prepared statement, which is decision 1 and
+  the reason it matters: it is the only thing that can force a floor.
+
+The parity risk of a direct dev path and a pooled deployment is real but narrow:
+a behaviour that only appears through the pooler. It is paid for by running the
+suite through a pooler in CI, in transaction mode, so the pooled path is proven
+on every change and no developer has to carry the daemon to find it.
+
+** Decision 1: prepared statements, which is the real blocker
+
+The repositories run *named* prepared statements. =detail::prepared(sql)= keeps a
+per-process cache of =fixed_statement=s named =ores_q_N=, the transaction
+pipeline sends =PQsendPrepare= for a name the client connection has not prepared
+(=pq/transaction.cpp=, =connection::is_prepared=), and hand-written SQL is sent
+unnamed. A name lives on a *server* connection; transaction pooling hands a
+different server connection to the next transaction, so a name the client
+believes is prepared may not exist, and worse, a name is owned by whichever
+client prepared it on a connection both clients share.
+
+Two ways out, and this is the decision to take before the unit is written:
+
+1. *Let pgbouncer track the statements.* pgbouncer 1.21 and later implement
+   prepared-statement support for transaction pooling: the client's
+   =Prepare= and =Bind= are followed by pgbouncer, which re-prepares on the
+   server connection that actually serves the transaction. It needs
+   =max_prepared_statements= set to a non-zero value, and it costs memory per
+   client and a small protocol overhead.
+   Nothing in our code changes, which is most of its appeal.
+2. *Send repository statements unnamed too*, as hand-written SQL already does.
+   Then no name exists to be lost, and any pgbouncer version works. The cost is
+   that PostgreSQL parses and plans every execution, which the named cache was
+   there to avoid, and the benchmark that would say whether that cost is real has
+   not been run.
+
+Recommendation: 1, with 2 as the fallback if an environment cannot carry a
+current pgbouncer, and with the measurement that decides it written into the
+task that does it, not assumed.
+
+** Decision 2: the listener does not go through the pooler
+
+=postgres_listener_service= issues =LISTEN= and =NOTIFY= on its own dedicated
+connection, not one from the pool (=postgres_listener_service.cpp=,
+=connect_utc=), and the event source sits on it. A =LISTEN= belongs to a session,
+so transaction pooling would subscribe a server connection that is handed to
+somebody else on the next commit, and the notifications would arrive nowhere or
+everywhere. The listener therefore keeps a direct connection to PostgreSQL: the
+services' options name the pooler's port, and the listener's name PostgreSQL's.
+=pgbouncer= can also serve a second database entry in session mode for it, but a
+direct connection is one setting and no second pool.
+
+The administrative paths the task already names - =compass db recreate=, the
+schema restore - connect directly for the same reason.
+
+** Decision 3: pool sizes become client limits, so they are sized with the pooler
+
+This is why the pool-sizing task under
+[[id:A4D0E305-CEF6-4684-ABBA-0D09657479F1][Keep workflow steps alive while they
+work, and off iam]] has to be taken with this one rather than before it. Today
+=db-pool-size= is simultaneously the service's concurrency and its share of the
+server's =max_connections=, because a pooled connection *is* a server
+connection. Behind a transaction pooler the two separate:
+
+- the service's =db-pool-size= is how many statements it may have in flight;
+- pgbouncer's =default_pool_size= and =max_db_connections= are the server's
+  budget, per database and per environment.
+
+So the lanes a step runs (four, in the surfaces and curves and forwards steps)
+and the step workers a service runs (two, =provisioning_step_registrar.cpp=)
+argue for a *larger* client pool than two, while the server connection count is
+capped and shared. Sizing the pool before the pooler lands would size it to the
+wrong constraint, which is why that task is waiting on this one.
+
+** Where the binary comes from, which is not a detail
+
+The images are already "the smallest base that carries this kind of program",
+and none of them is Debian at runtime:
+
+| Image | Runtime base |
+|-------+--------------|
+| =nats.Dockerfile= | =scratch= (static Go binary; Debian is only the extract stage) |
+| =service-base.Dockerfile= | =cgr.dev/chainguard/glibc-dynamic= (our C++ binaries, glibc) |
+| =service-web.Dockerfile= | =alpine:3.22= (node) |
+
+=pgbouncer= links nothing of ours - it speaks the PostgreSQL protocol to the
+server and is a C program with libevent, OpenSSL and c-ares - so a musl base is
+safe for it, and Alpine is the consistent choice:
+
+| Source | Version | Prepared statements |
+|--------+---------+---------------------|
+| =alpine:3.22= (community) | 1.24.0 | yes (1.21 and later) |
+| =alpine:edge= | 1.25.2 | yes |
+| =debian:bookworm-slim= | 1.18.0 | **no** |
+| the development host (sid) | 1.26.1 | yes |
+
+So the container is an =alpine= image with =apk add pgbouncer=, about 410 KiB
+installed, and its configuration under =build/config/= as the task already says.
+The development environments run the services as systemd units rather than in
+containers, so there the binary is the host package; the floor is the same in
+both places, pgbouncer 1.21, and that floor exists only if decision 1 goes the
+pooler-tracks-statements way. If the statements go unnamed, any version works
+and bookworm's 1.18 would do.
+
+** What to build
+
+1. The compatibility decision above, with its evidence.
+2. A pgbouncer unit per environment: =compass systemd generate= emits it, it
+   joins =ores-<env>.target=, starts before every service unit, and its
+   configuration lives under =build/config/= with its port in the environment's
+   =.env=. Transaction mode, =max_prepared_statements= per decision 1, and a
+   =default_pool_size= / =max_db_connections= that states the server's budget.
+3. The services' connection options name the pooler's port; the listener's and
+   the administrative paths' name PostgreSQL's.
+4. The proof: =pg_stat_activity= shows the fleet's connections arriving from
+   pgbouncer and the count of them dropping to the cap; a full build, ctest and
+   fleet start; Acme provisioning completing; no ERROR or FATAL in the journal.
 
 * Measurements
 

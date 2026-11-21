@@ -1,0 +1,103 @@
+:PROPERTIES:
+:ID: 83C4FD4E-888C-4C3F-BE3D-50136487B458
+:END:
+#+title: Task: Prove the pooled path in CI
+#+description: Developers keep a direct connection, so the pooled path is only proven if something runs it. One CI job runs the marketdata suite through a transaction pooler on every change.
+#+type: task
+#+level: s1
+#+filetags: :pool_the_fleets_connections:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A75C3063-896F-4DD5-A9BC-893A59EDFF7E][Pool the fleet's connections]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+One CI job runs the marketdata service suite through a transaction pooler in
+front of the test database, so a change that only works without a pooler fails on
+the pull request rather than on a shared host.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:A75C3063-896F-4DD5-A9BC-893A59EDFF7E][Pool the fleet's connections]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-21                               |
+
+* Acceptance
+
+- The job starts a pooler in transaction mode against the test database, with the
+  configuration the shared-fleet task states, and runs the affected suite through
+  it.
+- The job runs on every pull request that touches the database layer, the services
+  or the test suite, and is not optional.
+- It fails when the prepared-statement decision is violated: with named statements
+  and a pooler below the floor, or with unnamed statements configured as named.
+- The default path stays direct: a developer runs the suite with no pooler
+  installed, and CI's ordinary job still does too.
+- The job's own cost is recorded, because a check nobody waits for is a check
+  nobody runs.
+
+* Plan
+
+The pooler is the container the pauli task builds, run by the CI job against the
+same PostgreSQL service the other jobs use - no new service to install on the
+runners, and the same image the deployment runs, so the job proves the artifact
+and not a substitute.
+
+Which suite is the first candidate: =ores.marketdata.service.tests=, because it
+exercises the repositories, the transactions and the listener's neighbour paths,
+and is the suite the connection work was measured against. The job widens to the
+other suites once its cost is known.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

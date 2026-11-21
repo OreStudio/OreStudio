@@ -1,0 +1,113 @@
+:PROPERTIES:
+:ID: CE661B08-A485-4326-9558-3AE58C5208CD
+:END:
+#+title: Task: Make the pool grow and shrink
+#+description: The pool opens everything it will ever open when it is made, so two connections is a ceiling on concurrency rather than a cushion. Give it a floor and a burst ceiling, and close what a burst leaves idle.
+#+type: task
+#+level: s1
+#+filetags: :pool_the_fleets_connections:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A75C3063-896F-4DD5-A9BC-893A59EDFF7E][Pool the fleet's connections]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A service's pool has a floor it keeps and a ceiling a burst may reach. When
+callers wait and the ceiling is above the floor, the pool opens a connection; when
+a connection above the floor has been idle for a while, the pool closes it. A step
+that runs two steps and four lanes gets the connections it asks for, and an idle
+service holds only its floor.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:A75C3063-896F-4DD5-A9BC-893A59EDFF7E][Pool the fleet's connections]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-21                               |
+
+* Acceptance
+
+- The pool takes two numbers: the connections it keeps and the ceiling it may
+  burst to, with the ceiling never below the floor.
+- A connection is opened only when a caller is waiting for one and the ceiling
+  permits it, so an idle service opens none beyond its floor.
+- A connection above the floor is closed after an idle period, which is stated
+  and configurable, and the pool never closes a connection it is leasing.
+- A pool at its ceiling still fails its caller with the retryable "no connection
+  came free" error, and the ceiling is large enough that a service's own work does
+  not reach it: step workers times lanes, plus the handler work beside them.
+- The number each service asks for is stated in its =.env=, and a service whose
+  work grows states a larger ceiling without changing code.
+- The unit tests state the growth, the reap and the ceiling, including a burst
+  that empties the pool and a floor that is never closed.
+- The marketdata service runs a provisioning step with its four lanes and records
+  no acquisition failure where it previously recorded one.
+
+* Plan
+
+=pq::pool= is one class with one mutex, one condition variable and a vector of
+idle connections; its constructor opens everything and =acquire= only waits. The
+change is local: open on demand up to the ceiling, timestamp a connection when it
+is given back, and reap above the floor on acquire or on a small timer.
+
+The settings replace =db-pool-size= with a floor, a ceiling and an idle period,
+read the way the others are (=ORES_<APP>_DB_POOL_*=), keeping a single-number
+form working as "floor = ceiling = that number" so an environment that states one
+number keeps its meaning.
+
+Sizing is the other half and belongs with
+[[id:06195DFF-0D7C-4298-A0CF-464338CE728E][Size the connection pool and the
+step's lanes together]], which owns the numbers this task only carries.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

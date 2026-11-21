@@ -1,0 +1,117 @@
+:PROPERTIES:
+:ID: 3D23B905-359A-4DE0-9F35-1B047A54385B
+:END:
+#+title: Task: Run a pooler beside a shared fleet
+#+description: Where several environments share one PostgreSQL, the fleet's connections terminate at a pooler that caps what reaches the server. A systemd unit and a configuration, with the listener and the administrative paths left direct.
+#+type: task
+#+level: s1
+#+filetags: :pool_the_fleets_connections:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A75C3063-896F-4DD5-A9BC-893A59EDFF7E][Pool the fleet's connections]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A host that shares its PostgreSQL between environments runs a pooler in
+transaction mode beside the fleet, its ports in the environment's =.env=, and the
+services reach PostgreSQL through it. The server sees the pooler's cap rather than
+the sum of every service's pool, and an idle environment closes the connections it
+is not using.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:A75C3063-896F-4DD5-A9BC-893A59EDFF7E][Pool the fleet's connections]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-21                               |
+
+* Acceptance
+
+- The pooler is a unit of each environment, generated with the fleet's units,
+  part of =ores-<env>.target=, and started before every service unit.
+- Its configuration lives under =build/config/= with the rest, and states the
+  transaction mode, the prepared-statement support the statement task decided,
+  =default_pool_size=, =max_db_connections= and an idle server timeout, so the
+  server's budget is one number a reader can find.
+- The services' connection options name the pooler's port; the listener's and the
+  administrative paths' name PostgreSQL's, and both are stated in the
+  environment's =.env=.
+- A full build, ctest and fleet start are green, Acme provisioning completes, and
+  the journal has no ERROR or FATAL line.
+- =pg_stat_activity= shows the fleet's connections arriving from the pooler, and
+  the count of them settling to the cap and to nothing when the fleet is idle.
+- The measured before and after are recorded on the task: connections per
+  environment, idle and at peak.
+- An environment without the pooler still starts, so the direct path is not
+  broken by this change.
+
+* Plan
+
+The unit follows the shape =systemd_generate.py= already emits for NATS
+(=_nats_unit= and its template, lines around 397-442): a =Type=simple= unit, a
+port check in the start path, an =ExecStart= built from the checkout, and
+=After=/=Wants= wiring so the services are ordered behind it. The difference is
+that the services' units already start after NATS, so the pooler joins that same
+ordering.
+
+Where the binary comes from for a development host: the host package
+(=apt install pgbouncer=), pinned by version in the unit's documentation, because
+this host runs services as systemd units rather than containers - the container
+is pauli's task. The version floor is whatever the statement task decided.
+
+Verification is deliberately about the server: the connection count from
+=pg_stat_activity= grouped by =datname= and =client_addr=, before and after, idle
+and during a provisioning run.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

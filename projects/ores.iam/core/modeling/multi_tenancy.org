@@ -373,9 +373,11 @@ settings.
 
 * Connection Pool Architecture
 
-One pool serves every tenant and party. Each service process holds a few
-long-lived connections to pgbouncer, which runs in transaction pooling mode in
-front of PostgreSQL:
+One pool serves every tenant and party. Each service process holds a floor of
+long-lived connections and may burst above it to the concurrency its work has,
+opened to the address its configuration states: PostgreSQL directly, or a pooler
+in transaction pooling mode where the database is shared with other environments
+([[id:929A4722-8F06-4DEF-B759-D0800D4AC6D5][A pooler stands where the database is shared]]):
 
 #+begin_example
   request 1 (tenant AAA)   request 2 (tenant BBB)   request 3 (tenant CCC)
@@ -387,11 +389,12 @@ front of PostgreSQL:
                                    │ lease a connection for one transaction
                                    ▼
   ┌──────────────────────────────────────────────────────────────────┐
-  │ pq::pool: a few long-lived connections per service               │
+  │ pq::pool: a floor kept, a ceiling for bursts, per service        │
   └────────────────────────────────┬─────────────────────────────────┘
                                    ▼
   ┌──────────────────────────────────────────────────────────────────┐
-  │ pgbouncer (transaction pooling)                                  │
+  │ where the database is shared: a pooler in transaction mode       │
+  │ (absent on a developer's own database)                           │
   └────────────────────────────────┬─────────────────────────────────┘
                                    ▼
   begin; set_config('app.current_tenant_id', 'AAA', true); ...; commit
@@ -399,8 +402,9 @@ front of PostgreSQL:
 
 This architecture provides:
 
-- Efficient use of server connections: pgbouncer bounds them for the whole
-  fleet, and no tenant needs a connection of its own.
+- Efficient use of server connections: where a pooler stands it bounds them for
+  the whole fleet, and no tenant needs a connection of its own; where none stands
+  the service's own floor and burst are the only connections there are.
 - Tenant isolation through RLS: each transaction sets its own context.
 - Thread safety: each request holds its own immutable context copy, and a
   leased connection serves one transaction at a time.
@@ -595,9 +599,12 @@ first statement.
 ** Connection Pool
 
 - One pool per service process, shared by every tenant and party.
-- The pool opens its connections at startup and keeps them. No query opens a
-  connection.
-- pgbouncer bounds the server connections of the whole fleet.
+- The pool keeps a floor of connections and may open more up to a ceiling its
+  work needs, closing what a burst leaves idle. No query opens a connection.
+- Where the database is shared with other environments, a pooler bounds the
+  server connections of the whole fleet; where it is not, the service's own floor
+  and ceiling are the only connections there are
+  ([[id:929A4722-8F06-4DEF-B759-D0800D4AC6D5][A pooler stands where the database is shared]]).
 - RLS handles isolation at the query level.
 
 * Tenant Isolation Guarantees

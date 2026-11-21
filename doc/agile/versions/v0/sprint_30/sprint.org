@@ -143,6 +143,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:23FBE0B5-A263-49B8-90F5-B45B42DD46F1][Split the types that carry too many columns — the remaining work]] | BACKLOG | | | The persisted types hold 30 to 60 flat columns, which the data-oriented model forbids. Inventory them, decide which are one aggregate over several components, and split those into components of their own. |
 | [[id:4FCC628C-551E-4F7C-B1D7-69546174A9CD][Keep main green]] | BACKLOG | | | Main breaks often because every PR lands untested on main. PRs merge into dev; CI fast-forwards integration on a green continuous Linux run and main on a green nightly, so developers start from green and main only goes from green to green. |
 | [[id:F3AB6302-3325-4BDF-8106-70E0168C40F9][Make the build faster]] | BACKLOG | | | A continuous Linux build takes 42 to 90 min on a 4-core runner with a 38% cache hit rate and a 24-min compile unit. Tune unity batches, remove compile hot spots and setup cost, and measure whether an advisory PR build can fit. |
+| [[id:A75C3063-896F-4DD5-A9BC-893A59EDFF7E][Pool the fleet's connections]] | BACKLOG | | | Every service holds a fixed few connections and a burst starves it, while a shared PostgreSQL carries hundreds of idle ones. One approach covers both: an elastic pool on the client, a pooler where connections are shared, and a container for pauli. |
 
 ** Hotfixes
 

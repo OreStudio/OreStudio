@@ -1,0 +1,141 @@
+:PROPERTIES:
+:ID: A75C3063-896F-4DD5-A9BC-893A59EDFF7E
+:END:
+#+title: Story: Pool the fleet's connections
+#+description: Every service holds a fixed few connections and a burst starves it, while a shared PostgreSQL carries hundreds of idle ones. One approach covers both: an elastic pool on the client, a pooler where connections are shared, and a container for pauli.
+#+type: story
+#+level: s2
+#+filetags: :sprint_30:v0:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+#+environment: merry_newton
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A service gets the connections its work needs, and the database carries only
+what it can. The fleet's connection behaviour is one documented approach with two
+settings rather than two code paths: a service's pool states the connections it
+keeps and the ones a burst may reach, and where several environments share one
+PostgreSQL a pooler stands between them and the server. A developer's own
+database needs neither, and pauli runs the fleet as containers, the pooler among
+them.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
+| Now           | The approach is settled and the tasks are cut. The first is the documentation, because the target state is what the rest is measured against. |
+| Waiting on    | Nothing.                               |
+| Next          | [[id:C06698BB-529F-40B8-80B2-9EB57C1B3780][Document the connection approach]]. |
+| Last touched  | 2026-11-21                               |
+
+* Acceptance
+
+- A service's pool keeps a few connections and may burst to the concurrency its
+  work has, closing what it no longer needs, so a burst does not starve a step
+  and an idle service holds only its floor.
+- Where a pooler stands in front of a shared PostgreSQL, the server sees the
+  pooler's cap and not the sum of every service's pool; where none stands, a
+  developer's database sees the service's own floor and burst and nothing else.
+- The listener and the administrative paths never pass through a pooler.
+- The pooler is deployed to pauli as a container beside the fleet, and to a
+  shared development host as a unit, from one configuration.
+- The pooled path is exercised on every change, so the direct path developers use
+  is not a blind spot.
+- The knowledge graph states all of the above as the current state, and a reader
+  who has never seen this work can say which connections a service holds, why,
+  and what to change to hold fewer.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:C06698BB-529F-40B8-80B2-9EB57C1B3780][Document the connection approach]] | BACKLOG | | | State where the fleet lands: which connections a service keeps and which it may burst to, what a pooler does where the database is shared, and why a developer's own database needs neither. Knowledge pages, written as the target state. |
+| [[id:CE661B08-A485-4326-9558-3AE58C5208CD][Make the pool grow and shrink]] | BACKLOG | | | The pool opens everything it will ever open when it is made, so two connections is a ceiling on concurrency rather than a cushion. Give it a floor and a burst ceiling, and close what a burst leaves idle. |
+| [[id:5C2A4734-FE8D-4097-9720-31515FA03CA5][Settle the statement question]] | BACKLOG | | | Named prepared statements work directly and through pgbouncer 1.21 and later, and through nothing else in transaction mode. Measure what keeping them is worth, and decide between the version floor and unnamed statements. |
+| [[id:3D23B905-359A-4DE0-9F35-1B047A54385B][Run a pooler beside a shared fleet]] | BACKLOG | | | Where several environments share one PostgreSQL, the fleet's connections terminate at a pooler that caps what reaches the server. A systemd unit and a configuration, with the listener and the administrative paths left direct. |
+| [[id:24C47B49-2A5C-42D0-87C2-5E514D8BC9B3][Package the pooler for pauli]] | BACKLOG | | | pauli runs the fleet as podman containers pulled from the registry, NATS among them. The pooler joins it: an image, a configuration, and the services' options pointing at it. |
+| [[id:83C4FD4E-888C-4C3F-BE3D-50136487B458][Prove the pooled path in CI]] | BACKLOG | | | Developers keep a direct connection, so the pooled path is only proven if something runs it. One CI job runs the marketdata suite through a transaction pooler on every change. |
+
+* Decisions
+
+- *A pooler is a deployment option, never a developer requirement, 2026-11-21.*
+  The problem is a shared instance carrying many environments and hundreds of
+  idle connections; a developer with their own PostgreSQL has none of it. The
+  services read =ORES_<APP>_DB_HOST= and =DB_PORT=, so a pooler is a different
+  host and port and nothing else, direct and pooled are one switch, and the
+  default is direct. The parity risk - a behaviour that only appears through the
+  pooler - is paid for by running the suite through one in CI rather than by
+  asking every developer to install a daemon for a problem they do not have.
+- *The pool asks for a burst, not for a bigger number, 2026-11-21.* The pool
+  opens every connection in its constructor and never opens another, so the size
+  is a ceiling on concurrency rather than a cushion: two connections against two
+  step workers and four lanes met =No connection came free within the acquire
+  timeout=, and the answer at the time was a retry. The pool states a floor and a
+  burst ceiling instead, and closes what a burst leaves idle. Raising the single
+  number for everyone is rejected: it keeps every connection for life and
+  multiplies by every service in every environment.
+- *The saving is server side only, 2026-11-21.* A service's connections do not
+  shrink; they stop terminating at PostgreSQL. Measured on this host, one idle
+  environment held 38 server connections, two a service, against
+  =max_connections = 1500= shared by six development databases. Behind a
+  transaction pooler the same fleet keeps a handful and closes them when idle,
+  and the ceiling is stated per environment instead of summed across services
+  nobody counts.
+- *The two questions separate behind a pooler, 2026-11-21.* While a pooled
+  connection is a server connection, =db-pool-size= answers both "how much
+  concurrency may this service have" and "how much of the server may it take".
+  Behind a pooler the first is the service's - workers times lanes, plus the
+  handler work beside them - and the second is the pooler's =default_pool_size=
+  and =max_db_connections=. The pool may then be sized to the work without the
+  server seeing it, which is the whole reason a pooler is worth its operational
+  cost on a shared host and nowhere else.
+- *Named prepared statements decide the version floor, 2026-11-21.* The
+  repositories run named prepared statements, cached per client connection and
+  sent with =PQsendPrepare= when a connection has not prepared them. A name lives
+  on a server connection, so transaction pooling loses it unless the pooler
+  tracks it: pgbouncer 1.21 and later do, with =max_prepared_statements=; PgCat's
+  transaction mode does not, and neither does pgbouncer 1.18. Sending repository
+  statements unnamed, as hand-written SQL already does, removes the floor at the
+  cost of planning every execution. The task that takes this measures the cost
+  rather than assuming it.
+- *The listener and the administrative paths stay direct, 2026-11-21.*
+  =postgres_listener_service= holds a session to =LISTEN=, which transaction
+  pooling would hand to somebody else at the next commit, and =compass db
+  recreate= and the schema restore are not request traffic. They name
+  PostgreSQL's port while the services name the pooler's.
+- *pauli gets a container, a shared development host gets a unit, 2026-11-21.*
+  pauli runs the fleet as podman containers pulled from the registry, NATS
+  among them, so the pooler joins it the same way: an image, a configuration, and
+  the services' options pointing at it. A development host that shares its
+  PostgreSQL runs the same binary as a systemd unit. One configuration serves
+  both, and a developer's machine runs neither.
+
+* Related
+
+- [[id:06195DFF-0D7C-4298-A0CF-464338CE728E][Size the connection pool and the step's lanes together]] — the numbers
+  this story's ceiling is derived from: step workers times lanes, plus the handler
+  work beside them.
+- [[id:29333023-8206-4B41-9190-10D15ED3FA6A][Run every query on the pool behind pgbouncer]] — the same goal, stated in the
+  data-path story and owned by another environment. Its premise has partly
+  landed (the raw helpers already run through =database::transact= and every
+  setting is transaction-local), and what remains is cut into the tasks here; that
+  task should be retired in favour of them by whoever owns it.
+- [[id:C5D5D60F-54F3-4C34-A3B6-1294DBA743C1][Cap server connections across environments with a transaction pooler]] — abandoned,
+  and this story is how its goal is met: the cap is the pooler's, not a task of
+  its own.
+
+* Out of scope
+
+- Read replicas, load balancing and sharding. A single pooler in transaction mode
+  answers the connection problem; routing is a different one.
+- PgBouncer's own high availability, and a second pooler per host.
+- Moving the tests onto a pooler as their default. They run directly, and one CI
+  job runs them through a pooler.
+- The abandoned =cap server connections across environments= task, whose goal
+  this story meets by other means; it stays abandoned rather than revived.

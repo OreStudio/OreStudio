@@ -26,11 +26,11 @@ A full build of main compiles every target again, and the two raise functions ag
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:F3C78A53-A522-438B-96C7-7928E04B7719][Hotfix: Main stops at the surface set test]] |
-| Now          | The discarded result is marked and the sibling raise is nodiscard. |
-| Waiting on   | A build of the marketdata service tests. |
-| Next         | Build the target, then open the PR.    |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
 | Last touched | 2026-11-21                               |
 
 * Acceptance
@@ -78,6 +78,7 @@ task and name that file in the Command column.
 |------+-------+---------+--------|
 | Call sites of the two raise functions that discard the result | 2 | =grep -rn "raise_surface_publish_set\|raise_publish_request_set" --include=*.cpp --include=*.hpp projects= | 732fc2ee34 |
 | Call sites of the two raise functions in total | 6 | as above | 732fc2ee34 |
+| Targets built of the marketdata service tests | 144 of 144, in 0:01:40 | =compass build ores.marketdata.service.tests= | d0a9d1d3ae |
 
 * Notes
 
@@ -117,3 +118,21 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The marketdata service tests build again: 144 of 144 targets, in 1 minute 40
+seconds, ending at =publish/bin/ores.marketdata.service.tests=
+(=compass build ores.marketdata.service.tests=, commit =d0a9d1d3ae=).
+
+Three lines changed:
+
+- =app_published_surface_tests.cpp= casts the raise it does not read to
+  =void=, with a comment saying why: the refusal is the assertion.
+- =curve_publish_gate.hpp= marks =raise_publish_request_set= =nodiscard=,
+  matching =raise_surface_publish_set= in the surface service.
+- =app_curve_publish_gate_tests.cpp= casts its own unread raise to =void=,
+  which the new attribute makes necessary.
+
+What this does not prove: the suite was compiled, not run. The change is a
+compile-time attribute and two =void= casts, so the build is the evidence
+the acceptance asks for.
+

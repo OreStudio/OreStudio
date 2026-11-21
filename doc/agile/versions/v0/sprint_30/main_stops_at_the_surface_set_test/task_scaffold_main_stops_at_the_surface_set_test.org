@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:F3C78A53-A522-438B-96C7-7928E04B7719][Hotfix: Main stops at the surface set test]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-21                               |
 
 * Acceptance
@@ -83,3 +83,8 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The hotfix story exists, is wired into Sprint 30's =** Stories= table, and
+carries the one task that makes the fix. The work landed in the same branch,
+=hotfix/main-stops-at-the-surface-set-test=, as the runbook asks: the
+scaffold is one commit and the fix is the next.

@@ -23,9 +23,9 @@ A full build of main compiles every target again, and the two raise functions ag
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
-| Now           | The fix is made and the two raises agree; a build of the target is the evidence still owed. |
+| Now           | Both tasks are done and the target builds; the PR is the last step. |
 | Waiting on    | Nothing.                               |
-| Next          | [[id:E1FB7EF9-EDA5-4596-9A79-B6F66020194F][Discard the raise result the surface set test does not read]]. |
+| Next          | Merge, so main compiles again.         |
 | Last touched  | 2026-11-21                               |
 
 * Acceptance
@@ -37,7 +37,7 @@ A full build of main compiles every target again, and the two raise functions ag
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:1B5328BF-1066-43D6-A730-DC9C8E770590][Scaffold story: Hotfix: Main stops at the surface set test]] | STARTED | 2026-11-21 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:1B5328BF-1066-43D6-A730-DC9C8E770590][Scaffold story: Hotfix: Main stops at the surface set test]] | DONE | 2026-11-21 | 2026-11-21 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:E1FB7EF9-EDA5-4596-9A79-B6F66020194F][Discard the raise result the surface set test does not read]] | STARTED | 2026-11-21 | | Initial task for: Hotfix: Main stops at the surface set test |
 
 * Decisions

@@ -1,0 +1,244 @@
+:PROPERTIES:
+:ID: 424D435E-B5A9-5042-8D95-615970844601
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: http_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I call the series_identity_shapes endpoints over HTTP?
+#+description: Every endpoint the series_identity_shapes resource answers over HTTP, with the request each one exports into the gateway's recipe library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:http:series_identity_shapes:
+
+This file documents the series_identity_shapes resource over HTTP, one section per endpoint. Every section exports its own Hurl file into =projects/ores.http/scripts/library/=. Running a file sends that one request, so a failure names the endpoint it came from.
+
+* Endpoints
+
+** =GET /api/v1/market-data/series_identity_shapes=
+:PROPERTIES:
+:ID: 9C1B08EC-E1D8-5E3E-8055-3D8DC223F981
+:END:
+
+List series identity shapes. It needs a session.
+
+It forwards to =marketdata.v1.series_identity_shapes.list=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/market-data/series_identity_shapes
+#+end_example
+
+#+name: series_identity_shapes-list
+#+begin_src hurl :tangle series_identity_shapes-list.hurl :exports none
+GET {{base_url}}/api/v1/market-data/series_identity_shapes
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/market-data/series_identity_shapes/__none__=
+:PROPERTIES:
+:ID: ED07983A-FE95-5231-96D9-C87ECEB005FF
+:END:
+
+Get one series identity shape. It needs a session.
+
+It forwards to =marketdata.v1.series_identity_shapes.get=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/market-data/series_identity_shapes/__none__
+#+end_example
+
+#+name: series_identity_shapes-get
+#+begin_src hurl :tangle series_identity_shapes-get.hurl :exports none
+GET {{base_url}}/api/v1/market-data/series_identity_shapes/__none__
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/market-data/series_identity_shapes/get-many=
+:PROPERTIES:
+:ID: 9E528860-3455-5D12-B28B-B5EAF3803BCE
+:END:
+
+Get many series identity shapes. It needs a session.
+
+It forwards to =marketdata.v1.series_identity_shapes.get_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/market-data/series_identity_shapes/get-many
+#+end_example
+
+#+name: series_identity_shapes-get-many
+#+begin_src hurl :tangle series_identity_shapes-get-many.hurl :exports none
+POST {{base_url}}/api/v1/market-data/series_identity_shapes/get-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/market-data/series_identity_shapes=
+:PROPERTIES:
+:ID: 23B1495C-A0DA-5AD1-BEED-625F9B6D9D5E
+:END:
+
+Create one series identity shape. It needs a session.
+
+It forwards to =marketdata.v1.series_identity_shapes.put=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/market-data/series_identity_shapes
+#+end_example
+
+#+name: series_identity_shapes-add
+#+begin_src hurl :tangle series_identity_shapes-add.hurl :exports none
+POST {{base_url}}/api/v1/market-data/series_identity_shapes
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =PUT /api/v1/market-data/series_identity_shapes=
+:PROPERTIES:
+:ID: E23C7351-577D-52CD-B032-A85673F8185F
+:END:
+
+Replace one series identity shape. It needs a session.
+
+It forwards to =marketdata.v1.series_identity_shapes.put=.
+
+The request is:
+
+#+begin_example
+PUT /api/v1/market-data/series_identity_shapes
+#+end_example
+
+#+name: series_identity_shapes-set
+#+begin_src hurl :tangle series_identity_shapes-set.hurl :exports none
+PUT {{base_url}}/api/v1/market-data/series_identity_shapes
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/market-data/series_identity_shapes/put-many=
+:PROPERTIES:
+:ID: C0B37870-AE63-5D9A-B3B8-76C1C176340B
+:END:
+
+Write many series identity shapes. It needs a session.
+
+It forwards to =marketdata.v1.series_identity_shapes.put_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/market-data/series_identity_shapes/put-many
+#+end_example
+
+#+name: series_identity_shapes-put-many
+#+begin_src hurl :tangle series_identity_shapes-put-many.hurl :exports none
+POST {{base_url}}/api/v1/market-data/series_identity_shapes/put-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =DELETE /api/v1/market-data/series_identity_shapes/__none__=
+:PROPERTIES:
+:ID: 3971E8EB-E971-54BA-846B-11CD0AC436EE
+:END:
+
+Delete one series identity shape. It needs a session.
+
+It forwards to =marketdata.v1.series_identity_shapes.delete=.
+
+The request is:
+
+#+begin_example
+DELETE /api/v1/market-data/series_identity_shapes/__none__
+#+end_example
+
+#+name: series_identity_shapes-delete
+#+begin_src hurl :tangle series_identity_shapes-delete.hurl :exports none
+DELETE {{base_url}}/api/v1/market-data/series_identity_shapes/__none__
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/market-data/series_identity_shapes/delete-many=
+:PROPERTIES:
+:ID: 6C2E2CF9-CD4D-5A20-BE80-52F21E88EEF3
+:END:
+
+Delete many series identity shapes. It needs a session.
+
+It forwards to =marketdata.v1.series_identity_shapes.delete_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/market-data/series_identity_shapes/delete-many
+#+end_example
+
+#+name: series_identity_shapes-delete-many
+#+begin_src hurl :tangle series_identity_shapes-delete-many.hurl :exports none
+POST {{base_url}}/api/v1/market-data/series_identity_shapes/delete-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/market-data/series_identity_shapes/__none__/versions=
+:PROPERTIES:
+:ID: 119E011C-E701-538A-BC11-935C62EFE88D
+:END:
+
+List the recorded versions of one series identity shape. It needs a session.
+
+It forwards to =marketdata.v1.series_identity_shapes_versions.list=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/market-data/series_identity_shapes/__none__/versions
+#+end_example
+
+#+name: series_identity_shapes-versions
+#+begin_src hurl :tangle series_identity_shapes-versions.hurl :exports none
+GET {{base_url}}/api/v1/market-data/series_identity_shapes/__none__/versions
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/market-data/series_identity_shapes/__none__/versions/0=
+:PROPERTIES:
+:ID: 5A7FAF31-9138-5DE2-BD9D-AD99CF95FAE9
+:END:
+
+Get one recorded version of one series identity shape. It needs a session.
+
+It forwards to =marketdata.v1.series_identity_shapes_versions.get=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/market-data/series_identity_shapes/__none__/versions/0
+#+end_example
+
+#+name: series_identity_shapes-version
+#+begin_src hurl :tangle series_identity_shapes-version.hurl :exports none
+GET {{base_url}}/api/v1/market-data/series_identity_shapes/__none__/versions/0
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+

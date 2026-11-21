@@ -26,6 +26,10 @@ set(files
     "oresmd_routes_tests.cpp"
     "public_rate_routes_tests.cpp"
     "quote_routes_tests.cpp"
+    "series_identity_shape_entry_routes_tests.cpp"
+    "series_identity_shape_entry_web_routes_tests.cpp"
+    "series_identity_shape_routes_tests.cpp"
+    "series_identity_shape_web_routes_tests.cpp"
     "series_routes_tests.cpp"
     "subscription_routes_tests.cpp"
 )

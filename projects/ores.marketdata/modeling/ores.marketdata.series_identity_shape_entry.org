@@ -1,11 +1,16 @@
 :PROPERTIES:
 :ID: 31ADA72E-B724-40A0-8360-8348B8FE4439
 :ores.cpp.wire-codec.enabled: true
+:ores.cpp.http-route.enabled: true
 :END:
 #+title: ores.marketdata.series_identity_shape_entry
 #+description: One identity field an identity shape requires or forbids, stated as data so the writer can refuse a row that misses one.
 #+type: ores.codegen.entity
 #+component: marketdata
+#+http_area: market-data
+#+web_area: refdata
+#+web_resource: series-identity-shape-entries
+#+web_list_by: shape_code
 #+filetags: :model:entity:marketdata:
 #+entity_singular: series_identity_shape_entry
 #+entity_plural: series_identity_shape_entries

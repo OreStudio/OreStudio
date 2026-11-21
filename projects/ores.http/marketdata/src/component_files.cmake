@@ -27,6 +27,10 @@ set(files
     "routes/marketdata/public_rate_routes.cpp"
     "routes/marketdata/quote_board.cpp"
     "routes/marketdata/quote_routes.cpp"
+    "routes/marketdata/series_identity_shape_entry_routes.cpp"
+    "routes/marketdata/series_identity_shape_entry_web_routes.cpp"
+    "routes/marketdata/series_identity_shape_routes.cpp"
+    "routes/marketdata/series_identity_shape_web_routes.cpp"
     "routes/marketdata/series_routes.cpp"
     "routes/marketdata/subscription_routes.cpp"
 )
@@ -41,6 +45,10 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/marketdata/public_rate_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/marketdata/quote_board.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/marketdata/quote_routes.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/marketdata/series_identity_shape_entry_routes.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/marketdata/series_identity_shape_entry_web_routes.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/marketdata/series_identity_shape_routes.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/marketdata/series_identity_shape_web_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/marketdata/series_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/marketdata/subscription_routes.hpp"
 )

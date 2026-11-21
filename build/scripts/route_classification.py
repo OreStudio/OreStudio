@@ -124,6 +124,12 @@ RULES = (
          " from the board each server fills by listening to every feed subject once, and one"
          " point of a provider's series over a span; every read asks the market data service"
          " which feeds the caller may watch."),
+    Rule("the vols-by-delta fit",
+         ("exact", "POST /api/marketdata/quotes/vols-by-delta"),
+         None, RESOURCE, "market-data",
+         "Each source's quotes of one pair read as a smile, at ten, twenty-five and ten delta of"
+         " every expiry the body names: the market data service fits each source in the pair's"
+         " own convention on the party's published forwards, and stores nothing."),
     Rule("the curves' route",
          ("regex", r"^POST /api/curves/(series|series-by-id|series-list|slice|evolution"
                    r"|snapshot|manual-point(/clear)?|compute|fx-forward-ladder"
@@ -618,6 +624,16 @@ RULES = (
          ("regex", r"^(POST|PUT|DELETE) /api/v1/simulation/\w"),
          CPP, RESOURCE, "simulation",
          "A generated write of a synthetic collection: create, replace, remove, or one of"
+         " the bulk put and delete calls."),
+    Rule("a market data collection",
+         ("regex", r"^GET /api/v1/market-data/\w"),
+         CPP, RESOURCE, "market-data",
+         "A generated market data collection, answering under the published market data area:"
+         " the list, one row by key, its versions, and the bulk get."),
+    Rule("a market data collection writes",
+         ("regex", r"^(POST|PUT|DELETE) /api/v1/market-data/\w"),
+         CPP, RESOURCE, "market-data",
+         "A generated write of a market data collection: create, replace, remove, or one of"
          " the bulk put and delete calls."),
     Rule("the ORE currency document",
          ("regex", r"^(GET|POST) /api/refdata/currencies/ore-"),
@@ -1867,6 +1883,13 @@ VIEWS = {
         "the scheduler's recent decisions: every tick with the gap its law drew and the "
         "wall gap it took, every regime turn and pin, and every change of the feeds",
         "ETag on the whole view, stale after 10 s"),
+    "the identity shape fields": (
+        "ores.marketdata",
+        "the shapes and their entries read whole and joined one row per field with its "
+        "family's parts, and the rules that give a series its subclass, three "
+        "collection reads",
+        "No cache: an editor's save changes the shapes, so each read answers from the "
+        "store as it stands"),
     "the image map": (
         "ores.assets",
         "which image every flagged record uses: currencies, countries, calendars and "

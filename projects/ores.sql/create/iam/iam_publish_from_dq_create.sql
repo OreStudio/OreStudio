@@ -59,7 +59,7 @@
  * ores_iam_accounts_tbl has no business-unit FK (accounts are scoped to
  * a party, not a desk); it is not consumed here.
  */
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check
 create or replace function ores_iam_publish_accounts_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
@@ -275,7 +275,7 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
  * informations publish as separate steps. Idempotent by account_id: an
  * account that already has a contact information row is skipped.
  */
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check
 create or replace function ores_iam_publish_account_contact_informations_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,

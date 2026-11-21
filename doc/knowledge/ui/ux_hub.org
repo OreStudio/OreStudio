@@ -103,7 +103,7 @@ number that is never reused. The identifier is permanent. A rule that moves
 keeps it, so the section code says where it was born and not where it lives,
 and a reader follows the identifier rather than the page. The checklist cites
 identifiers, and a check reports one, so a reviewer and a test point at the
-same rule. =build/scripts/check_rule_identifiers.py= gives a new rule its
+same rule. compass-ng's =rule_identifiers= check gives a new rule its
 identifier with =--assign= and refuses a rule without one, a duplicate, and a
 checklist line that cites an unknown one.
 

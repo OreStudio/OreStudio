@@ -31,6 +31,7 @@ set(files
     "gmm_component_commands_tests.cpp"
     "ir_curve_generation_config_commands_tests.cpp"
     "ir_curve_generation_config_process_parameter_value_commands_tests.cpp"
+    "ir_curve_index_family_commands_tests.cpp"
     "ir_curve_template_entry_commands_tests.cpp"
     "main.cpp"
     "market_data_generation_config_commands_tests.cpp"

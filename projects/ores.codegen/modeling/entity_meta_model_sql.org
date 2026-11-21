@@ -184,7 +184,7 @@ The bundle as a feature model:
 | =:party_id_from_session:= | bool | false | Set =party_id= from the session GUC =app.current_party_id=. |
 | =:rls_tenant_isolation:= | bool | false | Emit =enable row level security= + a permissive tenant-isolation policy (T1) as a trailer of the create file, and its drop in the drop file. |
 | =:rls_party_isolation:= | bool | false | Also emit a =party_id=-scoped =as restrictive= policy (T3) over =ores_iam_visible_party_ids_fn= membership; requires =:rls_tenant_isolation:=. |
-| =:rls_system_tenant_visible:= | bool | false | Emit the *a system-tenant session sees every tenant* widening — =tenant_id = current or current = system=. Requires =:rls_tenant_isolation:=, and every use is listed by =check_rls_system_tenant_widenings.py=; read the ownership classes below before reaching for it. |
+| =:rls_system_tenant_visible:= | bool | false | Emit the *a system-tenant session sees every tenant* widening — =tenant_id = current or current = system=. Requires =:rls_tenant_isolation:=, and every use is listed by compass-ng's =rls_widenings= check; read the ownership classes below before reaching for it. |
 | =:rls_own_or_system_tenant_rows:= | bool | false | Emit the shared-reference and installation-scoped policy shape — =tenant_id = current or tenant_id = system=, with writes confined to the current tenant. Requires =:rls_tenant_isolation:=, and is mutually exclusive with =:rls_system_tenant_visible:=; the guard does not flag it, because it admits only the system tenant's own rows. |
 | =:rls_policy_style:= | enum | =default= | Selects the emitted policy shape. =default= is the shape every tenant-scoped table emits: the =ores.iam= session functions, called once for each row the policy filters. =hot_path= emits the same two policies with the session setting read through a scalar subquery, so the setting is evaluated once for each query: it requires =:rls_tenant_isolation:= and =:rls_party_isolation:=, and refuses =:rls_system_tenant_visible:=, =:rls_own_or_system_tenant_rows:= and =:rls_service_read_role:=, whose clauses the style would not emit. See [[*Which policy style a table takes][below]]. |
 | =:writer_role:= | psql variable | absent | Emit =grant insert on <table> to :<role>;= after the policies, for the one role an ingest writes through. The role is named as a psql variable, because the grant is a =psql= script and the role name is deployment state. The generator checks the name against the same rule =:rls_service_read_role:= uses. What the role is allowed beyond =INSERT= -- =BYPASSRLS=, the ownership of the table, the =SELECT= it does not have -- is stated where the roles are created (=projects/ores.sql/recreate_database.sql=), not here. |
@@ -380,7 +380,7 @@ The owner decides the policy, and the three are not interchangeable:
 =:rls_system_tenant_visible:= is *not* how a table says it is installation- or
 shared-scoped. It emits a different shape — *a system-tenant session sees
 every tenant* — which admits one tenant's data to another and is exactly what
-=check_rls_system_tenant_widenings.py= exists to stop. The two shapes spell
+compass-ng's =rls_widenings= check exists to stop. The two shapes spell
 differently and mean differently: =tenant_id = system= admits only the
 installation's own rows; =current = system= admits everybody's. Read
 [[id:5A5D6490-AF64-4AAF-8B3D-48EF3EDAF3D2][Tenant ownership and the information flow]]

@@ -73,6 +73,8 @@ set(files
     "ir_curve_generation_config_process_parameter_value_codec_roundtrip_tests.cpp"
     "ir_curve_generation_config_process_parameter_value_protocol_codec_roundtrip_tests.cpp"
     "ir_curve_generation_config_protocol_codec_roundtrip_tests.cpp"
+    "ir_curve_index_family_codec_roundtrip_tests.cpp"
+    "ir_curve_index_family_protocol_codec_roundtrip_tests.cpp"
     "ir_curve_operations_protocol_codec_roundtrip_tests.cpp"
     "ir_curve_template_entry_codec_roundtrip_tests.cpp"
     "ir_curve_template_entry_protocol_codec_roundtrip_tests.cpp"

@@ -243,3 +243,13 @@ def test_the_record_commit_names_story_task_and_environment():
 def test_the_record_commit_states_no_environment_it_does_not_know():
     msg = compass_pr._record_message(1, "S", "T", "(none)")
     assert "Environment" not in msg
+
+
+def test_a_branch_behind_its_base_is_a_reason_not_to_merge():
+    reason = compass_pr._behind_reason(3, "main")
+    assert reason.startswith("the branch is 3 commit(s) behind main")
+    assert "compass check" in reason
+
+
+def test_a_branch_level_with_its_base_gives_no_reason():
+    assert compass_pr._behind_reason(0, "main") == ""

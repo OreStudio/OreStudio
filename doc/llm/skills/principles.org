@@ -110,8 +110,8 @@ what.
 | Never pipe or redirect a compass command | A =PreToolUse= hook denies the call and names the log file to tail instead |
 | Never use the shared stash stack bare | A =PreToolUse= hook denies bare =git stash= and =git stash pop=, which every worktree shares |
 | Every skill declares its level | =apply_skill_levels.py --check=, in the Doc Lint workflow |
-| Every skill is in the compass namespace | =rename_skills_to_compass_namespace.py --check= |
-| A skill's commands belong to a recipe | =link_skill_recipes.py --check= |
+| Every skill is in the compass namespace | compass-ng's =skill_namespace= check |
+| A skill's commands belong to a recipe | compass-ng's =lint= |
 | Every id link resolves | =compass lint=, on every push and pull request |
 | A generated region matches its source | The generator's own =--check= mode, for the catalogue, the type tables and the level inventory |
 

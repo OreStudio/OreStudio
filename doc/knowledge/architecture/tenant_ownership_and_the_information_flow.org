@@ -49,7 +49,7 @@ system tenant, a system-owned policy compares =tenant_id= to the system
 tenant, an own-tenant policy names the current tenant and no system
 function, and a policy that names neither is scoped by party, sandbox or
 role. The same run reproduced the guard's count of
-=check_rls_system_tenant_widenings.py=:
+compass-ng's =rls_widenings= check:
 
 | Policy shape                                        | Count | Meaning |
 |-----------------------------------------------------+-------+---------|
@@ -67,7 +67,7 @@ function, and it only narrows a read the own-tenant policy already bounds. See
 [[id:0FF2B4E7-473D-A754-A893-C4C70E636C76][Multi-Tenancy Architecture]], "The
 accounts exception".
 
-The guarded shape is the third. =check_rls_system_tenant_widenings.py=
+The guarded shape is the third. compass-ng's =rls_widenings= check
 fails any new one, and its message is the rule: *"A service that needs a
 tenant's data acts inside that tenant, with a token for it (Token Exchange),
 instead."*

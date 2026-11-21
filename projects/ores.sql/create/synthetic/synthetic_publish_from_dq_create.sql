@@ -54,7 +54,7 @@
 -- names a provider when every feed row names the same one.
 -- =============================================================================
 
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check
 create or replace function ores_synthetic_publish_feeds_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
@@ -749,11 +749,20 @@ begin
                 coalesce(existing.version, 0),
                 v_party_id, v_config_id, v_ir_folder_id,
                                 r.currency_code, r.index_family, r.tenor,
-                -- A term IBOR curve projects forward rates and discounts off the overnight
-                -- curve; every other family discounts off itself. The role is what a consumer
-                -- reads to decide whether a curve may discount, so an IBOR feed is never
-                -- taken for a discount curve.
-                case when r.index_family in ('libor', 'euribor') then 'projection'
+                -- A term curve projects forward rates and discounts off the overnight
+                -- curve; an overnight or meeting-dated curve discounts off itself. The
+                -- insert trigger has checked the tenor against the family's catalogue
+                -- row, so a tenor that is not the family's dated tenor is a term tenor.
+                -- The role is what a consumer reads to decide whether a curve may
+                -- discount, so a term feed is never taken for a discount curve.
+                case when r.tenor <> ''
+                      and not exists (
+                          select 1 from ores_synthetic_ir_curve_index_families_tbl f
+                          where f.tenant_id = ores_utility_system_tenant_id_fn()
+                            and f.code = r.index_family
+                            and f.dated_tenor = r.tenor
+                            and f.valid_to = ores_utility_infinity_timestamp_fn())
+                     then 'projection'
                      else 'self_discounting' end,
                 r.process_type,
                 r.ticks_per_hour,
@@ -1119,7 +1128,7 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
  * of the system_core bundle and the only target this function accepts is the
  * system tenant: a tenant's own setup never writes the catalogue.
  */
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=publishes the provider catalogue the dq dataset stages into the system tenant in one idempotent pass, the synthetic publish-from-dq pattern beside it; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=publishes the provider catalogue the dq dataset stages into the system tenant in one idempotent pass, the synthetic publish-from-dq pattern beside it
 create or replace function ores_synthetic_publish_market_data_providers_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,

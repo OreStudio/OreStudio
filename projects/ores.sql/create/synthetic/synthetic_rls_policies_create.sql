@@ -189,6 +189,20 @@ with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
 
+alter table ores_synthetic_ir_curve_index_families_tbl enable row level security;
+
+drop policy if exists ir_curve_index_families_tenant_isolation_policy
+    on ores_synthetic_ir_curve_index_families_tbl;
+
+create policy ir_curve_index_families_tenant_isolation_policy
+on ores_synthetic_ir_curve_index_families_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
 -- -----------------------------------------------------------------------------
 -- Market data providers (the installation's catalogue). The providers are
 -- published into the system tenant alone, and every tenant reads them, so the

@@ -113,7 +113,7 @@ question — how a link resolves — and say nothing about the relation.
 
 A new page also links out and is linked back before it is committed. The
 back-link is what makes it reachable from the cluster it joined;
-=link_structure_notes.py --check= enforces it for the pages a structure
+compass-ng's =lint= enforces it for the pages a structure
 note orders, and the convention holds for every other page.
 
 *** One improbable neighbour

@@ -34,7 +34,7 @@ import {
 import { syntheticStore } from '../../refdata/store.js';
 import { FeedPage } from './FeedScreens.js';
 import { feedPath, type FeedKind } from './feedKind.js';
-import { INDEX_FAMILIES, TERM_FAMILIES, completeIrFeed, curveOf, irSeriesUri } from './irCurve.js';
+import { completeIrFeed, curveOf, irSeriesUri } from './irCurve.js';
 import { ArrivalsTab } from './ArrivalsPanel.js';
 import { IrTicksPanel, savedParameters } from './IrTicksPanel.js';
 import { IrProcessPanel, NO_ROWS, engineName } from './IrProcessPanel.js';
@@ -54,10 +54,6 @@ const ROLES = ['self_discounting', 'discount', 'projection'];
 const ARRIVAL_MODES = ['periodic'] as const;
 
 const PRICE_SOURCES = ['fixed'];
-
-/** Whether the family chosen in the form is an index with a term. */
-const isTerm = (values: FieldValues): boolean =>
-    TERM_FAMILIES.includes(values['index_family'] ?? '');
 
 /**
  * The curve's own fields, in the words of the Qt IR curve editor: the
@@ -89,7 +85,13 @@ const IR_FIELDS: readonly FieldSpec[] = [
     {
         field: 'index_family',
         history: 'Index Family',
-        kind: { kind: 'choice', options: INDEX_FAMILIES },
+        kind: {
+            kind: 'record',
+            resource: 'ir-curve-index-families',
+            value: 'code',
+            label: 'name',
+            store: syntheticStore,
+        },
         fixed: true,
     },
     {
@@ -97,7 +99,6 @@ const IR_FIELDS: readonly FieldSpec[] = [
         history: 'Tenor',
         kind: { kind: 'text', max: 20 },
         blank: true,
-        when: (values) => isTerm(values) || values['index_family'] === 'sofr',
         help: 'marketdata.irFeeds.help.tenor',
         fixed: true,
     },
@@ -244,17 +245,30 @@ const NEW_IR_FEED: FieldValues = {
     auto_start: 'false',
 };
 
-/** The rules across fields that the table checks, said before the save rather than after it. */
+/**
+ * The rules across fields that the table checks, said before the save rather
+ * than after it. The family's catalogue row says which tenors it admits, as the
+ * server's tenor rule reads it.
+ */
 function useIrFeedCheck(): (values: FieldValues) => readonly string[] {
     const { t } = useTranslation();
+    const families = useRecords('ir-curve-index-families').data ?? [];
     return (values) => {
-        const family = values['index_family'] ?? '';
+        const row = families.find((f) => show(f['code']) === (values['index_family'] ?? ''));
+        if (row === undefined) {
+            return [];
+        }
         const tenor = values['tenor'] ?? '';
-        if (TERM_FAMILIES.includes(family) && tenor === '') {
+        const dated = show(row['dated_tenor']);
+        if (tenor === '' && row['admits_overnight'] !== true) {
             return [t('marketdata.irFeeds.tenorNeeded')];
         }
-        if (family === 'sofr' && tenor !== '' && tenor !== 'FOMC') {
-            return [t('marketdata.irFeeds.tenorOnlyFomc')];
+        if (tenor !== '' && tenor !== dated && row['admits_term'] !== true) {
+            return [
+                dated === ''
+                    ? t('marketdata.irFeeds.tenorNotAdmitted')
+                    : t('marketdata.irFeeds.tenorOnlyDated', { tenor: dated }),
+            ];
         }
         return [];
     };

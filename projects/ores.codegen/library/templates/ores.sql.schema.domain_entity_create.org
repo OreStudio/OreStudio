@@ -636,13 +636,13 @@ begin
 {{#nullable}}
     -- Validate {{column}} (optional field -- skip validation when null)
     if NEW.{{column}} is not null then
-        NEW.{{column}} := {{validation_function}}({{#domain_entity.has_tenant_id}}NEW.tenant_id, {{/domain_entity.has_tenant_id}}NEW.{{column}});
+        NEW.{{column}} := {{validation_function}}({{#domain_entity.has_tenant_id}}NEW.tenant_id, {{/domain_entity.has_tenant_id}}NEW.{{column}}{{#with_column}}, NEW.{{with_column}}{{/with_column}});
     end if;
 
 {{/nullable}}
 {{^nullable}}
-    -- Validate {{column}}
-    NEW.{{column}} := {{validation_function}}({{#domain_entity.has_tenant_id}}NEW.tenant_id, {{/domain_entity.has_tenant_id}}NEW.{{column}});
+    -- Validate {{column}}{{#with_column}} with {{with_column}}{{/with_column}}
+    NEW.{{column}} := {{validation_function}}({{#domain_entity.has_tenant_id}}NEW.tenant_id, {{/domain_entity.has_tenant_id}}NEW.{{column}}{{#with_column}}, NEW.{{with_column}}{{/with_column}});
 
 {{/nullable}}
 {{#cardinality_limit_table}}

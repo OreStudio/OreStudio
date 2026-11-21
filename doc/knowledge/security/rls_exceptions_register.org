@@ -13,7 +13,7 @@
 
 This page lists, in one place, every exception to the tenant and party row-level security rules, and every table that the installation owns, that the compute grid work added. Each entry gives what changed, why, what it exposes, what limits it, how it was checked, and where its security review and sign-off stand. The rule that governs entries is in [[id:0EAAEDFD-7954-4649-A463-9EE377B023F7][Data read across tenants]]: an exception needs a stated reason, a review and a sign-off before it is accepted. No entry here has completed a security review yet. The state of each is stated, so a later review can start from this list.
 
-The guard =check_rls_system_tenant_widenings.py= still reports 11 system-tenant widenings, all listed, and none of the entries below adds one. None gives a system-tenant session a read of another tenant's rows.
+compass-ng's =rls_widenings= check still reports 11 system-tenant widenings, all listed, and none of the entries below adds one. None gives a system-tenant session a read of another tenant's rows.
 
 * Detail
 

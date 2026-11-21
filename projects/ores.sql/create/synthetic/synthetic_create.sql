@@ -52,13 +52,16 @@
 \ir ./synthetic_fx_vol_surface_feed_contributors_create.sql
 \ir ./synthetic_fx_vol_surface_feed_contributors_notify_trigger_create.sql
 
--- IR curve generation: yield_curve_process_types before the config that
--- FK-validates against it; parameter definitions after the process types
+-- IR curve generation: yield_curve_process_types and ir_curve_index_families
+-- before the config that validates against them; parameter definitions after the process types
 -- they belong to; config before the parameter values that reference it
 -- (and before the template entries); the hand-written process-type
 -- cross-check trigger after both the definitions and the configs it joins.
 \ir ./synthetic_yield_curve_process_types_create.sql
 \ir ./synthetic_yield_curve_process_types_notify_trigger_create.sql
+\ir ./synthetic_ir_curve_index_families_create.sql
+\ir ./synthetic_ir_curve_index_families_notify_trigger_create.sql
+\ir ./synthetic_ir_curve_index_family_tenor_validate_fn_create.sql
 \ir ./synthetic_yield_curve_process_parameter_definitions_create.sql
 \ir ./synthetic_yield_curve_process_parameter_definitions_notify_trigger_create.sql
 \ir ./synthetic_ir_curve_generation_configs_create.sql

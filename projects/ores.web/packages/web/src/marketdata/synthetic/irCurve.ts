@@ -21,37 +21,6 @@
 
 import { show } from '../../refdata/records.js';
 
-/** The index families a curve can stand for, in the order the Qt editor offers them. */
-export const INDEX_FAMILIES = [
-    'libor',
-    'euribor',
-    'sofr',
-    'estr',
-    'sonia',
-    'tona',
-    'saron',
-    'aonia',
-    'corra',
-    'honia',
-    'sora',
-    'swestr',
-    'nowa',
-    'kofr',
-    'mibor',
-    'zaronia',
-    'destr',
-    'polonia',
-    'nzonia',
-    'shibor',
-    'tiie',
-    'taibor',
-    'shir',
-    'hufonia',
-] as const;
-
-/** The families whose index has a term, such as EURIBOR 6M. The others are overnight rates. */
-export const TERM_FAMILIES: readonly string[] = ['libor', 'euribor'];
-
 /** The tenor of an overnight index, which the oresmd series states as `1D`. */
 const OVERNIGHT_TENOR = '1D';
 
@@ -88,20 +57,19 @@ export function curveOf(feed: Readonly<Record<string, unknown>>): string {
 }
 
 /**
- * The fields that follow from the others: a source name from the collection's
- * currency and index when none is given, and a tenor only for an index that
- * has one.
+ * The field that follows from the others: a source name from the collection's
+ * currency, index and tenor when none is given. The tenor stays as typed; the
+ * family's catalogue row says which tenors it admits, and the server refuses
+ * any other.
  */
 export function completeIrFeed(write: Readonly<Record<string, unknown>>): Record<string, unknown> {
     const family = show(write['index_family']);
     const tenor = show(write['tenor']);
-    const keepsTenor = TERM_FAMILIES.includes(family) || (family === 'sofr' && tenor === FOMC);
     return {
         ...write,
-        tenor: keepsTenor ? tenor : '',
         source_name:
             show(write['source_name']) === ''
-                ? `synthetic.${show(write['currency_code'])}${family}${keepsTenor ? tenor : ''}`.toLowerCase()
+                ? `synthetic.${show(write['currency_code'])}${family}${tenor}`.toLowerCase()
                 : write['source_name'],
     };
 }

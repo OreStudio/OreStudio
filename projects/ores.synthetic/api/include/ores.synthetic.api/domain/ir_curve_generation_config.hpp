@@ -81,36 +81,32 @@ struct ir_curve_generation_config final {
     std::string currency_code;
 
     /**
-     * @brief Floating-rate index family this curve represents (libor/euribor for term IBOR-style
-     * indices, or one of the overnight/RFR-style families -- sofr/estr/sonia/tona/
-     * saron/aonia/corra/honia/sora/swestr/nowa/kofr/mibor/
-     * zaronia/destr/polonia/nzonia/shibor/tiie/taibor/cdi/
-     * czeonia/buboron/telboron/tlref/camara/ibr/hibor/ shir/hufonia), stored as a fixed lower-case
-     * token rather than the full ISDA/ORE code the predecessor index_name column held ("USD-SOFR")
-     * -- currency_code already carries the currency half of that pair. Only the check below limits
-     * the family. The (currency_code, index_family) pair names an overnight_index_convention or
+     * @brief Floating-rate index family this curve represents, one of the codes of
+     * [[id:A6051CE4-29B2-4D05-A0FF-40ED1FD3C31D][ir_curve_index_family]], such as sofr, euribor or
+     * hibor, stored as a fixed lower-case token rather than the full ISDA/ORE code the predecessor
+     * index_name column held ("USD-SOFR") -- currency_code already carries the currency half of
+     * that pair. The insert trigger checks the family and the tenor together against the catalogue.
+     * The (currency_code, index_family) pair names an overnight_index_convention or
      * ibor_index_convention, whose own id is currency_code + "-" + upper(index_family); the feed
      * itself reads no convention, so a curve whose pair has no convention seeded still ticks.
      */
     std::string index_family;
 
     /**
-     * @brief Tenor of this curve's floating-rate index (references tenor.code, e.g. "3M", "6M"),
-     * required when index_family is a term family (libor/euribor), empty for overnight families
-     * (sofr/estr/sonia/tona, which have no tenor dimension). The tenor of the index is the tenor
+     * @brief Tenor of this curve's floating-rate index (references tenor.code, e.g. "3M", "6M").
+     * The family's row in [[id:A6051CE4-29B2-4D05-A0FF-40ED1FD3C31D][ir_curve_index_family]] says
+     * which tenors it admits: empty for an overnight curve, a tenor for a term curve, which
+     * projects off its currency's overnight curve, and its one dated tenor, such as SOFR's "FOMC",
+     * for a meeting-dated curve whose template entries resolve to meeting-dated pillars 1F..8F via
+     * tenor_resolution. The insert trigger applies the rule with
+     * ores_synthetic_validate_ir_curve_index_family_tenor_fn. The tenor of the index is the tenor
      * identity field of the oresmd series the curve's pillars land in ("1D" for an overnight index,
      * this column otherwise); see [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio
-     * Market Data URI]]. The literal discriminator "FOMC" is valid only for index_family sofr
-     * (schema-enforced): it keys a meeting-dated curve variant for the same (currency_code,
-     * index_family) (e.g. the USD-SOFR FOMC-dated short end, whose template entries resolve to
-     * meeting-dated pillars 1F..8F via tenor_resolution), so the config has its own natural key and
-     * does not collide with the standard curve's empty-tenor row. Other overnight families must
-     * leave tenor empty: no tenor_resolution meeting-dated pillar machinery exists for them. Empty
-     * string, not SQL NULL: the codegen used here has no true-nullable text support. Not
-     * DB-FK-validated against tenor, matching the precedent set by ir_curve_template_entry's own
-     * start_tenor_code/end_tenor_code (also soft FKs to tenor.code, resolved only at the
-     * application layer via ores.refdata.api/domain/tenor_resolution.hpp, not a DB trigger --
-     * tenor.org itself emits no single-argument validator function to reuse).
+     * Market Data URI]]. Empty string, not SQL NULL: the codegen used here has no true-nullable
+     * text support. Not DB-FK-validated against tenor, matching the precedent set by
+     * ir_curve_template_entry's own start_tenor_code/end_tenor_code (also soft FKs to tenor.code,
+     * resolved only at the application layer via ores.refdata.api/domain/tenor_resolution.hpp, not
+     * a DB trigger -- tenor.org itself emits no single-argument validator function to reuse).
      */
     std::string tenor;
 

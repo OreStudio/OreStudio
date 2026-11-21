@@ -104,6 +104,11 @@ import {
     type YieldCurveProcessParameterDefinitionsFilter,
 } from '@ores/wire-protocol/generated/synthetic/protocol/yield_curve_process_parameter_definition_protocol';
 import {
+    subjects as indexFamilySubjects,
+    type IrCurveIndexFamiliesFilter,
+    type IrCurveIndexFamilyWrite,
+} from '@ores/wire-protocol/generated/synthetic/protocol/ir_curve_index_family_protocol';
+import {
     subjects as processTypeSubjects,
     type YieldCurveProcessTypeWrite,
     type YieldCurveProcessTypesFilter,
@@ -591,6 +596,30 @@ const SYNTHETIC_RECORDS: readonly SyntheticResource[] = [
             description: text,
             display_order: z.int().nonnegative(),
         }) satisfies z.ZodType<YieldCurveProcessTypeWrite>,
+    },
+    {
+        key: 'ir-curve-index-families',
+        systemOwned: true,
+        entityType: 'ores.synthetic.ir_curve_index_family',
+        keyField: 'code',
+        oneOf: 'code_one_of',
+        rows: 'index_families',
+        filter: { code_one_of: null } satisfies IrCurveIndexFamiliesFilter,
+        subjects: {
+            list: indexFamilySubjects.list_ir_curve_index_families_request,
+            putMany: indexFamilySubjects.put_many_ir_curve_index_families_request,
+            remove: indexFamilySubjects.delete_ir_curve_index_family_request,
+            removeMany: indexFamilySubjects.delete_many_ir_curve_index_families_request,
+        },
+        writes: z.strictObject({
+            code,
+            name: label,
+            description: text,
+            admits_overnight: z.boolean(),
+            admits_term: z.boolean(),
+            dated_tenor: z.string().trim().max(20),
+            display_order: z.int().nonnegative(),
+        }) satisfies z.ZodType<IrCurveIndexFamilyWrite>,
     },
     {
         key: 'parameter-definitions',

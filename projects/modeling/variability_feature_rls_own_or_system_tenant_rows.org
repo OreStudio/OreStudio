@@ -43,7 +43,7 @@ The name states the rows the policy admits and puts =tenant_id= on the
 left of both comparisons. That is deliberate. The existing
 =:rls_system_tenant_visible:= names the *session* and emits =current =
 system=, which admits one tenant's rows to another and is the shape
-=check_rls_system_tenant_widenings.py= flags. This feature admits only
+compass-ng's =rls_widenings= check flags. This feature admits only
 the system tenant's own rows to everyone, so the guard does not flag
 it. The two names never mean the same thing, and the two flags are
 mutually exclusive, so a model cannot ask for both.

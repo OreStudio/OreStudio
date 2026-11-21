@@ -5359,6 +5359,16 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'synthetic.v1.ir_curve_index_families.list': {
+        asOf: true,
+        filter: ['code_one_of'],
+        rows: ['index_families'],
+    },
+    'synthetic.v1.ir_curve_index_families_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
     'synthetic.v1.ir_curve_template_entries.list': {
         asOf: true,
         filter: ['ir_curve_config_id', 'id_one_of', 'ir_curve_config_id_one_of'],

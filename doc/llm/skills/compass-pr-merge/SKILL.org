@@ -22,7 +22,10 @@ license: Complete terms in LICENSE.txt
 * When to use this skill
 
 Merging an approved PR, the moment CI goes green. Guard rails refuse
-while review threads are unresolved or CI is red. This should be the
+while review threads are unresolved, CI is red, or the branch is behind
+main: no check has seen the tree a behind branch merges into, so take main
+in and run compass check first, or merge with =--force= when you mean to.
+This should be the
 *only* action taken once CI is green post-review — no bookkeeping
 commit, no rebuild, nothing that would push a new commit and force
 another CI cycle. If the task isn't closed and the story/sprint

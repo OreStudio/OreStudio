@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: synthetic
-Tables: 25
+Tables: 26
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -530,6 +530,44 @@ package "synthetic" #F9FBE7 {
     ir_curve_template_entry rows, the same one-config-many-children shape
     fx_spot_generation_config uses for its gmm_component rows. Scoped to a
     tenant and a party.
+    end note
+
+    entity ores_synthetic_ir_curve_index_families_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * name : text
+        * description : text
+        * admits_overnight : boolean
+        * admits_term : boolean
+        * dated_tenor : text
+        * display_order : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_synthetic_ir_curve_index_families_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    IR Curve Index Family Table
+    The rate index families an [[id:8B840E8D-2763-4A1F-8BC2-6C9E354DB673][ir_curve_generation_config]] can name,
+    one row per family, and the tenors each one admits. An overnight family, such
+    as sonia, names no tenor. A term family, such as euribor, names one, and
+    the curve then projects that tenor's rate and discounts off the overnight
+    curve of its currency. A family can be both: hibor is an overnight index
+    for CNH and a term index for HKD. A dated tenor, such as SOFR's FOMC, is
+    neither: it names a curve whose pillars fall on meeting dates.
+    This replaces the two lists the curve config's checks and the DQ publish
+    function wrote out by hand, so a new family is a seed row rather than four
+    edits. Scoped to ores.synthetic, as the yield curve process types are,
+    because synthetic IR curve generation is its only consumer. Managed by the
+    system tenant.
     end note
 
     entity ores_synthetic_ir_curve_template_entries_tbl <<temporal>> #C6F0D8 {

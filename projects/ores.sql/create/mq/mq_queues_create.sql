@@ -93,7 +93,7 @@ for each row execute function ores_mq_queues_notify_fn();
 -- Helper: idempotent queue creation
 -- ---------------------------------------------------------------------------
 
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check
 create or replace function ores_mq_queues_create_fn(
     p_tenant_id   uuid,
     p_party_id    uuid,

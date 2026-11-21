@@ -2276,3 +2276,7 @@ tangled into the runnable script library
 * Series Identity Shape Entries
 
 - [[id:5811BEEE-5EEE-593C-AC1E-0377036D8DD5][How do I run the series_identity_shape_entries commands from the shell?]]
+
+* Ir Curve Index Families
+
+- [[id:BF13BB64-6E43-521F-8E2A-48A727208482][How do I run the ir_curve_index_families commands from the shell?]]

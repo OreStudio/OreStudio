@@ -58,7 +58,7 @@
  * This header is meant to be deleted. When Apple's libc++ has the standard
  * types, replace @c ores::platform::concurrency:: with @c std:: at each use,
  * keep @c wait_for as a function of the caller's own, and remove this file.
- * check_portable_stop_types.py fails on the standard types outside this
+ * compass-ng's portable_cpp check fails on the standard types outside this
  * library until then.
  */
 namespace ores::platform::concurrency::portable {

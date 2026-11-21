@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :design_the_scripted_trade_subsystem:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/copy-ores-script-parser
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,7 +26,7 @@ ores.trading.scripting holds ORE's script grammar, syntax tree, printer, static 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:E6359881-7919-4BBC-9B9C-03A8EEDB8A03][Design the scripted trade subsystem]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -45,9 +45,23 @@ ores.trading.scripting holds ORE's script grammar, syntax tree, printer, static 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Two PRs.
+
+1. The sub-component and the copy. =ores.trading.scripting= is a part of
+   =ores.trading=, first in its =#+parts:=, generated from its component overview.
+   ORE's grammar, syntax tree, parser, printer, converter back to text and random
+   tree generator are copied by =utility/import_ore_scripting.py=, which reads
+   ORE's files at a recorded commit through git, applies a fixed set of
+   transforms (namespace, include paths and guards, QuantLib names to the
+   standard library through =ore_compat.hpp=, and one stated patch), and
+   clang-formats the result; =--check= fails when the committed copy differs. The
+   copied identifiers stay ORE's, so the diff against ORE stays small; a façade in
+   ORE Studio's style parses a script and reports a syntax error as a diagnostic,
+   located in code points. The tests parse every code block of every script
+   library ORE's examples ship.
+2. =inputs_of= and =check=: the free variables of a parsed script with their
+   types, multiplicities and rules, compared with the stored inputs of every
+   library script, and the input, value and usage diagnostics.
 
 * Measurements
 
@@ -64,6 +78,22 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+** What the first PR found
+
+- ORE's identifiers, whitespace and keywords are ASCII and its grammar has no
+  comments, so the text before a syntax error is ASCII. A syntax error's column
+  differs from Spirit's only through tabs, which Spirit widens to four columns;
+  the conversion to code points still counts multi-byte characters for the
+  findings of later checks.
+- ORE's own run reported the WorstOfBasketSwap error as =expected
+  <InstructionSequence> in L17:30=; the diagnostic states the same line, column
+  and message.
+- The copied code carries no export macros, so the component builds with default
+  visibility, as adding macros to ORE's declarations would hurt the diff.
+- ORE's =ScriptGrammar= holds its 25 rules as fields, over compass-ng's
+  =wide_types= ceiling of 15; the warning is left for the user to excuse, since an
+  exception names its approver.
 
 The form of validation findings, numbered errors and warnings with line and column, is [[id:ECA442BB-48D7-47CB-9BAA-97FD1C0BBA9A][Diagnostic Reporting in Script Validation]].
 

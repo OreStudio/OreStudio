@@ -19,6 +19,7 @@
 # AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
 # Template: cmake_composite_root.mustache
 # To modify, update the template and regenerate.
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/scripting)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/api)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/core)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/service)

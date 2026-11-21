@@ -101,6 +101,11 @@ task and name that file in the Command column.
 
 * Notes
 
+- The interface now runs on the gateway's own port: the build publishes the
+  bundle and the site configuration beside the binaries, and a screen calls the
+  gateway's routes with no flag and no proxy. The harness signs in against it and
+  the ported screens answer as they do on the BFF. See
+  =evidence/web_on_the_gateway_live_run.txt=.
 - The twelve doc-backed routes are not served by this task. The decision that
   left them out was reversed, but not by porting the BFF's file reading: the org
   pages move into the database, so [[id:F8172A06-6927-4085-9901-B5F62A58A6EC][Serve the doc-backed agile and QA routes]]

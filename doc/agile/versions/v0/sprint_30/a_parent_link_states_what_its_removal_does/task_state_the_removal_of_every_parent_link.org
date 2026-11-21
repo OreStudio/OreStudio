@@ -1,0 +1,107 @@
+:PROPERTIES:
+:ID: 21E2C1D7-C483-4DDC-B29B-D3D60B73386B
+:END:
+#+title: Task: State the removal of every parent link
+#+description: Give every existing foreign key its removal behaviour, report the orphans the seeded data holds today, and decide for each owned child whether it bumps its parent's version.
+#+type: task
+#+level: s1
+#+filetags: :a_parent_link_states_what_its_removal_does:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:79752745-5D92-4BAE-B502-0AEFDD3F56A2][A parent link states what its removal does]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every existing foreign key gets its removal behaviour, and the seeded data is
+checked for the orphans that exist today. For each =cascade= child, decide
+whether it also bumps its parent's version, so the model treats it as part of
+the parent for versioning and for removal alike. The identity shape and its
+entries go first, as the case that found the gap.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:79752745-5D92-4BAE-B502-0AEFDD3F56A2][A parent link states what its removal does]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-21                               |
+
+* Acceptance
+
+- The census script reports 0 links without a behaviour.
+- A query over a freshly seeded environment, with Acme provisioned, lists the
+  current children whose parent is closed, before and after; after, it lists
+  only =keep= links.
+- The identity shape entries declare =cascade= and =:bump_parent_version:=, and
+  removing a shape on a running environment closes its entries.
+- Each =keep= states its reason beside the link.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Foreign keys in the entity models | 642 over 331 models | =python3 doc/agile/versions/v0/sprint_30/a_parent_link_states_what_its_removal_does/evidence/parent_links.py= | f1d84d68c9 |
+| with =:parent_entity:= | 180 | =python3 doc/agile/versions/v0/sprint_30/a_parent_link_states_what_its_removal_does/evidence/parent_links.py= | f1d84d68c9 |
+| with =:parent_entity:= and =:bump_parent_version: true= | 23 | =python3 doc/agile/versions/v0/sprint_30/a_parent_link_states_what_its_removal_does/evidence/parent_links.py= | f1d84d68c9 |
+| with =:bump_parent_version: true= and no =:parent_entity:= | 13 | =python3 doc/agile/versions/v0/sprint_30/a_parent_link_states_what_its_removal_does/evidence/parent_links.py= | f1d84d68c9 |
+
+* Notes
+
+- 642 links is too many to decide one at a time by hand. Write the first pass
+  as a script that proposes a behaviour from the link (a =:parent_entity:=
+  child with =:bump_parent_version:= is likely =cascade=; a reference from a
+  trade is likely =refuse=), and review the proposal by component.
+- The 36 links with =:bump_parent_version:= already behave as owned children:
+  23 carry =:parent_entity:= and 13 do not. Propose =cascade= for all 36.
+- The rows the writer skips today, such as an orphan shape entry, may hide
+  orphans in the seed; the query finds them.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

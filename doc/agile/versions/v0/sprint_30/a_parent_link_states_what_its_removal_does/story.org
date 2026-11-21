@@ -1,0 +1,150 @@
+:PROPERTIES:
+:ID: 79752745-5D92-4BAE-B502-0AEFDD3F56A2
+:END:
+#+title: Story: A parent link states what its removal does
+#+description: Each foreign key in the entity models states what the removal of its parent does to the child: close it, refuse the removal, or keep it. Codegen derives the delete rules from that, and a check refuses a link that states nothing.
+#+type: story
+#+level: s2
+#+filetags: :sprint_30:v0:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+#+environment: clever_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+When a person removes a record, what happens to the records that name it is a
+decision the model states, and the store enforces it for every caller. Each
+foreign key in the entity models states one of three behaviours:
+
+- =cascade=: the parent owns the child. The parent's removal closes the child
+  in the same statement. An identity shape and its entries are an example.
+- =refuse=: the child only refers to the parent. The store refuses to remove
+  the parent while a current child names it. A party and the trades that name
+  it are a likely example.
+- =keep=: the child outlives the parent on purpose, and the reason is written
+  beside the link.
+
+Codegen derives each parent's delete rule from the links that name it, and a
+check refuses a link that states no behaviour. No current row then names a
+parent that is gone, unless the model says so.
+
+** The gap
+
+Our tables are temporal, so a parent is named by a key that many rows share
+over time, and Postgres cannot hold a real foreign key to it. Codegen makes a
+soft foreign key instead: the child's insert trigger checks that a current
+parent exists. Nothing checks the link after that. A parent's delete rule
+closes the parent's own row and nothing else, unless the parent's model lists
+the child in a =* Delete cascade= section.
+
+The model has two ways to describe a parent and its children, and they are
+not connected:
+
+- =:parent_entity:= on the child's foreign key. It gives the insert check, the
+  list-by reads and, with =:bump_parent_version:=, the composite versioning of
+  [[id:BA159E88-74EB-4401-91CC-1DE7DF5AE50A][Temporal composite entity versioning]]. It says nothing about removal.
+- =* Delete cascade= on the parent. It names the child tables a delete closes,
+  as the bond issue and the rates instruments do. It does not name the child's
+  foreign key, and nothing checks that the two agree.
+
+The census below counts both, with =evidence/parent_links.py=; the full list
+of links is in =evidence/parent_links.txt=:
+
+- The entity models declare 642 foreign keys over 331 models. Every table name
+  the script derives is a table in the SQL.
+- 180 of them carry =:parent_entity:=. The parent's cascade closes none of
+  those 180. So when any of these parents is removed, its children stay
+  current and name a parent that is gone.
+- 36 foreign keys carry =:bump_parent_version:=, so a child write moves the
+  parent's version. The model treats those children as part of the parent for
+  versioning, and not for removal. 23 of them are among the 180; the other 13
+  carry no =:parent_entity:=, such as an account's contact information. All 36
+  are strong =cascade= candidates.
+- 8 models have a =* Delete cascade= section. They name 111 child tables, and
+  only 6 of those children declare a foreign key back to the parent.
+- 1 foreign key carries =:cascade_orphan:= (a bond instrument and its issue).
+- The script checks that it read every link of every Foreign keys section,
+  and it matches a cascade to a link by the child's table and column.
+
+** How it showed
+
+PR #4902 made the identity shape a record with entries. Its review found that
+removing a shape from the shell leaves its entries. The task declined it,
+because the writer skips an orphan entry, and called a cascade out of scope.
+That treated the symptom. The entry declares
+=:parent_entity: series_identity_shape=, the shape is the only owner an entry
+can have, and nothing in the model or the store says so. The entries also set
+no =:bump_parent_version:=, so a change to the fields a shape requires does not
+move the shape's version, although the writer applies a shape and its entries
+as one rule.
+
+The party shows the same gap on a composite the versioning document was
+written for. The party identifiers bump the party's version, and the parties'
+delete rule closes only the party row.
+
+** Why the general case
+
+A fix for the shape alone would add one more =* Delete cascade= list and leave
+179 links unstated. The behaviour belongs on the link, where the child already
+says who its parent is, so one declaration states the ownership and the
+removal together and a check can hold every link to it.
+
+The story covers all 642 foreign keys, not only the 180 that carry
+=:parent_entity:=. The other 462 are no less links: each one also names a
+parent whose removal leaves it, and each one states its behaviour too.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Design the removal behaviour on a foreign key. |
+| Last touched  | 2026-11-21                               |
+
+* Acceptance
+
+- Every foreign key in the entity models states =cascade=, =refuse= or =keep=,
+  and a =keep= states its reason.
+- The parent's delete rule is generated from those links: it closes the
+  =cascade= children and refuses while a =refuse= child is current, for every
+  caller, in the same statement.
+- No model has a =* Delete cascade= section; its children are links.
+- A check fails the build on a link that states no behaviour, and the rule it
+  applies is data that can be updated without code.
+- The census script reports 0 unstated links, and a seeded environment holds
+  no current child whose parent is closed, except under =keep=.
+- Removing an identity shape closes its entries, shown on a running
+  environment.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:BB1981E3-A044-4531-A4E5-08044FAF6C1E][State on a foreign key what its parent's removal does]] | BACKLOG | | | Add a removal behaviour to a foreign key in the codegen model, cascade, refuse or keep, and derive the parent's delete rule from the links that name it. |
+| [[id:8D34D165-24A7-4EB1-8D0D-DE2D169F20C7][Fold the delete cascade lists into the child links]] | BACKLOG | | | Move each child named in a Delete cascade section onto a foreign key of its own with the cascade behaviour, and remove the section. |
+| [[id:21E2C1D7-C483-4DDC-B29B-D3D60B73386B][State the removal of every parent link]] | BACKLOG | | | Give every existing foreign key its removal behaviour, report the orphans the seeded data holds today, and decide for each owned child whether it bumps its parent's version. |
+| [[id:DAFA8D4D-7684-4B6C-AD68-F3B95E59E28A][Refuse a parent link that states no removal]] | BACKLOG | | | Make a check, driven by data, fail the build on a foreign key that states no removal behaviour. |
+
+* Decisions
+
+- The behaviour lives on the child's foreign key, not on the parent. The child
+  already names its parent there, and one parent has many children whose
+  behaviours differ.
+- The three behaviours are =cascade=, =refuse= and =keep=. There is no default:
+  a link that states nothing is refused by the check, so every link is decided
+  once, by a person.
+- Removal closes a row by its =valid_to=, as today. History stays, so an as-of
+  read of the parent still composes the children it had.
+
+* Out of scope
+
+- Reopening the children when a removed parent is created again. A new parent
+  version starts with no children.
+- Real Postgres foreign keys. The tables stay temporal, so the link stays soft
+  and the delete rule enforces it.

@@ -1,0 +1,114 @@
+:PROPERTIES:
+:ID: BB1981E3-A044-4531-A4E5-08044FAF6C1E
+:END:
+#+title: Task: State on a foreign key what its parent's removal does
+#+description: Add a removal behaviour to a foreign key in the codegen model, cascade, refuse or keep, and derive the parent's delete rule from the links that name it.
+#+type: task
+#+level: s1
+#+filetags: :a_parent_link_states_what_its_removal_does:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr: 4941
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:79752745-5D92-4BAE-B502-0AEFDD3F56A2][A parent link states what its removal does]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The codegen model gains a removal behaviour on a foreign key, for example
+=:on_parent_remove: cascade=, =refuse= or =keep=, with =:keep_reason:= for the
+last. The SQL template builds the parent's delete rule from every link that
+names that parent: it closes the =cascade= children, as
+=<parent>_cascade_delete_fn= does today, and it refuses the removal with an
+outcome that names the child while a =refuse= child is current.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:79752745-5D92-4BAE-B502-0AEFDD3F56A2][A parent link states what its removal does]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-21                               |
+
+* Acceptance
+
+- A foreign key accepts =cascade=, =refuse= or =keep=, and codegen refuses any
+  other value.
+- A parent with a =cascade= child closes that child in the same statement as
+  its own row; a pgTAP case shows it.
+- A parent with a current =refuse= child is not removed, and the caller gets an
+  outcome that names the child; a pgTAP case shows it.
+- Regenerating the models without any new declaration gives byte-identical SQL.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Foreign keys in the entity models | 642 | =python3 doc/agile/versions/v0/sprint_30/a_parent_link_states_what_its_removal_does/evidence/parent_links.py= | f1d84d68c9 |
+| with =:parent_entity:= that a parent cascade closes | 0 of 180 | =python3 doc/agile/versions/v0/sprint_30/a_parent_link_states_what_its_removal_does/evidence/parent_links.py= | f1d84d68c9 |
+
+* Notes
+
+- The parent learns its children from the child models, so codegen needs the
+  reverse index: for each table, the links that name it. The loader in
+  =projects/ores.codegen/src/codegen/org_loader.py= builds the delete cascade
+  list today from the parent's own section.
+- Decide how a system tenant parent treats tenant children. A tenant cannot
+  remove a shared row, but the system tenant can, and its children may live in
+  other tenants. Row-level security binds the delete rule's statements to the
+  current tenant.
+- A cascade child may itself be a parent, so a removal can walk a tree. Decide
+  whether the generated functions chain, as the portfolio tree's rule does with
+  its own touch function, or whether the depth is refused.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4941][#4941]] | [agile] Add the story A parent link states what its removal does |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | PR #4941 review: 13 bump links sit outside =:parent_entity:= | =evidence/parent_links.py=, =story.org= | Accept | Census line added; story and the task State the removal of every parent link name them as =cascade= candidates |
+| 2 | PR #4941 review: say the other 462 links are in scope | =story.org= | Accept | Said once in Why the general case |
+| 3 | PR #4941 review: the script's cascade key reads backwards and matches on tables only | =evidence/parent_links.py= | Accept | Renamed to =table=; the match uses the child's table and column. Counts unchanged |
+| 4 | PR #4941 review: the regexes can drop a link silently | =evidence/parent_links.py= | Accept | The script counts =:table:= lines per Foreign keys section and reports a model it missed (0); the check task reads the models through codegen |
+| 5 | PR #4941 review: state that the check lands after the declaration | =task_refuse_a_parent_link_that_states_no_removal.org= | Accept | Dependency note added |
+| 6 | PR #4941 review: Status table padding | all | Decline | The scaffold writes it; org realigns on save, and the other sprint 30 files carry the same padding |
+
+* Result

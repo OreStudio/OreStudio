@@ -1,0 +1,100 @@
+:PROPERTIES:
+:ID: 8D34D165-24A7-4EB1-8D0D-DE2D169F20C7
+:END:
+#+title: Task: Fold the delete cascade lists into the child links
+#+description: Move each child named in a Delete cascade section onto a foreign key of its own with the cascade behaviour, and remove the section.
+#+type: task
+#+level: s1
+#+filetags: :a_parent_link_states_what_its_removal_does:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:79752745-5D92-4BAE-B502-0AEFDD3F56A2][A parent link states what its removal does]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Each child that a =* Delete cascade= section names gets a foreign key of its
+own with =:on_parent_remove: cascade=, and the section is removed. The
+generated delete rules then come from one source. Today 8 models name 111
+child tables, and only 6 of those children declare a foreign key back.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:79752745-5D92-4BAE-B502-0AEFDD3F56A2][A parent link states what its removal does]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-21                               |
+
+* Acceptance
+
+- No model has a =* Delete cascade= section, and the loader no longer reads one.
+- Each of the 111 children declares its link to the parent.
+- The regenerated delete rules close the same tables as before; a diff of the
+  generated SQL shows it.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Models with a =* Delete cascade= section | 8 | =python3 doc/agile/versions/v0/sprint_30/a_parent_link_states_what_its_removal_does/evidence/parent_links.py= | f1d84d68c9 |
+| Child tables they name | 111 | =python3 doc/agile/versions/v0/sprint_30/a_parent_link_states_what_its_removal_does/evidence/parent_links.py= | f1d84d68c9 |
+| Of those, children that declare the foreign key | 6 | =python3 doc/agile/versions/v0/sprint_30/a_parent_link_states_what_its_removal_does/evidence/parent_links.py= | f1d84d68c9 |
+
+* Notes
+
+- Many of the 111 children are the instrument tables of the trading families,
+  keyed by the instrument's trade id. Check how each child names its parent
+  before writing its link.
+- The bond instrument's =:cascade_orphan:= on its issue is the reverse shape:
+  the child takes a shared parent when it is the last to name it. Keep it, and
+  decide whether it becomes a fourth behaviour.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

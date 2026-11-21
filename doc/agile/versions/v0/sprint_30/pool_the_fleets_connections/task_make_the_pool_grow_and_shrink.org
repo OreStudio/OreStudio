@@ -30,11 +30,11 @@ service holds only its floor.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:A75C3063-896F-4DD5-A9BC-893A59EDFF7E][Pool the fleet's connections]] |
-| Now          | The pool grows, reaps and refuses at its ceiling; the tree builds. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Run the suites the change reaches.     |
+| Next         | Nothing. |
 | Last touched | 2026-11-21                               |
 
 * Acceptance
@@ -129,11 +129,31 @@ task and name that file in the Command column.
 |------+-------+---------+--------|
 | Services whose generated =application.cpp= states the pool | 17 | =grep -rln "db_opts.pool_min" projects/*/service/src/app | wc -l= | on top of 9f30c82fb8 |
 | Remaining references to =pool_size= in the tree | 0 | =grep -rn "pool_size" --include=*.cpp --include=*.hpp --include=*.py projects | grep -v venv | wc -l= | on top of 9f30c82fb8 |
+| Build of the targets the change reaches | 347 of 347, 28m02s, 0 warnings | =compass build ores.database.tests ores.iam.service.tests ores.marketdata.service.tests ores.inbox.core.tests ores.refdata.core.tests ores.workflow.core.tests ores.synthetic.service.tests ores.http.server ores.compute.service= | 177587f9e9 |
+| Suites the change reaches | 7 suites, 1221 test cases, all pass | =compass test run -- -R "ores.database.tests|ores.iam.service.tests|ores.inbox.core.tests|ores.refdata.core.tests|ores.workflow.core.tests|ores.synthetic.service.tests|ores.marketdata.service.tests"= | 177587f9e9 |
 
-Both were measured on this branch before its own commit existed, so they name
-the commit the branch stands on rather than one that contains the change.
+The first two were measured on this branch before its own commit existed, so
+they name the commit the branch stands on rather than one that contains the
+change.
 
 * Notes
+
+=compass test run= reported the suite totals as 83, 82, 15, 558, 85, 70 and
+328 test cases, which is 1221, with every assertion passing. The 328-case
+suite is the marketdata service, and it includes the ingest-loop case the
+inbox records as failing under load
+([[id:4712BE7F-25E7-477E-90AE-524C91569671][The ingest loop tests fail when the machine is
+loaded]]); it passed on this run.
+
+** The database had to be rebuilt first
+
+The first run of the marketdata suite failed 30 cases on
+=column "provider_code" does not exist=, and a second run crashed the ingest
+loop. Neither was this change: the environment's database predated main's
+schema, exactly as =compass bearings= warned before the work started, and no
+relation carried both =series_id= and =provider_code=. After
+=compass db recreate -y -k= the relation exists and the suite passes. Recorded
+because a reader of 30 red cases would otherwise look for a cause in the pool.
 
 * Test Scenarios
 
@@ -159,3 +179,22 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A service's pool now keeps a stated floor and may burst to a stated ceiling,
+closing what the burst leaves idle, so the number a service asks for is what its
+work needs rather than what the server can spare. The marketdata service states
+sixteen because it runs two provisioning steps with four lanes each.
+
+Evidence, at =177587f9e9=:
+
+- the nine targets the change reaches build, 347 of 347, in 28 minutes, with no
+  warnings;
+- the seven suites that assert on pool settings pass, 1221 test cases;
+- =db-pool-min=, =db-pool-max= and =db-pool-idle= are stated per service in the
+  environment, and the .env format is 34.
+
+What is still owed: the acceptance line that the marketdata service runs a
+provisioning step with its four lanes and records no acquisition failure. The
+pool can now serve that burst, but proving it means running a provisioned party
+against the fleet, which is a fleet run and not a unit test. It stays open on
+purpose rather than claimed.

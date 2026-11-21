@@ -41,7 +41,7 @@ One scripted trade subsystem serves every way a scripted trade enters ORE Studio
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:31CB7BE4-C241-4FCC-BFA2-3AFF7839DE15][Scaffold story: Design the scripted trade subsystem]] | STARTED | 2026-11-21 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:31CB7BE4-C241-4FCC-BFA2-3AFF7839DE15][Scaffold story: Design the scripted trade subsystem]] | DONE | 2026-11-21 | 2026-11-21 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:0A53E698-5A04-4A3E-B76E-3DFCA69E36A7][Document the scripted trade architecture]] | BACKLOG | | | The target architecture of scripted trades, documented to the knowledge standard before any of it is built. |
 | [[id:179E60E8-59B5-456A-B2CC-55323052E234][Edit a scripted trade on its own screen]] | BACKLOG |  |  | A scripted trade is a script plus the variables it reads. Without an editor a person can only see it as rows, and a free text box would let them state a variable the script never reads or miss one it needs. |
 

@@ -155,6 +155,53 @@ code fix, so a second host repeats the work:
   =docker/remote-run.sh=, which now asks for it only where podman is
   rootless — the same guard the runtime path already had.
 
+** The grid reports no nodes online while they run jobs
+
+The screen counts a host as online when it holds a node sample from the
+last two minutes. On pauli it never does, though four engines were
+heartbeating and finishing work:
+
+#+begin_src text
+ores_compute_grid_samples_tbl, system tenant, every 30s:
+  sampled_at 19:12:37  total_hosts 5  online_hosts 0  idle_hosts 0
+#+end_src
+
+Read as the compute service with the system tenant set:
+
+| Table | Rows visible |
+|---|---|
+| =ores_compute_hosts_tbl= | 5 |
+| =ores_compute_node_samples_tbl= | 0 |
+
+The host catalogue is installation-level and carries the system tenant,
+so its rows are visible. The samples carry the *served* tenant, because
+the wrapper is started with =--tenant-id <served tenant>=, and the
+policy only shows a tenant its own rows or the system tenant's. The
+liveness check joins the two and finds no sample it may read, so
+=online_hosts= stays 0 for ever.
+
+*Fix*, one of:
+
+- Write the sample under the host's tenant rather than the heartbeat's,
+  because the sample belongs to the installation the host is part of.
+- Let the fleet row count samples of the hosts it can see, whatever
+  tenant wrote them, through a =security definer= reader.
+
+** A compute node on another host is refused by the broker certificate
+
+The broker certificate carried the addresses of the machine that
+generated it, not the serving host's, so a node on newton was refused:
+
+#+begin_src text
+NATS connect failed: SSL handshake error: 64:IP address mismatch:
+depth=0:cert=/CN=nats-server/O=ORE Studio
+#+end_src
+
+Adding the serving address used to mean =--force=, which rotates the CA
+and every client certificate. =compass nats certs --server-only
+--hostname <serving address>= now rotates the broker pair alone, signed
+by the existing CA, so only the broker restarts.
+
 * Why
 
 The provision is the fastest way to exercise the market data path end to

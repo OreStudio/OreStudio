@@ -88,9 +88,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| The BFF routes paired with a C++ route | 321 of 334 | the coverage table of =doc/knowledge/architecture/http_route_inventory.org= | d7157cfa25 |
-| The BFF routes not paired, by gap | 13: 12 file-backed, 1 authorisation queue | the same table | d7157cfa25 |
-| The routes left to serve before the flag | 1 | the same table, less the 12 decided out | d7157cfa25 |
+| The BFF routes paired with a C++ route | 322 of 334 | the coverage table of =doc/knowledge/architecture/http_route_inventory.org= | edbe2c6aa4 |
+| The BFF routes not paired, by gap | 12: the file-backed routes the design decided out | the same table | edbe2c6aa4 |
+| The routes left to serve before the flag | 0 | the same table, less the 12 decided out | edbe2c6aa4 |
+| The authorisation queue, proved live | the same body as the BFF, the same refusals, and an empty queue on both | =evidence/authorisation_queue_live_run.txt= | edbe2c6aa4 |
 | The classifications, proved live | the same rows in the same order, the same 28 counted lists, the same refusals, and a row written and removed | =evidence/classifications_live_run.txt= | d7157cfa25 |
 | The two identity shape views, proved live | 43 rules and 29 fields, identical as sets to the BFF's answer | =evidence/shape_fields_live_run.txt= | d0013b80e8 |
 | The four desk reads, proved live | the same answer as the BFF at all four addresses; two payloads and two refusals shown | =evidence/market_reads_live_run.txt= | c6745e30f3 |

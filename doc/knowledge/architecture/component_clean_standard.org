@@ -57,7 +57,7 @@ Keeping the component out until every item passes is the alternative, and
 it withholds every gate from the component in the meantime. A component
 with one unverifiable item is then checked by nothing at all, which is
 worse than the gap it was excluded for. So the registry records the gap
-instead, and =check_registry_exceptions.py= refuses an exception that
+instead, and compass-ng's =registry_exceptions= codec refuses an exception that
 names an item the standard does not define, states no reason, names
 nobody or carries no date, against the standard's own item list. What it
 cannot do is decide whether a reason is good enough; that is the
@@ -81,7 +81,7 @@ a typecheck all missed; only a build and a test run found them.
 
 | Id  | Applies to | Item | Evidence |
 |-----+------------+------+----------|
-| B01 | All | Record the baseline before any edit: regenerate with nothing changed and record every pre-existing difference. A later difference is attributable only against this baseline. | =check_component_drift.py --component <c> --dry-run= and =check_model_drift.py= output, in the task's =* Measurements= table with the command and the commit each figure was measured at |
+| B01 | All | Record the baseline before any edit: regenerate with nothing changed and record every pre-existing difference. A later difference is attributable only against this baseline. | =check_component_drift.py --component <c> --dry-run= and =compass-ng check --codec model_rules= output, in the task's =* Measurements= table with the command and the commit each figure was measured at |
 | B02 | All | Classify every model file by metatype: entity, junction, operation, message, field group, module, component. Record and exclude the metatypes that carry no variability. | Survey table on the task |
 | B03 | All | Classify every hand-written C++ file (no generated marker): generatable (domain, repository, mapper, service, handler, registrar, protocol, generator, table and JSON I/O), infrastructure that stays hand-written, or dead. | Survey table on the task |
 | B04 | Protocol | List every NATS subject the component serves or sends, every protocol header, and every raw subject string outside a protocol header. | Survey table on the task |
@@ -92,16 +92,16 @@ a typecheck all missed; only a build and a test run found them.
 
 | Id  | Applies to | Item | Evidence |
 |-----+------------+------+----------|
-| M01 | Entity | Every model is on the current org format. No legacy JSON model remains, and every =lookup_entity= is migrated to =domain_entity=. | Survey; =check_model_drift.py= |
+| M01 | Entity | Every model is on the current org format. No legacy JSON model remains, and every =lookup_entity= is migrated to =domain_entity=. | Survey; =compass-ng check --codec model_rules= |
 | M02 | Entity | Every entity is bound to a variability profile, or recorded as a no-match with its actual feature values and the reason. A forced bind to the nearest profile is not allowed. | Survey table; the compass-codegen-fix-drift method |
-| M03 | Entity | No model states a property its profile already fixes to the same value. Genuine overrides stay. | =check_model_drift.py= |
+| M03 | Entity | No model states a property its profile already fixes to the same value. Genuine overrides stay. | =compass-ng check --codec model_rules= |
 | M04 | Entity | Features sit in the namespace the loader reads (for example =has_parent_id= at the entity root). A misplaced assignment is inert without any error. | Regeneration with the bind shows the expected change |
 | M05 | Entity | An entity describes its table. A joined or denormalised shape is a message, not an entity. A table with no history uses the current-state entity shape. | Model review |
-| M06 | Protocol | Every wire type the component exchanges is modelled: entities, junctions, operations, and the extra messages an entity declares in its =* Messages= section. No hand-written wire type remains. | =check_protocol_twin_coverage.py=; no hand-written protocol header |
+| M06 | Protocol | Every wire type the component exchanges is modelled: entities, junctions, operations, and the extra messages an entity declares in its =* Messages= section. No hand-written wire type remains. | =compass-ng check --codec protocol_twins=; no hand-written protocol header |
 | M07 | Entity | Junctions name their singular, give each key column its real type, and declare =:read_only:=, =:client_read_only:= and =:party_id_is_target:= where they apply. Junction row-level security is tenant scoped. | Model review; generated junction stack |
 | M08 | Entity | Every custom C++ type is bound to the header that defines it. SQL type spellings are the canonical ones. Flags are booleans, not integers. | Model review; regeneration |
 | M09 | All | No legacy fragment remains in any model: no Qt or Wt presentation drawer or property, no property that names a retired message type, no feature the canonical protocol retired, no dead history property. | =grep= over the modeling directory for the retired keywords |
-| M10 | All | The component model (=component_overview.org=) is current, declares its parts, and a composite has its group model so that codegen generates its root =CMakeLists.txt=. | =validate_docs.sh=; regeneration |
+| M10 | All | The component model (=component_overview.org=) is current, declares its parts, and a composite has its group model so that codegen generates its root =CMakeLists.txt=. | =compass-ng check --codec component_docs=; regeneration |
 
 ** Protocol
 
@@ -132,8 +132,8 @@ a typecheck all missed; only a build and a test run found them.
 | Id  | Applies to | Item | Evidence |
 |-----+------------+------+----------|
 | W01 | Entity | Every registrar family the regeneration materialises is composed at the component's composition points: the messaging registrar, the history providers and the event mappings. A family that is deliberately unwired is recorded with its reason. | Registrar review on the task |
-| W02 | Entity | Every permission a handler checks is seeded, and the roles that need it are granted it. | =check_handler_permissions.py= |
-| W03 | Entity | Every name a populate script uses is defined by a populate script. | =check_populate_references.py= |
+| W02 | Entity | Every permission a handler checks is seeded, and the roles that need it are granted it. | =compass-ng check --codec handler_permissions= |
+| W03 | Entity | Every name a populate script uses is defined by a populate script. | =compass-ng check --codec populate_refs= |
 | W04 | Entity | Every SQL script (tables, triggers, notify triggers, row-level security) is reachable from the create and drop aggregators, and the service grants cover every table the service reads. | SQL schema validation (no =WIRE_001=); =compass db recreate= |
 
 ** Shell
@@ -147,11 +147,11 @@ a typecheck all missed; only a build and a test run found them.
 
 | Id  | Applies to | Item | Evidence |
 |-----+------------+------+----------|
-| H01 | All | The component passes the Component Architecture Audit, and its record is written. The diagram is authored in two passes, never one. The automated pass reads data members and little else, so a class whose content is methods arrives as an empty box, and a facet of free functions does not arrive at all. The manual pass below the sentinel fills those boxes with the API, draws the relationships the automated pass cannot see, and deletes any edge the code does not support. A diagram of empty boxes is a skeleton, not a diagram. | Audit record; =validate_docs.sh=; the rendered image read, not merely regenerated |
+| H01 | All | The component passes the Component Architecture Audit, and its record is written. The diagram is authored in two passes, never one. The automated pass reads data members and little else, so a class whose content is methods arrives as an empty box, and a facet of free functions does not arrive at all. The manual pass below the sentinel fills those boxes with the API, draws the relationships the automated pass cannot see, and deletes any edge the code does not support. A diagram of empty boxes is a skeleton, not a diagram. | Audit record; =compass-ng check --codec component_docs=; the rendered image read, not merely regenerated |
 | H02 | All | No legacy code remains: no Qt or Wt fragment, no dead code, no commented-out code, no hand-written duplicate of a generated artefact. Two hand-written implementations of the same behaviour collapse into one, and the survivor keeps the consumers the pair had. | Review record on the task |
 | H03 | All | Comments follow the project comment rules. | compass-code-review-comments pass |
 | H04 | All | No hand-rolled per-platform shim survives where every supported compiler provides the standard facility. Replace the shim with the standard facility, and delete what existed only to carry it. | Review against the three supported compilers: MSVC, AppleClang, and GCC or Clang |
-| H05 | All | The component has its documentation, and the documentation is complete rather than a skeleton. Every component, and every part of a composite, carries a =component_overview.org= with the six sections [[id:B9D3D469-9E59-465F-8C18-34546B680D13][the Component Documentation Guide]] requires: Summary, Inputs, Outputs, Entry points, Dependencies, See also. Each overview carries a =Diagram= section, its =.puml= source and a rendered image committed beside it, and the =Diagram= section points at that image. A diagram that predates the code it draws is a finding: where the component's code changed, the diagram is refreshed in the same pass, per H01's two passes. A schema-owning component also carries its ER diagram. Placeholder prose and empty bullets do not pass. | The overview files and their =.puml=/image pairs; =validate_docs.sh=; the rendered image read, not merely regenerated |
+| H05 | All | The component has its documentation, and the documentation is complete rather than a skeleton. Every component, and every part of a composite, carries a =component_overview.org= with the six sections [[id:B9D3D469-9E59-465F-8C18-34546B680D13][the Component Documentation Guide]] requires: Summary, Inputs, Outputs, Entry points, Dependencies, See also. Each overview carries a =Diagram= section, its =.puml= source and a rendered image committed beside it, and the =Diagram= section points at that image. A diagram that predates the code it draws is a finding: where the component's code changed, the diagram is refreshed in the same pass, per H01's two passes. A schema-owning component also carries its ER diagram. Placeholder prose and empty bullets do not pass. | The overview files and their =.puml=/image pairs; =compass-ng check --codec component_docs=; the rendered image read, not merely regenerated |
 
 ** Verification
 

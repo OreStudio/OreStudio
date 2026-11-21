@@ -3334,13 +3334,23 @@ def _cmd_capture_promote(argv):
                    capture_output=True, text=True)
     if src.exists():
         src.unlink()
-    regen = (PROJECT_ROOT / "projects" / "ores.codegen" / "scripts"
-             / "regenerate_backlog_indexes.py")
-    subprocess.run([sys.executable, str(regen)], cwd=PROJECT_ROOT)
+    _regenerate_backlog_indexes()
     print(f"✅ Capture removed; backlog indexes regenerated.")
     print(f"ℹ️  Next: compass task start "
           f"{args.slug if args.to == 'task' else '<first-task-slug>'}")
     return 0
+
+
+def _regenerate_backlog_indexes():
+    """Rewrite the product backlog bucket indexes. compass-ng's backlog_indexes
+    codec writes them, so this runs compass-ng generate; returns its exit code."""
+    exe = shutil.which("compass-ng")
+    if exe is None:
+        print("❌ compass-ng is not on the PATH; it writes the backlog indexes.",
+              file=sys.stderr)
+        return 1
+    return subprocess.run([exe, "-C", str(PROJECT_ROOT), "generate"],
+                          cwd=str(PROJECT_ROOT)).returncode
 
 
 def cmd_capture(argv):
@@ -3400,7 +3410,7 @@ def cmd_capture(argv):
             # git mv failed (e.g. file not tracked yet); fall back to plain move.
             src.unlink()
         print(f"✅ Filed '{slug}' to {bucket} backlog: {dst.relative_to(PROJECT_ROOT)}")
-        print("ℹ️  Re-run regenerate_backlog_indexes.py to update the bucket index.")
+        print("ℹ️  Run ./compass.sh generate to update the bucket index.")
         return 0
 
     # --- promote subcommand ---
@@ -3478,16 +3488,14 @@ def _capture_commit(out_file, title, note, co_author):
     commit with a pathspec, so anything else already staged is left
     untouched.
     """
-    regen = (PROJECT_ROOT / "projects" / "ores.codegen" / "scripts"
-             / "regenerate_backlog_indexes.py")
-    res = subprocess.run([sys.executable, str(regen)], cwd=str(PROJECT_ROOT))
-    if res.returncode != 0:
+    rc = _regenerate_backlog_indexes()
+    if rc != 0:
         print("❌ Failed to regenerate backlog indexes — not committing.",
               file=sys.stderr)
-        return res.returncode
+        return rc
 
     backlog = PROJECT_ROOT / "doc" / "agile" / "product_backlog"
-    # Every bucket regenerate_backlog_indexes.py writes belongs here too, or
+    # Every bucket the backlog_indexes codec writes belongs here too, or
     # the commit leaves that index regenerated but unstaged, and the next
     # branch switch carries the dirty file along.
     paths = [out_file] + [backlog / f"{b}.org"

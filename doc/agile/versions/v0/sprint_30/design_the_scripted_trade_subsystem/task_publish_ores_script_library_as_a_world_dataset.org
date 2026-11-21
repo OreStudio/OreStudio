@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: D4DE184C-B7E4-47F8-BA9E-D25160E74EC4
 :END:
-#+title: Task: Parse and version the script library
-#+description: The library's inputs are mined into the seed by a text script, nothing parses a script before ORE does, and a trade names its script with no version, so a library change reprices it.
+#+title: Task: Publish ORE's script library as a world dataset
+#+description: ORE's script library is loaded by a populate script with inputs mined from its text, nothing parses a script before ORE does, and a trade names its script with no version, so a library change reprices it.
 #+type: task
 #+level: s1
 #+filetags: :design_the_scripted_trade_subsystem:sprint_30:v0:
@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-A script is parsed when it is loaded or published, its inputs are derived by the parser, and a scripted trade records the version of the script it was booked on, or its inline text, so it revalues on the payoff it was booked with.
+ORE's script library arrives as a world dataset whose methodology extracts, corrects, parses and derives the inputs of every script with ORE Studio's parser; a tenant's own script is parsed when it is published; and a scripted trade records the version of the script it was booked on, or its inline text, so it revalues on the payoff it was booked with.
 
 * Status
 
@@ -35,8 +35,13 @@ A script is parsed when it is loaded or published, its inputs are derived by the
 
 * Acceptance
 
-- a script that does not parse fails the load or the publish, with the line and column ORE's grammar reports
-- the inputs inputs_of derives replace the mined ones in the store, which corrects Accumulator02's ObservationPeriodEndDates from a Number list to an Event list
+- the library is a dataset of the Open Source Risk Engine catalogue, with a methodology that records the ORE commit and each correction, staged in the artefact tables of the script entities and published by the trading service's publish function as a member of the =world= bundle
+- the populate scripts that load the library and correct it today are retired; the corrections are steps of the methodology, under the same exactly-once rule
+- the shell's =script parse=, =script check=, =script inputs= and =script print= run with no session and no server, and =script check= prints each diagnostic as FILE:LINE:COLUMN: severity: message [code] and exits with a non-zero status on any error
+- the generator parses every script with =script check= and fails on a script that does not parse, with its line and column
+- the staged inputs are those =script inputs= derives, which corrects Accumulator02's ObservationPeriodEndDates from a Number list to an Event list, and a test verifies they equal inputs_of for every script
+- a republished dataset writes a new version only of the scripts whose rows changed
+- a tenant's script is parsed when the tenant publishes it, refused with the same diagnostics, and may not take a world script's name
 - a scripted trade records its library script's version, or its inline text and a hash of it
 - a run writes the library from the versions its trades name
 
@@ -61,6 +66,8 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+The world bundle is published in SQL at bring-up, before any service runs, so the parsing and derivation are steps of the generator rather than of the publish function.
 
 Cut from [[id:CCA8090C-26E0-4571-84BA-9115C110376C][Versioning of the Script Library]], [[id:358CC548-3892-45A1-A916-DF4A48ADED03][Library and Inline Scripts in Scripted Trades]], [[id:92449D70-09E2-4391-B716-A1001F22B271][Derivation of Script Inputs from Free Variables]], which states the target this task builds to; the components it touches are [[id:4E135FB5-6E0A-45CC-A805-F5B70F29DDB4][Component Architecture of the Scripted Trade Subsystem]].
 

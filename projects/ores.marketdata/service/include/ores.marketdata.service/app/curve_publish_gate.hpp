@@ -158,7 +158,7 @@ ORES_MARKETDATA_SERVICE_EXPORT ores::inbox::domain::approval_request raise_publi
  * a curve is named twice.
  * @throws std::runtime_error when the store refuses a detail row.
  */
-ORES_MARKETDATA_SERVICE_EXPORT ores::inbox::domain::approval_request
+[[nodiscard]] ORES_MARKETDATA_SERVICE_EXPORT ores::inbox::domain::approval_request
 raise_publish_request_set(const ores::database::context& ctx,
                           const std::vector<publish_subject>& subjects,
                           const std::string& reason);

@@ -63,7 +63,8 @@ TEST_CASE("a_set_that_names_a_surface_twice_is_refused_in_words", published_surf
     // The store would refuse the repeat at the natural key, in words a caller
     // cannot read, so the set is refused before anything is written.
     try {
-        ores::marketdata::service::app::raise_surface_publish_set(
+        // The raise is discarded on purpose: this set must throw.
+        (void)ores::marketdata::service::app::raise_surface_publish_set(
             *f.party, *f.party->party_id(), {subject, subject}, "A set that repeats itself");
         FAIL("A set that names one surface twice was raised.");
     } catch (const std::invalid_argument& e) {

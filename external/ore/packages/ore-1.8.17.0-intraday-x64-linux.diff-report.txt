@@ -1,8 +1,8 @@
 ORE package diff report -- for sign-off before trusting this build
 Package         : ore-1.8.17.0-intraday-x64-linux
-Sample          : /home/marco/Development/OreStudio/ores_dev_brave_hopper/external/ore/packages/TA002_IR_Swap.tar.gz (extracted)
-Expected output : /home/marco/Development/OreStudio/ores_dev_brave_hopper/external/ore/examples/Academy/TA002_IR_Swap/ExpectedOutput
-Compared        : 2026-11-11T22:12:00Z
+Sample          : /home/marco/Development/OreStudio/ores_dev_intraday_package/external/ore/packages/TA002_IR_Swap.tar.gz (extracted)
+Expected output : /home/marco/Development/OreStudio/ores_dev_intraday_package/external/ore/examples/Academy/TA002_IR_Swap/ExpectedOutput
+Compared        : 2026-11-16T23:52:58Z
 Tolerance       : rtol=1e-6
 
 curves.csv:

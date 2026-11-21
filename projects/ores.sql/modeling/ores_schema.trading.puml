@@ -5176,7 +5176,8 @@ package "trading" #E8F5E9 {
     and does not declare. The type is the one ORE's scripted trade states for it
     (Number, Event, Index, Currency or Daycounter), and an array input states a list.
     A value rule, where the library states one, says which values the script accepts.
-    The rows are mined from the code, not typed by hand.
+    The rows are derived from the code by ORE Studio's parser, as the
+    ore.script_library dataset's methodology states, not typed by hand.
     end note
 
     entity ores_trading_script_results_tbl <<temporal>> #C6F0D8 {
@@ -5415,8 +5416,9 @@ package "trading" #E8F5E9 {
     Script Table
     One script of ORE's script library. A scripted trade names a script by
     its library name, and the library states its code once for every trade of it.
-    The rows are the system tenant's reference data, mined from the library ORE
-    ships (external/ore/examples/Products/Input/scriptlibrary.xml).
+    The rows are the system tenant's reference data, published from the
+    ore.script_library dataset, which step 5 of external/ore/methodology.txt
+    derives from the library ORE ships.
     end note
 
     entity ores_trading_settlement_types_tbl <<temporal>> #C6F0D8 {

@@ -26,10 +26,12 @@
 #define ORES_IAM_CORE_MESSAGING_RUN_GRANT_HISTORY_PROVIDER_REGISTRAR_HPP
 
 #include "ores.history.core/service/dispatch_registry.hpp"
+#include "ores.iam.core/export.hpp"
 
 namespace ores::iam::messaging {
 
-void register_run_grant_history_provider(ores::history::service::dispatch_registry& registry);
+ORES_IAM_CORE_EXPORT void
+register_run_grant_history_provider(ores::history::service::dispatch_registry& registry);
 
 }
 

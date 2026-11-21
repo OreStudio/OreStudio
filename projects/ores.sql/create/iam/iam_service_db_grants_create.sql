@@ -33,7 +33,7 @@
 -- Uses a temporary helper function to grant DML on all tables matching a
 -- prefix, so grants automatically cover new tables added to a component.
 --
--- Variables (passed via psql -v from setup_database.sh):
+-- Variables (passed via psql -v by compass db recreate, compass_db.py):
 --   One {name}_service_user variable per service (see service_vars.sh).
 
 -- ---------------------------------------------------------------------------
@@ -173,18 +173,6 @@ grant select on ores_database_info_tbl
 -- Per-service grants
 -- ---------------------------------------------------------------------------
 -- ---------------------------------------------------------------------------
--- The approvals mode: every service that raises an approval reads it
--- ---------------------------------------------------------------------------
--- The inbox reads the approvals mode on every raise and writes it when a tenant
--- changes it.
-select _ores_grant_dml_fn('ores_variability_system_settings_', :'inbox_service_user');
--- These services raise approvals with the same library, in their own sessions.
-select _ores_grant_select_fn('ores_variability_system_settings_', :'refdata_service_user');
-select _ores_grant_select_fn('ores_variability_system_settings_', :'reporting_service_user');
-select _ores_grant_select_fn('ores_variability_system_settings_', :'trading_service_user');
-select _ores_grant_select_fn('ores_variability_system_settings_', :'marketdata_service_user');
-
--- ---------------------------------------------------------------------------
 -- iam_service: IAM domain service
 -- ---------------------------------------------------------------------------
 select _ores_grant_dml_fn('ores_iam_', :'iam_service_user');
@@ -213,6 +201,7 @@ select _ores_grant_select_fn('ores_inbox_notification_channels_', :'refdata_serv
 select _ores_grant_select_fn('ores_inbox_delivery_outcome_types_', :'refdata_service_user');
 select _ores_grant_select_fn('ores_iam_accounts_', :'refdata_service_user');
 select _ores_grant_select_fn('ores_iam_account_parties_', :'refdata_service_user');
+select _ores_grant_select_fn('ores_variability_system_settings_', :'refdata_service_user');
 select _ores_grant_execute_fn('ores_refdata_publish_', :'refdata_service_user');
 select _ores_grant_execute_fn('ores_refdata_book_change_parties_', :'refdata_service_user');
 select _ores_grant_execute_fn('ores_refdata_counterparty_change_parties_', :'refdata_service_user');
@@ -257,6 +246,7 @@ select _ores_grant_select_fn('ores_inbox_notification_channels_', :'reporting_se
 select _ores_grant_select_fn('ores_inbox_delivery_outcome_types_', :'reporting_service_user');
 select _ores_grant_select_fn('ores_iam_accounts_', :'reporting_service_user');
 select _ores_grant_select_fn('ores_iam_account_parties_', :'reporting_service_user');
+select _ores_grant_select_fn('ores_variability_system_settings_', :'reporting_service_user');
 select _ores_grant_execute_fn('ores_reporting_publish_', :'reporting_service_user');
 select _ores_grant_execute_fn('ores_reporting_unapplied_', :'reporting_service_user');
 
@@ -281,6 +271,7 @@ select _ores_grant_select_fn('ores_inbox_notification_channels_', :'trading_serv
 select _ores_grant_select_fn('ores_inbox_delivery_outcome_types_', :'trading_service_user');
 select _ores_grant_select_fn('ores_iam_accounts_', :'trading_service_user');
 select _ores_grant_select_fn('ores_iam_account_parties_', :'trading_service_user');
+select _ores_grant_select_fn('ores_variability_system_settings_', :'trading_service_user');
 
 -- ---------------------------------------------------------------------------
 -- compute_service: Compute Grid domain service
@@ -319,15 +310,7 @@ select _ores_grant_select_fn('ores_dq_fsm_', :'workflow_service_user');
 select _ores_grant_dml_fn('ores_marketdata_', :'marketdata_service_user');
 select _ores_grant_dml_fn('ores_inbox_approval_requests_', :'marketdata_service_user');
 select _ores_grant_dml_fn('ores_inbox_approval_request_parts_', :'marketdata_service_user');
--- A curve of the tenant's own party needs no approval, so the service closes
--- that request in the same act and writes the decision that closed it. A
--- decision is the inbox's row and the inbox's function, which runs as its
--- caller, so the service that closes a request writes the decision.
 select _ores_grant_dml_fn('ores_inbox_approval_decisions_', :'marketdata_service_user');
--- The notices a published curve raises. A component that tells the readers of
--- its own record writes the notice itself, as the reference data and reporting
--- services already do for the kinds they raise; the inbox owns the rows and the
--- raise function, and the reader resolves the audience the same way.
 select _ores_grant_dml_fn('ores_inbox_notifications_', :'marketdata_service_user');
 select _ores_grant_dml_fn('ores_inbox_notification_arguments_', :'marketdata_service_user');
 select _ores_grant_dml_fn('ores_inbox_notification_recipients_', :'marketdata_service_user');
@@ -337,6 +320,7 @@ select _ores_grant_select_fn('ores_ore_', :'marketdata_service_user');
 select _ores_grant_select_fn('ores_inbox_approval_', :'marketdata_service_user');
 select _ores_grant_select_fn('ores_iam_accounts_', :'marketdata_service_user');
 select _ores_grant_select_fn('ores_iam_account_parties_', :'marketdata_service_user');
+select _ores_grant_select_fn('ores_variability_system_settings_', :'marketdata_service_user');
 
 -- ---------------------------------------------------------------------------
 -- analytics_service: Analytics domain service
@@ -351,6 +335,7 @@ select _ores_grant_dml_fn('ores_analytics_', :'analytics_service_user');
 -- inbox_service: Inbox domain service
 -- ---------------------------------------------------------------------------
 select _ores_grant_dml_fn('ores_inbox_', :'inbox_service_user');
+select _ores_grant_dml_fn('ores_variability_system_settings_', :'inbox_service_user');
 select _ores_grant_select_fn('ores_iam_', :'inbox_service_user');
 select _ores_grant_execute_fn('ores_inbox_expire_approval_requests_', :'inbox_service_user');
 select _ores_grant_execute_fn('ores_inbox_remind_expiring_approval_requests_', :'inbox_service_user');

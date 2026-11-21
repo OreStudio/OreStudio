@@ -28,13 +28,15 @@
 #include "ores.database/domain/context_fwd.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/subscription.hpp"
+#include "ores.reporting.core/export.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include <optional>
 #include <vector>
 
 namespace ores::reporting::messaging {
 
-std::vector<ores::nats::service::subscription> register_ore_parameter_value_domain_handlers(
+ORES_REPORTING_CORE_EXPORT std::vector<ores::nats::service::subscription>
+register_ore_parameter_value_domain_handlers(
     ores::nats::service::client& nats,
     const ores::database::context& ctx,
     std::optional<ores::security::jwt::jwt_authenticator> verifier);

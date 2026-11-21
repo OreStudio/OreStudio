@@ -26,10 +26,11 @@
 #define ORES_SYNTHETIC_CORE_MESSAGING_CALIBRATION_PROVIDER_ORDER_HISTORY_PROVIDER_REGISTRAR_HPP
 
 #include "ores.history.core/service/dispatch_registry.hpp"
+#include "ores.synthetic.core/export.hpp"
 
 namespace ores::synthetic::messaging {
 
-void register_calibration_provider_order_history_provider(
+ORES_SYNTHETIC_CORE_EXPORT void register_calibration_provider_order_history_provider(
     ores::history::service::dispatch_registry& registry);
 
 }

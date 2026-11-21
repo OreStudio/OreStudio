@@ -205,6 +205,14 @@ export interface GatherMarketDataRequest {
     definition_id: string;
     tenant_id: string;
     correlation_id: string;
+    /**
+     * @brief The trade set the run prices, as trade ids.
+     *
+     * The market data a run gathers is the data its own trades need, and only the
+     * trades can say what that is. An empty set gathers the tenant's market data as
+     * a whole, which is what a caller that names no set still asks for.
+     */
+    trade_ids: string[];
 }
 
 export interface GatherMarketDataResult {

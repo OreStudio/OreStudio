@@ -26,10 +26,11 @@
 #define ORES_REFDATA_CORE_MESSAGING_DEFAULT_CURVE_YIELD_REINTERPRETATION_HISTORY_PROVIDER_REGISTRAR_HPP
 
 #include "ores.history.core/service/dispatch_registry.hpp"
+#include "ores.refdata.core/export.hpp"
 
 namespace ores::refdata::messaging {
 
-void register_default_curve_yield_reinterpretation_history_provider(
+ORES_REFDATA_CORE_EXPORT void register_default_curve_yield_reinterpretation_history_provider(
     ores::history::service::dispatch_registry& registry);
 
 }

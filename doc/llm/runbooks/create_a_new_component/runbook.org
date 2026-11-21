@@ -56,10 +56,9 @@ source of truth for codegen — it must come *before* the C++ scaffold:
    with it.
 
 5. /Build and verify./ Run =cmake --build --preset <preset>= and =ctest=
-   to confirm the scaffold compiles and passes stub tests. Verify the
-   codegen-side flow with =python3 projects/ores.codegen/tests/component_scaffold/verify.py=
-   which exercises the loader + scaffold-path resolution against fixtures
-   and prior art.
+   to confirm the scaffold compiles and passes stub tests. Then run
+   =./compass.sh check=: compass-ng's codegen and service integrity checks
+   prove the new component's generated files and its registration.
 
 6. /Commit and PR./ Use [[id:F4B1A670-3B02-11F1-BCE2-4B06F4BBA5D9][commit conventions]] and [[id:CC928252-E0C5-4C3C-A7A8-D613593E4E37][create a PR]].
 

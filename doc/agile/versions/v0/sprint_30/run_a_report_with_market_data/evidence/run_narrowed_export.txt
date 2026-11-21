@@ -1,0 +1,32 @@
+# A run gathers the market data its own trades resolve to. Checkout d92276f272,
+# on the acme_demo provision of 2026-11-21, report instance
+# 51ef2b79-3de6-47ec-bf72-6ee6da9f1294 (ACCOUK NPV).
+#
+# Command: compass sql -- -c "select left(i.output_message, 600) from
+#   ores_reporting_report_instances_tbl i where i.id = '51ef...' order by version"
+#
+# The gather step resolves the set it was handed and asks trading what the
+# trades name. The log states both counts:
+#
+#   2026-11-21 13:20:26 [INFO] gather_market_data resolved the run's requirements
+#     | instance=51ef2b79 | trades=467 requirements=98
+#
+# The export refuses the requirements the market cannot answer, and names them:
+#
+#   export_market_data_to_storage failed: The market holds no series for 93
+#   requirement(s) of the run: oresmd://commodity/ICE:B?type=fixing&index=commodity,
+#   oresmd://commodity/NYMEX:CL?type=fixing&index=commodity, ...,
+#   oresmd://credit/0292001167H3Q0GH7D41?type=series&instrument=cds&quote=credit_spread
+#   &seniority=SNRFOR&ccy=EUR, ...
+#
+# 93 of the 98 are commodity fixings and credit curves the generated population
+# names and the market does not hold. That gap is the subject of
+# "Prove a run on generated trades and market data", and the refusal is this
+# task's acceptance: a run that quietly lacks them fails much later, in an engine
+# that can only report a curve it could not build.
+#
+# A narrowing that finds nothing to refuse was read on the way to this: with the
+# as-of taken as the day's first instant, the same run resolved 0 requirements,
+# because the trades were booked during the day. Reading the set at the close of
+# the day it names resolved the 98, and the case is pinned by the repository's
+# comment and the run above.

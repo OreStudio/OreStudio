@@ -328,3 +328,42 @@ TEST_CASE("finalise waits for the step whose result it completes", "[workflow][r
     REQUIRE(ignored.back().name == "finalise");
     CHECK(waits_for(ignored.back(), "ignore_compute_results"));
 }
+
+TEST_CASE("the gather step names the trade set the previous step wrote", "[workflow][reporting]") {
+    /*
+     * The market data a run gathers is the data its own trades need, so the step reads the
+     * manifest gather_trades left and names its trade ids. A manifest the run cannot read
+     * leaves the set empty, which gathers the tenant's market data as a run that names no set
+     * asks for, rather than failing a run over another step's payload.
+     */
+    const auto request = run_request("execute", "", "execute");
+    const msg::gather_trades_result trades{.success = true,
+                                           .message = "Gathered 2 trades",
+                                           .trade_count = 2,
+                                           .storage_key = "trades",
+                                           .trade_versions = R"({"b": 3, "a": 1})"};
+    const svc::workflow_step_results prev{
+        {.name = "gather_trades", .response_json = ores::utility::codec::json::write(trades)}};
+
+    auto steps = steps_for(request);
+    const auto* gather = [&]() -> const svc::workflow_step_def* {
+        for (const auto& step : steps)
+            if (step.name == "gather_market_data")
+                return &step;
+        return nullptr;
+    }();
+    REQUIRE(gather != nullptr);
+
+    const auto command = ores::utility::codec::json::try_read<msg::gather_market_data_request>(
+        gather->build_command(request, prev));
+    REQUIRE(command);
+    CHECK(command->trade_ids == std::vector<std::string>{"a", "b"});
+
+    // A manifest the step cannot read names no set rather than failing the run.
+    const svc::workflow_step_results unreadable{
+        {.name = "gather_trades", .response_json = R"({"trade_versions": "not json"})"}};
+    const auto empty = ores::utility::codec::json::try_read<msg::gather_market_data_request>(
+        gather->build_command(request, unreadable));
+    REQUIRE(empty);
+    CHECK(empty->trade_ids.empty());
+}

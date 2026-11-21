@@ -42,7 +42,8 @@ namespace ores::trading::domain {
  * and does not declare. The type is the one ORE's scripted trade states for it
  * (Number, Event, Index, Currency or Daycounter), and an array input states a list.
  * A value rule, where the library states one, says which values the script accepts.
- * The rows are mined from the code, not typed by hand.
+ * The rows are derived from the code by ORE Studio's parser, as the
+ * ore.script_library dataset's methodology states, not typed by hand.
  */
 struct script_input final {
     /**

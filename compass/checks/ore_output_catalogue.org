@@ -412,3 +412,4 @@ None here: the codec's cases are its tests, in compass's
 - =compass-ng='s =ore_output_catalogue= codec, in the compass repository.
 - [[id:34C68112-7A34-4557-835C-BDCAA7BB9C2A][ORE output formats]], the page the
   codec writes.
+- [[id:A1D08435-9DCB-4B63-A33F-2E1A87DA62A2][Check inventory]]: every check compass runs here, with this one among them.

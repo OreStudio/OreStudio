@@ -37,6 +37,14 @@
 \echo '--- ORE Asset Class Artefacts ---'
 \ir ore_asset_class_artefact_populate.sql
 
+-- The script library: its methodology, its dataset and its staged rows, which
+-- the world bundle publishes into the system tenant at the end of the populate.
+\echo ''
+\echo '--- ORE Script Library ---'
+\ir ore_methodology_populate.sql
+\ir ore_script_library_dataset_populate.sql
+\ir ore_script_library_artefact_populate.sql
+
 -- =============================================================================
 -- Summary
 -- =============================================================================

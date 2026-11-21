@@ -29,12 +29,13 @@
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/subscription.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
+#include "ores.trading.core/export.hpp"
 #include <optional>
 #include <vector>
 
 namespace ores::trading::messaging {
 
-std::vector<ores::nats::service::subscription>
+ORES_TRADING_CORE_EXPORT std::vector<ores::nats::service::subscription>
 register_swap_leg_indexing_handlers(ores::nats::service::client& nats,
                                     const ores::database::context& ctx,
                                     std::optional<ores::security::jwt::jwt_authenticator> verifier);

@@ -24,6 +24,7 @@
 #include "ores.utility/codec/json_codec.hpp"
 #include "ores.workflow.api/service/workflow_definition.hpp"
 #include "ores.workflow.api/service/workflow_registry.hpp"
+#include <map>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -125,6 +126,36 @@ template <typename Result>
 }
 
 /**
+ * @brief The trade ids the named step wrote, read from its manifest.
+ *
+ * The gather step leaves the trades in object storage and travels only the
+ * manifest of versions keyed by trade id, so the set a later step names is that
+ * manifest's keys. A manifest the run cannot read leaves the set empty, which
+ * gathers the tenant's market data as a run that names no set does, rather than
+ * failing a run over a manifest this step does not own.
+ */
+[[nodiscard]] inline std::vector<std::string> trade_ids_of(const workflow_step_results& results,
+                                                           std::string_view step_name) {
+    std::vector<std::string> out;
+    const auto* json = find_step_result(results, step_name);
+    if (!json)
+        return out;
+    auto trades =
+        ores::utility::codec::json::try_read<ores::reporting::messaging::gather_trades_result>(
+            *json);
+    if (!trades || trades->trade_versions.empty())
+        return out;
+    auto manifest =
+        ores::utility::codec::json::try_read<std::map<std::string, int>>(trades->trade_versions);
+    if (!manifest)
+        return out;
+    out.reserve(manifest->size());
+    for (const auto& [id, version] : *manifest)
+        out.push_back(id);
+    return out;
+}
+
+/**
  * @brief The run's request, or a loud failure.
  */
 [[nodiscard]] inline ores::reporting::messaging::report_execution_request
@@ -194,15 +225,19 @@ template <typename Command>
     s.command_subject = std::string(gather_market_data_request::nats_subject);
     s.timeout = data_step_timeout;
     s.compensation_subject = std::string(fail_report_request::nats_subject);
+    // The market data a run gathers is the data its own trades need, so this step reads the
+    // trade set the previous one wrote rather than the whole tenant's market.
+    s.consumes = {"gather_trades"};
 
     s.build_command = [](const std::string& request_json,
-                         const workflow_step_results&) -> std::string {
+                         const workflow_step_results& prev) -> std::string {
         const auto req = require_run_request(request_json, "gather_market_data");
         return ores::utility::codec::json::write(
             gather_market_data_request{.report_instance_id = req.report_instance_id,
                                        .definition_id = req.definition_id,
                                        .tenant_id = req.tenant_id,
-                                       .correlation_id = req.correlation_id});
+                                       .correlation_id = req.correlation_id,
+                                       .trade_ids = trade_ids_of(prev, "gather_trades")});
     };
 
     s.build_compensation = [](const std::string& cmd_json,

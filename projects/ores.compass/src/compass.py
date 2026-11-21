@@ -5083,17 +5083,15 @@ def cmd_env(argv):
         largs = lp.parse_args(argv[1:])
         return env_init.list_env(PROJECT_ROOT, largs.show_secrets)
     if argv and argv[0] == "version":
-        import env_init
-        # `version new "<desc>"` records a new version; bare `version` prints it.
-        if len(argv) >= 2 and argv[1] == "new":
-            np = argparse.ArgumentParser(prog="compass env version new",
-                                         description="Record a new .env-format version.")
-            np.add_argument("description",
-                            help="What changed in the .env (becomes the log row's description)")
-            nargs = np.parse_args(argv[2:])
-            return env_init.new_version(PROJECT_ROOT, nargs.description)
-        print(env_init.current_version(PROJECT_ROOT))
-        return 0
+        # compass-ng holds the format versions in compass/checks/env_format.org:
+        # bare `version` prints the current one, and `version new "<why>"
+        # --adds NAME` records one.
+        exe = shutil.which("compass-ng")
+        if exe is None:
+            print("❌ compass-ng is not on the PATH; it holds the .env format versions.",
+                  file=sys.stderr)
+            return 1
+        return subprocess.run([exe, "-C", str(PROJECT_ROOT), "env"] + list(argv)).returncode
     if argv and argv[0] == "upgrade":
         import env_upgrade
         return env_upgrade.run(argv[1:], PROJECT_ROOT)

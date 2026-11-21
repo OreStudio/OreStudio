@@ -26,10 +26,11 @@
 #define ORES_IAM_CORE_MESSAGING_SEED_PROFILE_PARAMETER_HISTORY_PROVIDER_REGISTRAR_HPP
 
 #include "ores.history.core/service/dispatch_registry.hpp"
+#include "ores.iam.core/export.hpp"
 
 namespace ores::iam::messaging {
 
-void register_seed_profile_parameter_history_provider(
+ORES_IAM_CORE_EXPORT void register_seed_profile_parameter_history_provider(
     ores::history::service::dispatch_registry& registry);
 
 }

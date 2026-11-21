@@ -32,6 +32,7 @@
 #include "ores.storage.core/net/storage_transfer.hpp"
 #include "ores.trading.api/domain/origin.hpp"
 #include "ores.trading.api/messaging/trade_operations_protocol.hpp"
+#include "ores.trading.core/repository/market_reference_repository.hpp"
 #include "ores.trading.core/service/trade_export_service.hpp"
 #include "ores.trading.core/service/trade_operations_service.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
@@ -253,6 +254,46 @@ public:
             failure.result.message = e.what();
             reply(nats_, msg, failure);
         }
+    }
+
+    /**
+     * @brief Serves trading.v1.ops.resolve_market_data_requirements.
+     */
+    void resolve_market_data_requirements(ores::nats::message msg) {
+        using ores::service::messaging::decode;
+        using ores::service::messaging::error_reply;
+        using ores::service::messaging::reply;
+        using namespace ores::logging;
+
+        ORES_LOG_SEV(trade_operations_handler_lg(), debug) << "Handling " << msg.subject;
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        if (!ores::service::messaging::has_permission(*ctx_expected, "trading::trades:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        resolve_market_data_requirements_response resp;
+        try {
+            if (auto req = decode<resolve_market_data_requirements_request>(msg)) {
+                resp.requirements = repository::market_reference_repository{}.read(
+                    *ctx_expected, req->trade_ids, req->as_of);
+                resp.success = true;
+                resp.message = "Resolved " + std::to_string(resp.requirements.size()) +
+                               " requirement(s) from " + std::to_string(req->trade_ids.size()) +
+                               " trade(s).";
+            } else {
+                resp.message = "Invalid resolve_market_data_requirements_request.";
+            }
+        } catch (const std::exception& e) {
+            ORES_LOG_SEV(trade_operations_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            resp.success = false;
+            resp.message = e.what();
+        }
+        reply(nats_, msg, resp);
     }
 
     /**

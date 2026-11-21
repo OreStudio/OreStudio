@@ -323,4 +323,56 @@ wire_traits<ores::trading::messaging::export_trades_to_storage_response>::read_m
     return object::read_msgpack<ores::trading::messaging::export_trades_to_storage_response>(data);
 }
 
+std::string
+wire_traits<ores::trading::messaging::resolve_market_data_requirements_request>::write_json(
+    const ores::trading::messaging::resolve_market_data_requirements_request& v) {
+    return object::write_json(v);
+}
+
+ores::trading::messaging::resolve_market_data_requirements_request
+wire_traits<ores::trading::messaging::resolve_market_data_requirements_request>::read_json(
+    std::string_view text) {
+    return object::read_json<ores::trading::messaging::resolve_market_data_requirements_request>(
+        text);
+}
+
+std::string
+wire_traits<ores::trading::messaging::resolve_market_data_requirements_request>::write_msgpack(
+    const ores::trading::messaging::resolve_market_data_requirements_request& v) {
+    return object::write_msgpack(v);
+}
+
+ores::trading::messaging::resolve_market_data_requirements_request
+wire_traits<ores::trading::messaging::resolve_market_data_requirements_request>::read_msgpack(
+    std::span<const std::byte> data) {
+    return object::read_msgpack<ores::trading::messaging::resolve_market_data_requirements_request>(
+        data);
+}
+
+std::string
+wire_traits<ores::trading::messaging::resolve_market_data_requirements_response>::write_json(
+    const ores::trading::messaging::resolve_market_data_requirements_response& v) {
+    return object::write_json(v);
+}
+
+ores::trading::messaging::resolve_market_data_requirements_response
+wire_traits<ores::trading::messaging::resolve_market_data_requirements_response>::read_json(
+    std::string_view text) {
+    return object::read_json<ores::trading::messaging::resolve_market_data_requirements_response>(
+        text);
+}
+
+std::string
+wire_traits<ores::trading::messaging::resolve_market_data_requirements_response>::write_msgpack(
+    const ores::trading::messaging::resolve_market_data_requirements_response& v) {
+    return object::write_msgpack(v);
+}
+
+ores::trading::messaging::resolve_market_data_requirements_response
+wire_traits<ores::trading::messaging::resolve_market_data_requirements_response>::read_msgpack(
+    std::span<const std::byte> data) {
+    return object::read_msgpack<
+        ores::trading::messaging::resolve_market_data_requirements_response>(data);
+}
+
 }

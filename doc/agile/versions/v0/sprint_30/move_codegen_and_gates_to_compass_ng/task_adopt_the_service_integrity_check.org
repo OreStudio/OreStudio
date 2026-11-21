@@ -1,0 +1,103 @@
+:PROPERTIES:
+:ID: 66BABB58-0833-4371-A618-742B754D0C40
+:END:
+#+title: Task: Adopt the service integrity check
+#+description: Turn on compass-ng's service_integrity check with its ORE check document, fix the gaps it finds, and retire check_service_registration.py.
+#+type: task
+#+level: s1
+#+filetags: :move_codegen_and_gates_to_compass_ng:sprint_30:v0:
+#+owner: marco
+#+branch: feature/adopt-service-integrity
+#+pr: 4982
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E3BF90FE-43DF-4A30-9F2C-FF5E20128C88][Move codegen and the gates to compass-ng]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+compass-ng's service_integrity check runs on ORE with no finding: every service meets the obligations in compass/checks/service_integrity.org, the ORE service's role holds its component wildcard, and the Python check it replaces is gone.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:E3BF90FE-43DF-4A30-9F2C-FF5E20128C88][Move codegen and the gates to compass-ng]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-21                               |
+
+* Acceptance
+
+- =compass/checks/service_integrity.org= is committed and the codec is on.
+- =compass-ng check --codec service_integrity= reports nothing.
+- =OreService= holds =ore::*=, and =ore::*= is seeded.
+- =check_service_registration.py= and its gate entry are gone.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+- On main, the check found three gaps; compass-85's two =nats_certs.py=
+  findings were already fixed there.
+  - =OreService= held =workflow::*= but not =ore::*=, and =ore::*= was not
+    seeded. The product owner chose to fix the role. =workflow::*= stays: the
+    service answers =workflow.v1.ops.ore_import= and builds workflows.
+  - =projects/ores.agent/evals/native-windows.py= lists four services. The
+    product owner chose an exception row: the prototype is being ported.
+- The =unregistered= and =partless= rules replace =check_service_registration.py=.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4982][#4982]] | [compass] Adopt the service integrity check |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+compass-ng's service_integrity check runs on ORE and reports nothing. =ore::*=
+is seeded and granted to =OreService= beside =workflow::*=; the agent
+prototype's service list has an exception row with its reason; the Python
+service registration check is gone. The check inventory now counts 75 of 81
+enabled. The ratchet reports nothing new.

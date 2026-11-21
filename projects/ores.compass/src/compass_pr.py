@@ -290,6 +290,18 @@ def _env_name(project_root):
     return ""
 
 
+def _record_message(number, story_id, task_id, environment):
+    """The message of the commit that records a pull request on its task.
+
+    It carries the three trailers commit_provenance requires of every commit:
+    the story, the task and the environment that opened the pull request.
+    """
+    trailers = [f"Story-ID: {story_id}", f"Task-ID: {task_id}"]
+    if environment and environment != "(none)":
+        trailers.append(f"Environment: {environment}")
+    return f"[agile] Record PR #{number} on task\n\n" + "\n".join(trailers)
+
+
 def _canonical_body(summary, change_bullets, story_title, story_id,
                     story_url, task_title, task_id, task_url,
                     environment, testing_plan, testing_evidence,
@@ -442,9 +454,7 @@ def _cmd_create(args, project_root):
                      project_root)
     if rc != 0:
         return rc
-    msg = (f"[agile] Record PR #{number} on task\n\n"
-           f"Story-ID: {story_id}\n"
-           f"Task-ID: {task_id}")
+    msg = _record_message(number, story_id, task_id, environment)
     # add first: a just-scaffolded task doc is untracked, and a commit
     # pathspec alone does not pick those up. Check the staged diff
     # rather than parsing git's commit message, which varies with the

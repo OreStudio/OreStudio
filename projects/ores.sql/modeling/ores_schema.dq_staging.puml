@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: dq_staging
-Tables: 179
+Tables: 186
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -3072,6 +3072,115 @@ package "dq_staging" #F3E5F5 {
 
     note right of ores_dq_risk_report_configs_artefact_tbl
     The ORE-level run settings that risk report definitions of a party share: the base currency, the market data of the run and the folders and log file of the package. The engine settings are not here. They are a named configuration of their own, engine_settings, that the definition binds in its own slot. A report definition binds this configuration through report_configurations, in the slot of configuration type risk_report_config, as it binds its pricing engines. The analytics it runs, and their parameters, are rows of configuration_analytic and configuration_analytic_parameter. Portfolio and book scope live in separate temporal junction tables keyed by this row. - Artefact Table
+    end note
+
+    entity ores_dq_script_calibration_strikes_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * script_name : text
+        * purpose : text
+        * calibration_number : integer
+        * sequence_number : integer
+        * version : integer
+        * strike_variable : text
+    }
+
+    note right of ores_dq_script_calibration_strikes_artefact_tbl
+    One strike a library script calibration is made at, named by the script variable that holds it. - Artefact Table
+    end note
+
+    entity ores_dq_script_calibrations_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * script_name : text
+        * purpose : text
+        * sequence_number : integer
+        * version : integer
+        * index_variable : text
+    }
+
+    note right of ores_dq_script_calibrations_artefact_tbl
+    One calibration a library script variant asks the engine for: the index variable it is made against. Its strikes are rows of their own. - Artefact Table
+    end note
+
+    entity ores_dq_script_coarsenings_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * script_name : text
+        * purpose : text
+        * sequence_number : integer
+        * version : integer
+        * eligible_schedule : text
+    }
+
+    note right of ores_dq_script_coarsenings_artefact_tbl
+    One schedule a library script variant names as eligible for coarsening, which lets the engine price a long schedule on fewer dates. - Artefact Table
+    end note
+
+    entity ores_dq_script_inputs_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * script_name : text
+        * sequence_number : integer
+        * version : integer
+        * input_name : text
+        * data_type : text
+        * is_array : boolean
+          value_rule : text
+          description : text
+    }
+
+    note right of ores_dq_script_inputs_artefact_tbl
+    One input a library script reads from its trade: a variable the code uses and does not declare. The type is the one ORE's scripted trade states for it (Number, Event, Index, Currency or Daycounter), and an array input states a list. A value rule, where the library states one, says which values the script accepts. The rows are derived from the code by ORE Studio's parser, as the ore.script_library dataset's methodology states, not typed by hand. - Artefact Table
+    end note
+
+    entity ores_dq_script_results_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * script_name : text
+        * purpose : text
+        * sequence_number : integer
+        * version : integer
+        * variable : text
+          rename : text
+    }
+
+    note right of ores_dq_script_results_artefact_tbl
+    One result a library script variant reports beside its NPV: the script variable it reads and, when the library renames it, the name it reports it under. - Artefact Table
+    end note
+
+    entity ores_dq_script_variants_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * script_name : text
+        * purpose : text
+        * version : integer
+        * code : text
+        * npv_variable : text
+    }
+
+    note right of ores_dq_script_variants_artefact_tbl
+    One variant of a library script. Every script has a default variant, and a few add one for another purpose, such as a finite-difference engine. The variant holds the payoff code and the variable the NPV is read from. - Artefact Table
+    end note
+
+    entity ores_dq_scripts_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * name : text
+        * version : integer
+          product_tag : text
+          description : text
+    }
+
+    note right of ores_dq_scripts_artefact_tbl
+    One script of ORE's script library. A scripted trade names a script by its library name, and the library states its code once for every trade of it. The rows are the system tenant's reference data, published from the ore.script_library dataset, which step 5 of external/ore/methodology.txt derives from the library ORE ships. - Artefact Table
     end note
 
     entity ores_dq_supervisory_bodies_artefact_tbl  #F7E5FF {

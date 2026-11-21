@@ -26,10 +26,12 @@
 #define ORES_SCHEDULER_CORE_MESSAGING_JOB_DEFINITION_HISTORY_PROVIDER_REGISTRAR_HPP
 
 #include "ores.history.core/service/dispatch_registry.hpp"
+#include "ores.scheduler.core/export.hpp"
 
 namespace ores::scheduler::messaging {
 
-void register_job_definition_history_provider(ores::history::service::dispatch_registry& registry);
+ORES_SCHEDULER_CORE_EXPORT void
+register_job_definition_history_provider(ores::history::service::dispatch_registry& registry);
 
 }
 

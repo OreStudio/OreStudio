@@ -26,11 +26,12 @@
 #define ORES_INBOX_CORE_MESSAGING_NOTIFICATION_CHANNEL_HISTORY_PROVIDER_REGISTRAR_HPP
 
 #include "ores.history.core/service/dispatch_registry.hpp"
+#include "ores.inbox.core/export.hpp"
 
 namespace ores::inbox::messaging {
 
-void register_notification_channel_history_provider(
-    ores::history::service::dispatch_registry& registry);
+ORES_INBOX_CORE_EXPORT void
+register_notification_channel_history_provider(ores::history::service::dispatch_registry& registry);
 
 }
 

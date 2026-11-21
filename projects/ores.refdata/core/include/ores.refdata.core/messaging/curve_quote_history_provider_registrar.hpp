@@ -26,10 +26,12 @@
 #define ORES_REFDATA_CORE_MESSAGING_CURVE_QUOTE_HISTORY_PROVIDER_REGISTRAR_HPP
 
 #include "ores.history.core/service/dispatch_registry.hpp"
+#include "ores.refdata.core/export.hpp"
 
 namespace ores::refdata::messaging {
 
-void register_curve_quote_history_provider(ores::history::service::dispatch_registry& registry);
+ORES_REFDATA_CORE_EXPORT void
+register_curve_quote_history_provider(ores::history::service::dispatch_registry& registry);
 
 }
 

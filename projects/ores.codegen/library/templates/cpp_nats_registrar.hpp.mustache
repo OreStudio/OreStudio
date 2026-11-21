@@ -8,12 +8,13 @@
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/subscription.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
+#include "ores.{{component_core}}/export.hpp"
 #include <optional>
 #include <vector>
 
 namespace ores::{{component}}::messaging {
 
-std::vector<ores::nats::service::subscription>
+ORES_{{component_core_upper}}_EXPORT std::vector<ores::nats::service::subscription>
 register_{{entity_singular}}_handlers(ores::nats::service::client& nats,
                                        const ores::database::context& ctx,
                                        std::optional<ores::security::jwt::jwt_authenticator> verifier);
@@ -30,12 +31,13 @@ register_{{entity_singular}}_handlers(ores::nats::service::client& nats,
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/subscription.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
+#include "ores.{{component_core}}/export.hpp"
 #include <optional>
 #include <vector>
 
 namespace ores::{{component}}::messaging {
 
-std::vector<ores::nats::service::subscription>
+ORES_{{component_core_upper}}_EXPORT std::vector<ores::nats::service::subscription>
 register_{{name_singular}}_handlers(ores::nats::service::client& nats,
                                      const ores::database::context& ctx,
                                      std::optional<ores::security::jwt::jwt_authenticator> verifier);
@@ -52,12 +54,13 @@ register_{{name_singular}}_handlers(ores::nats::service::client& nats,
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/subscription.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
+#include "ores.{{component_core}}/export.hpp"
 #include <optional>
 #include <vector>
 
 namespace ores::{{component}}::messaging {
 
-std::vector<ores::nats::service::subscription>
+ORES_{{component_core_upper}}_EXPORT std::vector<ores::nats::service::subscription>
 register_{{entity_singular}}_handlers(ores::nats::service::client& nats,
                                        const ores::database::context& ctx,
                                        std::optional<ores::security::jwt::jwt_authenticator> verifier);
@@ -74,12 +77,13 @@ register_{{entity_singular}}_handlers(ores::nats::service::client& nats,
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/subscription.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
+#include "ores.{{component_core}}/export.hpp"
 #include <optional>
 #include <vector>
 
 namespace ores::{{component}}::messaging {
 
-std::vector<ores::nats::service::subscription>
+ORES_{{component_core_upper}}_EXPORT std::vector<ores::nats::service::subscription>
 register_{{entity_singular}}_handlers(ores::nats::service::client& nats,
                                        const ores::database::context& ctx,
                                        std::optional<ores::security::jwt::jwt_authenticator> verifier);

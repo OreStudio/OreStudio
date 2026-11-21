@@ -27,6 +27,7 @@
 
 #include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
+#include "ores.inbox.core/export.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <chrono>
 #include <optional>
@@ -92,7 +93,7 @@ struct approval_policy_entity {
     }
 };
 
-std::ostream& operator<<(std::ostream& s, const approval_policy_entity& v);
+ORES_INBOX_CORE_EXPORT std::ostream& operator<<(std::ostream& s, const approval_policy_entity& v);
 
 }
 

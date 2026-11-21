@@ -20,30 +20,17 @@ import subprocess
 import tempfile
 from pathlib import Path
 
-_SERVICES = [
-    "ores.iam.service",
-    "ores.refdata.service",
-    "ores.dq.service",
-    "ores.variability.service",
-    "ores.assets.service",
-    "ores.synthetic.service",
-    "ores.scheduler.service",
-    "ores.reporting.service",
-    "ores.telemetry.service",
-    "ores.storage.service",
-    "ores.inbox.service",
-    "ores.trading.service",
-    "ores.marketdata.service",
-    "ores.compute.service",
-    "ores.ore.service",
-    "ores.workflow.service",
-    "ores.http.server",
-    "ores.shell",
-    "ores.compute.wrapper",
-    "ores.marketdata.official",
-    "ores.analytics.service",
-    "ores.web.service",
-]
+# Clients that hold a leaf certificate without being a registered service.
+_CLIENTS = ["ores.shell"]
+
+
+def _certificate_holders(checkout_root: Path) -> list[str]:
+    """Every process that connects to the broker: the services the registry
+    lists, so a new service gets its certificate without a second list to
+    keep, and the clients that are not services."""
+    from systemd_generate import load_service_registry  # noqa: PLC0415
+    services = [s["name"] for s in load_service_registry(checkout_root)]
+    return services + [c for c in _CLIENTS if c not in services]
 
 _CA_DAYS = 365
 _LEAF_DAYS = 90
@@ -183,7 +170,7 @@ def generate(checkout_root: Path, *, force: bool = False, hostname: str = "local
 
     # --- Service client certificates ---
     print("==> Service client certificates")
-    for svc in _SERVICES:
+    for svc in _certificate_holders(checkout_root):
         svc_key = keys_dir / f"{svc}.key"
         svc_crt = keys_dir / f"{svc}.crt"
         svc_csr = keys_dir / f"{svc}.csr"

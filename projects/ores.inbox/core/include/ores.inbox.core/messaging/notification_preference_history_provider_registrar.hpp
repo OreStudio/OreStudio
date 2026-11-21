@@ -26,10 +26,11 @@
 #define ORES_INBOX_CORE_MESSAGING_NOTIFICATION_PREFERENCE_HISTORY_PROVIDER_REGISTRAR_HPP
 
 #include "ores.history.core/service/dispatch_registry.hpp"
+#include "ores.inbox.core/export.hpp"
 
 namespace ores::inbox::messaging {
 
-void register_notification_preference_history_provider(
+ORES_INBOX_CORE_EXPORT void register_notification_preference_history_provider(
     ores::history::service::dispatch_registry& registry);
 
 }

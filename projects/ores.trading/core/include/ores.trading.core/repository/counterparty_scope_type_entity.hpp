@@ -27,6 +27,7 @@
 
 #include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
+#include "ores.trading.core/export.hpp"
 #include <chrono>
 #include <optional>
 #include <ostream>
@@ -76,7 +77,8 @@ struct counterparty_scope_type_entity {
     }
 };
 
-std::ostream& operator<<(std::ostream& s, const counterparty_scope_type_entity& v);
+ORES_TRADING_CORE_EXPORT std::ostream& operator<<(std::ostream& s,
+                                                  const counterparty_scope_type_entity& v);
 
 }
 

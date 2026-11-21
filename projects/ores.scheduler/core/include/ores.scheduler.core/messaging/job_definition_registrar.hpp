@@ -28,13 +28,14 @@
 #include "ores.database/domain/context_fwd.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/subscription.hpp"
+#include "ores.scheduler.core/export.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include <optional>
 #include <vector>
 
 namespace ores::scheduler::messaging {
 
-std::vector<ores::nats::service::subscription>
+ORES_SCHEDULER_CORE_EXPORT std::vector<ores::nats::service::subscription>
 register_job_definition_handlers(ores::nats::service::client& nats,
                                  const ores::database::context& ctx,
                                  std::optional<ores::security::jwt::jwt_authenticator> verifier);

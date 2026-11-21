@@ -29,12 +29,14 @@
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/subscription.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
+#include "ores.synthetic.core/export.hpp"
 #include <optional>
 #include <vector>
 
 namespace ores::synthetic::messaging {
 
-std::vector<ores::nats::service::subscription> register_variance_calibration_handlers(
+ORES_SYNTHETIC_CORE_EXPORT std::vector<ores::nats::service::subscription>
+register_variance_calibration_handlers(
     ores::nats::service::client& nats,
     const ores::database::context& ctx,
     std::optional<ores::security::jwt::jwt_authenticator> verifier);

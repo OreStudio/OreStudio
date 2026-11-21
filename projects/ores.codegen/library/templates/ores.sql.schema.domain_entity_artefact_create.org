@@ -46,7 +46,9 @@ create table if not exists "ores_dq_{{domain_entity.entity_plural}}_artefact_tbl
     "dataset_id" uuid not null,
     "tenant_id" uuid not null,
 {{^domain_entity.artefact_columns}}
-    "{{domain_entity.primary_key.column}}" {{domain_entity.primary_key.type}} not null,
+{{#domain_entity.primary_key.columns}}
+    "{{column}}" {{type}} not null,
+{{/domain_entity.primary_key.columns}}
     "version" integer not null,
 {{#domain_entity.natural_keys}}
     "{{column}}" {{type}}{{#nullable}} null{{/nullable}}{{^nullable}} not null{{/nullable}}{{#default}} default {{{default}}}{{/default}}{{^last}},{{/last}}

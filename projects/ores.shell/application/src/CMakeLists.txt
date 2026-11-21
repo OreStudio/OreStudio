@@ -77,7 +77,7 @@ target_link_libraries(${lib_target_name}
         ores.workflow.api.lib
         ores.logging.lib
         ores.nats.lib
-        ores.orgmode.lib
+        ores.orgmode.parser.lib
         ores.service.lib
         cli::cli)
 

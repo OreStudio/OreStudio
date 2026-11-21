@@ -25,11 +25,13 @@
 #ifndef ORES_DQ_CORE_MESSAGING_CHANGE_REASON_HISTORY_PROVIDER_REGISTRAR_HPP
 #define ORES_DQ_CORE_MESSAGING_CHANGE_REASON_HISTORY_PROVIDER_REGISTRAR_HPP
 
+#include "ores.dq.core/export.hpp"
 #include "ores.history.core/service/dispatch_registry.hpp"
 
 namespace ores::dq::messaging {
 
-void register_change_reason_history_provider(ores::history::service::dispatch_registry& registry);
+ORES_DQ_CORE_EXPORT void
+register_change_reason_history_provider(ores::history::service::dispatch_registry& registry);
 
 }
 

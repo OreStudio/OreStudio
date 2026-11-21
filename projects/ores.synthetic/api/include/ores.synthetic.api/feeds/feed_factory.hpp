@@ -106,11 +106,11 @@ struct feed_adapter final {
  * helper per entity keeps the mapping in a single place: a new column reaches
  * every feed by changing this function, not each builder.
  */
-ores::analytics::quant::domain::arrival_spec
+ORES_SYNTHETIC_API_EXPORT ores::analytics::quant::domain::arrival_spec
 to_arrival_spec(const ores::synthetic::domain::fx_spot_generation_config& config);
-ores::analytics::quant::domain::arrival_spec
+ORES_SYNTHETIC_API_EXPORT ores::analytics::quant::domain::arrival_spec
 to_arrival_spec(const ores::synthetic::domain::ir_curve_generation_config& config);
-ores::analytics::quant::domain::arrival_spec
+ORES_SYNTHETIC_API_EXPORT ores::analytics::quant::domain::arrival_spec
 to_arrival_spec(const ores::synthetic::domain::fx_vol_surface_feed& config);
 
 struct fx_spot_feed_build_input final {

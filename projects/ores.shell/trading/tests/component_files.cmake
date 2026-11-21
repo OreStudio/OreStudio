@@ -92,6 +92,7 @@ set(files
     "moment_type_commands_tests.cpp"
     "option_type_commands_tests.cpp"
     "party_role_type_commands_tests.cpp"
+    "payoff_script_commands_tests.cpp"
     "payoff_type_commands_tests.cpp"
     "performance_option_instrument_commands_tests.cpp"
     "price_type_commands_tests.cpp"

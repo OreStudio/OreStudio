@@ -26,10 +26,11 @@
 #define ORES_REFDATA_CORE_MESSAGING_CROSS_CURRENCY_FIX_FLOAT_SWAP_TERMS_HISTORY_PROVIDER_REGISTRAR_HPP
 
 #include "ores.history.core/service/dispatch_registry.hpp"
+#include "ores.refdata.core/export.hpp"
 
 namespace ores::refdata::messaging {
 
-void register_cross_currency_fix_float_swap_terms_history_provider(
+ORES_REFDATA_CORE_EXPORT void register_cross_currency_fix_float_swap_terms_history_provider(
     ores::history::service::dispatch_registry& registry);
 
 }

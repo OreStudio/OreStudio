@@ -25,6 +25,7 @@
 #ifndef ORES_COMPUTE_CORE_REPOSITORY_BATCH_ENTITY_HPP
 #define ORES_COMPUTE_CORE_REPOSITORY_BATCH_ENTITY_HPP
 
+#include "ores.compute.core/export.hpp"
 #include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
@@ -86,7 +87,7 @@ struct batch_entity {
     }
 };
 
-std::ostream& operator<<(std::ostream& s, const batch_entity& v);
+ORES_COMPUTE_CORE_EXPORT std::ostream& operator<<(std::ostream& s, const batch_entity& v);
 
 }
 

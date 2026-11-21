@@ -497,6 +497,55 @@ struct export_trades_to_storage_response {
 };
 
 /**
+ * @brief The market data a set of trades needs, as oresmd addresses.
+ *
+ * A run gathers the market data its trade set resolves to, and only trading can
+ * read the addresses out of the trades: they sit in the instrument rows, which
+ * this service owns. A set whose instrument rows hold no address resolves to
+ * fewer requirements rather than to an error, which is the state an imported
+ * trade is in until its names are resolved.
+ */
+struct resolve_market_data_requirements_request {
+    using response_type = struct resolve_market_data_requirements_response;
+    static constexpr std::string_view nats_subject =
+        "trading.v1.ops.resolve_market_data_requirements";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    /**
+     * @brief The trades whose requirements are read, as trade ids.
+     */
+    std::vector<std::string> trade_ids;
+    /**
+     * @brief The transaction time the trades are read at, as an ISO 8601 date or timestamp, or
+     * empty for the current rows.
+     *
+     * A trade's rows are read as they stood at this time, so a run repeats the
+     * requirements it was priced from rather than the ones the trades hold today.
+     */
+    std::optional<std::string> as_of;
+
+    friend bool operator==(const resolve_market_data_requirements_request&,
+                           const resolve_market_data_requirements_request&) = default;
+};
+
+struct resolve_market_data_requirements_response {
+    bool success = false;
+    std::string message;
+    /**
+     * @brief The distinct addresses the trades need, in address order.
+     */
+    std::vector<std::string> requirements;
+
+    friend bool operator==(const resolve_market_data_requirements_response&,
+                           const resolve_market_data_requirements_response&) = default;
+};
+
+/**
  * @brief The members of book_trade_request, named as the wire names them and in the order
  * the type declares them.
  *
@@ -730,6 +779,43 @@ struct export_trades_to_storage_response {
     };
 }
 
+/**
+ * @brief The members of resolve_market_data_requirements_request, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<resolve_market_data_requirements_request>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"trade_ids",
+                                      &resolve_market_data_requirements_request::trade_ids},
+        ::ores::utility::codec::field{"as_of", &resolve_market_data_requirements_request::as_of},
+    };
+}
+
+/**
+ * @brief The members of resolve_market_data_requirements_response, named as the wire names them and
+ * in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<resolve_market_data_requirements_response>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"success",
+                                      &resolve_market_data_requirements_response::success},
+        ::ores::utility::codec::field{"message",
+                                      &resolve_market_data_requirements_response::message},
+        ::ores::utility::codec::field{"requirements",
+                                      &resolve_market_data_requirements_response::requirements},
+    };
+}
+
 }
 namespace ores::utility::codec {
 
@@ -878,6 +964,34 @@ struct ORES_TRADING_API_EXPORT
     static std::string
     write_msgpack(const ores::trading::messaging::export_trades_to_storage_response& v);
     static ores::trading::messaging::export_trades_to_storage_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::resolve_market_data_requirements_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::resolve_market_data_requirements_request& v);
+    static ores::trading::messaging::resolve_market_data_requirements_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::resolve_market_data_requirements_request& v);
+    static ores::trading::messaging::resolve_market_data_requirements_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT
+    wire_traits<ores::trading::messaging::resolve_market_data_requirements_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::trading::messaging::resolve_market_data_requirements_response& v);
+    static ores::trading::messaging::resolve_market_data_requirements_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::resolve_market_data_requirements_response& v);
+    static ores::trading::messaging::resolve_market_data_requirements_response
     read_msgpack(std::span<const std::byte> data);
 };
 }

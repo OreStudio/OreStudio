@@ -232,3 +232,14 @@ def test_without_pr_empties_the_field_when_no_row_remains():
     text, found = compass_pr._without_pr(one, 4732)
     assert found is True
     assert "#+pr:\n" in text
+
+
+def test_the_record_commit_names_story_task_and_environment():
+    msg = compass_pr._record_message(4980, "S-ID", "T-ID", "solid_dirac")
+    assert msg == ("[agile] Record PR #4980 on task\n\n"
+                   "Story-ID: S-ID\nTask-ID: T-ID\nEnvironment: solid_dirac")
+
+
+def test_the_record_commit_states_no_environment_it_does_not_know():
+    msg = compass_pr._record_message(1, "S", "T", "(none)")
+    assert "Environment" not in msg

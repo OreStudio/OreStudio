@@ -25,11 +25,12 @@
 #ifndef ORES_DQ_CORE_MESSAGING_CODING_SCHEME_AUTHORITY_TYPE_HISTORY_PROVIDER_REGISTRAR_HPP
 #define ORES_DQ_CORE_MESSAGING_CODING_SCHEME_AUTHORITY_TYPE_HISTORY_PROVIDER_REGISTRAR_HPP
 
+#include "ores.dq.core/export.hpp"
 #include "ores.history.core/service/dispatch_registry.hpp"
 
 namespace ores::dq::messaging {
 
-void register_coding_scheme_authority_type_history_provider(
+ORES_DQ_CORE_EXPORT void register_coding_scheme_authority_type_history_provider(
     ores::history::service::dispatch_registry& registry);
 
 }

@@ -141,7 +141,8 @@ void report_operations_operations_commands::register_commands(cli::Menu& root_me
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_gather_market_data(std::ref(out), std::ref(session), std::move(args));
         },
-        "gather-market-data <report_instance_id> <definition_id> <tenant_id> <correlation_id>");
+        "gather-market-data <report_instance_id> <definition_id> <tenant_id> <correlation_id> "
+        "<trade_ids>");
 
     menu->Insert(
         "assemble-bundle",
@@ -646,7 +647,7 @@ void report_operations_operations_commands::process_gather_market_data(
         return;
     }
 
-    constexpr std::size_t positional_count = 4;
+    constexpr std::size_t positional_count = 5;
     if (parsed->positionals.size() != positional_count) {
         fail(out) << "Expected " << positional_count << " arguments, got "
                   << parsed->positionals.size() << "." << std::endl;
@@ -660,6 +661,7 @@ void report_operations_operations_commands::process_gather_market_data(
         req.definition_id = parsed->positionals[next++];
         req.tenant_id = parsed->positionals[next++];
         req.correlation_id = parsed->positionals[next++];
+        req.trade_ids = report_operations_split_list_token(parsed->positionals[next++]);
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;

@@ -27,6 +27,7 @@
 
 #include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
+#include "ores.synthetic.core/export.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
@@ -90,7 +91,8 @@ struct market_data_generation_config_entity {
     }
 };
 
-std::ostream& operator<<(std::ostream& s, const market_data_generation_config_entity& v);
+ORES_SYNTHETIC_CORE_EXPORT std::ostream& operator<<(std::ostream& s,
+                                                    const market_data_generation_config_entity& v);
 
 }
 

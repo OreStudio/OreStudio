@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ores.cpp.wire-codec.enabled: true
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :ID: A2BE6361-0489-4A63-A1B7-6B07BB3F6000
 :END:
 #+title: ores.trading.script_variant

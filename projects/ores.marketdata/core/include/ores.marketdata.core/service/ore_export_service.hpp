@@ -27,6 +27,7 @@
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <optional>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -71,7 +72,8 @@ struct ore_export_result final {
 ORES_MARKETDATA_CORE_EXPORT std::vector<const domain::market_series*>
 series_to_export(const std::vector<domain::market_series>& series,
                  const utility::uuid::tenant_id& tenant,
-                 const std::optional<boost::uuids::uuid>& party);
+                 const std::optional<boost::uuids::uuid>& party,
+                 const std::optional<std::set<std::string>>& requirement_uris = std::nullopt);
 
 /**
  * @brief Writes the tenant's stored market data back out as ORE text.
@@ -130,14 +132,24 @@ public:
      * date, so the run does not take a stale quote for a current one. The result counts both
      * kinds of datum. A datum with no value at or before the close has no line either.
      *
+     * A run gathers the market data its trade set resolves to, so the export can be narrowed
+     * to that set's requirements: only the series whose address is one of @p requirement_uris
+     * are written, and the narrowing applies before the party's own series wins over the
+     * world's fixing, so a required fixing is still written from the system tenant when the
+     * party holds none. A requirement the market cannot answer is the caller's to refuse,
+     * because only it can say which step the absence fails.
+     *
      * @param max_age_days The limit above, or the default of default_max_age_days.
+     * @param requirement_uris The addresses the run needs, or nothing for every series of the
+     *                         tenant.
      *
      * @throws std::invalid_argument if the date is not an ISO 8601 date, or the limit is
      * negative.
      */
     [[nodiscard]] ore_export_result
     write_all(const std::optional<std::string>& valuation_date = std::nullopt,
-              const std::optional<int>& max_age_days = std::nullopt) const;
+              const std::optional<int>& max_age_days = std::nullopt,
+              const std::optional<std::set<std::string>>& requirement_uris = std::nullopt) const;
 
     /// The limit in days when a caller states none. It covers a weekend and a holiday.
     static constexpr int default_max_age_days = 5;

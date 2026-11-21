@@ -26,10 +26,11 @@
 #define ORES_WORKFLOW_CORE_MESSAGING_WORKFLOW_PLAN_DEPENDENCY_HISTORY_PROVIDER_REGISTRAR_HPP
 
 #include "ores.history.core/service/dispatch_registry.hpp"
+#include "ores.workflow.core/export.hpp"
 
 namespace ores::workflow::messaging {
 
-void register_workflow_plan_dependency_history_provider(
+ORES_WORKFLOW_CORE_EXPORT void register_workflow_plan_dependency_history_provider(
     ores::history::service::dispatch_registry& registry);
 
 }

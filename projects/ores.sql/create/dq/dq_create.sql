@@ -249,6 +249,15 @@
 -- FSM Framework (finite state machine infrastructure, part of DQ metadata layer)
 \ir ./dq_fsm_create.sql
 
+-- Script library: staging tables
+\ir ./dq_scripts_artefact_create.sql
+\ir ./dq_script_variants_artefact_create.sql
+\ir ./dq_script_results_artefact_create.sql
+\ir ./dq_script_calibrations_artefact_create.sql
+\ir ./dq_script_calibration_strikes_artefact_create.sql
+\ir ./dq_script_coarsenings_artefact_create.sql
+\ir ./dq_script_inputs_artefact_create.sql
+
 -- Report configuration documents: staging tables
 \ir ./dq_pricing_model_configs_artefact_create.sql
 \ir ./dq_pricing_model_products_artefact_create.sql

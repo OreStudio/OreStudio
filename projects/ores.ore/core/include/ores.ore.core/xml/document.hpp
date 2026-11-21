@@ -157,7 +157,7 @@ private:
 /**
  * @brief True when the text carries no data, only formatting.
  */
-auto is_blank(std::string_view text) -> bool;
+ORES_ORE_CORE_EXPORT auto is_blank(std::string_view text) -> bool;
 
 }
 

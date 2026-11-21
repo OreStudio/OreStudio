@@ -26,10 +26,11 @@
 #define ORES_MARKETDATA_CORE_MESSAGING_FX_VOL_SURFACE_PUBLISH_HISTORY_PROVIDER_REGISTRAR_HPP
 
 #include "ores.history.core/service/dispatch_registry.hpp"
+#include "ores.marketdata.core/export.hpp"
 
 namespace ores::marketdata::messaging {
 
-void register_fx_vol_surface_publish_history_provider(
+ORES_MARKETDATA_CORE_EXPORT void register_fx_vol_surface_publish_history_provider(
     ores::history::service::dispatch_registry& registry);
 
 }

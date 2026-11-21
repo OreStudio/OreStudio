@@ -25,11 +25,12 @@
 #ifndef ORES_ANALYTICS_CORE_MESSAGING_TODAYS_MARKET_COLLECTION_HISTORY_PROVIDER_REGISTRAR_HPP
 #define ORES_ANALYTICS_CORE_MESSAGING_TODAYS_MARKET_COLLECTION_HISTORY_PROVIDER_REGISTRAR_HPP
 
+#include "ores.analytics.core/export.hpp"
 #include "ores.history.core/service/dispatch_registry.hpp"
 
 namespace ores::analytics::messaging {
 
-void register_todays_market_collection_history_provider(
+ORES_ANALYTICS_CORE_EXPORT void register_todays_market_collection_history_provider(
     ores::history::service::dispatch_registry& registry);
 
 }

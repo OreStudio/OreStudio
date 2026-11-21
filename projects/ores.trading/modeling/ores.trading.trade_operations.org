@@ -831,6 +831,75 @@ generates no service handler.
  */
 #+end_src
 
+** resolve_market_data_requirements_request
+:PROPERTIES:
+:subject:  trading.v1.ops.resolve_market_data_requirements
+:response: resolve_market_data_requirements_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The market data a set of trades needs, as oresmd addresses.
+ *
+ * A run gathers the market data its trade set resolves to, and only trading can
+ * read the addresses out of the trades: they sit in the instrument rows, which
+ * this service owns. A set whose instrument rows hold no address resolves to
+ * fewer requirements rather than to an error, which is the state an imported
+ * trade is in until its names are resolved.
+ */
+#+end_src
+
+*** trade_ids
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The trades whose requirements are read, as trade ids.
+ */
+#+end_src
+
+*** as_of
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The transaction time the trades are read at, as an ISO 8601 date or timestamp, or empty for the current rows.
+ *
+ * A trade's rows are read as they stood at this time, so a run repeats the
+ * requirements it was priced from rather than the ones the trades hold today.
+ */
+#+end_src
+
+** resolve_market_data_requirements_response
+:PROPERTIES:
+:END:
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** requirements
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The distinct addresses the trades need, in address order.
+ */
+#+end_src
+
 * See also
 
 - [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

@@ -25,6 +25,7 @@
 #ifndef ORES_ANALYTICS_CORE_REPOSITORY_SENSITIVITY_METHOD_ENTITY_HPP
 #define ORES_ANALYTICS_CORE_REPOSITORY_SENSITIVITY_METHOD_ENTITY_HPP
 
+#include "ores.analytics.core/export.hpp"
 #include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
@@ -84,7 +85,8 @@ struct sensitivity_method_entity {
     }
 };
 
-std::ostream& operator<<(std::ostream& s, const sensitivity_method_entity& v);
+ORES_ANALYTICS_CORE_EXPORT std::ostream& operator<<(std::ostream& s,
+                                                    const sensitivity_method_entity& v);
 
 }
 

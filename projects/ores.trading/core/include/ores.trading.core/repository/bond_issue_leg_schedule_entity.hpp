@@ -27,6 +27,7 @@
 
 #include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
+#include "ores.trading.core/export.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
@@ -117,7 +118,8 @@ struct bond_issue_leg_schedule_entity {
     }
 };
 
-std::ostream& operator<<(std::ostream& s, const bond_issue_leg_schedule_entity& v);
+ORES_TRADING_CORE_EXPORT std::ostream& operator<<(std::ostream& s,
+                                                  const bond_issue_leg_schedule_entity& v);
 
 }
 

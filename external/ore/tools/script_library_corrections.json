@@ -1,0 +1,16 @@
+[
+  {
+    "script": "WorstOfBasketSwap",
+    "purpose": "default",
+    "text": "couponAccumulation = couponAccumulation + (1-allAssetsTriggered)\n",
+    "replacement": "couponAccumulation = couponAccumulation + (1-allAssetsTriggered);\n",
+    "reason": "ORE's parser stops at the statement before END, which ORE's library states with no semicolon."
+  },
+  {
+    "script": "GenericBarrierOption",
+    "purpose": "FD",
+    "text": "        END;\n\n\trebate = rebate + (",
+    "replacement": "        END;\n\n        rebate = NPV(rebate, TODAY);\n        R_V = NPV(R_V, TODAY);\n        V_V = NPV(V_V, TODAY);\n\trebate = rebate + (",
+    "reason": "The backward loop rolls the values back only to the first barrier monitoring date, so a trade monitored from a later date fails at the sum on TODAY; ORE's own GenericBarrierOption class rolls them back to TODAY first."
+  }
+]

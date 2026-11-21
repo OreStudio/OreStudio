@@ -26,11 +26,12 @@
 #define ORES_TRADING_CORE_MESSAGING_SWAPTION_INSTRUMENT_HISTORY_PROVIDER_REGISTRAR_HPP
 
 #include "ores.history.core/service/dispatch_registry.hpp"
+#include "ores.trading.core/export.hpp"
 
 namespace ores::trading::messaging {
 
-void register_swaption_instrument_history_provider(
-    ores::history::service::dispatch_registry& registry);
+ORES_TRADING_CORE_EXPORT void
+register_swaption_instrument_history_provider(ores::history::service::dispatch_registry& registry);
 
 }
 

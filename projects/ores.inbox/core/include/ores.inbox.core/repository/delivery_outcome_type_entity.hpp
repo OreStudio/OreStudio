@@ -27,6 +27,7 @@
 
 #include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
+#include "ores.inbox.core/export.hpp"
 #include <chrono>
 #include <optional>
 #include <ostream>
@@ -62,7 +63,8 @@ struct delivery_outcome_type_entity {
     }
 };
 
-std::ostream& operator<<(std::ostream& s, const delivery_outcome_type_entity& v);
+ORES_INBOX_CORE_EXPORT std::ostream& operator<<(std::ostream& s,
+                                                const delivery_outcome_type_entity& v);
 
 }
 

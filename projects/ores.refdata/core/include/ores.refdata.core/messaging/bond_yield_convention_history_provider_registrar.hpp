@@ -26,10 +26,11 @@
 #define ORES_REFDATA_CORE_MESSAGING_BOND_YIELD_CONVENTION_HISTORY_PROVIDER_REGISTRAR_HPP
 
 #include "ores.history.core/service/dispatch_registry.hpp"
+#include "ores.refdata.core/export.hpp"
 
 namespace ores::refdata::messaging {
 
-void register_bond_yield_convention_history_provider(
+ORES_REFDATA_CORE_EXPORT void register_bond_yield_convention_history_provider(
     ores::history::service::dispatch_registry& registry);
 
 }

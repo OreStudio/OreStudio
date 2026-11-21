@@ -389,6 +389,38 @@ export interface ExportTradesToStorageResponse {
     trade_versions: Record<string, number>;
 }
 
+/**
+ * @brief The market data a set of trades needs, as oresmd addresses.
+ *
+ * A run gathers the market data its trade set resolves to, and only trading can
+ * read the addresses out of the trades: they sit in the instrument rows, which
+ * this service owns. A set whose instrument rows hold no address resolves to
+ * fewer requirements rather than to an error, which is the state an imported
+ * trade is in until its names are resolved.
+ */
+export interface ResolveMarketDataRequirementsRequest {
+    /**
+     * @brief The trades whose requirements are read, as trade ids.
+     */
+    trade_ids: string[];
+    /**
+     * @brief The transaction time the trades are read at, as an ISO 8601 date or timestamp, or empty for the current rows.
+     *
+     * A trade's rows are read as they stood at this time, so a run repeats the
+     * requirements it was priced from rather than the ones the trades hold today.
+     */
+    as_of: string | null;
+}
+
+export interface ResolveMarketDataRequirementsResponse {
+    success: boolean;
+    message: string;
+    /**
+     * @brief The distinct addresses the trades need, in address order.
+     */
+    requirements: string[];
+}
+
 export const subjects = {
     book_trade_request: 'trading.v1.ops.book_trade',
     execute_trade_request: 'trading.v1.ops.execute_trade',
@@ -396,6 +428,7 @@ export const subjects = {
     put_bond_issue_composite_request: 'trading.v1.ops.put_bond_issue_composite',
     export_portfolio_request: 'trading.v1.ops.export_portfolio',
     export_trades_to_storage_request: 'trading.v1.ops.export_trades_to_storage',
+    resolve_market_data_requirements_request: 'trading.v1.ops.resolve_market_data_requirements',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -409,4 +442,5 @@ export const requiresSession = {
     put_bond_issue_composite_request: true,
     export_portfolio_request: true,
     export_trades_to_storage_request: true,
+    resolve_market_data_requirements_request: true,
 } as const;

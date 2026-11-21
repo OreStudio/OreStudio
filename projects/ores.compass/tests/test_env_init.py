@@ -46,37 +46,6 @@ class TestEnvValue:
             "ORES_NATS_SUBJECT_PREFIX", "ores.dev.derived") == "ores.dev.from_env"
 
 
-class TestBusctlSetting:
-    """The transport defaults to on, and an explicit flag always wins.
-
-    compass drives the fleet with systemctl --user, which the user manager
-    refuses from inside the DSH sandbox, so busctl is the transport that
-    works there and the safe default. A host where plain systemctl reaches
-    the manager turns it off with --no-use-busctl."""
-
-    def test_a_fresh_checkout_defaults_to_on(self, monkeypatch):
-        monkeypatch.delenv("ORES_USE_BUSCTL", raising=False)
-        assert env_init._busctl_setting({}, None) == "1"
-
-    def test_an_explicit_flag_turns_it_off_over_an_existing_on(
-            self, monkeypatch):
-        monkeypatch.delenv("ORES_USE_BUSCTL", raising=False)
-        assert env_init._busctl_setting({"ORES_USE_BUSCTL": "1"}, False) == "0"
-
-    def test_an_explicit_flag_turns_it_on_over_an_existing_off(
-            self, monkeypatch):
-        monkeypatch.delenv("ORES_USE_BUSCTL", raising=False)
-        assert env_init._busctl_setting({"ORES_USE_BUSCTL": "0"}, True) == "1"
-
-    def test_no_flag_keeps_the_checkout_choice(self, monkeypatch):
-        monkeypatch.setenv("ORES_USE_BUSCTL", "1")
-        assert env_init._busctl_setting({"ORES_USE_BUSCTL": "0"}, None) == "0"
-
-    def test_the_process_environment_seeds_a_fresh_checkout(self, monkeypatch):
-        monkeypatch.setenv("ORES_USE_BUSCTL", "0")
-        assert env_init._busctl_setting({}, None) == "0"
-
-
 class TestWebEnvironmentBinding:
     """The ores.web BFF resolves its site configuration by id.
 
@@ -142,28 +111,3 @@ class TestWebEnvironmentBinding:
         ])
         assert env_init._resolve_web_env_id(
             tmp_path, 20205, "ores.dev.swift_curie", "swift_curie") is None
-
-
-class TestSourceCredentials:
-    def test_public_source_keys_users_and_passwords_are_kept(self):
-        section = env_init._source_credentials({
-            "ORES_MARKETDATA_BANXICO_API_KEY": "k1",
-            "ORES_MARKETDATA_BCCH_USER": "someone@example.com",
-            "ORES_MARKETDATA_BCCH_PASSWORD": "p1",
-        })
-        assert "ORES_MARKETDATA_BANXICO_API_KEY=k1\n" in section
-        assert "ORES_MARKETDATA_BCCH_USER=someone@example.com\n" in section
-        assert "ORES_MARKETDATA_BCCH_PASSWORD=p1\n" in section
-
-    def test_the_variables_configure_generates_are_not_copied(self):
-        section = env_init._source_credentials({
-            "ORES_MARKETDATA_SERVICE_DB_PASSWORD": "generated",
-            "ORES_MARKETDATA_SERVICE_WRITER_DB_PASSWORD": "generated",
-            "PGPASSWORD": "generated",
-            "ORES_MARKETDATA_BANXICO_URL": "https://example.com",
-        })
-        assert section == ""
-
-    def test_an_empty_key_is_not_kept(self):
-        assert env_init._source_credentials(
-            {"ORES_MARKETDATA_CNB_API_KEY": ""}) == ""

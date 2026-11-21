@@ -479,7 +479,6 @@ Description=PostgreSQL transaction pooler (environment {env_name})
 PartOf={target_name}
 StartLimitIntervalSec=60
 StartLimitBurst=5
-After=postgresql.service
 
 [Service]
 Type=simple
@@ -526,8 +525,14 @@ WantedBy=default.target
     return unit
 
 
-def render_target(defs, env_name):
-    wants = [_unit_basename("nats-server", env_name) + ".service"]
+def render_target(defs, env_name, pooler_unit=None):
+    # The pooler is infrastructure, like nats-server: the target pulls it in
+    # itself so that starting the fleet never depends on an enablement symlink
+    # that a fresh checkout has not created yet.
+    wants = []
+    if pooler_unit:
+        wants.append(pooler_unit)
+    wants.append(_unit_basename("nats-server", env_name) + ".service")
     for d in defs:
         if not d["enabled"]:
             continue
@@ -621,10 +626,13 @@ def cmd_generate(project_root: Path, env: dict, args) -> int:
             # talks to the database, so it does not wait for the pooler.
             if name.startswith("nats-server-"):
                 continue
+            # Requires=, not Wants=: a service whose database port is the
+            # pooler cannot answer its first request without one, so it should
+            # not start at all rather than start and fail.
             write(f"{name}.d/pooler.conf",
-                  f"[Unit]\nAfter={pooler_unit}\nWants={pooler_unit}\n")
+                  f"[Unit]\nAfter={pooler_unit}\nRequires={pooler_unit}\n")
 
-    write(target_name, render_target(defs, env_name))
+    write(target_name, render_target(defs, env_name, pooler_unit))
 
     print(f"Wrote {len(written)} unit files to {out_dir}")
     print(f"Compiled services log at '{log_level}' "

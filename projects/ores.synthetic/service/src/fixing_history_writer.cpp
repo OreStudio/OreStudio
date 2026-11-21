@@ -27,6 +27,7 @@
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <format>
+#include <string_view>
 #include <vector>
 
 namespace ores::synthetic::service {
@@ -49,6 +50,17 @@ constexpr int derivation_version = 1;
 
 /// How many days of a curve's index a run states, from the as-of back.
 constexpr int fixing_history_days = 520;
+
+/// The outcome code the market data service refuses a series that holds nothing with. The
+/// client's describe() writes the code alone, or the code, a colon and the message.
+constexpr std::string_view not_found_code = "not_found";
+
+/// Whether @p error is the refusal of a series that holds nothing.
+bool is_not_found(const std::string& error) {
+    return error == not_found_code ||
+           (error.starts_with(not_found_code) && error.size() > not_found_code.size() &&
+            error[not_found_code.size()] == ':');
+}
 
 /// How many fixings one write carries.
 constexpr std::size_t fixing_write_batch = 500;
@@ -173,7 +185,7 @@ fixing_history_writer::series_for(const std::string& index_uri, const boost::uui
     return written->id;
 }
 
-std::set<std::chrono::year_month_day> fixing_history_writer::held_days(
+std::expected<std::set<std::chrono::year_month_day>, std::string> fixing_history_writer::held_days(
     const std::string& index_uri, const boost::uuids::uuid& party, std::chrono::year_month_day to) {
     // Reads go delegated, as every read of the catalogue does, because a service's own session
     // holds no party.
@@ -186,13 +198,15 @@ std::set<std::chrono::year_month_day> fixing_history_writer::held_days(
     request.days = held_window_days;
     const auto window = md.get_fixing_window(request);
     if (!window) {
-        // A series the market holds nothing for is refused rather than answered empty, which is
-        // the same thing to a caller that wants the days a value is not already held on.
-        ORES_LOG_SEV(lg(), debug) << "The days the market holds of '" << index_uri
-                                  << "' are not read: " << window.error();
-        return {};
+        // A series the market holds nothing for is refused as not_found rather than answered
+        // empty, which to this caller means no day is held. Any other failure, a request that
+        // went unanswered above all, says nothing about the days, and writing every day then
+        // could cover a day a publisher holds, so the plan waits for the next pass.
+        if (is_not_found(window.error()))
+            return std::set<std::chrono::year_month_day>{};
+        return std::unexpected(window.error());
     }
-    return {window->dates.begin(), window->dates.end()};
+    return std::set<std::chrono::year_month_day>(window->dates.begin(), window->dates.end());
 }
 
 std::expected<void, std::string>
@@ -202,8 +216,10 @@ fixing_history_writer::write(const feed::ir_curve_feed::fixing_plan& plan) {
     if (!party)
         return std::unexpected(party.error());
     const auto held = held_days(plan.index_uri, *party, plan.as_of);
+    if (!held)
+        return std::unexpected("the days it holds are not read: " + held.error());
     const auto history = feed::derive_fixing_history(
-        plan.level, plan.as_of, fixing_history_days, plan.run_seed, plan.index_uri, held);
+        plan.level, plan.as_of, fixing_history_days, plan.run_seed, plan.index_uri, *held);
     if (!history) {
         ORES_LOG_SEV(lg(), warn) << "The fixings of '" << plan.index_uri
                                  << "' are not stated: " << history.error();

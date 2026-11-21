@@ -92,9 +92,11 @@ private:
     [[nodiscard]] std::expected<boost::uuids::uuid, std::string> system_party();
     [[nodiscard]] std::expected<boost::uuids::uuid, std::string>
     series_for(const std::string& index_uri, const boost::uuids::uuid& party);
-    [[nodiscard]] std::set<std::chrono::year_month_day> held_days(const std::string& index_uri,
-                                                                  const boost::uuids::uuid& party,
-                                                                  std::chrono::year_month_day to);
+    /// The days the index's series holds, or why they cannot be read.
+    [[nodiscard]] std::expected<std::set<std::chrono::year_month_day>, std::string>
+    held_days(const std::string& index_uri,
+              const boost::uuids::uuid& party,
+              std::chrono::year_month_day to);
 
     ores::database::context db_ctx_;
     ores::nats::service::nats_client& svc_nats_;

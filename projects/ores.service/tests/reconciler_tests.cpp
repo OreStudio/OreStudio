@@ -65,6 +65,9 @@ TEST_CASE("the wait after a pass that left work doubles to its cap", "[reconcile
     for (int i = 0; i < 10; ++i)
         delay = next_reconcile_delay(delay, first, max);
     CHECK(delay == max);
+    // A cap near the largest wait does not overflow when the wait doubles.
+    const auto huge = milliseconds::max();
+    CHECK(next_reconcile_delay(huge - milliseconds(1), first, huge) == huge);
 }
 
 TEST_CASE("a pass that leaves work runs again without a kick", "[reconciler]") {
@@ -133,4 +136,24 @@ TEST_CASE("a reconciler stops while it waits", "[reconciler]") {
     r.stop();
     CHECK(std::chrono::steady_clock::now() - started < std::chrono::seconds(1));
     CHECK(passes.load() == 1);
+}
+
+TEST_CASE("kicks while a pass leaves work wait out the backoff", "[reconciler]") {
+    // A hundred curves start while the market data service is away: each one
+    // kicks, and none of them may cut the wait short.
+    std::atomic<int> passes{0};
+    reconciler r({.name = "test", .first_delay = milliseconds(200), .max_delay = milliseconds(200)},
+                 [&] {
+                     ++passes;
+                     return reconcile_result::pending("no service is handling subject");
+                 });
+    r.kick();
+    REQUIRE(eventually([&] { return passes.load() == 1; }));
+
+    for (int i = 0; i < 100; ++i)
+        r.kick();
+    std::this_thread::sleep_for(milliseconds(100));
+    CHECK(passes.load() == 1);
+
+    CHECK(eventually([&] { return passes.load() == 2; }));
 }

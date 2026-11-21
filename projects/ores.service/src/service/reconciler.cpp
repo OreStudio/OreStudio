@@ -40,7 +40,10 @@ std::chrono::milliseconds next_reconcile_delay(std::optional<std::chrono::millis
                                                std::chrono::milliseconds max) {
     if (!previous)
         return std::min(first, max);
-    return std::min(*previous * 2, max);
+    // Compared before doubling, so a large wait cannot overflow.
+    if (*previous >= max / 2)
+        return max;
+    return *previous * 2;
 }
 
 reconciler::reconciler(reconciler_options options, pass_fn pass)
@@ -74,20 +77,25 @@ void reconciler::run() {
     using namespace ores::logging;
     std::optional<std::chrono::milliseconds> delay;
     std::string last_reason;
-    // A pass runs on a kick, which new work brings, or when a wait times out:
-    // the interval after a pass that was done, the backoff after one that was
-    // not. Without an interval, a reconciler that is done waits for a kick.
+    // A reconciler that is done runs a pass on a kick, which new work brings,
+    // or when its interval ends; without an interval it waits for a kick. One
+    // that left work waits out its backoff whatever kicks arrive, so new work
+    // while a dependency is away joins the next pass rather than starting one.
     std::optional<std::chrono::milliseconds> wait = options_.interval;
     while (true) {
         {
             std::unique_lock lock(mu_);
-            const auto woken = [this] {
-                return stopping_ || kicked_;
-            };
-            if (wait)
-                wake_.wait_for(lock, *wait, woken);
-            else
-                wake_.wait(lock, woken);
+            if (delay) {
+                wake_.wait_for(lock, *delay, [this] { return stopping_; });
+            } else {
+                const auto woken = [this] {
+                    return stopping_ || kicked_;
+                };
+                if (wait)
+                    wake_.wait_for(lock, *wait, woken);
+                else
+                    wake_.wait(lock, woken);
+            }
             if (stopping_)
                 return;
             kicked_ = false;
@@ -123,8 +131,6 @@ void reconciler::run() {
                 << "The " << options_.name << " reconciler still has work; it runs again in "
                 << delay->count() << " ms.";
         }
-        // The wait ends at its timeout with no kick, so the pass runs again.
-        wait = delay;
     }
 }
 

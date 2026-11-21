@@ -129,6 +129,13 @@ via its "Verifies task" field.
 | 2 | PR #4956 review: the no-empty-address criterion needs the no-curve currencies out of the draw | =task_draw_only_the_indices_the_market_can_serve.org=, =story.org= | Accept | The task's acceptance names the 7 currencies; the story's criterion points to it |
 | 3 | PR #4956 review: file a capture for the refused ACCOUK and ACCOUS configs | =story.org= | Decline | The task Draw only the indices the market can serve already owns them in its acceptance; the story's criterion now names that task |
 | 4 | PR #4956 review: tie the evidence to the branch base | =evidence/fixing_gap_by_trade.txt= | Accept | States the measured commit, the base, what changed between, and that task 1 measures again |
+| 5 | PR #4965 review: a failed held-days read counts as no days held, so a write after it could cover a publisher's days | =fixing_history_writer.cpp= | Accept | =held_days= returns an error; only the =not_found= refusal of a series that holds nothing reads as empty, and any other failure keeps the plan pending |
+| 6 | PR #4965 review: a kick during a pass that leaves work skips the backoff | =reconciler.cpp= | Accept | A reconciler that left work waits out its backoff whatever kicks arrive; the new work joins the next pass. A test states it with 100 kicks |
+| 7 | PR #4965 review: include =<string_view>= | =fixing_history_writer.cpp= | Accept | Added |
+| 8 | PR #4965 review: the pass copies the plans | =fixing_history_writer.cpp= | Decline | 41 plans of four fields each; a shared pointer adds an indirection for a copy this small |
+| 9 | PR #4965 review: say that stop waits for a blocked pass | =reconciler.hpp= | Accept | Stated on =stop()= |
+| 10 | PR #4965 review: the doubling can overflow before the clamp | =reconciler.cpp= | Accept | Compared before doubling; a test passes a cap near the largest wait |
+| 11 | PR #4965 review: a seam to unit-test the writer's bookkeeping | =fixing_history_writer.cpp= | Decline | The bookkeeping is the map and its generation check; the live runs prove it, and a seam would change the writer's constructor for one test. Left as a limitation |
 
 * Result
 

@@ -98,10 +98,20 @@ public:
     reconciler(const reconciler&) = delete;
     reconciler& operator=(const reconciler&) = delete;
 
-    /// Asks for a pass now. A pass that is running finishes first.
+    /**
+     * @brief Asks for a pass now.
+     *
+     * A pass that is running finishes first. While the last pass left work, the
+     * reconciler waits out its backoff, and the kick's work joins the next pass.
+     */
     void kick();
 
-    /// Stops the thread after the pass that is running, if any.
+    /**
+     * @brief Stops the thread after the pass that is running, if any.
+     *
+     * A pass blocked on a request that does not answer holds the stop until the
+     * request times out.
+     */
     void stop();
 
 private:

@@ -8,7 +8,7 @@
 #+filetags: :run_a_report_with_market_data:sprint_30:v0:
 #+owner: marco
 #+branch: feature/export-the-market-data-a-trade-set-requires
-#+pr:
+#+pr: 4973
 #+blocked_on: The requirement resolution, which says which series an export may write.
 #+blocked_since:
 #+created: 2026-10-07
@@ -119,7 +119,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4973][#4973]] | [marketdata,trading,reporting] Gather a set's market data |
 
 * Review
 

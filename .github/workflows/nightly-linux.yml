@@ -310,6 +310,21 @@ jobs:
           fi
           ctest -VV --timeout ${timeout} --preset ${preset} --script "CTest.cmake,${cmake_args}"
 
+      - name: Upload the memcheck logs when the run fails
+        # A memcheck failure reports a count, not a stack: CTest says a test
+        # carried "Defects: N" and the stacks stay in MemoryChecker.N.log in the
+        # build tree, which the runner discards. Uploading them on failure is
+        # what makes the count explainable afterwards.
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: memcheck-logs-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}
+          if-no-files-found: ignore
+          retention-days: 7
+          path: |
+            build/output/${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja/Testing/Temporary/MemoryChecker.*.log
+            build/output/${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja/Testing/Temporary/LastTest.log
+
       - name: Stage the release images
         # Only the release build is published: the debug build is several
         # times larger, and no host runs it. The runner's job container has

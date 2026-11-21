@@ -8,7 +8,7 @@
 #+filetags: :keep_main_green:sprint_30:v0:
 #+owner: marco
 #+branch: hotfix/raise-the-windows-clang-toolchain
-#+pr:
+#+pr: 4970
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-21
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4970][#4970]] | [ci] Install a Clang the runner's STL accepts |
 
 * Review
 

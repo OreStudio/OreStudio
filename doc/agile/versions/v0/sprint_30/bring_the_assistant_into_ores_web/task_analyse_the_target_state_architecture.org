@@ -8,7 +8,7 @@
 #+filetags: :bring_the_assistant_into_ores_web:sprint_30:v0:
 #+owner: marco
 #+branch: feature/analyse-the-target-state-architecture
-#+pr:
+#+pr: 4960
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-20
@@ -168,7 +168,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4960][#4960]] | [agile] Analyse MCP, the catalogue and the knowledge base; split the assistant work into three stories |
 
 * Review
 

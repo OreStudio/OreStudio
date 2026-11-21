@@ -6,7 +6,7 @@
 #+type: ores.codegen.component
 #+component_kind: adapter
 #+shell_command_aggregator: true
-#+shell_command_local_units: ore_commands
+#+shell_command_local_units: ore_commands payoff_script_commands
 #+level: cross
 #+filetags: :shell:repl:trading:component:
 #+created: 2026-09-16
@@ -45,7 +45,8 @@ part of the surface no entity model holds. =#+shell_command_aggregator:
 true= opts trading into the generated component registrar, which the
 =application= part holds. =#+shell_command_local_units: ore_commands= names
 the units that no model describes, so the registrar lists them beside the
-generated ones. A component that omits the first keyword keeps its
+generated ones; =payoff_script_commands= is the =script= menu, whose commands read a
+payoff script's text alone and need no session. A component that omits the first keyword keeps its
 hand-authored registrar.
 
 * Inputs
@@ -70,6 +71,7 @@ hand-authored registrar.
 
 - =include/ores.shell/app/commands/trading/= — the generated unit headers.
 - =src/app/commands/trading/= — the generated unit implementations.
+- =payoff_script_commands= — the =script= menu: =parse=, =check=, =inputs= and =print=, with no session.
 - =trading_commands::register_commands= — the component-level entry the host
   calls once to install every unit below the trading root menu, generated
   into =application/src/app/commands/trading/=.
@@ -79,6 +81,7 @@ hand-authored registrar.
 - =ores.shell.api= — argument parsing, feedback, pagination, request helpers.
 - =ores.nats= — NATS transport for service calls.
 - =ores.trading.api= — the domain types and protocol messages the units send.
+- =ores.trading.scripting= — ORE's parser, the inputs and the checks the =script= commands run offline.
 - =ores.logging= — logger factory.
 - =cli= — the menu and handler types the units register against.
 
@@ -100,6 +103,7 @@ target_link_libraries(${lib_target_name}
         ores.logging.lib
     PRIVATE
         ores.trading.api.lib
+        ores.trading.scripting.lib
         ores.utility.lib
         cli::cli)
 #+end_src

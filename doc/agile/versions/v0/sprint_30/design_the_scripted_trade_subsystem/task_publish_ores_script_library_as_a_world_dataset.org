@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :design_the_scripted_trade_subsystem:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/publish-ores-script-library-as-a-world-dataset
 #+pr: 4971
 #+blocked_on:
 #+blocked_since:
@@ -26,7 +26,7 @@ ORE's script library arrives as a world dataset whose methodology extracts, corr
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:E6359881-7919-4BBC-9B9C-03A8EEDB8A03][Design the scripted trade subsystem]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -54,9 +54,21 @@ ORE's script library arrives as a world dataset whose methodology extracts, corr
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Four PRs, each ending in a check.
+
+1. The shell's =script= menu, which needs no session: =parse=, =check=,
+   =inputs= and =print=, a local unit of =ores.shell.trading= linking
+   =ores.trading.scripting=. The generator runs them through the shell's batch
+   mode, =ores.shell -f=, which exits non-zero when a command fails.
+2. The dataset: the generator and its corrections file in =external/ore/tools/=,
+   the methodology step, the artefact tables of the script entities, the
+   publish function, the artefact type and the =world= bundle membership; the
+   =script_library_seed= output and the corrections populate script are retired.
+3. A scripted trade records its script's name, holding tenant and version, or
+   its inline text and a hash, and a run writes the library from those
+   versions.
+4. A tenant publishes its own script through the trading service, which parses
+   it and warns on a name the world library holds.
 
 * Measurements
 
@@ -70,9 +82,26 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| ores.shell.trading.tests | 4932 assertions in 1743 test cases pass | build/output/linux-clang-release-ninja/publish/bin/ores.shell.trading.tests | f2de16c79c + PR 1 |
+| offline batch run | exit 0 for a clean script, exit 1 with =bad.txt:1:8: error: expected <Term> [SCR1001]= for one that does not parse, with no NATS server | ores.shell --nats-url nats://127.0.0.1:1 --load <file> | f2de16c79c + PR 1 |
 
 * Notes
+
+** What the first PR found
+
+- The shell runs a script offline with =--load=: with no server, the
+  auto-connect fails, the commands run, and a command that marks a failure ends
+  the batch with exit status 1. The generator relies on that contract.
+- The shell already has a =script_commands= class, for =load=, so the payoff
+  script unit is =payoff_script_commands=; the menu is still =script=.
+- A REQUIRE rule comes back as the condition on one line, and inputs come in
+  the order =inputs_of= derives them, which is the order the store holds.
+- The twin recipes (=trading_script_twin_inputs_populate.sql=) are a populate
+  script whose trigger requires the script to exist. Once the scripts arrive by
+  the =world= publish, which runs after the populate scripts, the recipes cannot
+  be written by a populate script; the second PR has to order them after the
+  publish.
+
 
 The world bundle is published in SQL at bring-up, before any service runs, so the parsing and derivation are steps of the generator rather than of the publish function.
 

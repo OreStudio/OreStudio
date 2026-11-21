@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: BC7D0742-2062-488E-89AC-148455B0FC50
+:ores.cpp.scaffold.enabled: true
+:END:
+#+title: ores.orgmode.service
+#+description: The knowledge service: indexes loaded org pages and answers searches and page reads over NATS.
+#+type: ores.codegen.component
+#+level: cross
+#+filetags: :orgmode:knowledge:service:component:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+#+name: orgmode.service
+#+full_name: ores.orgmode.service
+#+brief: Knowledge service
+#+component_kind: service
+
+* Diagram
+
+#+attr_html: :width 100% :alt ores.orgmode.service component diagram
+#+caption: ores.orgmode.service
+[[file:ores.orgmode.service.png][file:ores.orgmode.service.png]]
+
+* Summary
+
+=ores.orgmode.service= will be the knowledge service: it runs the indexing
+step when the loaded pages change, and answers searches and page reads over
+NATS for ores.http. It is a scaffold until the knowledge search story's tasks
+fill it; see [[id:05FE6068-3CBD-4B93-B6AE-47A5689F1FCB][Search the knowledge base from ores.web]].
+
+* Inputs
+
+-
+
+* Outputs
+
+-
+
+* Entry points
+
+-
+
+* Dependencies
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.service.lib
+        ores.security.lib
+        ores.orgmode.core.lib
+        ores.eventing.core.lib
+        ores.nats.lib
+        ores.database.lib
+        ores.utility.lib
+        ores.telemetry.core.lib)
+#+end_src
+
+#+begin_src cmake :name extra_test_dependencies
+target_link_libraries(${tests_target_name}
+    PRIVATE
+        ${lib_target_name}
+        ores.utility.lib
+        ores.testing.lib
+        ores.logging.lib
+        Catch2::Catch2
+        faker-cxx::faker-cxx
+        Threads::Threads)
+#+end_src
+
+* See also
+
+-

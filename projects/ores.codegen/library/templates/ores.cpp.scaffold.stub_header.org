@@ -30,6 +30,7 @@ The full template source. Edit here and re-tangle with
 #ifndef ORES_{{name_upper}}_DOMAIN_STUB_HPP
 #define ORES_{{name_upper}}_DOMAIN_STUB_HPP
 
+#include "{{full_name}}/export.hpp"
 #include <string>
 
 namespace {{namespace}}::domain {
@@ -41,7 +42,7 @@ struct stub final {
     int version = 0;
 };
 
-std::string stub_function();
+{{full_name_upper}}_EXPORT std::string stub_function();
 
 }
 

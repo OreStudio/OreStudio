@@ -1,0 +1,70 @@
+:PROPERTIES:
+:ID: 4FDF6B88-06FB-4203-BBA1-EE7F30A0F4C2
+:ores.cpp.scaffold.enabled: true
+:END:
+#+title: ores.orgmode.core
+#+description: The knowledge base's tables, the indexing step that parses loaded org pages into sections, and the search over them.
+#+type: ores.codegen.component
+#+level: cross
+#+filetags: :orgmode:knowledge:component:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+#+name: orgmode.core
+#+full_name: ores.orgmode.core
+#+brief: Knowledge tables, indexing and search
+#+component_kind: core
+#+hidden_visibility: true
+
+* Diagram
+
+#+attr_html: :width 100% :alt ores.orgmode.core component diagram
+#+caption: ores.orgmode.core
+[[file:ores.orgmode.core.png][file:ores.orgmode.core.png]]
+
+* Summary
+
+=ores.orgmode.core= will hold the knowledge base's tables, the raw pages as
+loaded and the pages, sections and links the indexing step writes; the indexing
+step itself, which parses each loaded page with =ores.orgmode.parser=; and the
+search over the sections. It is empty until the knowledge search story's tasks
+add them; see [[id:05FE6068-3CBD-4B93-B6AE-47A5689F1FCB][Search the knowledge base from ores.web]].
+
+* Inputs
+
+-
+
+* Outputs
+
+-
+
+* Entry points
+
+-
+
+* Dependencies
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.orgmode.api.lib
+        ores.orgmode.parser.lib
+    PRIVATE
+        ores.utility.lib
+        ores.database.lib)
+#+end_src
+
+#+begin_src cmake :name extra_test_dependencies
+target_link_libraries(${tests_target_name}
+    PRIVATE
+        ${lib_target_name}
+        ores.utility.lib
+        ores.testing.lib
+        ores.logging.lib
+        Catch2::Catch2
+        faker-cxx::faker-cxx
+        Threads::Threads)
+#+end_src
+
+* See also
+
+-

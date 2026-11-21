@@ -31,9 +31,9 @@ and reports it like any other container.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:A75C3063-896F-4DD5-A9BC-893A59EDFF7E][Pool the fleet's connections]] |
-| Now          | The image, the generator's container shape and the deploy's transfer are written; the pod, the registry and pauli are not. |
-| Waiting on   | A host that can run podman, which this checkout cannot: /run/user is read-only here. |
-| Next         | Add the pooler to the pod, publish the image, deploy to pauli. |
+| Now          | The image is built, proven and published; the pod and the deploy to pauli are next. |
+| Waiting on   | Nothing.                               |
+| Next         | Add the pooler to the pod, then deploy to pauli. |
 | Last touched | 2026-11-21                               |
 
 * Acceptance
@@ -109,10 +109,32 @@ The pooler is not yet a container of the pod: =docker/run-pod.sh= starts the
 service runtime and the NATS sidecar, and the pooler is a third. Nor is it
 published to the registry, nor named in the deployment recipe.
 
-And it has not been built: =podman build= fails here with "Failed to obtain
-podman configuration: /run/user/1000/libpod: read-only file system", so the
-Dockerfile is unproven. So is any deploy: pauli is another host and this
-checkout cannot reach it. Both are the next increment rather than a claim.
+** Built, run and published, 2026-11-21
+
+The build needs podman's runtime state under =/run/user=, which the workspace
+sandbox denies, so it ran with wider permissions. Running it found three faults
+that reading the file could not:
+
+- Alpine's package ships no =pgbouncer= user, and pgbouncer refuses to run as
+  root, so the image creates the user its entrypoint drops to.
+- The container expects =pgbouncer.ini=, which the generator did not write, and
+  its auth file must name the mount point rather than the directory it was
+  written to, because pgbouncer reads it after dropping privileges.
+- The mounted directory is read-only, so a pidfile inside it is a file it cannot
+  write, and the container shape carries none.
+
+Proof: =podman run= of the image answered =select 'pooled from the container'=
+against this environment's database, and its log shows the server connection
+with TLS established.
+
+Published as =ghcr.io/orestudio/ores-pgbouncer=, tags =main= and
+=0.0.30-07672ec35a1e=, digest =sha256:114f50e6...=, and made public. Verified
+without credentials: an anonymous pull token fetches the manifest of =main= with
+HTTP 200, which is what a host with no login on it will do.
+
+What is left is the pod: =docker/run-pod.sh= still starts the service runtime and
+the NATS sidecar, and the pooler is a third container. And a deploy to pauli,
+which needs that first.
 
 * Test Scenarios
 

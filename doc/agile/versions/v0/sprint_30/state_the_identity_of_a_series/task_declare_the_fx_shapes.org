@@ -8,7 +8,7 @@
 #+filetags: :state_the_identity_of_a_series:sprint_30:v0:
 #+owner: marco
 #+branch: feature/declare-the-fx-shapes
-#+pr:
+#+pr: 4949
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-15
@@ -104,7 +104,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4949][#4949]] | [marketdata] Test the CRM's refusal of a sparse FX fixing series |
 
 * Review
 

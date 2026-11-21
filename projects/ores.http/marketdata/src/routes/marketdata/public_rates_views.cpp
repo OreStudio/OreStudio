@@ -28,6 +28,7 @@
 #include "ores.marketdata.api/messaging/feed_scope_protocol.hpp"
 #include "ores.marketdata.api/messaging/market_fixing_protocol.hpp"
 #include "ores.marketdata.api/messaging/market_series_protocol.hpp"
+#include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.marketdata.api/messaging/provider_protocol.hpp"
 #include "ores.marketdata.api/messaging/session_protocol.hpp"
 #include "ores.marketdata.api/messaging/supplier_protocol.hpp"
@@ -76,51 +77,59 @@ auto& public_rates_lg() {
     return instance;
 }
 
-/// The pair an FX fixing item names, when the item is one.
+/// The pair an FX fixing item names.
 struct fixing_pair final {
     std::string base;
     std::string quote;
 };
 
 /**
- * The pair a fixing item names: its subject and its currency.
+ * The pairs of the series a view names, each read once and kept for the request.
  *
- * The item reads =oresmd://fx/<BASE>?type=fixing&index=fx&source=<KEY>&ccy=<QUOTE>=.
- * An item of any other shape names no pair, and a series whose item names none
- * is left out of the publishers' answer, because a screen draws a pair and has
- * nowhere to put a series without one.
+ * The grammar of an oresmd URI belongs to the codec, so the gateway asks the
+ * codec's own operation rather than parsing the text. The answer states the
+ * kind, the instrument family, the subject and the fields, which is every part
+ * the pair is made of: the subject is the base and the ccy field is the quote.
+ *
+ * A URI the codec refuses, or one whose kind or family is not an FX fixing,
+ * names no pair, which is a fact about the item and not a failure of the view.
  */
-std::optional<fixing_pair> pair_of(std::string_view uri) {
-    constexpr std::string_view prefix = "oresmd://fx/";
-    if (!uri.starts_with(prefix))
-        return std::nullopt;
-    auto rest = uri.substr(prefix.size());
-    const auto slash = rest.find('?');
-    if (slash == std::string_view::npos || slash != 3)
-        return std::nullopt;
-    fixing_pair pair;
-    pair.base = std::string(rest.substr(0, 3));
+class pair_reader final {
+public:
+    pair_reader(const http_request& req, nats_client& session)
+        : req_(req)
+        , session_(session) {}
 
-    rest = rest.substr(slash + 1);
-    const auto field = [&](std::string_view name) -> std::optional<std::string> {
-        auto at = rest.find(name);
-        if (at == std::string_view::npos)
-            return std::nullopt;
-        at += name.size();
-        const auto end = rest.find('&', at);
-        return std::string(rest.substr(at, end == std::string_view::npos ? end : end - at));
-    };
-    const auto type = field("type=");
-    const auto index = field("index=");
-    const auto source = field("source=");
-    const auto quote = field("ccy=");
-    if (!type || *type != "fixing" || !index || *index != "fx" || !source || !quote)
-        return std::nullopt;
-    if (quote->size() != 3)
-        return std::nullopt;
-    pair.quote = *quote;
-    return pair;
-}
+    std::optional<fixing_pair> of(const std::string& uri) {
+        if (const auto found = cache_.find(uri); found != cache_.end())
+            return found->second;
+
+        marketdata_messaging::parse_oresmd_uri_request msg;
+        msg.uri = uri;
+        const auto parsed = forwarding::forward(req_, session_, msg);
+        std::optional<fixing_pair> pair;
+        if (!parsed.success) {
+            ORES_LOG_SEV(public_rates_lg(), ores::logging::debug)
+                << "The codec refused the item " << uri << ": " << parsed.message;
+        } else if (parsed.kind == "fixing" && parsed.instrument == "fx" &&
+                   !parsed.subject.empty()) {
+            for (const auto& field : parsed.fields) {
+                if (field.name != "ccy")
+                    continue;
+                if (!field.text.empty())
+                    pair = fixing_pair{parsed.subject, field.text};
+                break;
+            }
+        }
+        cache_.emplace(uri, pair);
+        return pair;
+    }
+
+private:
+    const http_request& req_;
+    nats_client& session_;
+    std::map<std::string, std::optional<fixing_pair>> cache_;
+};
 
 /// One fixing of the catalogue, as the screens read it.
 struct fixing_row final {
@@ -280,6 +289,7 @@ void public_rates_views::register_routes(
                 co_return guarded<marketdata_messaging::list_providers_request>([&] {
                     rr::refuse_unknown_params(req, {});
                     auto catalogue = read_public_catalogue(req, session);
+                    pair_reader pairs(req, session);
 
                     std::map<std::string, const marketdata_domain::session*> session_of;
                     for (const auto& one : catalogue.sessions)
@@ -332,7 +342,7 @@ void public_rates_views::register_routes(
                         for (const auto& series : catalogue.series) {
                             if (series.provider_code != publisher.code)
                                 continue;
-                            const auto pair = pair_of(series.oresmd_uri);
+                            const auto pair = pairs.of(series.oresmd_uri);
                             if (!pair)
                                 continue;
                             series_rows.emplace_back(
@@ -429,6 +439,7 @@ void public_rates_views::register_routes(
                         rr::invalid(std::string(public_file_refused));
 
                     const auto catalogue = read_public_catalogue(req, session);
+                    pair_reader pairs(req, session);
                     const auto found = std::ranges::find(
                         catalogue.providers, publisher, &marketdata_domain::provider::code);
                     if (found == catalogue.providers.end())
@@ -441,7 +452,7 @@ void public_rates_views::register_routes(
                             continue;
                         if (!item.empty() && item != series.oresmd_uri)
                             continue;
-                        const auto pair = pair_of(series.oresmd_uri);
+                        const auto pair = pairs.of(series.oresmd_uri);
                         const auto named = pair ? pair->base + "/" + pair->quote : std::string{};
                         const auto held =
                             catalogue.fixings.find(boost::uuids::to_string(series.id));

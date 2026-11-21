@@ -23,6 +23,7 @@
 #include "ores.synthetic.api/domain/trade_population_plan.hpp"
 #include "ores.synthetic.core/export.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <chrono>
 #include <cstdint>
 #include <stdexcept>
 #include <string>
@@ -403,6 +404,15 @@ ORES_SYNTHETIC_CORE_EXPORT boost::uuids::uuid book_scope_id_for(const boost::uui
 ORES_SYNTHETIC_CORE_EXPORT boost::uuids::uuid
 counterparty_scope_id_for(const boost::uuids::uuid& config_id,
                           const boost::uuids::uuid& counterparty_id);
+
+/**
+ * @brief @p date, or the first TARGET business day after it.
+ *
+ * TARGET closes on weekends, New Year's Day, Good Friday, Easter Monday,
+ * Labour Day and the two Christmas days.
+ */
+ORES_SYNTHETIC_CORE_EXPORT std::chrono::year_month_day
+target_business_day(const std::chrono::year_month_day& date);
 
 /// The id one trade type of a config carries.
 ORES_SYNTHETIC_CORE_EXPORT boost::uuids::uuid

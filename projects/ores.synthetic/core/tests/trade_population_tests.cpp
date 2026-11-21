@@ -30,6 +30,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_string.hpp>
 #include <chrono>
+#include <cstdio>
 #include <format>
 #include <map>
 #include <optional>
@@ -2356,6 +2357,26 @@ TEST_CASE("a_window_barrier_twin_states_its_barrier_as_the_code_its_script_reads
     CHECK(seen > 0u);
 }
 
+TEST_CASE("a_target_business_day_skips_weekends_and_the_target_holidays",
+          "[trade_population]") {
+    using namespace std::chrono;
+    using ores::synthetic::service::target_business_day;
+    // A business day stays.
+    CHECK(target_business_day(year{2027} / March / 25) == year{2027} / March / 25);
+    // A Saturday and a Sunday go to the Monday.
+    CHECK(target_business_day(year{2029} / December / 1) == year{2029} / December / 3);
+    CHECK(target_business_day(year{2029} / December / 2) == year{2029} / December / 3);
+    // Good Friday 2027 goes past the weekend and Easter Monday to the Tuesday.
+    CHECK(target_business_day(year{2027} / March / 26) == year{2027} / March / 30);
+    CHECK(target_business_day(year{2027} / March / 29) == year{2027} / March / 30);
+    // Easter 2030 falls on 21 April.
+    CHECK(target_business_day(year{2030} / April / 19) == year{2030} / April / 23);
+    CHECK(target_business_day(year{2030} / January / 1) == year{2030} / January / 2);
+    CHECK(target_business_day(year{2029} / May / 1) == year{2029} / May / 2);
+    // Christmas Day and Boxing Day on weekdays close two days together.
+    CHECK(target_business_day(year{2029} / December / 25) == year{2029} / December / 27);
+}
+
 TEST_CASE("a_generic_barrier_twin_states_its_codes_and_expires_on_a_business_day",
           "[trade_population]") {
     std::size_t seen = 0;
@@ -2393,16 +2414,22 @@ TEST_CASE("a_generic_barrier_twin_states_its_codes_and_expires_on_a_business_day
             CHECK(parameter("PayoffType").value == "0");
             CHECK(parameter("KikoType").value == "1");
             CHECK(parameter("TransatlanticBarrierType").value == "0");
+            REQUIRE(native.instruments.instrument_barrier_levels.size() == 1u);
+            CHECK(values_of("BarrierLevels") ==
+                  std::vector<std::string>{
+                      native.instruments.instrument_barrier_levels[0].level.to_string()});
+            CHECK(values_of("BarrierRebates") == std::vector<std::string>{"0"});
+            CHECK(parameter("BarrierRebate").value == "0");
+            CHECK(parameter("TransatlanticBarrierLevel").value == "0");
 
             // ORE moves the native's expiry off a holiday and the script does not.
             const auto expiry = parameter("ExpiryDate").value.value_or("");
-            std::istringstream in(expiry);
-            std::chrono::year_month_day date{};
-            in >> std::chrono::parse("%F", date);
-            REQUIRE_FALSE(in.fail());
-            const std::chrono::weekday day{std::chrono::sys_days{date}};
-            CHECK(day != std::chrono::Saturday);
-            CHECK(day != std::chrono::Sunday);
+            int y = 0;
+            unsigned m = 0, d = 0;
+            REQUIRE(std::sscanf(expiry.c_str(), "%d-%u-%u", &y, &m, &d) == 3);
+            const std::chrono::year_month_day date{
+                std::chrono::year{y}, std::chrono::month{m}, std::chrono::day{d}};
+            CHECK(ores::synthetic::service::target_business_day(date) == date);
             ++seen;
         }
     }

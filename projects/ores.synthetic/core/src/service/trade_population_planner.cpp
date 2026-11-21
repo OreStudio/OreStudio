@@ -190,39 +190,6 @@ std::vector<year_month_day> quarterly_dates(const year_month_day& after,
 }
 
 /*
- * @p date, or the first TARGET business day after it. TARGET closes on
- * weekends, New Year's Day, Good Friday, Easter Monday, Labour Day and the two
- * Christmas days.
- */
-year_month_day target_business_day(const year_month_day& date) {
-    using namespace std::chrono;
-    const auto easter_of = [](int y) {
-        // The Gregorian computus of Meeus, Jones and Butcher.
-        const int a = y % 19, b = y / 100, c = y % 100, d = b / 4, e = b % 4;
-        const int g = (8 * b + 13) / 25, h = (19 * a + b - d - g + 15) % 30;
-        const int i = c / 4, k = c % 4, l = (32 + 2 * e + 2 * i - h - k) % 7;
-        const int m = (a + 11 * h + 19 * l) / 433;
-        const int month = (h + l - 7 * m + 90) / 25, day = (h + l - 7 * m + 33 * month + 19) % 32;
-        return sys_days{year{y} / month / day};
-    };
-    const auto closed = [&](sys_days day) {
-        const weekday wd{day};
-        if (wd == Saturday || wd == Sunday)
-            return true;
-        const year_month_day ymd{day};
-        const auto md = ymd.month() / ymd.day();
-        if (md == January / 1 || md == May / 1 || md == December / 25 || md == December / 26)
-            return true;
-        const auto easter = easter_of(static_cast<int>(ymd.year()));
-        return day == easter - days{2} || day == easter + days{1};
-    };
-    auto day = sys_days{date};
-    while (closed(day))
-        day += days{1};
-    return year_month_day{day};
-}
-
-/*
  * A draw in [0, 1) that depends only on the scope and the slot. It is built
  * from the same name generator the ids are, so nothing here reads a clock or
  * a global engine and the same scope draws the same numbers.
@@ -1500,6 +1467,34 @@ boost::uuids::uuid counterparty_scope_id_for(const boost::uuids::uuid& config_id
     return named(std::format("config_counterparty:{}:{}",
                              boost::uuids::to_string(config_id),
                              boost::uuids::to_string(counterparty_id)));
+}
+
+std::chrono::year_month_day target_business_day(const std::chrono::year_month_day& date) {
+    using namespace std::chrono;
+    const auto easter_of = [](int y) {
+        // The Gregorian computus of Meeus, Jones and Butcher.
+        const int a = y % 19, b = y / 100, c = y % 100, d = b / 4, e = b % 4;
+        const int g = (8 * b + 13) / 25, h = (19 * a + b - d - g + 15) % 30;
+        const int i = c / 4, k = c % 4, l = (32 + 2 * e + 2 * i - h - k) % 7;
+        const int m = (a + 11 * h + 19 * l) / 433;
+        const int month = (h + l - 7 * m + 90) / 25, day = (h + l - 7 * m + 33 * month + 19) % 32;
+        return sys_days{year{y} / month / day};
+    };
+    const auto closed = [&](sys_days day) {
+        const weekday wd{day};
+        if (wd == Saturday || wd == Sunday)
+            return true;
+        const year_month_day ymd{day};
+        const auto md = ymd.month() / ymd.day();
+        if (md == January / 1 || md == May / 1 || md == December / 25 || md == December / 26)
+            return true;
+        const auto easter = easter_of(static_cast<int>(ymd.year()));
+        return day == easter - days{2} || day == easter + days{1};
+    };
+    auto day = sys_days{date};
+    while (closed(day))
+        day += days{1};
+    return year_month_day{day};
 }
 
 boost::uuids::uuid trade_type_scope_id_for(const boost::uuids::uuid& config_id,
@@ -3250,6 +3245,9 @@ build_equity_trade(const domain::trade_generation_scope& scope,
                                                            (sys_days{end} - sys_days{start}) / 2},
                               .barrier = knock_out})
                              .build());
+        // ORE moves an expiry off a holiday but its library script does not, so the
+        // two forms agree only on a business day.
+        const auto expiry = target_business_day(end);
         return built(tb::equity_generic_barrier_option_builder(
                          {.underlying = address,
                           .pay_currency = currency,
@@ -3257,10 +3255,8 @@ build_equity_trade(const domain::trade_generation_scope& scope,
                           .strike = money(level),
                           .kind = kind,
                           .position = position,
-                          // ORE moves an expiry off a holiday but its library script
-                          // does not, so the two forms agree only on a business day.
-                          .expiry = target_business_day(end),
-                          .settlement = year_month_day{sys_days{target_business_day(end)} + days{5}},
+                          .expiry = expiry,
+                          .settlement = year_month_day{sys_days{expiry} + days{5}},
                           .monitoring_start = start,
                           .barriers = std::vector<tb::scripted_barrier>{knock_out},
                           .kiko_type = std::nullopt})

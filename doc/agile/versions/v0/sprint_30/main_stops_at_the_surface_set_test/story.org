@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: F3C78A53-A522-438B-96C7-7928E04B7719
+:END:
+#+title: Story: Hotfix: Main stops at the surface set test
+#+description: A -Werror build of main fails in the marketdata service tests because a call whose result is deliberately unused is marked nodiscard.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:marketdata:sprint_30:v0:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+#+environment: merry_newton
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A full build of main compiles every target again, and the two raise functions agree on whether a caller may discard what they return.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
+| Now           | The fix is made and the two raises agree; a build of the target is the evidence still owed. |
+| Waiting on    | Nothing.                               |
+| Next          | [[id:E1FB7EF9-EDA5-4596-9A79-B6F66020194F][Discard the raise result the surface set test does not read]]. |
+| Last touched  | 2026-11-21                               |
+
+* Acceptance
+
+- The marketdata service tests compile under -Werror with the discarded raise result marked as deliberate.
+- Both raise functions are nodiscard, so a discarded result fails the build in either of them rather than in one.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:1B5328BF-1066-43D6-A730-DC9C8E770590][Scaffold story: Hotfix: Main stops at the surface set test]] | STARTED | 2026-11-21 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:E1FB7EF9-EDA5-4596-9A79-B6F66020194F][Discard the raise result the surface set test does not read]] | STARTED | 2026-11-21 | | Initial task for: Hotfix: Main stops at the surface set test |
+
+* Decisions
+
+- *The asymmetry is the defect, not the discarded line, 2026-11-21.* One raise
+  was =nodiscard= and its sibling was not, so the same careless call was a
+  build error in one and invisible in the other. The fix marks both, so the
+  rule is the same in either direction; the two tests that raise a set to
+  assert the refusal say so with a =void= cast and a comment.
+
+* Out of scope
+
+-

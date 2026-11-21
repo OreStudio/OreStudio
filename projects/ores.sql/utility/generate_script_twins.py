@@ -61,6 +61,20 @@ def org_table(text, heading):
     return rows[1:]
 
 
+def library_scripts():
+    """Every script the library seed states, in its order."""
+    text = LIBRARY_SEED.read_text()
+    block = text[text.index("insert into ores_trading_scripts_tbl"):]
+    block = block[:block.index(";\n")]
+    names = re.findall(r"^    \('([^']+)', ores_utility_system_tenant_id_fn\(\)", block, re.M)
+    if not names:
+        sys.exit(f"found no script in {LIBRARY_SEED.relative_to(ROOT)}; its layout changed")
+    return names
+
+
+HELD = {"both forms", "element only", "script only", "not yet"}
+
+
 def script_inputs():
     """Each script's inputs, in the library's order, as (name, type, is_array)."""
     text = LIBRARY_SEED.read_text()
@@ -113,36 +127,72 @@ def transforms(text):
 
 
 def recipes():
+    """Every recipe row: a native type's twin, then the scripts that type carries."""
     text = CATALOGUE.read_text()
     known = {name for name, _, _ in transforms(text)}
     forms = {code: script for code, script in org_table(text, "Scripted forms")}
     library = script_inputs()
+    # Each form is a native type and a script: the type's twin, or a script with
+    # no element of its own that the type's rows carry.
     stated = {}
     errors, rows = [], []
-    for code, name, source, transform in org_table(text, "Scripted twin recipes"):
+
+    def state(code, script, name, source, transform):
         if transform and transform not in known:
             errors.append(f"{code}: {name} names the unknown transform {transform}")
         for part in (p for listed in source_parts(source) for p in listed):
             if part.startswith("'") != part.endswith("'"):
                 errors.append(f"{code}: {name} states an unclosed literal {part}")
-        stated.setdefault(code, {})[name] = (source, transform or None)
+        stated.setdefault((code, script), {})[name] = (source, transform or None)
+
     # A type of the Scripted forms table with no recipe is not twinned yet: the
     # recipes land a few products at a time.
-    for code in sorted(stated):
+    for code, name, source, transform in org_table(text, "Scripted twin recipes"):
         if code not in forms:
             errors.append(f"{code}: a recipe for a type the Scripted forms table does not name")
             continue
-        script = forms[code]
+        state(code, forms[code], name, source, transform)
+    for code, script, name, source, transform in org_table(text, "Script-only recipes"):
+        if script in forms.values():
+            errors.append(f"{code}: {script} is a type's scripted form, so it is not script only")
+        state(code, script, name, source, transform)
+
+    carried = {script for code, script in stated if forms.get(code) != script}
+    twinned = set(forms.values())
+    held = {}
+    for script, how, _ in org_table(text, "Library scripts"):
+        if script in held:
+            errors.append(f"Library scripts: {script} is listed twice")
+        if how not in HELD:
+            errors.append(f"Library scripts: {script} is held as {how}, not one of {sorted(HELD)}")
+        held[script] = how
+    for script in library_scripts():
+        how = held.pop(script, None)
+        if how is None:
+            errors.append(f"Library scripts: {script} is in the library but not listed")
+        elif (how == "both forms") != (script in twinned):
+            errors.append(f"Library scripts: {script} is held as {how}, but the Scripted forms "
+                          f"table {'names' if script in twinned else 'does not name'} it")
+        elif (how == "script only") != (script in carried):
+            errors.append(f"Library scripts: {script} is held as {how}, but "
+                          f"{'a' if script in carried else 'no'} script-only recipe states it")
+    for script in held:
+        errors.append(f"Library scripts: {script} is not in the library")
+
+    sequences = {}
+    for (code, script) in sorted(stated, key=lambda k: (k[0], forms.get(k[0]) != k[1], k[1])):
+        twin = forms.get(code) == script
         inputs = library.get(script, [])
         names = [name for name, _, _ in inputs]
-        for name in stated[code]:
+        for name in stated[(code, script)]:
             if name not in names:
                 errors.append(f"{code}: {script} reads no input {name}")
-        for sequence, (name, typ, array) in enumerate(inputs, 1):
-            if name not in stated[code]:
+        for name, typ, array in inputs:
+            if name not in stated[(code, script)]:
                 errors.append(f"{code}: the recipe states no source for {script}'s {name}")
                 continue
-            source, transform = stated[code][name]
+            sequence = sequences[code] = sequences.get(code, 0) + 1
+            source, transform = stated[(code, script)][name]
             listed = source_parts(source)
             parts = [part for alternatives in listed for part in alternatives]
             events = [part for part in parts if SCHEDULE.fullmatch(part) or DERIVED.fullmatch(part)]
@@ -166,7 +216,7 @@ def recipes():
                         (base.group(1), "Event") not in {(n, t) for n, t, _ in inputs}):
                     errors.append(f"{code}: {name} derives from {base.group(1)}, "
                                   f"which is no other Event of {script}")
-            rows.append((code, sequence, script, name, typ, array, source, transform))
+            rows.append((code, sequence, script, twin, name, typ, array, source, transform))
     if errors:
         sys.exit("\n".join(errors))
     return rows
@@ -192,7 +242,7 @@ def seed(rows):
             + ", ".join(literal(v) for v in (sequence, script, name, typ, array, source,
                                              transform))
             + ", current_user, 'system.initial_load', 'Seed the script twin recipes')"
-            for code, sequence, script, name, typ, array, source, transform in rows)
+            for code, sequence, script, _, name, typ, array, source, transform in rows)
         out.append("insert into ores_trading_script_twin_inputs_tbl (\n"
                    "    trade_type_code, tenant_id, version, sequence_number, script_name, "
                    "input_name, data_type, is_array, source, transform,\n"
@@ -215,10 +265,15 @@ def header(rows, codes):
              "#define ORES_SYNTHETIC_CORE_SERVICE_SCRIPT_TWIN_RECIPES_HPP\n",
              "#include <string_view>\n",
              "namespace ores::synthetic::service {\n",
-             "/// One input of a scripted twin and where its value comes from in the native trade.",
+             "/**",
+             " * One input of a scripted form of a native trade and where its value comes",
+             " * from in the native's rows. The form is the native's twin, or a script with",
+             " * no element of its own that the native's rows carry.",
+             " */",
              "struct script_twin_recipe final {",
              "    std::string_view trade_type_code;",
              "    std::string_view script_name;",
+             "    bool twin;",
              "    std::string_view input_name;",
              "    std::string_view data_type;",
              "    bool is_array;",
@@ -236,10 +291,11 @@ def header(rows, codes):
     for name, value, code in codes:
         lines.append(f"    {{{cxx(name)}, {cxx(value)}, {cxx(code)}}},")
     lines += ["};\n",
-             "/// The recipes, by trade type, each in its script's input order.",
+             "/// The recipes, by trade type, the twin first, each in its script's input order.",
              "inline constexpr script_twin_recipe script_twin_recipes[] = {"]
-    for code, _, script, name, typ, array, source, transform in rows:
-        lines.append(f"    {{{cxx(code)}, {cxx(script)}, {cxx(name)}, {cxx(typ)}, "
+    for code, _, script, twin, name, typ, array, source, transform in rows:
+        lines.append(f"    {{{cxx(code)}, {cxx(script)}, {'true' if twin else 'false'}, "
+                     f"{cxx(name)}, {cxx(typ)}, "
                      f"{'true' if array else 'false'}, {cxx(source)}, {cxx(transform or '')}}},")
     lines += ["};\n", "}\n", "#endif"]
     text = "\n".join(lines) + "\n"

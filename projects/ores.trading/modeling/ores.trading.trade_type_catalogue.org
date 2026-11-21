@@ -502,6 +502,180 @@ into the code the script reads, as the =Scripted twin transforms= table states.
 | FxWorstOfBasketSwap              | KnockInLevel                       | product.knock_in_level or '1'                                                                                                                          |           |
 | FxWorstOfBasketSwap              | EquityAmountPayoff                 | '0'                                                                                                                                                    |           |
 
+* Script-only recipes
+
+A script of ORE's library with no element of its own is booked only as a
+generic =ScriptedTrade=. It has no native trade to take its terms from, so a
+native type the generator books carries it: the recipe reads each input from the
+carrier's rows, as a twin recipe does, in the same grammar and through the same
+transforms. The carrier is still booked on its own; the carried trade is one
+more trade on its terms. An input the carrier states no term for takes a
+literal. The barrier levels here are ones the underlying never reaches, a
+knock-in at zero (the User Guide's form of no barrier), a knock-out at one and a
+corridor from zero to ten million, because no carrier states a level near its
+underlying's price: each script is read and built, and prices as its form
+without a barrier.
+
+| carrier                  | script                    | input                     | source                                     | transform |
+|--------------------------+---------------------------+---------------------------+--------------------------------------------+-----------|
+| EquityBasketVarianceSwap | VarianceOption            | Notional                  | product.notional                           |           |
+| EquityBasketVarianceSwap | VarianceOption            | Strike                    | product.strike                             |           |
+| EquityBasketVarianceSwap | VarianceOption            | ValuationSchedule         | instrument_schedules[valuation_schedule]   |           |
+| EquityBasketVarianceSwap | VarianceOption            | Underlying                | instrument_underlyings[underlying].name[1] |           |
+| EquityBasketVarianceSwap | VarianceOption            | SquaredPayoff             | product.squared_payoff                     | flag      |
+| EquityBasketVarianceSwap | VarianceOption            | VarianceReference         | product.strike                             |           |
+| EquityBasketVarianceSwap | VarianceOption            | PutCall                   | '1'                                        |           |
+| EquityBasketVarianceSwap | VarianceOption            | PremiumDate               | product.settlement_date                    |           |
+| EquityBasketVarianceSwap | VarianceOption            | SettlementDate            | product.settlement_date                    |           |
+| EquityBasketVarianceSwap | VarianceOption            | PayCcy                    | product.currency                           |           |
+| EquityBasketVarianceSwap | VarianceOption            | PremiumAmount             | '0'                                        |           |
+| EquityBasketVarianceSwap | VarianceOption            | LongShort                 | product.long_short                         | sign      |
+| EquityBasketVarianceSwap | KIKOVarianceSwap          | Notional                  | product.notional                           |           |
+| EquityBasketVarianceSwap | KIKOVarianceSwap          | Strike                    | product.strike                             |           |
+| EquityBasketVarianceSwap | KIKOVarianceSwap          | Cap                       | product.cap or '0'                         |           |
+| EquityBasketVarianceSwap | KIKOVarianceSwap          | Floor                     | product.floor or '0'                       |           |
+| EquityBasketVarianceSwap | KIKOVarianceSwap          | ValuationSchedule         | instrument_schedules[valuation_schedule]   |           |
+| EquityBasketVarianceSwap | KIKOVarianceSwap          | Underlying                | instrument_underlyings[underlying].name[1] |           |
+| EquityBasketVarianceSwap | KIKOVarianceSwap          | BarrierType               | '2'                                        |           |
+| EquityBasketVarianceSwap | KIKOVarianceSwap          | BarrierLevel              | '0'                                        |           |
+| EquityBasketVarianceSwap | KIKOVarianceSwap          | SquaredPayoff             | product.squared_payoff                     | flag      |
+| EquityBasketVarianceSwap | KIKOVarianceSwap          | LongShort                 | product.long_short                         | sign      |
+| EquityBasketVarianceSwap | KIKOVarianceSwap          | SettlementDate            | product.settlement_date                    |           |
+| EquityBasketVarianceSwap | KIKOVarianceSwap          | PayCcy                    | product.currency                           |           |
+| EquityBasketVarianceSwap | CorridorVarianceSwap      | Notional                  | product.notional                           |           |
+| EquityBasketVarianceSwap | CorridorVarianceSwap      | Strike                    | product.strike                             |           |
+| EquityBasketVarianceSwap | CorridorVarianceSwap      | UpperBarrierLevel         | '10000000'                                 |           |
+| EquityBasketVarianceSwap | CorridorVarianceSwap      | LowerBarrierLevel         | '0'                                        |           |
+| EquityBasketVarianceSwap | CorridorVarianceSwap      | ValuationSchedule         | instrument_schedules[valuation_schedule]   |           |
+| EquityBasketVarianceSwap | CorridorVarianceSwap      | Underlying                | instrument_underlyings[underlying].name[1] |           |
+| EquityBasketVarianceSwap | CorridorVarianceSwap      | CountBothObservations     | '1'                                        |           |
+| EquityBasketVarianceSwap | CorridorVarianceSwap      | AccrualAdjustment         | '-1'                                       |           |
+| EquityBasketVarianceSwap | CorridorVarianceSwap      | SquaredPayoff             | product.squared_payoff                     | flag      |
+| EquityBasketVarianceSwap | CorridorVarianceSwap      | Floor                     | product.floor or '0'                       |           |
+| EquityBasketVarianceSwap | CorridorVarianceSwap      | Cap                       | product.cap or '0'                         |           |
+| EquityBasketVarianceSwap | CorridorVarianceSwap      | LongShort                 | product.long_short                         | sign      |
+| EquityBasketVarianceSwap | CorridorVarianceSwap      | SettlementDate            | product.settlement_date                    |           |
+| EquityBasketVarianceSwap | CorridorVarianceSwap      | PayCcy                    | product.currency                           |           |
+| EquityBasketVarianceSwap | KIKOCorridorVarianceSwap  | Notional                  | product.notional                           |           |
+| EquityBasketVarianceSwap | KIKOCorridorVarianceSwap  | Strike                    | product.strike                             |           |
+| EquityBasketVarianceSwap | KIKOCorridorVarianceSwap  | KIKOBarrierLevel          | '1'                                        |           |
+| EquityBasketVarianceSwap | KIKOCorridorVarianceSwap  | CorridorUpperBarrierLevel | '10000000'                                 |           |
+| EquityBasketVarianceSwap | KIKOCorridorVarianceSwap  | CorridorLowerBarrierLevel | '0'                                        |           |
+| EquityBasketVarianceSwap | KIKOCorridorVarianceSwap  | ValuationSchedule         | instrument_schedules[valuation_schedule]   |           |
+| EquityBasketVarianceSwap | KIKOCorridorVarianceSwap  | Underlying                | instrument_underlyings[underlying].name[1] |           |
+| EquityBasketVarianceSwap | KIKOCorridorVarianceSwap  | CountBothObservations     | '1'                                        |           |
+| EquityBasketVarianceSwap | KIKOCorridorVarianceSwap  | KIKOBarrierType           | '3'                                        |           |
+| EquityBasketVarianceSwap | KIKOCorridorVarianceSwap  | AccrualAdjustment         | '-1'                                       |           |
+| EquityBasketVarianceSwap | KIKOCorridorVarianceSwap  | Floor                     | product.floor or '0'                       |           |
+| EquityBasketVarianceSwap | KIKOCorridorVarianceSwap  | Cap                       | product.cap or '0'                         |           |
+| EquityBasketVarianceSwap | KIKOCorridorVarianceSwap  | LongShort                 | product.long_short                         | sign      |
+| EquityBasketVarianceSwap | KIKOCorridorVarianceSwap  | SettlementSchedule        | instrument_schedules[valuation_schedule]   |           |
+| EquityBasketVarianceSwap | KIKOCorridorVarianceSwap  | PayCcy                    | product.currency                           |           |
+| EquityBasketVarianceSwap | ConditionalVarianceSwap01 | Notional                  | product.notional                           |           |
+| EquityBasketVarianceSwap | ConditionalVarianceSwap01 | Strike                    | product.strike                             |           |
+| EquityBasketVarianceSwap | ConditionalVarianceSwap01 | ValuationSchedule         | instrument_schedules[valuation_schedule]   |           |
+| EquityBasketVarianceSwap | ConditionalVarianceSwap01 | Underlying                | instrument_underlyings[underlying].name[1] |           |
+| EquityBasketVarianceSwap | ConditionalVarianceSwap01 | CountBothObservations     | '1'                                        |           |
+| EquityBasketVarianceSwap | ConditionalVarianceSwap01 | BarrierType               | '2'                                        |           |
+| EquityBasketVarianceSwap | ConditionalVarianceSwap01 | BarrierLevel              | '0'                                        |           |
+| EquityBasketVarianceSwap | ConditionalVarianceSwap01 | AccrualAdjustment         | '-1'                                       |           |
+| EquityBasketVarianceSwap | ConditionalVarianceSwap01 | SquaredPayoff             | product.squared_payoff                     | flag      |
+| EquityBasketVarianceSwap | ConditionalVarianceSwap01 | Floor                     | product.floor or '0'                       |           |
+| EquityBasketVarianceSwap | ConditionalVarianceSwap01 | Cap                       | product.cap or '0'                         |           |
+| EquityBasketVarianceSwap | ConditionalVarianceSwap01 | LongShort                 | product.long_short                         | sign      |
+| EquityBasketVarianceSwap | ConditionalVarianceSwap01 | SettlementDate            | product.settlement_date                    |           |
+| EquityBasketVarianceSwap | ConditionalVarianceSwap01 | PayCcy                    | product.currency                           |           |
+| EquityBasketVarianceSwap | ConditionalVarianceSwap02 | Notional                  | product.notional                           |           |
+| EquityBasketVarianceSwap | ConditionalVarianceSwap02 | Strike                    | product.strike                             |           |
+| EquityBasketVarianceSwap | ConditionalVarianceSwap02 | VarianceReference         | product.strike                             |           |
+| EquityBasketVarianceSwap | ConditionalVarianceSwap02 | ValuationSchedule         | instrument_schedules[valuation_schedule]   |           |
+| EquityBasketVarianceSwap | ConditionalVarianceSwap02 | Underlying                | instrument_underlyings[underlying].name[1] |           |
+| EquityBasketVarianceSwap | ConditionalVarianceSwap02 | CountBothObservations     | '1'                                        |           |
+| EquityBasketVarianceSwap | ConditionalVarianceSwap02 | BarrierType               | '2'                                        |           |
+| EquityBasketVarianceSwap | ConditionalVarianceSwap02 | BarrierLevel              | '0'                                        |           |
+| EquityBasketVarianceSwap | ConditionalVarianceSwap02 | AccrualAdjustment         | '-1'                                       |           |
+| EquityBasketVarianceSwap | ConditionalVarianceSwap02 | SquaredPayoff             | product.squared_payoff                     | flag      |
+| EquityBasketVarianceSwap | ConditionalVarianceSwap02 | Floor                     | product.floor or '0'                       |           |
+| EquityBasketVarianceSwap | ConditionalVarianceSwap02 | Cap                       | product.cap or '0'                         |           |
+| EquityBasketVarianceSwap | ConditionalVarianceSwap02 | LongShort                 | product.long_short                         | sign      |
+| EquityBasketVarianceSwap | ConditionalVarianceSwap02 | SettlementDate            | product.settlement_date                    |           |
+| EquityBasketVarianceSwap | ConditionalVarianceSwap02 | PayCcy                    | product.currency                           |           |
+| EquityBasketVarianceSwap | GammaSwap                 | Notional                  | product.notional                           |           |
+| EquityBasketVarianceSwap | GammaSwap                 | Strike                    | product.strike                             |           |
+| EquityBasketVarianceSwap | GammaSwap                 | Underlying                | instrument_underlyings[underlying].name[1] |           |
+| EquityBasketVarianceSwap | GammaSwap                 | ValuationSchedule         | instrument_schedules[valuation_schedule]   |           |
+| EquityBasketVarianceSwap | GammaSwap                 | LongShort                 | product.long_short                         | sign      |
+| EquityBasketVarianceSwap | GammaSwap                 | SettlementDate            | product.settlement_date                    |           |
+| EquityBasketVarianceSwap | GammaSwap                 | PayCcy                    | product.currency                           |           |
+
+* Library scripts
+
+Every script of ORE's library and how it is held. =both forms= is a type's
+scripted form, as the =Scripted forms= table names it; =script only= is a script
+with no element of its own that a =Script-only recipes= carrier books;
+=element only= is a script whose product a type of its own holds, with no
+scripted form booked; =not yet= is a script with no element of its own that is
+not generated. The generator script fails when a script of the library seed is
+not listed, is listed twice, or is held otherwise than the two recipe tables
+state.
+
+| script                              | held         | note                                                                                         |
+|-------------------------------------+--------------+----------------------------------------------------------------------------------------------|
+| Accumulator01                       | element only | EquityAccumulator, FxAccumulator and CommodityAccumulator; no scripted form is booked yet    |
+| Accumulator02                       | element only | the accumulators' backward variant; no scripted form is booked yet                           |
+| WindowBarrierOption                 | both forms   | EquityWindowBarrierOption, FxWindowBarrierOption                                             |
+| TaRF                                | element only | EquityTaRF, FxTaRF and CommodityTaRF; no scripted form is booked yet                         |
+| VanillaBasketOption                 | both forms   | EquityBasketOption, FxBasketOption                                                           |
+| AsianBasketOption                   | element only | a basket option of the Asian type; the ScriptedTrade type books it as ORE's own example does |
+| AverageStrikeBasketOption           | element only | a basket option of the average strike type; no scripted form is booked yet                   |
+| LookbackCallBasketOption            | element only | a basket option of the lookback call type; no scripted form is booked yet                    |
+| LookbackPutBasketOption             | element only | a basket option of the lookback put type; no scripted form is booked yet                     |
+| WorstOfBasketSwap                   | both forms   | FxWorstOfBasketSwap                                                                          |
+| BestOfAssetOrCashRainbowOption      | element only | a rainbow option of the best-of asset-or-cash type; no scripted form is booked yet           |
+| WorstOfAssetOrCashRainbowOption     | element only | a rainbow option of the worst-of asset-or-cash type; no scripted form is booked yet          |
+| MaxRainbowOption                    | both forms   | EquityRainbowOption, FxRainbowOption                                                         |
+| MinRainbowOption                    | element only | a rainbow option of the min type; no scripted form is booked yet                             |
+| EuropeanRainbowCallSpreadOption     | not yet      | script only                                                                                  |
+| RainbowCallSpreadBarrierOption      | not yet      | script only                                                                                  |
+| AsianRainbowCallSpreadOption        | not yet      | script only                                                                                  |
+| WorstPerformanceRainbowOption01     | not yet      | script only                                                                                  |
+| WorstPerformanceRainbowOption02     | not yet      | script only                                                                                  |
+| WorstPerformanceRainbowOption03     | not yet      | script only                                                                                  |
+| WorstPerformanceRainbowOption04     | not yet      | script only                                                                                  |
+| WorstPerformanceRainbowOption05     | not yet      | script only                                                                                  |
+| VarianceOption                      | script only  | carried by EquityBasketVarianceSwap                                                          |
+| KIKOVarianceSwap                    | script only  | carried by EquityBasketVarianceSwap                                                          |
+| CorridorVarianceSwap                | script only  | carried by EquityBasketVarianceSwap                                                          |
+| KIKOCorridorVarianceSwap            | script only  | carried by EquityBasketVarianceSwap                                                          |
+| ConditionalVarianceSwap01           | script only  | carried by EquityBasketVarianceSwap                                                          |
+| ConditionalVarianceSwap02           | script only  | carried by EquityBasketVarianceSwap                                                          |
+| PairwiseVarianceSwap                | both forms   | EquityPairwiseVarianceSwap, FxPairwiseVarianceSwap                                           |
+| BasketVarianceSwap                  | both forms   | EquityBasketVarianceSwap, FxBasketVarianceSwap                                               |
+| BestEntryOption                     | both forms   | EquityBestEntryOption, FxBestEntryOption                                                     |
+| GammaSwap                           | script only  | carried by EquityBasketVarianceSwap                                                          |
+| VarianceDispersionSwap              | not yet      | script only                                                                                  |
+| CorridorVarianceDispersionSwap      | not yet      | script only                                                                                  |
+| KOCorridorVarianceDispersionSwap    | not yet      | script only                                                                                  |
+| AsianIrCapFloor                     | not yet      | script only, rates                                                                           |
+| OutperformanceOption                | element only | EquityOutperformanceOption; no scripted form is booked yet                                   |
+| ForwardVolatilityAgreement          | both forms   | EquityForwardVolatilityAgreement, FxForwardVolatilityAgreement                               |
+| CorrelationSwap                     | not yet      | script only                                                                                  |
+| ConstantMaturityVolatilitySwap      | not yet      | script only, rates                                                                           |
+| CMSCapFloorBarrier                  | not yet      | script only, rates hybrid                                                                    |
+| FixedStrikeForwardStartingOption    | not yet      | script only                                                                                  |
+| FloatingStrikeForwardStartingOption | not yet      | script only                                                                                  |
+| ForwardStartingSwaption             | not yet      | script only, rates                                                                           |
+| FlooredAverageCPIZCIIS              | not yet      | script only, inflation                                                                       |
+| MovingMaxYYIIS                      | not yet      | script only, inflation                                                                       |
+| IrregularYYIIS                      | not yet      | script only, inflation                                                                       |
+| VolatilityBarrierOption             | not yet      | script only                                                                                  |
+| DualEuroBinaryOption                | not yet      | script only                                                                                  |
+| GenericBarrierOption                | both forms   | EquityGenericBarrierOption, FxGenericBarrierOption                                           |
+| AssetLinkedCliquetOption            | not yet      | script only, rates hybrid                                                                    |
+| LadderLockInOption                  | not yet      | script only                                                                                  |
+| LapseHedgeSwap                      | not yet      | script only, rates                                                                           |
+| LPISwap                             | not yet      | script only, inflation                                                                       |
+
 * Scripted twin transforms
 
 The codes a scripted twin's transform turns a native value into: the script

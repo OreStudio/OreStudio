@@ -415,9 +415,9 @@ TEST_CASE("a_credit_scope_whose_conventions_lack_the_cds_convention_is_refused",
  * past that position are never drawn. A config that wants every code states one
  * slot per code, which is what the seeded profiles do.
  */
-/// Whether the slot is the scripted twin of a native slot.
+/// Whether the slot is a scripted form of a native slot: its twin or a script it carries.
 bool is_scripted_twin(const domain::trade_population_slot& slot) {
-    return slot.internal_identifier.ends_with("-scripted");
+    return slot.internal_identifier.contains("-scripted");
 }
 
 /// The codes the planner draws: the native slots' codes, without their twins.
@@ -2440,6 +2440,57 @@ TEST_CASE("a_generic_barrier_twin_states_its_codes_and_expires_on_a_business_day
         }
     }
     CHECK(seen > 0u);
+}
+
+TEST_CASE("each_script_with_no_element_of_its_own_is_carried_by_a_native_trade",
+          "[trade_population]") {
+    using ores::synthetic::service::carried_id_for;
+    // Each script the library holds with no element of its own, and the type that carries it.
+    const std::map<std::string, std::string> carrier_of = {
+        {"ConditionalVarianceSwap01", "EquityBasketVarianceSwap"},
+        {"ConditionalVarianceSwap02", "EquityBasketVarianceSwap"},
+        {"CorridorVarianceSwap", "EquityBasketVarianceSwap"},
+        {"GammaSwap", "EquityBasketVarianceSwap"},
+        {"KIKOCorridorVarianceSwap", "EquityBasketVarianceSwap"},
+        {"KIKOVarianceSwap", "EquityBasketVarianceSwap"},
+        {"VarianceOption", "EquityBasketVarianceSwap"}};
+    auto scope = equity_scope();
+    scope.trades_per_book = 64;
+    const auto plan = plan_of(scope);
+    std::map<boost::uuids::uuid, const ores::synthetic::domain::trade_population_slot*> by_id;
+    for (const auto& slot : plan.slots)
+        by_id[slot.trade_id] = &slot;
+    CHECK(by_id.size() == plan.slots.size());
+
+    std::set<std::string> carried;
+    for (const auto& [script, carrier] : carrier_of) {
+        INFO("script " << script);
+        for (const auto& native : plan.slots) {
+            if (native.trade_type_code != carrier)
+                continue;
+            const auto it = by_id.find(carried_id_for(native.trade_id, carrier, script));
+            REQUIRE(it != by_id.end());
+            const auto& trade = *it->second;
+            CHECK(trade.trade_type_code == "ScriptedTrade");
+            CHECK(trade.internal_identifier == native.internal_identifier + "-scripted-" + script);
+            CHECK(trade.book_id == native.book_id);
+            REQUIRE(trade.instruments.scripted_instruments.size() == 1u);
+            CHECK(trade.instruments.scripted_instruments[0].script_name == script);
+
+            // The carried trade reads its single underlying as the first of the carrier's.
+            const auto underlying =
+                std::ranges::find_if(trade.instruments.scripted_parameters,
+                                     [](const auto& p) { return p.name == "Underlying"; });
+            REQUIRE(underlying != trade.instruments.scripted_parameters.end());
+            const auto first =
+                std::ranges::find_if(native.instruments.instrument_underlyings,
+                                     [](const auto& u) { return u.sequence_number == 1; });
+            REQUIRE(first != native.instruments.instrument_underlyings.end());
+            CHECK(underlying->value == first->name);
+            carried.insert(script);
+        }
+    }
+    CHECK(carried.size() == carrier_of.size());
 }
 
 TEST_CASE("a_transform_refuses_a_value_it_does_not_list", "[trade_population]") {

@@ -436,6 +436,14 @@ boost::uuids::uuid twin_id_for(const boost::uuids::uuid& native, std::string_vie
     return generate(boost::uuids::to_string(native) + "/" + std::string(trade_type) + "/scripted");
 }
 
+boost::uuids::uuid carried_id_for(const boost::uuids::uuid& native,
+                                  std::string_view trade_type,
+                                  std::string_view script) {
+    static const boost::uuids::name_generator_sha1 generate(native_namespace());
+    return generate(boost::uuids::to_string(native) + "/" + std::string(trade_type) + "/" +
+                    std::string(script));
+}
+
 std::vector<std::string> twin_source_values(const instrument_batch& batch,
                                             std::string_view trade_type_code,
                                             std::string_view source) {
@@ -452,15 +460,12 @@ std::vector<std::string> twin_source_values(const instrument_batch& batch,
     return out;
 }
 
-std::optional<domain::trade_population_slot>
-scripted_twin_of(const domain::trade_population_slot& native) {
-    std::vector<const script_twin_recipe*> recipe;
-    for (const auto& row : script_twin_recipes)
-        if (row.trade_type_code == native.trade_type_code)
-            recipe.push_back(&row);
-    if (recipe.empty())
-        return std::nullopt;
+namespace {
 
+/// The scripted trade one recipe states over a native trade's rows.
+domain::trade_population_slot
+scripted_form_of(const domain::trade_population_slot& native,
+                 const std::vector<const script_twin_recipe*>& recipe) {
     std::vector<ores::trading::domain::script_input> inputs;
     std::vector<tb::scripted_variable> variables;
     int sequence = 0;
@@ -493,12 +498,15 @@ scripted_twin_of(const domain::trade_population_slot& native) {
                     return other != row && other->input_name == derived->base &&
                            other->data_type == "Event";
                 }))
-                throw trade_population_error("The " + native.trade_type_code + " twin derives " +
-                                             std::string(row->input_name) + " from " +
-                                             derived->base + ", which is no other Event input.");
+                throw trade_population_error("The " + native.trade_type_code + " " +
+                                             std::string(recipe.front()->script_name) +
+                                             " form derives " + std::string(row->input_name) +
+                                             " from " + derived->base +
+                                             ", which is no other Event input.");
             if (!event)
                 throw trade_population_error(
-                    "The " + native.trade_type_code + " twin finds no schedule for " +
+                    "The " + native.trade_type_code + " " +
+                    std::string(recipe.front()->script_name) + " form finds no schedule for " +
                     std::string(row->input_name) + " at " + std::string(row->source) + ".");
             std::visit([&](auto& e) { variable.value = std::move(e); }, *event);
             variables.push_back(std::move(variable));
@@ -507,8 +515,9 @@ scripted_twin_of(const domain::trade_population_slot& native) {
         auto values = twin_source_values(native.instruments, native.trade_type_code, row->source);
         if (values.empty())
             throw trade_population_error(
-                "The " + native.trade_type_code + " twin finds no value for " +
-                std::string(row->input_name) + " at " + std::string(row->source) + ".");
+                "The " + native.trade_type_code + " " + std::string(recipe.front()->script_name) +
+                " form finds no value for " + std::string(row->input_name) + " at " +
+                std::string(row->source) + ".");
         for (auto& value : values)
             value = transformed(std::move(value), row->transform);
         if (row->is_array)
@@ -523,13 +532,20 @@ scripted_twin_of(const domain::trade_population_slot& native) {
                                     .variables = std::move(variables)})
             .build();
     if (!built)
-        throw trade_population_error("The " + native.trade_type_code + " twin is refused at " +
-                                     built.error().term + ": " + built.error().message);
+        throw trade_population_error(
+            "The " + native.trade_type_code + " " + std::string(recipe.front()->script_name) +
+            " form is refused at " + built.error().term + ": " + built.error().message);
 
     domain::trade_population_slot twin = native;
-    twin.trade_id = twin_id_for(native.trade_id, native.trade_type_code);
+    const auto script = std::string(recipe.front()->script_name);
+    if (recipe.front()->twin) {
+        twin.trade_id = twin_id_for(native.trade_id, native.trade_type_code);
+        twin.internal_identifier = native.internal_identifier + "-scripted";
+    } else {
+        twin.trade_id = carried_id_for(native.trade_id, native.trade_type_code, script);
+        twin.internal_identifier = native.internal_identifier + "-scripted-" + script;
+    }
     twin.trade_type_code = "ScriptedTrade";
-    twin.internal_identifier = native.internal_identifier + "-scripted";
     twin.instruments = instrument_batch{};
     ores::trading::domain::append_instrument(
         twin.instruments, ores::trading::domain::trade_instrument{std::move(*built)});
@@ -540,11 +556,42 @@ scripted_twin_of(const domain::trade_population_slot& native) {
     return twin;
 }
 
+/// The recipe of each scripted form of a type, the twin first, each in input order.
+std::vector<std::vector<const script_twin_recipe*>> recipes_of(std::string_view trade_type_code) {
+    std::vector<std::vector<const script_twin_recipe*>> out;
+    for (const auto& row : script_twin_recipes) {
+        if (row.trade_type_code != trade_type_code)
+            continue;
+        if (out.empty() || out.back().front()->script_name != row.script_name)
+            out.emplace_back();
+        out.back().push_back(&row);
+    }
+    return out;
+}
+
+}
+
+std::optional<domain::trade_population_slot>
+scripted_twin_of(const domain::trade_population_slot& native) {
+    for (const auto& recipe : recipes_of(native.trade_type_code))
+        if (recipe.front()->twin)
+            return scripted_form_of(native, recipe);
+    return std::nullopt;
+}
+
+std::vector<domain::trade_population_slot>
+scripted_forms_of(const domain::trade_population_slot& native) {
+    std::vector<domain::trade_population_slot> out;
+    for (const auto& recipe : recipes_of(native.trade_type_code))
+        out.push_back(scripted_form_of(native, recipe));
+    return out;
+}
+
 void add_scripted_twins(domain::trade_population_plan& plan) {
     const auto natives = plan.slots.size();
     for (std::size_t i = 0; i < natives; ++i)
-        if (auto twin = scripted_twin_of(plan.slots[i]))
-            plan.slots.push_back(std::move(*twin));
+        for (auto& form : scripted_forms_of(plan.slots[i]))
+            plan.slots.push_back(std::move(form));
 }
 
 }

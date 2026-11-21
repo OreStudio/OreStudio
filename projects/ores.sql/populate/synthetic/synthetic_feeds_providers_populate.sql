@@ -23,8 +23,8 @@
  *
  * Registers three synthetic feeds datasets, one for each provider that has feeds of a kind
  * the platform can simulate today. CME, LSE and Eurex have none yet: the futures, equity
- * and exchange kinds they quote do not exist, and the IR curve config admits term tenors only
- * for the LIBOR and EURIBOR families, so a CME Term SOFR curve cannot be stored. Each is published like every synthetic feeds dataset,
+ * and exchange kinds they quote do not exist, and the IR curve index family catalogue
+ * admits no term tenor for SOFR, so a CME Term SOFR curve cannot be stored. Each is published like every synthetic feeds dataset,
  * by ores_synthetic_publish_feeds_from_dq_fn, but as a system collection: the dataset is a
  * member of the system_core bundle, a publish that names no party, so the feeds are held by
  * the system tenant's system party, sandboxed, and run once there. A tenant sees them and
@@ -40,14 +40,16 @@
  *     LIBOR is retired, so the curves are learning material: the feed
  *     simulates a benchmark that no longer publishes, and claims no live market.
  *   - Tradeweb: dealer composite curves of the six and one month EURIBOR, and the one month
- *     GBP and JPY LIBOR and six month CHF LIBOR, kept as learning material, and the twelve
- *     month and one week EURIBOR the generated trades book.
+ *     GBP and JPY LIBOR and six month CHF LIBOR, kept as learning material, the twelve
+ *     month and one week EURIBOR the generated trades book, and HKD HIBOR at two weeks,
+ *     one month and three months, the floating index of the HK party's trades.
  *
  * FX spots are a two-component geometric Gaussian mixture, as Bloomberg's: a primary
  * component of weight 0.95 and a per-tick stdev of the pair's annualised vol / 3970.9, at
  * 1800 ticks an hour, and a tail of four times that stdev at weight 0.05. The levels are
  * illustrative, not sourced quotes. IR curves are Cox-Ingersoll-Ross short-rate
- * processes with the seven-pillar template Bloomberg's use.
+ * processes with the seven-pillar template Bloomberg's use, and a curve whose index tenor is
+ * shorter than one month starts with a spot deposit at that tenor.
  *
  * This script is idempotent.
  */
@@ -63,7 +65,7 @@ begin
             ('synthetic.feeds.ice', 'Synthetic Feeds: ICE Data Services',
              'The LIBOR-family curves a simulated ICE Data Services publishes, for the tenors the Bloomberg feeds do not cover. LIBOR is retired; the curves are learning material.'),
             ('synthetic.feeds.tradeweb', 'Synthetic Feeds: Tradeweb',
-             'The dealer composite curves a simulated Tradeweb publishes for the EURIBOR tenors the other providers do not, and the LIBOR tenors kept as learning material.')
+             'The dealer composite curves a simulated Tradeweb publishes for the EURIBOR tenors the other providers do not, the LIBOR tenors kept as learning material, and HKD HIBOR at 2W, 1M and 3M.')
         ) as t(code, title, description)
     loop
         perform ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
@@ -142,7 +144,14 @@ begin
         ('synthetic.feeds.tradeweb', 'tradeweb', 'Tradeweb', 'EUR', 'euribor', '1W', 0.35, 0.009, 0.0295),
         ('synthetic.feeds.tradeweb', 'tradeweb', 'Tradeweb', 'GBP', 'libor', '1M', 0.25, 0.012, 0.0460),
         ('synthetic.feeds.tradeweb', 'tradeweb', 'Tradeweb', 'CHF', 'libor', '6M', 0.30, 0.009, 0.0130),
-        ('synthetic.feeds.tradeweb', 'tradeweb', 'Tradeweb', 'JPY', 'libor', '1M', 0.20, 0.006, 0.0035);
+        ('synthetic.feeds.tradeweb', 'tradeweb', 'Tradeweb', 'JPY', 'libor', '1M', 0.20, 0.006, 0.0035),
+        -- HKD HIBOR at the tenors ACCOHK's trades float on. Each theta is HONIA's 4.50%
+        -- (synthetic_feeds_bloomberg_populate.sql) plus a term spread of 10bp at 2W, 20bp
+        -- at 1M and 35bp at 3M. The spreads are illustrative, not fitted to a source;
+        -- kappa and sigma are HONIA's.
+        ('synthetic.feeds.tradeweb', 'tradeweb', 'Tradeweb', 'HKD', 'hibor', '2W', 0.50, 0.009, 0.0460),
+        ('synthetic.feeds.tradeweb', 'tradeweb', 'Tradeweb', 'HKD', 'hibor', '1M', 0.50, 0.009, 0.0470),
+        ('synthetic.feeds.tradeweb', 'tradeweb', 'Tradeweb', 'HKD', 'hibor', '3M', 0.50, 0.009, 0.0485);
 
     for v_dataset in
         select d.id, d.code
@@ -218,15 +227,26 @@ begin
             v_dataset.id, v_tenant_id, c.currency_code, c.index_family, c.tenor,
             e.sequence_index, e.start_tenor_code, e.end_tenor_code, e.instrument_code
         from t_provider_ir c
-        cross join (values
-            (0, 'SPOT', '1M', 'DEPO'),
-            (1, 'SPOT', '3M', 'DEPO'),
-            (2, '3M', '6M', 'FRA'),
-            (3, '6M', '12M', 'FRA'),
-            (4, 'SPOT', '2Y', 'IRS'),
-            (5, 'SPOT', '5Y', 'IRS'),
-            (6, 'SPOT', '10Y', 'IRS')
-        ) as e(sequence_index, start_tenor_code, end_tenor_code, instrument_code)
+        cross join lateral (
+            -- A curve states its index's fixings from the deposit or FRA that ends at the
+            -- index tenor. A tenor shorter than the first deposit, such as 1W or 2W, has
+            -- neither, so its curve starts with a spot deposit at that tenor.
+            select 0 as sequence_index, 'SPOT' as start_tenor_code,
+                   c.tenor as end_tenor_code, 'DEPO' as instrument_code
+            where c.tenor not in ('1M', '3M', '6M', '12M')
+            union all
+            select t.sequence_index + case when c.tenor in ('1M', '3M', '6M', '12M') then 0 else 1 end,
+                   t.start_tenor_code, t.end_tenor_code, t.instrument_code
+            from (values
+                (0, 'SPOT', '1M', 'DEPO'),
+                (1, 'SPOT', '3M', 'DEPO'),
+                (2, '3M', '6M', 'FRA'),
+                (3, '6M', '12M', 'FRA'),
+                (4, 'SPOT', '2Y', 'IRS'),
+                (5, 'SPOT', '5Y', 'IRS'),
+                (6, 'SPOT', '10Y', 'IRS')
+            ) as t(sequence_index, start_tenor_code, end_tenor_code, instrument_code)
+        ) as e
         where c.dataset_code = v_dataset.code;
     end loop;
 end $$;

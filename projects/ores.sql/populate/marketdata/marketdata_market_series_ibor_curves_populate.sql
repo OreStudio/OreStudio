@@ -21,10 +21,10 @@
 /**
  * IBOR Curve Market Series Population Script
  *
- * Seeds the output and quote series the fifteen IBOR curves are built from: LIBOR 1M and 6M
+ * Seeds the output and quote series the eighteen IBOR curves are built from: LIBOR 1M and 6M
  * for USD, LIBOR 1M and 3M for GBP and JPY, LIBOR 3M and 6M for CHF, and EURIBOR 1M
  * and 6M for EUR, and the tenors the generated trades book: GBP LIBOR 6M, 12M and 1W,
- * and EURIBOR 12M and 1W.
+ * EURIBOR 12M and 1W, and HKD HIBOR 2W, 1M and 3M.
  *
  * Each curve has one output series (the bootstrapped curve the republish
  * service stamps) and three quote series, one for each forward start its
@@ -643,6 +643,126 @@ values
         'tradeweb', 'OBSERVED', ores_utility_nil_uuid_fn(), 0,
         current_user, current_user, 'system.initial_load',
         'The EUR-EURIBOR-1W quotes that start at 6M: the ladder the EUR-EURIBOR-1W blueprint pillars name'
+    ),
+    (
+        'e6f1ae0b-80c9-5e5b-ae84-b17f75185127',
+        ores_utility_system_tenant_id_fn(),
+        0,
+        ores_iam_account_parties_system_party_id_fn(ores_utility_system_tenant_id_fn()),
+        'yield', 'oresmd://ir/HKD?type=series&instrument=discount&quote=rate&curve_id=HKD-HIBOR-2W',
+        'ore', 'OBSERVED', ores_utility_nil_uuid_fn(), 0,
+        current_user, current_user, 'system.initial_load',
+        'Bootstrapped HKD-HIBOR-2W projection curve: republish output, stamped IR_CURVE_BOOTSTRAP on first republish'
+    ),
+    (
+        'b1e48949-5a3f-57c6-a8d8-c97dfd695e9e',
+        ores_utility_system_tenant_id_fn(),
+        0,
+        ores_iam_account_parties_system_party_id_fn(ores_utility_system_tenant_id_fn()),
+        'yield', 'oresmd://ir/HKD?type=series&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=2W',
+        'tradeweb', 'OBSERVED', ores_utility_nil_uuid_fn(), 0,
+        current_user, current_user, 'system.initial_load',
+        'The HKD-HIBOR-2W quotes that start at 0D: the ladder the HKD-HIBOR-2W blueprint pillars name'
+    ),
+    (
+        '83063b74-3343-5a97-9048-676cd3eeae9e',
+        ores_utility_system_tenant_id_fn(),
+        0,
+        ores_iam_account_parties_system_party_id_fn(ores_utility_system_tenant_id_fn()),
+        'yield', 'oresmd://ir/HKD?type=series&instrument=ir_swap&quote=rate&fwd_start=3M&tenor=2W',
+        'tradeweb', 'OBSERVED', ores_utility_nil_uuid_fn(), 0,
+        current_user, current_user, 'system.initial_load',
+        'The HKD-HIBOR-2W quotes that start at 3M: the ladder the HKD-HIBOR-2W blueprint pillars name'
+    ),
+    (
+        '33d9415d-6a28-5c93-9761-e24fd85d0033',
+        ores_utility_system_tenant_id_fn(),
+        0,
+        ores_iam_account_parties_system_party_id_fn(ores_utility_system_tenant_id_fn()),
+        'yield', 'oresmd://ir/HKD?type=series&instrument=ir_swap&quote=rate&fwd_start=6M&tenor=2W',
+        'tradeweb', 'OBSERVED', ores_utility_nil_uuid_fn(), 0,
+        current_user, current_user, 'system.initial_load',
+        'The HKD-HIBOR-2W quotes that start at 6M: the ladder the HKD-HIBOR-2W blueprint pillars name'
+    ),
+    (
+        '120d9e10-124c-5bb0-90c6-38d551fd4fda',
+        ores_utility_system_tenant_id_fn(),
+        0,
+        ores_iam_account_parties_system_party_id_fn(ores_utility_system_tenant_id_fn()),
+        'yield', 'oresmd://ir/HKD?type=series&instrument=discount&quote=rate&curve_id=HKD-HIBOR-1M',
+        'ore', 'OBSERVED', ores_utility_nil_uuid_fn(), 0,
+        current_user, current_user, 'system.initial_load',
+        'Bootstrapped HKD-HIBOR-1M projection curve: republish output, stamped IR_CURVE_BOOTSTRAP on first republish'
+    ),
+    (
+        '4925e745-dd28-539f-90ba-173c67441a7a',
+        ores_utility_system_tenant_id_fn(),
+        0,
+        ores_iam_account_parties_system_party_id_fn(ores_utility_system_tenant_id_fn()),
+        'yield', 'oresmd://ir/HKD?type=series&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1M',
+        'tradeweb', 'OBSERVED', ores_utility_nil_uuid_fn(), 0,
+        current_user, current_user, 'system.initial_load',
+        'The HKD-HIBOR-1M quotes that start at 0D: the ladder the HKD-HIBOR-1M blueprint pillars name'
+    ),
+    (
+        '2d3b5e6e-e553-5726-9f6c-765258d732aa',
+        ores_utility_system_tenant_id_fn(),
+        0,
+        ores_iam_account_parties_system_party_id_fn(ores_utility_system_tenant_id_fn()),
+        'yield', 'oresmd://ir/HKD?type=series&instrument=ir_swap&quote=rate&fwd_start=3M&tenor=1M',
+        'tradeweb', 'OBSERVED', ores_utility_nil_uuid_fn(), 0,
+        current_user, current_user, 'system.initial_load',
+        'The HKD-HIBOR-1M quotes that start at 3M: the ladder the HKD-HIBOR-1M blueprint pillars name'
+    ),
+    (
+        '0f876908-65c2-5499-ac97-b830df7b7881',
+        ores_utility_system_tenant_id_fn(),
+        0,
+        ores_iam_account_parties_system_party_id_fn(ores_utility_system_tenant_id_fn()),
+        'yield', 'oresmd://ir/HKD?type=series&instrument=ir_swap&quote=rate&fwd_start=6M&tenor=1M',
+        'tradeweb', 'OBSERVED', ores_utility_nil_uuid_fn(), 0,
+        current_user, current_user, 'system.initial_load',
+        'The HKD-HIBOR-1M quotes that start at 6M: the ladder the HKD-HIBOR-1M blueprint pillars name'
+    ),
+    (
+        '3fac868b-49d8-5330-937c-5d2f1de19917',
+        ores_utility_system_tenant_id_fn(),
+        0,
+        ores_iam_account_parties_system_party_id_fn(ores_utility_system_tenant_id_fn()),
+        'yield', 'oresmd://ir/HKD?type=series&instrument=discount&quote=rate&curve_id=HKD-HIBOR-3M',
+        'ore', 'OBSERVED', ores_utility_nil_uuid_fn(), 0,
+        current_user, current_user, 'system.initial_load',
+        'Bootstrapped HKD-HIBOR-3M projection curve: republish output, stamped IR_CURVE_BOOTSTRAP on first republish'
+    ),
+    (
+        '0cbc756a-55ef-532d-ac9f-58cf0ff73265',
+        ores_utility_system_tenant_id_fn(),
+        0,
+        ores_iam_account_parties_system_party_id_fn(ores_utility_system_tenant_id_fn()),
+        'yield', 'oresmd://ir/HKD?type=series&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=3M',
+        'tradeweb', 'OBSERVED', ores_utility_nil_uuid_fn(), 0,
+        current_user, current_user, 'system.initial_load',
+        'The HKD-HIBOR-3M quotes that start at 0D: the ladder the HKD-HIBOR-3M blueprint pillars name'
+    ),
+    (
+        'abf8e9f0-82d9-5b6d-9097-2ba6254a748f',
+        ores_utility_system_tenant_id_fn(),
+        0,
+        ores_iam_account_parties_system_party_id_fn(ores_utility_system_tenant_id_fn()),
+        'yield', 'oresmd://ir/HKD?type=series&instrument=ir_swap&quote=rate&fwd_start=3M&tenor=3M',
+        'tradeweb', 'OBSERVED', ores_utility_nil_uuid_fn(), 0,
+        current_user, current_user, 'system.initial_load',
+        'The HKD-HIBOR-3M quotes that start at 3M: the ladder the HKD-HIBOR-3M blueprint pillars name'
+    ),
+    (
+        '6e559168-6b4b-576e-9ac3-be0ad1d13c00',
+        ores_utility_system_tenant_id_fn(),
+        0,
+        ores_iam_account_parties_system_party_id_fn(ores_utility_system_tenant_id_fn()),
+        'yield', 'oresmd://ir/HKD?type=series&instrument=ir_swap&quote=rate&fwd_start=6M&tenor=3M',
+        'tradeweb', 'OBSERVED', ores_utility_nil_uuid_fn(), 0,
+        current_user, current_user, 'system.initial_load',
+        'The HKD-HIBOR-3M quotes that start at 6M: the ladder the HKD-HIBOR-3M blueprint pillars name'
     )
 on conflict (tenant_id, id)
 where valid_to = ores_utility_infinity_timestamp_fn()
@@ -1071,6 +1191,90 @@ values
     ),
     (
         'fb264f4f-2697-50c3-af4c-b517abe83910',
+        ores_utility_system_tenant_id_fn(),
+        'interest_rates', 0,
+        current_user, current_user, 'system.initial_load',
+        'An IBOR curve series is an interest rates series'
+    ),
+    (
+        'e6f1ae0b-80c9-5e5b-ae84-b17f75185127',
+        ores_utility_system_tenant_id_fn(),
+        'interest_rates', 0,
+        current_user, current_user, 'system.initial_load',
+        'An IBOR curve series is an interest rates series'
+    ),
+    (
+        'b1e48949-5a3f-57c6-a8d8-c97dfd695e9e',
+        ores_utility_system_tenant_id_fn(),
+        'interest_rates', 0,
+        current_user, current_user, 'system.initial_load',
+        'An IBOR curve series is an interest rates series'
+    ),
+    (
+        '83063b74-3343-5a97-9048-676cd3eeae9e',
+        ores_utility_system_tenant_id_fn(),
+        'interest_rates', 0,
+        current_user, current_user, 'system.initial_load',
+        'An IBOR curve series is an interest rates series'
+    ),
+    (
+        '33d9415d-6a28-5c93-9761-e24fd85d0033',
+        ores_utility_system_tenant_id_fn(),
+        'interest_rates', 0,
+        current_user, current_user, 'system.initial_load',
+        'An IBOR curve series is an interest rates series'
+    ),
+    (
+        '120d9e10-124c-5bb0-90c6-38d551fd4fda',
+        ores_utility_system_tenant_id_fn(),
+        'interest_rates', 0,
+        current_user, current_user, 'system.initial_load',
+        'An IBOR curve series is an interest rates series'
+    ),
+    (
+        '4925e745-dd28-539f-90ba-173c67441a7a',
+        ores_utility_system_tenant_id_fn(),
+        'interest_rates', 0,
+        current_user, current_user, 'system.initial_load',
+        'An IBOR curve series is an interest rates series'
+    ),
+    (
+        '2d3b5e6e-e553-5726-9f6c-765258d732aa',
+        ores_utility_system_tenant_id_fn(),
+        'interest_rates', 0,
+        current_user, current_user, 'system.initial_load',
+        'An IBOR curve series is an interest rates series'
+    ),
+    (
+        '0f876908-65c2-5499-ac97-b830df7b7881',
+        ores_utility_system_tenant_id_fn(),
+        'interest_rates', 0,
+        current_user, current_user, 'system.initial_load',
+        'An IBOR curve series is an interest rates series'
+    ),
+    (
+        '3fac868b-49d8-5330-937c-5d2f1de19917',
+        ores_utility_system_tenant_id_fn(),
+        'interest_rates', 0,
+        current_user, current_user, 'system.initial_load',
+        'An IBOR curve series is an interest rates series'
+    ),
+    (
+        '0cbc756a-55ef-532d-ac9f-58cf0ff73265',
+        ores_utility_system_tenant_id_fn(),
+        'interest_rates', 0,
+        current_user, current_user, 'system.initial_load',
+        'An IBOR curve series is an interest rates series'
+    ),
+    (
+        'abf8e9f0-82d9-5b6d-9097-2ba6254a748f',
+        ores_utility_system_tenant_id_fn(),
+        'interest_rates', 0,
+        current_user, current_user, 'system.initial_load',
+        'An IBOR curve series is an interest rates series'
+    ),
+    (
+        '6e559168-6b4b-576e-9ac3-be0ad1d13c00',
         ores_utility_system_tenant_id_fn(),
         'interest_rates', 0,
         current_user, current_user, 'system.initial_load',

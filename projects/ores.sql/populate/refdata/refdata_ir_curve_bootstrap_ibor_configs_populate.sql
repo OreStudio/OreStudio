@@ -21,11 +21,15 @@
 /**
  * IBOR Curve Bootstrap Config Population Script
  *
- * Seeds one bootstrap config per IBOR curve: the fifteen curves of LIBOR 1M and 6M for
+ * Seeds one bootstrap config per IBOR curve: the eighteen curves of LIBOR 1M and 6M for
  * USD, LIBOR 1M and 3M for GBP and JPY, LIBOR 3M and 6M for CHF, and EURIBOR 1M and 6M
- * for EUR, and the tenors the generated trades book: GBP LIBOR 6M, 12M and 1W, and
- * EURIBOR 12M and 1W. Each is a PROJECTION curve that names the currency's overnight config as its
- * discount curve, and its pillars name the quote series that start where the pillar does.
+ * for EUR, and the tenors the generated trades book: GBP LIBOR 6M, 12M and 1W, EURIBOR
+ * 12M and 1W, and HKD HIBOR 2W, 1M and 3M. Each is a PROJECTION curve that names the
+ * currency's overnight config as its discount curve, and its pillars name the quote series
+ * that start where the pillar does. The HKD curves count days on A365F, as HONIA does.
+ *
+ * The HKD HIBOR ids are version 5 UUIDs of the URL namespace over
+ * 'ores:ir_curve:<curve>:<part>', so a rerun of the script that wrote them writes the same ids.
  *
  * Each curve has one output series (the bootstrapped curve the republish
  * service stamps) and three quote series, one for each forward start its
@@ -617,6 +621,126 @@ values (
       order by version desc limit 1),
     'LOG_LINEAR_DISCOUNT',
     'A360', 'RATES_SPOT_FORWARD', '30Y',
+    current_user, current_user, 'system.initial_load',
+    'Initial population of IBOR curve bootstrap configs'
+)
+on conflict (tenant_id, id)
+where valid_to = ores_utility_infinity_timestamp_fn()
+do update set
+    output_series_id = excluded.output_series_id,
+    name = excluded.name,
+    currency_code = excluded.currency_code,
+    index_tenor = excluded.index_tenor,
+    curve_family_role = excluded.curve_family_role,
+    discount_curve_config_id = excluded.discount_curve_config_id,
+    interpolation_method = excluded.interpolation_method,
+    day_count_convention = excluded.day_count_convention,
+    tenor_convention_code = excluded.tenor_convention_code,
+    split_tenor_code = excluded.split_tenor_code,
+    modified_by = current_user,
+    performed_by = current_user,
+    change_reason_code = 'system.initial_load',
+    change_commentary = 'Update during initial population';
+
+insert into ores_refdata_ir_curve_bootstrap_configs_tbl (
+    id, tenant_id, version, output_series_id, party_id, name, currency_code, index_tenor,
+    curve_family_role, discount_curve_config_id, interpolation_method,
+    day_count_convention, tenor_convention_code, split_tenor_code,
+    modified_by, performed_by, change_reason_code, change_commentary
+)
+values (
+    '76fd88a1-7bff-5cdc-8d38-238eba86d340',
+    ores_utility_system_tenant_id_fn(),
+    0,
+    'e6f1ae0b-80c9-5e5b-ae84-b17f75185127',
+    ores_iam_account_parties_system_party_id_fn(ores_utility_system_tenant_id_fn()),
+    'HKD-HIBOR-2W', 'HKD', '2W',
+    'PROJECTION',
+    (select id from ores_refdata_ir_curve_bootstrap_configs_tbl
+      where name = 'HKD-HONIA' and valid_to = ores_utility_infinity_timestamp_fn()
+      order by version desc limit 1),
+    'LOG_LINEAR_DISCOUNT',
+    'A365F', 'RATES_SPOT_FORWARD', '30Y',
+    current_user, current_user, 'system.initial_load',
+    'Initial population of IBOR curve bootstrap configs'
+)
+on conflict (tenant_id, id)
+where valid_to = ores_utility_infinity_timestamp_fn()
+do update set
+    output_series_id = excluded.output_series_id,
+    name = excluded.name,
+    currency_code = excluded.currency_code,
+    index_tenor = excluded.index_tenor,
+    curve_family_role = excluded.curve_family_role,
+    discount_curve_config_id = excluded.discount_curve_config_id,
+    interpolation_method = excluded.interpolation_method,
+    day_count_convention = excluded.day_count_convention,
+    tenor_convention_code = excluded.tenor_convention_code,
+    split_tenor_code = excluded.split_tenor_code,
+    modified_by = current_user,
+    performed_by = current_user,
+    change_reason_code = 'system.initial_load',
+    change_commentary = 'Update during initial population';
+
+insert into ores_refdata_ir_curve_bootstrap_configs_tbl (
+    id, tenant_id, version, output_series_id, party_id, name, currency_code, index_tenor,
+    curve_family_role, discount_curve_config_id, interpolation_method,
+    day_count_convention, tenor_convention_code, split_tenor_code,
+    modified_by, performed_by, change_reason_code, change_commentary
+)
+values (
+    '3e29ec38-4029-50b2-bb30-222fb1735180',
+    ores_utility_system_tenant_id_fn(),
+    0,
+    '120d9e10-124c-5bb0-90c6-38d551fd4fda',
+    ores_iam_account_parties_system_party_id_fn(ores_utility_system_tenant_id_fn()),
+    'HKD-HIBOR-1M', 'HKD', '1M',
+    'PROJECTION',
+    (select id from ores_refdata_ir_curve_bootstrap_configs_tbl
+      where name = 'HKD-HONIA' and valid_to = ores_utility_infinity_timestamp_fn()
+      order by version desc limit 1),
+    'LOG_LINEAR_DISCOUNT',
+    'A365F', 'RATES_SPOT_FORWARD', '30Y',
+    current_user, current_user, 'system.initial_load',
+    'Initial population of IBOR curve bootstrap configs'
+)
+on conflict (tenant_id, id)
+where valid_to = ores_utility_infinity_timestamp_fn()
+do update set
+    output_series_id = excluded.output_series_id,
+    name = excluded.name,
+    currency_code = excluded.currency_code,
+    index_tenor = excluded.index_tenor,
+    curve_family_role = excluded.curve_family_role,
+    discount_curve_config_id = excluded.discount_curve_config_id,
+    interpolation_method = excluded.interpolation_method,
+    day_count_convention = excluded.day_count_convention,
+    tenor_convention_code = excluded.tenor_convention_code,
+    split_tenor_code = excluded.split_tenor_code,
+    modified_by = current_user,
+    performed_by = current_user,
+    change_reason_code = 'system.initial_load',
+    change_commentary = 'Update during initial population';
+
+insert into ores_refdata_ir_curve_bootstrap_configs_tbl (
+    id, tenant_id, version, output_series_id, party_id, name, currency_code, index_tenor,
+    curve_family_role, discount_curve_config_id, interpolation_method,
+    day_count_convention, tenor_convention_code, split_tenor_code,
+    modified_by, performed_by, change_reason_code, change_commentary
+)
+values (
+    '45239052-2796-561c-b1ee-bea2bca98dd1',
+    ores_utility_system_tenant_id_fn(),
+    0,
+    '3fac868b-49d8-5330-937c-5d2f1de19917',
+    ores_iam_account_parties_system_party_id_fn(ores_utility_system_tenant_id_fn()),
+    'HKD-HIBOR-3M', 'HKD', '3M',
+    'PROJECTION',
+    (select id from ores_refdata_ir_curve_bootstrap_configs_tbl
+      where name = 'HKD-HONIA' and valid_to = ores_utility_infinity_timestamp_fn()
+      order by version desc limit 1),
+    'LOG_LINEAR_DISCOUNT',
+    'A365F', 'RATES_SPOT_FORWARD', '30Y',
     current_user, current_user, 'system.initial_load',
     'Initial population of IBOR curve bootstrap configs'
 )
@@ -1414,6 +1538,162 @@ values
      ores_iam_account_parties_system_party_id_fn(ores_utility_system_tenant_id_fn()),
      'a6a34075-0186-5b05-b365-64f2d265b31e', 6, 'SPOT', '10Y', 'SWAP',
      'e240b4e6-3a46-501c-929d-797168911ea3',
+     current_user, current_user, 'system.initial_load',
+     'Initial population of IBOR curve bootstrap pillars')
+on conflict (tenant_id, id)
+where valid_to = ores_utility_infinity_timestamp_fn()
+do nothing;
+
+insert into ores_refdata_ir_curve_bootstrap_pillars_tbl (
+    id, tenant_id, version, party_id, bootstrap_config_id, sequence_index,
+    start_tenor_code, end_tenor_code, curve_role_code, market_series_id,
+    modified_by, performed_by, change_reason_code, change_commentary
+)
+values
+    ('ebd2e751-c035-570f-bc54-a2cdd82dd281', ores_utility_system_tenant_id_fn(), 0,
+     ores_iam_account_parties_system_party_id_fn(ores_utility_system_tenant_id_fn()),
+     '76fd88a1-7bff-5cdc-8d38-238eba86d340', 0, 'SPOT', '1M', 'DEPOSIT',
+     'b1e48949-5a3f-57c6-a8d8-c97dfd695e9e',
+     current_user, current_user, 'system.initial_load',
+     'Initial population of IBOR curve bootstrap pillars'),
+    ('53f0ad64-6027-5643-b63a-02a74dac2634', ores_utility_system_tenant_id_fn(), 0,
+     ores_iam_account_parties_system_party_id_fn(ores_utility_system_tenant_id_fn()),
+     '76fd88a1-7bff-5cdc-8d38-238eba86d340', 1, 'SPOT', '3M', 'DEPOSIT',
+     'b1e48949-5a3f-57c6-a8d8-c97dfd695e9e',
+     current_user, current_user, 'system.initial_load',
+     'Initial population of IBOR curve bootstrap pillars'),
+    ('38d1ba17-310c-5671-a82b-56bdf2d395b0', ores_utility_system_tenant_id_fn(), 0,
+     ores_iam_account_parties_system_party_id_fn(ores_utility_system_tenant_id_fn()),
+     '76fd88a1-7bff-5cdc-8d38-238eba86d340', 2, '3M', '6M', 'FRA',
+     '83063b74-3343-5a97-9048-676cd3eeae9e',
+     current_user, current_user, 'system.initial_load',
+     'Initial population of IBOR curve bootstrap pillars'),
+    ('7ca054b4-cd07-5fad-9aad-8303c9a13a06', ores_utility_system_tenant_id_fn(), 0,
+     ores_iam_account_parties_system_party_id_fn(ores_utility_system_tenant_id_fn()),
+     '76fd88a1-7bff-5cdc-8d38-238eba86d340', 3, '6M', '12M', 'FRA',
+     '33d9415d-6a28-5c93-9761-e24fd85d0033',
+     current_user, current_user, 'system.initial_load',
+     'Initial population of IBOR curve bootstrap pillars'),
+    ('bb4759c5-8203-5a97-8b41-4dd8bffa8db7', ores_utility_system_tenant_id_fn(), 0,
+     ores_iam_account_parties_system_party_id_fn(ores_utility_system_tenant_id_fn()),
+     '76fd88a1-7bff-5cdc-8d38-238eba86d340', 4, 'SPOT', '2Y', 'SWAP',
+     'b1e48949-5a3f-57c6-a8d8-c97dfd695e9e',
+     current_user, current_user, 'system.initial_load',
+     'Initial population of IBOR curve bootstrap pillars'),
+    ('6520563c-c04e-5233-b1ff-a64b1e780381', ores_utility_system_tenant_id_fn(), 0,
+     ores_iam_account_parties_system_party_id_fn(ores_utility_system_tenant_id_fn()),
+     '76fd88a1-7bff-5cdc-8d38-238eba86d340', 5, 'SPOT', '5Y', 'SWAP',
+     'b1e48949-5a3f-57c6-a8d8-c97dfd695e9e',
+     current_user, current_user, 'system.initial_load',
+     'Initial population of IBOR curve bootstrap pillars'),
+    ('aa0fd9c7-3164-5732-9a6f-fd2ae53776d0', ores_utility_system_tenant_id_fn(), 0,
+     ores_iam_account_parties_system_party_id_fn(ores_utility_system_tenant_id_fn()),
+     '76fd88a1-7bff-5cdc-8d38-238eba86d340', 6, 'SPOT', '10Y', 'SWAP',
+     'b1e48949-5a3f-57c6-a8d8-c97dfd695e9e',
+     current_user, current_user, 'system.initial_load',
+     'Initial population of IBOR curve bootstrap pillars')
+on conflict (tenant_id, id)
+where valid_to = ores_utility_infinity_timestamp_fn()
+do nothing;
+
+insert into ores_refdata_ir_curve_bootstrap_pillars_tbl (
+    id, tenant_id, version, party_id, bootstrap_config_id, sequence_index,
+    start_tenor_code, end_tenor_code, curve_role_code, market_series_id,
+    modified_by, performed_by, change_reason_code, change_commentary
+)
+values
+    ('e29061b8-285f-55cf-b449-0dd7591a4594', ores_utility_system_tenant_id_fn(), 0,
+     ores_iam_account_parties_system_party_id_fn(ores_utility_system_tenant_id_fn()),
+     '3e29ec38-4029-50b2-bb30-222fb1735180', 0, 'SPOT', '1M', 'DEPOSIT',
+     '4925e745-dd28-539f-90ba-173c67441a7a',
+     current_user, current_user, 'system.initial_load',
+     'Initial population of IBOR curve bootstrap pillars'),
+    ('4fc4ca43-ce80-50ec-9343-cb0da1c63ea5', ores_utility_system_tenant_id_fn(), 0,
+     ores_iam_account_parties_system_party_id_fn(ores_utility_system_tenant_id_fn()),
+     '3e29ec38-4029-50b2-bb30-222fb1735180', 1, 'SPOT', '3M', 'DEPOSIT',
+     '4925e745-dd28-539f-90ba-173c67441a7a',
+     current_user, current_user, 'system.initial_load',
+     'Initial population of IBOR curve bootstrap pillars'),
+    ('87d34272-37e7-5ff7-a47c-163b274ff0c9', ores_utility_system_tenant_id_fn(), 0,
+     ores_iam_account_parties_system_party_id_fn(ores_utility_system_tenant_id_fn()),
+     '3e29ec38-4029-50b2-bb30-222fb1735180', 2, '3M', '6M', 'FRA',
+     '2d3b5e6e-e553-5726-9f6c-765258d732aa',
+     current_user, current_user, 'system.initial_load',
+     'Initial population of IBOR curve bootstrap pillars'),
+    ('57eba727-f45a-5da6-aee4-c513433cd1f9', ores_utility_system_tenant_id_fn(), 0,
+     ores_iam_account_parties_system_party_id_fn(ores_utility_system_tenant_id_fn()),
+     '3e29ec38-4029-50b2-bb30-222fb1735180', 3, '6M', '12M', 'FRA',
+     '0f876908-65c2-5499-ac97-b830df7b7881',
+     current_user, current_user, 'system.initial_load',
+     'Initial population of IBOR curve bootstrap pillars'),
+    ('2c88c335-fc63-5005-b6d1-e7cba5289332', ores_utility_system_tenant_id_fn(), 0,
+     ores_iam_account_parties_system_party_id_fn(ores_utility_system_tenant_id_fn()),
+     '3e29ec38-4029-50b2-bb30-222fb1735180', 4, 'SPOT', '2Y', 'SWAP',
+     '4925e745-dd28-539f-90ba-173c67441a7a',
+     current_user, current_user, 'system.initial_load',
+     'Initial population of IBOR curve bootstrap pillars'),
+    ('a37e596b-a4db-5358-980c-7d89d140a420', ores_utility_system_tenant_id_fn(), 0,
+     ores_iam_account_parties_system_party_id_fn(ores_utility_system_tenant_id_fn()),
+     '3e29ec38-4029-50b2-bb30-222fb1735180', 5, 'SPOT', '5Y', 'SWAP',
+     '4925e745-dd28-539f-90ba-173c67441a7a',
+     current_user, current_user, 'system.initial_load',
+     'Initial population of IBOR curve bootstrap pillars'),
+    ('ffc645cb-2817-5352-8b28-1255f114a7d5', ores_utility_system_tenant_id_fn(), 0,
+     ores_iam_account_parties_system_party_id_fn(ores_utility_system_tenant_id_fn()),
+     '3e29ec38-4029-50b2-bb30-222fb1735180', 6, 'SPOT', '10Y', 'SWAP',
+     '4925e745-dd28-539f-90ba-173c67441a7a',
+     current_user, current_user, 'system.initial_load',
+     'Initial population of IBOR curve bootstrap pillars')
+on conflict (tenant_id, id)
+where valid_to = ores_utility_infinity_timestamp_fn()
+do nothing;
+
+insert into ores_refdata_ir_curve_bootstrap_pillars_tbl (
+    id, tenant_id, version, party_id, bootstrap_config_id, sequence_index,
+    start_tenor_code, end_tenor_code, curve_role_code, market_series_id,
+    modified_by, performed_by, change_reason_code, change_commentary
+)
+values
+    ('9badc4e6-7b2b-57e8-a46f-cbf431e4a2ac', ores_utility_system_tenant_id_fn(), 0,
+     ores_iam_account_parties_system_party_id_fn(ores_utility_system_tenant_id_fn()),
+     '45239052-2796-561c-b1ee-bea2bca98dd1', 0, 'SPOT', '1M', 'DEPOSIT',
+     '0cbc756a-55ef-532d-ac9f-58cf0ff73265',
+     current_user, current_user, 'system.initial_load',
+     'Initial population of IBOR curve bootstrap pillars'),
+    ('3ebf2d36-ec2a-5dee-93c5-8c4ab3258b0f', ores_utility_system_tenant_id_fn(), 0,
+     ores_iam_account_parties_system_party_id_fn(ores_utility_system_tenant_id_fn()),
+     '45239052-2796-561c-b1ee-bea2bca98dd1', 1, 'SPOT', '3M', 'DEPOSIT',
+     '0cbc756a-55ef-532d-ac9f-58cf0ff73265',
+     current_user, current_user, 'system.initial_load',
+     'Initial population of IBOR curve bootstrap pillars'),
+    ('d55b135d-8d9c-51fb-94cd-5a304c5f61c4', ores_utility_system_tenant_id_fn(), 0,
+     ores_iam_account_parties_system_party_id_fn(ores_utility_system_tenant_id_fn()),
+     '45239052-2796-561c-b1ee-bea2bca98dd1', 2, '3M', '6M', 'FRA',
+     'abf8e9f0-82d9-5b6d-9097-2ba6254a748f',
+     current_user, current_user, 'system.initial_load',
+     'Initial population of IBOR curve bootstrap pillars'),
+    ('fed2014f-c43e-58bf-a121-d9de8ab9bd0b', ores_utility_system_tenant_id_fn(), 0,
+     ores_iam_account_parties_system_party_id_fn(ores_utility_system_tenant_id_fn()),
+     '45239052-2796-561c-b1ee-bea2bca98dd1', 3, '6M', '12M', 'FRA',
+     '6e559168-6b4b-576e-9ac3-be0ad1d13c00',
+     current_user, current_user, 'system.initial_load',
+     'Initial population of IBOR curve bootstrap pillars'),
+    ('0ae19885-53ed-5ee8-af79-f8e46331f568', ores_utility_system_tenant_id_fn(), 0,
+     ores_iam_account_parties_system_party_id_fn(ores_utility_system_tenant_id_fn()),
+     '45239052-2796-561c-b1ee-bea2bca98dd1', 4, 'SPOT', '2Y', 'SWAP',
+     '0cbc756a-55ef-532d-ac9f-58cf0ff73265',
+     current_user, current_user, 'system.initial_load',
+     'Initial population of IBOR curve bootstrap pillars'),
+    ('071f864c-6726-5ff4-a0c5-aa658b54116a', ores_utility_system_tenant_id_fn(), 0,
+     ores_iam_account_parties_system_party_id_fn(ores_utility_system_tenant_id_fn()),
+     '45239052-2796-561c-b1ee-bea2bca98dd1', 5, 'SPOT', '5Y', 'SWAP',
+     '0cbc756a-55ef-532d-ac9f-58cf0ff73265',
+     current_user, current_user, 'system.initial_load',
+     'Initial population of IBOR curve bootstrap pillars'),
+    ('db5e5efc-5fdf-5020-bfdb-cc0020ac049d', ores_utility_system_tenant_id_fn(), 0,
+     ores_iam_account_parties_system_party_id_fn(ores_utility_system_tenant_id_fn()),
+     '45239052-2796-561c-b1ee-bea2bca98dd1', 6, 'SPOT', '10Y', 'SWAP',
+     '0cbc756a-55ef-532d-ac9f-58cf0ff73265',
      current_user, current_user, 'system.initial_load',
      'Initial population of IBOR curve bootstrap pillars')
 on conflict (tenant_id, id)

@@ -126,6 +126,11 @@ TEST_CASE("script check with variables reports errors and fails", script_tags) {
     const auto refused = run(payoff_script_commands::process_check, {path, "--variables", bad});
     CHECK(refused.failed);
     CHECK(refused.output.find(bad + ":1:") != std::string::npos);
+
+    const auto untyped = files.write("untyped.tsv", "# a list of nothing\nStrike\t[]\t1\n");
+    const auto no_type = run(payoff_script_commands::process_check, {path, "--variables", untyped});
+    CHECK(no_type.failed);
+    CHECK(no_type.output.find(untyped + ":2:") != std::string::npos);
 }
 
 TEST_CASE("script inputs lists one input per line and merges variants", script_tags) {
@@ -142,6 +147,10 @@ TEST_CASE("script inputs lists one input per line and merges variants", script_t
                            "Expiry\tEvent\t0\t\n"
                            "PayCcy\tCurrency\t0\t\n"
                            "Fixings\tNumber\t1\t\n");
+
+    const auto to_stdout = run(payoff_script_commands::process_inputs, {second, "--out", "-"});
+    CHECK_FALSE(to_stdout.failed);
+    CHECK(to_stdout.output == "Expiry\tEvent\t0\t\nPayCcy\tCurrency\t0\t\nFixings\tNumber\t1\t\n");
 
     const auto out = files.path("inputs.tsv");
     const auto written = run(payoff_script_commands::process_inputs, {second, "--out", out});

@@ -116,6 +116,11 @@ std::optional<std::vector<scripting::script_variable>> read_variables(std::ostre
             v.type.resize(v.type.size() - 2);
             v.is_array = true;
         }
+        if (v.name.empty() || v.type.empty()) {
+            fail(out) << path << ":" << number << ": a variable needs a name and a type"
+                      << std::endl;
+            return std::nullopt;
+        }
         if (!fields[2].empty())
             v.values = split(fields[2], ',');
         variables.push_back(std::move(v));
@@ -146,9 +151,13 @@ std::string escaped(std::string_view text) {
     return out;
 }
 
-/// Codes of the findings a script has on its own, with no trade to check.
-bool of_the_script_alone(const scripting::diagnostic& d) {
-    return d.code.starts_with("SCR1") || d.code.starts_with("SCR4");
+/*
+ * A finding about a trade's variables (SCR2xxx) or the values it states
+ * (SCR3xxx), which means nothing while no trade is given. Every other finding
+ * is the script's own, so a new code is reported unless it is a trade's.
+ */
+bool about_a_trade(const scripting::diagnostic& d) {
+    return d.code.starts_with("SCR2") || d.code.starts_with("SCR3");
 }
 
 }
@@ -195,18 +204,17 @@ void payoff_script_commands::process_check(std::ostream& out,
     const auto inputs = scripting::inputs_of(script->result.tree, script->text);
     auto findings = scripting::check(script->result.tree, script->text, inputs, variables);
     if (variables_path.empty())
-        std::erase_if(findings, [](const auto& d) { return !of_the_script_alone(d); });
+        std::erase_if(findings, about_a_trade);
 
-    std::size_t errors = 0;
+    std::size_t errors = 0, warnings = 0;
     for (const auto& d : findings) {
         out << scripting::to_compiler_format(d, *path) << '\n';
-        if (d.severity == scripting::severity::error)
-            ++errors;
+        ++(d.severity == scripting::severity::error ? errors : warnings);
     }
     if (errors != 0)
         fail(out) << errors << " error(s) in " << *path << std::endl;
     else
-        out << "✓ " << *path << ": " << findings.size() << " warning(s)" << std::endl;
+        out << "✓ " << *path << ": " << warnings << " warning(s)" << std::endl;
 }
 
 void payoff_script_commands::process_inputs(std::ostream& out,

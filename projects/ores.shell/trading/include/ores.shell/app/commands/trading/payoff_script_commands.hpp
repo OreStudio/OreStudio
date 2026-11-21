@@ -77,6 +77,7 @@ public:
      * those variables as well. The variables file holds one variable per line,
      * =name<TAB>type<TAB>values=, the values separated by commas and a list's
      * type ending in =[]=; blank lines and lines starting with =#= are skipped.
+     * A value cannot itself hold a comma, which no value ORE reads does.
      */
     static void process_check(std::ostream& out, const std::vector<std::string>& args);
 

@@ -17,6 +17,8 @@ build/output
 build/audit_synthetic
 build/audit_iam
 build/docker-stage
+# the pooler's generated configuration and its credential file, built from .env
+build/pgbouncer
 # scratch downloads and comparisons from the compute end-to-end runbook
 build/e2e
 

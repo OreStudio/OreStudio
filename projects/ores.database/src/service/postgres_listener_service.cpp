@@ -131,7 +131,7 @@ bool postgres_listener_service::open_connection() {
     ORES_LOG_SEV(lg(), debug) << "Opening dedicated listener connection.";
 
     try {
-        connection_ = connect_utc(ctx_.connection_options(), application_name_);
+        connection_ = connect_utc(ctx_.listener_connection_options(), application_name_);
     } catch (const std::exception& e) {
         ORES_LOG_SEV(lg(), error) << "Failed to connect to database: " << e.what();
         return false;
@@ -308,7 +308,7 @@ void postgres_listener_service::listen_loop() {
 
             std::lock_guard lock(mutex_);
             try {
-                connection_ = connect_utc(ctx_.connection_options(), application_name_);
+                connection_ = connect_utc(ctx_.listener_connection_options(), application_name_);
             } catch (const std::exception& e) {
                 ORES_LOG_SEV(lg(), error) << "Reconnect failed: " << e.what();
                 continue;

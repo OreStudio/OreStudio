@@ -1,0 +1,118 @@
+:PROPERTIES:
+:ID: 8E5BDABE-6926-4FEA-A20D-A507C59318D8
+:END:
+#+title: Task: Read an empty CZEONIA rate as no fixing
+#+description: Skip a CZEONIA row whose rate is empty, as the bank writes for a day it set no rate, instead of refusing the whole yearly file.
+#+type: task
+#+level: s1
+#+filetags: :czeonia_days_with_no_fixing_fail_the_refresh:sprint_30:v0:
+#+owner: marco
+#+branch: feature/read-an-empty-czeonia-rate-as-no-fixing
+#+pr: 4932
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-20
+#+updated: 2026-11-20
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:70778DC7-4876-4C16-81E1-3A7F190DFC82][CZEONIA days with no fixing fail the refresh]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every CZEONIA yearly file from 2016 to 2026 parses, and a day with an empty rate gives no fixing.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:70778DC7-4876-4C16-81E1-3A7F190DFC82][CZEONIA days with no fixing fail the refresh]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-20                               |
+
+* Acceptance
+
+- parse_cnb_czeonia skips a row whose rate cell is empty.
+- A rate cell that holds text other than a number still refuses the file.
+- A test holds rows as the bank wrote them in 2019.
+
+* Plan
+
+1. Fetch the bank's yearly files for 2016 to 2026 and find the rows the parser
+   refuses: 2018, 2019 and 2020 hold 142 days with volume 0 and an empty rate.
+2. Add a test with rows as the bank wrote them in 2019, and see it fail.
+3. Skip a row whose rate cell is empty. Keep the refusal of a rate that is not a
+   number.
+4. Run the refresh on a fresh environment and compare the stored fixings with
+   the bank's files.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Rows with an empty rate in the bank's files | 2018: 29, 2019: 82, 2020: 31; none in 2016-17 or 2021-26 | =curl= of =yearly.txt?calendarYear=Y=, =awk -F'|' '$3==""'= | 90700d9b6d |
+| CTest suites | 105 of 105 passed | =./compass.sh check= (ctest) | bb8076c458 |
+| ores.marketdata.official.tests | 121 cases passed, 519 assertions | =ores.marketdata.official.tests= | 90700d9b6d |
+| New case before the fix | failed: =fixings.has_value()= is false | =ores.marketdata.official.tests "[cnb]"= | 2cc6d6e76b |
+| CZEONIA fixings stored on a fresh environment | 2367, 2016-11-22 to 2026-11-19 | =./compass.sh sql -u ddl= on =ores_marketdata_market_fixings_tbl= | 90700d9b6d |
+| Stored against published, 2018 / 2019 / 2020 | 221/221, 169/169, 220/220 | the same query per year; =awk= over the bank's files | 90700d9b6d |
+| CZK curve start | 0.0344 from CZEONIA (cnb), was its fixed 0.035 | synthetic service journal after a restart | 90700d9b6d |
+
+* Notes
+
+- The refresh window reaches back over the years 2018 to 2020, so before the
+  fix every refresh failed and no CZEONIA fixing was ever stored. The CZK curve
+  then reported that no series publishes its overnight rate, which is the CZK
+  note in the IR calibration coverage story.
+- On a fresh environment the CZK curve starts before the first CNB refresh
+  lands, so it keeps its fixed rate until the synthetic service starts again.
+  The story "Make a fresh environment ready quickly" covers that start order.
+- The same run logged a failed refresh of =bcb-cdi=; that is a separate source.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4932][#4932]] | [marketdata] Read an empty CZEONIA rate as no fixing |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Local review: a rate cell of spaces only is still refused | =cnb.cpp= | Decline | No published file holds one; only the empty cell the bank writes means no rate |
+| 2 | Local review: the changed files spell clean | all | Accept | misspell-fixer on the changed files exits 0 |
+| 3 | Gate: ticks-smoke failed provisioning | machine | Decline | The disk filled (944 MB of 906 GB free); Postgres could not extend a file. Not the change |
+| 4 | Claude review: trim a rate cell of spaces only before the check | =cnb.cpp= | Decline | Same as row 1; refusing an unknown shape is the safe choice |
+| 5 | Claude review: no test of a CRLF file with empty rates | =domain_cnb_tests.cpp= | Decline | =lines_of= removes the =\r= for every reader and the CNB files use LF |
+| 6 | Claude review: the fixture may not be the file's real first lines | =domain_cnb_tests.cpp= | Decline | Fetched again on 2026-11-20: the first five lines match the fixture byte for byte |
+| 7 | Claude review: ticks-smoke failed on the full disk | machine | Decline | Same as row 3 |
+
+* Result
+
+The CNB adapter reads a CZEONIA row with an empty rate as a day with no fixing.
+Every yearly file from 2016 to 2026 now parses, and a fresh environment stores
+2367 CZEONIA fixings that match the bank's files day for day. The CZK curve
+starts from the CZEONIA fixing. A rate that is present but not a number still
+refuses the file.

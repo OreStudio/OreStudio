@@ -1,0 +1,138 @@
+:PROPERTIES:
+:ID: E1FB7EF9-EDA5-4596-9A79-B6F66020194F
+:END:
+#+title: Task: Discard the raise result the surface set test does not read
+#+description: A -Werror build of main stops in the marketdata service tests because raise_surface_publish_set is nodiscard and the duplicate-subject test drops its result on purpose.
+#+type: task
+#+level: s1
+#+filetags: :main_stops_at_the_surface_set_test:sprint_30:v0:
+#+owner: marco
+#+branch: hotfix/main-stops-at-the-surface-set-test
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F3C78A53-A522-438B-96C7-7928E04B7719][Hotfix: Main stops at the surface set test]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A full build of main compiles every target again, and the two raise functions agree on whether a caller may discard what they return.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:F3C78A53-A522-438B-96C7-7928E04B7719][Hotfix: Main stops at the surface set test]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-21                               |
+
+* Acceptance
+
+- The marketdata service tests compile under -Werror with the discarded raise result marked as deliberate.
+- Both raise functions are nodiscard, so a discarded result fails the build in either of them rather than in one.
+
+* Plan
+
+The failing line is in =app_published_surface_tests.cpp=, in the case that
+checks a set naming one surface twice is refused. The call sits in a =try=
+only because the refusal is the assertion, so its result is unused on
+purpose, and the compiler cannot tell that from a mistake.
+
+The same shape exists in =app_curve_publish_gate_tests.cpp= for the curve
+set, and it compiles today for one reason: =raise_publish_request_set= is
+not =nodiscard= while =raise_surface_publish_set= is. The asymmetry is the
+cause, so the fix is to remove it rather than to copy the =[[nodiscard]]=
+across silently.
+
+The change is three lines:
+
+- =app_published_surface_tests.cpp= casts the raise to =void= and states
+  why in a comment, because this set must throw.
+- =curve_publish_gate.hpp= marks =raise_publish_request_set= =nodiscard=,
+  as its sibling in the surface service already is.
+- =app_curve_publish_gate_tests.cpp= casts its own deliberately unused
+  raise to =void=, which the new attribute makes necessary.
+
+Every remaining caller reads the result: the provisioning step handler in
+two places, the surface publish service, and the curve gate's own
+single-subject wrapper returns it.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Call sites of the two raise functions that discard the result | 2 | =grep -rn "raise_surface_publish_set\|raise_publish_request_set" --include=*.cpp --include=*.hpp projects= | 732fc2ee34 |
+| Call sites of the two raise functions in total | 6 | as above | 732fc2ee34 |
+| Targets built of the marketdata service tests | 144 of 144, in 0:01:40 | =compass build ores.marketdata.service.tests= | d0a9d1d3ae |
+
+* Notes
+
+brave_hopper reported this: a full build of =origin/main= stopped after 358
+of 475 targets, in =ores.marketdata.service.tests=, and it blocked the build
+their own branch needed. The break came in with PR #4913, commit
+=44e27d91ef=, which added the case that raises a set naming one surface
+twice.
+
+The report also said it was the only site. That was true of the surface
+raise and false of its sibling: the curve raise is discarded in the same
+way in its own test, and only escapes because that function carries no
+=[[nodiscard]]=. Marking it turns the escape hatch into a compile error,
+which is the point.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The marketdata service tests build again: 144 of 144 targets, in 1 minute 40
+seconds, ending at =publish/bin/ores.marketdata.service.tests=
+(=compass build ores.marketdata.service.tests=, commit =d0a9d1d3ae=).
+
+Three lines changed:
+
+- =app_published_surface_tests.cpp= casts the raise it does not read to
+  =void=, with a comment saying why: the refusal is the assertion.
+- =curve_publish_gate.hpp= marks =raise_publish_request_set= =nodiscard=,
+  matching =raise_surface_publish_set= in the surface service.
+- =app_curve_publish_gate_tests.cpp= casts its own unread raise to =void=,
+  which the new attribute makes necessary.
+
+What this does not prove: the suite was compiled, not run. The change is a
+compile-time attribute and two =void= casts, so the build is the evidence
+the acceptance asks for.
+

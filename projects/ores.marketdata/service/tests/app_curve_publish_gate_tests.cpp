@@ -199,7 +199,8 @@ TEST_CASE("a_set_that_names_a_curve_twice_is_refused_in_words", tags) {
     // The store would refuse the repeat at the natural key, in words a caller
     // cannot read, so the set is refused before anything is written.
     try {
-        raise_publish_request_set(maker.ctx, {subject, subject}, "A set that repeats itself");
+        // The raise is discarded on purpose: this set must throw.
+        (void)raise_publish_request_set(maker.ctx, {subject, subject}, "A set that repeats itself");
         FAIL("A set that names one curve twice was raised.");
     } catch (const std::invalid_argument& e) {
         const auto message = std::string(e.what());

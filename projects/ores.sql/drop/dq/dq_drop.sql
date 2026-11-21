@@ -235,6 +235,15 @@
 \ir ./dq_change_reason_categories_notify_trigger_drop.sql
 \ir ./dq_change_reason_categories_drop.sql
 
+-- Script library: staging tables
+\ir ./dq_script_inputs_artefact_drop.sql
+\ir ./dq_script_coarsenings_artefact_drop.sql
+\ir ./dq_script_calibration_strikes_artefact_drop.sql
+\ir ./dq_script_calibrations_artefact_drop.sql
+\ir ./dq_script_results_artefact_drop.sql
+\ir ./dq_script_variants_artefact_drop.sql
+\ir ./dq_scripts_artefact_drop.sql
+
 -- Report configuration documents: staging tables
 \ir ./dq_pricing_model_configs_artefact_drop.sql
 \ir ./dq_pricing_model_products_artefact_drop.sql

@@ -69,7 +69,7 @@ rule_table stay off, because ORE Studio has its own index and contract checks.
 | protocol_twins | yes | |
 | registry_exceptions | yes | |
 | route_inventory | yes | |
-| script_library_seed | yes | |
+| script_library_seed | no | |
 | subject_conformance | yes | |
 | template_sections | yes | |
 | backlog_indexes | yes | |

@@ -73,8 +73,64 @@ Data Sourcing and Generation Steps:
    with the XML suites, which read and write the whole example corpus,
    not by reading the diff.
 
-5. COMMIT TO REPOSITORY
-   git add external/ore/* projects/ores.ore/core/include/ores.ore.core/xml/generated projects/ores.ore/core/src/xml/generated
+5. GENERATE THE SCRIPT LIBRARY DATASET
+   Source: external/ore/examples/Products/Input/scriptlibrary.xml, as step 2
+   synced it from the engine commit. The other copies of scriptlibrary.xml
+   under external/ore/examples/ belong to single examples and are not read.
+   Script: external/ore/tools/generate_script_library.py
+   Corrections: external/ore/tools/script_library_corrections.json
+   Output (in projects/ores.sql/populate/ore/):
+     - ore_methodology_populate.sql (this file, as the methodology's text)
+     - ore_script_library_dataset_populate.sql (the ore.script_library dataset)
+     - ore_script_library_artefact_populate.sql (the staged rows)
+
+   The generator calls the shell's offline script commands, so the shell is
+   built first, from the same checkout:
+     ./compass.sh build ores.shell
+   Commands:
+     python3 external/ore/tools/generate_script_library.py
+     python3 external/ore/tools/generate_script_library.py --check
+   --shell PATH names another build of ores.shell, such as one of another
+   preset; the default is
+   build/output/linux-clang-release-ninja/publish/bin/ores.shell. --check
+   writes nothing and exits non-zero when a committed file differs from what
+   the generator makes. No server, database or login is needed.
+
+   The generator derives the staged rows in four steps, in order:
+     a. Extraction. Every Script element of the library is read with its
+        variants (the purpose attribute, "default" when absent), NPV
+        variable, results, calibrations and schedule coarsenings. The
+        comment that precedes a script gives its description, its first
+        non-blank line, and its inputs' descriptions: the first line of each
+        entry under an "Input Data:" or "Inputs:" heading.
+     b. Correction. Each entry of script_library_corrections.json names a
+        script and variant, the text it replaces, its replacement and the
+        reason. A correction applies when its text occurs exactly once, does
+        nothing when the code already holds its replacement, and otherwise
+        fails the generation, so a library that changes the script is
+        reviewed. The file is the only list of corrections.
+     c. Parsing. Every variant is parsed by "ores.shell script check", run in
+        one batch with --load and an unreachable NATS URL. A script that does
+        not parse fails the generation, and the shell's output names its
+        line and column.
+     d. Derivation of inputs. Every script's inputs are listed by
+        "ores.shell script inputs" over its variants, which merges them.
+
+   The populate publishes nothing: the world bundle publishes the staged
+   rows into the system tenant at the end of database bring-up, by the
+   trading service's publish function, which writes a new version only of a
+   script whose rows changed.
+
+   Verification: the generator's --check, run by the build job after the
+   shell is built, and ores.trading.scripting.tests, whose inputs test
+   derives every staged script's inputs with the parser and compares them.
+   Following this step on a fresh checkout reproduces the committed files
+   byte for byte. Rerun it after step 2 moves the examples, after a change
+   to the corrections, and after a change to the parser that can change a
+   script's inputs, which fails --check until the rows are regenerated.
+
+6. COMMIT TO REPOSITORY
+   git add external/ore/* projects/ores.ore/core/include/ores.ore.core/xml/generated projects/ores.ore/core/src/xml/generated projects/ores.sql/populate/ore/
    git commit -m "[data] Update ORE Sample Data"
    Commit examples/, xsd/, packages/, and the regenerated domain.hpp/
    domain.cpp together -- they're all derived from the same engine

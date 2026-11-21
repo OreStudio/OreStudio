@@ -197,6 +197,10 @@
 \ir ./trading_script_twin_inputs_create.sql
 \ir ./trading_script_twin_inputs_notify_trigger_create.sql
 
+-- Publication of the script library from DQ (reads the staging tables of
+-- dq_create and writes the script tables above)
+\ir ./trading_publish_from_dq_create.sql
+
 -- Rates instruments (depend on swap_legs and reference data above). The
 -- header goes first: it owns the family's rows, and its delete rule's cascade
 -- function names every fact and child below.

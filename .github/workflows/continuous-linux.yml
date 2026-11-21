@@ -328,6 +328,17 @@ jobs:
           du -sh .git llvm .sccache vcpkg-cache build/output "$RUNNER_TEMP" 2>/dev/null || true
           ctest -VV --preset ${preset} --script "CTest.cmake,${cmake_args}"
 
+      - name: Check the script library dataset reproduces
+        # The generator calls the shell the build above made, to parse every
+        # script of ORE's library and derive its inputs; it fails when the
+        # committed populate files differ from what it makes. It needs no
+        # server, so it runs once the shell exists (step 5 of
+        # external/ore/methodology.txt).
+        run: |
+          preset=${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
+          python3 external/ore/tools/generate_script_library.py --check \
+            --shell ./build/output/${preset}/publish/bin/ores.shell
+
       - name: Start the transaction pooler
         # The image carries pgbouncer, so the job installs nothing, as its
         # comment above promises. The configuration is generated from the

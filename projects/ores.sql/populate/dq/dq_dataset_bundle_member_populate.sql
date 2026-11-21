@@ -155,6 +155,7 @@ BEGIN
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'fpml.regulatory_corporate_sector', 119);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'fpml.reporting_regime', 120);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'fpml.supervisory_body', 121);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'ore.script_library', 122);
 
     -- =============================================================================
     -- Tenant Defaults Bundle Members

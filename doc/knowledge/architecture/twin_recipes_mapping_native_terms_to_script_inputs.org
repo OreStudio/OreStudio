@@ -24,7 +24,10 @@ form, and the scripted counterparts produced by synthetic generation.
 
 The =Scripted twin recipes= table of [[id:A8E9807F-1BC8-4DA5-9A66-720D2444DA1B][the trade type catalogue]] states, for each native
 type and each input of its script, a source and an optional transform; the rows
-are seeded into [[id:C0D2BFF8-3742-4FAE-92C0-3BD185147CCF][ores.trading.script_twin_input]]. A source reads the rows of the native trade:
+are seeded into [[id:C0D2BFF8-3742-4FAE-92C0-3BD185147CCF][ores.trading.script_twin_input]]. The recipes are platform data that
+ORE Studio authors, so a populate script writes them; it runs after the bring-up
+has published the world bundle, since every recipe names a script of ORE's
+library ([[id:CCA8090C-26E0-4571-84BA-9115C110376C][Versioning of the Script Library]]). A source reads the rows of the native trade:
 
 | Source | Value read |
 |--------+------------|

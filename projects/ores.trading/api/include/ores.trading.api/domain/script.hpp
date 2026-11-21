@@ -39,8 +39,9 @@ namespace ores::trading::domain {
  *
  * One script of ORE's script library. A scripted trade names a script by
  * its library name, and the library states its code once for every trade of it.
- * The rows are the system tenant's reference data, mined from the library ORE
- * ships (external/ore/examples/Products/Input/scriptlibrary.xml).
+ * The rows are the system tenant's reference data, published from the
+ * ore.script_library dataset, which step 5 of external/ore/methodology.txt
+ * derives from the library ORE ships.
  */
 struct script final {
     /**

@@ -5,7 +5,7 @@ A product ORE carries in both forms is booked twice: its own element, and a
 generic ScriptedTrade over the library script the catalogue's Scripted forms
 table names. The catalogue's Scripted twin recipes table states where each
 input of the script takes its value from in the native trade's rows. This
-script joins the two tables with the inputs the script library seed mines from
+script joins the two tables with the inputs the script library's dataset stages
 ORE's library, refuses a recipe that misses an input of its script or names one
 the script does not read, and writes the recipes twice: as the seed of the
 script twin inputs table, and as the table the trade generator compiles in.
@@ -21,7 +21,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
 CATALOGUE = ROOT / "projects/ores.trading/modeling/ores.trading.trade_type_catalogue.org"
-LIBRARY_SEED = ROOT / "projects/ores.sql/populate/trading/trading_script_library_populate.sql"
+LIBRARY_SEED = ROOT / "projects/ores.sql/populate/ore/ore_script_library_artefact_populate.sql"
 SEED = ROOT / "projects/ores.sql/populate/trading/trading_script_twin_inputs_populate.sql"
 HEADER = ROOT / "projects/ores.synthetic/core/src/service/script_twin_recipes.hpp"
 ENTITY = ROOT / "projects/ores.trading/modeling/ores.trading.script_twin_input.org"
@@ -62,11 +62,12 @@ def org_table(text, heading):
 
 
 def library_scripts():
-    """Every script the library seed states, in its order."""
+    """Every script the library's dataset stages, in its order."""
     text = LIBRARY_SEED.read_text()
-    block = text[text.index("insert into ores_trading_scripts_tbl"):]
+    block = text[text.index("insert into ores_dq_scripts_artefact_tbl"):]
     block = block[:block.index(";\n")]
-    names = re.findall(r"^    \('([^']+)', ores_utility_system_tenant_id_fn\(\)", block, re.M)
+    names = re.findall(r"^        \(v_dataset_id, ores_utility_system_tenant_id_fn\(\), 0, '([^']+)'",
+                       block, re.M)
     if not names:
         sys.exit(f"found no script in {LIBRARY_SEED.relative_to(ROOT)}; its layout changed")
     return names
@@ -78,8 +79,8 @@ HELD = {"both forms", "element only", "script only", "not yet"}
 def script_inputs():
     """Each script's inputs, in the library's order, as (name, type, is_array)."""
     text = LIBRARY_SEED.read_text()
-    block = text[text.index("insert into ores_trading_script_inputs_tbl"):]
-    pattern = re.compile(r"^    \('([^']+)', ores_utility_system_tenant_id_fn\(\), 0, (\d+), "
+    block = text[text.index("insert into ores_dq_script_inputs_artefact_tbl"):]
+    pattern = re.compile(r"^        \(v_dataset_id, ores_utility_system_tenant_id_fn\(\), 0, '([^']+)', (\d+), "
                          r"'([^']+)', '([^']+)', (true|false),", re.M)
     inputs = {}
     for script, _, name, typ, array in pattern.findall(block):

@@ -1966,6 +1966,13 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'workflow::*', 'Full access to all workflow operations');
 
     -- =============================================================================
+    -- ORE Component Permissions
+    -- =============================================================================
+    -- The ORE import service's own wildcard. Its role holds it as every service
+    -- holds its component's wildcard.
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'ore::*', 'Full access to all ORE import operations');
+
+    -- =============================================================================
     -- Market Data Component Permissions
     -- =============================================================================
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::market_series:read',                 'View market data series');

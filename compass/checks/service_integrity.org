@@ -1,0 +1,137 @@
+:PROPERTIES:
+:ID: C2EFBC91-E896-4250-A81D-54C331308D10
+:END:
+#+title: Check: service integrity
+#+description: What every service of ORE Studio needs besides its code: the obligations compass-ng's service_integrity codec checks for each entry of the service registry, the runtimes that have parts, and the files that must not list the services.
+#+type: check
+#+level: cross
+#+filetags: :compass:check:services:ore:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+#+options: prop:t
+
+This page gives the data of compass-ng's =service_integrity= codec, which
+checks that every ORE Studio service is whole. The =* Definition= names the
+codec; each table below is data the codec reads, and the prose says what it is
+for. The codec reads the services from the registry,
+=projects/modeling/service_registry.org=, and the service parts from the
+component overviews; the tests it runs and the way it fills a pattern are
+compass code, and what an ORE Studio service needs is here.
+
+* Rule
+
+Every service part has an entry in the service registry, and every entry whose
+runtime has parts names a part that exists. Every entry meets each obligation of
+the Obligations table that applies to it. No script or build file lists three or
+more of the registry's services as a literal: the registry is their one source.
+
+* Why
+
+A service is more than its code. The registry drives its systemd unit, its
+container image, its database role and grants, its IAM account and role, its
+expected-services row and its NATS certificate, and a service missing any of them
+builds, passes its tests and then fails in the fleet. =ores.orgmode.service= was
+added without a registry entry, without =src/CMakeLists.txt=, with the
+scaffold's application that never becomes ready, and without a certificate,
+because =nats_certs.py= kept its own list of the services. No single gate saw
+the service whole; this one does.
+
+* Definition
+:PROPERTIES:
+:CODEC: service_integrity
+:END:
+
+* Settings
+
+=part_kind= is the =#+component_kind:= of a service part's overview.
+=default_runtime= is the runtime of an entry without =:runtime:=, as
+=systemd_generate= reads it. =single_source_minimum= is how many service names
+in a row make a list of the services.
+
+| setting                 | value     |
+|-------------------------+-----------|
+| =part_kind=             | =service= |
+| =default_runtime=       | =native=  |
+| =single_source_minimum= | 3         |
+
+* Runtimes
+
+The runtimes a registry entry may have. An entry of a runtime with a part is
+built from the service part of its name; =ores.web.service= runs on Node from
+=projects/ores.web= and has none.
+
+| runtime  | has part |
+|----------+----------|
+| =native= | yes      |
+| =node=   | no       |
+
+* Obligations
+
+One row per thing a service needs. =test= is =exists=, =contains=, =has_line= or
+=lacks=; =path= and =value= are patterns, where ={field}= is a field of the
+entry (=name=, =runtime=, =enabled=, =part=, the part's directory, or a key of
+its property drawer) and ={name[1]}= the second dotted piece of the name, so
+=iam= for =ores.iam.service=. An obligation applies to an entry that has every
+field its patterns name and for which each word of =condition= is set and not
+=false=. The rows are section 0 of the gate report that followed
+=ores.orgmode.service=:
+
+- /Buildable/: a service part has both build files and both source lists. The
+  =ores.cmake.component= address writes all but =src/CMakeLists.txt=, which
+  comes from =ores.cmake.service=.
+- /Not a scaffold/: the scaffold's =application::run= logs "is not yet
+  implemented" and returns, so an enabled unit of it never reports ready.
+- /Database role/: an entry with =:psql_var:= has its user, grants, IAM
+  account and account role in the files the registry generates. Whether those
+  files equal their regeneration is the drift check's, not this one's.
+- /IAM role/: an entry with =:iam_role:= is seeded holding its component's own
+  wildcard permission, which the permissions seed defines.
+- /Expected/: every entry is an expected service of the telemetry, and an
+  entry with a database role is in =service_vars.sh=.
+
+Two properties of the report are not rows. /Deployable/, the image list and
+the systemd units, is derived from the registry by code, so it cannot miss an
+entry. /Handler permissions/ is the =handler_permissions= codec's. The
+/Certificate/ is the Single source rule below: =nats_certs.py= issues a
+certificate to every name it reads, so it must read them from the registry.
+
+| obligation           | test     | path                                                                   | value                               | condition     | reason                                                   |
+|----------------------+----------+------------------------------------------------------------------------+-------------------------------------+---------------+----------------------------------------------------------|
+| Buildable: src build | exists   | ={part}/src/CMakeLists.txt=                                            |                                     | part          | ores.cmake.service writes it; without it nothing builds  |
+| Buildable: test build | exists  | ={part}/tests/CMakeLists.txt=                                          |                                     | part          | the part's tests build from it                           |
+| Buildable: src files | exists   | ={part}/src/component_files.cmake=                                     |                                     | part          | the source build lists its files from it                 |
+| Buildable: test files | exists  | ={part}/tests/component_files.cmake=                                   |                                     | part          | the test build lists its files from it                   |
+| Not a scaffold       | lacks    | ={part}/src/app/application.cpp=                                       | not yet implemented                 | part enabled  | the scaffold's application never reports ready           |
+| Database user        | contains | =projects/ores.sql/create/iam/service_users_create.sql=                | =grant :service_role to :{psql_var}_user;= |        | the service signs in to the database as its own user     |
+| Database grants      | contains | =projects/ores.sql/create/iam/iam_service_db_grants_create.sql=        | =-- {psql_var}:=                    |               | the registry writes a section of grants for the user     |
+| IAM account          | contains | =projects/ores.sql/populate/iam/iam_service_accounts_populate.sql=     | =:'{psql_var}_user',=               |               | the service has an IAM account                           |
+| IAM account role     | contains | =projects/ores.sql/populate/iam/iam_service_account_roles_populate.sql= | =:'{psql_var}_user', '{iam_role}'= |               | the service's account holds its role                     |
+| IAM role             | contains | =projects/ores.sql/populate/iam/iam_roles_populate.sql=                | ='{iam_role}', '{name[1]}::*'=      |               | the role holds its component's own wildcard permission   |
+| Component permission | contains | =projects/ores.sql/populate/iam/iam_permissions_populate.sql=          | ='{name[1]}::*'=                    | iam_role      | the wildcard the role holds is seeded                    |
+| Expected service     | contains | =projects/ores.sql/populate/telemetry/telemetry_expected_services_populate.sql= | =values ('{name}',=        |               | the telemetry expects every service of the fleet         |
+| Service variables    | has_line | =projects/ores.sql/service_vars.sh=                                    | ={name[1]}=                         | psql_var      | compass provisions the database user from this list      |
+
+* Single source files
+
+The files that must not hold a literal list of the services: scripts and build
+files, where a list of names was kept before (=nats_certs.py='s =_SERVICES=).
+
+| glob      | reason              |
+|-----------+---------------------|
+| =*.py=    | Python tooling      |
+| =*.sh=    | shell tooling       |
+| =*.el=    | Emacs Lisp tooling  |
+| =*.cmake= | CMake build files   |
+
+* Single source exceptions
+
+Files that may name services in a row: tests and fixtures, which state the
+services they expect, and the registry's generated outputs, which are its copy.
+
+| glob                                 | reason                                     |
+|--------------------------------------+--------------------------------------------|
+| =**/tests/**=                        | tests name the services they test          |
+| =**/test_*.py=                       | Python tests name the services they test   |
+| =**/fixtures/**=                     | fixtures are data a test reads             |
+| =projects/ores.sql/service_vars.sh=  | generated from the registry                |
+| =projects/ores.agent/evals/native-windows.py= | the agent prototype's evaluation, to be retired when the assistant moves onto the target architecture |

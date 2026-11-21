@@ -85,7 +85,8 @@ task and name that file in the Command column.
 | The pair the check and the codec both state | =IR_SWAP/RATE/GBP/0D/1D/1M= names =oresmd://ir/GBP?type=series&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D= | =ores_marketdata_curve_pillar_series_uri_fn=, with the pgTAP and unit tests | 3fbae97db1 |
 | A run that reads both spellings | ACCOUK NPV, instance =d91de176=, completed at version 5, compute outcome 1 and server state 5 | the run recipe's four queries | 3fbae97db1 |
 | Quotes no series answers, under the party-only rule the review settled | 0 of 420, unchanged | =evidence/curve_quote_coverage.sql= | 3c026c46d9 |
-| Cases the pgTAP test pins | 12: the mapping for a quoted, an indexed and a meeting-dated key, three keys the codec refuses, a gap, another party's series, the party's own series, and the invisible-party refusal | =projects/ores.sql/test/marketdata_curve_quote_coverage_test.sql= | 3c026c46d9 |
+| Quotes no series answers, after the reader was held to every codec check | 0 of 420, unchanged | =evidence/curve_quote_coverage.sql= | b442c030ff |
+| Cases the pgTAP test pins | 16: the mapping for a quoted, an indexed, a dashed-date and a meeting-dated key, five keys the codec refuses, a gap, another party's series, the party's own series, the invisible-party refusal and a null party | =projects/ores.sql/test/marketdata_curve_quote_coverage_test.sql= | 3c026c46d9 |
 
 * Notes
 
@@ -113,7 +114,11 @@ with a case:
   quote, so the rule is the party's own series.
 - The reader was laxer than the codec: it upper-cased the type and quote
   tokens, accepted an empty token, and passed a key whose start was a date and
-  whose end was a period. It now refuses what the codec refuses.
+  whose end was a period. It now refuses what the codec refuses, and the second
+  round found it still looser about dates and periods: a dashed date, a day
+  that does not exist, a date in the index tenor slot and any word as a period
+  all passed. Each is checked now, and a null party is refused rather than
+  answered with no rows.
 
 * Test Scenarios
 

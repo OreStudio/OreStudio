@@ -34,7 +34,7 @@ public:
     ASTToScriptConverter()
         : indent(0) {}
 
-    void visit(ASTNode& n) override {
+    void visit(ASTNode&) override {
         ORES_SCRIPTING_FAIL("ASTToScriptConverter(): unknown node type");
     }
 

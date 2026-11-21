@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: B079757E-02FB-4F24-B3A4-1DE796C54B40
+:END:
+#+title: The service grants file holds hand edits that regeneration drops
+#+description: iam_service_db_grants_create.sql is generated from the service registry, but main's copy holds grants added by hand that the template and registry do not state; regenerating it revokes them.
+#+type: capture
+#+level: cross
+#+filetags: :sql:codegen:service_registry:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=projects/ores.sql/create/iam/iam_service_db_grants_create.sql= is generated
+by the =ores.sql.service= codegen address from
+=projects/modeling/service_registry.org=. Regenerating it on 2026-11-21, to add
+=ores.orgmode.service=, removed lines main's copy holds that neither the
+template nor the registry states:
+
+- the loop in =_ores_grant_dml_fn= that grants each component's views to the
+  service that owns its tables;
+- the approvals-mode grants on =ores_variability_system_settings_= for the
+  inbox, refdata, reporting, trading and marketdata services;
+- marketdata's grants on the inbox notification tables, and the comments that
+  explain its approval-decision grant.
+
+So they were added to the generated file by hand. The next registry change that
+regenerates the file will silently revoke them, as it would have here. Move
+each into the template or the registry (=Select prefixes=, =DML prefixes=), and
+make the codegen drift check cover this file so a hand edit is refused.
+
+* Why
+
+A service that loses a grant fails at run time, not at build or test time, and
+only on the path that needs it.
+
+* References
+
+- =projects/ores.codegen/library/templates/ores.sql.service.db_grants.org=
+- Found while registering =ores.orgmode.service= in
+  [[id:05FE6068-3CBD-4B93-B6AE-47A5689F1FCB][Search the knowledge base from ores.web]]; that change added only the
+  =orgmode= lines by hand to keep the others.
+
+* See also
+
+-

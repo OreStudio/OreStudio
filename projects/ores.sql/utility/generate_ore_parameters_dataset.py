@@ -21,8 +21,8 @@ dataset ore.parameters holds the documentation of every leaf of ore.xml that a s
 the engine settings of the Setup block, the other parameters of the Setup, Logging and Markets
 blocks, and the parameters of the analytics; the parameters of the pricing engine document;
 and the terms of the conventions document. The rows come from the row modules and the texts
-they read. Both datasets are members of the system_core and base bundles, and a publication
-writes them to the tenant that the bundle names.
+they read. Both datasets are members of the system_core bundle and of no other, so the
+publication writes them into the system tenant once, and a tenant reads them there.
 
     generate_ore_parameters_dataset.py          write the seed
     generate_ore_parameters_dataset.py --check  fail if the seed differs
@@ -86,11 +86,13 @@ SQL_HEADER = """/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: ni
  * Ore Parameters DQ Datasets
  *
  * Registers the datasets ore.parameter_value_domains and ore.parameters and
- * stages their rows. Both are members of the system_core and base bundles, so
- * a publication writes them into the system tenant and into each tenant, through
+ * stages their rows. Both are members of the system_core bundle and of no
+ * other, so the publication writes them into the system tenant once, at
+ * bring-up, through
  * ores_reporting_publish_ore_parameter_value_domains_from_dq_fn and
- * ores_reporting_publish_ore_parameters_from_dq_fn. This script is idempotent:
- * it replaces the artefact rows of each dataset.
+ * ores_reporting_publish_ore_parameters_from_dq_fn; a tenant reads those rows
+ * through the shared-reference read. This script is idempotent: it replaces
+ * the artefact rows of each dataset.
  */
 
 """

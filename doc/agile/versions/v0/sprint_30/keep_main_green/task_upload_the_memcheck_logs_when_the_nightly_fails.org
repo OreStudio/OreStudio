@@ -8,7 +8,7 @@
 #+filetags: :keep_main_green:sprint_30:v0:
 #+owner: eager_maxwell
 #+branch: hotfix/upload-the-memcheck-logs
-#+pr: 0
+#+pr: 4976
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-21
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4976][#4976]] | [ci] Upload the memcheck logs when the nightly fails |
 
 * Review
 

@@ -8,7 +8,7 @@
 #+filetags: :state_the_identity_of_a_series:sprint_30:v0:
 #+owner: marco
 #+branch: feature/declare-the-ibor-shapes
-#+pr:
+#+pr: 4957
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-15
@@ -87,7 +87,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4957][#4957]] | [agile] Close the IBOR shapes task and the identity story |
 
 * Review
 

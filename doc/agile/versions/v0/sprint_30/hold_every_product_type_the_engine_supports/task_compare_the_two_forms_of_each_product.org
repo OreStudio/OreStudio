@@ -143,6 +143,14 @@ via its "Verifies task" field.
 | 3 | does a stale known entry fail | task_compare_the_two_forms_of_each_product.org | accept | yes, stated |
 | 4 | near-identical task pages | - | decline | the repo's task template |
 | 5 | branch and PR fields only on one task | - | decline | each hold task records its own when it starts |
+| 4942.1 | A listed type hides all its pairs | generated_trades_twin_differences.txt | accept | each line states a bound, a relative difference or unvalued; a pair beyond it fails. Planted at 1%, the 3.2% pair fails |
+| 4942.2 | The report is not asserted | generated_trade_ore_engine_tests.cpp | accept | outside a recording run, each pair's type, id and agreement must match the report |
+| 4942.3 | Unpaired natives are skipped silently | generated_trade_ore_engine_tests.cpp | accept | every recorded native of a twinned type must have its twin |
+| 4942.4 | Twin ids can collide | generated_trade_ore_engine_tests.cpp | accept | a repeated ScriptedTrade id fails the pairing |
+| 4942.5 | The static initialiser retries | generated_trade_ore_engine_tests.cpp | decline | only on a failed run, and the retry fails for the same reason |
+| 4942.6 | -0.00 in the report | generated_trade_ore_engine_tests.cpp | accept | half a cent either way prints as 0.00 |
+| 4942.7 | The run directory INFO is misleading | generated_trade_ore_engine_tests.cpp | accept | it says the directory is kept when the run fails |
+| 4942.8 | Tolerance wording; currency of an unvalued trade | generated_trade_ore_engine_tests.cpp | accept | the comment says at least a cent; an unvalued trade states no currency |
 
 * Result
 

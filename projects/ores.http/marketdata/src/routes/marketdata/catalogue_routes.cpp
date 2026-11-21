@@ -51,7 +51,7 @@ using ores::nats::service::nats_client;
 /// How long the catalogue stays fresh: a publisher adds a feed rarely.
 constexpr std::chrono::seconds catalogue_stale_after{5 * 60};
 
-auto& lg() {
+auto& catalogue_lg() {
     static auto instance = ores::logging::make_logger("ores.http.marketdata.catalogue_routes");
     return instance;
 }
@@ -117,7 +117,7 @@ void catalogue_routes::register_routes(
                     for (const auto& feed : feeds)
                         feed_rows.push_back(row_json(feed));
 
-                    ORES_LOG_SEV(lg(), ores::logging::debug)
+                    ORES_LOG_SEV(catalogue_lg(), ores::logging::debug)
                         << "The catalogue holds " << provider_rows.size() << " providers and "
                         << feed_rows.size() << " feeds";
                     return catalogue_answer(req,

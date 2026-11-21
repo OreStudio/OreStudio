@@ -594,6 +594,13 @@ RULES = (
          BFF, COMPOSED, "market-data",
          "The publishers, suppliers, adapters, sessions, feeds, scopes and routes the"
          " Connectivity screen draws, seven collection reads in one answer."),
+    Rule("the connectivity catalogue",
+         ("exact", "GET /api/marketdata/connectivity"),
+         CPP, COMPOSED, "market-data",
+         "The connectivity catalogue answered by ores.http at the address and in the shape the"
+         " BFF answered: the publishers and their suppliers, the adapters with their comma"
+         " lists as lists and their configuration schema as fields, the sessions with their"
+         " settings as a document, and the feeds with the scopes and routes each carries."),
     Rule("the identity shape fields",
          ("regex", r"^GET /api/marketdata/(series-identity-shape-fields"
                    r"|series-classification-rules)$"),

@@ -72,7 +72,7 @@ an API publishes no area, so it is counted under =(none)=.
 | auth | audit, iam, server | 65 | resource 60, transport capability 5 |
 | changes | core, server | 5 | transport capability 5 |
 | grid | compute, grid-app-versions, grid-downloads, grid-jobs, operations | 28 | composed view 6, resource 22 |
-| market-data | adapters, connectivity, curves, fixing-series, market-reads, marketdata, public-rates, quotes, series, series-identity-shapes, subscriptions | 92 | composed view 9, resource 83 |
+| market-data | adapters, connectivity, curves, fixing-series, market-reads, marketdata, public-rates, quotes, series, series-identity-shapes, subscriptions | 93 | composed view 10, resource 83 |
 | operations | core, inbox, operations, server, workflow | 10 | composed view 3, resource 5, transport capability 2 |
 | qa | qa | 6 | resource 6 |
 | reference-data | conventions, core, counterparties, curve-configuration, records, refdata, server, tenors | 306 | composed view 2, resource 304 |
@@ -151,7 +151,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | auth | 18 | 18 | 0 |
 | changes | 2 | 2 | 0 |
 | grid | 14 | 14 | 0 |
-| market-data | 41 | 26 | 15 |
+| market-data | 41 | 27 | 14 |
 | operations | 5 | 4 | 1 |
 | qa | 6 | 0 | 6 |
 | reference-data | 30 | 30 | 0 |
@@ -161,7 +161,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | trading | 24 | 24 | 0 |
 | workflow | 18 | 18 | 0 |
 | (none) | 35 | 29 | 6 |
-| total | 334 | 300 | 34 |
+| total | 334 | 301 | 33 |
 
 * The pairing
 
@@ -267,7 +267,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | POST =/api/market/rate-ladder= | none |
 | GET =/api/marketdata/adapters= | GET /api/marketdata/adapters |
 | GET =/api/marketdata/catalogue= | GET /api/marketdata/catalogue |
-| GET =/api/marketdata/connectivity= | none |
+| GET =/api/marketdata/connectivity= | GET /api/marketdata/connectivity |
 | GET =/api/marketdata/fixing-series= | none |
 | GET =/api/marketdata/public-rates= | none |
 | POST =/api/marketdata/public-rates/:code/accept-terms= | POST /api/marketdata/public-rates/{code}/accept-terms |
@@ -504,7 +504,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 
 * The inventory
 
-1434 routes: 334 answered by the BFF and 1100 by ores.http.
+1435 routes: 334 answered by the BFF and 1101 by ores.http.
 
 | Kind | Area | Method | Path | Server | Where | Note |
 |------+------+--------+------+--------+-------+------|
@@ -861,6 +861,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | composed view | market-data | get | =/api/marketdata/catalogue= | bff | projects/ores.web/packages/bff/src/subscriptions.ts:179 | The providers and the feeds that serve them in one answer, two collection reads, so a subscription or a route can name a feed by id. |
 | composed view | market-data | get | =/api/marketdata/catalogue= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/catalogue_routes.cpp:78 | The providers and the feeds that serve them answered by ores.http at the address and in the shape the BFF answered: every provider by its code, and every feed by the publisher it belongs to, its default first and then by name. |
 | composed view | market-data | get | =/api/marketdata/connectivity= | bff | projects/ores.web/packages/bff/src/connectivity.ts:167 | The publishers, suppliers, adapters, sessions, feeds, scopes and routes the Connectivity screen draws, seven collection reads in one answer. |
+| composed view | market-data | get | =/api/marketdata/connectivity= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/connectivity_routes.cpp:233 | The connectivity catalogue answered by ores.http at the address and in the shape the BFF answered: the publishers and their suppliers, the adapters with their comma lists as lists and their configuration schema as fields, the sessions with their settings as a document, and the feeds with the scopes and routes each carries. |
 | composed view | market-data | get | =/api/marketdata/fixing-series= | bff | projects/ores.web/packages/bff/src/fixing-series.ts:43 | One item named by its oresmd URI: its series, the feeds and sessions that brought its values, and the fixings written against it. |
 | composed view | market-data | get | =/api/marketdata/public-rates= | bff | projects/ores.web/packages/bff/src/public-rates.ts:228 | Every public publisher with its terms, its feeds with their suppliers and asset classes, and the fixing series it fills, six collections read together. |
 | resource | market-data | post | =/api/marketdata/public-rates/:code/accept-terms= | bff | projects/ores.web/packages/bff/src/public-rates.ts:494 | Records the acceptance of a publisher's terms as the service holds them, or withdraws it so the adapter no longer fetches the publisher. |

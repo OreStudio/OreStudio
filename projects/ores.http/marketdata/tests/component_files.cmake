@@ -22,6 +22,7 @@
 set(files
     "adapter_routes_tests.cpp"
     "catalogue_routes_tests.cpp"
+    "connectivity_routes_tests.cpp"
     "curve_routes_tests.cpp"
     "main.cpp"
     "oresmd_routes_tests.cpp"

@@ -26,24 +26,26 @@ ores.orgmode is a single library at the component's root. Make it a compound com
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:05FE6068-3CBD-4B93-B6AE-47A5689F1FCB][Search the knowledge base from ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-21                               |
 
 * Acceptance
 
 - The parser lives in ores.orgmode.parser and parses every org file of the repository as before; the corpus test passes unchanged.
 - ores.shell builds and runs on the moved parser.
-- ores.orgmode.api, ores.orgmode.core and ores.orgmode.service exist, empty, from the codegen, and the component audit passes.
+- ores.orgmode is a compound component with its parser part, generated from its overviews. (Changed 2026-11-21: the api, core and service parts are added by the tasks that give them real code, because the gate refuses scaffold stubs in the tree and a service part needs a real core; see Notes.)
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Move the existing library into a =parser= part with a script, not by hand, so
+the move is reviewable and behaviour-preserving: =git mv= the directories, then
+rewrite includes, namespaces, the export macro and the target name in
+=ores.orgmode= and its one consumer, =ores.shell=. Record the parser tests
+before and after. Generate every build file from the overviews through codegen.
 
 * Measurements
 
@@ -57,9 +59,35 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Parser tests before the move | 20 cases, 62 assertions, all passed | =ores.orgmode.tests= | 1092e7900b (main) |
+| Parser tests after the move | 20 cases, 62 assertions, all passed | =ores.orgmode.parser.tests= | 470a13bf10 |
+| Service parts the registration check sees | 21, all registered | =build/scripts/check_service_registration.py= | 470a13bf10 |
 
 * Notes
+
+- 2026-11-21: the parser's =parser= facet is renamed =parsing=, so =parse()= is
+  =ores::orgmode::parser::parsing::parse= rather than
+  =ores::orgmode::parser::parser::parse=.
+- 2026-11-21: the knowledge service was built, registered and run in this
+  branch, then moved to [[id:075A26CE-A1A8-4050-87EB-33EF43AAFA7A][Load the knowledge pages into PostgreSQL as org]]:
+  the gate refuses scaffold stubs in the tree, so empty api and core parts
+  cannot build, and a service part must link a real core. Making the link
+  conditional in the codegen template put compass-ng's own rendering out of step
+  with all 20 existing services. The work is in commits =05e0419674= (registry
+  entry, IAM role, generated SQL) and =b0887787b9= (a service that runs and
+  beats with no handlers); the load task takes it back with core's first table.
+- 2026-11-21: found and fixed on the way: the codegen stub template declared
+  =stub_function()= without the export macro, so a hidden-visibility part's
+  scaffold did not link; =nats_certs.py= kept its own list of services, now read
+  from the registry; and no check required a service part to be registered,
+  now =service-registration= in =compass check=. Two checks red on main were
+  fixed here too: the XML benchmark was not recorded after =eff1daa1af=, and the
+  ORE parameters generator's header was out of step with the SQL edited in
+  =e55a004da0=.
+- 2026-11-21: reported for compass-ng, which will implement a service-integrity
+  check: the gaps above, hand edits in generated files (the service grants SQL,
+  captured), and the codegen scaffold test, stale on main and run by no gate.
+
 
 * Test Scenarios
 
@@ -85,3 +113,12 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=ores.orgmode= is a compound component. Its library is now
+=ores.orgmode.parser=, moved by script with its history, behaviour unchanged:
+the parser tests, the corpus test among them, pass before and after (20 cases,
+62 assertions), and =ores.shell= builds on the new includes and target. The
+group and the part are generated from their overviews, and the component
+architecture page lists =ores.orgmode= and its =parser= part. The knowledge
+service and its api and core parts are added by the load task with real code.
+

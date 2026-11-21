@@ -1,0 +1,153 @@
+:PROPERTIES:
+:ID: 6DFC4BF5-65AC-4E75-90EA-FBDC1272E01C
+:END:
+#+title: Investigation: How the model sees ORE's operations
+#+description: How a catalogue of every operation ores.http serves reaches a model through MCP without filling its context, and what each operation must state for that.
+#+type: investigation
+#+level: s1
+#+filetags: :agent:llm:mcp:http:investigation:bring_the_assistant_into_ores_web:sprint_30:v0:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+
+A point-in-time record, written while the story that commissioned it was open, of an [[id:A7F8D9E2-3C4B-4A5D-B67C-8E9F0A1B2C3D][investigation]] into how a catalogue of every operation ores.http serves reaches a model, possibly a very small one, through MCP without filling its context, and what each operation must state for that.
+
+It is a snapshot, not a description of the system. Whatever it concludes that the code must keep doing belongs on the page that owns the subject; cite that page from code, recipes and models, not this one.
+
+* Context
+
+[[id:FC0847D1-9F09-42EF-A4BD-D5E3C34398EA][How ores.http serves MCP]] settled that ores.http speaks MCP itself and that
+its tools come from its own route registry. The story asks for a catalogue of
+every operation a person may call, derived rather than written by hand. The
+product owner expects to run very small models, so the catalogue must be shown
+in small steps, with a way to discover what exists.
+
+* Methodology
+
+- The OpenAPI document ores.http generates from its route registry, read from
+  the running server (=GET /openapi.json=, 1.1 MB) at =23c075966b=, and turned
+  into the MCP tools it would give: one tool per operation, its name from the
+  method and path, its description from the summary and description, its
+  =inputSchema= from the path and query parameters and the request body schema.
+  Tokens are estimated at four characters each.
+- The same operations grouped by tag, by the first path segment, and by the
+  first two path segments after =/api= and =/v1=, to see which grouping gives
+  steps small enough to browse.
+- How three large MCP servers disclose their tools: the GitHub MCP server,
+  Anthropic's tool search tool, and Cloudflare's Code Mode.
+
+* Paths taken
+
+** The catalogue measured
+
+| What | Value |
+|------+-------|
+| Operations | 1,070: 457 =GET=, 289 =POST=, 196 =PUT=, 128 =DELETE= |
+| Operations behind authentication | 1,055 |
+| Operations with a request body schema | 216 |
+| Every tool listed in full | about 427,700 characters, about 107,000 tokens |
+| Names and descriptions only | about 161,200 characters, about 40,300 tokens |
+| One tool | median 265 characters, 90th percentile 952, largest 1,650 |
+| Operations with an =operationId= | 0 |
+
+The whole catalogue is several times the context of a small model, and its
+names and descriptions alone are too.
+
+** Which grouping gives small steps
+
+| Grouping | Groups | Largest group |
+|----------+--------+---------------|
+| Tag | 26 | 561 operations (=refdata=) |
+| Tag and first path segment | 83 | 261 operations |
+| Area and entity, the first two path segments after =/api= and =/v1= | 289 entities in 71 areas | 19 operations in an entity (median 2); 33 entities in an area (median 1) |
+
+Tags are too coarse to browse. Area and entity are small enough: no step lists
+more than 33 entries. But the paths were not designed as a hierarchy, so 71
+areas at the top is wide and some areas hold one entity, and a path can change.
+
+** How others disclose a large catalogue
+
+- *Toolsets enabled on demand.* The GitHub MCP server groups its tools into
+  toolsets. In its dynamic mode it starts with three tools, to list toolsets,
+  to show a toolset's tools and to enable one.
+- *Search before load.* Anthropic's tool search tool keeps deferred tool
+  definitions out of the context; the model searches them, by regular
+  expression or BM25, and only the matches are loaded. Anthropic reports an 85%
+  cut in tokens. This is a feature of the client and model, not of the server.
+- *Search and execute.* Cloudflare's Code Mode serves more than 2,500 endpoints
+  through two tools, =search= and =execute=, in about 1,000 tokens against about
+  244,000 for a tool per endpoint. The model writes JavaScript that runs in a V8
+  isolate.
+
+** What fits a very small model
+
+- A tool per operation does not fit at all.
+- Code Mode does not fit: it needs a JavaScript sandbox in ORE and a model able
+  to write code against an API.
+- Search alone is fragile: a very small model may not know the words ORE uses,
+  and a long list of near matches is hard for it to choose from.
+- Browsing fits: each step is a short list the model reads and picks from, and
+  the next step depends only on that pick. GitHub's toolsets are the same idea
+  at one level; ORE needs two levels below the top.
+
+** What each operation must state
+
+- *A name.* No operation has an =operationId=, so a tool name has to be made
+  from the method and path or declared on the route. A declared name is stable
+  when a path changes.
+- *Where it sits.* An area and an entity, declared rather than read from the
+  path, so the hierarchy is designed and stable.
+- *Whether it writes.* The method is not enough. At least 17 =POST= routes read
+  by their summary or path, among them =/api/book-changes/preview= ("write
+  nothing") and =/api/curves/series-list=. The confirmation the story requires,
+  and MCP's =readOnlyHint= and =destructiveHint=, need the route to say so.
+- *Who may call it.* The route already carries =auth_required= and =roles=, so
+  each list is filtered to what the person may call, as the screens are.
+- *Its input.* The schema already comes from the wire type through
+  =body<T>()=; the routes that take a body without declaring it are the gap.
+
+* Conclusions
+
+- The catalogue is about 107,000 tokens listed in full, so it is shown in
+  steps, never listed.
+- Discovery is by browsing a declared hierarchy of areas, entities and
+  operations, each step a short list, with search as a shortcut beside it.
+- The tools are fixed and few, so their cost does not grow with the catalogue.
+- The route registry already holds most of what a tool needs. It lacks a stable
+  name, an area and an entity, a declared read or write, and some request body
+  schemas.
+
+* Recommendations
+
+1. =tools/list= on =/mcp= answers five tools, whatever the catalogue holds:
+   - =list_areas=: the areas the person can reach, each with a one-line purpose.
+   - =list_entities=: an area in, its entities out, each with a one-line purpose.
+   - =list_operations=: an entity in, its operations out, each with its name,
+     its summary and whether it writes.
+   - =find_operations=: a few words in, the five best operations out, by BM25
+     over names, areas, entities, summaries and descriptions, in ores.http.
+   - =call_operation=: a name and its arguments in, the result out. On a call
+     without arguments, or with wrong ones, it answers the operation's
+     =inputSchema= and an example, so describing an operation needs no tool of
+     its own. An operation that writes does not run until the person confirms.
+   Every answer is short, tens of lines, with every list filtered to what the
+   person may call and every result cut to a size the model can read.
+2. Declare on each route its tool name, its area and entity, and whether it
+   writes, with a gate that refuses a route without them; declare =body<T>()=
+   on every route that takes a body. Where the codegen generates a route, the
+   model it is generated from supplies the area and the entity.
+3. Offer the full catalogue only as an option, for clients such as Claude that
+   search tools themselves, through MCP's paginated =tools/list=.
+4. Measure before building the rest: a set of real requests, each run through
+   browsing and through search with a small model, counting how often it
+   reaches the right operation and in how many steps.
+
+Open, for the next part of the analysis: how a call made through
+=call_operation= is recorded as the assistant's, for the person.
+
+* See also
+
+- [[id:BBEDFA8E-D43D-4F48-8FD7-1A3CC9F47E3E][Bring the assistant into ores.web on the target architecture]]
+- [[id:FC0847D1-9F09-42EF-A4BD-D5E3C34398EA][How ores.http serves MCP]]
+- [[https://github.com/github/github-mcp-server/blob/main/docs/server-configuration.md][GitHub MCP server configuration]] (dynamic toolsets)
+- [[https://platform.claude.com/docs/en/agents-and-tools/tool-use/tool-search-tool][Anthropic tool search tool]]
+- [[https://blog.cloudflare.com/code-mode-mcp/][Cloudflare: Code Mode, an entire API in 1,000 tokens]]

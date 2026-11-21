@@ -8,7 +8,7 @@
 #+filetags: :agent:llm:web:http:architecture:sprint_30:v0:
 #+created: 2026-11-20
 #+updated: 2026-11-20
-#+environment: solid_dirac
+#+environment: bright_faraday
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -55,9 +55,9 @@ retires the prototype once ores.web does what it does.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
-| Now           | Scaffolded; the architecture analysis is next. |
+| Now           | Split into three stories; MCP and knowledge search go first. |
 | Waiting on    | Nothing.                               |
-| Next          | Analyse the target-state architecture. |
+| Next          | Analyse the assistant's remaining architecture, after the MCP and knowledge stories. |
 | Last touched  | 2026-11-20                               |
 
 * Acceptance
@@ -74,6 +74,8 @@ retires the prototype once ores.web does what it does.
 - Every operation the assistant performs is distinguishable from the
   person's own, in the audit trail and wherever ORE shows who did what.
 - An operation that changes data runs only after the person confirms it.
+- Asked about something the knowledge base covers, the assistant answers from
+  its pages and links each page it used, which ores.web shows as a page.
 - The gates cover the new code, and the prototype is retired or reduced
   to what the new design keeps.
 
@@ -82,9 +84,29 @@ retires the prototype once ores.web does what it does.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:F245FC50-7440-4C5E-AFA4-1B2D0E28F05D][Scaffold story: Bring the assistant into ores.web on the target architecture]] | DONE | 2026-11-20 | 2026-11-20 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:E3102699-58F9-4EF2-94BE-BCDBC1FA14BE][Analyse the assistant's target-state architecture]] | BACKLOG | | | Design the target architecture: the chat in ores.web via ores.http, the agent loop, the tool catalogue, machine operations, the inference server (plain llama.cpp or an ORE service) and the fate of the prototype. |
+| [[id:E3102699-58F9-4EF2-94BE-BCDBC1FA14BE][Analyse the assistant's target-state architecture]] | DONE | 2026-11-21 | 2026-11-21 | Design the target architecture: the chat in ores.web via ores.http, the agent loop, the tool catalogue, machine operations, the inference server (plain llama.cpp or an ORE service) and the fate of the prototype. |
+| [[id:FC78773D-6EFA-44C5-97B2-FAACB05319CC][Analyse the assistant's remaining architecture]] | BACKLOG | | | The questions the first analysis left open once MCP, the catalogue and the knowledge base moved to their own stories: user and machine operations, the agent loop, the chat in ores.web, confirmation, the inference server, tenancy, evaluation and the prototype. |
 
 * Decisions
+
+- *ores.http only* (2026-11-21). The BFF-to-ores.http migration is nearly done,
+  so the assistant's server side is ores.http and the services behind it, and
+  nothing goes through the BFF. Taken over from solid_dirac the same day.
+- *ores.http speaks MCP itself, with boost.taar as the reference*
+  (2026-11-21). Context: no C++ MCP library is both mature and a fit; boost.taar
+  is the only one on Beast and in vcpkg, but its tools are compile-time C++
+  functions and its JSON is Boost.JSON. Decision: implement MCP's Streamable
+  HTTP transport in ores.http as an improvement of its own server, reading
+  boost.taar for how each part of the protocol is handled. Consequences: no new
+  dependency; the catalogue comes from ores.http's route registry; conformance
+  is tested against the official MCP conformance runner. See [[id:FC0847D1-9F09-42EF-A4BD-D5E3C34398EA][How ores.http serves MCP]].
+- *Split into three stories* (2026-11-21). The knowledge base is a feature
+  without any model, and MCP is useful without the assistant. So they are their
+  own stories: [[id:05FE6068-3CBD-4B93-B6AE-47A5689F1FCB][Search the knowledge base from ores.web]],
+  [[id:008127D7-B897-4CF7-854B-6DDFB89AC7F4][Serve ORE's API to LLM agents over MCP]], and, when both are done,
+  [[id:70A4D585-8A56-475D-BE32-803D08A5D0CF][Answer from the knowledge base over MCP]]. This story keeps the
+  chat in ores.web, the agent loop, the inference server, the confirmation of
+  changes in the chat, and the prototype, and builds on the three.
 
 * Out of scope
 

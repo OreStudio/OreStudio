@@ -1,0 +1,91 @@
+:PROPERTIES:
+:ID: 05FE6068-3CBD-4B93-B6AE-47A5689F1FCB
+:END:
+#+title: Story: Search the knowledge base from ores.web
+#+description: Load the knowledge pages into PostgreSQL as org, parse and index them in a knowledge service, search them with PostgreSQL full-text search, and give ores.web a search bar that shows the matching pages, each readable as a page of ores.web.
+#+type: story
+#+level: s2
+#+filetags: :knowledge:search:web:http:sprint_30:v0:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+#+environment: bright_faraday
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A person types a few words into a search bar in ores.web, "volatility" say,
+and sees the knowledge pages that match, best first, each with its title, its
+description and the section that matched. Opening one shows the page in
+ores.web, with its links to other pages working. No model is involved: this is
+a feature in its own right, and the infrastructure an agent will later search.
+
+The knowledge base is ORE's org pages. They are loaded into PostgreSQL as they
+are, parsed and indexed by a knowledge service, and searched with PostgreSQL's
+full-text search. The analysis is in [[id:3237D7CF-8EBA-4B9B-9B54-7135A4A7AA4A][How the assistant answers from the knowledge base]].
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Split ores.orgmode into its parts. |
+| Last touched  | 2026-11-21                               |
+
+* Acceptance
+
+- Which pages are user-facing is declared on the page, a tag or a keyword.
+- A script loads the user-facing pages into PostgreSQL as org, unchanged, one
+  row per page keyed by its org id. Loading again replaces the previous load.
+- A knowledge service indexes the loaded pages with =ores.orgmode= into pages,
+  sections and links, whenever the load changes, replacing the index whole.
+- A search over the sections uses PostgreSQL full-text search, weighted by
+  title, heading and text, and answers pages best first with the section that
+  matched.
+- ores.http serves the search and a page by its org id, through the knowledge
+  service. Nothing goes through the BFF.
+- ores.web has a search bar, a list of results and a page view that renders the
+  org with =@ores/org=, with links to other pages and anchors on headings.
+- A set of at least twenty real questions, each with the pages that should
+  answer it, is run against the search, and how many find their page in the
+  first five is recorded.
+- The gates cover the new code.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:011FF055-90D8-4DBD-98C2-FC64B04BB516][Split ores.orgmode into its parts]] | BACKLOG | | | Make ores.orgmode a compound component: move the parser into ores.orgmode.parser and scaffold the api, core and service parts, with no change in what the parser does. |
+| [[id:075A26CE-A1A8-4050-87EB-33EF43AAFA7A][Load the knowledge pages into PostgreSQL as org]] | BACKLOG | | | Declare which pages are user-facing, add the raw pages table in the system tenant, and a script that loads those pages into it as they are. |
+| [[id:8B46AA17-7FD1-4682-BC0B-13A89B9B56F1][Index the knowledge pages in ores.orgmode.service]] | BACKLOG | | | The indexing step: parse each loaded page with ores.orgmode.parser into pages, sections and links with a weighted tsvector, whenever the load changes, replacing the index whole. |
+| [[id:3EB24EE2-82E5-4F11-AB20-4EEB16167FB3][Search and read the knowledge pages through ores.http]] | BACKLOG | | | The search over the indexed sections with PostgreSQL full-text search, and a page read by org id, as ores.orgmode.service messages served by ores.http routes. |
+| [[id:2D098FE0-9542-4F21-8223-E9D41B28964E][Search the knowledge base in ores.web]] | BACKLOG | | | A search bar, a list of results and a page view in ores.web that renders the org with @ores/org, with links between pages and anchors on headings. |
+| [[id:2924A178-BC49-460B-8D2C-0210D4372824][Measure the knowledge search]] | BACKLOG | | | Run at least twenty real questions, each with the pages that should answer it, and record how many find their page in the first five. |
+
+* Decisions
+
+- *Store the pages as org, unchanged, and parse them in one indexing step*
+  (2026-11-21). The script does not parse; the indexing step writes the shape
+  readers need and can be rerun without reloading. ORE already parses org in
+  C++ (=ores.orgmode=) and renders it in ores.web (=@ores/org=).
+- *One service owns the knowledge base* (2026-11-21): the loaded pages, the
+  indexing step, the search and the page reads.
+- *It lives in =ores.orgmode=, made a compound component* (2026-11-21, agreed
+  with the product owner): =ores.orgmode.parser= (the
+  existing parser, moved from the component's root), =ores.orgmode.api= (the
+  load, index, search and read-page messages), =ores.orgmode.core= (the raw and
+  indexed tables, the indexing step, the search query) and
+  =ores.orgmode.service= (the NATS service). The domain inside them is
+  "knowledge", since search is one of its four jobs.
+
+* Out of scope
+
+- Anything an LLM does with the pages; see [[id:70A4D585-8A56-475D-BE32-803D08A5D0CF][Answer from the knowledge base over MCP]].
+- Embeddings and meaning-based search, unless the measured search misses too
+  often.
+- Typesense or any other search server.
+- Editing pages in ORE, and pages a tenant writes.

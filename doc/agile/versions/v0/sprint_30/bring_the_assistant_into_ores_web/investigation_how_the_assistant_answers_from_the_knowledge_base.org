@@ -1,0 +1,222 @@
+:PROPERTIES:
+:ID: 3237D7CF-8EBA-4B9B-9B54-7135A4A7AA4A
+:END:
+#+title: Investigation: How the assistant answers from the knowledge base
+#+description: How the assistant finds the knowledge base's pages for a question, answers from them, and links each one as a page of ores.web, without Typesense.
+#+type: investigation
+#+level: s1
+#+filetags: :agent:llm:rag:knowledge:investigation:bring_the_assistant_into_ores_web:sprint_30:v0:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+
+A point-in-time record, written while the story that commissioned it was open, of an [[id:A7F8D9E2-3C4B-4A5D-B67C-8E9F0A1B2C3D][investigation]] into how the assistant finds the knowledge base's pages for a question, answers from them, and links each one as a page of ores.web.
+
+It is a snapshot, not a description of the system. Whatever it concludes that the code must keep doing belongs on the page that owns the subject; cite that page from code, recipes and models, not this one.
+
+* Context
+
+The prototype answered only from the operations it could call. ORE also has a
+large knowledge base, and the product owner wants the assistant to use it. Asked
+"what is volatility", it should answer from ORE's own pages and give a link to
+each page it used, which ores.web serves as a page. compass-ng could export the
+documents, and a pass could load them into PostgreSQL; the analysis found
+neither is needed to start. ORE has no
+Typesense; an earlier capture to add it for global search was discarded.
+
+* Methodology
+
+- The corpus sized from =doc/= at =23c075966b=: documents by =#+type= and
+  =#+filetags=, words outside source blocks, and headings, by a script.
+- The example question asked of the keyword search that already exists,
+  =compass search "what is volatility"=, which ranks by BM25 over SQLite FTS5.
+- The PostgreSQL server checked for the extensions retrieval would use
+  (=pg_available_extensions=).
+
+* Paths taken
+
+** The corpus
+
+| Set | Documents | Words | Tokens, about | Sections |
+|-----+-----------+-------+---------------+----------|
+| All knowledge pages | 785 | 1,087,767 | 1,447,000 | 8,840 |
+| Knowledge tagged =domain= | 259 | 257,279 | 342,000 | 2,583 |
+| User manual | 17 | 45,722 | 61,000 | 271 |
+
+A page is too long to hand a model whole (median about 900 words), and the
+knowledge base is far beyond any context. A section is about 130 tokens on
+average, which is the right size for a passage.
+
+** Keyword search on the example
+
+=compass search "what is volatility"= over the whole corpus ranks five shell
+recipes for the =*_volatility_configs= commands first, and the codegen models
+of those tables next. The pages that answer the question, the =Volatility=
+structure note, the =Volatility= concept page and =FX Volatility Surface=, come
+below them. Within the knowledge pages they rank first. So the corpus the
+assistant reads must be chosen, not everything compass indexes: the domain
+knowledge, the manual and the glossary, not the recipes, codegen models and
+agile records.
+
+** The shape of a document
+
+A page is stored once, in the format it is written in: org. Three forms were
+weighed.
+
+| Stored as | For | Against |
+|-----------+-----+---------|
+| HTML | Shown as it is | A second form beside the source; link and anchor rules fixed at export; searching it means stripping markup |
+| Markdown, rendered in ores.http by md4c (port =md4c= 0.6.0) | The model reads it directly; md4c parses tables, math and wiki links | A conversion from org at export, which can lose what Markdown cannot say; a new dependency |
+| Org | No conversion at all; ORE already parses it on both sides | The model is given org, or a form made from it |
+
+ORE already has both halves of the org form:
+
+- =ores.orgmode=, a C++ library, parses a page into a tree of headings, each
+  with its level, title, id, body lines, bullet lists, tables, and links by
+  target id and text. Its corpus test parses every =.org= file in the
+  repository and dumps it to JSON. =ores.shell= already uses it.
+- =@ores/org=, a package of ores.web, renders org text as safe HTML with
+  uniorg and rehype-sanitize. It renders the scenario documents today.
+
+So the shape is:
+
+- *The page, stored as org text* with its org id as the key, its title,
+  description and tags. The id is the key everywhere, so links between pages
+  stay what they are in org, =[[id:...][Volatility]]=.
+- *Its sections, made when the pages are loaded* by =ores.orgmode=: one per
+  heading, with its heading path (=Volatility > Implied volatility=), its anchor
+  (the heading's id, or one made from its title), its text, and its search
+  terms from the title, the heading path and the text, weighted in that order.
+- *Its links*, from the parsed tree: from page, to page.
+
+Each reader is served from these:
+
+- *A person.* ores.http answers a page as JSON, its id, title, description,
+  tags and org text, and ores.web renders the org with =@ores/org=, turning an
+  =id:= link into ores.web's page for that id and giving each heading its
+  anchor. Sending org text rather than =ores.orgmode='s tree keeps every inline
+  mark, which the tree does not hold, and needs no new renderer in ores.web.
+- *The model.* The passage it is given is a section written from the parsed
+  tree as plain Markdown, headings, paragraphs, lists and tables, with each link
+  reduced to its text, because small models read Markdown better than org.
+- *The search.* The sections' weighted terms, in a BM25 index.
+
+Two parsers read the same text, each for its own job: =ores.orgmode= in the
+service for sections, search and the model, and uniorg in the browser for the
+page. What =ores.orgmode= does not model, such as source blocks or formulas,
+stays as plain lines in a section's text, which search and the model can still
+use; the corpus test shows every page parses.
+
+** Where the pages come from
+
+No export tool is needed: the pages are org files, and =ores.orgmode= reads
+them, ids, titles, descriptions, tags and links included. Three ways to get them
+to ores.http were weighed:
+
+- *Files in the release.* The build copies the user-facing pages into a
+  directory of the release, as it fills the web bundle's =web_dir=, and
+  ores.http reads them at start. The pages change only with a release.
+- *Pages and sections in PostgreSQL.* A load step parses each page and writes
+  pages, sections and links, with a weighted =tsvector= per section. It puts the
+  parsing in the load step and the schema must follow every change to it.
+- *The org files in PostgreSQL as they are.* A script reads each file's =:ID:=
+  and writes one row per page: the org id as the key, the file's path, its org
+  text unchanged, and when it was loaded. Something then has to parse it:
+  ores.http in memory at start, or a step that writes the parsed shape back.
+
+The third, with an indexing step after it, keeps every property wanted, and is
+the pattern ORE's data quality pipeline already follows: stage the data as it
+arrives, then publish it into the shape its readers need.
+
+1. *Load.* A script reads each file's =:ID:= and writes one row per page into a
+   raw table: the org id as the key, the file's path, its org text unchanged,
+   and when it was loaded. The script does not parse.
+2. *Index.* A service step parses each loaded page with =ores.orgmode= and
+   writes the shaped tables: one row per page (org id, title, description,
+   tags), one per section (page, order, anchor, heading path, level, text, and
+   a =tsvector= weighted by title, heading path and text), and one per link
+   between pages. It runs when the raw table changes, from the change
+   notification ORE's tables already send, and replaces the previous index
+   whole, so a reader never sees half of one.
+
+The parsing lives in one step; the pages change when the script runs again,
+without a release; the index is built once, not by every ores.http instance at
+start; and any service can search it, which matters while it is open where the
+agent loop runs. The tables belong to the system tenant and every tenant reads
+them, as the shared reference tables do. The shaped tables are the indexing
+step's output and can be rebuilt from the raw table at any time, so their shape
+can change without reloading anything.
+
+** Where to search
+
+- *Typesense.* A new server to deploy, run, back up and secure, for a corpus of
+  a few thousand passages. It earns its place for typo tolerance and faceting
+  at scale, which this does not need yet.
+- *PostgreSQL full-text search over the section rows.* Already running,
+  backed up and behind ORE's tenancy; =ts_rank_cd= over the weighted
+  =tsvector=, and =pg_trgm= (available) for near spellings.
+- *An index in a service's memory.* BM25 over the sections, as compass's own
+  search does over SQLite. Not needed once the sections are rows. A =tsvector= per passage weighted by title,
+  description, heading and body, ranked with =ts_rank_cd=, is keyword search of
+  the kind compass already shows works on a chosen corpus. =pg_trgm= (available)
+  catches near spellings.
+- *Embeddings.* A meaning-based search finds "how much prices swing" for
+  "volatility". It needs a vector store, and =pgvector= is not available on the
+  server today, so adding it is a deployment change. The model server can
+  compute embeddings: llama.cpp's =llama-server= serves an embedding model.
+
+** How retrieval reaches the model
+
+- *As tools.* =find_knowledge= and =read_knowledge=, beside the operation
+  tools, and the knowledge pages as MCP resources (=resources/list= and
+  =resources/read=, one URI per page). This lets the model look further.
+- *Before the model is called.* The agent loop searches the knowledge base for
+  the question itself, puts the best passages in the prompt, numbered, and asks
+  the model to answer from them and cite their numbers. A very small model
+  cannot be trusted to decide to search, or to write a link, so the loop does
+  both: the links in the answer come from the passages it retrieved, never from
+  the model's text, and a citation of a passage that was not given is dropped.
+
+* Conclusions
+
+- Answering from the knowledge base is retrieval-augmented generation: find the
+  passages, give them to the model, answer from them, link their pages.
+- It fits the architecture already chosen. The pages are a resource of
+  ores.http like the operations, the search is one more discovery tool, and the
+  agent loop does the first search itself.
+- No new server and no export tool are needed. A script loads the org files
+  into PostgreSQL as they are, an indexing step parses them with =ores.orgmode=
+  into pages, sections and links, and PostgreSQL's full-text search over the
+  sections is the kind that ranks the right pages first once the corpus is
+  chosen. Embeddings, or Typesense, are
+  later steps with stated triggers.
+- What to load matters more than the search engine. The recipes and codegen
+  models outrank the domain pages on a plain question.
+
+* Recommendations
+
+1. Declare which pages are user-facing on the page itself, a tag or a keyword.
+2. A raw table of knowledge pages in the system tenant: org id as the key,
+   path, org text, loaded at. A script loads the user-facing pages into it as
+   they are, replacing the previous load.
+3. An indexing step in a service, run on the raw table's change notification:
+   parse each page with =ores.orgmode= and write pages, sections with a weighted
+   =tsvector=, and links, replacing the previous index whole. Which service owns
+   it, a new knowledge component or an existing one, is decided with where the
+   agent loop runs.
+4. In ores.http: a route that answers a page by its org id as JSON with its org
+   text, which ores.web renders with =@ores/org= as a page; a route that
+   searches sections; the same two as MCP tools (=find_knowledge=,
+   =read_knowledge=); and the pages as MCP resources.
+5. In the agent loop: retrieve before the model is called, give it the numbered
+   sections written as Markdown, and build the answer's links from what was
+   retrieved.
+6. Measure before choosing more: a set of real questions with the pages that
+   should answer them, scored on whether those pages are in the first five. Add
+   embeddings to the indexing step only if keyword search misses too often.
+
+* See also
+
+- [[id:BBEDFA8E-D43D-4F48-8FD7-1A3CC9F47E3E][Bring the assistant into ores.web on the target architecture]]
+- [[id:FC0847D1-9F09-42EF-A4BD-D5E3C34398EA][How ores.http serves MCP]]
+- [[id:6DFC4BF5-65AC-4E75-90EA-FBDC1272E01C][How the model sees ORE's operations]]
+- [[id:5B0BF2A0-912D-4501-8CA0-ED4E0F6ACCE3][Consider adding "global search" via typesense]] (discarded)

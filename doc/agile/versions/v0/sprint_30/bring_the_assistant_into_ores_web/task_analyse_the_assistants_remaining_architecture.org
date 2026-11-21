@@ -1,0 +1,86 @@
+:PROPERTIES:
+:ID: FC78773D-6EFA-44C5-97B2-FAACB05319CC
+:END:
+#+title: Task: Analyse the assistant's remaining architecture
+#+description: The questions the first analysis left open once MCP, the catalogue and the knowledge base moved to their own stories: user and machine operations, the agent loop, the chat in ores.web, confirmation, the inference server, tenancy, evaluation and the prototype.
+#+type: task
+#+level: s1
+#+filetags: :bring_the_assistant_into_ores_web:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BBEDFA8E-D43D-4F48-8FD7-1A3CC9F47E3E][Bring the assistant into ores.web on the target architecture]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Settle the questions of the first analysis that did not move to the knowledge search and MCP stories, each with the options considered, a recommendation and its reason, and end in the ordered tasks that build the assistant: how a call is marked as the assistant's for a person and where that is recorded; where the agent loop runs; the chat in ores.web through ores.http; how a change is confirmed in the chat; the inference server; which data the model may see; how the assistant is evaluated; and what is kept of the prototype.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:BBEDFA8E-D43D-4F48-8FD7-1A3CC9F47E3E][Bring the assistant into ores.web on the target architecture]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-21                               |
+
+* Acceptance
+
+- Each question has a recommendation the product owner approves, recorded in the story's Decisions.
+- The story ends with its ordered tasks.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

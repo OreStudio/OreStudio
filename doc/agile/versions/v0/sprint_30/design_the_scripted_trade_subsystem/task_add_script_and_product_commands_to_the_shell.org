@@ -61,7 +61,7 @@ task and name that file in the Command column.
 
 * Notes
 
-Cut from [[id:B01292A4-0394-40E8-A0B4-2DBA3F46C052][The shell parses a script without a login]], which states the target this task builds to; the components it touches are [[id:4E135FB5-6E0A-45CC-A805-F5B70F29DDB4][The scripted trade components depend in one direction]].
+Cut from [[id:B01292A4-0394-40E8-A0B4-2DBA3F46C052][Scripted Trade Commands in the Shell]], which states the target this task builds to; the components it touches are [[id:4E135FB5-6E0A-45CC-A805-F5B70F29DDB4][Component Architecture of the Scripted Trade Subsystem]].
 
 * Test Scenarios
 

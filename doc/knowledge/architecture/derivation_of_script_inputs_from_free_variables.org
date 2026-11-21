@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: 92449D70-09E2-4391-B716-A1001F22B271
+:END:
+#+title: Derivation of Script Inputs from Free Variables
+#+description: The definition of a script's inputs as its free variables, the derivation of their types and rules, and their role as the fields of a product that has no native element.
+#+type: knowledge
+#+level: cross
+#+filetags: :scripting:trading:architecture:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+
+* Summary
+
+An input of a script is a variable that the script reads but neither declares
+nor assigns; ORE obtains its value from the trade. The input's type follows from
+its use: an index evaluated at a date is an =Index=, and a date argument of
+=PAY= is an =Event=. An input is an array when the script indexes it or
+requests its =SIZE=. The inputs of a script are the union of those of its
+variants, since a trade must supply whatever any variant it may execute reads.
+For a product that has no native element, the inputs constitute the product's
+fields ([[id:290A1069-A1EE-4DD1-8D23-1C60F76F8949][Product Schemas for Native and Scripted Products]]).
+
+* Detail
+
+** Derivation by the parser
+
+The parser derives the inputs from the syntax tree ([[id:8FD7BD95-AAEC-4CF9-A9F4-D609A9DEFBD8][Script Parsing with ORE's Grammar]]): names that
+the script declares or assigns belong to the script, and every other name it
+reads is an input. ORE's static analysis already classifies the indices and
+events a script uses. The rule an input's values satisfy is taken from the
+script's =REQUIRE= statements concerning it, for example
+=REQUIRE PayoffType == 0 OR PayoffType == 1=. The inputs of a library script are
+derived at publication and stored as rows of [[id:F08D458F-B694-4B2F-A945-E22544A9222F][ores.trading.script_input]]; those of an
+inline script are derived at validation.
+
+** Validation of a trade against the inputs
+
+A trade's variables are validated against the script's inputs. A missing input,
+a variable the script does not read, or a variable of the wrong type is rejected
+with the name of the input concerned, before the trade reaches ORE.
+
+** The status of comments
+
+The comment block of a library script may enumerate its inputs, but comments
+are not maintained with the code. That of =WindowBarrierOption= lists
+=ObservationDates=, whereas its code reads =StartDate= and =EndDate=. The code
+is therefore authoritative, and a comment contributes only a description.
+
+** Divergence from the current implementation
+
+The inputs are extracted from the code into the seed by a text-processing
+script rather than by a parser, and a user's own script has no means of stating
+its inputs.

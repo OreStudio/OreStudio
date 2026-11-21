@@ -1,0 +1,65 @@
+:PROPERTIES:
+:ID: D18BD092-AF0C-449F-ACDA-F621655BA831
+:END:
+#+title: Scripted Trade Product Booking
+#+description: The native and scripted forms in which a product may be booked, the basis on which one is chosen, and what a booking records of the choice.
+#+type: knowledge
+#+level: cross
+#+filetags: :scripting:trading:architecture:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+
+* Summary
+
+A product admits one or more booking forms. Its native form is the element
+through which ORE reads it, such as =EquityBasketOptionData=; its scripted form
+is a generic =ScriptedTrade= over a library script that encodes the same payoff,
+such as =VanillaBasketOption=. Products differ in the forms they admit: some
+have only a native form, some have both, and some have only a scripted form,
+because ORE provides no element for them. The form is selected at booking and
+recorded on the trade, so that the trade is subsequently presented, amended and
+reported in the form in which it was booked.
+
+* Detail
+
+** Classification of products by form
+
+| Forms admitted | Examples | Booking |
+|----------------+----------+---------|
+| native only | =Swap=, =FxForward= | the product's element |
+| native and scripted | =EquityBasketOption=, =FxGenericBarrierOption= | the element, or a ScriptedTrade over the script named in the =Scripted forms= table of [[id:A8E9807F-1BC8-4DA5-9A66-720D2444DA1B][the trade type catalogue]] |
+| scripted only | gamma swap, corridor variance swap | a ScriptedTrade over the corresponding library script |
+
+Where a product admits both forms, the two express identical economic terms,
+and booking in the scripted form maps those terms onto the script's inputs, as
+described in [[id:206312C0-6398-4B9D-86F8-D8AEC9A5CEAD][Twin Recipes: Mapping Native Terms to Script Inputs]]. Where a product admits only the scripted form, its
+fields are the inputs of its script, as described in [[id:92449D70-09E2-4391-B716-A1001F22B271][Derivation of Script Inputs from Free Variables]].
+
+** The basis of the choice
+
+The two forms of a product are priced by different engines, and therefore differ
+in cost and behaviour. A native element may be priced analytically, whereas a
+script is priced by ORE's scripted engines, by Monte Carlo simulation or finite
+differences according to the pricing configuration of the script's product tag.
+The choice is accordingly presented together with its cost, which the product's
+schema states ([[id:290A1069-A1EE-4DD1-8D23-1C60F76F8949][Product Schemas for Native and Scripted Products]]). For every product admitting both forms, the ORE
+engine test values the two and compares the results, so that a divergence
+between implementations is detected.
+
+** What a booking records
+
+A trade records its product and the form in which it was booked; a scripted
+trade further records the script and version on which it was booked
+([[id:358CC548-3892-45A1-A916-DF4A48ADED03][Library and Inline Scripts in Scripted Trades]]). Reporting and risk aggregation classify a scripted trade under
+its product, the form =ScriptedTrade= being a property of representation rather
+than of economics.
+
+** Divergence from the current implementation
+
+- The =Library scripts= table of [[id:A8E9807F-1BC8-4DA5-9A66-720D2444DA1B][the trade type catalogue]] lists scripts whose product is
+  held natively but for which no scripted form is booked: the accumulators, the
+  TaRF, the outperformance option, and the basket and rainbow variants.
+- A trade records neither the form as a choice nor, when booked as scripted, its
+  product; =ScriptedTrade= is treated as a trade type in its own right.
+- A product admitting only a scripted form is booked from the rows of another
+  product, a carrier, rather than as a product in its own right.

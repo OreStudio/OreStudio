@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: 3085E65E-413B-4E7A-B60A-5844A124C999
+:END:
+#+title: The Product Booking API
+#+description: The operations by which a product is described, validated and booked in any form it admits, and by which a free-form scripted trade is booked, through a single validation path.
+#+type: knowledge
+#+level: cross
+#+filetags: :scripting:trading:architecture:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+
+* Summary
+
+A single API, provided by the trading service, books every product in any form
+it admits. =describe_product= returns a product's schema ([[id:290A1069-A1EE-4DD1-8D23-1C60F76F8949][Product Schemas for Native and Scripted Products]]).
+=book= accepts a product, its terms and a form, validates the terms against the
+schema, and constructs either the native element through its builder or the
+scripted form through the scripted builder. =book_scripted= books a free-form
+scripted trade, referencing a library script and version or carrying an inline
+script, together with its variables. Every scripted booking passes the server's
+validation ([[id:C2A45123-A9B3-49BA-BEFD-07E1703F7B84][Layered Validation of Scripted Trades]]), so that the booking interface, the editor, import and
+synthetic generation share a single path.
+
+* Detail
+
+** Operations
+
+| Operation | Arguments | Effect |
+|-----------+-----------+--------|
+| =describe_product= | a product | returns its fields and forms |
+| =validate_script= | a script, by version or by text, and variables | parses with ORE's grammar and validates the variables against the inputs, without booking |
+| =book= | a product, its terms and a form | validates, then constructs the native element; or maps the terms onto the script through the product's twin recipe ([[id:206312C0-6398-4B9D-86F8-D8AEC9A5CEAD][Twin Recipes: Mapping Native Terms to Script Inputs]]); or, for a scripted-only product, takes the terms as the script's variables |
+| =book_scripted= | a script and its variables | validates, then books the ScriptedTrade |
+
+A scripted =book= and =book_scripted= both conclude in the scripted builder,
+which states the trade's rows ([[id:B3FBDD1A-8FC6-4702-9600-B75581FC6494][ores.trading.scripted_instrument]],
+[[id:8D12E0ED-B6D9-4FDC-A98C-35AE84B8045F][ores.trading.scripted_parameter]]).
+
+** What a booking records
+
+A booking records the product, the form and, for a scripted form, the script's
+version or inline text ([[id:358CC548-3892-45A1-A916-DF4A48ADED03][Library and Inline Scripts in Scripted Trades]]), so that the trade is subsequently presented
+in the form in which it was booked.
+
+** Divergence from the current implementation
+
+A trade is booked from rows that a builder has already produced; no operation
+accepts a product, its terms and a form, and none describes a product or
+validates a script.

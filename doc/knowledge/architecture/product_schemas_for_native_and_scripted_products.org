@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID: 290A1069-A1EE-4DD1-8D23-1C60F76F8949
+:END:
+#+title: Product Schemas for Native and Scripted Products
+#+description: The single description of each product, comprising its fields and its forms, on which booking, the shell, import and synthetic generation all rely.
+#+type: knowledge
+#+level: cross
+#+filetags: :scripting:trading:architecture:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+
+* Summary
+
+Every product is described by a single schema, comprising its fields and the
+forms it admits ([[id:D18BD092-AF0C-449F-ACDA-F621655BA831][Scripted Trade Product Booking]]). Each field carries a type, its multiplicity
+(scalar or list), the values it accepts and a description. The booking interface
+derives its layout from the schema, the shell presents it, import validates a
+document against it, and synthetic generation draws terms from it. A product's
+fields are therefore stated once, and a product added to the catalogue becomes
+available to every interface simultaneously.
+
+* Detail
+
+** Sources of the schema
+
+- For a product with a native form, the fields are those of its element: the
+  terms accepted by its builder, which correspond to the facts its rows hold.
+- For a product with only a scripted form, the fields are the inputs of its
+  script ([[id:92449D70-09E2-4391-B716-A1001F22B271][Derivation of Script Inputs from Free Variables]]): each with a name, a type (=Number=, =Event=, =Index=,
+  =Currency= or =DayCounter=), a multiplicity and the rule its values satisfy.
+- Annotations, held as data, supply what neither source states: labels, the
+  codes admitted by a coded input (such as the values one to four of
+  =BarrierType=), defaults, and descriptions drawn from ORE's User Guide.
+
+** Forms within the schema
+
+The schema enumerates the forms a product admits, and for each scripted form the
+script it executes, the engine assigned to its product tag by the pricing
+configuration, and the associated cost. For a product admitting both forms, the
+schema is the native one, and the scripted form is reached through the product's
+twin recipe ([[id:206312C0-6398-4B9D-86F8-D8AEC9A5CEAD][Twin Recipes: Mapping Native Terms to Script Inputs]]).
+
+** Consumers of the schema
+
+| Consumer | Use of the schema |
+|----------+-------------------|
+| booking interface | derivation of fields and of the available forms |
+| booking API | validation of terms prior to booking ([[id:3085E65E-413B-4E7A-B60A-5844A124C999][The Product Booking API]]) |
+| ores.shell | presentation of a product's description ([[id:B01292A4-0394-40E8-A0B4-2DBA3F46C052][Scripted Trade Commands in the Shell]]) |
+| import | validation of a document's terms |
+| synthetic generation | field-by-field drawing of terms ([[id:8BA8D977-46CC-4DC6-9EFE-3FBE56B76A37][Synthetic Generation of Products in Every Form]]) |
+
+** Divergence from the current implementation
+
+No schema is served. A native product's fields exist only as the C++ terms of
+its builder, and a script's inputs exist as rows of [[id:F08D458F-B694-4B2F-A945-E22544A9222F][ores.trading.script_input]] that only
+the scripted builder consults; no interface reads either as the fields of a
+product.

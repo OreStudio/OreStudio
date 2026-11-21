@@ -1,0 +1,81 @@
+:PROPERTIES:
+:ID: CF5A2387-58E8-45A3-8B5B-24FF1F1464B9
+:END:
+#+title: Scripted Trades: An Architectural Overview
+#+description: A structure note for the scripted trade subsystem of ORE Studio: its scope, the questions it addresses, and the order in which its constituent documents are best read.
+#+type: knowledge
+#+level: cross
+#+filetags: :scripting:trading:architecture:index:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+
+* Summary
+
+A scripted trade expresses its payoff as a script that ORE interprets, rather
+than as one of ORE's fixed trade elements. Within ORE Studio, the scripted form
+is one of the forms in which a product may be booked, and the subsystem that
+supports it addresses five questions: which forms a product admits, how a
+product is described, how scripts are held and trusted, how trades are booked
+and validated, and how the booking and valuation of every product is
+demonstrated. Each question is treated in a document of its own; this note
+establishes their order. The scripting module as ORE defines it, including the
+script language and the two locations a script may occupy, is described in
+[[id:2F5B28D9-9AB7-401E-8EF3-612712F626C1][Generic Scripted Products]]. The documents describe the target architecture towards which
+[[id:E6359881-7919-4BBC-9B9C-03A8EEDB8A03][Design the scripted trade subsystem]] is directed, and each records where the current implementation
+diverges from it.
+
+* Detail
+
+** Product forms and description
+
+- [[id:D18BD092-AF0C-449F-ACDA-F621655BA831][Scripted Trade Product Booking]] defines the native and scripted forms of a product and the point
+  at which one is chosen.
+- [[id:290A1069-A1EE-4DD1-8D23-1C60F76F8949][Product Schemas for Native and Scripted Products]] defines the single description of a product's fields and forms
+  on which every interface relies.
+
+** The holding of scripts
+
+- [[id:358CC548-3892-45A1-A916-DF4A48ADED03][Library and Inline Scripts in Scripted Trades]] distinguishes a trade that references a library script from one
+  that carries its own.
+- [[id:CCA8090C-26E0-4571-84BA-9115C110376C][Versioning of the Script Library]] treats the script library as versioned reference data,
+  including corrections to the scripts ORE distributes.
+- [[id:92449D70-09E2-4391-B716-A1001F22B271][Derivation of Script Inputs from Free Variables]] defines a script's inputs and their derivation, and their role as
+  the fields of a product that has no native element.
+- [[id:206312C0-6398-4B9D-86F8-D8AEC9A5CEAD][Twin Recipes: Mapping Native Terms to Script Inputs]] describes how the terms of a native product populate the inputs of
+  its script.
+
+** The trust placed in scripts
+
+- [[id:8FD7BD95-AAEC-4CF9-A9F4-D609A9DEFBD8][Script Parsing with ORE's Grammar]] establishes ORE's own parser, reproduced in
+  =ores.trading.scripting=, as the sole authority on syntax.
+- [[id:C2A45123-A9B3-49BA-BEFD-07E1703F7B84][Layered Validation of Scripted Trades]] assigns each validation decision to the layer competent to make
+  it.
+- [[id:8CF94EFE-4699-4F7D-B59B-E695AFD723CA][Differential Testing of the Script Editor Grammar]] describes how the one grammar ORE Studio authors is kept
+  consistent with ORE's.
+- [[id:708554F7-FA3A-49E1-8A11-4AE968C76758][Script Execution and Compilation in ORE]] describes what the engine receives, and why no compiled form of
+  a script is retained.
+
+** Booking and its demonstration
+
+- [[id:3085E65E-413B-4E7A-B60A-5844A124C999][The Product Booking API]] specifies the operations that describe, validate and book a
+  product in any of its forms.
+- [[id:B01292A4-0394-40E8-A0B4-2DBA3F46C052][Scripted Trade Commands in the Shell]] specifies the corresponding shell commands and their
+  authentication requirements.
+- [[id:8BA8D977-46CC-4DC6-9EFE-3FBE56B76A37][Synthetic Generation of Products in Every Form]] describes how synthetic generation exercises the same booking
+  path.
+
+** Structure
+
+- [[id:4E135FB5-6E0A-45CC-A805-F5B70F29DDB4][Component Architecture of the Scripted Trade Subsystem]] sets out the components, their interfaces and their
+  dependencies.
+
+The persistent representation of a scripted trade is described by the entity
+documents [[id:B3FBDD1A-8FC6-4702-9600-B75581FC6494][ores.trading.scripted_instrument]] and [[id:8D12E0ED-B6D9-4FDC-A98C-35AE84B8045F][ores.trading.scripted_parameter]], and that of
+the library by [[id:833F8F79-7FF0-42B0-8C52-E3ED6596843E][ores.trading.script]], [[id:A2BE6361-0489-4A63-A1B7-6B07BB3F6000][ores.trading.script_variant]] and [[id:F08D458F-B694-4B2F-A945-E22544A9222F][ores.trading.script_input]].
+[[id:AB71AFF8-0B08-4610-9F12-C5A84D8AB892][Trade Modeling]] situates a scripted trade among the four entities of a
+trade, and [[id:CC7CC29C-9413-4DF3-BC32-D1C8A978D295][Which trade types ORE carries and ORE Studio holds]] records, for each trade type, the form in which ORE
+reads it.
+
+* See also
+
+- [[id:24748A22-DB67-4E22-A52F-5D0FBA668D10][Trade]] — the structure note that orders this cluster, and where to read this page in it.

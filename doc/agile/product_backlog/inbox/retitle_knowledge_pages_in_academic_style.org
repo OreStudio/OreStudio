@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: 8398F1D5-6980-44E2-A72A-7B376F9BE7F0
+:END:
+#+title: Retitle the knowledge pages written as assertions
+#+description: About seventy-six knowledge pages carry titles written as assertions, as if they were the names of unit tests, where the house style is an academic title naming the subject. No document review caught them, and new pages copy them as precedent.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-11-21
+#+updated: 2026-11-21
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Retitle every knowledge page whose title is an assertion, a full sentence
+stating a claim as if it named a unit test, to an academic title that names the
+page's subject as a paper's title does, and rename its file to match. A rough
+scan of =doc/= finds about seventy-six such knowledge pages: forty-one under
+=doc/knowledge/architecture=, twenty-one under =doc/knowledge/domain=, six under
+=doc/knowledge/demo=, six under =doc/knowledge/reporting= and two under
+=doc/knowledge/market_data=. The scan counts a title of four words or more that
+holds a finite verb and is not a question, so it both misses some and over-counts
+some; the first step is an exact list. Examples:
+
+| Assertion title | Page |
+|-----------------+------|
+| One component reads every ORE document, and none of them stores XML | [[id:9697F09E-441A-4B51-869E-FC59433EEA1E][page]] |
+| A stored value reaches the row in the form the value set names | [[id:948DAC44-404D-4B70-A8FC-3E9D4C05F72D][page]] |
+| A chart reads a series with one history call and one live subscription | [[id:10E479D2-990E-4627-95A2-1DA0FA5D68D5][page]] |
+| A repository works inside an open transaction and never holds credentials | [[id:37D08E01-F99C-4D2D-8ACA-E19E252BBE3D][page]] |
+| A service holds a few long-lived connections and never connects per query | [[id:729F746E-36DD-40A2-A592-6972239E31F0][page]] |
+| A pillar names the market series it reads | [[id:7AE57098-08D4-4D4A-83D6-918FE520B68E][page]] |
+
+The first two were the precedent for the scripted trade architecture pages,
+which were written with assertion titles such as "A product is booked in one of
+the forms it offers" and retitled on review to "Scripted Trade Product Booking".
+
+* Why
+
+The house style titles a document as an academic paper is titled: a noun
+phrase naming its subject, such as =Generic Scripted Products= or
+=Trade Modeling=. An assertion title reads as a test name, is long, and changes
+whenever the claim is refined. The pages were not caught by any document review:
+the academic prose review, [[id:180D0EB5-C08A-4C96-B266-3DF593E8F5E3][Review and write academic prose]], checks a page's
+prose and says nothing about its title, and no lint checks titles. Each such page
+then serves as precedent for the next, which is how the scripted trade pages came
+to copy them.
+
+The fix should leave a structure behind, not only renamed pages: a rule on titles
+in the academic review skill and in the knowledge document contract, and a
+compass-ng lint that flags a knowledge title written as a finite clause, so a new
+assertion title fails a gate rather than waiting for a reader.
+
+* References
+
+- [[id:180D0EB5-C08A-4C96-B266-3DF593E8F5E3][Review and write academic prose]], the review that should state the rule
+- =doc/meta/document_type_knowledge.org=, the knowledge document contract
+
+* See also
+
+- [[id:CF5A2387-58E8-45A3-8B5B-24FF1F1464B9][Scripted Trades: An Architectural Overview]], whose pages were retitled on review

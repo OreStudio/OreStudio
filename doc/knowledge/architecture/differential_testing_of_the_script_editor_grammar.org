@@ -1,0 +1,41 @@
+:PROPERTIES:
+:ID: 8CF94EFE-4699-4F7D-B59B-E695AFD723CA
+:END:
+#+title: Differential Testing of the Script Editor Grammar
+#+description: The tree-sitter grammar used by the scripted trade editor, and the differential test that holds it consistent with ORE's parser.
+#+type: knowledge
+#+level: cross
+#+filetags: :scripting:trading:architecture:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+
+* Summary
+
+The scripted trade editor in =ores.web= provides highlighting and error
+reporting through a tree-sitter grammar, which parses incrementally and tolerates
+errors, as an editor requires. Being the only grammar that ORE Studio authors
+itself, it is held consistent with ORE's by a differential test: every script
+accepted by either parser must be accepted by the other. The test corpus
+comprises every script of the library and scripts produced by ORE's random syntax
+tree generator, rendered as text by ORE's converter.
+
+* Detail
+
+** The differential test
+
+Each script in the corpus is parsed both by the reproduction of ORE's parser
+([[id:8FD7BD95-AAEC-4CF9-A9F4-D609A9DEFBD8][Script Parsing with ORE's Grammar]]) and by the tree-sitter grammar. The test fails, naming the
+script, whenever one parser accepts a script that the other rejects. The
+generated scripts exercise constructs absent from the library, so that the test
+is not limited to the forms ORE's authors happened to use.
+
+** Purpose of the grammar
+
+The grammar serves highlighting, folding and error reporting during
+composition in the editor described by [[id:179E60E8-59B5-456A-B2CC-55323052E234][Edit a scripted trade on its own screen]]. It takes no part in
+the decision to accept a booking, which rests with the server's application of
+ORE's grammar ([[id:C2A45123-A9B3-49BA-BEFD-07E1703F7B84][Layered Validation of Scripted Trades]]).
+
+** Divergence from the current implementation
+
+Neither the editor nor the tree-sitter grammar exists.

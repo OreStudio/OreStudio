@@ -1,0 +1,47 @@
+:PROPERTIES:
+:ID: 8BA8D977-46CC-4DC6-9EFE-3FBE56B76A37
+:END:
+#+title: Synthetic Generation of Products in Every Form
+#+description: Synthetic trade generation that draws each product's terms against its schema and books every product in every form through the booking API, so that the tests exercise the path used for manual booking.
+#+type: knowledge
+#+level: cross
+#+filetags: :scripting:trading:architecture:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+
+* Summary
+
+The synthetic trade generator books every product in every form it admits
+through the booking API ([[id:3085E65E-413B-4E7A-B60A-5844A124C999][The Product Booking API]]). It draws each product's terms against
+the product's schema ([[id:290A1069-A1EE-4DD1-8D23-1C60F76F8949][Product Schemas for Native and Scripted Products]]) according to rules held as data for each
+field: an underlying taken from the generation scope, a level at a stated
+distance from the underlying's price, or a monthly schedule to expiry. The path
+by which a user books is therefore the path that generated trades exercise, and
+the ORE engine test demonstrates that ORE reads, constructs and values every
+product in every form.
+
+* Detail
+
+** What generation demonstrates
+
+- Every product is booked in every form: the generated population contains one
+  trade of each product in each of its forms.
+- ORE reads and constructs each trade without an error attributable to the
+  trade; the test's list of known errors contains only entries concerning market
+  data and engine configuration.
+- The two forms of a product agree: the test values both and compares them, and
+  any pair that differs is listed with its reason and a bound.
+
+** The drawing of levels
+
+A barrier or strike stated as a fixed literal is reached for some underlyings
+and never for others. A level drawn at a stated distance from the underlying's
+price is reached as the product intends, so that the barrier logic of a script is
+exercised.
+
+** Divergence from the current implementation
+
+The generator books native trades through their builders and then books their
+scripted forms by evaluating recipes over the native rows within
+=ores.synthetic.core=. Scripted-only products are booked from the rows of a
+carrier type, with barriers set at levels that no underlying reaches.

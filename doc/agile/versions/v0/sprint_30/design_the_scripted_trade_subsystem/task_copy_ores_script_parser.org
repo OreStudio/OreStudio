@@ -62,7 +62,7 @@ task and name that file in the Command column.
 
 * Notes
 
-Cut from [[id:8FD7BD95-AAEC-4CF9-A9F4-D609A9DEFBD8][ORE's grammar is the one authority on whether a script parses]], which states the target this task builds to; the components it touches are [[id:4E135FB5-6E0A-45CC-A805-F5B70F29DDB4][The scripted trade components depend in one direction]].
+Cut from [[id:8FD7BD95-AAEC-4CF9-A9F4-D609A9DEFBD8][Script Parsing with ORE's Grammar]], which states the target this task builds to; the components it touches are [[id:4E135FB5-6E0A-45CC-A805-F5B70F29DDB4][Component Architecture of the Scripted Trade Subsystem]].
 
 * Test Scenarios
 

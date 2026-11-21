@@ -18,7 +18,7 @@
 @startuml
 @startuml
 
-title The scripted trade components: every dependency points down, and the parser knows no trading type
+title Component Architecture of the Scripted Trade Subsystem
 
 skinparam componentStyle rectangle
 skinparam shadowing false

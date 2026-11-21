@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID: 206312C0-6398-4B9D-86F8-D8AEC9A5CEAD
+:END:
+#+title: Twin Recipes: Mapping Native Terms to Script Inputs
+#+description: The data-held recipe by which the terms of a native product populate the inputs of its library script when the product is booked in its scripted form.
+#+type: knowledge
+#+level: cross
+#+filetags: :scripting:trading:architecture:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+
+* Summary
+
+A product admitting both forms is booked in its scripted form by mapping its
+native terms onto the inputs of its script. The mapping is a recipe held as data:
+one row per input, naming the native term that supplies it in a small grammar of
+sources, with no code specific to any product. The same recipe serves the
+booking interface's scripted option, the import of a native document in scripted
+form, and the scripted counterparts produced by synthetic generation.
+
+* Detail
+
+** The recipe
+
+The =Scripted twin recipes= table of [[id:A8E9807F-1BC8-4DA5-9A66-720D2444DA1B][the trade type catalogue]] states, for each native
+type and each input of its script, a source and an optional transform; the rows
+are seeded into [[id:C0D2BFF8-3742-4FAE-92C0-3BD185147CCF][ores.trading.script_twin_input]]. A source reads the rows of the native trade:
+
+| Source | Value read |
+|--------+------------|
+| =product.COL= | a column of the native product row |
+| =ROWS[ROLE].COL= | a column of the rows under a role |
+| =COL[n]= | the n-th value |
+| ='literal'= | a literal |
+| =a or b= | =b= where =a= yields no value |
+| =a and b= | the values of =a= followed by those of =b=, or the dates of an event |
+| =instrument_schedules[role]= | a complete schedule, by rules or by dates |
+| =X shifted 1D on Calendar Convention= | an event derived from another input |
+
+A transform converts a term of the native vocabulary into the code a script
+reads, as the =Scripted twin transforms= table states: =Long= becomes =1= and
+=UpAndOut= becomes =4=. A value the transform does not list is rejected, so that
+a scripted counterpart never carries a code its native trade does not state.
+
+** Limits of the recipe
+
+The recipe maps terms; it does not reconcile two implementations. Where ORE's
+native class departs from its library script, the two forms are priced
+differently, and the ORE engine test lists the product with the reason and a
+bound. In the case of the FX worst-of basket swap, the library script reads one
+fixing per period, whereas ORE's class compounds the overnight index.
+
+** Divergence from the current implementation
+
+The recipe is evaluated within =ores.synthetic.core= for synthetic generation
+only, so no booking path books a product in its scripted form from its terms.
+The same evaluator also books scripted-only products from the rows of a carrier
+type, an arrangement that [[id:290A1069-A1EE-4DD1-8D23-1C60F76F8949][Product Schemas for Native and Scripted Products]] supersedes.

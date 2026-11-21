@@ -202,4 +202,4 @@ The script the row belongs to.
 * See also
 
 - [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.
-- [[id:92449D70-09E2-4391-B716-A1001F22B271][A script's free variables are its inputs]] — why a free variable is an input, and how the parser derives it.
+- [[id:92449D70-09E2-4391-B716-A1001F22B271][Derivation of Script Inputs from Free Variables]] — why a free variable is an input, and how the parser derives it.

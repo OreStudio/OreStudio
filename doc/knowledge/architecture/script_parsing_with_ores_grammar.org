@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: 8FD7BD95-AAEC-4CF9-A9F4-D609A9DEFBD8
+:END:
+#+title: Script Parsing with ORE's Grammar
+#+description: The adoption of ORE's Boost Spirit parser, reproduced in ores.trading.scripting with its authorship preserved, as the sole grammar by which ORE Studio judges a script.
+#+type: knowledge
+#+level: cross
+#+filetags: :scripting:trading:architecture:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+
+* Summary
+
+ORE parses scripts with a Boost Spirit Qi grammar
+(=OREData/ored/scripting/grammar.cpp=, =scriptparser.cpp= and =ast.hpp=). ORE
+Studio reproduces this parser in =ores.trading.scripting= and recognises no other
+grammar as authoritative, since an independently written grammar would diverge
+from ORE's and would consequently either accept scripts that ORE rejects or
+reject scripts that ORE executes. The reproduction preserves ORE's authorship and
+licence, remains sufficiently close to ORE's sources to be compared with each
+release, and is adapted to ORE Studio's conventions only insofar as the
+comparison remains straightforward.
+
+* Detail
+
+** Scope of the reproduction
+
+The reproduction comprises the grammar, the syntax tree and the parser, together
+with those parts of ORE's scripting that operate on a syntax tree without a
+market: the printer, the conversion of a tree back to script text, the static
+analysis of indices and events, and the random syntax tree generator, which
+supplies scripts to the editor's test ([[id:8CF94EFE-4699-4F7D-B59B-E695AFD723CA][Differential Testing of the Script Editor Grammar]]). The engine, the models and
+the computation graph builder remain in ORE, since ORE Studio does not price
+scripts itself ([[id:708554F7-FA3A-49E1-8A11-4AE968C76758][Script Execution and Compilation in ORE]]).
+
+** Maintenance of the reproduction
+
+- Each reproduced file retains ORE's copyright header and records the ORE commit
+  from which it was taken.
+- Names and namespaces are adapted to ORE Studio's conventions, and the few
+  QuantLib types the syntax tree uses (=QuantLib::ext::shared_ptr=, =Real=,
+  =Size=) are replaced by their standard library equivalents, so that the
+  component does not link QuantLib.
+- A script compares the reproduction with ORE's sources at the recorded commit,
+  so that a change to the grammar in a subsequent ORE release is identified and
+  carried over deliberately.
+
+** Interface
+
+- =parse(text)= returns a syntax tree, or ORE's error with its line and column.
+- =inputs_of(tree)= returns the free variables with their types, multiplicities
+  and rules ([[id:92449D70-09E2-4391-B716-A1001F22B271][Derivation of Script Inputs from Free Variables]]).
+- =print(tree)= returns the script's text in normalised form.
+
+** Consumers
+
+The parser is used by the script library at publication ([[id:CCA8090C-26E0-4571-84BA-9115C110376C][Versioning of the Script Library]]), by the
+booking API when a scripted trade is validated ([[id:3085E65E-413B-4E7A-B60A-5844A124C999][The Product Booking API]]), and by those
+shell commands that require no authentication ([[id:B01292A4-0394-40E8-A0B4-2DBA3F46C052][Scripted Trade Commands in the Shell]]).
+
+** Divergence from the current implementation
+
+ORE Studio contains no parser; a script is first parsed by ORE during a run.

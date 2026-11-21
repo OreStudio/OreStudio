@@ -167,7 +167,7 @@ via its "Verifies task" field.
 * Result
 
 The scripted trade architecture is documented as its target state, in
-[[id:CF5A2387-58E8-45A3-8B5B-24FF1F1464B9][Scripted trades]], the structure note, and fourteen pages each stating one claim, from
+[[id:CF5A2387-58E8-45A3-8B5B-24FF1F1464B9][Scripted Trades: An Architectural Overview]], the structure note, and fourteen pages each stating one claim, from
 the forms a product is booked in to the components and their dependency graph,
 drawn with no cycle. Each page names where today's code differs. Ten existing
 pages link into them: the Trade structure note and the knowledge index, Generic

@@ -61,7 +61,7 @@ task and name that file in the Command column.
 
 * Notes
 
-Cut from [[id:8CF94EFE-4699-4F7D-B59B-E695AFD723CA][The editor's grammar is tested against ORE's parser]], which states the target this task builds to; the components it touches are [[id:4E135FB5-6E0A-45CC-A805-F5B70F29DDB4][The scripted trade components depend in one direction]].
+Cut from [[id:8CF94EFE-4699-4F7D-B59B-E695AFD723CA][Differential Testing of the Script Editor Grammar]], which states the target this task builds to; the components it touches are [[id:4E135FB5-6E0A-45CC-A805-F5B70F29DDB4][Component Architecture of the Scripted Trade Subsystem]].
 
 * Test Scenarios
 

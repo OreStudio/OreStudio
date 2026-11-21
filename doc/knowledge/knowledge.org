@@ -33,7 +33,7 @@ one, start there rather than here.
 | Cluster | Read it to be competent at |
 |---------+----------------------------|
 | [[id:24748A22-DB67-4E22-A52F-5D0FBA668D10][Trade]] | What a trade is, how it is classified, and what happens to it over its life |
-| [[id:CF5A2387-58E8-45A3-8B5B-24FF1F1464B9][Scripted trades]] | How a product is booked as a script, how a script is held and trusted, and the components that do it |
+| [[id:CF5A2387-58E8-45A3-8B5B-24FF1F1464B9][Scripted Trades: An Architectural Overview]] | How a product is booked as a script, how a script is held and trusted, and the components that do it |
 | [[id:FD427B5B-BDC5-4803-AFCD-97A59E31FE25][Market Data Requirements and Resolution]] | How a logical need for market data becomes concrete items |
 | [[id:FA45D3D1-C3D9-4FDB-B03B-8AB724D71092][Interest Rate Curves]] | Discounting, bootstrapping, and the multi-curve family |
 | [[id:576D0E28-E783-44D4-9C0F-C7ADD307539E][Volatility]] | Realised against implied, the surface, and what trades on it |

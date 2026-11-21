@@ -62,7 +62,7 @@ task and name that file in the Command column.
 
 * Notes
 
-Cut from [[id:CCA8090C-26E0-4571-84BA-9115C110376C][The script library is versioned reference data]], [[id:358CC548-3892-45A1-A916-DF4A48ADED03][A scripted trade names a library script or states its own]], [[id:92449D70-09E2-4391-B716-A1001F22B271][A script's free variables are its inputs]], which states the target this task builds to; the components it touches are [[id:4E135FB5-6E0A-45CC-A805-F5B70F29DDB4][The scripted trade components depend in one direction]].
+Cut from [[id:CCA8090C-26E0-4571-84BA-9115C110376C][Versioning of the Script Library]], [[id:358CC548-3892-45A1-A916-DF4A48ADED03][Library and Inline Scripts in Scripted Trades]], [[id:92449D70-09E2-4391-B716-A1001F22B271][Derivation of Script Inputs from Free Variables]], which states the target this task builds to; the components it touches are [[id:4E135FB5-6E0A-45CC-A805-F5B70F29DDB4][Component Architecture of the Scripted Trade Subsystem]].
 
 * Test Scenarios
 

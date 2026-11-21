@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: C2A45123-A9B3-49BA-BEFD-07E1703F7B84
+:END:
+#+title: Layered Validation of Scripted Trades
+#+description: The division of scripted trade validation among the editor, the server and the engine, the decisions for which each layer is authoritative, and those it cannot make.
+#+type: knowledge
+#+level: cross
+#+filetags: :scripting:trading:architecture:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+
+* Summary
+
+A scripted trade is validated at three points, each by the layer competent to
+make the decision concerned. The editor's grammar reports errors during
+composition, as an aid to the author. ORE's grammar, applied on the server,
+determines whether the script parses and whether the trade supplies the
+script's inputs, and rejects the booking otherwise. ORE's construction of the
+trade determines whether it can be priced, given the types its script expects,
+the engine assigned to its product tag and the available market data. No layer
+substitutes for another.
+
+* Detail
+
+| Layer | Location | Decides | Cannot decide |
+|-------+----------+---------+---------------|
+| editor | =ores.web=, by a tree-sitter grammar | the position of a malformed token or statement, during composition | any question of validity, since it is not ORE's grammar ([[id:8CF94EFE-4699-4F7D-B59B-E695AFD723CA][Differential Testing of the Script Editor Grammar]]) |
+| server | the booking API, by =ores.trading.scripting= | whether the script parses as ORE parses it, and whether the variables match the script's inputs by name and type ([[id:8FD7BD95-AAEC-4CF9-A9F4-D609A9DEFBD8][Script Parsing with ORE's Grammar]]) | whether ORE can price the trade |
+| engine | an ORE run | whether ORE constructs and prices the trade | nothing prior to booking, since it runs afterwards |
+
+** Rationale for three layers
+
+The editor must respond at the rate at which an author types, and cannot
+consult the server on each keystroke. The server must respond within the
+duration of a booking, and cannot run ORE. Only ORE can determine whether the
+market data and the pricing configuration permit a trade to be priced. Each
+layer is authoritative for the decisions within its competence and makes no
+claim beyond them.
+
+** Validation prior to booking
+
+The booking API's =validate_script= operation performs the server's validation
+without booking, which allows the editor to offer an explicit check and the
+shell to validate a file ([[id:B01292A4-0394-40E8-A0B4-2DBA3F46C052][Scripted Trade Commands in the Shell]]). A trial construction in ORE, which
+brings the engine's validation forward to before booking, is a separate and
+slower request.
+
+** Divergence from the current implementation
+
+The server compares a library script's variables with its extracted inputs, but
+parses nothing, and no editor exists.

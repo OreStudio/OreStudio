@@ -1,0 +1,40 @@
+:PROPERTIES:
+:ID: B01292A4-0394-40E8-A0B4-2DBA3F46C052
+:END:
+#+title: Scripted Trade Commands in the Shell
+#+description: The scripted trade and product commands of ores.shell, distinguishing those that operate on a script's text alone and require no authentication from those that consult the store.
+#+type: knowledge
+#+level: cross
+#+filetags: :scripting:trading:architecture:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+
+* Summary
+
+The trading part of ores.shell provides commands for scripted trades and
+products. Commands that operate on a script's text alone, namely parsing, listing
+the inputs and printing in normalised form, link the parser directly
+([[id:8FD7BD95-AAEC-4CF9-A9F4-D609A9DEFBD8][Script Parsing with ORE's Grammar]]) and execute without a session, so that a script may be checked
+without authentication and without a running server. Commands that consult the
+store, namely describing a product, validating against a library version and
+booking, are directed to the trading service in the same manner as every other
+command, and require authentication.
+
+* Detail
+
+| Command | Authentication | Effect |
+|---------+----------------+--------|
+| =script parse <file>= | not required | parses with ORE's grammar and reports any error with its line and column |
+| =script inputs <file>= | not required | lists the free variables with their types, multiplicities and rules ([[id:92449D70-09E2-4391-B716-A1001F22B271][Derivation of Script Inputs from Free Variables]]) |
+| =script print <file>= | not required | prints the script in normalised form |
+| =script validate <file> <variables>= | required | applies the server's validation against the store ([[id:C2A45123-A9B3-49BA-BEFD-07E1703F7B84][Layered Validation of Scripted Trades]]) |
+| =product describe <code>= | required | prints the product's schema ([[id:290A1069-A1EE-4DD1-8D23-1C60F76F8949][Product Schemas for Native and Scripted Products]]) |
+| =trade book ...= | required | books through the booking API ([[id:3085E65E-413B-4E7A-B60A-5844A124C999][The Product Booking API]]) |
+
+The commands reside in =ores.shell.trading=, the part of the shell that projects
+=ores.trading= ([[id:D0876A24-69BA-F484-ED9B-71CD3AA8710C][ores.shell]]).
+
+** Divergence from the current implementation
+
+ores.shell provides no command for scripts or products, and every command
+requires a session.

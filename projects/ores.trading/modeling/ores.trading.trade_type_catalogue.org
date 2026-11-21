@@ -203,7 +203,7 @@ script that books each such product in its scripted form, so the two forms can
 be booked on the same terms and compared. A product absent from it is booked
 in its own form only; the =Library scripts= table below names the scripts whose
 product has an element of its own and no scripted form yet. The forms a product
-offers are [[id:D18BD092-AF0C-449F-ACDA-F621655BA831][A product is booked in one of the forms it offers]].
+admits are described in [[id:D18BD092-AF0C-449F-ACDA-F621655BA831][Scripted Trade Product Booking]].
 
 | code                             | script                     |
 |----------------------------------+----------------------------|
@@ -518,9 +518,11 @@ takes a literal. The barrier levels here are ones the underlying never reaches, 
 knock-in at zero (the User Guide's form of no barrier), a knock-out at one and a
 corridor from zero to ten million, because no carrier states a level near its
 underlying's price: each script is read and built, and prices as its form
-without a barrier. A carrier is a stopgap: a script-only product is to be
-described by a schema of its own, its inputs, and drawn against it, as
-[[id:290A1069-A1EE-4DD1-8D23-1C60F76F8949][Every product has a schema of its fields and its forms]] and [[id:8BA8D977-46CC-4DC6-9EFE-3FBE56B76A37][The generator books every product through the booking API]] state.
+without a barrier. The carrier is an interim arrangement: in the target
+architecture a scripted-only product is described by a schema of its own,
+formed from its script's inputs, and its terms are drawn against that schema,
+as [[id:290A1069-A1EE-4DD1-8D23-1C60F76F8949][Product Schemas for Native and Scripted Products]] and
+[[id:8BA8D977-46CC-4DC6-9EFE-3FBE56B76A37][Synthetic Generation of Products in Every Form]] describe.
 
 | carrier                  | script                    | input                     | source                                     | transform |
 |--------------------------+---------------------------+---------------------------+--------------------------------------------+-----------|
@@ -623,7 +625,7 @@ with no element of its own that a =Script-only recipes= carrier books;
 scripted form booked; =not yet= is a script with no element of its own that is
 not generated. The generator script fails when a script of the library seed is
 not listed, is listed twice, or is held otherwise than the two recipe tables
-state. How the library is held is [[id:CCA8090C-26E0-4571-84BA-9115C110376C][The script library is versioned reference data]].
+state. The holding of the library is described in [[id:CCA8090C-26E0-4571-84BA-9115C110376C][Versioning of the Script Library]].
 
 | script                              | held         | note                                                                                         |
 |-------------------------------------+--------------+----------------------------------------------------------------------------------------------|

@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: 358CC548-3892-45A1-A916-DF4A48ADED03
+:END:
+#+title: Library and Inline Scripts in Scripted Trades
+#+description: The two means by which a ScriptedTrade carries its payoff, by reference to a library script or by an inline script, and what ORE Studio records of each to permit faithful revaluation.
+#+type: knowledge
+#+level: cross
+#+filetags: :scripting:trading:architecture:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+
+* Summary
+
+A scripted trade carries its payoff by one of two means: it references a
+script of the library by name, or it states the script's code inline. ORE
+accepts either ([[id:2F5B28D9-9AB7-401E-8EF3-612712F626C1][Generic Scripted Products]]). For a referenced script, ORE Studio records the
+version of the library script on which the trade was booked; for an inline
+script, it records the text together with its hash. In both cases the trade can
+be revalued on the payoff with which it was booked, irrespective of subsequent
+changes to the library.
+
+* Detail
+
+** Library scripts
+
+The common case is a trade booked through a product's booking interface, or as
+the scripted form of a native product, which references a script such as
+=VanillaBasketOption=. The trade records the script's name and the library
+version current at booking, and revaluation sends that version's text to the
+engine regardless of the library's latest version ([[id:CCA8090C-26E0-4571-84BA-9115C110376C][Versioning of the Script Library]]).
+
+** Inline scripts
+
+A payoff that no library script expresses is booked through the scripted trade
+editor as an inline script. The trade holds the script's text and its hash; its
+inputs are derived from the text by the parser ([[id:92449D70-09E2-4391-B716-A1001F22B271][Derivation of Script Inputs from Free Variables]]) rather than read
+from the library; and the booking is validated in the same manner as any other
+scripted trade ([[id:C2A45123-A9B3-49BA-BEFD-07E1703F7B84][Layered Validation of Scripted Trades]]). Because an inline script constitutes an
+unreviewed model, the right to book one is governed by a permission of its own.
+
+** Common elements
+
+In both cases the trade states the variables the script reads, as rows of
+[[id:8D12E0ED-B6D9-4FDC-A98C-35AE84B8045F][ores.trading.scripted_parameter]] beneath the trade's [[id:B3FBDD1A-8FC6-4702-9600-B75581FC6494][ores.trading.scripted_instrument]], and
+each variable is validated against the script's inputs by name and type.
+
+** Divergence from the current implementation
+
+A trade references a library script by name alone, without a version, so that a
+change to the library alters the valuation of trades already booked. No booking
+path accepts an inline script.

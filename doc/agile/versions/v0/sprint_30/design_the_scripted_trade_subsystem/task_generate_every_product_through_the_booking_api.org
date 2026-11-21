@@ -63,7 +63,7 @@ task and name that file in the Command column.
 
 * Notes
 
-Cut from [[id:8BA8D977-46CC-4DC6-9EFE-3FBE56B76A37][The generator books every product through the booking API]], [[id:D18BD092-AF0C-449F-ACDA-F621655BA831][A product is booked in one of the forms it offers]], which states the target this task builds to; the components it touches are [[id:4E135FB5-6E0A-45CC-A805-F5B70F29DDB4][The scripted trade components depend in one direction]].
+Cut from [[id:8BA8D977-46CC-4DC6-9EFE-3FBE56B76A37][Synthetic Generation of Products in Every Form]], [[id:D18BD092-AF0C-449F-ACDA-F621655BA831][Scripted Trade Product Booking]], which states the target this task builds to; the components it touches are [[id:4E135FB5-6E0A-45CC-A805-F5B70F29DDB4][Component Architecture of the Scripted Trade Subsystem]].
 
 * Test Scenarios
 

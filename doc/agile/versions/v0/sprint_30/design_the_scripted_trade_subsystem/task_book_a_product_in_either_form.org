@@ -63,7 +63,7 @@ task and name that file in the Command column.
 
 * Notes
 
-Cut from [[id:3085E65E-413B-4E7A-B60A-5844A124C999][One booking API books a product in either form]], [[id:206312C0-6398-4B9D-86F8-D8AEC9A5CEAD][A twin recipe maps a native product's terms onto its script]], [[id:C2A45123-A9B3-49BA-BEFD-07E1703F7B84][A scripted trade is validated in three layers]], which states the target this task builds to; the components it touches are [[id:4E135FB5-6E0A-45CC-A805-F5B70F29DDB4][The scripted trade components depend in one direction]].
+Cut from [[id:3085E65E-413B-4E7A-B60A-5844A124C999][The Product Booking API]], [[id:206312C0-6398-4B9D-86F8-D8AEC9A5CEAD][Twin Recipes: Mapping Native Terms to Script Inputs]], [[id:C2A45123-A9B3-49BA-BEFD-07E1703F7B84][Layered Validation of Scripted Trades]], which states the target this task builds to; the components it touches are [[id:4E135FB5-6E0A-45CC-A805-F5B70F29DDB4][Component Architecture of the Scripted Trade Subsystem]].
 
 * Test Scenarios
 

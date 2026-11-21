@@ -96,6 +96,21 @@ task and name that file in the Command column.
 
 * Notes
 
+** What the third PR found
+
+The trading service had no handler for =trading.v1.ops.publish_script_library_from_dq=,
+so a bundle publish over the bus could not publish the dataset: its step
+reached no subscriber. The bring-up publish runs in SQL and did not need one.
+
+The handler copies the analytics one, with the subject plan that refuses a
+function name which is not a plain identifier, and its test. It is the ninth
+copy of the same handler; the copies differ in their function-name rule, their
+guard and their decode. The capture
+[[id:AE3F5C64-0007-4C54-BEF9-D6ECFFDC0238][One publish-from-DQ handler for every service]]
+records them and the move of one copy into a shared library, which needs a
+decision on where the command and result types live, so it is not part of
+this task.
+
 ** What the second PR found
 
 - The staging template wrote only the first column of a composite primary key,

@@ -127,6 +127,7 @@ set(files
     "scripted_instrument_eventing_integration_tests.cpp"
     "service_bond_instrument_reader_tests.cpp"
     "service_fx_forward_instrument_get_many_tests.cpp"
+    "service_publish_subject_plan_tests.cpp"
     "service_trade_batcher_tests.cpp"
     "service_trade_operations_service_tests.cpp"
     "settlement_type_eventing_integration_tests.cpp"

@@ -19,7 +19,9 @@
  */
 #include "ores.history.core/messaging/registrar.hpp"
 #include "ores.history.core/service/dispatch_registry.hpp"
+#include "ores.service/messaging/step_command_stream.hpp"
 #include "ores.trading.api/messaging/blotter_protocol.hpp"
+#include "ores.trading.api/messaging/publish_operation_protocol.hpp"
 #include "ores.trading.core/messaging/activity_category_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/activity_category_registrar.hpp"
 #include "ores.trading.core/messaging/activity_type_history_provider_registrar.hpp"
@@ -109,6 +111,7 @@
 #include "ores.trading.core/messaging/price_type_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/price_type_registrar.hpp"
 #include "ores.trading.core/messaging/product_type_asset_class_registrar.hpp"
+#include "ores.trading.core/messaging/publish_from_dq_handler.hpp"
 #include "ores.trading.core/messaging/product_type_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/range_bound_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/registrar.hpp"
@@ -295,6 +298,18 @@ registrar::register_handlers(ores::nats::service::client& nats,
             get_blotter_page_request::nats_subject, queue_group, [bh](ores::nats::message msg) {
                 bh->get_blotter_page(std::move(msg));
             }));
+    }
+    {
+        // The publish-from-DQ workflow step (hand-written handler, not codegen).
+        // The handler derives the SQL function from the delivered subject, so a
+        // new staged document needs a subject here and a row in
+        // ores_dq_artefact_types_tbl, and nothing else.
+        auto pdq = std::make_shared<publish_from_dq_handler>(nats, ctx);
+        ores::service::messaging::step_routes routes;
+        routes.on(publish_script_library_from_dq_request::nats_subject,
+                  [pdq](ores::nats::delivery delivery) { pdq->handle(std::move(delivery)); });
+        subs.push_back(
+            ores::service::messaging::serve_step_commands(nats, queue_group, routes));
     }
     append(register_trade_authorisation_request_handlers(nats, ctx, verifier));
     append(register_trade_booking_handlers(nats, ctx, verifier));

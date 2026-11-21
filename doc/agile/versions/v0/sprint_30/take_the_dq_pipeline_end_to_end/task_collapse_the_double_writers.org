@@ -191,7 +191,7 @@ Gates, each run on the tree it names:
 | Gate | Tree | Result |
 |------+------+--------|
 | Database recreate from the tree | this branch, before and after the rebase | succeeded; the first two runs found the ordering work, the third is clean |
-| pgTAP | this branch, rebased onto f3f28a7eef | 934 assertions in 98 files, all pass |
+| pgTAP | this branch, rebased onto 05ec771d8a | 934 assertions in 98 files, all pass. The branch now sits on f1d84d68c9; the three commits between change four agile pages and no SQL |
 | Codegen suite | this branch | 1814 passed |
 | =check_single_writer.py= | this branch | 9 tables written both ways, all listed |
 | =check_populate_references.py=, =check_entity_table_writes.py=, =check_rls_system_tenant_widenings.py= | this branch | clean, no new writer, 13 widenings |

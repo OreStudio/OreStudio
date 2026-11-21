@@ -105,6 +105,20 @@ task and name that file in the Command column.
   leave local_checks.py; compass-ng's own result fails on their findings.
   The pin moves to v0.0.5 in the same change, because an older compass-ng
   stops on a check document.
+- 2026-11-21, tier 2 workflows: main was red on Compass check, Codegen
+  drift and Codegen sweep. Compass check was route inventory drift on main,
+  which this branch's regenerate fixes. Codegen drift and sweep failed because
+  =check_component_drift.py= stages its dry run under the git directory and
+  prettier 3.9.8 refuses any path inside =.git= ("No matching files", exit 2,
+  reproduced with a probe file). A worktree, whose git directory is
+  =ores.git=, never shows it. The product owner chose to delete the
+  single-gate workflows compass-check.yml covers: codegen-drift (its unit
+  suite kept as codegen-tests.yml), codegen-sweep, core-link-edges, doc-lint,
+  entity-writes, event- and history-registrar-composition, header-hygiene,
+  populate-reference-drift, portable-stop-types, rls-system-tenant-widenings,
+  shell-command-composition, shell-recipe-provenance, shell-script-drift and
+  template-drift. Their scripts are the tier 2 deletion. The staging bug
+  stays in =check_component_drift.py= until tier 3 retires it.
 - 2026-11-21, compass-ng v0.0.6: =compass/checks/xml_bindings.org= holds
   the family table compass had compiled in (Families, Exact decimals,
   Schema errata, Settings, Licence), so a money member is one Exact decimals

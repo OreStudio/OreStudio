@@ -1,0 +1,74 @@
+# Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+#
+# This program is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation; either version 3 of the License, or (at your option) any later
+# version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along with
+# this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+# Street, Fifth Floor, Boston, MA 02110-1301, USA.
+#
+---
+name: Codegen tests
+on:  # yamllint disable-line rule:truthy
+  push:
+    branches: ["main"]
+    paths:
+      - "projects/*/modeling/**"
+      - "projects/ores.codegen/**"
+      - "projects/ores.http/**"
+      - "projects/ores.sql/create/**"
+      - "projects/ores.sql/drop/**"
+      - "projects/ores.sql/populate/**"
+      - "projects/**/tests/**"
+      - "doc/recipes/shell/**"
+      - "doc/knowledge/security/authorised-reads.org"
+      - "build/scripts/check_boost_dependencies.py"
+      - ".prettierrc.yaml"
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  # The codegen unit suite. compass-ng's codecs prove the tree matches the
+  # models (see compass-check.yml); they do not say whether ORE's Python
+  # generator, which still writes code until it is retired, behaves. This job
+  # runs its whole suite: the generator, the loader and the scripts.
+  tests:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+      - name: Install codegen dependencies
+        run: |
+          pip install --quiet -r projects/ores.codegen/requirements.txt
+      # Two tests drive the regeneration path, which runs clang-format over
+      # its C++ output and prettier over its TypeScript output. Both formatters
+      # warn and do nothing when absent, so this is not strictly required, but
+      # the suite should exercise the path a regeneration takes.
+      - name: Install clang-format
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-format
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - name: Install prettier
+        run: |
+          version=$(node -p "require('./projects/ores.web/package.json').devDependencies.prettier")
+          npm install --global "prettier@${version}"
+      - name: Run the codegen suite
+        run: |
+          python3 -m pytest projects/ores.codegen/tests -q

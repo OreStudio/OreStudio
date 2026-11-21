@@ -35,14 +35,18 @@ ORE's script library arrives as a world dataset whose methodology extracts, corr
 
 * Acceptance
 
-- the library is a dataset of the Open Source Risk Engine catalogue, with a methodology that records the ORE commit and each correction, staged in the artefact tables of the script entities and published by the trading service's publish function as a member of the =world= bundle
+- the library is a dataset of the Open Source Risk Engine catalogue
+- its methodology records the ORE commit and each correction
+- its rows are staged in the artefact tables of the script, variant, input, result and calibration entities, which opt in through their models, whose descriptions then state that the rows are derived by the dataset's methodology
+- the trading service's publish function writes the staged rows into the system tenant, and the dataset is a member of the =world= bundle
+- a check verifies that the staged rows are what the generator makes of ORE's distribution
 - the populate scripts that load the library and correct it today are retired; the corrections are steps of the methodology, under the same exactly-once rule
 - the shell's =script parse=, =script check=, =script inputs= and =script print= run with no session and no server, and =script check= prints each diagnostic as FILE:LINE:COLUMN: severity: message [code] and exits with a non-zero status on any error
 - the generator parses every script with =script check= and fails on a script that does not parse, with its line and column
 - the staged inputs are those =script inputs= derives, which corrects Accumulator02's ObservationPeriodEndDates from a Number list to an Event list, and a test verifies they equal inputs_of for every script
 - a republished dataset writes a new version only of the scripts whose rows changed
-- a tenant's script is parsed when the tenant publishes it, refused with the same diagnostics, and may not take a world script's name
-- a scripted trade records its library script's version, or its inline text and a hash of it
+- a tenant's script is parsed when the tenant publishes it and refused with the same diagnostics; a name the world library holds draws a warning, and the tenant's script is the one its bookings resolve the name to
+- a scripted trade records its library script's name, holding tenant and version, or its inline text and a hash of it
 - a run writes the library from the versions its trades name
 
 * Plan
@@ -92,6 +96,10 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 4971.1 | the shell task does not name the owner of the no-login commands | task_add_script_and_product_commands_to_the_shell.org | accept | its Notes state the dependency, covering the Emacs recipe |
+| 4971.2 | the first criterion bundles four things; the staged-rows check is missing | task | accept | split into checkable criteria; the check added |
+| 4971.3 | the tenant name rule is unenforced and a later ORE release can collide | versioning_of_the_script_library.org | accept | no constraint: the tenant's own script wins at booking, a warning on publish, a later release leaves it in force |
+| 4971.4 | how a world script's version resolves for another tenant | versioning_of_the_script_library.org | accept | a trade records name, holding tenant and version; the run reads world rows through the shared-reference read |
+| 4971.5 | the model descriptions' follow-up is not an acceptance item | task | accept | added to the staging criterion |
 
 * Result

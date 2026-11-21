@@ -85,14 +85,21 @@ A version of a script arises in one of two ways.
 - *A tenant's publication.* A tenant publishes a script of its own through the
   trading service ([[id:3085E65E-413B-4E7A-B60A-5844A124C999][The Product Booking API]]), which parses it, derives its inputs
   and writes it as a version in the tenant, refusing a script that fails to
-  parse with the same diagnostics. A tenant's script may not take the name of a
-  script of the world library, so that a name identifies one script for that
-  tenant.
+  parse with the same diagnostics. Where a tenant's script and a script of the
+  world library share a name, the tenant's own script is the one its bookings
+  resolve the name to. The trading service reports a warning when a tenant
+  publishes a name the world library holds, and a later release of ORE that adds
+  a name a tenant already uses leaves that tenant's script in force; no
+  constraint forbids the pair, since the two rows lie in different tenants.
 
 ** Delivery to the engine
 
-A scripted trade names its script and the version on which it was booked, or
-states its script inline together with a hash of the text. Each run writes the
+A scripted trade records its script by its name, the tenant that holds it and
+the version on which it was booked, or states its script inline together with a
+hash of the text. A script of the world library is held by the system tenant, and
+the run reads it there through the shared-reference read by which every tenant
+reads world rows, so that the recorded version resolves to one row whichever
+tenant holds the trade. Each run writes the
 library from the stored versions that its trades name, so that a script absent
 from the store causes the failure of any run that requires it, and the engine
 reads the stored versions rather than the copy distributed with ORE

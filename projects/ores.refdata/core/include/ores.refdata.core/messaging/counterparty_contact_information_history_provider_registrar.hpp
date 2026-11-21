@@ -26,10 +26,11 @@
 #define ORES_REFDATA_CORE_MESSAGING_COUNTERPARTY_CONTACT_INFORMATION_HISTORY_PROVIDER_REGISTRAR_HPP
 
 #include "ores.history.core/service/dispatch_registry.hpp"
+#include "ores.refdata.core/export.hpp"
 
 namespace ores::refdata::messaging {
 
-void register_counterparty_contact_information_history_provider(
+ORES_REFDATA_CORE_EXPORT void register_counterparty_contact_information_history_provider(
     ores::history::service::dispatch_registry& registry);
 
 }

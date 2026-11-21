@@ -25,6 +25,7 @@
 #ifndef ORES_ANALYTICS_CORE_MESSAGING_TODAYS_MARKET_CONFIGURATION_BINDING_REGISTRAR_HPP
 #define ORES_ANALYTICS_CORE_MESSAGING_TODAYS_MARKET_CONFIGURATION_BINDING_REGISTRAR_HPP
 
+#include "ores.analytics.core/export.hpp"
 #include "ores.database/domain/context_fwd.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/subscription.hpp"
@@ -34,7 +35,7 @@
 
 namespace ores::analytics::messaging {
 
-std::vector<ores::nats::service::subscription>
+ORES_ANALYTICS_CORE_EXPORT std::vector<ores::nats::service::subscription>
 register_todays_market_configuration_binding_handlers(
     ores::nats::service::client& nats,
     const ores::database::context& ctx,

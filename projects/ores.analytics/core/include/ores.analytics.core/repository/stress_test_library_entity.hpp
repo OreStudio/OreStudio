@@ -25,6 +25,7 @@
 #ifndef ORES_ANALYTICS_CORE_REPOSITORY_STRESS_TEST_LIBRARY_ENTITY_HPP
 #define ORES_ANALYTICS_CORE_REPOSITORY_STRESS_TEST_LIBRARY_ENTITY_HPP
 
+#include "ores.analytics.core/export.hpp"
 #include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
@@ -87,7 +88,8 @@ struct stress_test_library_entity {
     }
 };
 
-std::ostream& operator<<(std::ostream& s, const stress_test_library_entity& v);
+ORES_ANALYTICS_CORE_EXPORT std::ostream& operator<<(std::ostream& s,
+                                                    const stress_test_library_entity& v);
 
 }
 

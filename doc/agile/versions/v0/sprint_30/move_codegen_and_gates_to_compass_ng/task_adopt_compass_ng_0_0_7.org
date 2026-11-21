@@ -1,0 +1,128 @@
+:PROPERTIES:
+:ID: 9E59F8F0-9FF8-4236-84AD-ED98C7960C06
+:END:
+#+title: Task: Adopt compass-ng v0.0.7
+#+description: Raise the compass-ng pin to v0.0.7 with main green: move the grants hand edits into the template and the registry, export every function a hidden-visibility part declares, and add the check inventory page.
+#+type: task
+#+level: s1
+#+filetags: :move_codegen_and_gates_to_compass_ng:sprint_30:v0:
+#+owner: marco
+#+branch: feature/adopt-compass-ng-0.0.7
+#+pr: 4979
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E3BF90FE-43DF-4A30-9F2C-FF5E20128C88][Move codegen and the gates to compass-ng]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+ORE runs compass-ng v0.0.7 with main green: the grants hand edits live in the template and the registry, every function a hidden-visibility part declares carries its export macro, and the check inventory page lists every check and links from the site.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:E3BF90FE-43DF-4A30-9F2C-FF5E20128C88][Move codegen and the gates to compass-ng]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-21                               |
+
+* Acceptance
+
+- The pin names v0.0.7, and =compass check= on the branch reports only the
+  two known =wide_types= warnings.
+- =iam_service_db_grants_create.sql= is generated: its view grants, approvals
+  mode grants and marketdata notification grants come from the template and
+  =projects/modeling/service_registry.org=, and it holds the same grants main
+  held.
+- The NATS registrar, history provider registrar and repository entity
+  templates emit the part's export macro, and so do the twelve hand-written
+  declarations =exported_types= named.
+- =doc/knowledge/compass/check_inventory.org= is generated, and the knowledge
+  index, the CI page and every check document link to it.
+- The tree builds on all three platforms.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+- Plan from compass-85's v0.0.7 bundle, in five PRs: this one (pin, grants,
+  exports, check inventory), then service integrity, commit provenance, the
+  .env generation, and retiring verify.py. The product owner decided:
+  ores.ore.service's role gets ore::* permissions; the agent prototype's
+  essentials list gets an exception row; commit provenance is on, with
+  Environment on every commit; ORES_TEST_LOG_ENABLED is declared as a new env
+  format version.
+- v0.0.7's full check on main: 1 codegen/drift (the grants file), 1662
+  exported_types/unexported_hidden_function, and the 2 known warnings.
+- Grants: the regenerated file holds exactly main's grant statements, compared
+  as sorted sets. The view loop moved into the template; the approvals mode
+  and notification grants moved into the registry with their reasons as
+  comments.
+- Exports: the templates follow the junction branch of the history provider
+  template, which already included =ores.<part>/export.hpp= and wrote
+  =ORES_<PART>_EXPORT=. The regenerate wrote 1702 files. Every export header
+  the new includes name exists (14), and every macro used is defined there.
+  The twelve hand-written declarations were marked and clang-formatted.
+- compass reported, in the first pass of a three-pass generate, that it
+  deleted the view loop comment the template now holds; the final file keeps
+  it. Sent to compass-85 as a compass issue.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4979][#4979]] | [build] Adopt compass-ng v0.0.7 with main green |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+ORE runs compass-ng v0.0.7 with main green. The service grants file is
+generated from the template and the registry and holds exactly the grants
+main held. Every function a hidden-visibility part declares carries its
+export macro: three templates and twelve hand-written declarations, 1,714
+files in all. The check inventory page lists 81 checks and generators, 75
+enabled, and the knowledge index, the CI page and each check document link
+to it. compass-ng check reports only the two known wide_types warnings. The
+product owner's full build passed on 2026-11-21 in 36 minutes. Windows and
+macOS are proved by their nightly builds.

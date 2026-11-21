@@ -27,6 +27,7 @@
 
 #include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
+#include "ores.reporting.core/export.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <chrono>
 #include <optional>
@@ -84,7 +85,7 @@ struct report_type_entity {
     }
 };
 
-std::ostream& operator<<(std::ostream& s, const report_type_entity& v);
+ORES_REPORTING_CORE_EXPORT std::ostream& operator<<(std::ostream& s, const report_type_entity& v);
 
 }
 

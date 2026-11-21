@@ -26,11 +26,12 @@
 #define ORES_REFDATA_CORE_MESSAGING_TENOR_CONVENTION_HISTORY_PROVIDER_REGISTRAR_HPP
 
 #include "ores.history.core/service/dispatch_registry.hpp"
+#include "ores.refdata.core/export.hpp"
 
 namespace ores::refdata::messaging {
 
-void register_tenor_convention_history_provider(
-    ores::history::service::dispatch_registry& registry);
+ORES_REFDATA_CORE_EXPORT void
+register_tenor_convention_history_provider(ores::history::service::dispatch_registry& registry);
 
 }
 

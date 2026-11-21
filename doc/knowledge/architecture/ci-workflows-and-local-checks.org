@@ -138,6 +138,10 @@ clean belongs to the =drift-sweep= check, not to this branch's
 
 * What still runs on GitHub
 
+compass generates the [[id:A1D08435-9DCB-4B63-A33F-2E1A87DA62A2][Check inventory]]: every codec and check
+document =compass check= runs, with its purpose and rules. It is the list of
+what the Compass check workflow and the local gate check.
+
 Nothing on a pull request. These workflows keep their own triggers:
 
 | Workflow | When | Why it stays |

@@ -26,11 +26,12 @@
 #define ORES_REPORTING_CORE_MESSAGING_CUT_APPROVAL_DETAIL_HISTORY_PROVIDER_REGISTRAR_HPP
 
 #include "ores.history.core/service/dispatch_registry.hpp"
+#include "ores.reporting.core/export.hpp"
 
 namespace ores::reporting::messaging {
 
-void register_cut_approval_detail_history_provider(
-    ores::history::service::dispatch_registry& registry);
+ORES_REPORTING_CORE_EXPORT void
+register_cut_approval_detail_history_provider(ores::history::service::dispatch_registry& registry);
 
 }
 

@@ -25,6 +25,7 @@
 #ifndef ORES_ANALYTICS_CORE_REPOSITORY_TODAYS_MARKET_CONFIGURATION_ENTITY_HPP
 #define ORES_ANALYTICS_CORE_REPOSITORY_TODAYS_MARKET_CONFIGURATION_ENTITY_HPP
 
+#include "ores.analytics.core/export.hpp"
 #include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
@@ -86,7 +87,8 @@ struct todays_market_configuration_entity {
     }
 };
 
-std::ostream& operator<<(std::ostream& s, const todays_market_configuration_entity& v);
+ORES_ANALYTICS_CORE_EXPORT std::ostream& operator<<(std::ostream& s,
+                                                    const todays_market_configuration_entity& v);
 
 }
 

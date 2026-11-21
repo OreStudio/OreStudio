@@ -25,12 +25,13 @@
 #ifndef ORES_ANALYTICS_CORE_MESSAGING_PRICING_PAIR_SETTING_HISTORY_PROVIDER_REGISTRAR_HPP
 #define ORES_ANALYTICS_CORE_MESSAGING_PRICING_PAIR_SETTING_HISTORY_PROVIDER_REGISTRAR_HPP
 
+#include "ores.analytics.core/export.hpp"
 #include "ores.history.core/service/dispatch_registry.hpp"
 
 namespace ores::analytics::messaging {
 
-void register_pricing_pair_setting_history_provider(
-    ores::history::service::dispatch_registry& registry);
+ORES_ANALYTICS_CORE_EXPORT void
+register_pricing_pair_setting_history_provider(ores::history::service::dispatch_registry& registry);
 
 }
 

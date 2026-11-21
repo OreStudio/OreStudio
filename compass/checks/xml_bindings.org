@@ -220,3 +220,4 @@ project from a check document of its own.
 - =projects/ores.ore/core/include/ores.ore.core/xml/binding.hpp=, the
   engine the generated tables describe documents to.
 - =external/ore/xsd=, ORE's schemas.
+- [[id:A1D08435-9DCB-4B63-A33F-2E1A87DA62A2][Check inventory]]: every check compass runs here, with this one among them.

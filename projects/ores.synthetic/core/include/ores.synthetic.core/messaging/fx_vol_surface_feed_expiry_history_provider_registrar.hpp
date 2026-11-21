@@ -26,10 +26,11 @@
 #define ORES_SYNTHETIC_CORE_MESSAGING_FX_VOL_SURFACE_FEED_EXPIRY_HISTORY_PROVIDER_REGISTRAR_HPP
 
 #include "ores.history.core/service/dispatch_registry.hpp"
+#include "ores.synthetic.core/export.hpp"
 
 namespace ores::synthetic::messaging {
 
-void register_fx_vol_surface_feed_expiry_history_provider(
+ORES_SYNTHETIC_CORE_EXPORT void register_fx_vol_surface_feed_expiry_history_provider(
     ores::history::service::dispatch_registry& registry);
 
 }

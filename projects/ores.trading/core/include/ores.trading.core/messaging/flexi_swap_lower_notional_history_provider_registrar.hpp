@@ -26,10 +26,11 @@
 #define ORES_TRADING_CORE_MESSAGING_FLEXI_SWAP_LOWER_NOTIONAL_HISTORY_PROVIDER_REGISTRAR_HPP
 
 #include "ores.history.core/service/dispatch_registry.hpp"
+#include "ores.trading.core/export.hpp"
 
 namespace ores::trading::messaging {
 
-void register_flexi_swap_lower_notional_history_provider(
+ORES_TRADING_CORE_EXPORT void register_flexi_swap_lower_notional_history_provider(
     ores::history::service::dispatch_registry& registry);
 
 }

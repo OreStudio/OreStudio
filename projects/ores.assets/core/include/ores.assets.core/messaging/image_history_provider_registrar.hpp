@@ -25,11 +25,13 @@
 #ifndef ORES_ASSETS_CORE_MESSAGING_IMAGE_HISTORY_PROVIDER_REGISTRAR_HPP
 #define ORES_ASSETS_CORE_MESSAGING_IMAGE_HISTORY_PROVIDER_REGISTRAR_HPP
 
+#include "ores.assets.core/export.hpp"
 #include "ores.history.core/service/dispatch_registry.hpp"
 
 namespace ores::assets::messaging {
 
-void register_image_history_provider(ores::history::service::dispatch_registry& registry);
+ORES_ASSETS_CORE_EXPORT void
+register_image_history_provider(ores::history::service::dispatch_registry& registry);
 
 }
 

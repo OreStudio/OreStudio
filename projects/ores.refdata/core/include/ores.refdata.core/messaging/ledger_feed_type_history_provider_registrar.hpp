@@ -26,11 +26,12 @@
 #define ORES_REFDATA_CORE_MESSAGING_LEDGER_FEED_TYPE_HISTORY_PROVIDER_REGISTRAR_HPP
 
 #include "ores.history.core/service/dispatch_registry.hpp"
+#include "ores.refdata.core/export.hpp"
 
 namespace ores::refdata::messaging {
 
-void register_ledger_feed_type_history_provider(
-    ores::history::service::dispatch_registry& registry);
+ORES_REFDATA_CORE_EXPORT void
+register_ledger_feed_type_history_provider(ores::history::service::dispatch_registry& registry);
 
 }
 

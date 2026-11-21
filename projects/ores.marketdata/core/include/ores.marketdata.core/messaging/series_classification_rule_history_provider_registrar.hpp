@@ -26,10 +26,11 @@
 #define ORES_MARKETDATA_CORE_MESSAGING_SERIES_CLASSIFICATION_RULE_HISTORY_PROVIDER_REGISTRAR_HPP
 
 #include "ores.history.core/service/dispatch_registry.hpp"
+#include "ores.marketdata.core/export.hpp"
 
 namespace ores::marketdata::messaging {
 
-void register_series_classification_rule_history_provider(
+ORES_MARKETDATA_CORE_EXPORT void register_series_classification_rule_history_provider(
     ores::history::service::dispatch_registry& registry);
 
 }

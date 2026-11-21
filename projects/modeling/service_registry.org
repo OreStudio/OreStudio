@@ -119,6 +119,10 @@
 # of the caller, so the service must be able to read the account-party links.
 - ores_iam_account_parties_
 
+# The approvals mode: the service raises approvals with the inbox library,
+# in its own session, and the library reads the mode on every raise.
+- ores_variability_system_settings_
+
 ** Execute prefixes
 
 - ores_refdata_publish_
@@ -268,6 +272,10 @@
 # links, and a policy runs with the privileges of the caller.
 - ores_iam_account_parties_
 
+# The approvals mode: the service raises approvals with the inbox library,
+# in its own session, and the library reads the mode on every raise.
+- ores_variability_system_settings_
+
 ** Execute prefixes
 
 - ores_reporting_publish_
@@ -344,6 +352,10 @@
 # A read of an account is limited by a policy that looks at the account-party
 # links, and a policy runs with the privileges of the caller.
 - ores_iam_account_parties_
+
+# The approvals mode: the service raises approvals with the inbox library,
+# in its own session, and the library reads the mode on every raise.
+- ores_variability_system_settings_
 
 ** Select tables
 
@@ -480,6 +492,15 @@
 - ores_inbox_approval_request_parts_
 - ores_inbox_approval_decisions_
 
+# The notices a published curve raises. A component that tells the readers of
+# its own record writes the notice itself, as the reference data and reporting
+# services already do for the kinds they raise; the inbox owns the rows and
+# the raise function, and the reader resolves the audience the same way.
+- ores_inbox_notifications_
+- ores_inbox_notification_arguments_
+- ores_inbox_notification_recipients_
+- ores_inbox_notification_deliveries_
+
 ** Select prefixes
 
 - ores_refdata_
@@ -490,6 +511,10 @@
 # A read of an account is limited by a policy that looks at the account-party
 # links, and a policy runs with the privileges of the caller.
 - ores_iam_account_parties_
+
+# The approvals mode: the service raises approvals with the inbox library,
+# in its own session, and the library reads the mode on every raise.
+- ores_variability_system_settings_
 
 ** Extra args
 
@@ -601,6 +626,10 @@ hold the permission.
 ** DML prefixes
 
 - ores_inbox_
+
+# The approvals mode: the inbox reads it on every raise and writes it when a
+# tenant changes it.
+- ores_variability_system_settings_
 
 ** Select prefixes
 

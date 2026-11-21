@@ -25,12 +25,13 @@
 #ifndef ORES_DQ_CORE_MESSAGING_ORIGIN_DIMENSION_HISTORY_PROVIDER_REGISTRAR_HPP
 #define ORES_DQ_CORE_MESSAGING_ORIGIN_DIMENSION_HISTORY_PROVIDER_REGISTRAR_HPP
 
+#include "ores.dq.core/export.hpp"
 #include "ores.history.core/service/dispatch_registry.hpp"
 
 namespace ores::dq::messaging {
 
-void register_origin_dimension_history_provider(
-    ores::history::service::dispatch_registry& registry);
+ORES_DQ_CORE_EXPORT void
+register_origin_dimension_history_provider(ores::history::service::dispatch_registry& registry);
 
 }
 

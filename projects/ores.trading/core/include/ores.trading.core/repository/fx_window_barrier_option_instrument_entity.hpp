@@ -27,6 +27,7 @@
 
 #include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
+#include "ores.trading.core/export.hpp"
 #include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
@@ -100,7 +101,8 @@ struct fx_window_barrier_option_instrument_entity {
     }
 };
 
-std::ostream& operator<<(std::ostream& s, const fx_window_barrier_option_instrument_entity& v);
+ORES_TRADING_CORE_EXPORT std::ostream&
+operator<<(std::ostream& s, const fx_window_barrier_option_instrument_entity& v);
 
 }
 

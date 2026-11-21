@@ -25,6 +25,7 @@
 #ifndef ORES_ANALYTICS_CORE_REPOSITORY_PRICING_MODEL_PRODUCT_ENTITY_HPP
 #define ORES_ANALYTICS_CORE_REPOSITORY_PRICING_MODEL_PRODUCT_ENTITY_HPP
 
+#include "ores.analytics.core/export.hpp"
 #include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
@@ -89,7 +90,8 @@ struct pricing_model_product_entity {
     }
 };
 
-std::ostream& operator<<(std::ostream& s, const pricing_model_product_entity& v);
+ORES_ANALYTICS_CORE_EXPORT std::ostream& operator<<(std::ostream& s,
+                                                    const pricing_model_product_entity& v);
 
 }
 

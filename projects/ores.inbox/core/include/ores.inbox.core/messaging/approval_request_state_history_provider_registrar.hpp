@@ -26,10 +26,11 @@
 #define ORES_INBOX_CORE_MESSAGING_APPROVAL_REQUEST_STATE_HISTORY_PROVIDER_REGISTRAR_HPP
 
 #include "ores.history.core/service/dispatch_registry.hpp"
+#include "ores.inbox.core/export.hpp"
 
 namespace ores::inbox::messaging {
 
-void register_approval_request_state_history_provider(
+ORES_INBOX_CORE_EXPORT void register_approval_request_state_history_provider(
     ores::history::service::dispatch_registry& registry);
 
 }

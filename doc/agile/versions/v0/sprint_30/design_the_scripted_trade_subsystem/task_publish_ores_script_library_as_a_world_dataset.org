@@ -8,7 +8,7 @@
 #+filetags: :design_the_scripted_trade_subsystem:sprint_30:v0:
 #+owner: marco
 #+branch: feature/publish-ores-script-library-as-a-world-dataset
-#+pr: 4977
+#+pr: 4978
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-21
@@ -154,6 +154,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4978][#4978]] | [trading] Publish ORE's script library as a world dataset |
 | [[https://github.com/OreStudio/OreStudio/pull/4977][#4977]] | [shell] Parse, check and list a payoff script's inputs offline |
 | [[https://github.com/OreStudio/OreStudio/pull/4971][#4971]] | [doc] Hold ORE's script library as a world dataset |
 

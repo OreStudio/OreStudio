@@ -17,7 +17,9 @@
  *
  */
 #include "ores.logging/logger.hpp"
+#include "ores.marketdata.api/datum/market_datum.hpp"
 #include "ores.marketdata.api/datum/market_reference.hpp"
+#include "ores.marketdata.api/datum/ore_key_codec.hpp"
 #include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
@@ -106,4 +108,32 @@ TEST_CASE("a reference made from a datum is the reference its address parses to"
 
     REQUIRE(made);
     CHECK(*made == *parsed);
+}
+
+TEST_CASE("a curve pillar's quote names a series that drops the term",
+          "[marketdata][datum][reference]") {
+    auto lg(make_logger(test_suite));
+
+    /*
+     * A curve configuration bootstraps a curve from ORE quote keys, and the
+     * market it bootstraps from holds series. The two spellings name one
+     * datum: the key's tokens are the datum's fields in schema order, and the
+     * term is the point within the series rather than part of its identity.
+     *
+     * ores_marketdata_curve_pillar_series_uri_fn() states the same pair in
+     * SQL, and projects/ores.sql/test/marketdata_curve_quote_coverage_test.sql
+     * asserts it against this literal, so a change to either side fails one of
+     * the two.
+     */
+    const auto quote = ores::marketdata::datum::ore_key_codec::read("IR_SWAP/RATE/GBP/0D/1D/1M");
+    if (!quote)
+        FAIL("ORE's grammar refused the key: " << quote.error());
+
+    const auto series = ores::marketdata::datum::oresmd_uri_codec::write(
+        ores::marketdata::datum::series_of(*quote));
+    if (!series)
+        FAIL("the codec refused the series: " << series.error());
+
+    CHECK(*series ==
+          "oresmd://ir/GBP?type=series&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D");
 }

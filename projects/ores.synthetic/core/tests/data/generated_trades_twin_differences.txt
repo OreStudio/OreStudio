@@ -1,10 +1,13 @@
 # Trade types whose native trade and scripted twin do not value the same in the
-# ORE run of the recorded trades, one line each: the trade type, a tab, and the
-# reason. A pair agrees when its two values, in the same currency, differ by no
-# more than a millionth of the larger, or by a cent near zero. A trade ORE
-# cannot build has no value, so its pair does not agree either.
+# ORE run of the recorded trades, one line each: the trade type, the bound, and
+# the reason, separated by tabs. A pair agrees when its two values, in the same
+# currency, differ by no more than a millionth of the larger, and by at least a
+# cent. A trade ORE cannot build has no value, so its pair does not agree either.
+# The bound is the largest relative difference a listed type's pairs may show,
+# or unvalued when one trade of each pair has no value, so a pair that differs
+# further fails the test even though its type is listed.
 # The test fails on a type whose pairs differ and are not listed, and on a
 # listed type whose pairs now all agree, so remove its line then.
-EquityPairwiseVarianceSwap	The native trade is not valued: the Products example states no pricing engine for EquityPairwiseVarianceSwap. The twin prices through the scripted engine.
-FxPairwiseVarianceSwap	The native trade is not valued: the Products example states no pricing engine for FxPairwiseVarianceSwap. The twin prices through the scripted engine.
-FxWorstOfBasketSwap	ORE's class runs a script of its own, not the library one. The library script reads one fixing of the floating index on each fixing date where the class compounds an overnight index over the period, and the twin pays the initial fixed amount on the first period date where the class pays it on the first pay date. The two differ by a few percent.
+EquityPairwiseVarianceSwap	unvalued	The native trade is not valued: the Products example states no pricing engine for EquityPairwiseVarianceSwap. The twin prices through the scripted engine.
+FxPairwiseVarianceSwap	unvalued	The native trade is not valued: the Products example states no pricing engine for FxPairwiseVarianceSwap. The twin prices through the scripted engine.
+FxWorstOfBasketSwap	0.05	ORE's class runs a script of its own, not the library one. The library script reads one fixing of the floating index on each fixing date where the class compounds an overnight index over the period, and the twin pays the initial fixed amount on the first period date where the class pays it on the first pay date. The recorded pairs differ by 3.2% and 0.6%.

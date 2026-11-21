@@ -11,8 +11,8 @@ EquityForwardVolatilityAgreement	2b98ce5b-3eeb-5c36-9cb8-e4a7f8922842	3250090.63
 EquityForwardVolatilityAgreement	f7a5f5f7-7567-5f27-ac28-264e8861c471	-240510.01	USD	-240510.01	USD	0.00	yes
 EquityGenericBarrierOption	218774a5-e3e4-54a7-a1a9-4d27d7aed44b	-6406.61	EUR	-6406.61	EUR	0.00	yes
 EquityGenericBarrierOption	90294a9c-9eb6-5d85-ac7b-0550e6e0f628	0.00	USD	0.00	USD	0.00	yes
-EquityPairwiseVarianceSwap	739b0e18-7bb1-53b8-bdab-993e5bad2744	unvalued	USD	356329.78	USD	-	no
-EquityPairwiseVarianceSwap	f1c63d3f-5920-5b31-a3f0-4676a1c9b751	unvalued	USD	68716.77	EUR	-	no
+EquityPairwiseVarianceSwap	739b0e18-7bb1-53b8-bdab-993e5bad2744	unvalued		356329.78	USD	-	no
+EquityPairwiseVarianceSwap	f1c63d3f-5920-5b31-a3f0-4676a1c9b751	unvalued		68716.77	EUR	-	no
 EquityRainbowOption	85a4cda1-faea-5845-bc9c-b97dc2482179	-5390795.92	EUR	-5390795.92	EUR	0.00	yes
 EquityRainbowOption	c5961c6e-0075-50d6-8c89-68c3f727dd6d	86523035.35	USD	86523035.35	USD	0.00	yes
 EquityWindowBarrierOption	630b3e61-deb7-5096-b447-eeb3d1e9e4d4	-155738695.51	USD	-155738695.51	USD	0.00	yes
@@ -27,8 +27,8 @@ FxForwardVolatilityAgreement	9df8ee5f-9ce1-546e-ba4b-05270865af03	237582.02	USD	
 FxForwardVolatilityAgreement	d937809a-06ec-57f6-a738-417fabd91365	-11114.67	USD	-11114.67	USD	0.00	yes
 FxGenericBarrierOption	ab16386a-36a6-5b49-8e00-ceb61c22c299	-3.55	USD	-3.55	USD	0.00	yes
 FxGenericBarrierOption	f265a2f6-17d9-5f0c-8a83-ce659e4225cb	19238.21	USD	19238.21	USD	0.00	yes
-FxPairwiseVarianceSwap	0e6cb4a2-2a7b-571c-bf6b-f956ac1db9bf	unvalued	USD	-724203.96	USD	-	no
-FxPairwiseVarianceSwap	0f1cabb4-b764-579f-8437-c726066494c7	unvalued	USD	1187561.25	USD	-	no
+FxPairwiseVarianceSwap	0e6cb4a2-2a7b-571c-bf6b-f956ac1db9bf	unvalued		-724203.96	USD	-	no
+FxPairwiseVarianceSwap	0f1cabb4-b764-579f-8437-c726066494c7	unvalued		1187561.25	USD	-	no
 FxRainbowOption	5e7c6da9-55db-56f8-a1c3-1a58bbd13c9c	-9686228.63	USD	-9686228.63	USD	0.00	yes
 FxRainbowOption	63c35dde-b955-55b1-9998-d8fcc5419534	19.24	USD	19.24	USD	0.00	yes
 FxWindowBarrierOption	39397c03-db4e-560d-b715-5ca261dd64d9	753556.84	USD	753556.84	USD	0.00	yes

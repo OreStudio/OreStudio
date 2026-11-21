@@ -350,8 +350,8 @@ struct twin_pair {
 
 /*
  * Two values agree when they differ by no more than a millionth of the larger,
- * or by a cent where both are near zero. Both trades price on the same engines
- * and inputs, so a pair that agrees agrees to the cent.
+ * and by at least a cent, so values near zero still agree. Both trades price on
+ * the same engines and inputs, so a pair that agrees agrees to the cent.
  */
 constexpr double relative_tolerance = 1e-6;
 constexpr double absolute_floor = 0.01;
@@ -377,14 +377,20 @@ std::map<std::string, valuation> valuations_of(const std::string& npv_report) {
         const auto type = std::ranges::find_if(
             metric.qualifiers, [](const auto& q) { return q.first == "TradeType"; });
         const bool failed = type != metric.qualifiers.end() && type->second == "Failed";
-        out[metric.subject] = {.npv = failed ? std::nullopt : std::optional{metric.value},
-                               .currency = metric.currency};
+        out[metric.subject] =
+            failed ? valuation{} : valuation{.npv = metric.value, .currency = metric.currency};
     }
     return out;
 }
 
+/// The pairs the run values, and the natives of a twinned type with no twin recorded.
+struct twin_pairing {
+    std::vector<twin_pair> pairs;
+    std::set<std::string> unpaired;
+};
+
 /// Every recorded native trade whose twin is recorded too, with the two values.
-std::vector<twin_pair> twin_pairs(const engine_run& run) {
+twin_pairing twin_pairs(const engine_run& run) {
     const auto values = valuations_of(run.npv_report);
     const auto value_of = [&](const std::string& run_id) {
         const auto it = values.find(run_id);
@@ -393,40 +399,71 @@ std::vector<twin_pair> twin_pairs(const engine_run& run) {
     std::map<std::string, std::string> scripted;
     for (const auto& [run_id, trade] : run.trades)
         if (trade.trade_type == "ScriptedTrade")
-            scripted[trade.id] = run_id;
+            REQUIRE(scripted.emplace(trade.id, run_id).second);
 
-    std::vector<twin_pair> out;
+    twin_pairing out;
+    std::set<std::string> twinned;
+    std::vector<recorded_trade> alone;
     for (const auto& [run_id, trade] : run.trades) {
         if (trade.trade_type == "ScriptedTrade")
             continue;
         const auto twin_id = boost::uuids::to_string(ores::synthetic::service::twin_id_for(
             boost::uuids::string_generator()(trade.id), trade.trade_type));
         const auto twin = scripted.find(twin_id);
-        if (twin == scripted.end())
+        if (twin == scripted.end()) {
+            alone.push_back(trade);
             continue;
-        out.push_back({.trade_type = trade.trade_type,
-                       .native_id = trade.id,
-                       .native = value_of(run_id),
-                       .twin = value_of(twin->second)});
+        }
+        twinned.insert(trade.trade_type);
+        out.pairs.push_back({.trade_type = trade.trade_type,
+                             .native_id = trade.id,
+                             .native = value_of(run_id),
+                             .twin = value_of(twin->second)});
     }
-    std::ranges::sort(out, [](const auto& l, const auto& r) {
+    for (const auto& trade : alone)
+        if (twinned.contains(trade.trade_type))
+            out.unpaired.insert(trade.trade_type + " " + trade.id);
+    std::ranges::sort(out.pairs, [](const auto& l, const auto& r) {
         return std::tie(l.trade_type, l.native_id) < std::tie(r.trade_type, r.native_id);
     });
     return out;
 }
 
-/// The known list: each trade type whose pairs do not agree, and the reason.
-std::map<std::string, std::string> twin_differences() {
-    std::map<std::string, std::string> out;
+/*
+ * A trade type whose pairs do not agree. The bound is the largest relative
+ * difference its pairs may show, or "unvalued" when one trade of each pair has
+ * no value, so a listed type does not hide a pair that differs further.
+ */
+struct known_difference {
+    std::string bound;
+    std::string reason;
+};
+
+bool within(const twin_pair& pair, const std::string& bound) {
+    if (bound == "unvalued")
+        return !pair.native.npv || !pair.twin.npv;
+    if (!pair.native.npv || !pair.twin.npv || pair.native.currency != pair.twin.currency)
+        return false;
+    const auto a = *pair.native.npv;
+    const auto b = *pair.twin.npv;
+    return std::abs(a - b) <= std::stod(bound) * std::max(std::abs(a), std::abs(b));
+}
+
+/// The known list: each trade type whose pairs do not agree, its bound and the reason.
+std::map<std::string, known_difference> twin_differences() {
+    std::map<std::string, known_difference> out;
     std::istringstream text(text_of(ores::testing::project_root::resolve(twin_differences_file)));
     for (std::string line; std::getline(text, line);) {
         if (line.ends_with('\r'))
             line.pop_back();
         if (line.empty() || line.starts_with("#"))
             continue;
-        const auto tab = line.find('\t');
-        REQUIRE(tab != std::string::npos);
-        out[line.substr(0, tab)] = line.substr(tab + 1);
+        const auto first = line.find('\t');
+        const auto second = line.find('\t', first == std::string::npos ? first : first + 1);
+        INFO("known difference line: " << line);
+        REQUIRE(second != std::string::npos);
+        out[line.substr(0, first)] = {.bound = line.substr(first + 1, second - first - 1),
+                                      .reason = line.substr(second + 1)};
     }
     return out;
 }
@@ -443,9 +480,12 @@ void record_twin_values(const std::vector<twin_pair>& pairs) {
         "trade_type\tnative_id\tnative_npv\tnative_currency\ttwin_npv\t"
         "twin_currency\tdifference\tagrees\n";
     for (const auto& p : pairs) {
-        const auto difference = p.native.npv && p.twin.npv ?
-                                    std::format("{:.2f}", *p.twin.npv - *p.native.npv) :
-                                    std::string("-");
+        std::string difference = "-";
+        if (p.native.npv && p.twin.npv) {
+            const auto d = *p.twin.npv - *p.native.npv;
+            // Half a cent either way prints as zero, so the report shows no -0.00.
+            difference = std::format("{:.2f}", std::abs(d) < 0.005 ? 0.0 : d);
+        }
         out += p.trade_type + "\t" + p.native_id + "\t" + figure_of(p.native) + "\t" +
                p.native.currency + "\t" + figure_of(p.twin) + "\t" + p.twin.currency + "\t" +
                difference + "\t" + (agrees(p) ? "yes" : "no") + "\n";
@@ -453,6 +493,22 @@ void record_twin_values(const std::vector<twin_pair>& pairs) {
     std::ofstream file(ores::testing::project_root::resolve(twin_values_file), std::ios::binary);
     file << out;
     REQUIRE(file.good());
+}
+
+/// Each recorded pair's trade type, native id and whether it agrees, from the report.
+std::set<std::string> recorded_agreement() {
+    std::set<std::string> out;
+    std::istringstream text(text_of(ores::testing::project_root::resolve(twin_values_file)));
+    for (std::string line; std::getline(text, line);) {
+        if (line.empty() || line.starts_with("#") || line.starts_with("trade_type\t"))
+            continue;
+        const auto first = line.find('\t');
+        const auto second = line.find('\t', first + 1);
+        const auto last = line.rfind('\t');
+        REQUIRE(second != std::string::npos);
+        out.insert(line.substr(0, second) + "\t" + line.substr(last + 1));
+    }
+    return out;
 }
 
 }
@@ -469,7 +525,7 @@ TEST_CASE("the ORE engine raises only the known errors on the recorded trades",
         SKIP("ORES_ORE_EXECUTABLE names no ORE engine.");
 
     const auto& run = the_engine_run(*executable);
-    INFO("run directory: " << run.dir.string());
+    INFO("run directory, kept when the run fails: " << run.dir.string());
     REQUIRE(run.exit_code == 0);
     REQUIRE_FALSE(run.structured_log.empty());
 
@@ -508,29 +564,39 @@ TEST_CASE("each scripted twin values as its native trade does, or is known to di
         SKIP("ORES_ORE_EXECUTABLE names no ORE engine.");
 
     const auto& run = the_engine_run(*executable);
-    INFO("run directory: " << run.dir.string());
+    INFO("run directory, kept when the run fails: " << run.dir.string());
     REQUIRE(run.exit_code == 0);
     REQUIRE_FALSE(run.npv_report.empty());
 
-    const auto pairs = twin_pairs(run);
+    const auto pairing = twin_pairs(run);
+    const auto& pairs = pairing.pairs;
     REQUIRE_FALSE(pairs.empty());
+    INFO("natives of a twinned type whose twin is not recorded:" << lines_of(pairing.unpaired));
+    CHECK(pairing.unpaired.empty());
     if (ores::platform::environment::environment::get_value("ORES_UPDATE_GENERATED_TRADES") == "1")
         record_twin_values(pairs);
 
+    const auto known = twin_differences();
     std::set<std::string> differing;
+    std::set<std::string> beyond_bound;
+    std::set<std::string> agreement;
     std::string report;
     for (const auto& p : pairs) {
         report += "\n  " + p.trade_type + " " + p.native_id + ": native " + figure_of(p.native) +
                   " " + p.native.currency + ", twin " + figure_of(p.twin) + " " + p.twin.currency;
-        if (!agrees(p))
-            differing.insert(p.trade_type);
+        agreement.insert(p.trade_type + "\t" + p.native_id + "\t" + (agrees(p) ? "yes" : "no"));
+        if (agrees(p))
+            continue;
+        differing.insert(p.trade_type);
+        const auto listed = known.find(p.trade_type);
+        if (listed != known.end() && !within(p, listed->second.bound))
+            beyond_bound.insert(p.trade_type + " " + p.native_id);
     }
-    const auto known = twin_differences();
     std::set<std::string> listed;
-    for (const auto& [type, reason] : known) {
+    for (const auto& [type, difference] : known) {
         listed.insert(type);
         INFO("the known difference of " << type << " states no reason");
-        CHECK_FALSE(reason.empty());
+        CHECK_FALSE(difference.reason.empty());
     }
     std::set<std::string> unexplained;
     std::set<std::string> now_agreeing;
@@ -540,7 +606,13 @@ TEST_CASE("each scripted twin values as its native trade does, or is known to di
     INFO("pairs:" << report);
     INFO("differ but not known:" << lines_of(unexplained));
     INFO("known but now agree, so remove them:" << lines_of(now_agreeing));
+    INFO("known but beyond the bound their line states:" << lines_of(beyond_bound));
     CHECK(unexplained.empty());
     CHECK(now_agreeing.empty());
+    CHECK(beyond_bound.empty());
+
+    // The report a reader reviews states the pairs the run values.
+    INFO("rerun with ORES_UPDATE_GENERATED_TRADES=1 to record the report again");
+    CHECK(agreement == recorded_agreement());
 #endif
 }

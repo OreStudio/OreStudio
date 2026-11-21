@@ -57,6 +57,14 @@ ORES_SYNTHETIC_CORE_EXPORT boost::uuids::uuid twin_id_for(const boost::uuids::uu
                                                           std::string_view trade_type);
 
 /**
+ * @brief The id of the trade a native trade carries over @p script, a script
+ * with no element of its own, drawn as the twin's id is.
+ */
+ORES_SYNTHETIC_CORE_EXPORT boost::uuids::uuid carried_id_for(const boost::uuids::uuid& native,
+                                                             std::string_view trade_type,
+                                                             std::string_view script);
+
+/**
  * @brief The generic ScriptedTrade twin of a native slot, on the same terms.
  *
  * Nothing when the slot's type has no recipe. The twin is a slot of its own,
@@ -66,7 +74,15 @@ ORES_SYNTHETIC_CORE_EXPORT boost::uuids::uuid twin_id_for(const boost::uuids::uu
 ORES_SYNTHETIC_CORE_EXPORT std::optional<domain::trade_population_slot>
 scripted_twin_of(const domain::trade_population_slot& native);
 
-/// Appends the scripted twin of every slot whose type has a recipe.
+/**
+ * @brief Every scripted form of a native slot: its twin, if its type has one,
+ * then a ScriptedTrade for each script with no element of its own that its type
+ * carries, each stated from the native rows by its recipe.
+ */
+ORES_SYNTHETIC_CORE_EXPORT std::vector<domain::trade_population_slot>
+scripted_forms_of(const domain::trade_population_slot& native);
+
+/// Appends every scripted form of every slot whose type has a recipe.
 ORES_SYNTHETIC_CORE_EXPORT void add_scripted_twins(domain::trade_population_plan& plan);
 
 }

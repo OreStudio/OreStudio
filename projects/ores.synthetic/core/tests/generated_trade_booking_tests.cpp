@@ -409,9 +409,11 @@ TEST_CASE("every_generated_trade_type_books_through_the_database", tags) {
         const auto scope = booking_scope_of(f, asset_class);
         const auto plan = planner_for(asset_class).plan(scope);
         // A container adds the trades it holds, and a product with a scripted
-        // form adds its twin; neither takes a slot of its own.
+        // form adds its twin and the scripts it carries; neither takes a slot of its own.
         const auto offered_slots = std::ranges::count_if(plan.slots, [](const auto& s) {
-            return s.structure_role != "sub_trade" && !s.internal_identifier.ends_with("-scripted");
+            return s.structure_role != "sub_trade" &&
+                   !(s.internal_identifier.ends_with("-scripted") ||
+                     s.internal_identifier.contains("-scripted-"));
         });
         REQUIRE(static_cast<std::size_t>(offered_slots) == offered);
 
@@ -427,7 +429,8 @@ TEST_CASE("every_generated_trade_type_books_through_the_database", tags) {
             INFO("the database refused it: " << response.result.message);
             CHECK(response.result.outcome == outcome::ok);
             if (response.result.outcome == outcome::ok) {
-                if (!slot.internal_identifier.ends_with("-scripted"))
+                if (!slot.internal_identifier.ends_with("-scripted") &&
+                    !slot.internal_identifier.contains("-scripted-"))
                     booked_types.insert(slot.trade_type_code);
                 booked.emplace_back(slot.trade_type_code, request);
             }

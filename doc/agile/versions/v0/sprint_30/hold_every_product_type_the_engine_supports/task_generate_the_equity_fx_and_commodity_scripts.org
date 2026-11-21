@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :hold_every_product_type_the_engine_supports:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/generate-the-equity-fx-and-commodity-scripts
+#+pr: 4948
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-15
@@ -26,7 +26,7 @@ Every equity, FX and commodity script in ORE's library that has no element of it
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -42,9 +42,36 @@ Every equity, FX and commodity script in ORE's library that has no element of it
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+A script with no element of its own has no native trade to take its terms
+from. Decided on 2026-11-21: a native type the generator already books carries
+it. The catalogue's =Script-only recipes= table states, for a carrier type and a
+script, where each input comes from in the carrier's rows, in the twin recipes'
+grammar, so the evaluator, the transforms, the builder and the generator's
+checks are the twins' own. An input the carrier states no term for takes a
+literal.
+
+- The generator reads both recipe tables and checks them alike. The compiled
+  rows state whether each is the carrier's twin.
+- The runtime books every scripted form of a native trade: its twin, then each
+  script it carries, with an id =carried_id_for= draws by name, and an internal
+  identifier =<native>-scripted-<script>=.
+- The =Library scripts= table states how each library script is held: =both
+  forms=, =element only=, =script only= or =not yet=. The generator fails when a
+  script of the seed is missing, listed twice, or held otherwise than the recipe
+  tables state; this is the acceptance's test of a script neither generated nor
+  named.
+- One trade of each script, carried by an equity type.
+
+The families, a PR each:
+
+1. The single-name variance family on EquityBasketVarianceSwap: VarianceOption,
+   KIKOVarianceSwap, CorridorVarianceSwap, KIKOCorridorVarianceSwap,
+   ConditionalVarianceSwap01 and 02, GammaSwap.
+2. The rainbow call spreads and the worst-performance rainbows on
+   EquityBasketOption.
+3. The dispersion swaps and the correlation swap.
+4. The forward-starting options, VolatilityBarrierOption, DualEuroBinaryOption
+   and LadderLockInOption.
 
 * Measurements
 
@@ -62,6 +89,28 @@ task and name that file in the Command column.
 
 * Notes
 
+** Barrier levels no underlying reaches
+
+No carrier states a level near its underlying's price: the basket variance swap
+states a variance strike, and its underlyings range from DHER.DE near 27 to
+.NDX near 21,000. A barrier is therefore one the underlying never reaches: a
+knock-in at zero, the User Guide's form of no barrier, a knock-out at one, and a
+corridor from zero to ten million. ORE values KIKOVarianceSwap,
+CorridorVarianceSwap and both ConditionalVarianceSwaps carried by the same
+basket at the same value, -2995483.84 and -34388.52 EUR for the two recorded
+carriers, which is the plain single-name variance swap each becomes. A carrier
+that states a level relative to its underlying would let the barriers bite; that
+is a follow-up, not this task.
+
+** Scripts with an element of their own and no scripted form
+
+Classifying the library showed scripts whose product a type of ours holds, with
+no scripted form booked: Accumulator01 and 02 (the accumulators), TaRF,
+OutperformanceOption, MinRainbowOption, the AssetOrCash rainbows, and the
+Asian, average strike and lookback basket options. The =Scripted forms= table
+does not name them, so the both-forms task did not twin them. The =Library
+scripts= table holds them as =element only=, with the types that hold them.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -77,12 +126,29 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4948][#4948]] | [synthetic] Carry the script-only variance payoffs on a native trade |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 4948.1 | recipes_of relies on the generator's row order | scripted_twins.cpp | accept | a comment states it, and a script whose rows come apart is refused |
+| 4948.2 | the -scripted match is loose | tests | accept | a -scripted suffix or a -scripted- infix only |
+| 4948.3 | the test's map restates the table | trade_population_tests.cpp | accept | the plan's carried scripts must be exactly the map's, so a script added to the table alone fails it |
+| 4948.4 | the seed parsing is fragile | generate_script_twins.py | decline | it fails loudly on a new layout, which is the intent |
+| 4948.5 | the first-underlying choice is not stated | catalogue | accept | the Script-only recipes prose states it |
+| 4948.6 | the script name is rebuilt on error paths | scripted_twins.cpp | accept | one local |
+| 4948.7 | no barrier bites, so barrier logic is not tested | - | defer | noted in the task; a carrier with a level near its underlying is a follow-up |
 
 * Result
+
+First PR: the machinery and the single-name variance family. A native type the
+generator books carries each script with no element of its own: the catalogue's
+=Script-only recipes= table states where each input comes from in the carrier's
+rows, in the twin recipes' grammar, and the generator checks it as it checks the
+twins. EquityBasketVarianceSwap carries VarianceOption, KIKOVarianceSwap,
+CorridorVarianceSwap, KIKOCorridorVarianceSwap, ConditionalVarianceSwap01 and
+02, and GammaSwap; ORE reads, builds and values each. The =Library scripts=
+table states how each of the library's 54 scripts is held, and the generator
+fails when one is missing or held otherwise than the recipes state. The rainbow,
+dispersion and option families follow.

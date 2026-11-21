@@ -123,28 +123,39 @@ to ores.http were weighed:
   text unchanged, and when it was loaded. ores.http reads the table, parses
   each page with =ores.orgmode=, and indexes the sections in memory.
 
-The third is the simplest that keeps every property wanted: the script does not
-parse; the page changes when the script runs again, without a release; every
-ores.http instance reads one copy; it is backed up with the rest of ORE's data;
-and the parsing stays in one place, ores.http, which already has the parser. The
-table belongs to the system tenant and every tenant reads it, as the shared
-reference tables do. A change notification on the table, as ORE's tables
-already send, tells ores.http to read it again without a restart.
+The third, with an indexing step after it, keeps every property wanted, and is
+the pattern ORE's data quality pipeline already follows: stage the data as it
+arrives, then publish it into the shape its readers need.
 
-Full-text search over the stored org text alone would rank whole pages, index
-the org markup with the words, and could not point a citation at a section; so
-the sections and their index are built in ores.http from the parsed pages.
+1. *Load.* A script reads each file's =:ID:= and writes one row per page into a
+   raw table: the org id as the key, the file's path, its org text unchanged,
+   and when it was loaded. The script does not parse.
+2. *Index.* A service step parses each loaded page with =ores.orgmode= and
+   writes the shaped tables: one row per page (org id, title, description,
+   tags), one per section (page, order, anchor, heading path, level, text, and
+   a =tsvector= weighted by title, heading path and text), and one per link
+   between pages. It runs when the raw table changes, from the change
+   notification ORE's tables already send, and replaces the previous index
+   whole, so a reader never sees half of one.
+
+The parsing lives in one step; the pages change when the script runs again,
+without a release; the index is built once, not by every ores.http instance at
+start; and any service can search it, which matters while it is open where the
+agent loop runs. The tables belong to the system tenant and every tenant reads
+them, as the shared reference tables do. The shaped tables are the indexing
+step's output and can be rebuilt from the raw table at any time, so their shape
+can change without reloading anything.
 
 ** Where to search
 
 - *Typesense.* A new server to deploy, run, back up and secure, for a corpus of
   a few thousand passages. It earns its place for typo tolerance and faceting
   at scale, which this does not need yet.
-- *An index in ores.http's memory.* BM25 over the sections, as compass's own
-  search does over SQLite; small enough to build at start, about 2,850
-  sections.
-- *PostgreSQL full-text search.* Already running and behind ORE's tenancy; the
-  step if a service other than ores.http must search. A =tsvector= per passage weighted by title,
+- *PostgreSQL full-text search over the section rows.* Already running,
+  backed up and behind ORE's tenancy; =ts_rank_cd= over the weighted
+  =tsvector=, and =pg_trgm= (available) for near spellings.
+- *An index in a service's memory.* BM25 over the sections, as compass's own
+  search does over SQLite. Not needed once the sections are rows. A =tsvector= per passage weighted by title,
   description, heading and body, ranked with =ts_rank_cd=, is keyword search of
   the kind compass already shows works on a chosen corpus. =pg_trgm= (available)
   catches near spellings.
@@ -173,9 +184,10 @@ the sections and their index are built in ores.http from the parsed pages.
   ores.http like the operations, the search is one more discovery tool, and the
   agent loop does the first search itself.
 - No new server and no export tool are needed. A script loads the org files
-  into PostgreSQL as they are, ores.http parses them with =ores.orgmode= and
-  indexes their sections in memory, and keyword search of that kind ranks the
-  right pages first once the corpus is chosen. Embeddings, or Typesense, are
+  into PostgreSQL as they are, an indexing step parses them with =ores.orgmode=
+  into pages, sections and links, and PostgreSQL's full-text search over the
+  sections is the kind that ranks the right pages first once the corpus is
+  chosen. Embeddings, or Typesense, are
   later steps with stated triggers.
 - What to load matters more than the search engine. The recipes and codegen
   models outrank the domain pages on a plain question.
@@ -183,13 +195,14 @@ the sections and their index are built in ores.http from the parsed pages.
 * Recommendations
 
 1. Declare which pages are user-facing on the page itself, a tag or a keyword.
-2. A table of knowledge pages in the system tenant, read by every tenant: org
-   id as the key, path, org text, loaded at. A script loads the user-facing
-   pages into it as they are, replacing the previous load.
-3. ores.http reads the table at start and on its change notification, parses
-   each page with =ores.orgmode=, makes one section per heading keyed by the
-   org id and the heading's anchor, keeps the links between pages, and builds a
-   BM25 index of the sections in memory.
+2. A raw table of knowledge pages in the system tenant: org id as the key,
+   path, org text, loaded at. A script loads the user-facing pages into it as
+   they are, replacing the previous load.
+3. An indexing step in a service, run on the raw table's change notification:
+   parse each page with =ores.orgmode= and write pages, sections with a weighted
+   =tsvector=, and links, replacing the previous index whole. Which service owns
+   it, a new knowledge component or an existing one, is decided with where the
+   agent loop runs.
 4. In ores.http: a route that answers a page by its org id as JSON with its org
    text, which ores.web renders with =@ores/org= as a page; a route that
    searches sections; the same two as MCP tools (=find_knowledge=,
@@ -199,8 +212,7 @@ the sections and their index are built in ores.http from the parsed pages.
    retrieved.
 6. Measure before choosing more: a set of real questions with the pages that
    should answer them, scored on whether those pages are in the first five. Add
-   embeddings only if keyword search misses too often, and move the index into
-   PostgreSQL only if a service other than ores.http must search it.
+   embeddings to the indexing step only if keyword search misses too often.
 
 * See also
 

@@ -19,7 +19,6 @@
  */
 #include "ores.trading.core/service/publish_subject_plan.hpp"
 #include <algorithm>
-#include <cctype>
 
 namespace ores::trading::service {
 
@@ -38,8 +37,8 @@ std::string publish_from_dq_function(std::string_view subject) {
         return {};
     // The name is put into SQL as an identifier, so it holds lower-case letters,
     // digits and underscores and nothing else.
-    const auto plain = std::ranges::all_of(operation, [](const unsigned char c) {
-        return std::islower(c) || std::isdigit(c) || c == '_';
+    const auto plain = std::ranges::all_of(operation, [](const char c) {
+        return (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '_';
     });
     if (!plain)
         return {};

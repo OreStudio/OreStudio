@@ -205,6 +205,13 @@ via its "Verifies task" field.
 | 4978.5 | the default shell names one preset | external/ore/methodology.txt | accept | the methodology says --shell takes another preset's build |
 | 4978.6 | --check does not guard the library against upstream | none | reject | the examples move only by step 2, which the methodology says to follow with this step |
 | 4978.7 | the as-of date is hard-coded | generate_script_library.py | accept | a named AS_OF constant with a note to change it on regeneration |
+| 4993.1 | the handler's include is out of order in the registrar | registrar.cpp | accept | after the product_type includes |
+| 4993.2 | the cast of a count to uint64 wraps a negative value | publish_from_dq_handler.cpp | reject | the function returns counts from count(*), which are never negative; the nine copies share the line, so the capture's shared handler is where to change it |
+| 4993.3 | the handler relies on a transitive include for std::uint64_t | publish_from_dq_handler.cpp | accept | includes <cstdint> |
+| 4993.4 | islower and isdigit depend on the locale | publish_subject_plan.cpp | accept | explicit ASCII ranges |
+| 4993.5 | the empty-operation test fails at the ops lookup, so it tests something else | service_publish_subject_plan_tests.cpp | accept | its subject is trading.v1.ops. |
+| 4993.6 | no test covers the handler itself | none | reject | the handler needs a NATS server and a workflow step; the bus publish ran both its success paths, and the capture's shared handler is the place for one test of all copies |
+| 4993.7 | a missing SQL function fails the step with the database's text | publish_from_dq_handler.cpp | reject | the step's failure goes to the workflow, which only administrators read; every copy reports it the same way |
 
 * Result
 

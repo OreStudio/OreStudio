@@ -54,7 +54,6 @@ TEST_CASE("a subject whose operation is not a plain publish name has no function
     CHECK(publish_from_dq_function("trading.v1.ops._from_dq").empty());
 }
 
-TEST_CASE("a subject with nothing between the version and the suffix has no function",
-          "[service][publish]") {
-    CHECK(publish_from_dq_function("trading.v1..publish-from-dq").empty());
+TEST_CASE("a subject with no operation has no function", "[service][publish]") {
+    CHECK(publish_from_dq_function("trading.v1.ops.").empty());
 }

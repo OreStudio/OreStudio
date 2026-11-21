@@ -26,6 +26,7 @@
 #include "ores.nats/domain/delivery.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
 #include "ores.utility/codec/json_codec.hpp"
+#include <cstdint>
 #include <format>
 #include <optional>
 #include <string>

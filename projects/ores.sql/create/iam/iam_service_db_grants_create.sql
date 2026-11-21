@@ -121,7 +121,6 @@ grant usage, select on all sequences in schema public
     :ore_service_user,
     :marketdata_service_user,
     :analytics_service_user,
-    :orgmode_service_user,
     :storage_service_user,
     :inbox_service_user;
 
@@ -143,7 +142,6 @@ alter default privileges in schema public
     :ore_service_user,
     :marketdata_service_user,
     :analytics_service_user,
-    :orgmode_service_user,
     :storage_service_user,
     :inbox_service_user;
 
@@ -168,7 +166,6 @@ grant select on ores_database_info_tbl
     :ore_service_user,
     :marketdata_service_user,
     :analytics_service_user,
-    :orgmode_service_user,
     :storage_service_user,
     :inbox_service_user;
 
@@ -345,11 +342,6 @@ select _ores_grant_select_fn('ores_iam_account_parties_', :'marketdata_service_u
 -- analytics_service: Analytics domain service
 -- ---------------------------------------------------------------------------
 select _ores_grant_dml_fn('ores_analytics_', :'analytics_service_user');
-
--- ---------------------------------------------------------------------------
--- orgmode_service: Org-mode domain service
--- ---------------------------------------------------------------------------
-select _ores_grant_dml_fn('ores_orgmode_', :'orgmode_service_user');
 
 -- ---------------------------------------------------------------------------
 -- storage_service: Object Storage domain service

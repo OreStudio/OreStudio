@@ -116,7 +116,7 @@ Current composite components and their active sub-components:
 | =ores.iam= | =api=, =client=, =core=, =service=, =modeling= |
 | =ores.marketdata= | =api=, =core=, =service= |
 | =ores.ore= | =api=, =core=, =service= |
-| =ores.orgmode= | =parser=, =service=, =modeling= |
+| =ores.orgmode= | =parser=, =modeling= |
 | =ores.refdata= | =api=, =client=, =core=, =service=, =modeling= |
 | =ores.reporting= | =api=, =core=, =service=, =modeling= |
 | =ores.scheduler= | =api=, =core=, =service=, =modeling= |

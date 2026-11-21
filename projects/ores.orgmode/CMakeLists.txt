@@ -20,4 +20,3 @@
 # Template: cmake_composite_root.mustache
 # To modify, update the template and regenerate.
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/parser)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/service)

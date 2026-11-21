@@ -3955,11 +3955,6 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             component['api_full_name'] = f'ores.{base_name}.api'
             component['core_full_name'] = f'ores.{base_name}.core'
             component['service_full_name'] = f'ores.{base_name}.service'
-        # A service part links its sibling core when there is one. A component
-        # adds its core with the first tables it owns, so until then the
-        # service links none rather than a library that does not exist.
-        component['has_core_sibling'] = (
-            Path(model_path).parent.parent.parent / 'core').is_dir()
 
         # The ores.cmake.component.files_{src,tests} archetypes emit an
         # explicit, checked-in `set(files ...)` list -- the idiomatic

@@ -513,24 +513,6 @@
 
 - ores_analytics_
 
-* ores.orgmode.service
-:PROPERTIES:
-:psql_var:    orgmode_service
-:env_key:     ORGMODE_SERVICE
-:iam_role:    OrgmodeService
-:description: Org-mode
-:display_name: Org-mode Service
-:summary:     Indexes ORE's knowledge pages and answers searches and page reads.
-:email:       orgmode_service@system.ores
-:replicas:    1
-:enabled:     true
-:depends_on:  ores.iam.service
-:END:
-
-** DML prefixes
-
-- ores_orgmode_
-
 * ores.http.server
 :PROPERTIES:
 :description: HTTP API gateway

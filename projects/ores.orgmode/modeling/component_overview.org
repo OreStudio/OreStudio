@@ -12,7 +12,7 @@
 #+full_name: ores.orgmode
 #+brief: Org-mode parsing and the knowledge service
 #+component_kind: composite
-#+parts: parser service
+#+parts: parser
 
 * Diagram
 
@@ -23,11 +23,10 @@
 * Summary
 
 =ores.orgmode= is org-mode in ORE. =ores.orgmode.parser= parses org pages
-into documents and resolves =id:= links; =ores.orgmode.service= is the
-knowledge service, which will load ORE's org pages, index them into sections
-and answer searches and page reads. Its =api= and =core= parts are added by the
-tasks that give them their first messages and tables. The service parts are
-built by [[id:05FE6068-3CBD-4B93-B6AE-47A5689F1FCB][Search the knowledge base from ores.web]].
+into documents and resolves =id:= links. The knowledge service, which will load
+ORE's org pages, index them into sections and answer searches and page reads,
+joins as =ores.orgmode.core= and =ores.orgmode.service= with its first tables;
+see [[id:05FE6068-3CBD-4B93-B6AE-47A5689F1FCB][Search the knowledge base from ores.web]].
 
 * Inputs
 

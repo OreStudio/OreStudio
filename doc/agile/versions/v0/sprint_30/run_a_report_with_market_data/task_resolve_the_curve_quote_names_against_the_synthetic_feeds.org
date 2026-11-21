@@ -8,7 +8,7 @@
 #+filetags: :run_a_report_with_market_data:sprint_30:v0:
 #+owner: marco
 #+branch: feature/resolve-the-curve-quote-names-against-the-synthetic-feeds
-#+pr:
+#+pr: 4959
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-12
@@ -115,7 +115,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4959][#4959]] | [marketdata,sql] Check a curve configuration's quotes are answered |
 
 * Review
 

@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 697D625A-034B-4642-806F-12D395C76CB1
+:END:
+#+title: Check the whole fleet is active before provisioning
+#+description: Stopping one service stops the units that require it, and the gate stops services without restarting them; provision only after compass services status shows every unit active.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :environment:provisioning:services:memory:feedback:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+
+Before provisioning a tenant, run compass services status and confirm every unit is active. After stopping any single service by hand, restart the whole target with compass services start, not just the units you stopped.
+
+*Why:* On 2026-11-21 stopping ores.marketdata.service to rerun tests also stopped ores.marketdata.official, which requires it. Only the two stopped units were restarted, and Acme was provisioned without the official service: 4 surfaces were not published and 140 surface blueprints were not given. (The 60 deferred party curves of that run were not caused by it: they recur with every unit up, because the IBOR curves are tried before the overnight curves they discount off, and the scheduled republish publishes them minutes later.) The local gate also stops marketdata and synthetic before ctest and leaves them down.
+
+*How to apply:* Any time services were stopped individually, or after compass check ran, before provisioning or measuring anything on a tenant.

@@ -8,7 +8,7 @@
 #+filetags: :state_the_identity_of_a_series:sprint_30:v0:
 #+owner: marco
 #+branch: feature/refuse-an-identity-that-misses-its-shape
-#+pr:
+#+pr: 4945
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-15
@@ -106,7 +106,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4945][#4945]] | [marketdata] Backfill only the series a party can see |
 
 * Review
 

@@ -108,29 +108,32 @@ use; the corpus test shows every page parses.
 
 ** Where the pages come from
 
-No export tool is needed: the pages are org files and =ores.orgmode= reads them,
-ids, titles, descriptions, tags and links included. What is needed is that the
-pages travel with the release, because a deployed ORE has its binaries, not the
-repository. ORE already does this for the web bundle: the build fills a
-directory, and ores.http serves it from =web_dir= in its configuration through
-=web_bundle_routes=. The knowledge pages can go the same way: the build copies
-the pages marked user-facing into a knowledge directory of the release.
+No export tool is needed: the pages are org files, and =ores.orgmode= reads
+them, ids, titles, descriptions, tags and links included. Three ways to get them
+to ores.http were weighed:
 
-From there, two ways to hold them:
+- *Files in the release.* The build copies the user-facing pages into a
+  directory of the release, as it fills the web bundle's =web_dir=, and
+  ores.http reads them at start. The pages change only with a release.
+- *Pages and sections in PostgreSQL.* A load step parses each page and writes
+  pages, sections and links, with a weighted =tsvector= per section. It puts the
+  parsing in the load step and the schema must follow every change to it.
+- *The org files in PostgreSQL as they are.* A script reads each file's =:ID:=
+  and writes one row per page: the org id as the key, the file's path, its org
+  text unchanged, and when it was loaded. ores.http reads the table, parses
+  each page with =ores.orgmode=, and indexes the sections in memory.
 
-- *In ores.http's memory.* At start, ores.http parses the directory with
-  =ores.orgmode= and builds the sections, the links and a BM25 index in memory.
-  The corpus is about 2,850 sections and 400,000 tokens, a few megabytes. No
-  schema, no load step, no database round trip; the pages change when the
-  release does, which is when they should.
-- *In PostgreSQL.* A load step parses the directory and writes pages, sections
-  and links, with a weighted =tsvector= per section. It earns its place when the
-  knowledge must change without a release, when tenants add pages of their own,
-  or when a service other than ores.http must search it.
+The third is the simplest that keeps every property wanted: the script does not
+parse; the page changes when the script runs again, without a release; every
+ores.http instance reads one copy; it is backed up with the rest of ORE's data;
+and the parsing stays in one place, ores.http, which already has the parser. The
+table belongs to the system tenant and every tenant reads it, as the shared
+reference tables do. A change notification on the table, as ORE's tables
+already send, tells ores.http to read it again without a restart.
 
-The knowledge is the release's own content, read-only and the same for every
-tenant, like the web bundle. So memory is the place to start, and PostgreSQL is
-the step to take when one of those three needs arrives.
+Full-text search over the stored org text alone would rank whole pages, index
+the org markup with the words, and could not point a citation at a section; so
+the sections and their index are built in ores.http from the parsed pages.
 
 ** Where to search
 
@@ -138,10 +141,10 @@ the step to take when one of those three needs arrives.
   a few thousand passages. It earns its place for typo tolerance and faceting
   at scale, which this does not need yet.
 - *An index in ores.http's memory.* BM25 over the sections, as compass's own
-  search does over SQLite; small enough to build at start.
-- *PostgreSQL full-text search.* Already running, already backed up, already
-  behind ORE's tenancy and roles; the step when the pages move into the
-  database. A =tsvector= per passage weighted by title,
+  search does over SQLite; small enough to build at start, about 2,850
+  sections.
+- *PostgreSQL full-text search.* Already running and behind ORE's tenancy; the
+  step if a service other than ores.http must search. A =tsvector= per passage weighted by title,
   description, heading and body, ranked with =ts_rank_cd=, is keyword search of
   the kind compass already shows works on a chosen corpus. =pg_trgm= (available)
   catches near spellings.
@@ -169,34 +172,35 @@ the step to take when one of those three needs arrives.
 - It fits the architecture already chosen. The pages are a resource of
   ores.http like the operations, the search is one more discovery tool, and the
   agent loop does the first search itself.
-- No new server and no export tool are needed to start. The org files travel
-  with the release, ores.http reads them with =ores.orgmode= and indexes their
-  sections in memory, and keyword search of that kind ranks the right pages
-  first once the corpus is chosen. PostgreSQL, and then embeddings or
-  Typesense, are later steps with stated triggers.
+- No new server and no export tool are needed. A script loads the org files
+  into PostgreSQL as they are, ores.http parses them with =ores.orgmode= and
+  indexes their sections in memory, and keyword search of that kind ranks the
+  right pages first once the corpus is chosen. Embeddings, or Typesense, are
+  later steps with stated triggers.
 - What to load matters more than the search engine. The recipes and codegen
   models outrank the domain pages on a plain question.
 
 * Recommendations
 
-1. Declare which pages are user-facing on the page itself, a tag or a keyword,
-   and have the build copy those pages into a knowledge directory of the
-   release, as it fills the web bundle's directory.
-2. At start, ores.http parses that directory with =ores.orgmode=, makes one
-   section per heading, keyed by the org id and the heading's anchor, keeps the
-   links between pages, and builds a BM25 index of the sections in memory.
-3. In ores.http: a route that answers a page by its org id as JSON with its org
+1. Declare which pages are user-facing on the page itself, a tag or a keyword.
+2. A table of knowledge pages in the system tenant, read by every tenant: org
+   id as the key, path, org text, loaded at. A script loads the user-facing
+   pages into it as they are, replacing the previous load.
+3. ores.http reads the table at start and on its change notification, parses
+   each page with =ores.orgmode=, makes one section per heading keyed by the
+   org id and the heading's anchor, keeps the links between pages, and builds a
+   BM25 index of the sections in memory.
+4. In ores.http: a route that answers a page by its org id as JSON with its org
    text, which ores.web renders with =@ores/org= as a page; a route that
    searches sections; the same two as MCP tools (=find_knowledge=,
    =read_knowledge=); and the pages as MCP resources.
-4. In the agent loop: retrieve before the model is called, give it the numbered
+5. In the agent loop: retrieve before the model is called, give it the numbered
    sections written as Markdown, and build the answer's links from what was
    retrieved.
-5. Measure before choosing more: a set of real questions with the pages that
+6. Measure before choosing more: a set of real questions with the pages that
    should answer them, scored on whether those pages are in the first five. Add
-   embeddings only if keyword search misses too often. Move the pages into
-   PostgreSQL only when they must change without a release, tenants add their
-   own, or another service must search them.
+   embeddings only if keyword search misses too often, and move the index into
+   PostgreSQL only if a service other than ores.http must search it.
 
 * See also
 

@@ -88,9 +88,7 @@ TEST_CASE("a_zero_rule_a_run_left_open_is_restored_before_the_next_test", tags) 
     ores::inbox::repository::approval_kind_repository repo;
     repo.write(ctx, leaked);
 
-    {
-        zero_approval_kind zeroed(h);
-    }
+    { zero_approval_kind zeroed(h); }
 
     const auto after = lifecycle.kind(std::string(curve_publish_kind_code));
     REQUIRE(after);

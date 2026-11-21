@@ -92,7 +92,7 @@ const ore_parameter* documented_of(const documentation& documented,
 }
 
 /// One field of a documentation row, or nothing when the guide never lists it.
-std::string documented_field(const ore_parameter* doc, std::string ore_parameter::* field) {
+std::string documented_field(const ore_parameter* doc, std::string ore_parameter::*field) {
     return doc == nullptr ? std::string() : doc->*field;
 }
 

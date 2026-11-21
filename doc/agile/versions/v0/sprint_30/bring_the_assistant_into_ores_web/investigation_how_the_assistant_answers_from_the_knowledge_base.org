@@ -120,8 +120,8 @@ to ores.http were weighed:
   parsing in the load step and the schema must follow every change to it.
 - *The org files in PostgreSQL as they are.* A script reads each file's =:ID:=
   and writes one row per page: the org id as the key, the file's path, its org
-  text unchanged, and when it was loaded. ores.http reads the table, parses
-  each page with =ores.orgmode=, and indexes the sections in memory.
+  text unchanged, and when it was loaded. Something then has to parse it:
+  ores.http in memory at start, or a step that writes the parsed shape back.
 
 The third, with an indexing step after it, keeps every property wanted, and is
 the pattern ORE's data quality pipeline already follows: stage the data as it

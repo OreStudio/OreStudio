@@ -21,11 +21,11 @@ A full build of main compiles every target again, and the two raise functions ag
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
-| Now           | Both tasks are done and the target builds; the PR is the last step. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Merge, so main compiles again.         |
+| Next          | Nothing. |
 | Last touched  | 2026-11-21                               |
 
 * Acceptance
@@ -38,7 +38,7 @@ A full build of main compiles every target again, and the two raise functions ag
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:1B5328BF-1066-43D6-A730-DC9C8E770590][Scaffold story: Hotfix: Main stops at the surface set test]] | DONE | 2026-11-21 | 2026-11-21 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:E1FB7EF9-EDA5-4596-9A79-B6F66020194F][Discard the raise result the surface set test does not read]] | STARTED | 2026-11-21 | | Initial task for: Hotfix: Main stops at the surface set test |
+| [[id:E1FB7EF9-EDA5-4596-9A79-B6F66020194F][Discard the raise result the surface set test does not read]] | DONE | 2026-11-21 | 2026-11-21 | Initial task for: Hotfix: Main stops at the surface set test |
 
 * Decisions
 
@@ -51,3 +51,19 @@ A full build of main compiles every target again, and the two raise functions ag
 * Out of scope
 
 -
+
+* Result
+
+Main compiles again. The marketdata service tests build 144 of 144 targets in
+1 minute 40 seconds, and the two set raises now agree: both are
+=[[nodiscard]]=, and the two tests that raise a set only to assert its refusal
+say so with a =void= cast and a comment.
+
+The PR is #4943, merged as =2be739449d=, about twenty minutes after
+brave_hopper reported the break. Their build of main was blocked on it, and
+the branch they were validating could not be built either.
+
+What the report said was true of the surface raise and not of the whole tree:
+the curve raise discards its result in the same way, in the same kind of
+test, and passed only because nobody had marked that function. Both are
+marked now, so the next such call fails the build instead of hiding.

@@ -85,10 +85,11 @@ struct ir_curve_generation_config final {
      * [[id:A6051CE4-29B2-4D05-A0FF-40ED1FD3C31D][ir_curve_index_family]], such as sofr, euribor or
      * hibor, stored as a fixed lower-case token rather than the full ISDA/ORE code the predecessor
      * index_name column held ("USD-SOFR") -- currency_code already carries the currency half of
-     * that pair. The insert trigger checks the family and the tenor together against the catalogue.
-     * The (currency_code, index_family) pair names an overnight_index_convention or
-     * ibor_index_convention, whose own id is currency_code + "-" + upper(index_family); the feed
-     * itself reads no convention, so a curve whose pair has no convention seeded still ticks.
+     * that pair. The insert trigger checks the family against the catalogue, and a hand-written
+     * trigger checks the tenor against the family's row. The (currency_code, index_family) pair
+     * names an overnight_index_convention or ibor_index_convention, whose own id is currency_code +
+     * "-" + upper(index_family); the feed itself reads no convention, so a curve whose pair has no
+     * convention seeded still ticks.
      */
     std::string index_family;
 
@@ -98,15 +99,16 @@ struct ir_curve_generation_config final {
      * which tenors it admits: empty for an overnight curve, a tenor for a term curve, which
      * projects off its currency's overnight curve, and its one dated tenor, such as SOFR's "FOMC",
      * for a meeting-dated curve whose template entries resolve to meeting-dated pillars 1F..8F via
-     * tenor_resolution. The insert trigger applies the rule with
-     * ores_synthetic_validate_ir_curve_index_family_tenor_fn. The tenor of the index is the tenor
-     * identity field of the oresmd series the curve's pillars land in ("1D" for an overnight index,
-     * this column otherwise); see [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio
-     * Market Data URI]]. Empty string, not SQL NULL: the codegen used here has no true-nullable
-     * text support. Not DB-FK-validated against tenor, matching the precedent set by
-     * ir_curve_template_entry's own start_tenor_code/end_tenor_code (also soft FKs to tenor.code,
-     * resolved only at the application layer via ores.refdata.api/domain/tenor_resolution.hpp, not
-     * a DB trigger -- tenor.org itself emits no single-argument validator function to reuse).
+     * tenor_resolution. The rule needs both columns, which the codegen validations cannot pass, so
+     * a hand-written trigger applies it, as the process type cross-check of the parameter values
+     * does. The tenor of the index is the tenor identity field of the oresmd series the curve's
+     * pillars land in ("1D" for an overnight index, this column otherwise); see
+     * [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio Market Data URI]]. Empty
+     * string, not SQL NULL: the codegen used here has no true-nullable text support. Not
+     * DB-FK-validated against tenor, matching the precedent set by ir_curve_template_entry's own
+     * start_tenor_code/end_tenor_code (also soft FKs to tenor.code, resolved only at the
+     * application layer via ores.refdata.api/domain/tenor_resolution.hpp, not a DB trigger --
+     * tenor.org itself emits no single-argument validator function to reuse).
      */
     std::string tenor;
 

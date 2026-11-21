@@ -1,0 +1,414 @@
+:PROPERTIES:
+:ID: 8DCDD35A-90A9-48DA-A880-A2D098FE2838
+:END:
+#+title: Check: ORE output catalogue
+#+description: The output catalogue and the output formats page state every output family the samples ORE ships show; the tables give compass the curation the samples cannot state.
+#+type: check
+#+level: cross
+#+filetags: :compass:check:ore:results:generator:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+#+options: prop:t
+
+This page gives the data of compass-ng's =ore_output_catalogue= codec, the
+generator of ORE Studio's output catalogue. The =* Definition= names the codec;
+each table below is data the codec reads, and the prose says what it is for.
+The tables were module-level constants of
+=projects/ores.ore/scripts/generate_output_catalogue.py= and the =FAMILY_DOCS=
+of =projects/ores.ore/scripts/output_family_docs.py=, which compass-ng used to
+parse. Every cell is read as written: a blank cell, or one that is only ==, is
+the empty string.
+
+The codec still reads the list of ORE's files from
+=projects/ores.sql/utility/ore_files.py=, which ORE Studio's seed generator also
+reads; that list is not data of this page.
+
+* Rule
+
+The output catalogue
+(=projects/ores.ore/core/src/results/output_catalogue_data.cpp= and its header)
+and the page =doc/knowledge/external/ore_output_formats.org= are what the codec
+writes from the samples ORE ships under =external/ore/examples=, the samples
+under =projects/ores.ore/data/samples=, the seed of ORE's output files and the
+tables below. Each family the samples show is one ORE file, has a row in
+=* Family documentation=, and each output file the seed names is a family, an
+alias of one, or a row of =* Out of scope=.
+
+* Why
+
+ORE publishes no list of what its output files hold, so ORE Studio derives the
+catalogue from the samples. The samples cannot say which analytic writes a file
+no parameter names, which columns identify a row, which values mean no value,
+or what a figure means; these tables say it, once, beside the reason for each.
+
+* Definition
+:PROPERTIES:
+:CODEC: ore_output_catalogue
+:END:
+
+* Family conventions
+
+The files the engine names by a convention of its own, with the analytic that
+writes them. A family whose name a seed parameter states takes its analytic
+from the seed instead.
+
+| family                            | analytic                |
+|-----------------------------------+-------------------------|
+| bacva                             | bacva                   |
+| colva-nettingset                  | xva                     |
+| credit-migration                  | creditcurves            |
+| cva_sensitivities                 | xvaSensitivity          |
+| dim_evolution                     | xva                     |
+| dim_regression                    | xva                     |
+| eigenvalues                       | calibration             |
+| eigenvectors                      | calibration             |
+| exposure-nettingset               | xva                     |
+| exposure-trade                    | xva                     |
+| historical_PnL                    | historicalSimulationVar |
+| im_schedule                       | imschedule              |
+| im_schedule_trade                 | imschedule              |
+| mean-reversion                    | calibration             |
+| pca                               | calibration             |
+| regulation_breakdown_simm         | simm                    |
+| saccr                             | saccr                   |
+| saccr_detail                      | saccr                   |
+| sacva                             | sacva                   |
+| sacva_sensitivities               | sacva                   |
+| sacvadetail                       | sacva                   |
+| scenario_fullSurface              | scenario                |
+| scenariostatistics                | scenario                |
+| sensitivity_atmOnly               | sensitivity             |
+| sensitivity_fullSurface           | sensitivity             |
+| sensitivity_scenario              | sensitivity             |
+| simm                              | simm                    |
+| simm_data                         | simm                    |
+| smrc                              | smrc                    |
+| smrcdetail                        | smrc                    |
+| stress                            | stress                  |
+| stress_scenario_par_rates         | stress                  |
+| stress_scenarios                  | scenarioGeneration      |
+| stresstest                        | stress                  |
+| stresstest_flows                  | stress                  |
+| swaption_npv                      | npv                     |
+| todaysmarketcalibration           | todaysMarketCalibration |
+| todaysmarketcalibration_cashflows | todaysMarketCalibration |
+| xvaExplain                        | xvaExplain              |
+| xvaExplain_details                | xvaExplain              |
+| xva_par_sensitivity               | xvaSensitivity          |
+| xva_zero_sensitivity              | xvaSensitivity          |
+| xvacg-cva-sensi-scenario          | xva                     |
+| xvacg-exposure                    | xva                     |
+| scenario_par_rates                | sensitivity             |
+| xva                               | xva                     |
+
+* Numeric qualifiers
+
+Numeric columns that state the context of a figure rather than the figure: the
+size of a shift, the time to a maturity, the index of a point. Each is a
+qualifier, not a measure.
+
+| column       |
+|--------------|
+| ShiftSize_1  |
+| ShiftSize_2  |
+| MaturityTime |
+| DateIndex    |
+| Depth        |
+| TimeStep     |
+
+* Family roles
+
+Families the codec treats apart. A =risk_factors= family's figures are the risk
+factors the run simulated, so its columns come from the configuration even
+where the samples hold one variant: its measures are open. A =notebook= family
+has no sample in the suites and is read from the notebook examples
+(=ORE-Python/Notebooks=); only these are read from there, because the notebooks
+also hold copies of families the suites already state. A =legacy= family has a
+sample only in the legacy examples (=Legacy=); only these are read from there,
+because the legacy examples repeat the suites with older headers. A family may
+hold more than one role.
+
+| family               | role         |
+|----------------------+--------------|
+| scenariostatistics   | risk_factors |
+| stress_scenarios     | risk_factors |
+| scenariodump         | risk_factors |
+| marketdata           | notebook     |
+| fixings              | notebook     |
+| dividends            | notebook     |
+| runtimes             | notebook     |
+| scenariodump         | notebook     |
+| additional_results   | notebook     |
+| timeaveragedexposure | legacy       |
+| marketObjects        | legacy       |
+| riskFactors          | legacy       |
+| counterparties       | legacy       |
+| netting_sets         | legacy       |
+| swap_indices         | legacy       |
+| trade_types          | legacy       |
+| underlying_indices   | legacy       |
+
+* Aliases
+
+The other names a family is written under, one row for each. A report the run
+configuration does not name is written under the engine's own report name, and
+the seed names the initial margin files with a =.txt= extension.
+
+| family         | name                |
+|----------------+---------------------|
+| flows          | cashflow.csv        |
+| saccr_detail   | saccrdetail.csv     |
+| dim_evolution  | dim_evolution.txt   |
+| dim_regression | dim_regression*.txt |
+| stresstest     | stress.csv          |
+
+* Same report
+
+The samples written under another report's name: a sample whose name, without
+=.csv= and a trailing =_<n>=, is =sample= belongs to =family=. The stress
+analytic writes its report as =stress.csv= when the run names it so, as the
+intraday power example does; it is the stress test report, not a family of its
+own.
+
+| sample | family     |
+|--------+------------|
+| stress | stresstest |
+
+* Out of scope
+
+The output files the seed names that are not read into rows, and why. The
+codec refuses a seed output that is neither a family nor stated here. The
+reasons that cite a version hold for that version: re-check them when the
+vendored ORE moves. The output formats page lists them in its =Outputs not read
+into rows= table.
+
+| file                               | reason                                                                              |
+|------------------------------------+-------------------------------------------------------------------------------------|
+| amcBuffer.dat                      | binary path data the AMC engine reads back, not a report                            |
+| scenariodata.dat                   | binary scenario data the engine reads back, not a report                            |
+| cube.csv.gz                        | a compressed copy of the NPV cube; rawcube states it as text                        |
+| cptyCube.csv.gz                    | a compressed counterparty cube the engine reads back                                |
+| nettingSetCube.csv.gz              | a compressed copy of the netting set cube; netcube states it as text                |
+| scenariodata.csv.gz                | a compressed copy of the aggregation scenario data the engine reads back            |
+| crossgamma.csv                     | no writer reads sensitivity.crossGammaOutputFile at v1.8.17.0                       |
+| productclass_mapping.csv           | no writer reads sensitivity.productClassMappingOutputFile at v1.8.17.0              |
+| creditcurves.csv                   | no writer reads creditcurves.outputFileName at v1.8.17.0                            |
+| parsensi.csv                       | no writer reads sensitivity.parRateSensitivityOutputFile at v1.8.17.0               |
+| scenariodata.csv                   | no writer reads simulation.aggregationScenarioDataDump at v1.8.17.0                 |
+| xva_sensitivity_jacobi.csv         | the xvaSensitivity analytic writes its jacobi to jacobi.csv at v1.8.17.0            |
+| xva_sensitivity_jacobi_inverse.csv | the xvaSensitivity analytic writes its jacobi to jacobi_inverse.csv at v1.8.17.0    |
+| pca.csv                            | a stem: the analytic writes pca_<currency>.csv, the pca family                      |
+| meanReversion.csv                  | a stem: the analytic writes meanReversion_<currency>.csv, the mean-reversion family |
+
+* Kind overrides
+
+The kinds a sample cannot show, because every sample of the column is empty.
+A kind is one of =text=, =date=, =time=, =integer= or =decimal=.
+
+| family       | column              | kind    |
+|--------------+---------------------+---------|
+| crif         | Bucket              | text    |
+| capital_crif | Bucket              | text    |
+| dividends    | dividendExDate      | date    |
+| dividends    | dividendRate        | decimal |
+| dividends    | dividendPaymentDate | date    |
+
+* Keys
+
+The columns that identify a row rather than measure it. A key is text whatever
+its values look like. A row with an empty =family= is a key of every family; a
+row that names a family is a key of that family only, because another family
+states the same name as a column of its own: a cashflow states the fixing date
+of its coupon. The order is the order a family's key columns are listed in.
+
+| column             | family             |
+|--------------------+--------------------|
+| TradeId            |                    |
+| TradeID            |                    |
+| NettingSet         |                    |
+| NettingSetId       |                    |
+| NettingSetID       |                    |
+| Portfolio          |                    |
+| PortfolioId        |                    |
+| PortfolioID        |                    |
+| Date               |                    |
+| Time               |                    |
+| Tenor              |                    |
+| PillarDate         |                    |
+| Scenario           |                    |
+| ScenarioLabel      |                    |
+| LegNo              |                    |
+| CashflowNo         |                    |
+| RiskFactor         |                    |
+| Factor             |                    |
+| RiskFactor1        |                    |
+| RiskFactor2        |                    |
+| TradeType          |                    |
+| MarketObjectType   |                    |
+| MarketObjectId     |                    |
+| PrincipalComponent |                    |
+| Sample             |                    |
+| PLDate1            |                    |
+| PLDate2            |                    |
+| datumDate          | marketdata         |
+| datumId            | marketdata         |
+| fixingDate         | fixings            |
+| fixingId           | fixings            |
+| dividendExDate     | dividends          |
+| equityId           | dividends          |
+| ParFactor          | jacobi             |
+| RawFactor          | jacobi             |
+| RawFactor(z)       | jacobi_inverse     |
+| ParFactor(c)       | jacobi_inverse     |
+| Key                | runtimes           |
+| TradeId            | additional_results |
+| ResultId           | additional_results |
+| Counterparty       | counterparties     |
+| NettingSets        | netting_sets       |
+| TradeTypes         | trade_types        |
+| MarketObjectType   | marketObjects      |
+| RiskFactorType     | riskFactors        |
+| AssetType          | underlying_indices |
+
+* Prefixes
+
+A sample whose name starts with =prefix= belongs to =family=, whatever follows:
+the parameter that names the file states the family, and the engine adds the
+netting set, trade or currency. The first prefix that matches wins.
+
+| prefix                | family               |
+|-----------------------+----------------------|
+| colva_nettingset_     | colva-nettingset     |
+| exposure_nettingset_  | exposure-nettingset  |
+| exposure_trade_       | exposure-trade       |
+| credit_migration_     | credit-migration     |
+| meanReversion_        | mean-reversion       |
+| xva_par_sensitivity_  | xva_par_sensitivity  |
+| xva_zero_sensitivity_ | xva_zero_sensitivity |
+| pca_                  | pca                  |
+
+* Nulls
+
+The engine writes a value it has no figure for as its null string. It is not a
+value of the column, so it is dropped before the kind is inferred. The row ==
+is the empty string: an empty cell of a sample.
+
+| value |
+|-------|
+| ==    |
+| #N/A  |
+| #NA   |
+| N/A   |
+| null  |
+| NULL  |
+| NaN   |
+| -nan  |
+
+* Family documentation
+
+What each output family states, and the units of its figures, by the ORE file
+code of the family. The catalogue says which columns a family has and what kind
+each is; it cannot say what a figure means. The codec renders this table beside
+the catalogue's columns into the output formats page, and refuses a family this
+table does not describe, or a row whose family the samples do not show, so a
+new family cannot reach the page without a sentence. Money is in the currency
+the row states, or the run's base currency where a column says Base.
+
+| family                              | description                                                                                                                                       | units                                                                                                                                                                       |
+|-------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| additional_results_report           | The extra results a pricer reports for each trade beyond its NPV: the engine and model it used, intermediate values and projected cashflows.      | Each value states its own type: string, double or cashflows; a double is in the trade's currency unless its name says otherwise.                                            |
+| bacva_report                        | The basic approach CVA capital charge for each netting set.                                                                                       | Money, in the currency the row states; a (Base) column is in the run's base currency.                                                                                       |
+| calibration_report                  | The calibrated cross-asset model, as one XML document.                                                                                            | None: the document is configuration, not figures.                                                                                                                           |
+| capital_crif                        | The capital sensitivities in CRIF form, one row for each trade, risk type and label, with the counterparty and netting set they belong to.        | Amount is in AmountCurrency; AmountUSD is in US dollars.                                                                                                                    |
+| netting_set_colva_report            | The collateral valuation adjustment of one netting set along the exposure dates, with the collateral balance and floor behind it.                 | Money, in the currency the row states; a (Base) column is in the run's base currency.                                                                                       |
+| correlations                        | The correlation between two risk factors, estimated from history.                                                                                 | A correlation between -1 and 1.                                                                                                                                             |
+| counterparties                      | The counterparties a portfolio's trades name, with how many trades each has.                                                                      | A count of trades.                                                                                                                                                          |
+| credit_migration                    | The distribution of a credit portfolio's value under credit migration, bucket by bucket.                                                          | upperBucketBound is money in the base currency; pdf and cdf are probabilities.                                                                                              |
+| crif                                | The SIMM sensitivities in CRIF form, one row for each trade, risk type, qualifier, bucket and label.                                              | Amount is in AmountCurrency; AmountUSD is in US dollars.                                                                                                                    |
+| curves_report                       | The discount factors of each curve the run built, one column for each curve, at each pillar date.                                                 | A discount factor, without unit; the columns are the run's configured curves.                                                                                               |
+| cva_sensitivities                   | The CVA of each netting set and its change when one risk factor is shifted.                                                                       | BaseCva and Delta are money in the base currency; ShiftSize is in the factor's own unit.                                                                                    |
+| dim_evolution                       | The expected dynamic initial margin of each netting set along the exposure dates.                                                                 | Money in the base currency; DaysInPeriod is a count of days.                                                                                                                |
+| dim_regression                      | The dynamic initial margin of each simulation sample and the regressors it was estimated from.                                                    | Money in the base currency; the regressor columns are the run's configured regressors.                                                                                      |
+| dividends_report                    | The dividends the run loaded, one row for each equity and ex date.                                                                                | dividendRate is the dividend per share, in the equity's currency.                                                                                                           |
+| eigenvalues                         | The eigenvalues of a principal component analysis of historical moves.                                                                            | An eigenvalue, without unit.                                                                                                                                                |
+| eigenvectors                        | The eigenvectors of a principal component analysis, one row for each tenor.                                                                       | A loading, without unit.                                                                                                                                                    |
+| netting_set_exposure_report         | The exposure profile of one netting set: expected positive and negative exposure, potential future exposure and the Basel measures, at each date. | Money, in the currency the row states; a (Base) column is in the run's base currency.                                                                                       |
+| trade_exposure_report               | The exposure profile of one trade, with the share of its netting set's exposure allocated to it, at each date.                                    | Money, in the currency the row states; a (Base) column is in the run's base currency.                                                                                       |
+| fixings_report                      | The index fixings the run loaded, one row for each index and date.                                                                                | A fixing, in the index's own unit: a rate, a price or a level.                                                                                                              |
+| cashflow_report                     | The cashflows of each trade, one row for each payment of each leg, with its dates, rates and present value.                                       | Money, in the currency the row states; a (Base) column is in the run's base currency. Coupon is a rate; Accrual is a year fraction; DiscountFactor has no unit.             |
+| historical_pnl                      | The historical profit and loss of a portfolio between two dates, one row for each historical scenario.                                            | Money, in the currency the row states; a (Base) column is in the run's base currency.                                                                                       |
+| im_schedule                         | The initial margin of each portfolio under the regulatory schedule approach, with the replacement costs and net-to-gross ratio.                   | Money, in the currency the row states; a (Base) column is in the run's base currency. NetToGrossRatio has no unit.                                                          |
+| im_schedule_trade                   | The schedule initial margin of each trade, with the notional and value it is computed from.                                                       | Money, in the currency the row states; a (Base) column is in the run's base currency. Maturity is a year fraction; Multiplier has no unit.                                  |
+| jacobi                              | The conversion matrix from zero-rate to par-rate sensitivities: how much one par factor moves with one raw factor.                                | A sensitivity ratio, without unit.                                                                                                                                          |
+| jacobi_inverse                      | The inverse conversion matrix: how much one raw factor moves with one par factor.                                                                 | A sensitivity ratio, without unit.                                                                                                                                          |
+| market_objects                      | The market objects a portfolio depends on, one row for each kind, with the objects of that kind.                                                  | None: the values are names.                                                                                                                                                 |
+| market_data_report                  | The market quotes the run loaded, one row for each quote and date.                                                                                | A quote, in the quote's own unit: a rate, a price, a spread or a volatility.                                                                                                |
+| mean_reversion                      | The mean reversion and volatility parameters calibrated for a Hull-White model, one file for each currency.                                       | A parameter of the model, without unit.                                                                                                                                     |
+| net_cube                            | The value of each netting set in each simulated scenario at each date: the NPV cube after netting.                                                | Money in the base currency.                                                                                                                                                 |
+| netting_sets                        | The netting sets a portfolio's trades fall in, with how many trades each has.                                                                     | A count of trades.                                                                                                                                                          |
+| npv_report                          | The net present value and notional of each trade.                                                                                                 | Money, in the currency the row states; a (Base) column is in the run's base currency.                                                                                       |
+| par_conversion_sensitivity          | The par-rate sensitivities of each trade converted from zero-rate sensitivities.                                                                  | Money, in the currency the row states; a (Base) column is in the run's base currency. A (Trade) column is in the trade's currency.                                          |
+| par_sensitivity                     | The par-rate sensitivities of each trade: delta and gamma for each par factor.                                                                    | Money, in the currency the row states; a (Base) column is in the run's base currency. A (Trade) column is in the trade's currency.                                          |
+| par_shifts                          | The par-rate shift a zero-rate stress scenario implies for each par instrument.                                                                   | A shift in the instrument's quote unit, usually a rate.                                                                                                                     |
+| pca                                 | The principal components of historical curve moves, one file for each currency.                                                                   | Eigenvalues and loadings, without unit.                                                                                                                                     |
+| pnl_report                          | The profit and loss of each trade between two dates, split into its sources.                                                                      | Money, in the currency the row states; a (Base) column is in the run's base currency.                                                                                       |
+| pnl_explain_report                  | The profit and loss of each trade between two dates, explained factor by factor.                                                                  | Money, in the currency the row states; a (Base) column is in the run's base currency.                                                                                       |
+| pricing_stats                       | How many times each trade was priced and how long it took.                                                                                        | NumberOfPricings is a count; the timings are in microseconds.                                                                                                               |
+| raw_cube                            | The value of each trade in each simulated scenario at each date: the NPV cube before netting.                                                     | Money in the base currency.                                                                                                                                                 |
+| simm_regulation_breakdown           | The SIMM initial margin of each portfolio broken down by regulation.                                                                              | Money, in the currency the row states; a (Base) column is in the run's base currency.                                                                                       |
+| risk_factors                        | The risk factors a portfolio depends on, one row for each kind, with the factors of that kind.                                                    | None: the values are names.                                                                                                                                                 |
+| runtimes                            | How long each part of the run took.                                                                                                               | Count is a number of calls; the others are microseconds.                                                                                                                    |
+| saccr_report                        | The SA-CCR exposure at default of each netting set, with the add-on, replacement cost and margin terms behind it.                                 | Money, in the currency the row states; a (Base) column is in the run's base currency. Multiplier and RW have no unit.                                                       |
+| saccr_detail                        | The SA-CCR terms of each trade: its hedging set, supervisory delta, maturity factor and adjusted notional.                                        | Money, in the currency the row states; a (Base) column is in the run's base currency. delta, MF and the supervisory factors have no unit; M, S, E and T are year fractions. |
+| sacva_report                        | The standardised approach CVA capital charge of each netting set.                                                                                 | Money, in the currency the row states; a (Base) column is in the run's base currency.                                                                                       |
+| sacva_sensitivities                 | The SA-CVA sensitivities of each netting set to each risk factor, before netting and before any risk weight.                                      | Money, in the currency the row states; a (Base) column is in the run's base currency.                                                                                       |
+| sacva_sensitivity                   | The net SA-CVA sensitivities of each netting set, by risk type, CVA type and margin type.                                                         | Money, in the currency the row states; a (Base) column is in the run's base currency.                                                                                       |
+| sacva_detail                        | The SA-CVA sensitivities of each netting set with the risk weight applied to each.                                                                | Sensitivity is money in the base currency; RiskWeight has no unit.                                                                                                          |
+| scenario                            | The value of each trade under each shifted factor of a sensitivity run.                                                                           | Money, in the currency the row states; a (Base) column is in the run's base currency.                                                                                       |
+| scenario_full_surface               | The value of each trade under each shifted factor of a full volatility surface sensitivity run.                                                   | Money, in the currency the row states; a (Base) column is in the run's base currency.                                                                                       |
+| scenario_par_rates                  | The par rates of each par instrument in the base and in the shifted market.                                                                       | A rate.                                                                                                                                                                     |
+| scenario_dump                       | The simulated market: the value of each risk factor in each scenario at each date.                                                                | A risk factor in its own unit: a discount factor, a rate, a spot or a volatility; the columns are the run's configured factors.                                             |
+| scenario_statistics                 | Statistics of the simulated market across scenarios, for each risk factor at each date.                                                           | A risk factor in its own unit; the columns are the run's configured factors.                                                                                                |
+| sensitivity_report                  | The zero-rate sensitivities of each trade: delta and gamma for each factor, and cross gammas for factor pairs.                                    | Money, in the currency the row states; a (Base) column is in the run's base currency. A (Trade) column is in the trade's currency; a shift size is in the factor's unit.    |
+| sensitivity_atm_only                | The sensitivities of each trade when only the at-the-money volatilities are shifted.                                                              | Money, in the currency the row states; a (Base) column is in the run's base currency.                                                                                       |
+| sensitivity_full_surface            | The sensitivities of each trade when the full volatility surface is shifted.                                                                      | Money, in the currency the row states; a (Base) column is in the run's base currency.                                                                                       |
+| sensitivity_scenario                | The value of each trade under each scenario of a sensitivity run, with the factor the scenario shifts.                                            | Money, in the currency the row states; a (Base) column is in the run's base currency.                                                                                       |
+| simm_report                         | The SIMM initial margin of each portfolio.                                                                                                        | Money, in the currency the row states; a (Base) column is in the run's base currency.                                                                                       |
+| simm_data                           | The SIMM margin of each portfolio broken down by product class, risk class and bucket.                                                            | Money, in the currency the row states; a (Base) column is in the run's base currency.                                                                                       |
+| smrc_report                         | The standardised market risk charge of each trade type.                                                                                           | Money, in the currency the row states; a (Base) column is in the run's base currency. RiskWeight has no unit.                                                               |
+| smrc_detail                         | The standardised market risk charge terms of each trade.                                                                                          | Money, in the currency the row states; a (Base) column is in the run's base currency. Maturity is a year fraction; RiskWeight has no unit.                                  |
+| stress_scenario_par_rates           | The par rates of each par instrument in the base and in each stress scenario.                                                                     | A rate.                                                                                                                                                                     |
+| stress_scenarios                    | The stressed market: the value of each risk factor in each stress scenario.                                                                       | A risk factor in its own unit; the columns are the run's configured factors.                                                                                                |
+| stress_test_report                  | The value of each trade in each stress scenario and the change from the base, under the stress analytic's usual file name.                        | Money, in the currency the row states; a (Base) column is in the run's base currency.                                                                                       |
+| stress_test_flows                   | The cashflows of each trade in each stress scenario, each figure stated for the base, the scenario and the difference.                            | Money, in the currency the row states; a (Base) column is in the run's base currency. Coupon is a rate; Accrual is a year fraction.                                         |
+| swap_indices                        | The swap indices a portfolio references.                                                                                                          | None: the values are names.                                                                                                                                                 |
+| swaption_npv                        | The net present value and notional of each swaption.                                                                                              | Money, in the currency the row states; a (Base) column is in the run's base currency.                                                                                       |
+| time_averaged_exposure              | The time-averaged netted exposure of each netting set in each simulation sample, with and without collateral.                                     | Money in the base currency.                                                                                                                                                 |
+| todays_market_calibration           | What the market the run built came out as: one value for each result of each curve, surface or model, such as a pillar's rate or time.            | Each value states its type, double or string; a double is in the object's own unit.                                                                                         |
+| todays_market_calibration_cashflows | The cashflows of the instruments each curve was calibrated to, one row for each payment of each pillar's instrument.                              | Money, in the currency the row states; a (Base) column is in the run's base currency. Coupon is a rate; Accrual is a year fraction.                                         |
+| trade_types                         | The trade types a portfolio holds, with how many trades of each.                                                                                  | A count of trades.                                                                                                                                                          |
+| underlying_indices                  | The underlying indices a portfolio references, one row for each asset type.                                                                       | None: the values are names.                                                                                                                                                 |
+| var_report                          | The value at risk and expected shortfall of each portfolio at each configured quantile.                                                           | Money in the base currency; the columns are the run's configured quantiles.                                                                                                 |
+| xva_report                          | The valuation adjustments of each trade and netting set: CVA, DVA, funding, collateral, margin and capital, with the Basel exposures.             | Money in the base currency.                                                                                                                                                 |
+| xva_explain_report                  | The change in CVA of each trade and netting set explained by each risk factor.                                                                    | Money in the base currency.                                                                                                                                                 |
+| xva_explain_details                 | The valuation adjustments of each trade and netting set under each explain scenario.                                                              | Money in the base currency.                                                                                                                                                 |
+| xva_par_sensitivity                 | The par-rate sensitivities of one valuation adjustment, one file for each adjustment.                                                             | Money in the base currency.                                                                                                                                                 |
+| xva_zero_sensitivity                | The zero-rate sensitivities of one valuation adjustment, one file for each adjustment.                                                            | Money in the base currency.                                                                                                                                                 |
+| xva_cg_cva_sensitivity_scenario     | The CVA of each trade under each shifted factor, from the computation-graph XVA engine.                                                           | Money in the base currency.                                                                                                                                                 |
+| xva_cg_exposure                     | The expected positive and negative exposure at each date, from the computation-graph XVA engine.                                                  | Money in the base currency.                                                                                                                                                 |
+
+* Examples
+
+None here: the codec's cases are its tests, in compass's
+=codecs_ore_output_catalogue_tests.cpp=.
+
+* Exceptions
+
+| path | line | rule | expires | approver | reason |
+|------+------+------+---------+----------+--------|
+
+* See also
+
+- =compass-ng='s =ore_output_catalogue= codec, in the compass repository.
+- [[id:34C68112-7A34-4557-835C-BDCAA7BB9C2A][ORE output formats]], the page the
+  codec writes.

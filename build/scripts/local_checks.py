@@ -404,21 +404,6 @@ CATALOGUE: tuple[Check, ...] = (
                "projects/ores.sql/utility/generate_script_twins.py"),
         fix="Run python3 projects/ores.sql/utility/generate_script_twins.py and commit the result.",
     ),
-    # The generated tables are the only copy of the schema's shape we keep, so
-    # a hand edit or a schema change that the tables did not follow is the same
-    # failure from here.
-    Check(
-        id="xml-bindings-drift",
-        title="The generated codec tables match the schemas",
-        argv=("python3", "build/scripts/check_xml_bindings_drift.py"),
-        classes=("cpp", "codegen"),
-        paths=("projects/ores.ore/scripts/*",
-               "projects/ores.ore/core/include/ores.ore.core/xml/generated/*",
-               "projects/ores.ore/core/src/xml/generated/*",
-               "build/scripts/check_xml_bindings_drift.py",
-               "external/ore/xsd/*"),
-        fix="Run ./projects/ores.ore/scripts/regenerate_xml_bindings.sh and commit.",
-    ),
     # The gate is narrow on purpose: it only applies when a file that changes
     # what the benchmark measures changed. A change to the XML sources, or to
     # the benchmark's own harness, owes a measurement; nothing else does.
@@ -598,24 +583,6 @@ CATALOGUE: tuple[Check, ...] = (
             "projects/ores.sql/utility/extract_curve_terms.py",
         ),
         fix="Run projects/ores.sql/utility/generate_ore_parameters_dataset.py and commit the seed.",
-    ),
-    Check(
-        id="convention-kind-terms",
-        title="The convention kind terms match the mapper and the ORE terms",
-        argv=("python3", "projects/ores.sql/utility/generate_convention_kind_terms.py", "--check"),
-        classes=("sql", "cpp"),
-        paths=(
-            "projects/ores.sql/populate/refdata/refdata_convention_kind_terms_populate.sql",
-            "projects/ores.sql/populate/refdata/refdata_convention_kinds_populate.sql",
-            "projects/ores.sql/create/refdata/refdata_convention_terms_validate_create.sql",
-            "projects/ores.sql/drop/refdata/refdata_drop.sql",
-            "projects/ores.sql/drop/refdata/refdata_convention_terms_validate_drop.sql",
-            "projects/ores.sql/utility/generate_convention_kind_terms.py",
-            "projects/ores.sql/utility/convention_terms.json",
-            "projects/ores.ore/core/src/domain/conventions_family_*.cpp",
-            "projects/ores.ore/core/src/domain/conventions_fx_projection.cpp",
-        ),
-        fix="Run projects/ores.sql/utility/generate_convention_kind_terms.py and commit the populate script.",
     ),
     Check(
         id="curve-sections-wiring",
@@ -841,49 +808,12 @@ CATALOGUE: tuple[Check, ...] = (
             "generate_sql.py, and commit both.",
     ),
     Check(
-        id="conventions-coverage",
-        title="The conventions dataset holds every convention ORE holds, or says why not",
-        argv=(
-            "bash",
-            "-c",
-            "projects/ores.codegen/venv/bin/python tools/ore_conventions/extract.py"
-            " && python3 projects/ores.seeder/datasets/conventions/propose.py --check",
-        ),
-        classes=("sql", "tooling"),
-        paths=(
-            "tools/ore_conventions/*",
-            "external/ore/examples/*",
-            "projects/ores.seeder/datasets/conventions/*",
-        ),
-        fix="Add or change the row in conventions.tsv, or record why the dataset keeps "
-            "its own row in propose_decisions.tsv; see methodology.txt.",
-    ),
-    Check(
         id="conventions-generator-tests",
         title="The conventions dataset generator's tests pass",
         argv=("projects/ores.codegen/venv/bin/python",
               "projects/ores.seeder/datasets/conventions/test_generate_sql.py"),
         classes=("sql", "tooling"),
         paths=("projects/ores.seeder/datasets/conventions/*",),
-    ),
-    Check(
-        id="ore-output-catalogue",
-        title="The output catalogue matches the ORE samples",
-        argv=("python3", "projects/ores.ore/scripts/generate_output_catalogue.py",
-              "--check"),
-        classes=("cpp", "tooling"),
-        paths=(
-            "external/ore/*",
-            "projects/ores.ore/scripts/generate_output_catalogue.py",
-            "projects/ores.ore/scripts/output_family_docs.py",
-            "projects/ores.ore/data/samples/*",
-            "projects/ores.ore/core/include/ores.ore.core/results/output_catalogue.hpp",
-            "projects/ores.ore/core/src/results/output_catalogue_data.*",
-            "doc/knowledge/external/ore_output_formats.org",
-        ),
-        fix="Run projects/ores.ore/scripts/generate_output_catalogue.py and commit"
-            " the data it writes, or state in the generator why the sample is not"
-            " a family.",
     ),
     Check(
         id="dsh-environment",
@@ -1070,7 +1000,6 @@ COMPASS_CODECS: dict[str, tuple[str, ...]] = {
     "model-drift": ("model_rules",),
     "er-diagram": ("er_diagram", "rls_coverage",),
     "sql-hygiene": ("sql_hygiene",),
-    "convention-kind-terms": ("ore_value_sets",),
     "curve-column-guards": ("curve_sections_wiring",),
     "curve-sections-wiring": ("curve_sections_wiring",),
     "protocol-twins": ("protocol_twins", "model_rules"),
@@ -1091,8 +1020,6 @@ COMPASS_CODECS: dict[str, tuple[str, ...]] = {
     "exported-types": ("exported_types",),
     "backlog-indexes": ("backlog_indexes",),
     "conventions-dataset": ("conventions_dataset",),
-    "conventions-coverage": ("conventions_coverage",),
-    "ore-output-catalogue": ("ore_output_catalogue",),
 }
 
 COMPASS_CHECK = Check(

@@ -38,6 +38,7 @@ begin
         and code = 'WRLD'
         and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
+        -- compass:except(single_writer/second_writer) expires=2027-05-18 approver=marco reason=the platform's WRLD row and the 212 FpML codes are disjoint rows: the populate script writes WRLD, because the foundation layer's system party names it and no dataset can publish that early, and fpml.business_center publishes the rest
         insert into ores_refdata_business_centres_tbl (
             code, tenant_id, version, coding_scheme_code,
             source, description,

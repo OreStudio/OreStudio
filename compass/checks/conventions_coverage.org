@@ -1,0 +1,83 @@
+:PROPERTIES:
+:ID: 36CF4C91-16C7-431F-8C1B-25D4D1B46205
+:END:
+#+title: Check: conventions coverage
+#+description: The conventions dataset holds every convention ORE's examples hold, stated as ORE states it; the tables give compass the field names and spellings it reads the conventions with.
+#+type: check
+#+level: cross
+#+filetags: :compass:check:conventions:dataset:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+#+options: prop:t
+
+This page gives the data of compass-ng's =conventions_coverage= codec, which
+ORE Studio runs over its conventions dataset. The =* Definition= names the
+codec; each table below is data the codec reads, and the prose says what it is
+for. The tables were =INDEX_FIELDS= and =BDC= in
+=projects/ores.seeder/datasets/conventions/propose.py=, which compass-ng used to
+parse.
+
+* Rule
+
+The conventions dataset (=projects/ores.seeder/datasets/conventions/conventions.tsv=)
+holds every convention ORE's examples hold, and states each one's terms as ORE
+does, or =propose_decisions.tsv= says why not. Each row names its source, each
+(kind, id) is one row, and each index a convention names is defined by an
+index convention of the dataset.
+
+* Why
+
+The dataset is ORE Studio's curated copy of the conventions ORE ships. A
+convention ORE adds or changes in its examples has to reach the dataset, or be
+declined with a reason, so the dataset never silently falls behind the engine.
+
+* Definition
+:PROPERTIES:
+:CODEC: conventions_coverage
+:END:
+
+* Index fields
+
+The fields of a convention whose value names an index, as the dataset's
+generator reads them. compass resolves each such value against the index
+conventions of the dataset, and reports one no index convention defines.
+
+| field |
+|-------|
+| Index |
+| BMAIndex |
+| FlatIndex |
+| SpreadIndex |
+| IndexName |
+| PayIndex |
+| ReceiveIndex |
+| LongIndex |
+| ShortIndex |
+
+* Business day conventions
+
+The spellings ORE's examples use for a business day convention, which the
+engine states in full: compass rewrites the engine's name to the example's
+code before it compares an index's terms with the dataset's.
+
+| convention | code |
+|------------+------|
+| Following | F |
+| ModifiedFollowing | MF |
+| HalfMonthModifiedFollowing | HMMF |
+
+* Examples
+
+None here: the codec's cases are its tests, in compass's
+=codecs_conventions_coverage_tests.cpp=.
+
+* Exceptions
+
+| path | line | rule | expires | approver | reason |
+|------+------+------+---------+----------+--------|
+
+* See also
+
+- =compass-ng='s =conventions_coverage= codec, in the compass repository.
+- =tools/ore_conventions/extract.py=, which mines the canonical conventions of
+  ORE's examples.

@@ -8,7 +8,6 @@ The one curated set of index and instrument conventions every tenant reads.
 | `conventions.tsv` | The dataset: one row per (kind, id), its terms in ORE notation, its source, an `oresmd_uri` when its id is not an ORE index name, and its aliases. |
 | `methodology.txt` | The methodology, registered with the dataset. |
 | `generate_sql.py` | Writes `projects/ores.sql/populate/refdata/refdata_conventions_artefact_populate.sql` from the table. |
-| `propose.py` | Compares the table with the conventions ORE holds; the gate runs it with `--check`. |
 | `propose_decisions.tsv` | Why the table keeps its own row where ORE states other terms. |
 | `oresmd_index_map.tsv` | ORE index name to oresmd URI, written by the codec. |
 | `generate_oresmd_index_map.ores` | The shell script that rewrites the map. |
@@ -16,7 +15,7 @@ The one curated set of index and instrument conventions every tenant reads.
 
 ```
 python3 projects/ores.seeder/datasets/conventions/generate_sql.py
-python3 projects/ores.seeder/datasets/conventions/propose.py
+compass-ng check --codec conventions_coverage
 ```
 
 ## The generator

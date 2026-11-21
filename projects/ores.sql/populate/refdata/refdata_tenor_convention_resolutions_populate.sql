@@ -60,6 +60,7 @@
 
 \echo '--- Tenor Convention Resolutions ---'
 
+-- compass:except(single_writer/second_writer) expires=2027-05-18 approver=marco reason=the row is the platform's -- which tenors a convention carries, and how each resolves -- and two of its columns are the world dataset's: refdata.tenor_schedules re-inserts each row to set schedule_code and schedule_step_count, so it writes a new version of a row the populate script wrote rather than a row of its own
 insert into ores_refdata_tenor_convention_resolutions_tbl (
     tenant_id, convention_code, tenor_code, version, anchor_override, offset_unit, offset_multiplier,
     schedule_code, schedule_step_count,

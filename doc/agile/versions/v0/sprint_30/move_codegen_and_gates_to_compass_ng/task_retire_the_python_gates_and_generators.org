@@ -28,7 +28,7 @@ One tool, not two, owns each build-free gate and each generated artefact.
 |--------------+----------------------------------------|
 | State        | STARTED |
 | Parent story | [[id:E3BF90FE-43DF-4A30-9F2C-FF5E20128C88][Move codegen and the gates to compass-ng]] |
-| Now          | Tier 1 deleted on this branch: 31 scripts, 15 test files, and 28 gates out of local_checks.py. |
+| Now          | Tier 1 deleted (#4946). compass-ng v0.0.5 adopted (stacked on #4946): its check documents hold the data compass parsed out of ORE Python, and 16 more files go. |
 | Waiting on   | Nothing. |
 | Next         | Tier 2: switch or remove the workflows that still call the scripts, then delete them. |
 | Last touched | 2026-11-21 |
@@ -91,8 +91,22 @@ task and name that file in the Command column.
     =generate_value_sets.py=: compass-ng's =parameter_value_sets= codec reads
     them as curation data. Deleting them gave
     =parameter_value_sets/unresolved= and =ore_value_sets/refused=.
+- 2026-11-21, compass-ng v0.0.5: compass now reads its curated data from
+  three check documents in =compass/checks/= (=conventions_coverage.org=,
+  =value_sets.org=, =ore_output_catalogue.org=) instead of parsing ORE's
+  Python, and adds =single_writer=, =xml_bindings= and =list_request_table=.
+  That retires =propose.py=, the five value-set modules,
+  =generate_ore_element_map.py=, =generate_value_sets.py=,
+  =generate_convention_kind_terms.py=, =generate_output_catalogue.py= and
+  its test, =output_family_docs.py=, =check_single_writer.py= and its test,
+  =single-writer.yml=, =check_xml_bindings_drift.py= and
+  =regenerate_list_request_descriptors.py=. The gates =xml-bindings-drift=,
+  =convention-kind-terms=, =conventions-coverage= and =ore-output-catalogue=
+  leave local_checks.py; compass-ng's own result fails on their findings.
+  The pin moves to v0.0.5 in the same change, because an older compass-ng
+  stops on a check document.
 - =projects/ores.codegen/scripts/regenerate_list_request_descriptors.py=
-  stays until compass-ng's =list_request_table= codec ships (compass PR
+  stayed until compass-ng's =list_request_table= codec ships (compass PR
   #132). It is the only writer of
   =projects/ores.web/packages/wire-protocol/src/generated/list_requests.ts=;
   today =bff_list_requests= only reports the table as stale. After that

@@ -32,7 +32,7 @@ The pricing engine data is extracted from the ORE guide and source by a script, 
 | Extract | =extract_vocabulary.py=, =pricing_vocabulary.json= | Product types, pairs, setting names, guide text |
 | Type | =extract_parameter_types.py=, =curation/value-sets.json= | A setting's type and its enumerated values |
 | Curate | =curation/*.json= (this methodology) | Authored texts, name fixes, instrument mappings |
-| Generate | =generate_vocabulary_sql.py=, =generate_ore_parameters_dataset.py=, =generate_value_sets.py= | Deterministic SQL |
+| Generate | =generate_vocabulary_sql.py=, =generate_ore_parameters_dataset.py=, compass-ng's =ore_value_sets= | Deterministic SQL |
 | Store | Analytics tables, =ore_parameters= | The data the API reads |
 | Serve | =/api/reporting/pricing-engines/vocabulary= | The view a screen reads |
 | Render | The screen | Nothing but the view |
@@ -187,7 +187,7 @@ The coverage report prints, per run: types mapped, types unmapped, settings docu
 3. Read the curation diff: every entry has a reason, a source and a source reference.
 4. Spot-check one product from each asset class against the guide.
 5. Run the generator and =--check=.
-6. Run =generate_value_sets.py --check= and read the set and link counts.
+6. Run =compass-ng check --codec ore_value_sets --codec parameter_value_sets=.
 7. Run the screens' tests; the vocabulary fixtures are built from the same data shape.
 
 ** Current state and gaps

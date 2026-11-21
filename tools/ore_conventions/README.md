@@ -177,7 +177,8 @@ running twice with two `--out` directories and comparing all four files.
 
 The extraction is not a DQ input. The refdata.conventions dataset in
 `projects/ores.seeder/datasets/conventions/` is the one curated convention set,
-and its `propose.py` compares it with this tool's output and with the mined
-engine conventions (`builtin_index_fields.tsv`, written by
-`mine_builtin_conventions.py`). Run the extraction before `propose.py` after an
-ORE upgrade; see that dataset's `methodology.txt`.
+and compass-ng's `conventions_coverage` check compares it with this tool's
+output and with the mined engine conventions (`builtin_index_fields.tsv`,
+written by `mine_builtin_conventions.py`). Run the extraction before
+`compass-ng check --codec conventions_coverage` after an ORE upgrade; see that
+dataset's `methodology.txt`.

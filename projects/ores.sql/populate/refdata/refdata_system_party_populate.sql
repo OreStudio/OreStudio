@@ -38,6 +38,7 @@ begin
         and party_category = 'System'
         and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
+        -- compass:except(single_writer/second_writer) expires=2027-05-18 approver=marco reason=the populate script writes the system tenant's row and the publish writes a tenant's own: the system party, and each tenant's own parties
         insert into ores_refdata_parties_tbl (
             id, tenant_id, full_name, short_code, party_category,
             party_type, business_center_code, parent_party_id, status,

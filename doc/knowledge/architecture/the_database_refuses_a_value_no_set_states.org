@@ -101,8 +101,8 @@ All are stated here rather than left for a reader to discover.
 - A leaf the element map states =text= for is admitted, because text is a rule
   that admits every value. For all 155 of the 477 leaves that number is a decision
   an ORE source justifies, and three more take the rule the ORE schema states for
-  them: the extractor reads at least one form for every leaf, and the ratchet in
-  =generate_ore_element_map.py= (=UNREAD_ALLOWED=) holds that count at zero so it
+  them: the extractor reads at least one form for every leaf, and the "Unread
+  leaves allowed" table of [[id:D8B98C0D-6E28-4D36-96CE-1D9F69529D35][the value sets check]] holds that count at zero so it
   can fall but not grow unnoticed.
 - A parameter with no set is admitted by the product parameter guard: it returns
   the row when the link is not found

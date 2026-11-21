@@ -81,7 +81,7 @@ page from that table: =./compass.sh generate= rewrites it, and
 
 # BEGIN GENERATED
 
-Read at ORE commit =3d75a6908=. Regenerate with =build/scripts/generate_trade_type_coverage.py --write=.
+Read at ORE commit =3d75a6908=. Regenerate with =./compass.sh generate=.
 
 ** Counts
 

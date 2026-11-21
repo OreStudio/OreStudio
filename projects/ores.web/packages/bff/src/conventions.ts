@@ -499,8 +499,8 @@ function columnValue(sourceKind: string, value: string | null): unknown {
  * is given the column of the term it names, so the screen puts it on that term.
  *
  * The sentence is the one ores_refdata_validate_convention_terms_fn raises, which
- * generate_convention_kind_terms.py writes; a change to its wording must change
- * this match too, or the refusal falls back to the card instead of its term.
+ * compass generates; a change to its wording must change this match too, or the
+ * refusal falls back to the card instead of its term.
  */
 export function onTerm(
     result: z.infer<typeof resultSchema>,

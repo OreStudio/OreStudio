@@ -5,7 +5,7 @@
 #+description: The library's rates and inflation scripts (AsianIrCapFloor, CMSCapFloorBarrier, ForwardStartingSwaption, LPISwap, FlooredAverageCPIZCIIS, IrregularYYIIS, MovingMaxYYIIS, LapseHedgeSwap and their kin) read IR and inflation indices, which the scripted generator never draws. None is generated.
 #+type: task
 #+level: s1
-#+filetags: :hold_every_product_type_the_engine_supports:sprint_30:v0:
+#+filetags: :design_the_scripted_trade_subsystem:sprint_30:v0:
 #+owner: marco
 #+branch:
 #+pr:
@@ -16,7 +16,7 @@
 #+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E6359881-7919-4BBC-9B9C-03A8EEDB8A03][Design the scripted trade subsystem]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Every rates and inflation script in ORE's library is booked as a generic Scripte
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | ABANDONED |
-| Parent story | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] |
+| Parent story | [[id:E6359881-7919-4BBC-9B9C-03A8EEDB8A03][Design the scripted trade subsystem]] |
 | Now          | Abandoned on 2026-11-21; see Result. |
 | Waiting on   | Nothing. |
 | Next         | None. |
@@ -87,4 +87,4 @@ via its "Verifies task" field.
 
 * Result
 
-Abandoned on 2026-11-21, superseded by [[id:E6359881-7919-4BBC-9B9C-03A8EEDB8A03][Design the scripted trade subsystem]], which generates every script-only product against its own schema.
+Abandoned on 2026-11-21, superseded by the design of this story, which generates every script-only product against its own schema. The task moved here from [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] when scripted trades became a story of their own.

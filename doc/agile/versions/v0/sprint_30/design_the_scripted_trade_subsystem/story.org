@@ -42,8 +42,10 @@ One scripted trade subsystem serves every way a scripted trade enters ORE Studio
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:31CB7BE4-C241-4FCC-BFA2-3AFF7839DE15][Scaffold story: Design the scripted trade subsystem]] | DONE | 2026-11-21 | 2026-11-21 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:0A53E698-5A04-4A3E-B76E-3DFCA69E36A7][Document the scripted trade architecture]] | BACKLOG | | | The target architecture of scripted trades, documented to the knowledge standard before any of it is built. |
+| [[id:0A53E698-5A04-4A3E-B76E-3DFCA69E36A7][Document the scripted trade architecture]] | STARTED | 2026-11-21 | | The target architecture of scripted trades, documented to the knowledge standard before any of it is built. |
 | [[id:179E60E8-59B5-456A-B2CC-55323052E234][Edit a scripted trade on its own screen]] | BACKLOG |  |  | A scripted trade is a script plus the variables it reads. Without an editor a person can only see it as rows, and a free text box would let them state a variable the script never reads or miss one it needs. |
+| [[id:CF1384A9-A358-4E56-82F7-AFC089AD4FEB][Generate the script-only equity, FX and commodity payoffs]] | ABANDONED | 2026-11-21 | 2026-11-21 | About thirty scripts in ORE's library have no element of their own: gamma, corridor, conditional, KIKO and dispersion variance swaps, correlation swaps, volatility barrier options, ladder lock-ins, forward-starting options, rainbow call spreads and the worst-performance rainbows, among others. A trade of each can only be a generic ScriptedTrade, and none is generated. |
+| [[id:873E2FA1-F1AE-4B77-8DF0-7BBB4F330B18][Generate the script-only rates and inflation payoffs]] | ABANDONED |  | 2026-11-21 | The library's rates and inflation scripts (AsianIrCapFloor, CMSCapFloorBarrier, ForwardStartingSwaption, LPISwap, FlooredAverageCPIZCIIS, IrregularYYIIS, MovingMaxYYIIS, LapseHedgeSwap and their kin) read IR and inflation indices, which the scripted generator never draws. None is generated. |
 
 * Decisions
 

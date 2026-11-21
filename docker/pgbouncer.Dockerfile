@@ -28,12 +28,17 @@
 
 FROM alpine:3.22
 
+# The package ships no user of its own, and pgbouncer refuses to run as root,
+# so the image makes the one its entrypoint drops to.
 RUN apk add --no-cache --no-progress pgbouncer && \
+    adduser -D -H -s /sbin/nologin -G nogroup pgbouncer && \
     mkdir -p /etc/pgbouncer
 
 # The configuration is a mount, so the image states only where it lives. The
 # pooler logs to stderr, which is what the container runtime collects.
 VOLUME ["/etc/pgbouncer"]
 
-ENTRYPOINT ["/usr/bin/pgbouncer", "/etc/pgbouncer/pgbouncer.ini"]
-CMD ["-q"]
+# pgbouncer refuses to run as root, and the mounted configuration is a
+# credential file nobody else should read: it starts as root, reads it, and
+# drops to the user the package creates.
+ENTRYPOINT ["/usr/bin/pgbouncer", "-u", "pgbouncer", "/etc/pgbouncer/pgbouncer.ini"]

@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :design_the_scripted_trade_subsystem:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr: 4971
+#+branch: feature/publish-ores-script-library-as-a-world-dataset
+#+pr: 4977
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-21
@@ -26,7 +26,7 @@ ORE's script library arrives as a world dataset whose methodology extracts, corr
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:E6359881-7919-4BBC-9B9C-03A8EEDB8A03][Design the scripted trade subsystem]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -54,9 +54,21 @@ ORE's script library arrives as a world dataset whose methodology extracts, corr
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Four PRs, each ending in a check.
+
+1. The shell's =script= menu, which needs no session: =parse=, =check=,
+   =inputs= and =print=, a local unit of =ores.shell.trading= linking
+   =ores.trading.scripting=. The generator runs them through the shell's batch
+   mode, =ores.shell -f=, which exits non-zero when a command fails.
+2. The dataset: the generator and its corrections file in =external/ore/tools/=,
+   the methodology step, the artefact tables of the script entities, the
+   publish function, the artefact type and the =world= bundle membership; the
+   =script_library_seed= output and the corrections populate script are retired.
+3. A scripted trade records its script's name, holding tenant and version, or
+   its inline text and a hash, and a run writes the library from those
+   versions.
+4. A tenant publishes its own script through the trading service, which parses
+   it and warns on a name the world library holds.
 
 * Measurements
 
@@ -70,9 +82,26 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| ores.shell.trading.tests | 4932 assertions in 1743 test cases pass | build/output/linux-clang-release-ninja/publish/bin/ores.shell.trading.tests | f2de16c79c + PR 1 |
+| offline batch run | exit 0 for a clean script, exit 1 with =bad.txt:1:8: error: expected <Term> [SCR1001]= for one that does not parse, with no NATS server | ores.shell --nats-url nats://127.0.0.1:1 --load <file> | f2de16c79c + PR 1 |
 
 * Notes
+
+** What the first PR found
+
+- The shell runs a script offline with =--load=: with no server, the
+  auto-connect fails, the commands run, and a command that marks a failure ends
+  the batch with exit status 1. The generator relies on that contract.
+- The shell already has a =script_commands= class, for =load=, so the payoff
+  script unit is =payoff_script_commands=; the menu is still =script=.
+- A REQUIRE rule comes back as the condition on one line, and inputs come in
+  the order =inputs_of= derives them, which is the order the store holds.
+- The twin recipes (=trading_script_twin_inputs_populate.sql=) are a populate
+  script whose trigger requires the script to exist. Once the scripts arrive by
+  the =world= publish, which runs after the populate scripts, the recipes cannot
+  be written by a populate script; the second PR has to order them after the
+  publish.
+
 
 The world bundle is published in SQL at bring-up, before any service runs, so the parsing and derivation are steps of the generator rather than of the publish function.
 
@@ -93,6 +122,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4977][#4977]] | [shell] Parse, check and list a payoff script's inputs offline |
 | [[https://github.com/OreStudio/OreStudio/pull/4971][#4971]] | [doc] Hold ORE's script library as a world dataset |
 
 * Review
@@ -109,5 +139,17 @@ via its "Verifies task" field.
 | 4971.8 | the compass generate step for the library is not retired | task | accept | the new generator replaces script_library_seed; its populate file and include go |
 | 4971.9 | the reproduction check needs a built shell | both | accept | it runs in the build job after the shell; a parser change that moves inputs fails it until regenerated, by intent |
 | 4971.10 | wrap; corrections listed in two places | versioning_of_the_script_library.org | accept | re-wrapped; the data file is the only list and the methodology names it |
+| 4977.1 | the no-variables filter drops any new code outside SCR1/SCR4 | payoff_script_commands.cpp | accept | it now drops only a trade's codes, SCR2xxx and SCR3xxx, so a new code is reported |
+| 4977.2 | a value cannot hold a comma | payoff_script_commands.hpp | accept | stated in the format description |
+| 4977.3 | a bare [] type gives an empty type | payoff_script_commands.cpp | accept | an empty name or type is refused with its line; a test |
+| 4977.4 | escaped() leaves other control characters | payoff_script_commands.cpp | reject | the format needs one line per input, which the four escapes give; the generator reads it line by line |
+| 4977.5 | a failed --out write can leave a partial file | payoff_script_commands.cpp | reject | the command fails and the generator stops on the non-zero exit |
+| 4977.6 | the success line counts every non-error as a warning | payoff_script_commands.cpp | accept | warnings are counted on their own |
+| 4977.7 | confirm the tests' coverage | tests | accept | unreadable file, malformed variables and merging were covered; --out - is added |
 
 * Result
+
+In progress: the first of four PRs is in. The shell's =script= menu parses,
+checks and lists the inputs of a payoff script with no session and no server,
+and a batch run with =--load= exits non-zero when a command fails, which is the
+contract the library's generator calls it under.

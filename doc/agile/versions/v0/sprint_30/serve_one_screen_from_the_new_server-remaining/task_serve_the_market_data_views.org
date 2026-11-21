@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/serve-the-market-data-views
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
 #+updated: 2026-11-09
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ Serve these composed views from ores.marketdata: an item's fixing series, the co
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Planned; the first view is not written. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-09                               |
+| Next         | Serve the market data catalogue.       |
+| Last touched | 2026-11-21                               |
 
 * Acceptance
 
@@ -42,9 +42,51 @@ Serve these composed views from ores.marketdata: an item's fixing series, the co
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Six views, served from =ores.http.marketdata=, which already answers the area's
+resources and is the part the inventory names as their owner. Every one of them
+is a join: the market data service answers collections, and the gateway sorts
+them, nests the children under their parent, and reads the two JSON documents
+the catalogue stores as text back into documents.
+
+Five of the six are kept for five minutes and carry an ETag. The sixth is a
+file: it states no cache policy because it is built on each request, and it is
+the only view here that answers with a body that is not JSON.
+
+The reads each view makes, as the BFF makes them:
+
+| View | Reads | The join |
+|------+-------+----------|
+| the market data catalogue | providers, feeds | each feed under the publisher its code names, the providers by code and the feeds by publisher, default first, then name |
+| the connectivity catalogue | publishers, suppliers, adapters, sessions, feeds, scopes, routes | the scopes and the routes under the feed they name, the adapter's comma lists as lists, and its configuration schema as the fields it states |
+| an item's fixing series | market series, providers, feeds, scopes, sessions, suppliers, fixings | the series the URI names, its fixings oldest first, and the feeds that carry it with the supplier behind each session |
+| the public publishers | the public catalogue | each provider's feeds and the series its sessions fill, the pair of every series, and the fixings behind them |
+| the public rates coverage | the public catalogue | each series' first date, last date and count, and only the series that hold one |
+| the public rates file | the public catalogue | the publisher's series, filtered by range and item, written as CSV |
+
+*The public catalogue* is one builder, not a route: the last three views read it
+and then answer differently. That is the same shape the BFF has, and it is why
+the three are one commit rather than three.
+
+Two facts the port settles rather than assumes.
+
+- *The JSON documents come back as documents.* Two catalogue columns hold a
+  document as text — a session's settings and an adapter's configuration schema.
+  A text that does not parse is drawn as an empty document, because a screen that
+  cannot draw one record must not fail the tree for the rest.
+- *The file is not a view answer.* It answers =text/csv= with a
+  =content-disposition= naming the publisher and the range, and a =x-fixing-rows=
+  count, so a person downloads it and a screen can say how many rows it holds.
+  The composed-view answer builder is for JSON and is not used here.
+
+The pieces land one commit each, in the order the table states them: the two
+catalogues, then the item's series, then the three public rates views. Each
+commit is a view the gate and a live run can check on its own.
+
+The tests prove what a test can reach without a service behind it: the query
+each view refuses, the reach of each read, the shape built from a stated reply,
+and the ETag with its five minutes. The joins across live data are proved on the
+gateway, as the grid views were, because the reply shapes are what a test cannot
+invent.
 
 * Measurements
 

@@ -314,6 +314,7 @@ PAIRS = {
     ("POST", "/api/curves/published-sets"): ("POST", "/api/curves/published-sets"),
     ("POST", "/api/curves/fx-forward-ladder"): ("POST", "/api/curves/fx-forward-ladder"),
     ("POST", "/api/curves/published/withdraw"): ("POST", "/api/curves/published/withdraw"),
+    ("GET", "/api/marketdata/catalogue"): ("GET", "/api/marketdata/catalogue"),
     ("GET", "/api/marketdata/subscriptions"): ("GET", "/api/marketdata/subscriptions"),
     ("POST", "/api/marketdata/subscriptions"): ("POST", "/api/marketdata/subscriptions"),
     ("DELETE", "/api/marketdata/subscriptions/:provider"): (

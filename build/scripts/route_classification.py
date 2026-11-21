@@ -568,6 +568,12 @@ RULES = (
          BFF, COMPOSED, "market-data",
          "The providers and the feeds that serve them in one answer, two collection reads,"
          " so a subscription or a route can name a feed by id."),
+    Rule("the market data catalogue",
+         ("exact", "GET /api/marketdata/catalogue"),
+         CPP, COMPOSED, "market-data",
+         "The providers and the feeds that serve them answered by ores.http at the address and"
+         " in the shape the BFF answered: every provider by its code, and every feed by the"
+         " publisher it belongs to, its default first and then by name."),
     Rule("the public publishers",
          ("exact", "GET /api/marketdata/public-rates"),
          BFF, COMPOSED, "market-data",

@@ -19,6 +19,7 @@
  */
 #include "ores.http/routes/marketdata/marketdata_routes.hpp"
 #include "ores.http/routes/marketdata/adapter_routes.hpp"
+#include "ores.http/routes/marketdata/catalogue_routes.hpp"
 #include "ores.http/routes/marketdata/curve_routes.hpp"
 #include "ores.http/routes/marketdata/oresmd_routes.hpp"
 #include "ores.http/routes/marketdata/public_rate_routes.hpp"
@@ -37,6 +38,7 @@ void marketdata_routes::register_routes(
     std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
     ores::nats::service::nats_client& session) {
     adapter_routes::register_routes(router, registry, session);
+    catalogue_routes::register_routes(router, registry, session);
     curve_routes::register_routes(router, registry, session);
     oresmd_routes::register_routes(router, registry, session);
     series_routes::register_routes(router, registry, session);

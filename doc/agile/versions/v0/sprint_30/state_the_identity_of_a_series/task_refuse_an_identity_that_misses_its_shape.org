@@ -114,6 +114,11 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 | 1 | Local review: a =--party= outside the visible parties now projects nothing instead of failing on the policy. | =market_series_identity_projector.cpp= | Accept as is | The caller could not write those rows; the response's counts show nothing was projected. |
 | 2 | Local review: misspell check on the changed files. | all | Clean | =misspell-fixer= exit 0. |
+| 3 | PR review: =std::ranges::find= needs =<algorithm>=. | =market_series_identity_projector.cpp= | No change | Already included. |
+| 4 | PR review: a visible party with no series is a no-op. | =market_series_identity_projector.cpp= | No change | Confirmation, not a defect. |
+| 5 | PR review: add a =not_visible= count so skipped series show. | =market_series_identity_projector.hpp= | Declined | The publish handler projects with no party, so it skips nothing; only a party caller skips, and it could not write those rows. |
+| 6 | PR review: confirm the full gate passes before merge. | all | Accept | Merged only on a green =compass check=. |
+| 7 | PR review: the doc and capture files were not reviewed in depth. | docs | No change | Noted. |
 
 * Result
 

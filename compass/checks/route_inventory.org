@@ -754,6 +754,10 @@ pair records the mapping and does not prove it.
 | POST | /api/curves/fx-forward-ladder | POST | /api/curves/fx-forward-ladder |
 | POST | /api/curves/published/withdraw | POST | /api/curves/published/withdraw |
 | GET | /api/marketdata/catalogue | GET | /api/marketdata/catalogue |
+| GET | /api/marketdata/quotes | GET | /api/marketdata/quotes |
+| GET | /api/marketdata/quotes/feeds | GET | /api/marketdata/quotes/feeds |
+| GET | /api/marketdata/quotes/history | GET | /api/marketdata/quotes/history |
+| POST | /api/marketdata/quotes/vols-by-delta | POST | /api/marketdata/quotes/vols-by-delta |
 | GET | /api/marketdata/connectivity | GET | /api/marketdata/connectivity |
 | GET | /api/marketdata/fixing-series | GET | /api/marketdata/fixing-series |
 | GET | /api/marketdata/public-rates | GET | /api/marketdata/public-rates |

@@ -29,8 +29,8 @@ Move the one switch that sends the requests of ores.web to the C++ server, and t
 | State        | STARTED                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
 | Now          | Planned; 29 routes stand between the flag and every screen. |
-| Waiting on   | Nothing.                               |
-| Next         | Serve the 17 routes that are not decided out, screen by screen. |
+| Waiting on   | A fleet that starts: the IAM service core-dumps after the environment file was regenerated. |
+| Next         | Prove the quotes screen on a live gateway, then the identity shape fields. |
 | Last touched | 2026-11-21                               |
 
 * Acceptance

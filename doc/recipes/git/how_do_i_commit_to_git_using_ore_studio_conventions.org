@@ -65,9 +65,12 @@ The body is separated from the title by a blank line. It should explain the
 
 ** Story and Task Trailers
 
-Every commit that implements agile work (story or task) must include
-=Story-ID:= and =Task-ID:= trailers with the *full* UUID from the
-=:ID:= property of the respective =.org= files:
+Every commit on a branch must include =Story-ID:= and =Task-ID:= trailers
+with the *full* UUID from the =:ID:= property of the respective =.org=
+files. compass-ng's =commit_provenance= check enforces it: =compass check
+--ratchet= fails a branch with a commit that lacks a trailer, or whose IDs
+do not resolve to a story and a task document (see
+[[id:3C1F0E52-7A4B-4E8D-9B61-2D5C8F7A9E03][Check: commit provenance]]).
 
 #+begin_example
 Story-ID: E6CC19FC-5469-45BD-AA87-9CDBB23A4A7F

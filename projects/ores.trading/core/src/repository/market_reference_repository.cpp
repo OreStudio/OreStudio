@@ -48,8 +48,15 @@ market_reference_repository::read(const context& ctx,
     if (trade_ids.empty())
         return out;
 
+    // The run states a business date, and a trade booked during that day is one the run
+    // prices. Reading at the day's first instant would leave out every trade booked since, so
+    // a bare date is read at the close of its day.
+    std::optional<std::string> read_at = as_of;
+    if (as_of && as_of->size() == 10 && as_of->find('T') == std::string::npos)
+        read_at = *as_of + "T23:59:59.999999Z";
+
     const std::vector<std::optional<std::string>> params{
-        ctx.tenant_id().to_string(), ores::utility::codec::json::write(trade_ids), as_of};
+        ctx.tenant_id().to_string(), ores::utility::codec::json::write(trade_ids), read_at};
 
     for (const auto& row : ores::database::query_builder::execute_parameterized_multi_column_query(
              ctx, references_query, params, lg(), "Reading the market data a trade set needs"))

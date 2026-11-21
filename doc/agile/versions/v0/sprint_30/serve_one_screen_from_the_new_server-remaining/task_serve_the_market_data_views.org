@@ -26,11 +26,11 @@ Serve these composed views from ores.marketdata: an item's fixing series, the co
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Served, tested, paired and proved on a live gateway; waiting on the PR. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Raise the PR, then merge when main is green. |
+| Next         | Nothing. |
 | Last touched | 2026-11-21                               |
 
 * Acceptance

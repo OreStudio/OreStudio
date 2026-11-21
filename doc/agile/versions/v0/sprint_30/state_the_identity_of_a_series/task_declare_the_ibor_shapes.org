@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-15
-#+updated: 2026-11-15
+#+updated: 2026-11-21
 #+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -31,7 +31,7 @@ Handed to clever dijkstra, who owns the IBOR work. The nine IBOR fixings (ESTER,
 | Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing. |
-| Last touched | 2026-11-15                               |
+| Last touched | 2026-11-21 |
 
 * Acceptance
 
@@ -45,7 +45,8 @@ The work landed with [[id:B003AE67-4F98-49AB-908E-13A1F7674E98][State the shape 
 [[id:52F82265-4192-43EA-9EA7-56E06D7B7EE4][Refuse an identity row that misses its shape]]. Close this task on evidence:
 read the declared IR entries and the classification rules from a freshly
 provisioned database, hold every stored IBOR fixing to its shape with
-=evidence/shape_audit.sql=, and run the shape tests.
+=evidence/shape_audit.sql=, and run the shape tests. Every measurement was taken on main at
+=eb2fe1dd7a=, the merge of PR #4949, built and provisioned from scratch.
 
 * Measurements
 
@@ -93,7 +94,11 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | PR review: the task's =Last touched= and =#+updated= were stale. | this task | Fixed | 2026-11-21. |
+| 2 | PR review: the Review table was empty. | this task | Fixed | This table. |
+| 3 | PR review: say which tree =eb2fe1dd7a= is. | this task | Fixed | The Plan says it is main, the merge of PR #4949. |
+| 4 | PR review: move the memory's note on the deferred curves elsewhere. | =check_the_whole_fleet_before_provisioning.org= | Declined | It stops the next reader blaming the official service for deferred curves, which is the wrong lesson. |
+| 5 | PR review: explain why the story's decisions are dated after its start. | =story.org= | Declined | Each is dated when its task made it. |
 
 * Result
 

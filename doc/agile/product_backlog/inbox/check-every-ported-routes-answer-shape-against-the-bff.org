@@ -25,4 +25,14 @@ This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbo
 
 * See also
 
--
+-* The other half: the parameters a screen sends
+
+A route also differs from the BFF in the query it takes. ores.http refuses a
+parameter a read does not declare, which tells a person their query did nothing,
+while the BFF ignored it. That is the better rule, and it breaks a screen whose
+call states a parameter the port did not declare: a series' observations refused
+the as_of a chosen day states, a report's runs refused a search, and each looked
+like a fault in the screen. The sweep therefore compares both: the members an
+answer states, and the parameters a route takes, against what the screens send.
+
+

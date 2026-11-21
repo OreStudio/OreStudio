@@ -224,7 +224,7 @@ via its "Verifies task" field.
 | 4935.2 | The new names are not uniform | builders | Declined | Each name follows the prefix its file already uses, such as barrier_product_positive and worst_of_positive. |
 | 4937.1 | FX settlement can fall before the moved expiry | trade_population_planner.cpp | Declined | The FX generic barrier native states no settlement date, so the twin falls back to the moved expiry. |
 | 4937.2 | The test does not check the TARGET holidays | tests | Accepted | target_business_day is declared in the header and tested on weekends, two Easters, New Year, Labour Day and Christmas. |
-| 4937.3 | std::chrono::parse is not portable | tests | Accepted | The test parses the date with sscanf. |
+| 4937.3 | std::chrono::parse is not portable | tests | Accepted | The test parses the date with std::from_chars; compass-ng refuses sscanf as deprecated under MSVC. |
 | 4937.4 | The SQL correction depends on exact whitespace | trading_script_library_corrections_populate.sql | Declined | A missing match raises and fails the load; it does not pass silently. The inserted lines use the spaces of the lines around them. |
 | 4937.5 | Regenerate the hand-edited SQL after the release | create SQL | Deferred | To run once the compass-ng release is in; the order of the C++ table does not matter to the check. |
 | 4937.6 | The transforms table is packed three per line | script_twin_recipes.hpp | Declined | It is clang-format's layout of the generated header, not a hand layout. |

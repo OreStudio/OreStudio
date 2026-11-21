@@ -8,7 +8,7 @@
 #+filetags: :run_a_report_with_market_data:sprint_30:v0:
 #+owner: marco
 #+branch: feature/make-the-market-data-connection-follow-the-trades
-#+pr:
+#+pr: 4990
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-21
@@ -299,7 +299,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4990][#4990]] | [agile] Scaffold the market data connection and its evidence |
 
 * Review
 

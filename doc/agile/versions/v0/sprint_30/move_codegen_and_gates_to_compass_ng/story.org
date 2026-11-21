@@ -58,6 +58,7 @@ compass-ng generates the code and runs the build-free gates for every environmen
 | [[id:67AF2BC8-0FD7-4382-A4B3-C2407C408708][Retire the Python gates and generators compass replaces]] | STARTED | 2026-11-21 | | Delete the Python gates, generator scripts and baseline files compass replaces, once the two tools have agreed for an agreed period. |
 | [[id:F2F96980-5CF8-4FE5-B827-8405D15F6F6B][Fix the two codegen tests that fail on main]] | DONE | | 2026-11-18 | Every local gate reported two codegen test failures that came from main, not from the change it checked. |
 | [[id:9E59F8F0-9FF8-4236-84AD-ED98C7960C06][Adopt compass-ng v0.0.7]] | DONE | 2026-11-21 | 2026-11-21 | Task for: Move codegen and the gates to compass-ng |
+| [[id:66BABB58-0833-4371-A618-742B754D0C40][Adopt the service integrity check]] | DONE | 2026-11-21 | 2026-11-21 | Task for: Move codegen and the gates to compass-ng |
 
 * Decisions
 

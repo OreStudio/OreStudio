@@ -332,15 +332,6 @@ CATALOGUE: tuple[Check, ...] = (
             " and the key itself lives only in .env.",
     ),
     Check(
-        id="service-registration",
-        title="Every service part is in the service registry",
-        argv=("python3", "build/scripts/check_service_registration.py"),
-        classes=("modeling", "services", "tooling"),
-        fix="Add the service to projects/modeling/service_registry.org and"
-            " regenerate what it drives: see doc/recipes/codegen/"
-            "how_do_i_add_a_domain_service.org.",
-    ),
-    Check(
         id="org-links",
         title="Every org link resolves",
         argv=("emacs", "-Q", "--script", "projects/ores.lisp/src/ores-check-org-links.el"),

@@ -8,7 +8,7 @@
 #+filetags: :design_the_scripted_trade_subsystem:sprint_30:v0:
 #+owner: marco
 #+branch: feature/publish-ores-script-library-as-a-world-dataset
-#+pr: 4978
+#+pr: 4993
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-21
@@ -93,8 +93,26 @@ task and name that file in the Command column.
 | republish after one staged change | updated 1, skipped 53; Accumulator01's input at version 2, a dropped result closed (4 to 3), others at version 1 | same, inside a rolled-back transaction | 55d938cb53 + PR 2 |
 | generator against the retired seed | equal but the 2 corrections, Accumulator02's Event list and 5 script descriptions | a row-by-row comparison of the seven tables | 55d938cb53 + PR 2 |
 | ores.trading.scripting.tests | 1200 assertions in 18 test cases; a planted wrong type fails the inputs test | ores.trading.scripting.tests | 55d938cb53 + PR 2 |
+| bus publish of the world bundle | 41 of 41 steps completed, ore.script_library among them; the trading service logged inserted=0 updated=0 after the bring-up publish | compass db recreate -y -k, services start, then bundles publish world --wait as super_admin | a2d0beeee1 |
+| bus republish after one staged change | the trading service logged updated=1; Accumulator01's first input at version 2, version 1 kept | the same, after an update of one staged input description | a2d0beeee1 |
+| trading publish tests | 10 assertions in 6 test cases (subject plan); the generated codec round trip within 18920 assertions in 5303 test cases | ores.trading.core.tests [publish], ores.trading.api.tests [codec] | a2d0beeee1 |
 
 * Notes
+
+** What the third PR found
+
+The trading service had no handler for =trading.v1.ops.publish_script_library_from_dq=,
+so a bundle publish over the bus could not publish the dataset: its step
+reached no subscriber. The bring-up publish runs in SQL and did not need one.
+
+The handler copies the analytics one, with the subject plan that refuses a
+function name which is not a plain identifier, and its test. It is the ninth
+copy of the same handler; the copies differ in their function-name rule, their
+guard and their decode. The capture
+[[id:AE3F5C64-0007-4C54-BEF9-D6ECFFDC0238][One publish-from-DQ handler for every service]]
+records them and the move of one copy into a shared library, which needs a
+decision on where the command and result types live, so it is not part of
+this task.
 
 ** What the second PR found
 
@@ -154,6 +172,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4993][#4993]] | [trading] Publish the script library from DQ over the bus |
 | [[https://github.com/OreStudio/OreStudio/pull/4978][#4978]] | [trading] Publish ORE's script library as a world dataset |
 | [[https://github.com/OreStudio/OreStudio/pull/4977][#4977]] | [shell] Parse, check and list a payoff script's inputs offline |
 | [[https://github.com/OreStudio/OreStudio/pull/4971][#4971]] | [doc] Hold ORE's script library as a world dataset |
@@ -186,10 +205,19 @@ via its "Verifies task" field.
 | 4978.5 | the default shell names one preset | external/ore/methodology.txt | accept | the methodology says --shell takes another preset's build |
 | 4978.6 | --check does not guard the library against upstream | none | reject | the examples move only by step 2, which the methodology says to follow with this step |
 | 4978.7 | the as-of date is hard-coded | generate_script_library.py | accept | a named AS_OF constant with a note to change it on regeneration |
+| 4993.1 | the handler's include is out of order in the registrar | registrar.cpp | accept | after the product_type includes |
+| 4993.2 | the cast of a count to uint64 wraps a negative value | publish_from_dq_handler.cpp | reject | the function returns counters that start at zero and only increase, and only when above zero; the nine copies share the line, so the capture's shared handler is where to change it |
+| 4993.3 | the handler relies on a transitive include for std::uint64_t | publish_from_dq_handler.cpp | accept | includes <cstdint> |
+| 4993.4 | islower and isdigit depend on the locale | publish_subject_plan.cpp | accept | explicit ASCII ranges |
+| 4993.5 | the empty-operation test fails at the ops lookup, so it tests something else | service_publish_subject_plan_tests.cpp | accept | its subject is trading.v1.ops. |
+| 4993.6 | no test covers the handler itself | none | reject | the handler needs a NATS server and a workflow step; the bus publish ran both its success paths, and the capture's shared handler is the place for one test of all copies |
+| 4993.7 | a missing SQL function fails the step with the database's text | publish_from_dq_handler.cpp | reject | the step's failure goes to the workflow, which only administrators read; every copy reports it the same way |
 
 * Result
 
-In progress: the first two of five PRs are in. The second publishes ORE's
+In progress: the first three of five PRs are in. The third gives the trading
+service a handler for the script library's publish step, so a bundle
+published over the bus publishes the library as the bring-up does. The second publishes ORE's
 script library as the =ore.script_library= world dataset: a generator in
 =external/ore/tools/= extracts, corrects, parses and derives every script with
 the shell, and the bring-up publishes the staged rows, writing a new version

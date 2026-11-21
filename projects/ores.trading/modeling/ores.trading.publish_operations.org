@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: 5F53B504-95AB-48EE-98F9-A0F014072420
+:ores.cpp.wire-codec.enabled: true
+:END:
+#+title: ores.trading.publish_operations
+#+description: Codegen operation model for the workflow step that publishes ORE's script library from a DQ dataset.
+#+type: ores.codegen.operation
+#+component: trading
+#+subcomponent: api
+#+entity_singular: publish_operation
+#+namespace: ores::trading::messaging
+#+brief: The trading publish-from-DQ workflow steps.
+#+filetags: :model:operation:trading:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+
+The workflow step that publishes the script library trading owns from a DQ
+dataset. It is a trigger, as the analytics component's publish steps are. The
+DQ publisher sends it and reads no reply, so the step states a subject and no
+response, and its body is the DQ artefact the server-side function knows how to
+expand.
+
+The SQL function the step calls is derived from its subject, so the spelling of
+the subject matters twice: once as the subject the registrar subscribes and once
+as the function the handler calls. That is why the subject is declared here and
+referenced, never spelled out at a call site.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <string_view>
+#+end_src
+
+* Messages
+
+** publish_script_library_from_dq_request
+:PROPERTIES:
+:subject: trading.v1.ops.publish_script_library_from_dq
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow step that publishes a DQ-cleared script library.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is
+ * ores_trading_publish_script_library_from_dq_fn.
+ */
+#+end_src

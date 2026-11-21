@@ -1,0 +1,104 @@
+:PROPERTIES:
+:ID: 05F7CDA0-07BC-44A1-91F3-695AE79A3C19
+:END:
+#+title: Task: Give one engine version one app version ID
+#+description: Make the seeded app version ID stable for one engine, so a wrapper reuses its unpacked package after a database recreate.
+#+type: task
+#+level: s1
+#+filetags: :compute_wrappers_never_release_their_disk:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-20
+#+updated: 2026-11-20
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2B553C18-5DC3-4443-AE79-2B3BBC071172][Compute wrappers never release their disk]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+One engine version gets one app version ID. The ID is derived from the
+engine's identity, for example a name-based UUID (version 5) of the app name
+and the engine version, or a hash of the package archive. A wrapper then finds
+its unpacked package after a database recreate and does not download it again.
+The wrapper also removes the =.tar.gz= after it unpacks it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:2B553C18-5DC3-4443-AE79-2B3BBC071172][Compute wrappers never release their disk]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Analyse the existing package folders.  |
+| Last touched | 2026-11-20                               |
+
+* Acceptance
+
+- Two database recreates seed the same app version ID for the same engine.
+- After a recreate, a wrapper runs a job without a new package download.
+- A changed engine gets a new ID, so a wrapper never runs a stale package.
+- No =.tar.gz= stays in =packages/= after a package is unpacked.
+- Decide what removes the copies that other IDs left behind. When the task
+  starts, make this testable, for example: after the change, the number of
+  package folders equals the number of distinct engine versions.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Unpacked package copies in =node_1/packages= (clever_dijkstra) | 33, all =ore-1.8.17.0-x64-linux= | =cat packages/*/manifest.json= | 73d064ad9a |
+| Size of one copy | 209 MB unpacked and 57 MB archive | =du -sh <id>/lib <id>.tar.gz= | 73d064ad9a |
+| Archives that are identical | 6 of 6 hashed | =md5sum= on six =.tar.gz= | 73d064ad9a |
+| =packages= per node (clever_dijkstra) | 8.6 GB to 9.6 GB, 5 nodes | =du -sh node_*/packages= | 73d064ad9a |
+
+* Notes
+
+- The cache key is set in =projects/ores.compute/wrapper/src/app/application.cpp=,
+  in =ensure_package= and its caller.
+- The seed is =projects/ores.sql/populate/compute/compute_ore_app_seed.sql=.
+- The existing folders are kept for this analysis. Do not delete them before
+  the task has used them.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

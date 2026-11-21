@@ -1,0 +1,102 @@
+:PROPERTIES:
+:ID: A8E2FC93-6C14-4786-9B0C-A9BC4F25F6EE
+:END:
+#+title: Task: Remove job folders older than a set age
+#+description: Make the wrapper remove job folders that are older than a configured age.
+#+type: task
+#+level: s1
+#+filetags: :compute_wrappers_never_release_their_disk:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-20
+#+updated: 2026-11-20
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2B553C18-5DC3-4443-AE79-2B3BBC071172][Compute wrappers never release their disk]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A wrapper removes each job folder under =jobs/= that is older than a configured
+age. The engine's results and logs are uploaded and published before the job
+ends, so the folder is scratch data after that. Find the age from the existing
+folders and from what a person needs to inspect a failed job.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:2B553C18-5DC3-4443-AE79-2B3BBC071172][Compute wrappers never release their disk]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Analyse the existing job folders.      |
+| Last touched | 2026-11-20                               |
+
+* Acceptance
+
+- A wrapper removes job folders older than the configured age, at start and
+  then at a regular interval.
+- The age is a wrapper setting with a stated default.
+- A job that runs now is never removed.
+- Decide whether a failed job's folder is kept longer than a successful one.
+- Measure the wrapper folders before and after both tasks, on the same
+  workload, for the story's acceptance.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Job folders in =node_1/jobs= (clever_dijkstra) | 995, from 2026-11-11 to 2026-11-20 | =ls jobs= and =ls -la --time-style=+%F jobs= | 73d064ad9a |
+| Size of a job folder | median 1.8 MB, 90th percentile 3.7 MB, largest 28 MB | =du -sk jobs/*=, sorted | 0432e34058 |
+| Total of =node_1/jobs= | 2,842 MB over 995 folders | =du -sk jobs/*=, summed | 0432e34058 |
+| =jobs= per node (clever_dijkstra) | 2.7 GB to 3.0 GB, 5 nodes | =du -sh node_*/jobs= | 73d064ad9a |
+
+* Notes
+
+- The job folder is made in =projects/ores.compute/wrapper/src/app/application.cpp=
+  as =work_dir/jobs/<result_id>=. Nothing removes it.
+- The existing folders are kept for this analysis. Do not delete them before
+  the task has used them.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -452,7 +452,7 @@ void report_execution_handler::gather_market_data(ores::nats::delivery delivery)
             ORES_LOG_SEV(lg(), info)
                 << "gather_market_data resolved the run's requirements"
                 << " | instance=" << req.report_instance_id << " trades=" << req.trade_ids.size()
-                << " requirements=" << md_req.requirements.size();
+                << " requirements=" << res_resp->requirements.size();
         }
         ORES_LOG_SEV(lg(), info) << "gather_market_data asking marketdata to export | instance="
                                  << req.report_instance_id

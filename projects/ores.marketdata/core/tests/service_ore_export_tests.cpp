@@ -820,7 +820,9 @@ TEST_CASE("a narrowed export writes the series that answer the run's requirement
         series_of(party, false, gbp_swap),
         // The world's fixings sit in the system tenant, as the public sources write them.
         series_of(other, true, sonia_fixing),
-        series_of(other, true, libor_fixing)};
+        series_of(other, true, libor_fixing),
+        // A fixing the party holds its own series of, beside the world's.
+        series_of(party, false, libor_fixing)};
 
     const auto uris = [](const std::vector<const ores::marketdata::domain::market_series*>& v) {
         std::vector<std::string> out;
@@ -839,9 +841,11 @@ TEST_CASE("a narrowed export writes the series that answer the run's requirement
     const std::set<std::string> also_libor{libor_fixing};
     const auto libor = ores::marketdata::service::series_to_export(
         series, ores::utility::uuid::tenant_id::system(), party, also_libor);
-    CHECK(uris(libor) == std::vector<std::string>{libor_fixing});
+    REQUIRE(libor.size() == 1);
+    CHECK(libor.front()->party_id == party);
 
-    // No requirement set writes every series the party's export writes, as before.
+    // No requirement set writes every series the party's export writes, as before: its own
+    // quote, its own fixing, and the world's fixing whose index it holds none of.
     const auto all = ores::marketdata::service::series_to_export(
         series, ores::utility::uuid::tenant_id::system(), party);
     CHECK(all.size() == 4);

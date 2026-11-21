@@ -601,12 +601,18 @@ public:
             // here, naming it, rather than in an engine that can only report a curve it
             // could not build.
             std::optional<std::set<std::string>> requirements;
-            if (!req->requirements.empty()) {
+            if (req->requirements && req->requirements->empty()) {
+                // The caller named a set, and the set needs no market data. That is not the
+                // same request as one that names no set, which keeps the whole-tenant export.
+                requirements = std::set<std::string>{};
+                ORES_LOG_SEV(market_series_handler_lg(), info)
+                    << "export_to_storage: the run names no requirement, so no series is written";
+            } else if (req->requirements) {
                 repository::requirement_coverage_repository coverage_repo;
                 std::set<std::string> answered;
                 std::vector<std::string> missing;
                 for (const auto& one :
-                     coverage_repo.read(ctx, req->requirements, req->valuation_date)) {
+                     coverage_repo.read(ctx, *req->requirements, req->valuation_date)) {
                     if (one.answered)
                         answered.insert(one.oresmd_uri);
                     else
@@ -626,7 +632,7 @@ public:
                 }
                 requirements = std::move(answered);
                 ORES_LOG_SEV(market_series_handler_lg(), info)
-                    << "export_to_storage: the run needs " << req->requirements.size()
+                    << "export_to_storage: the run needs " << req->requirements->size()
                     << " series, and the market answers every one";
             }
 

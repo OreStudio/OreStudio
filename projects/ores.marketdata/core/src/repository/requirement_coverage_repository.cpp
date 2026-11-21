@@ -30,10 +30,18 @@ namespace {
 
 /*
  * One row per requirement, whether the market answers it or not. A party's own
- * series answers the address, and a fixing is also answered by the system
- * tenant's series of that index, because the export writes the world's fixing
- * when the party holds none of its own; that rule is stated here as the export
- * states it.
+ * series answers the address. A fixing is also answered by the system tenant's
+ * series of the same address, because the export writes the world's fixing when
+ * the party holds none of its own; a quote is not, because the export takes from
+ * the system tenant only fixing series, so counting a system-tenant quote here
+ * would pass a requirement the body never carries.
+ *
+ * A series answers whether or not it holds a point at the date: the export writes
+ * a series with no point at the date as its history alone and counts it, so a
+ * missing point is the export's own stale accounting and not a gap here.
+ *
+ * The system tenant's series are installation reference data, which every party
+ * reads, so its rows are counted without asking for a party of their own.
  */
 constexpr auto coverage_query =
     "with requirements as ("
@@ -47,10 +55,11 @@ constexpr auto coverage_query =
     "    group by c.oresmd_uri)"
     " select r.uri,"
     "        coalesce(c.answered, false)"
-    "        or exists (select 1 from ores_marketdata_market_series_tbl s"
-    "                   where s.tenant_id = ores_utility_system_tenant_id_fn()"
-    "                     and s.oresmd_uri = r.uri"
-    "                     and s.valid_to = ores_utility_infinity_timestamp_fn())"
+    "        or (position('?type=fixing&' in r.uri) > 0"
+    "            and exists (select 1 from ores_marketdata_market_series_tbl s"
+    "                        where s.tenant_id = ores_utility_system_tenant_id_fn()"
+    "                          and s.oresmd_uri = r.uri"
+    "                          and s.valid_to = ores_utility_infinity_timestamp_fn()))"
     " from requirements r"
     " left join coverage c on c.oresmd_uri = r.uri"
     " order by r.uri";
@@ -75,10 +84,12 @@ requirement_coverage_repository::read(const context& ctx,
         ctx.tenant_id().to_string(),
         boost::uuids::to_string(*party),
         requirements_json,
-        // The close of the business date, so a point written about that day counts, as the
-        // export's own line for the date does.
-        as_of ? std::optional<std::string>(*as_of + "T23:59:59.999999Z") :
-                std::optional<std::string>{}};
+        // A bare business date is read at the close of its day, so a point written about that
+        // day counts, as the export's own line for the date does. A value that already carries
+        // a time is read as it stands.
+        (as_of && as_of->size() == 10 && as_of->find('T') == std::string::npos) ?
+            std::optional<std::string>(*as_of + "T23:59:59.999999Z") :
+            as_of};
 
     for (const auto& row : ores::database::query_builder::execute_parameterized_multi_column_query(
              ctx, coverage_query, params, lg(), "Reading the market's coverage of requirements"))

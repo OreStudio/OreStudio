@@ -48,6 +48,7 @@ BEGIN
           and code = 'demo_counterparty_logo'
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
+        -- compass:except(single_writer/second_writer) expires=2027-05-18 approver=marco reason=the populate script writes the system tenant's row and the publish writes a tenant's own: a demonstration's photographs in its own tenant, and the platform's flags and avatars in the system tenant
         insert into ores_assets_images_tbl (
             id, tenant_id, version, code, description, mime_type, data,
             modified_by, performed_by, change_reason_code, change_commentary

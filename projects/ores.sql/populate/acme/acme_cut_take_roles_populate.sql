@@ -89,6 +89,7 @@ begin
               and role_id = v_role_id
               and valid_to = ores_utility_infinity_timestamp_fn()
         ) then
+            -- compass:except(single_writer/second_writer) expires=2027-05-18 approver=marco reason=to collapse: the ACME cut-take seed grants a second role to one account, which the account artefact cannot express because it carries one role per account; the IAM publish grants that one
             insert into ores_iam_account_roles_tbl (
                 tenant_id, account_id, role_id, version, modified_by, performed_by,
                 change_reason_code, change_commentary, valid_from, valid_to

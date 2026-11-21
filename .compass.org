@@ -91,6 +91,9 @@ rule_table stay off, because ORE Studio has its own index and contract checks.
 | skill_type_tables | yes | |
 | trade_type_coverage | yes | |
 | rls_coverage | yes | |
+| single_writer | yes | |
+| xml_bindings | yes | clang_format=clang-format |
+| list_request_table | yes | |
 
 * Exceptions
 

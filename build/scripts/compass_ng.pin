@@ -1,8 +1,8 @@
 # The compass-ng build ORE Studio needs. bearings asks for a newer build when
 # the installed one was committed before this one. Raise it when ORE Studio
 # starts to depend on a newer compass-ng.
-commit: e83a62d1e4eb10a7c3b6deb7eb79e125463ab492
-committed: 2026-11-20T11:04:05Z
+commit: 69b9ef475c5ec0cc39e0d5c83c7e28b8b9ddb5e2
+committed: 2026-11-21T04:09:01Z
 # The compass release the Compass check workflow installs. It must contain the
 # commit above. Raise it with the commit when a check needs a newer release.
-release: v0.0.3
+release: v0.0.5

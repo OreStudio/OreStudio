@@ -99,7 +99,7 @@ A list need not say what one item is. =curve.list= is the set that says the leaf
 holds many values and admits any item, and it is used for the three leaves whose
 items no authority states: a delta written =25D=, an expiry that may be a date or
 a wildcard, and a pillar date. Those three sets of names are curated in
-=curve_value_sets.py= beside the reason and the guide or code line it came from,
+[[id:D8B98C0D-6E28-4D36-96CE-1D9F69529D35][the value sets check]] beside the reason and the guide or code line it came from,
 so the difference between a list of periods and a list of anything is data.
 
 * What a set looks like as data
@@ -107,8 +107,9 @@ so the difference between a list of periods and a list of anything is data.
 The sets are seeded, not typed in. The curated input is
 =projects/ores.seeder/datasets/ore_pricing_engines/curation/value-sets.json=
 with =value-sets-code.json= for the codes, and
-=projects/ores.sql/utility/generate_value_sets.py= writes the populate scripts;
-=--check= fails the build when the committed SQL and the curation disagree. Each
+compass-ng's =ore_value_sets= codec writes the populate scripts
+(=./compass.sh generate=), and its check fails when the committed SQL and the
+curation disagree. Each
 row's description names the ORE source the rule was taken from, so a set can be
 re-derived rather than guessed:
 
@@ -177,7 +178,8 @@ means, and which of them a configuration carries.
 
 The renderings are data. =projects/ores.sql/utility/ore_renderings.json= states,
 for each table, the form a configuration holds and every rendering that means it.
-Two readers take that file: the value sets, through =ore_aliases.py=, and the C++
+Two readers take that file: the value sets, through compass-ng's =ore_value_sets=
+codec, and the C++
 reader, which converts with tables generated from it
 (=projects/ores.ore/core/src/domain/conventions_renderings.hpp=). A generated table
 is one statement that survives being compiled: the check fails when the committed

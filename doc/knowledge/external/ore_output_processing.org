@@ -105,9 +105,9 @@ The layering is fixed before any reader is written:
 - The post-processor calls the readers. That gives =ores.reporting.core= a core
   link to =ores.ore.core=, the same edge =ores.marketdata.core= already holds.
 
-The catalogue is generated from the corpus by
-=projects/ores.ore/scripts/generate_output_catalogue.py=, and the
-=ore-output-catalogue= local check fails when the corpus and the data disagree.
+The catalogue is generated from the corpus by compass-ng's
+=ore_output_catalogue= codec, from the data in [[id:8DCDD35A-90A9-48DA-A880-A2D098FE2838][the output catalogue check]], and the
+check fails when the corpus and the data disagree.
 Each family states the roles of its columns — keys that identify a row,
 qualifiers that state the context of a figure, and measures that are the figures
 — and whether its measure set is open.

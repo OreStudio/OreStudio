@@ -45,6 +45,7 @@
 
 \echo '--- Overnight-Index Curve Market Series ---'
 
+-- compass:except(single_writer/second_writer) expires=2027-05-18 approver=marco reason=the populate script writes the system tenant's row and the publish writes a tenant's own: the seeds write the system tenant's bootstrapped series, and the market data publish writes a series for the tenant that asked for it
 insert into ores_marketdata_market_series_tbl (
     id, tenant_id, version, party_id, series_subclass, oresmd_uri,
     provider_code, derivation_kind, derivation_config_id, derivation_config_version,
@@ -245,6 +246,7 @@ on conflict (tenant_id, id)
 where valid_to = ores_utility_infinity_timestamp_fn()
 do nothing;
 
+-- compass:except(single_writer/second_writer) expires=2027-05-18 approver=marco reason=the populate script writes the system tenant's row and the publish writes a tenant's own: the seeds write the system tenant's series classes, and the market data publish writes them for the tenant that asked for it
 insert into ores_marketdata_market_series_asset_classes_tbl (
     market_series_id, tenant_id, asset_class_code, version,
     modified_by, performed_by, change_reason_code, change_commentary

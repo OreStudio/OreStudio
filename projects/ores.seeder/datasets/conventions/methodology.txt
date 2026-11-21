@@ -87,7 +87,7 @@ own copy.
    engine, then compare them with the dataset:
 
        ./projects/ores.codegen/venv/bin/python tools/ore_conventions/extract.py
-       python3 projects/ores.seeder/datasets/conventions/propose.py
+       compass-ng check --codec conventions_coverage
 
    The report names each convention ORE holds that the dataset lacks, and each
    whose terms differ. A curator adds or changes the row, or records in

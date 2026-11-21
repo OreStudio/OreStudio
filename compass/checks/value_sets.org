@@ -1,0 +1,442 @@
+:PROPERTIES:
+:ID: D8B98C0D-6E28-4D36-96CE-1D9F69529D35
+:END:
+#+title: Check: parameter value sets
+#+description: The curation the parameter value sets, the ORE element map and the convention kind terms are resolved from; the tables give compass the data it resolves them with.
+#+type: check
+#+level: cross
+#+filetags: :compass:check:value_sets:ore:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+#+options: prop:t
+
+This page gives the data of compass-ng's =ore_value_sets= and
+=parameter_value_sets= codecs, which ORE Studio runs over its parameter value
+sets. The =* Definition= names both codecs, because the generator and the gate
+resolve one model from the same curation; each table below is data they read,
+and the prose says what it is for. The tables were module-level literals of
+six modules under =projects/ores.sql/utility/=: =convention_value_sets.py=,
+=curve_value_sets.py=, =ore_aliases.py=, =ore_schema_types.py=,
+=generate_ore_element_map.py= and =generate_convention_kind_terms.py=, which
+compass-ng used to parse. The regular expressions and functions of those
+modules are compass code.
+
+* Rule
+
+Every parameter a screen draws names a value set by a curated link, every set
+is named and states only a rule its kind can hold, and no source restates
+another's set. =ore_value_sets= writes the value set seed, the ORE element map
+and its columns, and the convention kind terms with their validation triggers,
+from one resolution of the curation; =parameter_value_sets= reports every rule
+the same resolution breaks, and writes nothing.
+
+* Why
+
+A value set is the rule the store applies to a parameter's value: the values
+an enumeration lists, the catalogue it names, or the pattern or bounds it
+states. ORE's reader, parsers and schema are the authority for each rule, and
+the tables below say where the extraction of that authority needs a person:
+which reader converts a value, which kind a leaf really has, and what a reader
+of the element map is told about it. Stating them once, beside the prose that
+explains them, means the generator and the gate read the same curation.
+
+* Definition
+:PROPERTIES:
+:CODEC: ore_value_sets parameter_value_sets
+:END:
+
+* Catalogues
+
+The catalogues of reference data a value may name, with the relation that holds
+their codes. A term whose kind the =Catalogue kinds= table names, and a curve
+setting whose declaration names a catalogue, takes a set that names one of
+these instead of copying its values. This was =CATALOGUES=, which
+=convention_value_sets.py= and =curve_value_sets.py= each stated, alike.
+
+| code               | name       | relation                            | description                          |
+|--------------------+------------+-------------------------------------+--------------------------------------|
+| =refdata.currency= | Currencies | =ores_refdata_currency_catalogue_v= | The currencies reference data holds. |
+
+* Catalogue kinds
+
+The convention term kinds whose values a catalogue holds, and that catalogue:
+such a term takes the set =convention.<kind>=, which names it. This was
+=convention_value_sets.py='s =CATALOGUE_OF=.
+
+| kind       | catalogue          |
+|------------+--------------------|
+| =currency= | =refdata.currency= |
+
+* Rendered kinds
+
+The convention term kinds ORE's reader converts before the store sees a value,
+and the family of =ore_renderings.json= that states which renderings mean one
+fact. The set states every rendering, so a document may write any of them, and
+a configuration holds the one form the set names. This was
+=convention_value_sets.py='s =RENDERED_OF=.
+
+| kind                      | renderings                 |
+|---------------------------+----------------------------|
+| =business_day_convention= | =business_day_conventions= |
+| =day_counter=             | =day_counters=             |
+
+* Kinds without a list
+
+The convention term kinds whose parser states no list of values, and the set
+each takes instead, unless the ORE schema states a narrower one for the leaf. A
+term whose parser states no list, and whose kind is not here, stops the
+generator: a parser that gained a list, or a list the extractor failed to read,
+would otherwise leave the term free text with no one told. This was
+=convention_value_sets.py='s =WITHOUT_LIST=.
+
+| kind       | set    |
+|------------+--------|
+| =calendar= | =text= |
+| =index=    | =text= |
+| =text=     | =text= |
+
+* Kinds one parser lists
+
+A convention term kind whose values one parser lists, whichever parser the term
+names. This was =convention_value_sets.py='s =LIST_OF=.
+
+| kind        | parser           |
+|-------------+------------------|
+| =frequency= | =parseFrequency= |
+
+* Type sets
+
+The value set each extractor type takes, per family: a convention term or a
+curve setting of that type links to the set. This was =TYPE_SETS= in
+=convention_value_sets.py= (family =convention=) and in =curve_value_sets.py=
+(family =curve=).
+
+| family       | type          | set                  |
+|--------------+---------------+----------------------|
+| =convention= | =boolean=     | =flag=               |
+| =convention= | =double=      | =number=             |
+| =convention= | =integer=     | =convention.integer= |
+| =convention= | =period=      | =convention.period=  |
+| =curve=      | =boolean=     | =curve.flag=         |
+| =curve=      | =double=      | =curve.number=       |
+| =curve=      | =integer=     | =curve.integer=      |
+| =curve=      | =period=      | =curve.period=       |
+| =curve=      | =number_list= | =curve.number_list=  |
+| =curve=      | =period_list= | =curve.period_list=  |
+| =curve=      | =date_list=   | =curve.date_list=    |
+| =curve=      | =list=        | =curve.list=         |
+
+* Schema type sets
+
+The kind of value the ORE schema declares for a leaf, and the extractor type
+that names its set in =Type sets=. A leaf whose parser states no list takes the
+set of the kind its schema type declares, when the schema bounds it no further.
+This was =SCHEMA_TYPE_SETS=, which =convention_value_sets.py= and
+=curve_value_sets.py= each stated, alike.
+
+| kind      | type      |
+|-----------+-----------|
+| =integer= | =integer= |
+| =number=  | =double=  |
+| =boolean= | =boolean= |
+| =period=  | =period=  |
+
+* Convention own sets
+
+The sets the convention family defines itself, rather than drawing from a
+parser, the schema or a catalogue. =pattern= is the pattern a value must match,
+where the set states one; =is_ordered= is =yes= when the order of the values
+means something. This was =convention_value_sets.py='s =OWN_SETS=.
+
+| code                 | name         | description                                                             | source_kind | pattern                      | is_ordered |
+|----------------------+--------------+-------------------------------------------------------------------------+-------------+------------------------------+------------|
+| =convention.integer= | Whole number | A whole number the ORE code parses as an integer.                       | =integer=   |                              | no         |
+| =convention.period=  | Period       | A period such as 2D, 3M or 1Y6M, which the ORE code parses as a period. | =regex=     | =^[+-]?([0-9]+[DdWwMmYy])+$= | no         |
+
+* Type overrides
+
+Convention leaves whose extracted type is wrong, the kind that holds instead,
+and why. A row with no =element= holds of the term under every convention; a row
+with one holds of that convention's term only, and a row for every convention
+wins over it. This was =convention_value_sets.py='s =TYPE_OVERRIDE=, whose key
+was (term, None) for every convention and (element, term) for one.
+
+| element            | term                    | kind                      | reason                                                                                                                                                                                                |
+|--------------------+-------------------------+---------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|                    | =SettlementDays=        | =integer=                 | The ORE schema declares SettlementDays xs:integer, and the extractor typed it text because no parser reaches it.                                                                                      |
+|                    | =FixingDays=            | =integer=                 | The ORE schema declares FixingDays xs:integer, and the extractor typed it text because no parser reaches it.                                                                                          |
+| =CommodityForward= | =SpotDays=              | =integer=                 | The ORE schema declares the commodity forward's SpotDays xs:integer, and the extractor typed it text because no parser reaches it.                                                                    |
+| =IborIndex=        | =DayCounter=            | =day_counter=             | ORE stores this day counter as a string and never parses it, so a typo is silent in the engine; it means the vocabulary every other convention states, so the catalogue refuses the typo.             |
+| =IborIndex=        | =BusinessDayConvention= | =business_day_convention= | ORE stores this business day convention as a string and never parses it, so a typo is silent in the engine; it means the vocabulary every other convention states, so the catalogue refuses the typo. |
+| =OvernightIndex=   | =DayCounter=            | =day_counter=             | ORE stores this day counter as a string and never parses it, so a typo is silent in the engine; it means the vocabulary every other convention states, so the catalogue refuses the typo.             |
+
+* Curation keys
+
+The keys every entry of =curve_value_set_curation.json= must state; an entry
+that lacks one stops the generator. This was =curve_value_sets.py='s
+=CURATION_KEYS=.
+
+| key          |
+|--------------|
+| =link=       |
+| =reason=     |
+| =source=     |
+| =source_ref= |
+| =curator=    |
+| =date=       |
+
+* Curation sources
+
+The sources an entry of =curve_value_set_curation.json= may cite; any other
+stops the generator. This was =curve_value_sets.py='s =SOURCES=.
+
+| source      |
+|-------------|
+| =ore_guide= |
+| =ore_code=  |
+| =ore_xsd=   |
+| =authored=  |
+| =seed=      |
+
+* List items
+
+Curve leaves that hold a comma separated list ORE reads as strings, the kind one
+item has, and the ORE code or guide line that proves it. The extractor sees the
+read and not what parses an item, so a person states it here. An empty =kind=
+says no rule holds of an item yet, and the leaf takes the set of a list of any
+text. This was =curve_value_sets.py='s =LIST_ITEM=.
+
+| leaf                | kind          | source      | source_ref                                                       | reason                                                                                                                                                                     |
+|---------------------+---------------+-------------+------------------------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| =Strikes=           | =number_list= | =ore_code=  | =OREData/ored/configuration/reportconfig.cpp:68=                 | The report grid beside the curve parses its strike list as a real, and both leaves name the same set of strikes, so one item is a number.                                  |
+| =CapStrikes=        | =number_list= | =ore_guide= | =Docs/UserGuide/parameterisation/curveconfig.tex:50=             | The guide states the strikes for which cap prices are quoted, so one item is a number.                                                                                     |
+| =FloorStrikes=      | =number_list= | =ore_guide= | =Docs/UserGuide/parameterisation/curveconfig.tex:52=             | The guide states the strikes for which floor prices are quoted, so one item is a number.                                                                                   |
+| =DetachmentPoints=  | =number_list= | =ore_guide= | =Docs/UserGuide/parameterisation/curveconfig.tex:38=             | The guide states any positive number less than one, so one item is a number.                                                                                               |
+| =SmileSpreads=      | =number_list= | =ore_guide= | =Docs/UserGuide/parameterisation/curveconfig.tex:111=            | The guide states strikes expressed as strike spreads relative to the ATM strike, so one item is a number.                                                                  |
+| =Tenors=            | =period_list= | =ore_guide= | =Docs/UserGuide/curve_configurations/capfloorvolatility.tex:94=  | The guide states a comma separated list of valid tenor strings, and a tenor is a period.                                                                                   |
+| =AtmTenors=         | =period_list= | =ore_guide= | =Docs/UserGuide/curve_configurations/capfloorvolatility.tex:106= | The guide states a comma separated list of valid tenor strings, and a tenor is a period.                                                                                   |
+| =Terms=             | =period_list= | =ore_guide= | =Docs/UserGuide/parameterisation/curveconfig.tex:37=             | The guide states a comma separated list of tenors, and a tenor is a period.                                                                                                |
+| =SmileOptionTenors= | =period_list= | =ore_guide= | =Docs/UserGuide/parameterisation/curveconfig.tex:109=            | The guide states option expiries in period form, so one item is a period.                                                                                                  |
+| =OptionTenors=      | =period_list= | =ore_code=  | =OREData/ored/configuration/correlationcurveconfig.cpp:148=      | The option tenors are the expiries of the volatility surface, and every family reads an option tenor as a period, so one item is a period.                                 |
+| =SwapTenors=        | =period_list= | =ore_guide= | =Docs/UserGuide/parameterisation/curveconfig.tex:135=            | The guide states the underlying Swap term in period form, so one item is a period.                                                                                         |
+| =SmileSwapTenors=   | =period_list= | =ore_guide= | =Docs/UserGuide/parameterisation/curveconfig.tex:142=            | The guide states the underlying Swap term in period form for the smile section, so one item is a period.                                                                   |
+| =BondTenors=        | =period_list= | =ore_code=  | =OREData/ored/configuration/yieldvolcurveconfig.hpp:42=          | The yield volatility class builds this leaf from the same read the swaption class builds SwapTenors from, with Bond as the underlying label, and a bond tenor is a period. |
+| =SmileBondTenors=   | =period_list= | =ore_code=  | =OREData/ored/configuration/yieldvolcurveconfig.hpp:42=          | The yield volatility class builds this leaf from the same read the swaption class builds SmileSwapTenors from, and a bond tenor is a period.                               |
+| =Deltas=            |               | =ore_code=  | =OREData/ored/configuration/fxvolcurveconfig.cpp:167=            | ORE writes a delta as 25D, which is neither a number nor a period, and this tree states no rule for one yet.                                                               |
+| =Expiries=          |               | =ore_guide= | =Docs/UserGuide/parameterisation/curveconfig.tex:128=            | The guide states expiry tenors and or expiry dates, and a single wildcard *, so no one rule holds of an item yet.                                                          |
+| =PillarDates=       | =date_list=   | =ore_code=  | =OREData/ored/configuration/reportconfig.cpp:82=                 | A pillar date is a date the ORE date parser accepts, and the schema states the pattern.                                                                                    |
+
+* Period pattern
+
+The pattern a period matches, which the curve family's =curve.period= and
+=curve.period_list= sets state. It is the same text as the =convention.period=
+row of =Convention own sets=. This was =curve_value_sets.py='s
+=PERIOD_PATTERN=.
+
+| pattern                      |
+|------------------------------|
+| =^[+-]?([0-9]+[DdWwMmYy])+$= |
+
+* Parser tables
+
+The ORE parser whose list names one family of renderings of
+=ore_renderings.json=. ORE's reader states each rendering once, in the table
+that converts it, and the parser that accepts it states the word it means; the
+two must agree, and a rendering only one of them names is a problem the codecs
+report. This was =ore_aliases.py='s =PARSER_TABLE=.
+
+| parser                       | table                      |
+|------------------------------+----------------------------|
+| =parseBusinessDayConvention= | =business_day_conventions= |
+| =parseDayCounter=            | =day_counters=             |
+| =parseFrequency=             | =frequencies=              |
+| =parseCompounding=           | =compoundings=             |
+| =parseDateGenerationRule=    | =date_rules=               |
+
+* Rendering families
+
+What each family of renderings is called, and how a row of its set reads:
+=words= labels a value with its name in words, =value= with the value itself.
+This was =ore_aliases.py='s =SETS=, whose labels were its =WORDS_LABEL= and
+=VALUE_LABEL=.
+
+| table                      | name                     | description                                                                                                     | label   |
+|----------------------------+--------------------------+-----------------------------------------------------------------------------------------------------------------+---------|
+| =business_day_conventions= | Business day conventions | The business day conventions, as the form a configuration holds and every other rendering ORE's reader accepts. | =words= |
+| =day_counters=             | Day counters             | The day counters, as the form a configuration holds and every other rendering ORE's reader accepts.             | =value= |
+| =frequencies=              | Frequencies              | The frequencies, as the form a configuration holds and every other rendering ORE's reader accepts.              | =words= |
+| =compoundings=             | Compoundings             | The compounding rules, as the form a configuration holds and every other rendering ORE's reader accepts.        | =words= |
+| =date_rules=               | Date generation rules    | The date generation rules, as the form a configuration holds and every other rendering ORE's reader accepts.    | =words= |
+
+* Schema kinds
+
+The XSD types narrower than a string, and the kind of value each states. A leaf
+the ORE schema declares with one of them takes the set of that kind. This was
+=ore_schema_types.py='s =KIND_OF=; the walk of the schema is compass code.
+
+| xsd_type                | kind      |
+|-------------------------+-----------|
+| =xs:integer=            | =integer= |
+| =xs:int=                | =integer= |
+| =xs:long=               | =integer= |
+| =xs:short=              | =integer= |
+| =xs:unsignedLong=       | =integer= |
+| =xs:nonNegativeInteger= | =integer= |
+| =xs:positiveInteger=    | =integer= |
+| =xs:double=             | =number=  |
+| =xs:float=              | =number=  |
+| =xs:decimal=            | =number=  |
+| =positiveDecimal=       | =number=  |
+| =xs:boolean=            | =boolean= |
+| =bool=                  | =boolean= |
+| =period=                | =period=  |
+
+* Unread leaves allowed
+
+How many leaves of the element map may name no authority: no ORE source reads
+them and the ORE schema types none, so the map states text for a value ORE may
+well constrain. A projection column carries each, so the count is a coverage
+gap and not a choice. It may only fall, and it is zero. This was
+=generate_ore_element_map.py='s =UNREAD_ALLOWED=.
+
+| count |
+|-------|
+| 0     |
+
+* Item words
+
+What one item of a list may be, in the words a person reads beside the leaf, by
+the kind of the item's set. An empty =words= says no rule states what an item
+may be. This was =generate_ore_element_map.py='s =ITEM_WORDS=.
+
+| kind         | words                                 |
+|--------------+---------------------------------------|
+| =number=     | a number                              |
+| =integer=    | a whole number                        |
+| =regex=      | a period                              |
+| =enumerated= | one of the values the set lists       |
+| =catalogue=  | one of the values the catalogue holds |
+| =flag=       | a flag                                |
+| =boolean=    | a flag                                |
+| =text=       |                                       |
+
+* Schema words
+
+For each kind of value the ORE schema declares, the name of the set it takes
+and the words a person reads for a value of it. This was
+=generate_ore_element_map.py='s =SCHEMA_NAMES= (=name=) and =SCHEMA_WORDS=
+(=words=), which named the same kinds.
+
+| kind      | name         | words          |
+|-----------+--------------+----------------|
+| =integer= | Whole number | a whole number |
+| =number=  | Number       | a number       |
+| =boolean= | Flag         | true or false  |
+| =period=  | Period       | a period       |
+
+* Asset classes
+
+The asset classes a convention kind may serve; a screen draws its kinds under
+them, and a kind of the seed whose asset class is not here stops the convention
+kind terms. This was =generate_convention_kind_terms.py='s =ASSET_CLASSES=.
+
+| asset_class      |
+|------------------|
+| =interest-rates= |
+| =fx=             |
+| =inflation=      |
+| =credit=         |
+| =commodity=      |
+| =bond=           |
+
+* Not a column
+
+A read of the conventions mapper whose target is not a column of a convention
+entity, with why: the kind the mapper serves, the variable it reads into and
+the member. This was =generate_convention_kind_terms.py='s =NOT_A_COLUMN=.
+
+| kind            | variable | column      | reason                                                                                                                                          |
+|-----------------+----------+-------------+-------------------------------------------------------------------------------------------------------------------------------------------------|
+| =CURRENCY_PAIR= | =r=      | =spot_days= | the FX projection's spot days, which the projection carries and no entity stores                                                                |
+| =CURRENCY_PAIR= | =r=      | =id=        | the FX convention's Id as the document names it, which the projection carries to write the convention back under that name and no entity stores |
+
+* Convention schema
+
+The ORE schema the convention kind terms are read against, which their seed
+names. This was =generate_convention_kind_terms.py='s =SCHEMA_NAME=.
+
+| schema            |
+|-------------------|
+| =conventions.xsd= |
+
+* File kinds
+
+The kind a mapper file serves, where its name does not say it. This was
+=generate_convention_kind_terms.py='s =FILE_KIND=.
+
+| file                            | kind            |
+|---------------------------------+-----------------|
+| =conventions_fx_projection.cpp= | =CURRENCY_PAIR= |
+
+* Spelled otherwise
+
+A term whose element the mapper spells otherwise than the ORE parser reads it,
+with the leaf the parser reads and why. The contract is keyed by what ORE
+reads. This was =generate_convention_kind_terms.py='s =SPELLED_OTHERWISE=.
+
+| term                                                              | xpath                                           | reason                                                                                                                   |
+|-------------------------------------------------------------------+-------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------|
+| =BMA_BASIS_SWAP:bma_basis_swap_convention.overnight_lockout_days= | =/Conventions/BMABasisSwap/OvernightLockouDays= | ORE's fromXML reads OvernightLockouDays and its toXML writes OvernightLockoutDays; the mapper uses the written spelling. |
+
+* Read elsewhere
+
+A block of a convention another ORE parser reads whole, so its parts are not
+leaves of the conventions parser and take no term, with why. This was
+=generate_convention_kind_terms.py='s =READ_ELSEWHERE=.
+
+| kind             | element               | reason                                                                            |
+|------------------+-----------------------+-----------------------------------------------------------------------------------|
+| =INFLATION_SWAP= | =PublicationSchedule= | a ScheduleData block that ScheduleData::fromXML reads, not the conventions parser |
+
+* Kind elements
+
+The element a convention kind is written as, where no =pack_family= call of the
+mapper names it. This was =generate_convention_kind_terms.py='s =ELEMENT_OF=.
+
+| kind                       | element                 |
+|----------------------------+-------------------------|
+| =TENOR_BASIS_SWAP=         | =TenorBasisSwap=        |
+| =COMMODITY_FUTURE=         | =CommodityFuture=       |
+| =CROSS_CURRENCY_BASIS=     | =CrossCurrencyBasis=    |
+| =CROSS_CURRENCY_FIX_FLOAT= | =CrossCurrencyFixFloat= |
+| =CURRENCY_PAIR=            | =FX=                    |
+
+* Member entities
+
+The entity a member of a projection struct holds, where a mapper reaches an
+entity through an alias, as the FX mapper reaches the currency pair. This was
+=generate_convention_kind_terms.py='s =MEMBER_ENTITY=.
+
+| member       | entity                     |
+|--------------+----------------------------|
+| =pair=       | =currency_pair=            |
+| =convention= | =currency_pair_convention= |
+
+* Examples
+
+None here: the codecs' cases are their tests, in compass's
+=codecs_value_sets_tests.cpp= and =codecs_convention_kind_terms_tests.cpp=.
+
+* Exceptions
+
+| path | line | rule | expires | approver | reason |
+|------+------+------+---------+----------+--------|
+
+* See also
+
+- =compass-ng='s =ore_value_sets= and =parameter_value_sets= codecs, in the
+  compass repository.
+- =projects/ores.sql/utility/convention_terms.json=, =curve_terms.json=,
+  =ore_renderings.json=, =ore_parameter_vocabularies.json= and
+  =curve_value_set_curation.json=, the extracted and curated JSON the codecs
+  also read.

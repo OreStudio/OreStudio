@@ -83,8 +83,8 @@ map.
 
 The gap that remains is the other kind. A leaf whose read the term extractor does
 not know has no parser to take a rule from, so the map states =text= and says why.
-28 leaves are in that state, and =generate_ore_element_map.py= holds the number
-down with =UNREAD_ALLOWED= so it can fall but not grow unnoticed.
+28 leaves are in that state, and the "Unread leaves allowed" table of
+[[id:D8B98C0D-6E28-4D36-96CE-1D9F69529D35][the value sets check]] holds the number down so it can fall but not grow unnoticed.
 
 * What the two column maps still do
 

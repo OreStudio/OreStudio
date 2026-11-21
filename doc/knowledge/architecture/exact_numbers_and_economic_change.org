@@ -96,7 +96,7 @@ A new money member needs three steps:
 2. Regenerate the tables with =regenerate_xml_bindings.sh=.
 3. Add a mapper test that holds the digits of the member.
 
-The drift check =build/scripts/check_xml_bindings_drift.py= fails when a
+compass-ng's =xml_bindings= codec fails when a
 committed table and the generator disagree, so a table never carries a hand
 edit.
 

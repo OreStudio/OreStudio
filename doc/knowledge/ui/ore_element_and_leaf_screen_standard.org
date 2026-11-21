@@ -33,7 +33,7 @@ the Allium specification
 [[proj:doc/llm/specs/ore-leaf-behaviour.allium][=ore-leaf-behaviour.allium=]] and
 the screen review checklist can name it. The
 identifiers follow the convention the [[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX]] hub
-states; =check_rule_identifiers.py= does not key this page yet.
+states; compass-ng's =rule_identifiers= check does not key this page yet.
 
 * Detail
 

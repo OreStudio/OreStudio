@@ -73,7 +73,7 @@ page carries only what is specific to =workflow=.
     services, so the section is never empty. A pattern whose page exists is
     linked, and lists the workflow back under =* In ORE Studio=; a pattern
     whose page is not yet written is named in plain text.
-    =build/scripts/check_pattern_uses.py= checks the links.
+    compass-ng's =lint= checks the links.
   - =* Related= — a link to every page that bears on the workflow:
     =[[file:...]]= links for pages in the documentation, and =id:=
     links for the agile artefacts that built it, such as its story and

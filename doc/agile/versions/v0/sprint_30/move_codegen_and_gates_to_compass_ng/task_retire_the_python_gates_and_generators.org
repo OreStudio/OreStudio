@@ -8,7 +8,7 @@
 #+filetags: :move_codegen_and_gates_to_compass_ng:sprint_30:v0:
 #+owner: marco
 #+branch: feature/delete-the-python-gates-compass-ng-replaced
-#+pr: 4963
+#+pr: 4986
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-17
@@ -28,9 +28,9 @@ One tool, not two, owns each build-free gate and each generated artefact.
 |--------------+----------------------------------------|
 | State        | STARTED |
 | Parent story | [[id:E3BF90FE-43DF-4A30-9F2C-FF5E20128C88][Move codegen and the gates to compass-ng]] |
-| Now          | Tier 1 deleted (#4946). compass-ng v0.0.5 adopted (stacked on #4946): its check documents hold the data compass parsed out of ORE Python, and 16 more files go. |
+| Now          | Tiers 1 and 2 deleted; four scripts wait on compass to stop naming them; tiers 3 and 4 remain. |
 | Waiting on   | Nothing. |
-| Next         | Tier 2: switch or remove the workflows that still call the scripts, then delete them. |
+| Next         | Tier 3: move the callers (check_clean_standard.sh, the unity exclusions, generator chains), then tier 4, the Python generator. |
 | Last touched | 2026-11-21 |
 
 * Acceptance
@@ -78,6 +78,19 @@ task and name that file in the Command column.
 
 * Notes
 
+- 2026-11-21, tier 2: the scripts only the deleted single-gate workflows
+  called. 34 files go: 20 scripts, 13 tests and ores-check-org-links.el,
+  counting check_core_link_edges.py, check_shell_command_composition.py and
+  check_shell_recipe_sources.py, which those workflows also ran. Their 22 gates leave local_checks.py, and test_local_checks.py uses
+  surviving gates as its examples. Sixteen pages and three RLS exception
+  reasons that named a script now name its compass-ng codec.
+- Four tier 2 scripts stay, because compass-ng itself names them: the skill
+  codecs write the markers "# BEGIN generated ... (build/scripts/
+  apply_skill_levels.py)", "(generate_skills_catalogue.py)" and
+  "(generate_skill_type_tables.py)" (skill_levels.cpp, skill_tables.cpp), and
+  lint's marker_without_writer fails a marker whose script is gone; the
+  recipe_inventories codec writes a header naming
+  regenerate_http_recipe_inventory.py. Asked of compass-85.
 - 2026-11-21: the product owner waived the week of agreement: "we have been
   running these so it's fine to delete, previous checks were so slow they
   were unusable." The gates have run through compass-ng locally since
@@ -167,6 +180,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4986][#4986]] | [build] Delete the tier 2 Python gates |
 | [[https://github.com/OreStudio/OreStudio/pull/4963][#4963]] | [build] Adopt compass-ng v0.0.6 and own the XML binding table |
 | [[https://github.com/OreStudio/OreStudio/pull/4950][#4950]] | [build] Adopt compass-ng v0.0.5 and delete the Python it replaces |
 | [[https://github.com/OreStudio/OreStudio/pull/4946][#4946]] | [build] Delete the Python gates compass-ng replaced |
@@ -175,6 +189,9 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | SKILL_SCRIPTS names a deleted script and is unused. | build/scripts/local_checks.py | Accepted | Deleted (PR #4986). |
+| 2 | Four .compass.org RLS exception rows name the deleted script. | .compass.org | Accepted | Clause removed; the 220 exceptions still all excuse (PR #4986). |
+| 3 | compass:except headers name entity_table_writes_baseline.json. | projects/** | Accepted | No reader in ORE or compass: that baseline, core_link_edges_baseline.json and template_section_baseline.json are deleted, and 211 clauses naming the first two removed. money_decimal_columns.baseline stays: convert_money_column_to_decimal.py reads it (PR #4986). |
+| 4 | Historical agile pages name the deleted scripts. | doc/agile/** | Declined | Records of past work keep what was true then. |
 
 * Result

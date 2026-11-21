@@ -236,7 +236,6 @@ def classify(changed: list[str]) -> tuple[set[str], dict[str, list[str]]]:
 # checks that had no CI job at all.
 # --------------------------------------------------------------------------
 
-SKILL_SCRIPTS = ("build/scripts/generate_skill*.py", "build/scripts/link_structure_notes.py")
 
 # The test preset names no job count, so ctest would run one suite at a time.
 # The suites that must not overlap already say so, with RESOURCE_LOCK or
@@ -332,67 +331,6 @@ CATALOGUE: tuple[Check, ...] = (
             " and the key itself lives only in .env.",
     ),
     Check(
-        id="org-links",
-        title="Every org link resolves",
-        argv=("emacs", "-Q", "--script", "projects/ores.lisp/src/ores-check-org-links.el"),
-        classes=("docs",),
-    ),
-    Check(
-        id="skill-namespace",
-        title="Every skill uses the compass namespace",
-        argv=("python3", "build/scripts/rename_skills_to_compass_namespace.py", "--check"),
-        classes=("docs", "tooling"),
-        paths=SKILL_SCRIPTS + ("doc/llm/skills/*",),
-    ),
-    Check(
-        id="skill-catalogue",
-        title="The skills catalogue matches the skill tree",
-        argv=("python3", "build/scripts/generate_skills_catalogue.py", "--check"),
-        classes=("docs", "tooling"),
-        paths=SKILL_SCRIPTS + ("doc/llm/skills/*",),
-    ),
-    Check(
-        id="skill-type-tables",
-        title="The skill type tables match the catalogue",
-        argv=("python3", "build/scripts/generate_skill_type_tables.py", "--check"),
-        classes=("docs", "tooling"),
-        paths=SKILL_SCRIPTS + ("doc/llm/skills/*",),
-    ),
-    Check(
-        id="skill-levels",
-        title="Every skill declares its level",
-        argv=("python3", "build/scripts/apply_skill_levels.py", "--check"),
-        classes=("docs", "tooling"),
-        paths=SKILL_SCRIPTS + ("doc/llm/skills/*",),
-    ),
-    Check(
-        id="skill-recipes",
-        title="Every skill links its recipes both ways",
-        argv=("python3", "build/scripts/link_skill_recipes.py", "--check"),
-        classes=("docs", "tooling"),
-        paths=SKILL_SCRIPTS + ("doc/llm/skills/*",),
-    ),
-    Check(
-        id="rule-identifiers",
-        title="Every UX rule carries one identifier and the checklist cites them",
-        argv=("python3", "build/scripts/check_rule_identifiers.py"),
-        classes=("docs",),
-        fix="Run build/scripts/check_rule_identifiers.py --assign for a rule without an identifier; cite an identifier on the checklist line it names.",
-    ),
-    Check(
-        id="structure-notes",
-        title="Every structure note is linked from and to its neighbours",
-        argv=("python3", "build/scripts/link_structure_notes.py", "--check"),
-        classes=("docs",),
-    ),
-    Check(
-        id="pattern-uses",
-        title="Pattern links run both ways",
-        argv=("python3", "build/scripts/check_pattern_uses.py"),
-        classes=("docs", "tooling"),
-        paths=("doc/*", "build/scripts/check_pattern_uses.py"),
-    ),
-    Check(
         id="script-twins",
         title="The scripted twin recipes' seed and compiled table match the catalogue",
         argv=("python3", "projects/ores.sql/utility/generate_script_twins.py", "--check"),
@@ -452,13 +390,6 @@ CATALOGUE: tuple[Check, ...] = (
             "table, or delete the row of a route neither server answers.",
     ),
     Check(
-        id="prototypes",
-        title="The prototype inventory matches the tree",
-        argv=("python3", "build/scripts/check_prototype_inventory.py"),
-        classes=("docs", "tooling"),
-        paths=("doc/*", "build/scripts/check_prototype_inventory.py"),
-    ),
-    Check(
         id="component-docs",
         title="Every component has an overview and a diagram",
         argv=("bash", "projects/ores.codegen/validate_docs.sh"),
@@ -493,12 +424,6 @@ CATALOGUE: tuple[Check, ...] = (
         argv=(CODEGEN_PY, "projects/ores.codegen/scripts/check_component_drift.py", "--sweep"),
         classes=("modeling", "codegen"),
         timeout=1800,
-    ),
-    Check(
-        id="paste-blocks",
-        title="Every pasted block names a symbol that exists",
-        argv=(CODEGEN_PY, "projects/ores.codegen/scripts/check_paste_block_symbols.py"),
-        classes=("modeling", "codegen"),
     ),
     Check(
         id="model-drift",
@@ -638,36 +563,10 @@ CATALOGUE: tuple[Check, ...] = (
         classes=("modeling", "sql", "codegen"),
     ),
     Check(
-        id="open-reads",
-        title="Every open read is declared",
-        argv=(CODEGEN_PY, "projects/ores.codegen/scripts/check_open_reads.py"),
-        classes=("modeling", "codegen"),
-    ),
-    Check(
-        id="shell-menus",
-        title="No two shell menu entries collide",
-        argv=(CODEGEN_PY, "projects/ores.codegen/scripts/check_shell_menu_collisions.py"),
-        classes=("modeling", "codegen"),
-    ),
-    Check(
         id="route-auth",
         title="Every route declares its authorisation",
         argv=(CODEGEN_PY, "projects/ores.codegen/scripts/check_route_auth_declarations.py"),
         classes=("modeling", "codegen"),
-    ),
-    Check(
-        id="recipe-inventories",
-        title="The shell and HTTP recipe inventories match the tree",
-        argv=(
-            "bash",
-            "-c",
-            "python3 projects/ores.codegen/scripts/regenerate_shell_recipe_inventory.py --check"
-            " && python3 projects/ores.codegen/scripts/regenerate_http_recipe_inventory.py --check",
-        ),
-        classes=("modeling", "codegen", "docs"),
-        paths=("doc/recipes/shell/*", "doc/recipes/http/*"),
-        after=("component-drift",),
-        phase=PREPARE,
     ),
     Check(
         id="registry-exceptions",
@@ -676,66 +575,10 @@ CATALOGUE: tuple[Check, ...] = (
         classes=("codegen",),
     ),
     Check(
-        id="reachability",
-        title="No test case sits inside a conditional compilation block",
-        argv=(CODEGEN_PY, "projects/ores.codegen/scripts/check_test_case_reachability.py"),
-        classes=("cpp", "modeling", "codegen"),
-    ),
-    Check(
-        id="portable-stop",
-        title="No code outside ores.platform names a C++20 stop type",
-        argv=(CODEGEN_PY, "projects/ores.codegen/scripts/check_portable_stop_types.py"),
-        classes=("cpp",),
-        fix="Use the same name from ores::platform::concurrency (stoppable_thread.hpp):"
-            " Apple's libc++ has no std::jthread or std::stop_token.",
-    ),
-    Check(
-        id="event-registrars",
-        title="Every generated event registrar is composed",
-        argv=(CODEGEN_PY, "projects/ores.codegen/scripts/check_event_registrar_composition.py"),
-        classes=("services", "cpp", "modeling", "codegen"),
-    ),
-    # A history provider nothing registers answers every request with "No
-    # history provider registered for entity_type". No build, check or screen
-    # catches that: the generated file compiles and the service serves.
-    Check(
-        id="history-registrars",
-        title="Every generated history-provider registrar is composed",
-        argv=(CODEGEN_PY, "projects/ores.codegen/scripts/check_history_registrar_composition.py"),
-        classes=("services", "cpp", "modeling", "codegen"),
-    ),
-    Check(
         id="populate-refs",
         title="Every populate script names a reference something defines",
         argv=(CODEGEN_PY, "projects/ores.codegen/scripts/check_populate_references.py"),
         classes=("sql", "modeling"),
-    ),
-    Check(
-        id="rls-widenings",
-        title="No row-level security policy widens the system tenant",
-        argv=(CODEGEN_PY, "projects/ores.codegen/scripts/check_rls_system_tenant_widenings.py"),
-        classes=("sql",),
-    ),
-    Check(
-        id="entity-writes",
-        title="Only the repositories write an entity table",
-        argv=(CODEGEN_PY, "projects/ores.codegen/scripts/check_entity_table_writes.py"),
-        classes=("sql", "cpp", "modeling", "codegen"),
-        fix="Move the write into the repository, or add the writer to the"
-            " ratchet baseline at projects/ores.codegen/scripts/entity_table_writes_baseline.json.",
-    ),
-    Check(
-        id="enum-attributes",
-        title="No visibility macro decorates an enum",
-        argv=("python3", "build/scripts/check_enum_export_attributes.py"),
-        classes=("cpp", "modeling", "codegen"),
-        fix="Remove the export macro from the enum the report names.",
-    ),
-    Check(
-        id="exported-types",
-        title="Every exported type is compiled",
-        argv=("python3", "build/scripts/check_exported_types_are_compiled.py"),
-        classes=("cpp",),
     ),
     Check(
         id="boost-deps",
@@ -980,23 +823,12 @@ COMPASS_CODECS: dict[str, tuple[str, ...]] = {
     "tangle-shell": ("shell_recipe_library",),
     "tangle-http": ("http_recipe_library",),
     "lint": ("lint",),
-    "org-links": ("org_links",),
-    "skill-namespace": ("skill_namespace",),
-    "skill-catalogue": ("skill_catalogue",),
-    "skill-type-tables": ("skill_type_tables",),
-    "skill-levels": ("skill_levels",),
-    "skill-recipes": ("lint",),
-    "rule-identifiers": ("rule_identifiers",),
-    "structure-notes": ("lint",),
-    "pattern-uses": ("lint",),
     "unity-collisions": ("unity_collisions",),
     "route-inventory": ("route_inventory",),
-    "prototypes": ("prototypes",),
     "component-docs": ("component_docs",),
     "cmake-sources": ("component_files",),
     "component-drift": ("codegen",),
     "drift-sweep": ("codegen",),
-    "paste-blocks": ("codegen",),
     "model-drift": ("model_rules",),
     "er-diagram": ("er_diagram", "rls_coverage",),
     "sql-hygiene": ("sql_hygiene",),
@@ -1004,20 +836,9 @@ COMPASS_CODECS: dict[str, tuple[str, ...]] = {
     "curve-sections-wiring": ("curve_sections_wiring",),
     "protocol-twins": ("protocol_twins", "model_rules"),
     "handler-permissions": ("handler_permissions",),
-    "open-reads": ("open_reads",),
-    "shell-menus": ("shell_menus",),
     "route-auth": ("route_auth",),
-    "recipe-inventories": ("recipe_inventories",),
     "registry-exceptions": ("registry_exceptions",),
-    "reachability": ("test_case_reachability",),
-    "portable-stop": ("portable_cpp",),
-    "event-registrars": ("event_registrars",),
-    "history-registrars": ("history_registrars",),
     "populate-refs": ("populate_refs",),
-    "rls-widenings": ("rls_widenings",),
-    "entity-writes": ("entity_writes",),
-    "enum-attributes": ("exported_types",),
-    "exported-types": ("exported_types",),
     "backlog-indexes": ("backlog_indexes",),
     "conventions-dataset": ("conventions_dataset",),
 }

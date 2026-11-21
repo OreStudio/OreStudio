@@ -93,7 +93,6 @@ def test_a_model_change_runs_the_drift_checks():
     chosen = select(paths)
     assert "component-drift" in chosen
     assert "model-drift" in chosen
-    assert "paste-blocks" in chosen
 
 
 def test_a_path_nobody_classified_asks_for_everything():
@@ -135,10 +134,10 @@ def test_a_forced_class_overrides_the_classification():
 
 
 def test_a_check_with_paths_only_runs_when_one_of_them_changed():
-    # The codegen suite belongs to the tooling class, but the skill checks do
-    # not: a compass source change must not run them.
-    assert "skill-catalogue" not in select(["projects/ores.compass/src/compass.py"])
-    assert "skill-catalogue" in select(["doc/llm/skills/compass-pr-raise/SKILL.org"])
+    # The backlog indexes belong to the docs class, but only a backlog page
+    # changes them: another doc change must not run them.
+    assert "backlog-indexes" not in select(["doc/knowledge/architecture/x.org"])
+    assert "backlog-indexes" in select(["doc/agile/product_backlog/next/x.org"])
 
 
 # -- the catalogue ----------------------------------------------------------
@@ -436,10 +435,10 @@ def _on_path(tmp_path, monkeypatch, with_compass):
 
 def test_compass_ng_answers_for_the_ported_gates_it_finds_on_the_path(tmp_path, monkeypatch):
     _on_path(tmp_path, monkeypatch, with_compass=True)
-    selected = [local_checks.CHECKS_BY_ID[i] for i in ("sql-hygiene", "entity-writes", "boost-deps")]
+    selected = [local_checks.CHECKS_BY_ID[i] for i in ("sql-hygiene", "route-auth", "boost-deps")]
     run, covered = local_checks.through_compass(selected)
     assert [c.id for c in run] == ["boost-deps", "compass-ng"]
-    assert [c.id for c in covered] == ["sql-hygiene", "entity-writes"]
+    assert [c.id for c in covered] == ["sql-hygiene", "route-auth"]
 
 
 def test_without_compass_ng_the_ported_gates_run_as_scripts(tmp_path, monkeypatch):
@@ -455,7 +454,7 @@ def _compass_result(tmp_path, output, status):
 
 
 def test_a_finding_fails_the_gate_its_codec_answers_for(tmp_path):
-    covered = [local_checks.CHECKS_BY_ID[i] for i in ("sql-hygiene", "entity-writes")]
+    covered = [local_checks.CHECKS_BY_ID[i] for i in ("sql-hygiene", "route-auth")]
     run = _compass_result(
         tmp_path,
         "$ compass-ng check\n\n"
@@ -465,7 +464,7 @@ def test_a_finding_fails_the_gate_its_codec_answers_for(tmp_path):
     by_id = {r.check.id: r for r in local_checks.expand_compass([run], covered)}
     assert by_id["sql-hygiene"].failed
     assert "duplicate_index" in by_id["sql-hygiene"].tail
-    assert by_id["entity-writes"].status == "PASS"
+    assert by_id["route-auth"].status == "PASS"
     assert by_id["compass-ng"].status == "PASS"
 
 
@@ -483,12 +482,12 @@ def test_a_finding_no_selected_gate_claims_fails_compass_ng(tmp_path):
 
 
 def test_compass_ng_failing_to_run_fails_every_gate_it_answers_for(tmp_path):
-    covered = [local_checks.CHECKS_BY_ID[i] for i in ("sql-hygiene", "entity-writes")]
+    covered = [local_checks.CHECKS_BY_ID[i] for i in ("sql-hygiene", "route-auth")]
     run = _compass_result(tmp_path, "compass: codegen: a model did not load\n", "FAIL")
     by_id = {r.check.id: r for r in local_checks.expand_compass([run], covered)}
     assert by_id["compass-ng"].failed
     assert by_id["sql-hygiene"].failed
-    assert by_id["entity-writes"].failed
+    assert by_id["route-auth"].failed
 
 
 def test_every_gate_compass_ng_answers_for_is_in_the_catalogue():
@@ -496,14 +495,14 @@ def test_every_gate_compass_ng_answers_for_is_in_the_catalogue():
 
 
 def test_a_run_that_stops_after_some_findings_fails_every_gate(tmp_path):
-    covered = [local_checks.CHECKS_BY_ID[i] for i in ("sql-hygiene", "entity-writes")]
+    covered = [local_checks.CHECKS_BY_ID[i] for i in ("sql-hygiene", "route-auth")]
     run = _compass_result(
         tmp_path,
         "projects/ores.sql/create/a.sql:3:1: sql_hygiene/duplicate_index: index i is defined twice\n"
         "compass: codegen: a model did not load\n",
         "FAIL")
     by_id = {r.check.id: r for r in local_checks.expand_compass([run], covered)}
-    assert by_id["entity-writes"].failed
+    assert by_id["route-auth"].failed
 
 
 def test_a_codec_name_with_a_digit_is_read(tmp_path):

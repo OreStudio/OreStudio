@@ -23,7 +23,7 @@
 -- =============================================================================
 
 -- Upsert Methodology
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check
 create or replace function ores_dq_methodology_upsert_fn(
     p_name text,
     p_description text,
@@ -56,7 +56,7 @@ end;
 $$ language plpgsql;
 
 -- Upsert Dataset
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check
 create or replace function ores_dq_dataset_upsert_fn(
     p_subject_area_name text,
     p_domain_name text,
@@ -108,7 +108,7 @@ end;
 $$ language plpgsql;
 
 -- Upsert Images Artefact (Snapshot)
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check
 create or replace function ores_dq_images_artefact_upsert_fn(
     p_dataset_name text
 ) returns void as $$
@@ -158,7 +158,7 @@ end;
 $$ language plpgsql;
 
 -- Upsert Tags Artefact (Snapshot)
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check
 create or replace function ores_dq_tags_artefact_upsert_fn(
     p_dataset_name text
 ) returns void as $$
@@ -203,7 +203,7 @@ end;
 $$ language plpgsql;
 
 -- Upsert Image Tags Artefact (Snapshot)
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check
 create or replace function ores_dq_image_tags_artefact_upsert_fn(
     p_dataset_name text
 ) returns void as $$

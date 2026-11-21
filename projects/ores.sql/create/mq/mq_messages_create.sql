@@ -75,7 +75,7 @@ create policy messages_write_policy on ores_mq_messages_tbl for all using (
 -- ---------------------------------------------------------------------------
 
 -- Atomic read with visibility timeout (SKIP LOCKED)
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check
 create or replace function ores_mq_messages_read_fn(
     p_queue_id    uuid,
     p_batch       int  default 1,
@@ -101,7 +101,7 @@ as $$
 $$;
 
 -- Acknowledge -> move to archive
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check
 create or replace function ores_mq_messages_ack_fn(p_message_ids bigint[])
 returns void
 language plpgsql security definer
@@ -121,7 +121,7 @@ end;
 $$;
 
 -- Nack / mark failed
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check
 create or replace function ores_mq_messages_nack_fn(
     p_message_id  bigint,
     p_error       text default ''
@@ -136,7 +136,7 @@ as $$
 $$;
 
 -- Send (JSON)
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check
 create or replace function ores_mq_messages_send_fn(
     p_queue_id      uuid,
     p_type          text,
@@ -153,7 +153,7 @@ as $$
 $$;
 
 -- Send (binary)
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check
 create or replace function ores_mq_messages_send_binary_fn(
     p_queue_id      uuid,
     p_type          text,

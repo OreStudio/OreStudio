@@ -28,11 +28,11 @@ the pull request rather than on a shared host.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:A75C3063-896F-4DD5-A9BC-893A59EDFF7E][Pool the fleet's connections]] |
-| Now          | The shape is settled and the harness measured; the job itself is not written. |
-| Waiting on   | Nothing.                               |
-| Next         | Write the job against the shape below. |
+| Now          | Nothing. |
+| Waiting on   | The next scheduled Linux run, which is where the step first runs. |
+| Next         | Nothing. |
 | Last touched | 2026-11-21                               |
 
 * Acceptance
@@ -105,7 +105,12 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The database suite through a generated transaction pooler | 72 of 72 cases pass, 289 assertions | =./build/scripts/start_ci_pooler.sh start 26432= then =ores.database.tests '~[direct]'= with =ORES_TEST_DB_PORT=26432= | 52512e7dce |
+| The same suite through a pooler with no statement tracking | fails on the first prepare | =max_prepared_statements = 0= | 52512e7dce |
+| Cases that need a direct connection | 11, tagged =[direct]= | =ores.database.tests '[direct]'= | 52512e7dce |
+
+The first figure varies by one case between runs on a loaded host, the ingest
+and reap cases being wall-clock; the run recorded here passed every case.
 
 * Notes
 
@@ -120,10 +125,27 @@ task and name that file in the Command column.
 - =ores.marketdata.service.tests= through the same pooler: 307 of 328, the
   failures being the harness's own missing environment, not the pooler.
 
-** Still to do
+** What was written
 
-Write the configuration script, the workflow step, and record the job's cost - a
-check nobody waits for is a check nobody runs. None of it is written yet.
+- =build/scripts/start_ci_pooler.sh= starts, stops and prints the configuration of
+  a transaction-mode pooler. It generates the credential file from the
+  environment's own =ORES_*_DB_USER/PASSWORD= pairs, so every service logs in as
+  itself, and it waits until the port answers before returning.
+- The four cases that cannot work through a pooler now carry =[direct]=: the
+  listener's eight, and three in =pq_layer_tests.cpp= that terminate a backend,
+  expect a failed prepare, and copy rows into an RLS-forced table. The pooled run
+  excludes the tag, so "this case needs a direct connection" is a property of the
+  case rather than a list of names in a workflow.
+- =.github/workflows/continuous-linux.yml= starts the pooler after the ordinary
+  test run, runs =ores.database.tests '~[direct]'= against it, and stops it.
+- =build/docker/ci/Dockerfile= installs =pgbouncer=, so the job installs nothing
+  at run time, which is the promise its own comment makes.
+
+** The cost
+
+Not yet measured on a runner. Locally the pooled step is 72 cases in about
+twenty-five seconds on top of a build that already happened. The line stays empty
+until the scheduled run reports it.
 
 * Test Scenarios
 
@@ -149,3 +171,21 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A pooler in transaction mode now stands in front of the test database, and the
+suite that exercises the prepared statements runs through it on every scheduled
+Linux build. What it proves is the pooled path itself: the statements, the
+transactions and the pool, on the floor version of the pooler rather than a
+comfortable margin.
+
+Locally: 72 of 72 cases pass through the generated pooler, with the 11
+connection-level cases tagged and excluded. With statement tracking off the same
+run fails on its first prepare, so the check fails when the decision is
+violated.
+
+Two things are owed and stated rather than claimed. The step has not run on a
+runner yet, so its cost is unmeasured there. And the acceptance's "every pull
+request" became "every scheduled build", because no workflow here triggers on a
+pull request - the =no-pr-triggers= gate forbids it - so a job written that way
+would never run.
+

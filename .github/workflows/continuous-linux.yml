@@ -328,6 +328,27 @@ jobs:
           du -sh .git llvm .sccache vcpkg-cache build/output "$RUNNER_TEMP" 2>/dev/null || true
           ctest -VV --preset ${preset} --script "CTest.cmake,${cmake_args}"
 
+      - name: Start the transaction pooler
+        # The image carries pgbouncer, so the job installs nothing, as its
+        # comment above promises. The configuration is generated from the
+        # environment's own database users by the script the unit uses too.
+        run: ./build/scripts/start_ci_pooler.sh start 6432
+
+      - name: Run the database suite through the transaction pooler
+        # The suite is the one that exercises the prepared statements directly.
+        # It runs from the built binary because the test environment is baked
+        # into CTestTestfile.cmake at configure time; the binary reads its
+        # database from the environment, so the port is the only thing that has
+        # to change. Cases that need a direct connection carry the direct tag.
+        run: |
+          preset=${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
+          ORES_TEST_DB_HOST=127.0.0.1 ORES_TEST_DB_PORT=6432 \
+            ./build/output/${preset}/publish/bin/ores.database.tests '~[direct]'
+
+      - name: Stop the transaction pooler
+        if: always()
+        run: ./build/scripts/start_ci_pooler.sh stop
+
       - name: Upload the package of a tag
         if: ${{ github.ref_type == 'tag' && matrix.buildtype == 'release' }}
         uses: actions/upload-artifact@v7

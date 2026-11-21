@@ -15,10 +15,12 @@ dataset reaches through its artefact type, so the scan takes the tables an
 intersects them with the tables any ``populate/**/*.sql`` file inserts into.
 
 *A populate script may write a table that a publish function writes when the
-two write different tenants.* A tenant's own row is not a second copy of the
-platform's row, and the exception list states which case each remaining table
-is. The list shrinks as the task that collapses the writers proceeds; a new
-entry needs a reason.
+two do not write the same row.* Two cases qualify. The two may write different
+tenants: a tenant's own row is not a second copy of the platform's row. Or they
+may write disjoint rows of one tenant: the platform defines one code and the
+dataset adopts the rest. The exception list states which case each remaining
+table is, and names the rows it covers. The list shrinks as the task that
+collapses the writers proceeds; a new entry needs a reason.
 
 Run::
 
@@ -49,39 +51,36 @@ EXCEPTIONS = {
     "ores_assets_images_tbl":
         f"{TENANTS}: a demonstration's photographs in its own tenant, and the "
         "platform's flags and avatars in the system tenant",
-    # The world catalogue. The populate scripts below still write the system
-    # tenant's live rows, and the world dataset publishes the same rows into
-    # it, which is the second copy this check exists to find. They are listed
-    # so the check reports no new one while the collapse proceeds; each entry
-    # leaves the list as its populate script stops inserting.
-    "ores_refdata_calendars_tbl": "to collapse: refdata.calendars publishes it",
-    "ores_refdata_calendar_types_tbl": "to collapse: refdata.calendar_types publishes it",
-    "ores_refdata_calendar_events_tbl": "to collapse: refdata.calendar_events publishes it",
-    "ores_refdata_calendar_exceptions_tbl": "to collapse: refdata.calendar_exceptions publishes it",
-    "ores_refdata_currency_calendars_tbl": "to collapse: refdata.currency_calendars publishes it",
-    "ores_refdata_currency_countries_tbl": "to collapse: refdata.currency_countries publishes it",
-    "ores_refdata_currency_pair_convention_calendars_tbl":
-        "to collapse: refdata.currency_pair_convention_calendars publishes it",
-    "ores_refdata_tenor_schedules_tbl": "to collapse: refdata.tenor_schedules publishes it",
-    "ores_refdata_countries_tbl": "to collapse: iso.countries publishes it",
-    "ores_refdata_business_centres_tbl":
-        "to collapse: the WRLD row is seeded directly and fpml.business_center publishes the rest",
-    "ores_refdata_payment_frequencies_tbl":
-        "to collapse: no dataset carries it, so its publish function is dead",
-    "ores_refdata_tenor_convention_resolutions_tbl":
-        "to collapse: refdata.tenor_schedules publishes it",
-    # Outside the refdata inventory the same task took. Both writers reach the
-    # system tenant, and the rows agree because the publish finds the series
-    # the seed wrote; the derived-feed work owns the collapse.
     "ores_marketdata_market_series_tbl":
-        "to collapse: the seeds write the system tenant's bootstrapped series "
-        "and the market data publish writes a series for its target tenant",
+        f"{TENANTS}: the seeds write the system tenant's bootstrapped series, "
+        "and the market data publish writes a series for the tenant that asked "
+        "for it",
     "ores_marketdata_market_series_asset_classes_tbl":
-        "to collapse: the seeds write the system tenant's series classes and "
-        "the market data publish writes them for its target tenant",
+        f"{TENANTS}: the seeds write the system tenant's series classes, and "
+        "the market data publish writes them for the tenant that asked for it",
+    # Two tables where the two writers write disjoint rows of one tenant rather
+    # than a copy of one fact. The rows are named, because the overlap is a
+    # property of the row and not of the table.
+    "ores_refdata_business_centres_tbl":
+        "the platform's WRLD row and the 212 FpML codes are disjoint rows: the "
+        "populate script writes WRLD, because the foundation layer's system "
+        "party names it and no dataset can publish that early, and "
+        "fpml.business_center publishes the rest",
+    "ores_refdata_payment_frequencies_tbl":
+        "no dataset carries it, so the generated publish function is "
+        "unreachable and the populate script is the platform vocabulary's one "
+        "writer",
+    "ores_refdata_tenor_convention_resolutions_tbl":
+        "the row is the platform's -- which tenors a convention carries, and "
+        "how each resolves -- and two of its columns are the world dataset's: "
+        "refdata.tenor_schedules re-inserts each row to set schedule_code and "
+        "schedule_step_count, so it writes a new version of a row the populate "
+        "script wrote rather than a row of its own",
+    # The one table that still holds a row written twice, and what it needs.
     "ores_iam_account_roles_tbl":
-        "to collapse: the ACME cut-take seeds grant roles and the IAM publish "
-        "grants them for its target tenant",
+        "to collapse: the ACME cut-take seed grants a second role to one "
+        "account, which the account artefact cannot express because it carries "
+        "one role per account; the IAM publish grants that one",
 }
 
 

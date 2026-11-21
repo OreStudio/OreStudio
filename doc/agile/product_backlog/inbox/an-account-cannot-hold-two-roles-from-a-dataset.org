@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: ECFD6B90-5AF1-450D-BFA8-550F430BC38C
+:END:
+#+title: An account cannot hold two roles from a dataset
+#+description: The account artefact carries one role per account, so a second role for one account has no published path and a populate script writes it.
+#+type: capture
+#+level: cross
+#+filetags: :capture:iam:refdata:
+#+created: 2026-11-18
+#+updated: 2026-11-18
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The account artefact carries one role per account: =ores_dq_accounts_artefact_tbl=
+has a single =role= column, and the IAM publish grants that one role. The ACME
+demonstration needs one account to hold two -- =henry.jones= is a junior trader
+and also takes the end of day cut, which is the Finance role's -- so
+=acme_cut_take_roles_populate.sql= writes the second row straight into
+=ores_iam_account_roles_tbl=.
+
+That is the last table the collapse of the double writers left, and the only
+place where a populate script and a publish write the same row of the same
+tenant.
+
+* Why
+
+The publication-level rule gives every row one writer. Today the account's
+first role arrives from the =acme.*.accounts= dataset and its second from a
+populate script, so a tenant that publishes its accounts from a dataset cannot
+express a second role at all.
+
+Two designs would close it. The artefact could carry role assignments of its
+own, which needs a second artefact -- the role junction is not published --
+to hold one row per account and role. Or the publish could read a list of roles
+from the one column, which puts a list in a field whose name says one role, and
+would need the account screens to render it.
+
+* References
+
+- [[id:A611C520-54AA-4562-9BA6-768278E5DDEE][Task: Collapse the tables written both ways]] -- where the
+  second writer was found.
+- [[id:7287B58F-964C-4D42-8EC4-6C5DA53EEE2D][Reference data classification by publication level]] -- the
+  rule the second writer breaks, and its mechanism section.
+- =projects/ores.sql/populate/acme/acme_cut_take_roles_populate.sql= -- the
+  second writer.
+- =projects/ores.sql/create/iam/iam_publish_from_dq_create.sql= --
+  =ores_iam_publish_accounts_from_dq_fn=, which grants the artefact's one role.
+- =projects/ores.codegen/scripts/check_single_writer.py= -- the check that
+  lists the table as the one remaining second copy.
+
+* See also
+
+- [[id:34172C9C-FC58-475C-BD18-7AF4782B163F][A tenant can write into a shared catalogue]] -- the other write-path
+  capture the same task opened.

@@ -89,7 +89,7 @@ using ores::refdata::domain::tenor_schedule;
 // The 2025-2027 FOMC meeting dates, transcribed from federalreserve.gov.
 // Each date is the *second day* of the Fed's published two-day range -- the
 // statement/decision day, usually a Wednesday. Task D4 seeds the same
-// window into calendar_event (refdata_calendar_events_populate.sql, 8
+// window into calendar_event (refdata_calendar_events_seed_populate.sql, 8
 // meetings per year).
 std::vector<std::chrono::year_month_day> fomc_meeting_dates() {
     using namespace std::chrono;
@@ -108,7 +108,7 @@ std::vector<std::chrono::year_month_day> fomc_meeting_dates() {
 }
 
 // A meeting event on US.FOMC, transcribed from the D4 seed rows
-// (refdata_calendar_events_populate.sql): central_bank_meeting entry, dated
+// (refdata_calendar_events_seed_populate.sql): central_bank_meeting entry, dated
 // the statement day, sourced from the Fed's published calendar.
 calendar_event make_calendar_event(std::chrono::year_month_day event_date) {
     calendar_event e;
@@ -121,7 +121,7 @@ calendar_event make_calendar_event(std::chrono::year_month_day event_date) {
     return e;
 }
 
-// The US.FOMC calendar row, transcribed from refdata_calendars_populate.sql
+// The US.FOMC calendar row, transcribed from refdata_calendars_seed_populate.sql
 // (task D1): a central-bank-meeting calendar for the US, sourced from the
 // Fed's published calendar, seeded editable (is_editable true).
 calendar make_us_fomc_calendar() {
@@ -136,7 +136,7 @@ calendar make_us_fomc_calendar() {
 }
 
 // The seeded schedule rows, transcribed from
-// refdata_tenor_schedules_populate.sql (task D2): ROLL_QUARTER is closed
+// refdata_tenor_schedules_seed_populate.sql (task D2): ROLL_QUARTER is closed
 // form with no event store; FOMC_MEETING looks the meeting events up on
 // US.FOMC.
 tenor_schedule make_tenor_schedule(const std::string& code) {
@@ -233,7 +233,7 @@ TEST_CASE("FOMC_MEETING points at the meeting events on US.FOMC",
           "[calendar_event][tenor_schedule][fomc]") {
     // invariant.FomcSchedulePointsAtMeetingEvents as a data contract over
     // the seeded tenor_schedules rows (transcribed from
-    // refdata_tenor_schedules_populate.sql): the FOMC_MEETING schedule is
+    // refdata_tenor_schedules_seed_populate.sql): the FOMC_MEETING schedule is
     // an EVENT_LOOKUP over the central_bank_meeting events on US.FOMC, and
     // the closed-form ROLL_QUARTER schedule binds no event store.
     const auto fomc = make_tenor_schedule("FOMC_MEETING");
@@ -255,7 +255,7 @@ TEST_CASE("US.FOMC meeting events satisfy the EnterFomcMeeting rule",
 
     // rule-success.EnterFomcMeeting as a data contract: the rule's requires
     // clauses pin the US.FOMC calendar row (transcribed from
-    // refdata_calendars_populate.sql, task D1), including is_editable --
+    // refdata_calendars_seed_populate.sql, task D1), including is_editable --
     // a generated C++ column, seeded true here (calendar.hpp), no
     // SQL-only gap remains...
     const auto us_fomc = make_us_fomc_calendar();
@@ -335,7 +335,7 @@ TEST_CASE("tenor_convention_resolution anchor_override is optional",
     CHECK(!plain.anchor_override);
 
     // The migrated CDS rows override the convention's NONE anchor with SPOT
-    // (refdata_tenor_convention_resolutions_populate.sql, task D2):
+    // (ores_refdata_publish_tenor_schedules_from_dq_fn, task D2):
     // CREDIT_CDS_IMM keeps measured_from NONE for the family, and each
     // resolution row re-anchors at SPOT before walking one ROLL_QUARTER
     // step (the row's own offsets stay null; the tenor's period offset

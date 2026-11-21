@@ -23,7 +23,7 @@
 // one config; split_tenor_code = 1Y) walked through the existing republish
 // resolver, in the same shape the production seed data takes (see
 // refdata_ir_curve_bootstrap_configs_populate.sql and
-// refdata_tenor_convention_resolutions_populate.sql).
+// ores_refdata_publish_tenor_schedules_from_dq_fn).
 //
 // Obligations covered here:
 //   - surface-exposure.CurveRepublish      (the pillar loop: codes and dates)

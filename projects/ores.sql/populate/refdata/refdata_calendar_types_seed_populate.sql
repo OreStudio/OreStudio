@@ -22,11 +22,9 @@
  * Calendar Types Seed Population Script
  *
  * Registers the refdata.calendar_types dataset and seeds its DQ artefact
- * table with the same classification set already loaded straight into
- * ores_refdata_calendar_types_tbl by refdata_calendar_types_populate.sql
- * (kept in lockstep by hand -- the two exist for different purposes: that
- * one is the system tenant's own live rows, this one is the Librarian-
- * publishable dataset a party bundle-Applies to get its own copy).
+ * table with the five classifications. The dataset is the one writer of
+ * ores_refdata_calendar_types_tbl: the bring-up publishes it into the
+ * system tenant, and no populate script inserts the rows.
  *
  * Execution order: no dependency on other populate scripts.
  *

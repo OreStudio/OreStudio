@@ -59,7 +59,7 @@
  * Day count is ACT/360, the USD SOFR overnight-index convention; the
  * split_tenor_code 1Y is the PERIOD tenor whose calendar-axis resolution
  * (spot + one year) closes the segment under the RATES_SPOT_FOMC
- * convention (see refdata_tenor_convention_resolutions_populate.sql).
+ * convention (see ores_refdata_publish_tenor_schedules_from_dq_fn).
  *
  * The config's output_series_id references the curve's market_series row
  * seeded by marketdata_market_series_fomc_populate.sql (a soft,

@@ -30,31 +30,30 @@
  *    a simple country match -- e.g. EUR -> TARGET, a supranational
  *    calendar with no single owning country).
  * 2. Every other currency, matched mechanically against
- *    refdata.calendars by country, via
- *    ores_refdata_currency_countries_tbl (system-tenant live rows
- *    seeded in the foundation layer -- not yet itself a DQ-published
- *    dataset, see the currency_country DQ-publish task, so this reads
- *    it directly rather than through an artefact table). Where a
- *    currency has multiple countries (e.g. EUR) or a country has
- *    multiple calendars (e.g. the US has 7), prefer the
- *    "<Country>.Settlement" one, since that's the general-purpose
+ *    refdata.calendars by country, via the refdata.currency_countries
+ *    artefact rows. Where a currency has multiple countries (e.g. EUR)
+ *    or a country has multiple calendars (e.g. the US has 7), prefer
+ *    the "<Country>.Settlement" one, since that's the general-purpose
  *    spot/settlement calendar the other market-specific ones (NYSE,
  *    SOFR, GovernmentBond, ...) are variants of; falling back to the
  *    bare country-name calendar (no dot) for countries without a
  *    ".Settlement" row, then to any remaining match.
  *
- * Every currency with no country in ores_refdata_currency_countries_tbl,
- * or whose country has no calendar in the 41-country coverage of
- * refdata.calendars, is left unassigned rather than forcing an
- * arbitrary mapping -- see refdata.calendars' and
- * refdata_currency_countries_populate.sql's own seed scripts to grow
- * coverage, which grows this join for free next time this runs.
+ * One currency also holds a second calendar that no country match finds:
+ * USD carries the FOMC meeting calendar beside its settlement calendar,
+ * because the short end of the dollar curve steps on FOMC dates. It is
+ * stated below as a curated row.
  *
- * Execution order: depends on refdata.calendars and iso.currencies being
- * registered first (soft dependency only -- calendar_code is a free-text
- * column here, not an FK; the target table's own insert trigger doesn't
- * validate it either), and on the foundation layer (which seeds
- * ores_refdata_currency_countries_tbl) having already run.
+ * Every currency with no country in refdata.currency_countries, or whose
+ * country has no calendar in the 41-country coverage of refdata.calendars,
+ * is left unassigned rather than forcing an arbitrary mapping -- see
+ * refdata.calendars' and refdata.currency_countries' own seed scripts to
+ * grow coverage, which grows this join for free next time this runs.
+ *
+ * Execution order: depends on the refdata.calendars,
+ * refdata.currency_countries and iso.currencies seeds having run, because
+ * it reads their artefact rows, and the refdata layer runs the
+ * currency_countries seed before this one.
  *
  * This script is idempotent.
  */
@@ -110,6 +109,7 @@ declare
     v_dataset_id uuid;
     v_currencies_dataset_id uuid;
     v_calendars_dataset_id uuid;
+    v_countries_dataset_id uuid;
     v_tenant_id uuid := ores_utility_system_tenant_id_fn();
     v_count integer := 0;
 begin
@@ -143,6 +143,16 @@ begin
         raise exception 'Dataset not found: refdata.calendars';
     end if;
 
+    select id into v_countries_dataset_id
+    from ores_dq_datasets_tbl
+    where tenant_id = v_tenant_id
+      and code = 'refdata.currency_countries'
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    if v_countries_dataset_id is null then
+        raise exception 'Dataset not found: refdata.currency_countries';
+    end if;
+
     -- Clear existing rows for this dataset (idempotency)
     delete from ores_dq_currency_calendars_artefact_tbl
     where dataset_id = v_dataset_id;
@@ -167,6 +177,23 @@ begin
           and tenant_id = v_tenant_id
           and country_code <> 'ZZ'
     ),
+    -- A second calendar a currency holds beside the one its holiday_calendar
+    -- names, and that no country match finds. USD carries the FOMC meeting
+    -- calendar because the short end of the dollar curve steps on FOMC dates.
+    -- A row is written only where the currency does not already carry that
+    -- calendar, so the union below cannot produce a duplicate.
+    second_calendars as (
+        select v.currency_iso_code, v.calendar_code
+        from (values ('USD', 'US.FOMC')) as v(currency_iso_code, calendar_code)
+        where not exists (
+            select 1
+            from ores_dq_currencies_artefact_tbl
+            where dataset_id = v_currencies_dataset_id
+              and tenant_id = v_tenant_id
+              and iso_code = v.currency_iso_code
+              and holiday_calendar = v.calendar_code
+        )
+    ),
     curated as (
         -- 1. Currencies with an explicit holiday_calendar already set.
         select iso_code as currency_iso_code, holiday_calendar as calendar_code
@@ -174,6 +201,8 @@ begin
         where dataset_id = v_currencies_dataset_id
           and tenant_id = v_tenant_id
           and holiday_calendar is not null
+        union all
+        select * from second_calendars
     ),
     ranked_currency_countries as (
         -- A currency with several countries (e.g. EUR) picks one
@@ -187,9 +216,9 @@ begin
                 partition by currency_iso_code
                 order by country_alpha2_code
             ) as rnk
-        from ores_refdata_currency_countries_tbl
-        where tenant_id = ores_utility_system_tenant_id_fn()
-          and valid_to = ores_utility_infinity_timestamp_fn()
+        from ores_dq_currency_countries_artefact_tbl
+        where dataset_id = v_countries_dataset_id
+          and tenant_id = v_tenant_id
     ),
     derived as (
         -- 2. Everyone else, matched by country.

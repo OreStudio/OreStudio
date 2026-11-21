@@ -67,12 +67,14 @@
 \ir ./refdata_calendar_events_seed_populate.sql
 
 \echo ''
-\echo '--- Currency Calendars Seed Data ---'
-\ir ./refdata_currency_calendars_seed_populate.sql
-
-\echo ''
 \echo '--- Currency Countries Seed Data ---'
 \ir ./refdata_currency_countries_seed_populate.sql
+
+-- The calendars derive from the countries' artefact rows, so the countries
+-- seed stages first.
+\echo ''
+\echo '--- Currency Calendars Seed Data ---'
+\ir ./refdata_currency_calendars_seed_populate.sql
 
 \echo ''
 \echo '--- Currency Groups Seed Data ---'

@@ -320,7 +320,10 @@ jobs:
         with:
           name: memcheck-logs-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}
           if-no-files-found: ignore
-          path: build/output/${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja/Testing/Temporary/MemoryChecker.*.log
+          retention-days: 7
+          path: |
+            build/output/${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja/Testing/Temporary/MemoryChecker.*.log
+            build/output/${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja/Testing/Temporary/LastTest.log
 
       - name: Stage the release images
         # Only the release build is published: the debug build is several

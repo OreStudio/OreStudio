@@ -69,6 +69,13 @@ task and name that file in the Command column.
 
 * Notes
 
+- The primitive exists since 73758769e4: =ores.service/service/reconciler.hpp=,
+  with the synthetic service's fixing writer as its first user. What is left
+  is its registration with the runner, its dependencies, and the run on each
+  return from the degraded state.
+- The synthetic service's =adapter_fleet= retries =marketdata.v1.feeds.list=
+  with a backoff of its own ("Trying again in 30 s"); move it onto the
+  reconciler.
 - Candidates beyond the two above: the cache warm-ups of the
   nats-event-cache facet, the IR curve feed's choice of its starting fixing,
   and any one-shot startup query a service makes.

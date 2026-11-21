@@ -27,6 +27,7 @@ set(files
     "messaging_step_command_stream_tests.cpp"
     "messaging_step_progress_board_tests.cpp"
     "rate_limiter_tests.cpp"
+    "reconciler_tests.cpp"
     "request_context_tests.cpp"
     "request_retry_tests.cpp"
     "run_token_cache_tests.cpp"

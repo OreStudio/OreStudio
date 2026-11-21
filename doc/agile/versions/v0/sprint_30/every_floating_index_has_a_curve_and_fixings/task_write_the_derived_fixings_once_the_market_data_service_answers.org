@@ -8,7 +8,7 @@
 #+filetags: :every_floating_index_has_a_curve_and_fixings:sprint_30:v0:
 #+owner: marco
 #+branch:
-#+pr:
+#+pr: 4956
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-21
@@ -105,7 +105,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4956][#4956]] | [agile] Add the floating index and service dependency stories |
 
 * Review
 

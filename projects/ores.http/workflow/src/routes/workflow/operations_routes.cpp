@@ -21,18 +21,22 @@
 #include "ores.http.api/domain/http_request.hpp"
 #include "ores.http.api/domain/http_response.hpp"
 #include "ores.http.api/net/record_routes.hpp"
+#include "ores.http.api/net/view_answer.hpp"
 #include "ores.http.nats/forwarding.hpp"
 #include "ores.telemetry.core/messaging/logs_protocol.hpp"
+#include "ores.telemetry.core/messaging/nats_samples_protocol.hpp"
 #include "ores.telemetry.core/messaging/service_samples_protocol.hpp"
 #include "ores.utility/codec/json_codec.hpp"
 #include <boost/asio/awaitable.hpp>
 #include <algorithm>
 #include <charconv>
 #include <chrono>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
 #include <string>
 #include <string_view>
+#include <utility>
 #include <vector>
 
 namespace ores::http::routes::workflow {
@@ -60,19 +64,19 @@ constexpr std::uint32_t logs_page_max = 500;
 /// The page of logs a read answers with when the caller states none.
 constexpr std::uint32_t logs_page_default = 100;
 
-/// One range the logs screen offers, and the seconds it spans.
-struct logs_range final {
+/// One range a screen offers, and the seconds it spans.
+struct range_preset final {
     std::string_view name;
     std::uint32_t seconds;
 };
 
 /**
- * The ranges the screen offers.
+ * The ranges the logs screen offers.
  *
  * The window is start-inclusive and end-exclusive, so adjacent ranges tile: a
  * line stamped on a boundary belongs to the older range alone.
  */
-constexpr logs_range logs_ranges[] = {
+constexpr range_preset logs_ranges[] = {
     {"15m", 15 * 60}, {"1h", 60 * 60}, {"6h", 6 * 60 * 60}, {"24h", 24 * 60 * 60}};
 
 /// The severity words the read matches, as the store writes them.
@@ -112,9 +116,11 @@ bool logs_is_level(const std::string& word) {
     return false;
 }
 
-/// The seconds one range spans, or nothing when the word is not a range.
-std::optional<std::uint32_t> logs_span_of(const std::string& range) {
-    for (const auto& offered : logs_ranges)
+/// The seconds one range spans, or nothing when the word is not one the screen offers.
+template <std::size_t Count>
+std::optional<std::uint32_t> span_of(const range_preset (&ranges)[Count],
+                                     const std::string& range) {
+    for (const auto& offered : ranges)
         if (offered.name == range)
             return offered.seconds;
     return std::nullopt;
@@ -137,7 +143,7 @@ std::optional<std::string> logs_filter_of(const http_request& req, const std::st
 logs_query logs_of(const http_request& req) {
     rr::refuse_unknown_params(
         req, {"range", "level", "source", "component", "tag", "message", "offset", "limit"});
-    const auto range = logs_span_of(req.get_query_param("range"));
+    const auto range = span_of(logs_ranges, req.get_query_param("range"));
     if (!range)
         rr::invalid(std::string(logs_refused));
 
@@ -171,6 +177,77 @@ logs_query logs_of(const http_request& req) {
         out.limit = *stated;
     }
     return out;
+}
+
+/// The sentence the bus states when its range is not one it offers.
+constexpr std::string_view bus_refused = "The message bus read takes a range of 15m, 1h or 6h.";
+
+/// How long the bus stays fresh: its samples are taken every few seconds.
+constexpr std::chrono::seconds bus_stale_after{10};
+
+/**
+ * The ranges the bus screen offers.
+ *
+ * The window is start-inclusive and end-exclusive, so adjacent ranges tile: a
+ * sample stamped on a boundary belongs to the older range alone.
+ */
+constexpr range_preset bus_ranges[] = {{"15m", 15 * 60}, {"1h", 60 * 60}, {"6h", 6 * 60 * 60}};
+
+/**
+ * The five JetStream streams this installation creates, by their suffix.
+ *
+ * The names are the deployment's own, from
+ * doc/knowledge/architecture/jetstream_streams_and_consumers.org. They are
+ * declared rather than read, because no operation lists the streams that
+ * exist: a stream created after this list was written is not read, and the
+ * screen states that gap.
+ */
+constexpr std::string_view bus_stream_suffixes[] = {"marketdata_ticks",
+                                                    "synthetic_ticks",
+                                                    "synthetic_sandbox_ticks",
+                                                    "workflow",
+                                                    "compute_assignments"};
+
+/// The window one bus read states.
+struct bus_window final {
+    std::chrono::system_clock::time_point start;
+    std::chrono::system_clock::time_point end;
+};
+
+/**
+ * The window one bus read states, from the deployment's own clock.
+ *
+ * The browser names a range and not two instants, because the deployment's
+ * clock is the one the samples were stamped against.
+ */
+bus_window bus_window_of(const http_request& req) {
+    rr::refuse_unknown_params(req, {"range"});
+    const auto span = span_of(bus_ranges, req.get_query_param("range"));
+    if (!span)
+        rr::invalid(std::string(bus_refused));
+    const auto now = std::chrono::system_clock::now();
+    return {now - std::chrono::seconds(*span), now};
+}
+
+/// One NATS server sample, in the shape the bus screen reads.
+std::string bus_server_sample_json(const telemetry_messaging::nats_server_sample& sample) {
+    return "{\"sampled_at\":" + json::write(sample.sampled_at) +
+           ",\"in_msgs\":" + std::to_string(sample.in_msgs) +
+           ",\"out_msgs\":" + std::to_string(sample.out_msgs) +
+           ",\"in_bytes\":" + std::to_string(sample.in_bytes) +
+           ",\"out_bytes\":" + std::to_string(sample.out_bytes) +
+           ",\"connections\":" + std::to_string(sample.connections) +
+           ",\"mem_bytes\":" + std::to_string(sample.mem_bytes) +
+           ",\"slow_consumers\":" + std::to_string(sample.slow_consumers) + "}";
+}
+
+/// One NATS stream sample, in the shape the bus screen reads.
+std::string bus_stream_sample_json(const telemetry_messaging::nats_stream_sample& sample) {
+    return "{\"sampled_at\":" + json::write(sample.sampled_at) +
+           ",\"stream_name\":" + json::write(sample.stream_name) +
+           ",\"messages\":" + std::to_string(sample.messages) +
+           ",\"bytes\":" + std::to_string(sample.bytes) +
+           ",\"consumer_count\":" + std::to_string(sample.consumer_count) + "}";
 }
 
 /**
@@ -226,6 +303,29 @@ void require_answered(bool success, const std::string& message, std::string_view
                message.empty() ? std::string(fallback) : message);
 }
 
+}
+
+std::string
+operations_routes::bus_json(const telemetry_messaging::get_nats_server_samples_response& servers,
+                            const std::vector<telemetry_messaging::nats_stream_sample>& streams) {
+    std::vector<std::string> samples;
+    samples.reserve(servers.samples.size());
+    for (const auto& sample : servers.samples)
+        samples.push_back(bus_server_sample_json(sample));
+    std::vector<std::string> rows;
+    rows.reserve(streams.size());
+    for (const auto& sample : streams)
+        rows.push_back(bus_stream_sample_json(sample));
+    std::string sampled_at("null");
+    if (!servers.samples.empty())
+        sampled_at = json::write(servers.samples.front().sampled_at);
+    return "{\"sampled_at\":" + sampled_at + ",\"samples\":" + rr::array_of(samples) +
+           ",\"streams\":" + rr::array_of(rows) + "}";
+}
+
+http_response operations_routes::bus_answer(const http_request& req, std::string body) {
+    return ores::http::net::view_answer(
+        req, std::move(body), ores::http::net::view_cache_policy::fresh_for(bus_stale_after));
 }
 
 void operations_routes::register_routes(
@@ -310,6 +410,52 @@ void operations_routes::register_routes(
                         ",\"total\":" + std::to_string(reply.total_count) +
                         ",\"limit\":" + std::to_string(asked.limit) +
                         ",\"offset\":" + std::to_string(asked.offset) + "}");
+                });
+            }));
+
+    add(router->get("/api/operations/bus")
+            .summary("The message bus over a window, newest first")
+            .description("A composed view owned by ores.telemetry: the NATS server samples a "
+                         "window holds, whole and newest first, because every counter is a "
+                         "running total and only a subtraction over the range turns one into "
+                         "movement; and the newest sample of each stream. The window comes from "
+                         "the deployment's clock and is start-inclusive and end-exclusive, so "
+                         "adjacent windows tile. One read per stream, because no operation lists "
+                         "the streams that exist: the five the installation creates are declared "
+                         "here, so a stream created after this list was written is not read and "
+                         "the screen states that gap. A stream with no sample in the window "
+                         "contributes no row rather than a row of zeros. The telemetry service "
+                         "checks the permission each read names. The answer carries an ETag and "
+                         "stays fresh for 10 seconds.")
+            .query_param("range", "string", "", true, "The window: 15m, 1h or 6h")
+            .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
+                co_return guarded<telemetry_messaging::get_nats_server_samples_request>([&] {
+                    const auto window = bus_window_of(req);
+
+                    telemetry_messaging::get_nats_server_samples_request read;
+                    read.query.start_time = window.start;
+                    read.query.end_time = window.end;
+                    const auto servers = forwarding::forward(req, session, read);
+                    require_answered(servers.success,
+                                     servers.message,
+                                     "The telemetry service refused the bus read.");
+
+                    std::vector<telemetry_messaging::nats_stream_sample> streams;
+                    for (const auto suffix : bus_stream_suffixes) {
+                        telemetry_messaging::get_nats_stream_samples_request stream_read;
+                        stream_read.query.stream_name = session.make_stream_name(suffix);
+                        stream_read.query.start_time = window.start;
+                        stream_read.query.end_time = window.end;
+                        const auto reply = forwarding::forward(req, session, stream_read);
+                        require_answered(reply.success,
+                                         reply.message,
+                                         "The telemetry service refused a stream read.");
+                        if (!reply.samples.empty())
+                            streams.push_back(reply.samples.front());
+                    }
+
+                    return operations_routes::bus_answer(
+                        req, operations_routes::bus_json(servers, streams));
                 });
             }));
 }

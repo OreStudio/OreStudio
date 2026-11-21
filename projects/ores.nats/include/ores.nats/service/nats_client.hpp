@@ -286,6 +286,16 @@ public:
     [[nodiscard]] nats_client with_session_id(std::string sid) const;
 
     /**
+     * @brief The JetStream stream name this environment gives a logical suffix.
+     *
+     * A stream name is not a subject: a caller states it in a query rather
+     * than sending on it, so it cannot be derived from an operation's own
+     * subject. The rule lives on the connection, beside make_subject, and this
+     * states it for a caller that holds only the authenticated client.
+     */
+    [[nodiscard]] std::string make_stream_name(std::string_view logical_suffix) const;
+
+    /**
      * @brief The connection underneath, for a caller that subscribes.
      *
      * Request and reply cover a command that asks one question and prints

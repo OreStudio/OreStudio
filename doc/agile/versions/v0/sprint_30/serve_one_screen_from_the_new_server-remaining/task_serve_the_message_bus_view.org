@@ -28,9 +28,9 @@ Serve these composed views from ores.telemetry: the message bus. Each view state
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Planned; the part that owns it is open. |
-| Waiting on   | Nothing.                               |
-| Next         | Choose the part that owns the route, then serve the two reads. |
+| Now          | Served and gated; waiting on the build and the live run. |
+| Waiting on   | The tree build.                        |
+| Next         | Prove the route against a running gateway, then raise the PR. |
 | Last touched | 2026-11-20                               |
 
 * Acceptance
@@ -102,13 +102,30 @@ via its "Verifies task" field.
 
 * Result
 
-The plan is written and the composition is settled against the BFF's own code: two
-reads of the telemetry service, a window from the deployment's clock, a fixed list
-of five streams, and the deployment read as the gate. No route is served yet.
+The view is served at =GET /api/operations/bus= in =ores.http.workflow=, in the
+address and the shape the BFF answers: the server samples the window holds,
+whole and newest first, and the newest sample of each of the five declared
+streams. The answer carries an ETag and stays fresh for 10 seconds.
 
-Two findings change the shape of the work rather than its size. The messages the
-reads need are in =ores.telemetry.core= and not in an =.api= library, so a part
-that links only the api libraries cannot send them. And the roster and the logs
-already sit in =ores.http.workflow= while the inventory records =ores.telemetry= as
-this view's owner, so the part that owns the bus route has to be chosen before it
-is written.
+Four decisions the work took, each recorded where it belongs:
+
+- *The part is =ores.http.workflow=.* The roster and the logs already live
+  there, and the part's own model states =/api/operations= among the paths it
+  serves. A new part for the third telemetry view would split three sibling
+  routes that read the same service.
+- *The gate is the service's.* Both list subjects served any signed-in account,
+  which the bus journey recorded as a gap. They now check
+  =telemetry::samples:read=, the code the roster names, so the gateway forwards
+  and the telemetry service judges. The gateway states no permission of its own
+  and holds no copy of the role table.
+- *A stream name comes from the session.* =nats_client= now states
+  =make_stream_name= beside the connection's, because a stream name is not a
+  subject: the caller sends it in a query rather than on it.
+- *The streams are declared, not discovered.* No operation lists them, so a
+  stream created after this list was written is not read. The route's
+  description and the screen state that gap.
+
+The inventory is regenerated: 1400 routes, 296 of the BFF's 334 paired, 38
+unpaired. Six tests cover the route and the shape: the range it takes, the
+field it does not, the service it reaches, the members of its answer, the null
+instant of an empty window, and the ETag with its ten seconds.

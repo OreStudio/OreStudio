@@ -413,6 +413,7 @@ PAIRS = {
     # operations
     ("GET", "/api/operations/services"): ("GET", "/api/operations/services"),
     ("GET", "/api/operations/logs"): ("GET", "/api/operations/logs"),
+    ("GET", "/api/operations/bus"): ("GET", "/api/operations/bus"),
 }
 
 # A BFF route that takes the resource as a parameter is answered in ores.http by

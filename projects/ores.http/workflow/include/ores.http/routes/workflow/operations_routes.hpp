@@ -20,19 +20,42 @@
 #ifndef ORES_HTTP_ROUTES_WORKFLOW_OPERATIONS_ROUTES_HPP
 #define ORES_HTTP_ROUTES_WORKFLOW_OPERATIONS_ROUTES_HPP
 
+#include "ores.http.api/domain/http_request.hpp"
+#include "ores.http.api/domain/http_response.hpp"
 #include "ores.http.api/net/router.hpp"
 #include "ores.http.api/openapi/endpoint_registry.hpp"
 #include "ores.nats/service/nats_client.hpp"
+#include "ores.telemetry.core/messaging/nats_samples_protocol.hpp"
 #include <memory>
+#include <string>
+#include <vector>
 
 namespace ores::http::routes::workflow {
 
 /**
  * @brief What the installation is doing: the services roster, each instance
- * with the age of its last report, and a page of the telemetry logs.
+ * with the age of its last report, a page of the telemetry logs, and the
+ * message bus over a window.
  */
 class operations_routes final {
 public:
+    /**
+     * @brief The message bus over a window: the server samples whole and
+     * newest first, and the newest sample of each stream read.
+     *
+     * Stated on its own so a test can read the shape without a service behind
+     * it: the members are the browser's, each instant is the wire's text, and
+     * the instant the view is named by is null when the window holds no
+     * sample.
+     */
+    static std::string
+    bus_json(const ores::telemetry::messaging::get_nats_server_samples_response& servers,
+             const std::vector<ores::telemetry::messaging::nats_stream_sample>& streams);
+
+    /// The message bus's answer, kept fresh for ten seconds.
+    static ores::http::domain::http_response bus_answer(const ores::http::domain::http_request& req,
+                                                        std::string body);
+
     static void register_routes(std::shared_ptr<ores::http::net::router> router,
                                 std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
                                 ores::nats::service::nats_client& session);

@@ -502,6 +502,13 @@ RULES = (
          BFF, COMPOSED, "operations",
          "The NATS server samples over a window and one row per stream, a second read for"
          " each named stream, because no operation lists the streams."),
+    Rule("the message bus",
+         ("exact", "GET /api/operations/bus"),
+         CPP, COMPOSED, "operations",
+         "The message bus answered by ores.http at the address and in the shape the BFF"
+         " answered: the NATS server samples over a window, whole and newest first, and the"
+         " newest sample of each stream the installation creates, kept for the interval a"
+         " page asks again."),
     Rule("the run's progress",
          ("regex", r"^GET /api/workflow/:"),
          BFF, COMPOSED, "workflow",

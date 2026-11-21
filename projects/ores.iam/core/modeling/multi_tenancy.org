@@ -222,7 +222,7 @@ tenant's rows to another:
 |-------+--------------+----------------|
 | Own tenant | =tenant_id = ores_iam_current_tenant_id_fn()= | The default, and the only shape a tenant's own data may use. |
 | System-owned rows for all | =tenant_id = current or tenant_id = system= | A system-owned row every tenant reads: shared reference data, and the installation's own facts. It exposes no tenant's data. |
-| A system session sees every tenant | =tenant_id = current or current = system= | The widening. It hands one tenant's rows to a session in another, and =check_rls_system_tenant_widenings.py= fails a new one. |
+| A system session sees every tenant | =tenant_id = current or current = system= | The widening. It hands one tenant's rows to a session in another, and compass-ng's =rls_widenings= check fails a new one. |
 
 Naming the row's owner is what decides which shape it may take, and the
 difference between the last two is which side of the comparison the *session*
@@ -616,7 +616,7 @@ first statement.
 - Cross-tenant data access is impossible at the SQL level *except* through a
   reviewed widening: a policy whose body compares the session to the system
   tenant admits every tenant's rows to that session.
-  =check_rls_system_tenant_widenings.py= lists every one and fails a new one,
+  compass-ng's =rls_widenings= check lists every one and fails a new one,
   and [[id:6C930659-6548-4371-B9EB-1AACE597D0E9][Read each tenant's cache
   partition inside its tenant]] is removing them.
 

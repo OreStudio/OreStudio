@@ -28,9 +28,9 @@ One tool, not two, owns each build-free gate and each generated artefact.
 |--------------+----------------------------------------|
 | State        | STARTED |
 | Parent story | [[id:E3BF90FE-43DF-4A30-9F2C-FF5E20128C88][Move codegen and the gates to compass-ng]] |
-| Now          | Tier 1 deleted (#4946). compass-ng v0.0.5 adopted (stacked on #4946): its check documents hold the data compass parsed out of ORE Python, and 16 more files go. |
+| Now          | Tiers 1 and 2 deleted; four scripts wait on compass to stop naming them; tiers 3 and 4 remain. |
 | Waiting on   | Nothing. |
-| Next         | Tier 2: switch or remove the workflows that still call the scripts, then delete them. |
+| Next         | Tier 3: move the callers (check_clean_standard.sh, the unity exclusions, generator chains), then tier 4, the Python generator. |
 | Last touched | 2026-11-21 |
 
 * Acceptance
@@ -78,6 +78,19 @@ task and name that file in the Command column.
 
 * Notes
 
+- 2026-11-21, tier 2: the scripts only the deleted single-gate workflows
+  called. 34 files go: 20 scripts, 13 tests and ores-check-org-links.el,
+  counting check_core_link_edges.py, check_shell_command_composition.py and
+  check_shell_recipe_sources.py, which those workflows also ran. Their 22 gates leave local_checks.py, and test_local_checks.py uses
+  surviving gates as its examples. Sixteen pages and three RLS exception
+  reasons that named a script now name its compass-ng codec.
+- Four tier 2 scripts stay, because compass-ng itself names them: the skill
+  codecs write the markers "# BEGIN generated ... (build/scripts/
+  apply_skill_levels.py)", "(generate_skills_catalogue.py)" and
+  "(generate_skill_type_tables.py)" (skill_levels.cpp, skill_tables.cpp), and
+  lint's marker_without_writer fails a marker whose script is gone; the
+  recipe_inventories codec writes a header naming
+  regenerate_http_recipe_inventory.py. Asked of compass-85.
 - 2026-11-21: the product owner waived the week of agreement: "we have been
   running these so it's fine to delete, previous checks were so slow they
   were unusable." The gates have run through compass-ng locally since

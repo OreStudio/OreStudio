@@ -60,7 +60,7 @@ This is an exception to the party rule. Its reason, its limits and the state of 
 
 ** An operator reads a tenant's work inside the tenant
 
-The six blocks share a row of the system tenant with every tenant. The opposite direction, a system-tenant session that reads every tenant's rows, is not a sixth block. It is the widening that =check_rls_system_tenant_widenings.py= exists to stop, and the audit task removes the widenings that remain.
+The six blocks share a row of the system tenant with every tenant. The opposite direction, a system-tenant session that reads every tenant's rows, is not a sixth block. It is the widening that compass-ng's =rls_widenings= check exists to stop, and the audit task removes the widenings that remain.
 
 The compute grid shows the rule at work. The fleet (hosts, nodes, node samples) belongs to the installation, and the policy that exposes it is the shared-reference shape. The work (batches, workunits and results) belongs to the tenant that owns it. The operator still needs to see which tenant uses what share of the grid, and the answer is to read each tenant from inside it.
 

@@ -22,7 +22,7 @@ gathers. Each group has its own page, which lists its prototypes, what each
 argues, and the Gemini review where one exists.
 
 This page is the top of the tree and the only inventory.
-=build/scripts/check_prototype_inventory.py= enforces it.
+compass-ng's =prototypes= check enforces it.
 
 * The groups
 
@@ -116,7 +116,7 @@ Every group page states, for each prototype, whether a review exists.
 A prototype is never a route in =ores.web=. React is for the product, and a
 prototype must open without a build, a server or a session.
 
-=build/scripts/check_prototype_inventory.py= enforces this: it fails when a
+compass-ng's =prototypes= check enforces this: it fails when a
 prototype is missing from its group page, when a group page is missing from the
 table above, when a review row disagrees with whether a review exists, when a
 review directory holds no =index.html=, and when a React prototype tree

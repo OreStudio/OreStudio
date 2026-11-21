@@ -109,6 +109,21 @@ TEST_CASE("the inputs the parser derives are the inputs the store holds", inputs
     REQUIRE(library.variants.size() > 50u);
     REQUIRE(library.inputs.size() > 50u);
 
+    /*
+     * Where the derived inputs differ from the stored ones, the stored row is the
+     * mining's mistake, and the line says why; the store's rows are derived by the
+     * parser once the library is, and the line goes.
+     */
+    const std::set<std::string> known = {
+        // The default variant reads it untyped, and the mining kept that first
+        // use; the FD variant passes it to DATEINDEX as its schedule, and both
+        // compare it with ObservationDates, so it is a list of Events.
+        "Accumulator02: ObservationPeriodEndDates Event[] {ObservationPeriodEndDates"
+        "[SIZE(ObservationPeriodEndDates)] >= ObservationDates[SIZE(ObservationDates)]}"
+        " | stored ObservationPeriodEndDates Number[] {ObservationPeriodEndDates"
+        "[SIZE(ObservationPeriodEndDates)] >= ObservationDates[SIZE(ObservationDates)]}"};
+
+    std::set<std::string> differing;
     std::size_t compared = 0;
     for (const auto& [name, variants] : library.variants) {
         INFO("script " << name);
@@ -127,15 +142,26 @@ TEST_CASE("the inputs the parser derives are the inputs the store holds", inputs
         const auto derived = merge_inputs(per_variant);
         const auto stored =
             library.inputs.contains(name) ? library.inputs.at(name) : std::vector<script_input>{};
-        std::string report;
-        for (std::size_t i = 0; i < std::max(derived.size(), stored.size()); ++i)
-            report += "\n  " + (i < derived.size() ? described(derived[i]) : "-") + "  |  " +
-                      (i < stored.size() ? described(stored[i]) : "-");
-        INFO("derived  |  stored:" << report);
-        CHECK(derived == stored);
+        // The names and their order must agree; a difference within an input is
+        // reported for the known list.
+        std::vector<std::string> derived_names, stored_names;
+        for (const auto& in : derived)
+            derived_names.push_back(in.name);
+        for (const auto& in : stored)
+            stored_names.push_back(in.name);
+        CHECK(derived_names == stored_names);
+        for (std::size_t i = 0; i < std::min(derived.size(), stored.size()); ++i)
+            if (derived[i] != stored[i])
+                differing.insert(name + ": " + described(derived[i]) + " | stored " +
+                                 described(stored[i]));
         compared += stored.size();
     }
     CHECK(compared > 700u);
+    std::string report;
+    for (const auto& d : differing)
+        report += "\n  " + d;
+    INFO("differing inputs:" << report);
+    CHECK(differing == known);
 }
 
 TEST_CASE("an input takes its type from how the script uses it", inputs_tags) {
@@ -162,6 +188,17 @@ TEST_CASE("an input takes its type from how the script uses it", inputs_tags) {
                                            "PayCcy Currency",
                                            "Strike Number",
                                            "DayCounter Daycounter"});
+}
+
+TEST_CASE("a variant that types or indexes an input says more of it than one that reads it",
+          inputs_tags) {
+    const std::vector<std::vector<script_input>> variants = {
+        {{.name = "Fixings", .type = "Number"}},
+        {{.name = "Fixings", .type = "Event", .is_array = true}}};
+    const auto merged = merge_inputs(variants);
+    REQUIRE(merged.size() == 1u);
+    CHECK(merged[0].type == "Event");
+    CHECK(merged[0].is_array);
 }
 
 TEST_CASE("a script with several variants has every input any variant reads", inputs_tags) {

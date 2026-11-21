@@ -33,7 +33,7 @@ diagnostic syntax_error(std::string_view text, const LocationInfo& where, std::s
     d.code = "SCR1001";
     d.message = std::move(message);
     if (where.initialised) {
-        const auto line = spirit_columns::line_of(text, where.lineStart);
+        const auto line = spirit_columns::line_of(text, where.lineStart).value_or("");
         d.start = position{.line = where.lineStart,
                            .column = spirit_columns::code_point_column(line, where.columnStart)};
     }

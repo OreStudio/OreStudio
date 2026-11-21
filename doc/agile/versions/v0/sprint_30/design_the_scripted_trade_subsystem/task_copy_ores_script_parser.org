@@ -88,8 +88,13 @@ task and name that file in the Command column.
   arguments as it is met, so an input's place in the order is where the call
   names it, as the mining's token scan placed it.
 - Over every script the store is seeded with, the derived inputs equal the
-  stored ones in name, type, array, rule and order; there is no difference to
-  explain.
+  stored ones in name, type, array, rule and order, but one. Accumulator02's
+  ObservationPeriodEndDates is stored as a Number list, which the mining took
+  from the default variant's untyped first use; the FD variant passes it to
+  DATEINDEX as its schedule and both compare it with ObservationDates, so it is
+  a list of Events. A variant that types or indexes an input now says more of it
+  than one that only reads it, on review, which surfaced the defect; the test
+  asserts it as the one known difference, and the library task corrects the row.
 - ORE pads a node's arguments with nulls up to its most, so a variable is
   indexed only when its first argument is there.
 - The tests' and sources' file-local helpers collided in the unity build; the
@@ -145,6 +150,12 @@ via its "Verifies task" field.
 | 4964.5 | code_of returns a copy | diagnostic.cpp | no change | its fields are string views |
 | 4964.6 | the wide_types warning on ScriptGrammar | grammar.hpp | accept | excused in .compass.org, as the user approved, until 2027-11-21 |
 | 4964.7 | the four tangle diagnostics | - | no change | on main, not this PR |
+| 4966.1 | args[0] unchecked in the VarEvaluationNode branch | inputs.cpp | accept | guarded |
+| 4966.2 | merge_inputs keeps only the first type and array | inputs.cpp | accept | a typed or indexed use wins; it surfaced Accumulator02's stored Number, now the test's one known difference |
+| 4966.3 | a rule is keyed by its first name | inputs.cpp | accept | a comment states it, as the mining did |
+| 4966.4 | includes come through the header | inputs.cpp | accept | included directly |
+| 4966.5 | line_of signals the end by a null view | spirit_columns.hpp | accept | it returns an optional |
+| 4966.6 | the type precedence relies on no call passing Number | inputs.cpp | accept | untyped is an absent type; Number is only the default |
 
 * Result
 

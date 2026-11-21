@@ -36,7 +36,7 @@ A script is parsed when it is loaded or published, its inputs are derived by the
 * Acceptance
 
 - a script that does not parse fails the load or the publish, with the line and column ORE's grammar reports
-- the inputs inputs_of derives replace the mined ones in the store
+- the inputs inputs_of derives replace the mined ones in the store, which corrects Accumulator02's ObservationPeriodEndDates from a Number list to an Event list
 - a scripted trade records its library script's version, or its inline text and a hash of it
 - a run writes the library from the versions its trades name
 

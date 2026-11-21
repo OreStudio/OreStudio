@@ -20,8 +20,12 @@
 #include "spirit_columns.hpp"
 #include <algorithm>
 #include <cctype>
+#include <initializer_list>
 #include <map>
+#include <optional>
 #include <set>
+#include <string>
+#include <vector>
 
 namespace ores::trading::scripting {
 
@@ -113,7 +117,7 @@ public:
         } else if (const auto* s = dynamic_cast<const SizeOpNode*>(n)) {
             note(s->name);
             arrays_.insert(s->name);
-        } else if (dynamic_cast<const VarEvaluationNode*>(n)) {
+        } else if (dynamic_cast<const VarEvaluationNode*>(n) && !args.empty()) {
             if (const auto* v = bare(args[0]))
                 note(v->name, "Index");
             type_arguments(args, {{1, "Event"}, {2, "Event"}});
@@ -138,6 +142,9 @@ public:
             arrays_.insert(d->name);
         } else if (dynamic_cast<const RequireNode*>(n) && !args.empty()) {
             const auto rule = text_of(*args[0], text_);
+            // A rule is about the first name its condition states, and the first
+            // rule about a name is the one kept, as the library's inputs were
+            // mined; REQUIRE a < b is a rule about a alone.
             if (!rule.empty())
                 rules_.emplace(first_name(rule), rule);
         }
@@ -180,8 +187,8 @@ private:
         if (added)
             order_.push_back(name);
         // A use that states a type wins over one that does not, and the first
-        // typed use wins over a later one.
-        if (type && (!it->second || *it->second == "Number"))
+        // typed use wins over a later one; an input no use types is a Number.
+        if (type && !it->second)
             it->second = std::move(type);
     }
 
@@ -208,9 +215,16 @@ std::vector<script_input> merge_inputs(std::span<const std::vector<script_input>
     for (const auto& variant : variants)
         for (const auto& in : variant) {
             auto it = std::ranges::find(out, in.name, &script_input::name);
-            if (it == out.end())
+            if (it == out.end()) {
                 out.push_back(in);
-            else if (!it->rule && in.rule)
+                continue;
+            }
+            // A variant that types an input, or indexes it, says more of it than
+            // one that only reads it.
+            if (it->type == "Number" && in.type != "Number")
+                it->type = in.type;
+            it->is_array = it->is_array || in.is_array;
+            if (!it->rule && in.rule)
                 it->rule = in.rule;
         }
     return out;

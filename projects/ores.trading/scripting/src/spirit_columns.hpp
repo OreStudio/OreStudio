@@ -20,6 +20,7 @@
 #define ORES_TRADING_SCRIPTING_SRC_SPIRIT_COLUMNS_HPP
 
 #include <cstddef>
+#include <optional>
 #include <string_view>
 
 /**
@@ -42,12 +43,13 @@ inline std::size_t advance(std::size_t column, char c) {
 }
 
 /// The text of a one-based line, without its line break; a CRLF reads as LF.
-inline std::string_view line_of(std::string_view text, std::size_t line) {
+/// Nothing for a line past the text's end.
+inline std::optional<std::string_view> line_of(std::string_view text, std::size_t line) {
     std::size_t start = 0;
     for (std::size_t current = 1; current < line; ++current) {
         const auto next = text.find('\n', start);
         if (next == std::string_view::npos)
-            return {};
+            return std::nullopt;
         start = next + 1;
     }
     const auto end = text.find('\n', start);
@@ -75,9 +77,9 @@ inline std::size_t code_point_column(std::string_view line, std::size_t spirit_c
 /// The byte offset in the text of a one-based line and a Spirit column.
 inline std::size_t byte_offset(std::string_view text, std::size_t line, std::size_t spirit_column) {
     const auto row = line_of(text, line);
-    if (row.data() == nullptr)
+    if (!row)
         return text.size();
-    std::size_t at = static_cast<std::size_t>(row.data() - text.data());
+    std::size_t at = static_cast<std::size_t>(row->data() - text.data());
     for (std::size_t column = 1; column < spirit_column && at < text.size() && text[at] != '\n';
          ++at)
         column = advance(column, text[at]);

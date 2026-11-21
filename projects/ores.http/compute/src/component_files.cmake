@@ -23,6 +23,7 @@ set(files
     "routes/compute/app_version_routes.cpp"
     "routes/compute/compute_routes.cpp"
     "routes/compute/download_routes.cpp"
+    "routes/compute/grid_composed_routes.cpp"
     "routes/compute/grid_views.cpp"
     "routes/compute/job_routes.cpp"
 )
@@ -33,6 +34,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/compute/app_version_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/compute/compute_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/compute/download_routes.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/compute/grid_composed_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/compute/grid_views.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/compute/job_routes.hpp"
 )

@@ -71,7 +71,7 @@ an API publishes no area, so it is counted under =(none)=.
 | assets | assets, server | 39 | composed view 2, resource 37 |
 | auth | audit, iam, server | 65 | resource 60, transport capability 5 |
 | changes | core, server | 5 | transport capability 5 |
-| grid | compute, grid-app-versions, grid-downloads, grid-jobs, operations | 25 | composed view 3, resource 22 |
+| grid | compute, grid-app-versions, grid-downloads, grid-jobs, operations | 28 | composed view 6, resource 22 |
 | market-data | adapters, connectivity, curves, fixing-series, market-reads, marketdata, public-rates, quotes, series, series-identity-shapes, subscriptions | 91 | composed view 8, resource 83 |
 | operations | core, inbox, operations, server, workflow | 10 | composed view 3, resource 5, transport capability 2 |
 | qa | qa | 6 | resource 6 |
@@ -150,7 +150,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | assets | 5 | 5 | 0 |
 | auth | 18 | 18 | 0 |
 | changes | 2 | 2 | 0 |
-| grid | 14 | 11 | 3 |
+| grid | 14 | 14 | 0 |
 | market-data | 41 | 25 | 16 |
 | operations | 5 | 4 | 1 |
 | qa | 6 | 0 | 6 |
@@ -161,7 +161,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | trading | 24 | 24 | 0 |
 | workflow | 18 | 18 | 0 |
 | (none) | 35 | 29 | 6 |
-| total | 334 | 296 | 38 |
+| total | 334 | 299 | 35 |
 
 * The pairing
 
@@ -305,7 +305,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | GET =/api/me/sessions= | GET /api/me/sessions |
 | GET =/api/me/ways-to-hold= | GET /api/me/ways-to-hold |
 | GET =/api/operations/bus= | GET /api/operations/bus |
-| GET =/api/operations/grid= | none |
+| GET =/api/operations/grid= | GET /api/operations/grid |
 | GET =/api/operations/grid/app-versions/:id= | GET /api/operations/grid/app-versions/{id} |
 | PUT =/api/operations/grid/app-versions/:id/release-note= | PUT /api/operations/grid/app-versions/{id}/release-note |
 | GET =/api/operations/grid/jobs/batches= | GET /api/operations/grid/jobs/batches |
@@ -317,8 +317,8 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | GET =/api/operations/grid/jobs/workunits/:id= | GET /api/operations/grid/jobs/workunits/{id} |
 | GET =/api/operations/grid/jobs/workunits/:id/input= | GET /api/operations/grid/jobs/workunits/{id}/input |
 | GET =/api/operations/grid/jobs/workunits/:id/results= | GET /api/operations/grid/jobs/workunits/{id}/results |
-| GET =/api/operations/grid/series= | none |
-| GET =/api/operations/grid/usage= | none |
+| GET =/api/operations/grid/series= | GET /api/operations/grid/series |
+| GET =/api/operations/grid/usage= | GET /api/operations/grid/usage |
 | GET =/api/operations/logs= | GET /api/operations/logs |
 | GET =/api/operations/services= | GET /api/operations/services |
 | POST =/api/oresmd/compose= | POST /api/oresmd/compose |
@@ -504,7 +504,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 
 * The inventory
 
-1430 routes: 334 answered by the BFF and 1096 by ores.http.
+1433 routes: 334 answered by the BFF and 1099 by ores.http.
 
 | Kind | Area | Method | Path | Server | Where | Note |
 |------+------+--------+------+--------+-------+------|
@@ -929,6 +929,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | composed view | operations | get | =/api/operations/bus= | bff | projects/ores.web/packages/bff/src/operations.ts:593 | The NATS server samples over a window and one row per stream, a second read for each named stream, because no operation lists the streams. |
 | composed view | operations | get | =/api/operations/bus= | ores.http | projects/ores.http/workflow/src/routes/workflow/operations_routes.cpp:416 | The message bus answered by ores.http at the address and in the shape the BFF answered: the NATS server samples over a window, whole and newest first, and the newest sample of each stream the installation creates, kept for the interval a page asks again. |
 | composed view | grid | get | =/api/operations/grid= | bff | projects/ores.web/packages/bff/src/operations.ts:419 | The compute grid as one answer: the stored summary, the host registry with its hardware rows and the service roster, three reads so a node carries the name a person reads and the runner that serves it. |
+| composed view | grid | get | =/api/operations/grid= | ores.http | projects/ores.http/compute/src/routes/compute/grid_composed_routes.cpp:342 | The grid summary answered by ores.http at the address and in the shape the BFF answered: the newest stored sample, each node with the name of its machine and its hardware, and the runner that serves it, kept for the interval a page asks again. |
 | resource | grid | get | =/api/operations/grid/app-versions/:id= | bff | projects/ores.web/packages/bff/src/grid-app-versions.ts:99 | One app version with its packages and the versions beside it, and the write that replaces its release note against the version read. |
 | resource | grid | put | =/api/operations/grid/app-versions/:id/release-note= | bff | projects/ores.web/packages/bff/src/grid-app-versions.ts:115 | One app version with its packages and the versions beside it, and the write that replaces its release note against the version read. |
 | resource | grid | get | =/api/operations/grid/app-versions/{id}= | ores.http | projects/ores.http/compute/src/routes/compute/app_version_routes.cpp:279 | One build of the compute catalogue at the addresses and in the shapes the BFF answered: the build with the app it belongs to, the packages the wrapper downloads and the versions beside it, and the write that replaces its release note against the version the editor read. |
@@ -952,7 +953,9 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | resource | grid | get | =/api/operations/grid/jobs/workunits/{id}/input= | ores.http | projects/ores.http/compute/src/routes/compute/download_routes.cpp:130 | The input bundle of one work unit or the output of one run, at the addresses and in the shapes the BFF answered: the bytes the grid stored, read only after the record that names them is read on the caller's own token. |
 | resource | grid | get | =/api/operations/grid/jobs/workunits/{id}/results= | ores.http | projects/ores.http/compute/src/routes/compute/job_routes.cpp:235 | The grid's jobs at the addresses and in the shapes the BFF answered: one page of the batches the session may see with the name of the run and the party that made each, one batch, the work units of one batch, one work unit, the runs of one work unit, one page of the runs that ended with an outcome, and one run. |
 | composed view | grid | get | =/api/operations/grid/series= | bff | projects/ores.web/packages/bff/src/operations.ts:480 | The grid counters per bucket and one row of buckets per node on one time axis, two reads joined onto the host registry. |
+| composed view | grid | get | =/api/operations/grid/series= | ores.http | projects/ores.http/compute/src/routes/compute/grid_composed_routes.cpp:414 | The grid series answered by ores.http at the address and in the shape the BFF answered: the counters per bucket, and for an operator one row of buckets per node joined onto the host registry, kept for the interval a page asks again. |
 | composed view | grid | get | =/api/operations/grid/usage= | bff | projects/ores.web/packages/bff/src/operations.ts:540 | Who uses the grid, the results grouped by tenant or by party with each group's share, the results read and the party names beside them. |
+| composed view | grid | get | =/api/operations/grid/usage= | ores.http | projects/ores.http/compute/src/routes/compute/grid_composed_routes.cpp:498 | The grid usage answered by ores.http at the address and in the shape the BFF answered: a group for each tenant, read by entering each in turn, or for each of the caller's parties, with each group's share and a tenant that could not be read carried as unavailable. |
 | resource | operations | get | =/api/operations/logs= | bff | projects/ores.web/packages/bff/src/operations.ts:640 | One page of telemetry entries a filter selects, with the count of everything it matches. |
 | resource | operations | get | =/api/operations/logs= | ores.http | projects/ores.http/workflow/src/routes/workflow/operations_routes.cpp:368 | One page of telemetry entries at the address and in the shape the BFF answered: the window from a range, the filters combined with and, and the page and its total. |
 | resource | operations | get | =/api/operations/services= | bff | projects/ores.web/packages/bff/src/operations.ts:386 | Every expected service instance with the age of its last report, read from the telemetry samples. |

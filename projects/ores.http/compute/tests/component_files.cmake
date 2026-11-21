@@ -22,6 +22,7 @@
 set(files
     "app_version_routes_tests.cpp"
     "download_routes_tests.cpp"
+    "grid_composed_routes_tests.cpp"
     "grid_views_tests.cpp"
     "job_routes_tests.cpp"
     "main.cpp"

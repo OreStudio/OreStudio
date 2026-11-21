@@ -84,7 +84,7 @@ it lands, and the browser keeps calling the BFF until the last one does.
 | [[id:ABDC11EE-7538-4BF0-A9A5-E73F553FBDBB][Serve the workflow composed views]] | DONE | 2026-11-18 | 2026-11-19 | Five workflow views and the authorisation queue are answered only by the BFF. |
 | [[id:297C5264-A2AB-4DB2-B3C9-15FB5DBB5D4B][Serve the IAM composed views]] | DONE | 2026-11-11 | 2026-11-12 | Three IAM views are answered only by the BFF. |
 | [[id:BE5A7BF2-B680-42BF-AB49-E9801C307742][Serve the synthetic composed views]] | DONE | 2026-11-11 | 2026-11-11 | Three synthetic views are answered only by the BFF. |
-| [[id:A2165589-71E8-4107-856A-77FB5FDD32E0][Serve the grid composed views]] | BACKLOG | | | Three grid views are answered only by the BFF. |
+| [[id:A2165589-71E8-4107-856A-77FB5FDD32E0][Serve the grid composed views]] | STARTED | 2026-11-21 | | Three grid views are answered only by the BFF. |
 | [[id:350D91AF-A4E0-43B0-849E-8188345DA443][Serve the trading composed views]] | DONE | 2026-11-13 | 2026-11-13 | Two trading views are answered only by the BFF. |
 | [[id:878A1153-2C81-4857-8CB8-A619EE74A7BE][Serve the message bus composed view]] | STARTED | 2026-11-20 | | The message bus view is answered only by the BFF. |
 | [[id:767BF782-CF59-4A55-8268-5DBDBABCC298][Serve the image map composed view]] | DONE | 2026-11-12 | 2026-11-12 | The image map view is answered only by the BFF. |

@@ -410,6 +410,10 @@ PAIRS = {
         "/api/workflow/{instanceId}/retry"),
     ("GET", "/api/approvals-mode"): ("GET", "/api/approvals-mode"),
     ("GET", "/api/hold-reasons"): ("GET", "/api/hold-reasons"),
+    # grid
+    ("GET", "/api/operations/grid"): ("GET", "/api/operations/grid"),
+    ("GET", "/api/operations/grid/series"): ("GET", "/api/operations/grid/series"),
+    ("GET", "/api/operations/grid/usage"): ("GET", "/api/operations/grid/usage"),
     # operations
     ("GET", "/api/operations/services"): ("GET", "/api/operations/services"),
     ("GET", "/api/operations/logs"): ("GET", "/api/operations/logs"),

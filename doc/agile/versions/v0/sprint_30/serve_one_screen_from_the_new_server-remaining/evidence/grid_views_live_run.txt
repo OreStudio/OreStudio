@@ -1,0 +1,79 @@
+GET /api/operations/grid, .../grid/series and .../grid/usage, proved against the
+environment the systemd unit runs.
+
+Commit under test : the branch head, built from this checkout
+Database          : ores_dev_brave_hopper, fingerprint cabc2ecdbf1f608e; the work
+                    changes no SQL
+Gateway           : ores.http.server-brave_hopper, http://localhost:20401
+Services running  : http.server, iam, compute, telemetry
+Accounts          : super_admin, in the Root Tenant, which acts on the installation;
+                    tenant_admin, in Acme Corporation, which acts on one tenant
+
+What the run shows. The installation's administrator reads all three views: the
+summary joins the stored sample, the host registry and the service roster, so
+every node carries the name of its machine, its hardware and the state of the
+runner that serves it; the series answers the counters as columns on one axis;
+the usage answers one group for each tenant, entering Acme Corporation to read
+its work and reading the Root Tenant where the session already stands.
+
+A session in one tenant is refused the summary with the sentence the BFF used,
+because the grid is the installation's and not that tenant's, and reads its own
+series and usage: the party grouping, and no machines, because the nodes are the
+installation's hardware.
+
+--- 8< ---
+
+=== signing in as the installation's administrator ===
+signed in as: super_admin  outcome: active  tenant: Root Tenant
+
+=== the grid summary
+HTTP 200
+Cache-Control: private, max-age=10
+Vary: Authorization, Cookie
+ETag: "0bbb027d40ca96f9-8a3"
+members: ['active_batches', 'idle_hosts', 'nodes', 'online_hosts', 'outcomes_client_error', 'outcomes_no_reply', 'outcomes_success', 'sampled_at', 'total_batches', 'total_hosts', 'total_workunits']
+sampled_at: 2026-11-21 03:53:39.805114Z  hosts: 5  nodes: 5
+  12c93c3b-3eaa-5870-ad4f-46529ee2dde8   host=timid-uakari-3eaa5870 cpu=8   ram=64171  state=lost     v=0.0.30
+  551a16b7-bc48-5725-bc00-02f99c177e09   host=quiet-yak-bc485725   cpu=8   ram=64171  state=lost     v=0.0.30
+  e9b4b77b-593e-583f-9aac-8d7eadf8b424   host=timid-hamster-593e583f cpu=8   ram=64171  state=lost     v=0.0.30
+  ed10ef0f-ed48-5b3f-96ab-49e5eca325d7   host=idle-xerus-ed485b3f  cpu=8   ram=64171  state=lost     v=0.0.30
+
+=== the grid series, 1h
+HTTP 200
+Cache-Control: private, max-age=10
+Vary: Authorization, Cookie
+ETag: "9b567f77b1ddd124-91f"
+members: ['bucket_count', 'bucket_seconds', 'grid', 'nodes', 'range', 'read_at', 'start_time']
+range: 1h  bucket_seconds: 60  bucket_count: 61
+grid columns: ['active_batches', 'idle_hosts', 'online_hosts', 'outcomes_client_error', 'outcomes_no_reply', 'outcomes_success', 'results_done', 'results_in_progress', 'results_inactive', 'results_unsent', 'samples', 'total_batches', 'total_hosts', 'total_workunits']
+samples column: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+nodes listed: 0
+node cells: 0
+
+=== the grid usage
+HTTP 200
+Cache-Control: private, max-age=30
+Vary: Authorization, Cookie
+ETag: "994209ae422c23d4-265"
+members: ['group_kind', 'groups', 'read_at']
+group_kind: tenant  groups: 2
+  6808fc48-69d8-4e47-a662-0ce35a5bb96f   Acme Corporation         results=66    share=1.000 unavailable=False
+  ffffffff-ffff-ffff-ffff-ffffffffffff   Root Tenant              results=0     share=0.000 unavailable=False
+
+=== the address refuses what the BFF refused
+/api/operations/grid/series HTTP 400  {"code":"invalid-request","message":"The grid series read takes a range of 1h, 24h or 7d."}
+/api/operations/grid/series?range=6h HTTP 400  {"code":"invalid-request","message":"The grid series read takes a range of 1h, 24h or 7d."}
+/api/operations/grid/series?range=1h&bucket=60 HTTP 400  {"code":"invalid-request","message":"This read cannot take bucket."}
+/api/operations/grid/series?range= HTTP 400  {"code":"invalid-request","message":"The grid series read takes a range of 1h, 24h or 7d."}
+/api/operations/grid?scope=all HTTP 400  {"code":"invalid-request","message":"This read cannot take scope."}
+
+=== a session that acts on one tenant reads its own grid
+signed in as: tenant_admin  outcome: party-required  tenant: Acme Corporation
+choose party: 200
+/api/operations/grid                       HTTP 403  {"code":"forbidden","message":"The grid of a deployment needs the read of the deployment as a whole."}
+/api/operations/grid/series?range=1h       HTTP 200  {"read_at":"2026-11-21 03:53:47.082464Z","range":"1h","start_time":"2026-11-21 02:53:00.000000Z","bucket_seconds":60,"bu
+/api/operations/grid/usage                 HTTP 200  {"read_at":"2026-11-21 03:53:47.092827Z","group_kind":"party","groups":[{"key":"6fcbd63e-9e10-482b-99ab-65c729f1565d","n
+
+=== what a tenant sees of the nodes ===
+GET /api/operations/grid/series?range=1h  HTTP 200
+nodes keys: [list]  list: 0  buckets: 61

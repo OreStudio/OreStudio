@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/serve-the-reporting-views
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
 #+updated: 2026-11-09
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ Serve these composed views from ores.reporting: a report configuration, an ORE s
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-09                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-21                               |
 
 * Acceptance
 
@@ -86,3 +86,25 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+* Result
+
+The task is closed without a change of its own: every view it names was served by
+an earlier task of the story, and the inventory confirms it. The reporting area
+pairs 44 of its 44 BFF routes.
+
+| The view | Where it is served |
+|----------+--------------------|
+| a report configuration | =GET /api/reporting/configurations/{id}=, with the cuts, in =e864783b30= |
+| an ORE schema's contents | =GET /api/reporting/ore-files/{code}/schema=, in =f3508d5f37= |
+| the cuts, and the hand take | =/api/reporting/cuts= and =POST /api/reporting/cuts/take=, in =e864783b30= |
+| the kinds of cut, and the lookups they name | =/api/reporting/cut-kinds= and =cut-kind-choices=, in =fe3b13d01b= and =e864783b30= |
+| the report health | =GET /api/reporting/report-health=, in =f8ec128f93= |
+
+The measurement is the inventory's own: =| reporting | 44 | 44 | 0 |=, taken with
+=python3 build/scripts/route_inventory.py --check= on this branch.
+
+Two things this task does not claim. The views were not proved against a live
+gateway by this task; the tasks that served them carry their own evidence. And
+the reporting area's remaining unpaired routes are none, so nothing is left
+behind it for the switch.

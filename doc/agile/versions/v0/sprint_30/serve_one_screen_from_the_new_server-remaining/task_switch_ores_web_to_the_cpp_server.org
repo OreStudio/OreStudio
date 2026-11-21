@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/switch-ores-web-to-the-cpp-server
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
 #+updated: 2026-11-09
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ Move the one switch that sends the requests of ores.web to the C++ server, and t
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Planned; 29 routes stand between the flag and every screen. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-09                               |
+| Next         | Serve the 17 routes that are not decided out, screen by screen. |
+| Last touched | 2026-11-21                               |
 
 * Acceptance
 
@@ -45,9 +45,37 @@ Move the one switch that sends the requests of ores.web to the C++ server, and t
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The switch already exists and is one variable. =baseForScreen= in
+=projects/ores.web/packages/web/src/api/servers.ts= sends a screen's requests to
+the prefix =/cpp= when the screen is named in =VITE_ORE_CPP_SCREENS=, and the
+proxy in front of a deployment sends =/cpp= to =ores.http= and =/api= to the BFF.
+So this task is: name every screen in that variable, and prove the browser works
+against the gateway.
+
+What stands in the way is the inventory's own count. Of the BFF's 334 routes, 305
+are paired with a route =ores.http= answers and 29 are not:
+
+| The gap | Routes | What this task does |
+|---------+--------+---------------------|
+| the agile and QA file-backed routes | 12 | out of scope by the task that decided them, because they read and write the checkout and a deployed gateway holds none |
+| the classifications | 6 | the list, its order and its rows: to serve, or to keep those screens on the BFF |
+| the market screens | 4 | curve analytics, the FX montage, instruments and the rate ladder: views over market data and trading |
+| the quotes screens | 4 | the quotes list, its feeds, its history and the vols-by-delta fit |
+| the identity shape fields | 2 | the joined read the oresmd editor marks a URL's fields from |
+| the authorisation queue | 1 | the requests a decider may act on, with each deal as it stands now |
+
+A screen moves only when every route it calls is answered, so the flag cannot be
+set for a screen whose routes are missing: the browser would answer 404 where it
+answered a page, which is worse than the two-server deployment it has today. The
+plan is therefore to serve the 17 routes that are neither decided out nor
+file-backed, screen by screen, and then to set the flag for the screens those
+routes complete.
+
+The end-to-end test is the second half and is the point of the task: build the
+web bundle with the flag set, bring up the fleet, and drive the screens a person
+uses against the gateway — sign in, choose a party, read each screen's list and
+open one record. A screen that breaks is moved back to the BFF, the fault is
+fixed, and the flag is tried again. Nothing in this task retires the BFF.
 
 * Measurements
 

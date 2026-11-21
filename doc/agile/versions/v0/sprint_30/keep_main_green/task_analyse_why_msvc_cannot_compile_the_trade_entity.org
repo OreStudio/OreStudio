@@ -29,9 +29,9 @@ stops the Windows leg, and what a fix should touch.
 |--------------+----------------------------------------|
 | State        | DONE                                 |
 | Parent story | [[id:4FCC628C-551E-4F7C-B1D7-69546174A9CD][Keep-main-green]] |
-| Now          | Analysis written and merged.           |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Decide which recommendation to take.   |
+| Next         | Nothing. |
 | Last touched | 2026-11-19                               |
 
 * Acceptance

@@ -60,7 +60,7 @@ them.
 | [[id:5C2A4734-FE8D-4097-9720-31515FA03CA5][Settle the statement question]] | BACKLOG | | | Named prepared statements work directly and through pgbouncer 1.21 and later, and through nothing else in transaction mode. Measure what keeping them is worth, and decide between the version floor and unnamed statements. |
 | [[id:3D23B905-359A-4DE0-9F35-1B047A54385B][Run a pooler beside a shared fleet]] | BACKLOG | | | Where several environments share one PostgreSQL, the fleet's connections terminate at a pooler that caps what reaches the server. A systemd unit and a configuration, with the listener and the administrative paths left direct. |
 | [[id:24C47B49-2A5C-42D0-87C2-5E514D8BC9B3][Package the pooler for pauli]] | BACKLOG | | | pauli runs the fleet as podman containers pulled from the registry, NATS among them. The pooler joins it: an image, a configuration, and the services' options pointing at it. |
-| [[id:83C4FD4E-888C-4C3F-BE3D-50136487B458][Prove the pooled path in CI]] | BACKLOG | | | Developers keep a direct connection, so the pooled path is only proven if something runs it. One CI job runs the marketdata suite through a transaction pooler on every change. |
+| [[id:83C4FD4E-888C-4C3F-BE3D-50136487B458][Prove the pooled path in CI]] | STARTED | 2026-11-21 | | Developers keep a direct connection, so the pooled path is only proven if something runs it. One CI job runs the marketdata suite through a transaction pooler on every change. |
 
 * Decisions
 

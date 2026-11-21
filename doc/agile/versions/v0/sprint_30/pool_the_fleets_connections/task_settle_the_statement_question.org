@@ -8,7 +8,7 @@
 #+filetags: :pool_the_fleets_connections:sprint_30:v0:
 #+owner: marco
 #+branch: feature/settle-the-statement-question
-#+pr:
+#+pr: 4961
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-21
@@ -153,7 +153,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4961][#4961]] | [docs] Settle the statement question with the number that settled it |
 
 * Review
 

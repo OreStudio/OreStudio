@@ -8,7 +8,7 @@
 #+filetags: :compute_wrappers_never_release_their_disk:sprint_30:v0:
 #+owner: marco
 #+branch:
-#+pr:
+#+pr: 4947
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-20
@@ -112,7 +112,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4947][#4947]] | [agile] Fold the package cache capture into the app version task |
 
 * Review
 

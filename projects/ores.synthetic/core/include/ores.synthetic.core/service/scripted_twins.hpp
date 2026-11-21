@@ -23,6 +23,7 @@
 #include "ores.synthetic.api/domain/trade_population_plan.hpp"
 #include "ores.synthetic.core/export.hpp"
 #include "ores.trading.api/domain/instrument_batch.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -44,6 +45,16 @@ ORES_SYNTHETIC_CORE_EXPORT std::vector<std::string>
 twin_source_values(const ores::trading::domain::instrument_batch& batch,
                    std::string_view trade_type_code,
                    std::string_view source);
+
+/**
+ * @brief The id of the twin of the native trade @p native of type @p trade_type.
+ *
+ * A name-based id over the native trade's id and type, so no other trade draws
+ * it. The type keeps apart the twins of natives that share an id across
+ * separately drawn plans, as the recorded trades of each asset class do.
+ */
+ORES_SYNTHETIC_CORE_EXPORT boost::uuids::uuid twin_id_for(const boost::uuids::uuid& native,
+                                                          std::string_view trade_type);
 
 /**
  * @brief The generic ScriptedTrade twin of a native slot, on the same terms.

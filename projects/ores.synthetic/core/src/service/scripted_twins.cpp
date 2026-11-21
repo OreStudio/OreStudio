@@ -429,17 +429,11 @@ std::string transformed(std::string value, std::string_view transform) {
                                  value + "'.");
 }
 
-/**
- * @brief The twin's id: a name-based id over the native trade's id and type, so
- * no other trade draws it. The type keeps apart the twins of natives that share
- * an id across separately drawn plans, as the recorded trades of each asset
- * class do.
- */
+}
+
 boost::uuids::uuid twin_id_for(const boost::uuids::uuid& native, std::string_view trade_type) {
     static const boost::uuids::name_generator_sha1 generate(native_namespace());
     return generate(boost::uuids::to_string(native) + "/" + std::string(trade_type) + "/scripted");
-}
-
 }
 
 std::vector<std::string> twin_source_values(const instrument_batch& batch,

@@ -578,7 +578,10 @@ def _transfer_runtime(project_root, host, remote_root, profile_path,
                 break
     subprocess.run([
         "bash", str(project_root / "build" / "scripts" / "start_ci_pooler.sh"),
-        "print-config", str(pooler_port), str(stage_pooler)], check=True,
+        # The quadlet unit runs the pooler with Network=host, so the database is
+        # on the container's own loopback rather than on a pod alias.
+        "print-config", str(pooler_port), str(stage_pooler), "127.0.0.1"],
+        check=True,
         stdout=subprocess.DEVNULL)
     _ssh(host, f"mkdir -p {shlex.quote(remote_root)}/build/config/pooler",
          check=True)

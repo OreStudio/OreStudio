@@ -42,7 +42,19 @@ die() {
 }
 
 [ -f "${env_file}" ] || die "no .env at ${env_file}; run compass env configure first"
-command -v pgbouncer >/dev/null 2>&1 || die "pgbouncer is not installed"
+
+# A systemd user unit gets a PATH without /usr/sbin, so a bare "command -v
+# pgbouncer" says it is missing on a host that has it. Find it once, here.
+pgbouncer_bin="$(command -v pgbouncer 2>/dev/null || true)"
+if [ -z "${pgbouncer_bin}" ]; then
+    for candidate in /usr/sbin/pgbouncer /usr/bin/pgbouncer /usr/local/sbin/pgbouncer; do
+        if [ -x "${candidate}" ]; then
+            pgbouncer_bin="${candidate}"
+            break
+        fi
+    done
+fi
+[ -n "${pgbouncer_bin}" ] || die "pgbouncer is not installed"
 
 label="$(sed -n 's/^ORES_ENV_NAME=//p' "${env_file}" | head -1)"
 [ -n "${label}" ] || label="ci"
@@ -86,9 +98,8 @@ EOF
 
 start() {
     local port="${1:-6432}"
-    command -v pgbouncer >/dev/null 2>&1 || die "pgbouncer is not installed"
     write_config "${port}"
-    pgbouncer -d "${out}/${label}.ini" || die "pgbouncer did not start"
+    "${pgbouncer_bin}" -d "${out}/${label}.ini" || die "pgbouncer did not start"
     echo "${port}" > "${out}/${label}.port"
     # A pooler that is not listening yet is not up, and a suite that connects at
     # once would fail for a reason that has nothing to do with the suite.

@@ -55,6 +55,26 @@ struct connection_options final {
 enum class backoff { linear, exponential };
 
 /**
+ * @brief The connections a pool keeps and the ones a burst may reach.
+ *
+ * A pool keeps its floor, so a request arriving after a quiet spell does not
+ * wait for a login. It opens beyond the floor only when a caller is waiting and
+ * the ceiling allows it, and it closes a connection above the floor once that
+ * connection has been idle for @c idle_after. The ceiling is the concurrency the
+ * work really has, not a share of the server: without a pooler it is what the
+ * server sees, which is why it is stated per service and not raised for
+ * everyone.
+ */
+struct pool_settings final {
+    /// The connections the pool keeps once it has opened them.
+    std::size_t floor = 2;
+    /// The most a burst may open. Never below the floor.
+    std::size_t ceiling = 8;
+    /// How long a connection above the floor lives once it is idle.
+    std::chrono::milliseconds idle_after = std::chrono::seconds(30);
+};
+
+/**
  * @brief How hard a pool tries to open its connections before it gives up.
  *
  * A database that is restarting refuses connections for a while; the attempts

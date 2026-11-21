@@ -30,9 +30,11 @@
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <chrono>
 #include <span>
 #include <stdexcept>
 #include <string>
+#include <thread>
 
 using namespace ores::database::pq;
 using std::chrono::system_clock;
@@ -98,6 +100,22 @@ std::pair<std::string, std::string> settings_between(pool& p) {
                           " current_setting('app.current_party_id', true)"));
     REQUIRE(r.status() == PGRES_TUPLES_OK);
     return {PQgetvalue(r.native(), 0, 0), PQgetvalue(r.native(), 0, 1)};
+}
+
+/*
+ * True once the pool has reached the state a case waits for. A reap happens on
+ * another thread, so a case that asserted the size at once would read the pool
+ * before it had closed anything.
+ */
+template <typename Predicate>
+bool eventually(Predicate reached, std::chrono::milliseconds within = std::chrono::seconds(10)) {
+    const auto deadline = std::chrono::steady_clock::now() + within;
+    while (std::chrono::steady_clock::now() < deadline) {
+        if (reached())
+            return true;
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+    return reached();
 }
 
 }
@@ -388,6 +406,88 @@ TEST_CASE("a pool that stays busy refuses with a retryable error", "[pq]") {
     } catch (const store_error& e) {
         CHECK(e.retryable());
     }
+}
+
+TEST_CASE("a pool grows only when a caller waits for a connection", "[pq]") {
+    ores::testing::scoped_database_helper h;
+    pool p(options_of(h),
+           pool_settings{.floor = 1, .ceiling = 3, .idle_after = std::chrono::seconds(30)});
+    CHECK(p.size() == 1);
+    CHECK(p.idle() == 1);
+
+    // A lease that finds a connection idle opens none.
+    {
+        const auto lone = p.acquire();
+        CHECK(p.size() == 1);
+    }
+    CHECK(p.size() == 1);
+    CHECK(p.idle() == 1);
+
+    // Two callers at once find nothing idle, so the pool opens up to them.
+    const auto first = p.acquire();
+    const auto second = p.acquire();
+    CHECK(p.size() == 2);
+    const auto third = p.acquire();
+    CHECK(p.size() == 3);
+
+    // Every connection of the burst answers: they are leases, not reservations.
+    for (const auto* lease : {&first, &second, &third}) {
+        const result r(PQexec(lease->get().native(), "select 1"));
+        REQUIRE(r.status() == PGRES_TUPLES_OK);
+    }
+    CHECK(p.idle() == 0);
+}
+
+TEST_CASE("a burst that reaches the ceiling refuses the caller after it", "[pq]") {
+    ores::testing::scoped_database_helper h;
+    pool p(options_of(h),
+           pool_settings{.floor = 1, .ceiling = 2, .idle_after = std::chrono::seconds(30)},
+           {},
+           std::chrono::milliseconds(20));
+    const auto first = p.acquire();
+    const auto second = p.acquire();
+    REQUIRE(p.size() == 2);
+    try {
+        (void)p.acquire();
+        FAIL("the third acquire did not throw");
+    } catch (const store_error& e) {
+        CHECK(e.retryable());
+    }
+}
+
+TEST_CASE("a connection above the floor is closed once it has been idle", "[pq]") {
+    ores::testing::scoped_database_helper h;
+    pool p(options_of(h),
+           pool_settings{.floor = 1, .ceiling = 2, .idle_after = std::chrono::milliseconds(100)});
+    {
+        const auto first = p.acquire();
+        const auto second = p.acquire();
+        REQUIRE(p.size() == 2);
+    }
+    CHECK(eventually([&p] { return p.size() == 1; }));
+
+    // The floor is not above the rule: it stays, however long the pool is quiet.
+    std::this_thread::sleep_for(std::chrono::milliseconds(300));
+    CHECK(p.size() == 1);
+    CHECK(p.idle() == 1);
+}
+
+TEST_CASE("a ceiling below the floor is raised to the floor", "[pq]") {
+    ores::testing::scoped_database_helper h;
+    pool p(options_of(h),
+           pool_settings{.floor = 2, .ceiling = 1, .idle_after = std::chrono::seconds(30)});
+    CHECK(p.settings().floor == 2);
+    CHECK(p.settings().ceiling == 2);
+    CHECK(p.size() == 2);
+}
+
+TEST_CASE("a pool given one number keeps it and opens no more", "[pq]") {
+    ores::testing::scoped_database_helper h;
+    pool p(options_of(h), 2);
+    CHECK(p.settings().floor == 2);
+    CHECK(p.settings().ceiling == 2);
+    CHECK(p.size() == 2);
+    CHECK(p.idle() == 2);
 }
 
 TEST_CASE("a connection given back inside a transaction is reset before its next lease", "[pq]") {

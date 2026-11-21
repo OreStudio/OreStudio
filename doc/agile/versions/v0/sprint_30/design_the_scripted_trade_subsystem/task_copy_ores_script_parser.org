@@ -129,3 +129,12 @@ via its "Verifies task" field.
 | 4964.7 | the four tangle diagnostics | - | no change | on main, not this PR |
 
 * Result
+
+First PR: the sub-component and the copy. =ores.trading.scripting= holds ORE's
+grammar, syntax tree, parser, printer, converter back to text and random tree
+generator, copied from ORE at =c3ffbae78= by =utility/import_ore_scripting.py=,
+whose =--check= fails when the copy differs from what it makes. =parse= reports a
+syntax error as an =SCR1001= diagnostic located by line and code point column.
+Every one of the 198 code blocks in ORE's example libraries parses but
+WorstOfBasketSwap, whose diagnostic matches ORE's own report. =inputs_of= and
+=check= follow in the second PR.

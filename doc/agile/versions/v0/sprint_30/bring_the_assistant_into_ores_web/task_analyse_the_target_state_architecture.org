@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :bring_the_assistant_into_ores_web:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/analyse-the-target-state-architecture
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-20
 #+updated: 2026-11-20
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BBEDFA8E-D43D-4F48-8FD7-1A3CC9F47E3E][Bring the assistant into ores.web on the target architecture]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -99,7 +99,7 @@ changes in this task.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:BBEDFA8E-D43D-4F48-8FD7-1A3CC9F47E3E][Bring the assistant into ores.web on the target architecture]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -118,9 +118,17 @@ changes in this task.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Settle the questions one investigation at a time, each in its own document
+beside the story, and fold the decisions into the story's =* Decisions= as the
+product owner approves them. The order follows what the rest depends on:
+
+1. How ores.http serves MCP, because the tool catalogue (question 3) and the
+   machine operations (question 4) are both expressed through it. Started:
+   [[id:FC0847D1-9F09-42EF-A4BD-D5E3C34398EA][How ores.http serves MCP]].
+2. The tool catalogue and how it fits a small model's context.
+3. User and machine operations, and how an outside MCP client authenticates.
+4. Where the agent loop runs, the chat in ores.web, confirmation of changes,
+   the inference server, and the fate of the prototype.
 
 * Measurements
 
@@ -137,6 +145,10 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+- 2026-11-21: taken over from solid_dirac, which moved to compass-ng. The product
+  owner narrowed the story to ores.http: the BFF is nearly retired, so nothing
+  of this story goes through it.
 
 * Test Scenarios
 

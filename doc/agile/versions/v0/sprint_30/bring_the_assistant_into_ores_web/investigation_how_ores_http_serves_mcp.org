@@ -1,0 +1,147 @@
+:PROPERTIES:
+:ID: FC0847D1-9F09-42EF-A4BD-D5E3C34398EA
+:END:
+#+title: Investigation: How ores.http serves MCP
+#+description: Whether a Boost.Beast MCP library exists that ores.http can adopt through vcpkg, or whether ores.http should implement the MCP Streamable HTTP transport itself.
+#+type: investigation
+#+level: s1
+#+filetags: :agent:llm:mcp:http:investigation:bring_the_assistant_into_ores_web:sprint_30:v0:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+
+A point-in-time record, written while the story that commissioned it was open, of an [[id:A7F8D9E2-3C4B-4A5D-B67C-8E9F0A1B2C3D][investigation]] into how ores.http serves the Model Context Protocol (MCP): whether a Boost.Beast MCP library exists that it can adopt through vcpkg, or whether it should implement the transport itself.
+
+It is a snapshot, not a description of the system. Whatever it concludes that the code must keep doing belongs on the page that owns the subject; cite that page from code, recipes and models, not this one.
+
+* Context
+
+The assistant reaches ORE only through ores.http: the BFF is being retired, so
+the story adds nothing to it. An agent, whether the assistant in ores.web or an
+outside MCP client, needs a tool catalogue and a way to call each tool. MCP is
+the standard for both, so the first decision is how ores.http speaks it. The
+preferred shape is an MCP extension to ores.http's own Boost.Beast server, and
+any library it uses should come from vcpkg.
+
+What MCP asks of an HTTP server (Streamable HTTP transport, revisions
+2025-03-26, 2025-06-18 and 2025-11-25):
+
+- One endpoint. =POST= carries a JSON-RPC 2.0 message; the server answers with
+  =application/json= or with a =text/event-stream= of messages. =GET= may open
+  a server-to-client event stream. =DELETE= ends a session.
+- An =Mcp-Session-Id= header, issued at =initialize= and sent on every later
+  request, of visible ASCII only. A request without it, other than
+  =initialize=, gets =400=; a request for an ended session gets =404=.
+- The methods a tool server needs: =initialize=, =notifications/initialized=,
+  =ping=, =tools/list= and =tools/call=. Resources, prompts, progress,
+  cancellation and the rest are optional capabilities.
+
+* Methodology
+
+- Web search for C++ MCP libraries, and for any built on Boost.Beast.
+- Each candidate's repository read for licence, dependencies, protocol
+  revisions, transports and whether it can sit inside another server.
+- Our vcpkg checkout (=vcpkg/=, ports at =ec48c11eae=, 2026-11-07) searched for
+  a port of each candidate.
+- boost.taar's =include/boost/taar/mcp/endpoint.hpp= read at its =master=
+  (pushed 2026-11-12) through the GitHub API.
+- ores.http's own server read: =ores.http.api/net= (server, session, router,
+  route builder), =ores.http.api/domain= (route, request, response, body
+  sources) and =ores.http.api/openapi/endpoint_registry=, with route metadata
+  counted by =grep= over =projects/ores.http*= at =23c075966b=.
+
+* Paths taken
+
+** There is no official C++ SDK
+
+The modelcontextprotocol organisation publishes no C++ SDK. Every C++ library
+found is a community project.
+
+** The candidates
+
+| Library | Licence | HTTP stack | vcpkg | Embeds in a Beast server | Notes |
+|---------+---------+------------+-------+--------------------------+-------|
+| [[https://github.com/rjahanbakhshi/boost.taar][boost.taar]] | BSL-1.0 | Boost.Beast, Asio, JSON, URL | Yes: port =taar= 1.1.0 in our checkout; upstream 1.2.1 | Partly; see below | C++20, header-only. Revisions 2025-11-25, 2025-06-18, 2025-03-26. Streamable HTTP with sessions and =Last-Event-ID= resumption, stdio. Tools, resources, prompts, progress, cancellation, sampling, elicitation. One maintainer, 3 stars. |
+| [[https://github.com/caomengxuan666/cxxmcp][cxxmcp]] | MIT | Bundled cpp-httplib | Overlay port in its own repo only | No: its own server | C++17. Reports 272/272 server checks on the official conformance runner. OAuth 2.1. 34 stars. Calls itself a release candidate, not official. |
+| [[https://github.com/GopherSecurity/gopher-mcp][gopher-mcp]] | Apache-2.0 | libevent with its own codecs | =vcpkg.json= manifest, no registry port | No: its own event loop | C++14. Revisions up to 2026-07-28. 156 stars, no releases. |
+| [[https://github.com/hkr04/cpp-mcp][cpp-mcp]] | MIT | cpp-httplib | Not found | No | Small SDK. |
+| [[https://github.com/dugan-dev/MCP][dugan-dev/MCP]] | | Unclear | Not found | Unclear | v0.0.1. |
+
+Only boost.taar is built on Beast and only boost.taar is in the vcpkg registry.
+
+** Can boost.taar sit inside ores.http?
+
+Partly. =mcp::endpoint::handle(incoming, request, mctx)= is a coroutine that
+takes a Beast =request<string_body>= and returns a Beast response, so a route
+of ores.http could call it without taar's server. Three things stand in the way:
+
+1. *Its tools are C++ functions.* =tools/list= builds each =inputSchema= from
+   the typed parameters of the registered callable (=object_schema(info.params)=).
+   There is no way to register a tool from a JSON schema and a JSON handler at
+   run time. A catalogue derived from ores.http's own routes is exactly that,
+   so it needs a change upstream or a fork.
+2. *It brings a second JSON stack.* Every message and tool result is a
+   =boost::json::value=. ORE reads and writes JSON with its own codec in
+   =ores.utility/codec=; nothing in ores.http uses Boost.JSON today.
+3. *Its types are not ores.http's.* The request and response are Beast types,
+   the call takes taar's matcher and incoming contexts, and its =GET= stream is
+   taar's =chunked_response=. Each needs an adapter to ores.http's
+   =http_request=, =http_response= and =awaitable_body_source=.
+
+** What ores.http already has
+
+- A Beast server with coroutine handlers: =http_server=, =http_session=,
+  =router= and a =route_builder= with =summary=, =description=,
+  =query_param=, =body=, =auth_required=, =roles= and =rate_limit=.
+- A streamed response, =awaitable_body_source=, already serving
+  =text/event-stream= in =ores.http.core/routes/change_routes.cpp=.
+- A session store and authentication on each route.
+- A registry of every route, =openapi::endpoint_registry=, which already writes
+  an OpenAPI document. =route_builder::body<T>()= and =response<T>()= already
+  generate a route's JSON schema from its wire type, through
+  =ores::utility::codec::json_schema<T>()=. Measured at =23c075966b= by =grep=
+  over the route sources, so approximate: 1,140 route registrations, 1,102 with
+  a summary, 692 query parameters, 226 typed request bodies against about 521
+  =POST=, =PUT= and =PATCH= registrations, and 443 typed responses.
+
+* Conclusions
+
+- No C++ MCP library is both mature and a fit. boost.taar is the only one on
+  Beast and the only one in vcpkg, and it implements the current revision, but
+  it is a one-person project whose tool model is compile-time and whose JSON is
+  Boost.JSON.
+- The transport is small. A tool server needs one route with three methods, a
+  session header, a JSON-RPC envelope and five methods, and ores.http already
+  has the server, the streamed response, the sessions, the authentication and
+  the JSON codec.
+- The catalogue is the larger problem, and no library solves it, but most of
+  it is already built. The route registry holds a name, a summary, the query
+  parameters and, for most body-taking routes, a JSON schema generated from the
+  wire type. That is an MCP tool's =name=, =description= and =inputSchema=. The
+  gap is the body-taking routes that do not yet declare =body<T>()=.
+
+* Recommendations
+
+1. Implement MCP's Streamable HTTP transport natively in ores.http, as a
+   component beside the route registry: one =/mcp= route for =POST=, =GET=
+   and =DELETE=, JSON-RPC through ORE's codec, sessions in the existing store,
+   the event stream on =awaitable_body_source=. Start with =initialize=,
+   =ping=, =tools/list= and =tools/call=, and add capabilities only when a
+   client needs them.
+2. Derive the catalogue from the route registry, and close the gap by
+   declaring =body<T>()= on every body-taking route, which a gate can enforce.
+   That work also completes the OpenAPI document.
+3. Keep boost.taar as the reference implementation, and test ours against the
+   official MCP conformance runner, which cxxmcp reports using.
+4. Revisit adoption if boost.taar gains run-time tool registration and a second
+   maintainer: it is the only candidate that would let ores.http drop its own
+   transport code.
+
+Open, for the next part of the analysis: how an outside MCP client
+authenticates (MCP specifies OAuth 2.1 with protected resource metadata; ORE
+issues its own sessions and tokens), and how a call made by the assistant is
+told apart from the person's own.
+
+* See also
+
+- [[id:BBEDFA8E-D43D-4F48-8FD7-1A3CC9F47E3E][Bring the assistant into ores.web on the target architecture]]
+- [[https://modelcontextprotocol.io/specification/2025-06-18/basic/transports][MCP transports, 2025-06-18]]

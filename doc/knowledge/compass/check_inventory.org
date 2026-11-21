@@ -31,7 +31,7 @@ This page lists every check and generator compass runs on this repository, and t
 | =curve_sections_wiring= | yes | generator | error | Writes the curve screen's column wiring and the curve part validators from the curve configuration projection. | built into compass |
 | =entity_binary_types= | yes | check | error | Reports each column a model's generated row binds in a binary format its create script's type does not define. | built into compass |
 | =entity_writes= | yes | check | error | Reports each SQL function and hand-written C++ file that writes an entity table outside its repository. | built into compass |
-| =env_format= | yes | check | error | Reports each variable of the project's environment file that no new version declares, and each version that declares nothing. | [[id:BFE330BD-2AF8-43A4-BE8C-D066BD3FB1FD][compass/checks/env_format.org]] |
+| =env_format= | yes | check | error | Reports each variable of the project's environment file that no new version declares, each version that declares nothing, and each variable whose rows could write it twice. | [[id:BFE330BD-2AF8-43A4-BE8C-D066BD3FB1FD][compass/checks/env_format.org]] |
 | =er_diagram= | yes | generator | error | Writes the PlantUML ER diagrams of the schema, one per table group and an index, from the create scripts. | built into compass |
 | =event_registrars= | yes | check | error | Reports each generated event registrar its component's event_registrar.cpp does not call. | built into compass |
 | =exported_types= | yes | check | error | Reports each header whose library exports a type that no translation unit of the library compiles, each enum a visibility macro decorates, and each function a part built with hidden visibility declares without its export macro. | built into compass |
@@ -307,7 +307,7 @@ Reports each SQL function and hand-written C++ file that writes an entity table 
 
 *** env_format
 
-Reports each variable of the project's environment file that no new version declares, and each version that declares nothing.
+Reports each variable of the project's environment file that no new version declares, each version that declares nothing, and each variable whose rows could write it twice.
 
 - Kind: check.
 - Severity: error.
@@ -320,6 +320,7 @@ Reports each variable of the project's environment file that no new version decl
 | =unknown_variable= | Every variable a version lists as added or removed has a row that names that version. |
 | =empty_version= | Every version after the baseline adds or removes a variable, or is marked format only. |
 | =unreadable= | The check document gives every table, column, setting, kind and template the format needs, and each row reads. |
+| =duplicate_variable= | Two live rows of one variable each have a when, so that exclusive conditions write it once; a row without a when is the variable's only row for the services it applies to. |
 
 *** er_diagram
 

@@ -215,7 +215,9 @@ via its "Verifies task" field.
 
 * Result
 
-In progress: the first two of five PRs are in. The second publishes ORE's
+In progress: the first three of five PRs are in. The third gives the trading
+service a handler for the script library's publish step, so a bundle
+published over the bus publishes the library as the bring-up does. The second publishes ORE's
 script library as the =ore.script_library= world dataset: a generator in
 =external/ore/tools/= extracts, corrects, parses and derives every script with
 the shell, and the bring-up publishes the staged rows, writing a new version

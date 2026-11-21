@@ -57,7 +57,7 @@ retires the prototype once ores.web does what it does.
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
 | Now           | Split into three stories; MCP and knowledge search go first. |
 | Waiting on    | Nothing.                               |
-| Next          | Analyse the target-state architecture. |
+| Next          | Analyse the assistant's remaining architecture, after the MCP and knowledge stories. |
 | Last touched  | 2026-11-20                               |
 
 * Acceptance
@@ -84,7 +84,8 @@ retires the prototype once ores.web does what it does.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:F245FC50-7440-4C5E-AFA4-1B2D0E28F05D][Scaffold story: Bring the assistant into ores.web on the target architecture]] | DONE | 2026-11-20 | 2026-11-20 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:E3102699-58F9-4EF2-94BE-BCDBC1FA14BE][Analyse the assistant's target-state architecture]] | STARTED | 2026-11-21 | | Design the target architecture: the chat in ores.web via ores.http, the agent loop, the tool catalogue, machine operations, the inference server (plain llama.cpp or an ORE service) and the fate of the prototype. |
+| [[id:E3102699-58F9-4EF2-94BE-BCDBC1FA14BE][Analyse the assistant's target-state architecture]] | DONE | 2026-11-21 | 2026-11-21 | Design the target architecture: the chat in ores.web via ores.http, the agent loop, the tool catalogue, machine operations, the inference server (plain llama.cpp or an ORE service) and the fate of the prototype. |
+| [[id:FC78773D-6EFA-44C5-97B2-FAACB05319CC][Analyse the assistant's remaining architecture]] | BACKLOG | | | The questions the first analysis left open once MCP, the catalogue and the knowledge base moved to their own stories: user and machine operations, the agent loop, the chat in ores.web, confirmation, the inference server, tenancy, evaluation and the prototype. |
 
 * Decisions
 

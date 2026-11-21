@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: 075A26CE-A1A8-4050-87EB-33EF43AAFA7A
+:END:
+#+title: Task: Load the knowledge pages into PostgreSQL as org
+#+description: Declare which pages are user-facing, add the raw pages table in the system tenant, and a script that loads those pages into it as they are.
+#+type: task
+#+level: s1
+#+filetags: :search_the_knowledge_base:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:05FE6068-3CBD-4B93-B6AE-47A5689F1FCB][Search the knowledge base from ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Declare on each page whether it is user-facing, with a tag or a keyword, and mark the domain knowledge, the manual and the glossary. Add a table of raw knowledge pages in the system tenant, read by every tenant: org id as the key, the file's path, its org text unchanged, when it was loaded. Write the script that loads every user-facing page into it, replacing the previous load.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:05FE6068-3CBD-4B93-B6AE-47A5689F1FCB][Search the knowledge base from ores.web]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-21                               |
+
+* Acceptance
+
+- Every user-facing page carries the declaration, and a gate refuses a page whose declaration is malformed.
+- The script loads every user-facing page into the raw table as org, unchanged, keyed by its org id; a second run replaces the first.
+- Every tenant can read the raw table and none can write it.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

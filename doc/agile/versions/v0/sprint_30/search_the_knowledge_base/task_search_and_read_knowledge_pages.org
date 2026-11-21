@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: 3EB24EE2-82E5-4F11-AB20-4EEB16167FB3
+:END:
+#+title: Task: Search and read the knowledge pages through ores.http
+#+description: The search over the indexed sections with PostgreSQL full-text search, and a page read by org id, as ores.orgmode.service messages served by ores.http routes.
+#+type: task
+#+level: s1
+#+filetags: :search_the_knowledge_base:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:05FE6068-3CBD-4B93-B6AE-47A5689F1FCB][Search the knowledge base from ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+ores.orgmode.service answers a search, a few words in and the best pages out with the section that matched, ranked with PostgreSQL full-text search over the weighted sections; and a page read by org id, its title, description, tags and org text. ores.http serves both as routes, through NATS, in its route registry and OpenAPI document. Nothing goes through the BFF.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:05FE6068-3CBD-4B93-B6AE-47A5689F1FCB][Search the knowledge base from ores.web]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-21                               |
+
+* Acceptance
+
+- A search for volatility answers the Volatility pages first, each with the section that matched.
+- A page read by org id answers its org text and its metadata, and an unknown id is refused by name.
+- Both routes are in ores.http's route registry and OpenAPI document, with their schemas.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

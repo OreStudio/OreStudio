@@ -99,11 +99,11 @@ changes in this task.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:BBEDFA8E-D43D-4F48-8FD7-1A3CC9F47E3E][Bring the assistant into ores.web on the target architecture]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-20                               |
 
 * Acceptance
@@ -177,3 +177,29 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Three questions settled, each in an investigation beside the story, and the
+work split into three stories the product owner approved:
+
+- *How ores.http serves MCP*
+  ([[id:FC0847D1-9F09-42EF-A4BD-D5E3C34398EA][investigation]]): no C++ MCP library is both mature and a fit; boost.taar
+  is the only one on Beast and in vcpkg, but its tools are compile-time C++
+  functions and it brings Boost.JSON. ores.http implements MCP's Streamable
+  HTTP transport itself, with boost.taar as the reference.
+- *How the model sees ORE's operations*
+  ([[id:6DFC4BF5-65AC-4E75-90EA-FBDC1272E01C][investigation]]): the catalogue is 1,070 operations, about 107,000
+  tokens listed in full, so it is browsed in small steps (areas, entities,
+  operations, at most 33 entries a step) with search beside it, and each route
+  declares its tool name, its place and whether it writes.
+- *How the assistant answers from the knowledge base*
+  ([[id:3237D7CF-8EBA-4B9B-9B54-7135A4A7AA4A][investigation]]), a requirement added during the analysis: the org pages
+  are loaded into PostgreSQL as they are, indexed into sections by a service
+  step with =ores.orgmode=, searched with PostgreSQL full-text search, and
+  rendered in ores.web with =@ores/org=.
+
+The stories: [[id:05FE6068-3CBD-4B93-B6AE-47A5689F1FCB][Search the knowledge base from ores.web]] (six tasks),
+[[id:008127D7-B897-4CF7-854B-6DDFB89AC7F4][Serve ORE's API to LLM agents over MCP]], and
+[[id:70A4D585-8A56-475D-BE32-803D08A5D0CF][Answer from the knowledge base over MCP]] once both are done. The questions
+left open, user and machine operations, the agent loop, the chat, confirmation,
+the inference server, tenancy, evaluation and the prototype, move to
+[[id:FC78773D-6EFA-44C5-97B2-FAACB05319CC][Analyse the assistant's remaining architecture]].

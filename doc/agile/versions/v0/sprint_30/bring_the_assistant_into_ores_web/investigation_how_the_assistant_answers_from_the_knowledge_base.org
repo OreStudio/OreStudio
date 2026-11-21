@@ -58,37 +58,49 @@ agile records.
 
 ** The shape of a document
 
-One org page is exported once and stored in three forms, each for its reader.
-The search never reads HTML, so HTML does not hinder it.
+A page is stored once, in one internal format, and ores.http renders what each
+reader needs from it. Storing HTML as well, or instead, would keep a second form
+that can drift from the first, and would fix link and anchor rules at export
+time; rendering in the service keeps those rules in ORE's code.
 
-- *HTML, for a person.* ores.web shows it. Links to other knowledge pages are
-  rewritten to ores.web's own page address, each heading carries an anchor so a
-  citation can point at its section, and formulas stay as LaTeX for the page to
-  typeset.
-- *Markdown, for the model.* Small models read Markdown well: headings, lists
-  and tables in few tokens, and formulas as =$...$=. Each section's Markdown is
-  the passage the model is given.
-- *Search text, for PostgreSQL.* A =tsvector= built from the title, the
-  heading path and the section's Markdown, weighted in that order, so a word in
-  a title outranks the same word in a paragraph.
+*The internal format is Markdown*: CommonMark with GFM tables, LaTeX math as
+=$...$= and =$$...$$=, and links between knowledge pages as wiki links on the
+org id, =[[id:...][Volatility]]= becoming =[[576D0E28-...|Volatility]]=.
+Markdown, because the model reads it directly and well; a document tree
+(Pandoc's JSON, say) would need a renderer for every kind of node and a second
+form for the model, and org itself has no C++ parser.
+
+*ores.http renders it with md4c* (MIT, port =md4c= 0.6.0 in our vcpkg). md4c
+parses CommonMark with GFM tables, LaTeX math spans and wiki links, and does not
+write HTML itself: it reports each element to callbacks. So one parse gives
+three things:
+
+- *HTML, for a person*, written by ORE: an anchor on every heading so a
+  citation can point at its section, wiki links rewritten to ores.web's page for
+  that id, math left as LaTeX for the page to typeset. ores.web still cleans it
+  before inserting it, and the site's content security policy applies.
+- *Sections, for the model and the search*: the heading path and the Markdown
+  between one heading and the next. A section's Markdown is the passage the
+  model is given.
+- *Search text*: a =tsvector= from the title, the heading path and the
+  section's text, weighted in that order.
+
+The parse that splits sections runs when the pages are loaded, so a search reads
+stored sections; HTML is rendered when a page is asked for, and can be cached.
+cmark and cmark-gfm (both in vcpkg) were the other parsers considered; neither
+reads math or wiki links.
 
 The rows:
 
 | Table | One row per | Holds |
 |-------+-------------+-------|
-| page | page | org id, title, description, tags, the whole page's HTML, its source path, when it was exported |
-| section | heading of a page | page id, order, anchor, heading path (=Volatility > Implied volatility=), level, Markdown, HTML of the section, the weighted =tsvector= |
+| page | page | org id, title, description, tags, the page's Markdown, its source path, when it was exported |
+| section | heading of a page | page id, order, anchor, heading path (=Volatility > Implied volatility=), level, Markdown, the weighted =tsvector= |
 | link | link between two pages | from page, to page |
 
 A search returns sections; the answer links each section's page at its anchor,
 and the page is shown whole. The links between pages let a search lift a
 structure note and its neighbours, as compass's own search does.
-
-Rendering is HTML because ORE writes it from its own sources. ores.web still
-cleans it before inserting it into the page, and the site's content security
-policy applies to it; a structured document tree rendered by React components is
-the alternative if the pages ever need interaction, at the cost of a renderer
-for every element.
 
 ** Where to search
 
@@ -132,16 +144,16 @@ for every element.
 
 * Recommendations
 
-1. A compass-ng export of the user-facing corpus: the domain knowledge, the
-   manual and the glossary, in the shape above: each page's HTML, each
-   section's Markdown and HTML with its heading path and anchor, and the links
-   between pages. Which documents are user-facing is declared on the
+1. A compass-ng export of the user-facing corpus, the domain knowledge, the
+   manual and the glossary, as Markdown in the internal format above, with each
+   page's id, title, description and tags. Which documents are user-facing is declared on the
    document (a tag or a keyword), so the export does not guess.
 2. A pass that loads the export into PostgreSQL, as system data every tenant
-   reads, replaced whole on each load: pages, passages with a weighted
+   reads, replaced whole on each load: pages, their sections with a weighted
    =tsvector=, and links.
-3. In ores.http: a route that serves a page by its id as HTML, which ores.web
-   shows as a page; a route that searches passages; and the same two as MCP
+3. In ores.http: md4c to split pages into sections when they are loaded and to
+   render a page as HTML when it is asked for; a route that serves a page by its
+   id, which ores.web shows as a page; a route that searches passages; and the same two as MCP
    tools (=find_knowledge=, =read_knowledge=) and the pages as MCP resources.
 4. In the agent loop: retrieve before the model is called, give it the numbered
    passages, and build the answer's links from what was retrieved.

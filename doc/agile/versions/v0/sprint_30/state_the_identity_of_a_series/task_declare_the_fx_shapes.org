@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :state_the_identity_of_a_series:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/declare-the-fx-shapes
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-15
 #+updated: 2026-11-15
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:663D745C-C7C3-48F7-A2E5-0BBE6B90C69A][State the identity of a market series]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The CRM composes a pair from two legs that share a base, which it reads from ccy
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:663D745C-C7C3-48F7-A2E5-0BBE6B90C69A][State the identity of a market series]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-15                               |
 
 * Acceptance
@@ -41,9 +41,15 @@ The CRM composes a pair from two legs that share a base, which it reads from ccy
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Find the code that builds a CRM topology from series identity, and check what
+it does with a sparse row. It is =read_fixing_sources= in
+=ores.marketdata.service/app/fixing_sources.cpp=: the CRM ingest bridge reads a
+party's FX fixing series from the identity table, takes each series' =unit_ccy=
+as the base its publisher quotes against and its =ccy= as a currency it quotes,
+and builds the star from that. It already refuses a party whose FX fixing series
+lacks either field, naming the series, and the bridge then builds no engine for
+the party and logs the refusal. Nothing tested it. Add the tests, show that they
+fail without the refusal, and measure the seeded tenant.
 
 * Measurements
 
@@ -57,7 +63,12 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Acme FX level series (spot and volatility) | 402, none without =ccy= or =unit_ccy= | =compass sql=: identity rows with =asset_class = 'fx'= by tenant | 1092e7900b |
+| Acme FX fixing series | 0 | same query | 1092e7900b |
+| Enabled Acme CRM configs | 15 | =ores_refdata_crm_topology_configs_tbl= | 1092e7900b |
+| CRM refusals logged after provisioning | 0 | =grep 'CRM: refusing' ores.marketdata.service.0.log= | 1092e7900b |
+| FX fixing series on the earlier database, and shape breaks | 162, 0 | =evidence/shape_audit.sql= | 0432e34058 |
+| New tests with the refusal disabled | 2 of 2 fail | =ores.marketdata.service.tests "[fixing_sources]"= | 1092e7900b plus this branch |
 
 * Notes
 
@@ -65,6 +76,18 @@ task and name that file in the Command column.
   =fx.volatility= and =fx.index_fixing.fx= require =ccy= and =unit_ccy=); see
   the result of [[id:B003AE67-4F98-49AB-908E-13A1F7674E98][State the shape of each series class as data]]. What is left is the CRM topology factory's refusal of a
   level series whose identity lacks either field.
+- 2026-11-21: the topology factory is =read_fixing_sources=, and its refusal
+  was already there, untested. The CRM composes pairs from fixing series, not
+  from spot: the spot series feed a built engine tick by tick, and the
+  datum codec cannot read an =fx_spot= without =unit_ccy= and =ccy=, because
+  both are identity fields of the instrument, so a spot tick always carries
+  them.
+- 2026-11-21: the new tests write the sparse row in SQL, because the identity
+  writer refuses it by its shape. The rows stay in the test tenants, so an audit
+  of the whole database counts them; filter on the tenant when reading it.
+- 2026-11-21: =app_feed_ingest_loop_tests= fail when =ores.marketdata.service=
+  and =ores.synthetic.service= run beside them, which is why the gate stops
+  both before =ctest=. With both stopped the whole suite passes.
 
 * Test Scenarios
 
@@ -90,3 +113,21 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The FX shapes are declared: =fx.spot=, =fx.forward=, =fx.volatility= and
+=fx.index_fixing.fx= require =ccy= and =unit_ccy=, and the identity writer
+refuses a row that lacks either (from
+[[id:B003AE67-4F98-49AB-908E-13A1F7674E98][State the shape of each series class as data]]).
+
+The CRM topology factory, =read_fixing_sources=, refuses a party whose FX fixing
+series lacks =ccy= or =unit_ccy=, naming the series' oresmd URI, and the CRM
+ingest bridge builds no engine for that party. That behaviour was on main
+already; this task adds the tests that hold it:
+=a fixing series without its unit currency is refused by name= and
+=a party with a fixing series without its unit currency gets no CRM engine=.
+Both fail when the refusal is switched off and pass with it.
+
+No FX series in the seeded tenant is refused: all 402 Acme FX level series carry
+both fields, and the service logged no CRM refusal. This provisioning holds no
+FX fixing series in Acme, so its CRMs keep their configured pairs; the 162 FX
+fixing series of the earlier database had no shape breaks.

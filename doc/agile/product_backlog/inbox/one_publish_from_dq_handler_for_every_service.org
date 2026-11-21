@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: AE3F5C64-0007-4C54-BEF9-D6ECFFDC0238
+:END:
+#+title: One publish-from-DQ handler for every service
+#+description: Nine services carry the same publish-from-DQ step handler and subject plan; move one copy into a shared library and delete the rest.
+#+type: capture
+#+level: cross
+#+filetags: :dq:service:duplication:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Nine services now hold their own copy of the publish-from-DQ workflow step
+handler: analytics, assets, dq, iam, marketdata, refdata, reporting, synthetic
+and trading. Each copy decodes the step command, derives the SQL function from
+the subject, calls it under the tenant, sums the (action, record_count) rows
+and completes or fails the step. The copies differ in small ways:
+
+- The function name. Most use =ores_<component>_<operation>_fn=; dq uses
+  =ores_dq_<operation>_publish_fn=.
+- The guard on that name, which goes into SQL as an identifier. Analytics and
+  trading refuse a name that is not lower-case letters, digits and
+  underscores, and test it. Dq, marketdata and synthetic accept only a fixed
+  list of names. Assets, iam, refdata and reporting have no guard.
+- The decode. Some catch an exception, some use =read_expected=.
+
+Move one handler, with a guarded subject plan and its test, into a library
+that every service core already links. Give it the function-name rule as a
+parameter, migrate the nine registrars to it and delete the copies.
+
+* Why
+
+A fix to one copy does not reach the others. The guard is the example: four
+copies put the subject's last segment into SQL with no check. Each service
+subscribes only its own declared subjects, so no wrong text reaches SQL
+today, but the safety depends on every registrar. Each new owner of a staged
+document also adds another copy.
+
+The shared home needs a decision. ores.service links ores.database but not
+ores.dq.api, which holds the command and result types; one option is to move
+those two types down, another is a small shared library above both.
+
+* References
+
+- projects/ores.analytics/core/src/messaging/publish_from_dq_handler.cpp
+- projects/ores.analytics/core/src/service/publish_subject_plan.cpp
+- projects/ores.trading/core/src/messaging/publish_from_dq_handler.cpp
+
+* See also
+
+- [[id:D4DE184C-B7E4-47F8-BA9E-D25160E74EC4][Publish ORE's script library as a world dataset]]

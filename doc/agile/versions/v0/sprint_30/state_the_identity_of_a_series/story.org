@@ -21,12 +21,12 @@ market_series_identity is one wide table of nullable columns with one shape per 
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
-| Now           | The shapes are stated as data, the writer refuses a row that breaks one, and the CRM refuses a sparse FX fixing. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Close the IBOR shapes task, which is clever dijkstra's. |
-| Last touched  | 2026-11-20 |
+| Next          | Nothing. |
+| Last touched  | 2026-11-21 |
 
 * Acceptance
 
@@ -42,10 +42,38 @@ market_series_identity is one wide table of nullable columns with one shape per 
 | [[id:B003AE67-4F98-49AB-908E-13A1F7674E98][State the shape of each series class as data]] | DONE | 2026-11-20 | 2026-11-20 | Initial task for: State the identity of a market series |
 | [[id:52F82265-4192-43EA-9EA7-56E06D7B7EE4][Refuse an identity row that misses its shape]] | DONE | 2026-11-20 | 2026-11-20 | The writer that derives a series identity from its oresmd URI accepts a sparse row; make it validate against the declared shape and fail closed, naming the class and the field. |
 | [[id:22B00026-4B86-447F-B8AB-9F5CE8F52ADA][Declare the FX shapes and hold the CRM to them]] | DONE | 2026-11-21 | 2026-11-21 | The FX shapes are declared; make the CRM topology factory refuse a level series whose identity lacks ccy or unit_ccy. |
-| [[id:DE0C9E63-C399-44D9-A388-F64183ABDB37][Declare the IBOR shapes and refuse a sparse fixing]] | BACKLOG | | | The nine IBOR fixings record ccy and correctly no unit currency; declare the IR shapes so a new one cannot arrive sparse, and collapse the duplicated index_fixing classification rule. |
+| [[id:DE0C9E63-C399-44D9-A388-F64183ABDB37][Declare the IBOR shapes and refuse a sparse fixing]] | DONE | 2026-11-21 | 2026-11-21 | The nine IBOR fixings record ccy and correctly no unit currency; declare the IR shapes so a new one cannot arrive sparse, and collapse the duplicated index_fixing classification rule. |
 
 * Decisions
 
+- *A shape is keyed by family, not by instrument* (2026-11-20). A family is the
+  asset class, the series subclass and, for an index, the index family, which
+  is the key the shapes table carries. A family no shape names is not enforced
+  but counted as unstated, because the catalogue grows and refusing every
+  family nobody has stated yet would stop an ingest for the catalogue's reason.
+- *An index series must carry the index subclass before its shape is looked
+  up* (2026-11-20). Otherwise a fixing that states another subclass is held to
+  no shape and the guard cannot see the lie.
+- *The writer fails closed; the backfill counts* (2026-11-20). A write through
+  the repository refuses the batch. A backfill is a repair, so it counts the
+  rows a shape refuses, warns with each, and projects the rest. It projects
+  only the series of the parties its caller can see.
+- *The CRM's own refusal stays* (2026-11-21). =read_fixing_sources= refuses a
+  party whose FX fixing lacks =ccy= or =unit_ccy= even though the writer
+  refuses such a row, because a row can still arrive by SQL or a restore.
+
 * Out of scope
 
--
+- A series written in SQL is not projected until something runs the
+  projection. Captured as [[id:20D96191-9FBE-455C-B2EA-529C31867A76][A published curve's series has no identity until something else projects it]].
+
+* Result
+
+Each series family states as data the identity fields it requires and those it
+forbids, in =ores_marketdata_series_identity_shapes_tbl= and its entries. The
+identity writer refuses a row that misses a required field or carries a
+forbidden one, naming the series, the family and the field; the backfill counts
+such rows and leaves them unprojected. The FX families require =ccy= and
+=unit_ccy=; the IBOR fixings require =ccy=, =index= and =index_name= and forbid
+a unit currency; the CRM refuses a party whose FX fixing is sparse. On a freshly
+provisioned database every one of the 1,611 series held to a shape conforms.

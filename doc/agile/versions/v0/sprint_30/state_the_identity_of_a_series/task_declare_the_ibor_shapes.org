@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :state_the_identity_of_a_series:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/declare-the-ibor-shapes
+#+pr: 4957
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-15
-#+updated: 2026-11-15
-#+environment:
+#+updated: 2026-11-21
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:663D745C-C7C3-48F7-A2E5-0BBE6B90C69A][State the identity of a market series]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ Handed to clever dijkstra, who owns the IBOR work. The nine IBOR fixings (ESTER,
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:663D745C-C7C3-48F7-A2E5-0BBE6B90C69A][State the identity of a market series]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-15                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-21 |
 
 * Acceptance
 
@@ -41,9 +41,12 @@ Handed to clever dijkstra, who owns the IBOR work. The nine IBOR fixings (ESTER,
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The work landed with [[id:B003AE67-4F98-49AB-908E-13A1F7674E98][State the shape of each series class as data]] and
+[[id:52F82265-4192-43EA-9EA7-56E06D7B7EE4][Refuse an identity row that misses its shape]]. Close this task on evidence:
+read the declared IR entries and the classification rules from a freshly
+provisioned database, hold every stored IBOR fixing to its shape with
+=evidence/shape_audit.sql=, and run the shape tests. Every measurement was taken on main at
+=eb2fe1dd7a=, the merge of PR #4949, built and provisioned from scratch.
 
 * Measurements
 
@@ -57,7 +60,12 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| =ir.index_fixing.ibor= entries | =ccy=, =index=, =index_name= required; =unit_ccy= forbidden | =compass sql=: shape entries with =shape_code like 'ir.%'= | eb2fe1dd7a |
+| =ir.yield= entries | =ccy=, =instrument_type=, =quote_type= required; =unit_ccy= forbidden | same query | eb2fe1dd7a |
+| Classification rules for =index_fixing= | 1 (key kind =index=, asset class from the index authority) | =ores_marketdata_series_classification_rules_tbl= | eb2fe1dd7a |
+| IBOR fixing series held to their shape, and breaks | 51, 0 | =evidence/shape_audit.sql= | eb2fe1dd7a |
+| All series held to a shape, and breaks | 1,611, 0 | =evidence/shape_audit.sql= | eb2fe1dd7a |
+| Identity and shape tests | 23 cases, 61 assertions, all passed | =ores.marketdata.core.tests "[series_identity]"= | eb2fe1dd7a |
 
 * Notes
 
@@ -80,12 +88,29 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4957][#4957]] | [agile] Close the IBOR shapes task and the identity story |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | PR review: the task's =Last touched= and =#+updated= were stale. | this task | Fixed | 2026-11-21. |
+| 2 | PR review: the Review table was empty. | this task | Fixed | This table. |
+| 3 | PR review: say which tree =eb2fe1dd7a= is. | this task | Fixed | The Plan says it is main, the merge of PR #4949. |
+| 4 | PR review: move the memory's note on the deferred curves elsewhere. | =check_the_whole_fleet_before_provisioning.org= | Declined | It stops the next reader blaming the official service for deferred curves, which is the wrong lesson. |
+| 5 | PR review: explain why the story's decisions are dated after its start. | =story.org= | Declined | Each is dated when its task made it. |
 
 * Result
+
+The IR shapes are declared as data beside the classification rules. An IBOR
+fixing requires =ccy=, =index= and =index_name= and forbids =unit_ccy=; a swap
+index fixing requires =ccy=, =index= and =tenor=; a yield series requires
+=ccy=, =instrument_type= and =quote_type=; none carries a unit currency. The
+identity writer refuses a new IBOR fixing that misses one of those fields or
+carries a unit currency, naming the series, the family and the field
+(=an_ibor_fixing_that_misses_a_required_field_is_refused_by_name=,
+=an_ibor_fixing_that_carries_a_unit_currency_is_refused_by_name=). The
+classification rules hold one =index_fixing= rule. On a freshly provisioned
+database all 51 IBOR fixing series hold to their shape. The task was handed to
+clever dijkstra; the work reached main through the other tasks of this story, so
+it closes on evidence.

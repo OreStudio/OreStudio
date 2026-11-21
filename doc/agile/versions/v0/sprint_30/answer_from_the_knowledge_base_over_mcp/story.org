@@ -32,7 +32,7 @@ This joins two stories and starts when both are done:
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
 | Now           | Not yet started.                       |
 | Waiting on    | The knowledge search and MCP stories. |
-| Next          | Waiting on the two stories it joins. |
+| Next          | Write its tasks when the two stories it joins are done. |
 | Last touched  | 2026-11-21                               |
 
 * Acceptance
@@ -54,6 +54,7 @@ This joins two stories and starts when both are done:
 
 * Decisions
 
+None yet.
 
 
 * Out of scope

@@ -32,7 +32,7 @@ The analysis is in [[id:FC0847D1-9F09-42EF-A4BD-D5E3C34398EA][How ores.http serv
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks. |
+| Next          | Decide how an outside MCP client authenticates, then break the rest into tasks. |
 | Last touched  | 2026-11-21                               |
 
 * Acceptance
@@ -48,8 +48,9 @@ The analysis is in [[id:FC0847D1-9F09-42EF-A4BD-D5E3C34398EA][How ores.http serv
 - Every route declares its tool name, its area and entity, and whether it
   writes, and a gate refuses a route that does not. Every route that takes a
   body declares its schema with =body<T>()=.
-- An operation that writes is marked as writing and does not run unless the
-  call states that the person confirmed it.
+- An operation that writes is marked as writing and does not run until the
+  person confirms it through the client, by MCP elicitation or the client's own
+  confirmation. No argument the model sets counts as a confirmation.
 - An outside MCP client authenticates as a person, by a means this story
   decides, and a call made over MCP is recorded as made over MCP, for that
   person, so it is never mistaken for one made in ores.web.
@@ -62,7 +63,7 @@ The analysis is in [[id:FC0847D1-9F09-42EF-A4BD-D5E3C34398EA][How ores.http serv
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-|      |       |       |     |             |
+| [[id:BEF95B2A-42BF-40DA-BC3D-7B703C34ED73][Decide how an outside MCP client authenticates]] | BACKLOG | | | Decide how Claude Code, Claude Desktop or a local agent signs in to ores.http's MCP endpoint as a person, against MCP's OAuth 2.1 authorization and ORE's own sessions, before the session store and the audit trail are designed. |
 
 * Decisions
 

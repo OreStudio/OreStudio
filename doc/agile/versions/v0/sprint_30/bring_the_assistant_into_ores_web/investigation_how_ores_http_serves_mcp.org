@@ -101,12 +101,17 @@ of ores.http could call it without taar's server. Three things stand in the way:
   =ores::utility::codec::json_schema<T>()=. Measured at =23c075966b= by =grep=
   over the route sources, so approximate: 1,140 route registrations, 1,102 with
   a summary, 692 query parameters, 226 typed request bodies against about 521
-  =POST=, =PUT= and =PATCH= registrations, and 443 typed responses.
+  =POST=, =PUT= and =PATCH= registrations, and 443 typed responses. These
+  count call sites in the source, tests included (1,098 without them); the
+  catalogue investigation counts what the running server serves, 1,070
+  operations, because a call site is not always a served route.
 
 * Conclusions
 
 - No C++ MCP library is both mature and a fit. boost.taar is the only one on
-  Beast and the only one in vcpkg, and it implements the current revision, but
+  Beast and the only one in vcpkg, and it implements revision 2025-11-25 (with
+  2025-06-18 and 2025-03-26) already in v1.1.0, the release our vcpkg port pins,
+  as in v1.2.1 upstream, but
   it is a one-person project whose tool model is compile-time and whose JSON is
   Boost.JSON.
 - The transport is small. A tool server needs one route with three methods, a

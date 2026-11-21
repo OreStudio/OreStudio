@@ -35,7 +35,11 @@ Declare on each page whether it is user-facing, with a tag or a keyword, and mar
 
 * Acceptance
 
+- A page is user-facing only when it declares it; the default is not, so an
+  internal page is never loaded by omission.
 - Every user-facing page carries the declaration, and a gate refuses a page whose declaration is malformed.
+- The script lists every page it loads, so the set can be reviewed before it
+  reaches every tenant.
 - The script loads every user-facing page into the raw table as org, unchanged, keyed by its org id; a second run replaces the first.
 - Every tenant can read the raw table and none can write it.
 

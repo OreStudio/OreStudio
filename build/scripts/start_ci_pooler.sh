@@ -58,6 +58,11 @@ fi
 
 label="$(sed -n 's/^ORES_ENV_NAME=//p' "${env_file}" | head -1)"
 [ -n "${label}" ] || label="ci"
+# The port PostgreSQL listens on. A remote environment keeps its database off
+# the default, and the deploy passes that port in PGPORT when it generates this
+# configuration for the remote host.
+db_port="${PGPORT:-$(sed -n 's/^PGPORT=//p' "${env_file}" | head -1)}"
+db_port="${db_port:-5432}"
 out="${root}/build/pgbouncer"
 mkdir -p "${out}"
 
@@ -112,7 +117,7 @@ write_config() {
     fi
     cat > "${dir}/${base}.ini" <<EOF
 [databases]
-* = host=${db_host} port=5432
+* = host=${db_host} port=${db_port}
 
 [pgbouncer]
 listen_addr = ${listen_addr}

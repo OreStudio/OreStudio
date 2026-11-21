@@ -296,12 +296,16 @@ def build_all(project_root: Path, tag: str | None = None,
 
 # --- Image existence checks (used by env_deploy) --------------------------
 
-def check_images_exist(project_root: Path, role: str = "runtime") -> bool:
+def check_images_exist(project_root: Path, role: str = "runtime",
+                       tag: str | None = None) -> bool:
     """Return True if all expected images for *role* are present locally.
+
+    *tag* defaults to this checkout's tag. A deploy that pins a tag passes it,
+    so the check covers the images that deploy will ship.
 
     Prints a helpful message on failure telling the user what to run.
     """
-    tag = _version_tag(project_root)
+    tag = tag or _version_tag(project_root)
     missing = missing_images(project_root, role, tag)
     if not missing:
         return True

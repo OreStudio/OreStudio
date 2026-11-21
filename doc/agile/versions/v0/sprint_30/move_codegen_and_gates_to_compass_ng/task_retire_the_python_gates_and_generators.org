@@ -8,7 +8,7 @@
 #+filetags: :move_codegen_and_gates_to_compass_ng:sprint_30:v0:
 #+owner: marco
 #+branch: feature/delete-the-python-gates-compass-ng-replaced
-#+pr: 4946
+#+pr: 4950
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-17
@@ -134,6 +134,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4950][#4950]] | [build] Adopt compass-ng v0.0.5 and delete the Python it replaces |
 | [[https://github.com/OreStudio/OreStudio/pull/4946][#4946]] | [build] Delete the Python gates compass-ng replaced |
 
 * Review

@@ -32,18 +32,6 @@ TEST_CASE("ores::orgmode::messaging::knowledge_page_key", "[codec][roundtrip][pr
     ores::testing::check_wire_roundtrip<ores::orgmode::messaging::knowledge_page_key>();
 }
 
-TEST_CASE("ores::orgmode::messaging::knowledge_page_write", "[codec][roundtrip][protocol]") {
-    ores::testing::check_wire_roundtrip<ores::orgmode::messaging::knowledge_page_write>();
-}
-
-TEST_CASE("ores::orgmode::messaging::knowledge_page_change", "[codec][roundtrip][protocol]") {
-    ores::testing::check_wire_roundtrip<ores::orgmode::messaging::knowledge_page_change>();
-}
-
-TEST_CASE("ores::orgmode::messaging::knowledge_page_removal", "[codec][roundtrip][protocol]") {
-    ores::testing::check_wire_roundtrip<ores::orgmode::messaging::knowledge_page_removal>();
-}
-
 TEST_CASE("ores::orgmode::messaging::knowledge_page_lookup", "[codec][roundtrip][protocol]") {
     ores::testing::check_wire_roundtrip<ores::orgmode::messaging::knowledge_page_lookup>();
 }
@@ -93,48 +81,6 @@ TEST_CASE("ores::orgmode::messaging::get_many_knowledge_pages_response",
           "[codec][roundtrip][protocol]") {
     ores::testing::check_wire_roundtrip<
         ores::orgmode::messaging::get_many_knowledge_pages_response>();
-}
-
-TEST_CASE("ores::orgmode::messaging::put_knowledge_page_request", "[codec][roundtrip][protocol]") {
-    ores::testing::check_wire_roundtrip<ores::orgmode::messaging::put_knowledge_page_request>();
-}
-
-TEST_CASE("ores::orgmode::messaging::put_knowledge_page_response", "[codec][roundtrip][protocol]") {
-    ores::testing::check_wire_roundtrip<ores::orgmode::messaging::put_knowledge_page_response>();
-}
-
-TEST_CASE("ores::orgmode::messaging::put_many_knowledge_pages_request",
-          "[codec][roundtrip][protocol]") {
-    ores::testing::check_wire_roundtrip<
-        ores::orgmode::messaging::put_many_knowledge_pages_request>();
-}
-
-TEST_CASE("ores::orgmode::messaging::put_many_knowledge_pages_response",
-          "[codec][roundtrip][protocol]") {
-    ores::testing::check_wire_roundtrip<
-        ores::orgmode::messaging::put_many_knowledge_pages_response>();
-}
-
-TEST_CASE("ores::orgmode::messaging::delete_knowledge_page_request",
-          "[codec][roundtrip][protocol]") {
-    ores::testing::check_wire_roundtrip<ores::orgmode::messaging::delete_knowledge_page_request>();
-}
-
-TEST_CASE("ores::orgmode::messaging::delete_knowledge_page_response",
-          "[codec][roundtrip][protocol]") {
-    ores::testing::check_wire_roundtrip<ores::orgmode::messaging::delete_knowledge_page_response>();
-}
-
-TEST_CASE("ores::orgmode::messaging::delete_many_knowledge_pages_request",
-          "[codec][roundtrip][protocol]") {
-    ores::testing::check_wire_roundtrip<
-        ores::orgmode::messaging::delete_many_knowledge_pages_request>();
-}
-
-TEST_CASE("ores::orgmode::messaging::delete_many_knowledge_pages_response",
-          "[codec][roundtrip][protocol]") {
-    ores::testing::check_wire_roundtrip<
-        ores::orgmode::messaging::delete_many_knowledge_pages_response>();
 }
 
 TEST_CASE("ores::orgmode::messaging::list_knowledge_page_versions_request",

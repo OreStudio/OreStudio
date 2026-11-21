@@ -26,6 +26,7 @@ set(files
     "domain/knowledge_page_table_io.cpp"
     "generators/knowledge_page_generator.cpp"
     "messaging/knowledge_page_protocol_codec.cpp"
+    "messaging/publish_operation_protocol_codec.cpp"
 )
 
 # The headers are listed for the install and IDE targets.
@@ -39,5 +40,6 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.orgmode.api/export.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.orgmode.api/generators/knowledge_page_generator.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.orgmode.api/messaging/knowledge_page_protocol.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.orgmode.api/messaging/publish_operation_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.orgmode.api/ores.orgmode.api.hpp"
 )

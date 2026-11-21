@@ -22,6 +22,8 @@
 set(files
     "messaging/knowledge_page_history_provider_registrar.cpp"
     "messaging/knowledge_page_registrar.cpp"
+    "messaging/publish_from_dq_handler.cpp"
+    "messaging/registrar.cpp"
     "presentation/knowledge_page_history_field_mapper.cpp"
     "repository/knowledge_page_entity.cpp"
     "repository/knowledge_page_mapper.cpp"
@@ -35,6 +37,8 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.orgmode.core/messaging/knowledge_page_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.orgmode.core/messaging/knowledge_page_history_provider_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.orgmode.core/messaging/knowledge_page_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.orgmode.core/messaging/publish_from_dq_handler.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.orgmode.core/messaging/registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.orgmode.core/ores.orgmode.core.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.orgmode.core/presentation/knowledge_page_history_field_mapper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.orgmode.core/repository/knowledge_page_entity.hpp"

@@ -22,5 +22,4 @@
 set(files
     "knowledge_page_eventing_integration_tests.cpp"
     "main.cpp"
-    "messaging_knowledge_page_system_owned_tests.cpp"
 )

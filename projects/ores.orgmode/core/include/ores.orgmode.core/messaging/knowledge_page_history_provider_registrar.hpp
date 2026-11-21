@@ -26,10 +26,12 @@
 #define ORES_ORGMODE_CORE_MESSAGING_KNOWLEDGE_PAGE_HISTORY_PROVIDER_REGISTRAR_HPP
 
 #include "ores.history.core/service/dispatch_registry.hpp"
+#include "ores.orgmode.core/export.hpp"
 
 namespace ores::orgmode::messaging {
 
-void register_knowledge_page_history_provider(ores::history::service::dispatch_registry& registry);
+ORES_ORGMODE_CORE_EXPORT void
+register_knowledge_page_history_provider(ores::history::service::dispatch_registry& registry);
 
 }
 

@@ -55,6 +55,7 @@ COMPONENT_PREFIXES = {
     'ores_analytics_': {'name': 'analytics', 'description': 'Analytics & Pricing Configuration', 'schema': 'public', 'color': '#E8F5E9', 'order': 20},
     'ores_synthetic_': {'name': 'synthetic', 'description': 'Synthetic Data Generation', 'schema': 'public', 'color': '#F9FBE7', 'order': 22},
     'ores_inbox_': {'name': 'inbox', 'description': 'Inbox — Approval Requests and Notifications', 'schema': 'public', 'color': '#FCE4EC', 'order': 23},
+    'ores_orgmode_': {'name': 'orgmode', 'description': 'Knowledge Base (Org Pages)', 'schema': 'public', 'color': '#F3E5F5', 'order': 24},
     'ores_utility_': {'name': 'utility', 'description': 'Utility Functions', 'schema': 'public', 'color': '#ECEFF1', 'order': 15},
     'ores_seed_': {'name': 'seed', 'description': 'Seed Functions', 'schema': 'public', 'color': '#ECEFF1', 'order': 16},
     'ores_database_': {'name': 'database', 'description': 'Database Infrastructure', 'schema': 'public', 'color': '#EFEBE9', 'order': 17},

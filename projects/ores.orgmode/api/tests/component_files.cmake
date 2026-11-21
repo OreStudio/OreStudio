@@ -23,4 +23,5 @@ set(files
     "knowledge_page_codec_roundtrip_tests.cpp"
     "knowledge_page_protocol_codec_roundtrip_tests.cpp"
     "main.cpp"
+    "publish_operation_protocol_codec_roundtrip_tests.cpp"
 )

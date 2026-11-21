@@ -73,6 +73,16 @@ regenerated or its check would fail.
 4. *Serve.* =ores.orgmode.service= joins, registered as in commits
    =05e0419674= and =b0887787b9=, linking the new core.
 
+   The service serves the knowledge page's generated reads and the publish
+   step, =orgmode.v1.ops.publish_knowledge_pages_from_dq=, declared in
+   =ores.orgmode.publish_operations= and handled the way assets handles its own.
+   The bring-up publish does not need it: the bootstrap publishes the
+   =system_core= bundle in SQL. The step serves a later republication.
+5. *Read from the shell.* A new adapter part, =ores.shell.orgmode=, holds the
+   generated =knowledge_pages= menu. The entity is =client_read_only=, so the
+   menu lists and reads and never writes: the dataset is the table's only
+   writer.
+
 Measure: the number of pages declared, loaded and readable from a tenant.
 
 * Measurements

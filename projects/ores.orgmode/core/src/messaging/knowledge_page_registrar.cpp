@@ -61,22 +61,6 @@ register_knowledge_page_handlers(ores::nats::service::client& nats,
         knowledge_page_queue_group,
         [h](ores::nats::message msg) { h->get_many_knowledge_pages(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_knowledge_page_request::nats_subject,
-        knowledge_page_queue_group,
-        [h](ores::nats::message msg) { h->put_knowledge_page(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(
-        put_many_knowledge_pages_request::nats_subject,
-        knowledge_page_queue_group,
-        [h](ores::nats::message msg) { h->put_many_knowledge_pages(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(
-        delete_knowledge_page_request::nats_subject,
-        knowledge_page_queue_group,
-        [h](ores::nats::message msg) { h->delete_knowledge_page(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(
-        delete_many_knowledge_pages_request::nats_subject,
-        knowledge_page_queue_group,
-        [h](ores::nats::message msg) { h->delete_many_knowledge_pages(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(
         list_knowledge_page_versions_request::nats_subject,
         knowledge_page_queue_group,
         [h](ores::nats::message msg) { h->list_knowledge_page_versions(std::move(msg)); }));

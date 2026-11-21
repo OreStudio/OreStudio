@@ -20,7 +20,7 @@
 #include "ores.orgmode.service/app/application.hpp"
 #include "ores.database/service/context_factory.hpp"
 #include "ores.nats/service/client.hpp"
-#include "ores.nats/service/subscription.hpp"
+#include "ores.orgmode.core/messaging/registrar.hpp"
 #include "ores.orgmode.service/app/application_exception.hpp"
 #include "ores.service/service/domain_service_runner.hpp"
 #include "ores.service/service/heartbeat_publisher.hpp"
@@ -30,7 +30,7 @@
 #include <memory>
 #include <string>
 #include <string_view>
-#include <vector>
+#include <utility>
 
 namespace ores::orgmode::service::app {
 
@@ -67,14 +67,16 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     ores::nats::service::client nats(cfg.nats);
     nats.connect();
 
-    // The knowledge search story adds the handlers; until then the service runs
-    // and beats so the fleet starts it, watches it and deploys it.
+    // Bound before the await, so no lambda of the call lives in this frame; see run().
     auto service_run = ores::service::service::run(
         io_ctx,
         nats,
         make_context(cfg.database),
         std::string(service_name),
-        [](auto&, auto, auto) { return std::vector<ores::nats::service::subscription>{}; },
+        [](auto& n, auto c, auto v) {
+            return ores::orgmode::messaging::registrar::register_handlers(
+                n, std::move(c), std::move(v));
+        },
         [&nats](boost::asio::io_context& ioc) {
             auto hb = std::make_shared<ores::service::service::heartbeat_publisher>(
                 std::string(service_name), std::string(service_version), nats);

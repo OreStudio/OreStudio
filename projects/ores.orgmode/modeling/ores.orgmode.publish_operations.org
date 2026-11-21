@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
+:ID: 13FBBE67-70E6-4BF7-BD10-92FDE64753BF
+:END:
+#+title: ores.orgmode.publish_operations
+#+description: Codegen operation model for the workflow step that publishes the knowledge pages from a DQ dataset.
+#+type: ores.codegen.operation
+#+component: orgmode
+#+subcomponent: api
+#+entity_singular: publish_operation
+#+namespace: ores::orgmode::messaging
+#+brief: The orgmode publish-from-DQ workflow step.
+#+filetags: :model:operation:orgmode:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+
+The workflow step that publishes the knowledge pages from a DQ dataset. It is a
+trigger, as the assets and reporting components' publish steps are: the DQ
+publisher sends it and reads no reply, so the step states a subject and no
+response.
+
+The subject is also the =target_subject= of the =knowledge_pages= artefact type,
+in =projects/ores.sql/populate/dq/dq_artefact_types_populate.sql=. The handler
+calls =ores_orgmode_publish_knowledge_pages_from_dq_fn=.
+
+At bring-up the publication does not reach the service: the bootstrap publishes
+the =system_core= bundle in SQL. The step serves a later republication through
+the workflow.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <string_view>
+#+end_src
+
+* Messages
+
+** publish_knowledge_pages_from_dq_request
+:PROPERTIES:
+:subject: orgmode.v1.ops.publish_knowledge_pages_from_dq
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow step that publishes the DQ-staged knowledge pages.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is
+ * ores_orgmode_publish_knowledge_pages_from_dq_fn.
+ */
+#+end_src
+
+* See also
+
+- [[id:932F96AD-9A59-4B06-8452-901E3B5C5F52][ores.orgmode.knowledge_page]] — the entity the step publishes.

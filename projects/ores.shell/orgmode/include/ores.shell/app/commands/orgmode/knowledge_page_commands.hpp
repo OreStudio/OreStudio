@@ -87,41 +87,6 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <id> <path> <org> <reason> <commentary>
-     */
-    static void process_add(std::ostream& out,
-                            ores::nats::service::nats_client& session,
-                            const std::vector<std::string>& args);
-
-    /**
-     * @brief set <id> <path> <org> <reason> <commentary> [--version <n>]
-     */
-    static void process_set(std::ostream& out,
-                            ores::nats::service::nats_client& session,
-                            const std::vector<std::string>& args);
-
-    /**
-     * @brief put-many --count <n> <id> <path> <org> <reason> <commentary>
-     */
-    static void process_put_many(std::ostream& out,
-                                 ores::nats::service::nats_client& session,
-                                 const std::vector<std::string>& args);
-
-    /**
-     * @brief delete <id> <reason> <commentary> [--version <n>]
-     */
-    static void process_delete(std::ostream& out,
-                               ores::nats::service::nats_client& session,
-                               const std::vector<std::string>& args);
-
-    /**
-     * @brief delete-many <id> <reason> <commentary>
-     */
-    static void process_delete_many(std::ostream& out,
-                                    ores::nats::service::nats_client& session,
-                                    const std::vector<std::string>& args);
-
-    /**
      * @brief versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
      */
     static void process_versions(std::ostream& out,

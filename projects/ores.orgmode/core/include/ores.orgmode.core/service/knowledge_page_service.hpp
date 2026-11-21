@@ -81,14 +81,6 @@ public:
     get_knowledge_page(const ::ores::orgmode::messaging::get_knowledge_page_request& request);
     ::ores::orgmode::messaging::get_many_knowledge_pages_response get_many_knowledge_pages(
         const ::ores::orgmode::messaging::get_many_knowledge_pages_request& request);
-    ::ores::orgmode::messaging::put_knowledge_page_response
-    put_knowledge_page(const ::ores::orgmode::messaging::put_knowledge_page_request& request);
-    ::ores::orgmode::messaging::put_many_knowledge_pages_response put_many_knowledge_pages(
-        const ::ores::orgmode::messaging::put_many_knowledge_pages_request& request);
-    ::ores::orgmode::messaging::delete_knowledge_page_response
-    delete_knowledge_page(const ::ores::orgmode::messaging::delete_knowledge_page_request& request);
-    ::ores::orgmode::messaging::delete_many_knowledge_pages_response delete_many_knowledge_pages(
-        const ::ores::orgmode::messaging::delete_many_knowledge_pages_request& request);
     ::ores::orgmode::messaging::list_knowledge_page_versions_response list_knowledge_page_versions(
         const ::ores::orgmode::messaging::list_knowledge_page_versions_request& request);
     ::ores::orgmode::messaging::get_knowledge_page_version_response get_knowledge_page_version(
@@ -172,29 +164,6 @@ public:
 private:
     context ctx_;
     repository::knowledge_page_repository repo_;
-
-    /**
-     * @brief Checks one change against the row it names, and stamps it.
-     *
-     * A single write and a batch state the same claim, so the check, the
-     * server-derived provenance and the version the store must match are one
-     * decision made in one place. A batch that made the decision per element
-     * would eventually make it differently from the single write.
-     *
-     * The caller reads the current row, so a batch reads every row it names
-     * in one query rather than one query per change.
-     *
-     * @param change The change as the caller stated it.
-     * @param intent The reason and commentary the caller gave.
-     * @param current The row the change names as it is now, or empty.
-     * @param out The stamped domain object, written only when the result is ok.
-     * @return ok, or why the change was refused.
-     */
-    ores::utility::domain::result
-    prepare_change(const ::ores::orgmode::messaging::knowledge_page_change& change,
-                   const ores::utility::domain::change_intent& intent,
-                   const std::vector<domain::knowledge_page>& current,
-                   domain::knowledge_page& out);
 };
 
 }

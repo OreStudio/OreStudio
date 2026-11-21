@@ -28,6 +28,7 @@ indexing step reads the text and writes the sections the search reads.
 :product:       ores
 :component:     orgmode
 :system_tenant_validation: true
+:client_read_only: true
 :profile:                  simple-lookup
 :tablename: ores_orgmode_knowledge_pages_tbl
 :END:

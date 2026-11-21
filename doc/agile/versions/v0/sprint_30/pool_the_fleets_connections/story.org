@@ -109,6 +109,14 @@ them.
   pooling would hand to somebody else at the next commit, and =compass db
   recreate= and the schema restore are not request traffic. They name
   PostgreSQL's port while the services name the pooler's.
+- *The generated environment runs a pooler; the code's default stays direct,
+  2026-11-21.* Those are two different defaults and both are right. A binary
+  takes PostgreSQL's endpoint unless its configuration names another, so a
+  developer with their own database needs nothing. The environment generator
+  provisions hosts that share one PostgreSQL between checkouts, which is the case
+  a pooler exists for, so it writes the pooler's unit and points the services at
+  it; =ORES_DB_POOLER_ENABLED=0 keeps an environment direct and the pooler's unit
+  is then not written at all.
 - *The pool states two numbers, not one, 2026-11-21.* It keeps a floor and may
   burst to a ceiling, and closes what a burst leaves idle. The three settings
   are =db-pool-min=, =db-pool-max= and =db-pool-idle=, stated per service in the

@@ -948,7 +948,11 @@ ORES_TEST_DB_DDL_PASSWORD={test_ddl_pw}
     # states whether it runs one; with none, every service names the database
     # directly, which is what a developer's own instance needs.
     pooler_port = base_port + POOLER_PORT_OFFSET
-    pooler_enabled = existing.get("ORES_DB_POOLER_ENABLED", "0") == "1"
+    # On by default: every environment this generator provisions lives on a host
+    # that shares its PostgreSQL with others, which is the case a pooler exists
+    # for. A developer's own instance sets this to 0 and keeps the direct path,
+    # and an existing .env keeps whatever it already states.
+    pooler_enabled = existing.get("ORES_DB_POOLER_ENABLED", "1") == "1"
     out.append("\n# ---------------------------------------------------------------------------\n")
     out.append("# Transaction pooler. A shared instance sees its cap rather than the sum\n")
     out.append("# of every service's pool; an environment without one stays direct.\n")

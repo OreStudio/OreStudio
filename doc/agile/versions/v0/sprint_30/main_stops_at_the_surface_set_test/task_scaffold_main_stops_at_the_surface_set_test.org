@@ -8,7 +8,7 @@
 #+filetags: :main_stops_at_the_surface_set_test:sprint_30:v0:
 #+owner: marco
 #+branch: hotfix/main-stops-at-the-surface-set-test
-#+pr:
+#+pr: 4943
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-21
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4943][#4943]] | [marketdata] Mark both set raises as nodiscard |
 
 * Review
 

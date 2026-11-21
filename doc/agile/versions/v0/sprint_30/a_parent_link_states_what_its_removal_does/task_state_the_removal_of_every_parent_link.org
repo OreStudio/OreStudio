@@ -67,7 +67,8 @@ task and name that file in the Command column.
 |------+-------+---------+--------|
 | Foreign keys in the entity models | 642 over 331 models | =python3 doc/agile/versions/v0/sprint_30/a_parent_link_states_what_its_removal_does/evidence/parent_links.py= | f1d84d68c9 |
 | with =:parent_entity:= | 180 | =python3 doc/agile/versions/v0/sprint_30/a_parent_link_states_what_its_removal_does/evidence/parent_links.py= | f1d84d68c9 |
-| with =:bump_parent_version: true= | 23 | =python3 doc/agile/versions/v0/sprint_30/a_parent_link_states_what_its_removal_does/evidence/parent_links.py= | f1d84d68c9 |
+| with =:parent_entity:= and =:bump_parent_version: true= | 23 | =python3 doc/agile/versions/v0/sprint_30/a_parent_link_states_what_its_removal_does/evidence/parent_links.py= | f1d84d68c9 |
+| with =:bump_parent_version: true= and no =:parent_entity:= | 13 | =python3 doc/agile/versions/v0/sprint_30/a_parent_link_states_what_its_removal_does/evidence/parent_links.py= | f1d84d68c9 |
 
 * Notes
 
@@ -75,6 +76,8 @@ task and name that file in the Command column.
   as a script that proposes a behaviour from the link (a =:parent_entity:=
   child with =:bump_parent_version:= is likely =cascade=; a reference from a
   trade is likely =refuse=), and review the proposal by component.
+- The 36 links with =:bump_parent_version:= already behave as owned children:
+  23 carry =:parent_entity:= and 13 do not. Propose =cascade= for all 36.
 - The rows the writer skips today, such as an orphan shape entry, may hide
   orphans in the seed; the query finds them.
 

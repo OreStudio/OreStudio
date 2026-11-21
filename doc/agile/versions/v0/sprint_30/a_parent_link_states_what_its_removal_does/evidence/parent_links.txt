@@ -3,12 +3,15 @@ foreign keys declared                : 642
   with :parent_entity:               : 180
     with :bump_parent_version: true  : 23
     closed by the parent's cascade   : 0
+  with :bump_parent_version: true    : 36
+    without :parent_entity:          : 13
   closed by the parent's cascade     : 6
   with :cascade_orphan: true         : 1
 models with a Delete cascade section : 8
   child tables they name             : 111
   of which the child declares the FK : 6
 table names not found in the SQL     : 0
+models whose links the script missed : 0
 ores_analytics_credit_simulation_configs_tbl.configuration_id -> ores_reporting_configurations_tbl  parent_entity=True bump=False cascaded=False
 ores_analytics_credit_simulation_entities_tbl.credit_simulation_config_id -> ores_analytics_credit_simulation_configs_tbl  parent_entity=True bump=False cascaded=False
 ores_analytics_credit_simulation_entities_tbl.transition_matrix_id -> ores_analytics_credit_simulation_matrices_tbl  parent_entity=True bump=False cascaded=False

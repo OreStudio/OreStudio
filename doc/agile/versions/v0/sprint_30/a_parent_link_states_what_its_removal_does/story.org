@@ -58,12 +58,16 @@ of links is in =evidence/parent_links.txt=:
 - 180 of them carry =:parent_entity:=. The parent's cascade closes none of
   those 180. So when any of these parents is removed, its children stay
   current and name a parent that is gone.
-- 23 of the 180 carry =:bump_parent_version:=, so a child write moves the
+- 36 foreign keys carry =:bump_parent_version:=, so a child write moves the
   parent's version. The model treats those children as part of the parent for
-  versioning, and not for removal.
+  versioning, and not for removal. 23 of them are among the 180; the other 13
+  carry no =:parent_entity:=, such as an account's contact information. All 36
+  are strong =cascade= candidates.
 - 8 models have a =* Delete cascade= section. They name 111 child tables, and
   only 6 of those children declare a foreign key back to the parent.
 - 1 foreign key carries =:cascade_orphan:= (a bond instrument and its issue).
+- The script checks that it read every link of every Foreign keys section,
+  and it matches a cascade to a link by the child's table and column.
 
 ** How it showed
 
@@ -87,6 +91,10 @@ A fix for the shape alone would add one more =* Delete cascade= list and leave
 179 links unstated. The behaviour belongs on the link, where the child already
 says who its parent is, so one declaration states the ownership and the
 removal together and a check can hold every link to it.
+
+The story covers all 642 foreign keys, not only the 180 that carry
+=:parent_entity:=. The other 462 are no less links: each one also names a
+parent whose removal leaves it, and each one states its behaviour too.
 
 * Status
 

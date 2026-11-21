@@ -69,6 +69,11 @@ task and name that file in the Command column.
 - Until the task State the removal of every parent link is done, the check can
   hold the line from a baseline: refuse a new unstated link, and list the old
   ones as exceptions that the other task removes.
+- Land this task after State on a foreign key what its parent's removal does.
+  The check needs the declaration to exist, and that task's acceptance asks
+  for byte-identical SQL while no link states a behaviour.
+- Read the models through the codegen model reader, not with the census
+  script's regular expressions, which can miss a link in an unusual layout.
 - See =build/scripts/check_marketdata_identity_columns.py= and its
   =.compass.org= row for the pattern of a check whose rule is data.
 

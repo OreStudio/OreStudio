@@ -52,9 +52,11 @@ struct script_variable final {
  *   (SCR2001, SCR2003, SCR2004); a variable the script never reads is a warning
  *   (SCR2002).
  * - A REQUIRE statement the trade's values break is an error at the statement
- *   (SCR3001). A statement is evaluated when every name it reads is a number the
- *   trade states, or the size of a list it states; one that reads anything else
- *   is left to ORE.
+ *   (SCR3001). Only the statements every run reaches are evaluated, those
+ *   outside any IF and loop, and only when every name one reads is a number the
+ *   trade states, or the size of a list it states, and the script does not
+ *   assign it; anything else is left to ORE. Equality is ORE's: equal within
+ *   QuantLib's close_enough.
  * - A declared variable the script never uses is a warning at its declaration
  *   (SCR4001).
  *
@@ -62,7 +64,8 @@ struct script_variable final {
  * @param text the script's text, which locates each finding.
  * @param inputs the script's inputs; for a script with several variants, their
  * merge.
- * @param variables the variables the trade states.
+ * @param variables the variables the trade states; where two share a name, the
+ * first is the one checked.
  */
 ORES_TRADING_SCRIPTING_EXPORT std::vector<diagnostic>
 check(const ASTNodePtr& tree,

@@ -116,3 +116,60 @@ TEST_CASE("a REQUIRE that reads a date is left to ORE", check_tags) {
     REQUIRE(result.size() == 1u);
     CHECK(summary(result[0]) == "SCR3001 1:1");
 }
+
+TEST_CASE("a REQUIRE inside an IF is left to ORE, which knows whether it runs", check_tags) {
+    const std::string text = "IF Flag == 1 THEN\n"
+                             "  REQUIRE Strike > 100;\n"
+                             "END;\n"
+                             "value = PAY(Strike * Flag, Expiry, Expiry, PayCcy);\n";
+    const std::vector<script_variable> variables = {
+        {.name = "Flag", .type = "Number", .values = {"0"}},
+        {.name = "Strike", .type = "Number", .values = {"50"}},
+        {.name = "Expiry", .type = "Event", .values = {"2027-01-01"}},
+        {.name = "PayCcy", .type = "Currency", .values = {"USD"}}};
+    CHECK(findings(text, variables).empty());
+}
+
+TEST_CASE("a REQUIRE over a name the script assigns is left to ORE", check_tags) {
+    const std::string text = "Level = Level * 2;\n"
+                             "REQUIRE Level < 100;\n"
+                             "value = PAY(Level, Expiry, Expiry, PayCcy);\n";
+    const std::vector<script_variable> variables = {
+        {.name = "Level", .type = "Number", .values = {"80"}},
+        {.name = "Expiry", .type = "Event", .values = {"2027-01-01"}},
+        {.name = "PayCcy", .type = "Currency", .values = {"USD"}}};
+    // The script writes Level, so it is not an input, and the REQUIRE reads the
+    // script's value, not the trade's.
+    std::vector<std::string> seen;
+    for (const auto& d : findings(text, variables))
+        seen.push_back(summary(d));
+    CHECK(seen == std::vector<std::string>{"SCR2002 Level"});
+}
+
+TEST_CASE("a REQUIRE is evaluated as ORE evaluates it", check_tags) {
+    const std::string text =
+        "REQUIRE Weight1 + Weight2 == 0.3;\n"
+        "REQUIRE Notional / Units > 0;\n"
+        "value = PAY(Notional * Units * Weight1 * Weight2, Expiry, Expiry, PayCcy);\n";
+    const std::vector<script_variable> variables = {
+        {.name = "Weight1", .type = "Number", .values = {"0.1"}},
+        {.name = "Weight2", .type = "Number", .values = {"0.2"}},
+        {.name = "Notional", .type = "Number", .values = {"0"}},
+        {.name = "Units", .type = "Number", .values = {"0"}},
+        {.name = "Expiry", .type = "Event", .values = {"2027-01-01"}},
+        {.name = "PayCcy", .type = "Currency", .values = {"USD"}}};
+    // 0.1 + 0.2 equals 0.3 within QuantLib's close_enough, as ORE compares, and a
+    // zero divisor leaves the second statement to ORE.
+    CHECK(findings(text, variables).empty());
+}
+
+TEST_CASE("a variable of the wrong type and shape has both findings", check_tags) {
+    const std::string text = "value = PAY(1, Expiry, Expiry, PayCcy);\n";
+    const std::vector<script_variable> variables = {
+        {.name = "Expiry", .type = "Number", .is_array = true, .values = {"1", "2"}},
+        {.name = "PayCcy", .type = "Currency", .values = {"USD"}}};
+    std::vector<std::string> seen;
+    for (const auto& d : findings(text, variables))
+        seen.push_back(summary(d));
+    CHECK(seen == std::vector<std::string>{"SCR2003 Expiry", "SCR2004 Expiry"});
+}

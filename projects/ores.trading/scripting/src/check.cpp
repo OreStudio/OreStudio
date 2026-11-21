@@ -19,11 +19,13 @@
 #include "ores.trading.scripting/check.hpp"
 #include "spirit_columns.hpp"
 #include <algorithm>
-#include <charconv>
 #include <cmath>
+#include <limits>
+#include <locale>
 #include <map>
 #include <optional>
 #include <set>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -57,6 +59,7 @@ std::string described(const std::string& type, bool is_array) {
 /// The names a script declares, each with its declaration, and the names it uses.
 struct name_uses final {
     std::map<std::string, const ASTNode*> declared;
+    std::set<std::string> assigned;
     std::set<std::string> used;
 
     void collect(const ASTNodePtr& node) {
@@ -74,14 +77,19 @@ struct name_uses final {
             }
             return;
         }
+        if (dynamic_cast<const AssignmentNode*>(node.get()) && !node->args.empty())
+            if (const auto* target = dynamic_cast<const VariableNode*>(node->args[0].get()))
+                assigned.insert(target->name);
         if (const auto* v = dynamic_cast<const VariableNode*>(node.get()))
             used.insert(v->name);
         else if (const auto* s = dynamic_cast<const SizeOpNode*>(node.get()))
             used.insert(s->name);
         else if (const auto* d = dynamic_cast<const FunctionDateIndexNode*>(node.get()))
             used.insert(d->name);
-        else if (const auto* l = dynamic_cast<const LoopNode*>(node.get()))
+        else if (const auto* l = dynamic_cast<const LoopNode*>(node.get())) {
             used.insert(l->name);
+            assigned.insert(l->name);
+        }
         for (const auto& arg : node->args)
             collect(arg);
     }
@@ -105,6 +113,8 @@ public:
             return std::nullopt;
         const auto& a = n->args;
         const auto compare = [&](auto op) -> std::optional<bool> {
+            if (a.size() < 2)
+                return std::nullopt;
             const auto l = term(a[0].get());
             const auto r = term(a[1].get());
             if (!l || !r)
@@ -112,9 +122,9 @@ public:
             return op(*l, *r);
         };
         if (dynamic_cast<const ConditionEqNode*>(n))
-            return compare([](double l, double r) { return l == r; });
+            return compare([](double l, double r) { return close_enough(l, r); });
         if (dynamic_cast<const ConditionNeqNode*>(n))
-            return compare([](double l, double r) { return l != r; });
+            return compare([](double l, double r) { return !close_enough(l, r); });
         if (dynamic_cast<const ConditionLtNode*>(n))
             return compare([](double l, double r) { return l < r; });
         if (dynamic_cast<const ConditionLeqNode*>(n))
@@ -123,11 +133,13 @@ public:
             return compare([](double l, double r) { return l > r; });
         if (dynamic_cast<const ConditionGeqNode*>(n))
             return compare([](double l, double r) { return l >= r; });
-        if (dynamic_cast<const ConditionNotNode*>(n)) {
+        if (dynamic_cast<const ConditionNotNode*>(n) && !a.empty()) {
             const auto c = condition(a[0].get());
             return c ? std::optional<bool>(!*c) : std::nullopt;
         }
         if (dynamic_cast<const ConditionAndNode*>(n) || dynamic_cast<const ConditionOrNode*>(n)) {
+            if (a.size() < 2)
+                return std::nullopt;
             const bool both = dynamic_cast<const ConditionAndNode*>(n) != nullptr;
             const auto l = condition(a[0].get());
             const auto r = condition(a[1].get());
@@ -164,6 +176,8 @@ private:
             return static_cast<double>(var->values.size());
         }
         const auto arithmetic = [&](auto op) -> std::optional<double> {
+            if (a.size() < 2)
+                return std::nullopt;
             const auto l = term(a[0].get());
             const auto r = term(a[1].get());
             if (!l || !r)
@@ -176,17 +190,22 @@ private:
             return arithmetic([](double l, double r) { return l - r; });
         if (dynamic_cast<const OperatorMultiplyNode*>(n))
             return arithmetic([](double l, double r) { return l * r; });
-        if (dynamic_cast<const OperatorDivideNode*>(n))
+        if (dynamic_cast<const OperatorDivideNode*>(n)) {
+            // A zero divisor leaves the statement to ORE.
+            const auto r = a.size() < 2 ? std::nullopt : term(a[1].get());
+            if (r && *r == 0)
+                return std::nullopt;
             return arithmetic([](double l, double r) { return l / r; });
+        }
         if (dynamic_cast<const FunctionMaxNode*>(n))
             return arithmetic([](double l, double r) { return std::max(l, r); });
         if (dynamic_cast<const FunctionMinNode*>(n))
             return arithmetic([](double l, double r) { return std::min(l, r); });
-        if (dynamic_cast<const NegateNode*>(n)) {
+        if (dynamic_cast<const NegateNode*>(n) && !a.empty()) {
             const auto v = term(a[0].get());
             return v ? std::optional<double>(-*v) : std::nullopt;
         }
-        if (dynamic_cast<const FunctionAbsNode*>(n)) {
+        if (dynamic_cast<const FunctionAbsNode*>(n) && !a.empty()) {
             const auto v = term(a[0].get());
             return v ? std::optional<double>(std::abs(*v)) : std::nullopt;
         }
@@ -200,22 +219,42 @@ private:
         return it == variables_.end() ? nullptr : it->second;
     }
 
+    /*
+     * A number as the trade states it, read in the classic locale; text that is
+     * not wholly a number leaves the statement to ORE.
+     */
     static std::optional<double> number(const std::string& text) {
+        std::istringstream in(text);
+        in.imbue(std::locale::classic());
         double out = 0;
-        const auto* first = text.data();
-        const auto* last = first + text.size();
-        const auto result = std::from_chars(first, last, out);
-        if (result.ec != std::errc{} || result.ptr != last)
+        if (!(in >> out) || !(in >> std::ws).eof())
             return std::nullopt;
         return out;
+    }
+
+    /// QuantLib's close_enough, by which ORE's scripts compare for equality.
+    static bool close_enough(double x, double y) {
+        if (x == y)
+            return true;
+        const double diff = std::abs(x - y);
+        const double tolerance = 42 * std::numeric_limits<double>::epsilon();
+        if (x * y == 0.0)
+            return diff < tolerance * tolerance;
+        return diff <= tolerance * std::abs(x) && diff <= tolerance * std::abs(y);
     }
 
     const std::map<std::string, const script_variable*>& variables_;
     const std::set<std::string>& own_;
 };
 
+/*
+ * The REQUIRE statements every run reaches: those outside any IF and any loop.
+ * One inside a branch runs only when its condition holds, which is ORE's to
+ * know.
+ */
 void find_requires(const ASTNodePtr& node, std::vector<const ASTNode*>& out) {
-    if (!node)
+    if (!node || dynamic_cast<const IfThenElseNode*>(node.get()) ||
+        dynamic_cast<const LoopNode*>(node.get()))
         return;
     if (dynamic_cast<const RequireNode*>(node.get()))
         out.push_back(node.get());
@@ -285,7 +324,9 @@ std::vector<diagnostic> check(const ASTNodePtr& tree,
 
     name_uses uses;
     uses.collect(tree);
-    std::set<std::string> own;
+    // A name the script declares, assigns or loops over is the script's to change,
+    // so a REQUIRE that reads it is left to ORE.
+    std::set<std::string> own = uses.assigned;
     for (const auto& [name, declaration] : uses.declared)
         own.insert(name);
 

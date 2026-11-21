@@ -169,6 +169,14 @@ via its "Verifies task" field.
 | 4966.4 | includes come through the header | inputs.cpp | accept | included directly |
 | 4966.5 | line_of signals the end by a null view | spirit_columns.hpp | accept | it returns an optional |
 | 4966.6 | the type precedence relies on no call passing Number | inputs.cpp | accept | untyped is an absent type; Number is only the default |
+| 4967.1 | a REQUIRE inside an IF or loop is judged as if it always runs | check.cpp | accept | only statements outside any IF and loop are evaluated; a test with a false guard |
+| 4967.2 | a name the script assigns is evaluated at the trade's value | check.cpp | accept | assigned names and loop variables are the script's own; a test |
+| 4967.3 | floating-point from_chars is not portable | check.cpp | accept | read with a classic-locale stream; text not wholly a number is left to ORE |
+| 4967.4 | a zero divisor gives NaN | check.cpp | accept | a zero divisor leaves the statement to ORE; a test |
+| 4967.5 | exact equality on doubles | check.cpp | accept | QuantLib's close_enough, as ORE's scripts compare; a test of 0.1 + 0.2 == 0.3 |
+| 4967.6 | a duplicate variable name is ignored silently | check.hpp | accept | the header states the first is checked |
+| 4967.7 | child accesses are unchecked | check.cpp | accept | guarded |
+| 4967.8 | a wrong type and shape give two findings | tests | accept | a test confirms both are reported |
 
 * Result
 

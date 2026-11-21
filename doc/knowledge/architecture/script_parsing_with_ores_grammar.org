@@ -57,6 +57,7 @@ scripts itself ([[id:708554F7-FA3A-49E1-8A11-4AE968C76758][Script Execution and 
 
 ** Consumers
 
-The parser is used by the script library at publication ([[id:CCA8090C-26E0-4571-84BA-9115C110376C][Versioning of the Script Library]]), by the
+The parser is used by the script library's dataset when its rows are generated, and by the trading
+service when a tenant publishes a script ([[id:CCA8090C-26E0-4571-84BA-9115C110376C][Versioning of the Script Library]]), by the
 booking API when a scripted trade is validated ([[id:3085E65E-413B-4E7A-B60A-5844A124C999][The Product Booking API]]), and by those
 shell commands that require no authentication ([[id:B01292A4-0394-40E8-A0B4-2DBA3F46C052][Scripted Trade Commands in the Shell]]).

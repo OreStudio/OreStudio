@@ -1,0 +1,113 @@
+:PROPERTIES:
+:ID: D4DE184C-B7E4-47F8-BA9E-D25160E74EC4
+:END:
+#+title: Task: Publish ORE's script library as a world dataset
+#+description: ORE's script library is loaded by a populate script with inputs mined from its text, nothing parses a script before ORE does, and a trade names its script with no version, so a library change reprices it.
+#+type: task
+#+level: s1
+#+filetags: :design_the_scripted_trade_subsystem:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr: 4971
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E6359881-7919-4BBC-9B9C-03A8EEDB8A03][Design the scripted trade subsystem]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+ORE's script library arrives as a world dataset whose methodology extracts, corrects, parses and derives the inputs of every script with ORE Studio's parser; a tenant's own script is parsed when it is published; and a scripted trade records the version of the script it was booked on, or its inline text, so it revalues on the payoff it was booked with.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:E6359881-7919-4BBC-9B9C-03A8EEDB8A03][Design the scripted trade subsystem]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-21                               |
+
+* Acceptance
+
+- the library is a dataset of the Open Source Risk Engine catalogue
+- the generator is =external/ore/tools/generate_script_library.py=, which reads only =external/ore/examples/Products/Input/scriptlibrary.xml= and writes the dataset's populate files
+- it replaces the =script_library_seed= step of =compass generate= as the only generator of the library's rows, so =trading_script_library_populate.sql= and its include in =populate_trading.sql= go
+- the corrections are a data file beside the generator, each naming its script and variant, the text it replaces, its replacement and the reason; the file is their only list
+- =external/ore/methodology.txt= gains a numbered step before its final commit step that states exactly how to reproduce the staged rows from a clean checkout: the ORE commit, the build of =ores.shell= the generator calls, the command, the files read and written, the corrections, the verification and the commit; following it on a fresh checkout reproduces the committed files byte for byte
+- its rows are staged in the artefact tables of the script, variant, input, result and calibration entities, which opt in through their models, whose descriptions then state that the rows are derived by the dataset's methodology
+- the trading service's publish function writes the staged rows into the system tenant, and the dataset is a member of the =world= bundle
+- a check in the build job, after =ores.shell= is built, runs the generator and verifies its output equals the committed files
+- the populate scripts that load the library and correct it today are retired; the corrections are steps of the methodology, under the same exactly-once rule
+- the shell's =script parse=, =script check=, =script inputs= and =script print= run with no session and no server, and =script check= prints each diagnostic as FILE:LINE:COLUMN: severity: message [code] and exits with a non-zero status on any error
+- the generator parses every script with =script check= and fails on a script that does not parse, with its line and column
+- the staged inputs are those =script inputs= derives, which corrects Accumulator02's ObservationPeriodEndDates from a Number list to an Event list, and a test verifies they equal inputs_of for every script
+- a republished dataset writes a new version only of the scripts whose rows changed
+- a tenant's script is parsed when the tenant publishes it and refused with the same diagnostics; a name the world library holds draws a warning, and the tenant's script is the one its bookings resolve the name to
+- a scripted trade records its library script's name, holding tenant and version, or its inline text and a hash of it
+- a run writes the library from the versions its trades name
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+The world bundle is published in SQL at bring-up, before any service runs, so the parsing and derivation are steps of the generator rather than of the publish function.
+
+Cut from [[id:CCA8090C-26E0-4571-84BA-9115C110376C][Versioning of the Script Library]], [[id:358CC548-3892-45A1-A916-DF4A48ADED03][Library and Inline Scripts in Scripted Trades]], [[id:92449D70-09E2-4391-B716-A1001F22B271][Derivation of Script Inputs from Free Variables]], which states the target this task builds to; the components it touches are [[id:4E135FB5-6E0A-45CC-A805-F5B70F29DDB4][Component Architecture of the Scripted Trade Subsystem]].
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4971][#4971]] | [doc] Hold ORE's script library as a world dataset |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 4971.1 | the shell task does not name the owner of the no-login commands | task_add_script_and_product_commands_to_the_shell.org | accept | its Notes state the dependency, covering the Emacs recipe |
+| 4971.2 | the first criterion bundles four things; the staged-rows check is missing | task | accept | split into checkable criteria; the check added |
+| 4971.3 | the tenant name rule is unenforced and a later ORE release can collide | versioning_of_the_script_library.org | accept | no constraint: the tenant's own script wins at booking, a warning on publish, a later release leaves it in force |
+| 4971.4 | how a world script's version resolves for another tenant | versioning_of_the_script_library.org | accept | a trade records name, holding tenant and version; the run reads world rows through the shared-reference read |
+| 4971.5 | the model descriptions' follow-up is not an acceptance item | task | accept | added to the staging criterion |
+| 4971.6 | which scriptlibrary.xml is the source | versioning_of_the_script_library.org | accept | Products/Input/scriptlibrary.xml; the examples' own copies are not read |
+| 4971.7 | ISO and FpML do not keep generators in a tools directory | versioning_of_the_script_library.org | accept | the precedent claim dropped; the generator sits beside the catalogue's other tools |
+| 4971.8 | the compass generate step for the library is not retired | task | accept | the new generator replaces script_library_seed; its populate file and include go |
+| 4971.9 | the reproduction check needs a built shell | both | accept | it runs in the build job after the shell; a parser change that moves inputs fails it until regenerated, by intent |
+| 4971.10 | wrap; corrections listed in two places | versioning_of_the_script_library.org | accept | re-wrapped; the data file is the only list and the methodology names it |
+
+* Result

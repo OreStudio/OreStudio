@@ -1,0 +1,98 @@
+:PROPERTIES:
+:ID: DAFA8D4D-7684-4B6C-AD68-F3B95E59E28A
+:END:
+#+title: Task: Refuse a parent link that states no removal
+#+description: Make a check, driven by data, fail the build on a foreign key that states no removal behaviour.
+#+type: task
+#+level: s1
+#+filetags: :a_parent_link_states_what_its_removal_does:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:79752745-5D92-4BAE-B502-0AEFDD3F56A2][A parent link states what its removal does]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A check fails the build on a foreign key that states no removal behaviour. As
+for the identity columns check, the rule is data: the accepted behaviours and
+any reviewed exception live in a file the check reads, so the rule changes
+without a code change, and compass-ng reads the same data for its port.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:79752745-5D92-4BAE-B502-0AEFDD3F56A2][A parent link states what its removal does]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-21                               |
+
+* Acceptance
+
+- The check fails on a model whose foreign key states no behaviour, and names
+  the model and the column.
+- The check reads the accepted behaviours and the exceptions from data, not
+  from its code.
+- =compass check= runs it, and compass-ng reads the same data.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Foreign keys that state a removal behaviour | 0 of 642 | =python3 doc/agile/versions/v0/sprint_30/a_parent_link_states_what_its_removal_does/evidence/parent_links.py= | f1d84d68c9 |
+
+* Notes
+
+- Until the task State the removal of every parent link is done, the check can
+  hold the line from a baseline: refuse a new unstated link, and list the old
+  ones as exceptions that the other task removes.
+- See =build/scripts/check_marketdata_identity_columns.py= and its
+  =.compass.org= row for the pattern of a check whose rule is data.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

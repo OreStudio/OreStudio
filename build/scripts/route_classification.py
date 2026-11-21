@@ -613,6 +613,12 @@ RULES = (
          BFF, COMPOSED, "market-data",
          "One item named by its oresmd URI: its series, the feeds and sessions that brought"
          " its values, and the fixings written against it."),
+    Rule("an item's fixing series",
+         ("exact", "GET /api/marketdata/fixing-series"),
+         CPP, COMPOSED, "market-data",
+         "One item's fixing series answered by ores.http at the address and in the shape the BFF"
+         " answered: the series its oresmd URI names, its fixings oldest first, its publisher, and"
+         " the feeds that carry it with the supplier behind each session."),
     Rule("the report health",
          ("exact", "GET /api/reporting/report-health"),
          None, RESOURCE, "reporting",

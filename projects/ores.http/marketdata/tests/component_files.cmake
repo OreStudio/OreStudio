@@ -24,6 +24,7 @@ set(files
     "catalogue_routes_tests.cpp"
     "connectivity_routes_tests.cpp"
     "curve_routes_tests.cpp"
+    "fixing_series_routes_tests.cpp"
     "main.cpp"
     "oresmd_routes_tests.cpp"
     "public_rate_routes_tests.cpp"

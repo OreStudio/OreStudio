@@ -28,7 +28,7 @@ One tool, not two, owns each build-free gate and each generated artefact.
 |--------------+----------------------------------------|
 | State        | STARTED |
 | Parent story | [[id:E3BF90FE-43DF-4A30-9F2C-FF5E20128C88][Move codegen and the gates to compass-ng]] |
-| Now          | Tier 1 deleted on this branch: 32 scripts, 15 test files, and 28 gates out of local_checks.py. |
+| Now          | Tier 1 deleted on this branch: 31 scripts, 15 test files, and 28 gates out of local_checks.py. |
 | Waiting on   | Nothing. |
 | Next         | Tier 2: switch or remove the workflows that still call the scripts, then delete them. |
 | Last touched | 2026-11-21 |
@@ -91,6 +91,13 @@ task and name that file in the Command column.
     =generate_value_sets.py=: compass-ng's =parameter_value_sets= codec reads
     them as curation data. Deleting them gave
     =parameter_value_sets/unresolved= and =ore_value_sets/refused=.
+- =projects/ores.codegen/scripts/regenerate_list_request_descriptors.py=
+  stays until compass-ng's =list_request_table= codec ships (compass PR
+  #132). It is the only writer of
+  =projects/ores.web/packages/wire-protocol/src/generated/list_requests.ts=;
+  today =bff_list_requests= only reports the table as stale. After that
+  release, enable =list_request_table= in =.compass.org=, run
+  =./compass.sh generate=, and delete the script.
 - =build/scripts/tests/test_unity_checks.py= also tested
   =check_unique_type_names.py=; those tests go, and the unity collision
   tests stay.

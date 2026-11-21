@@ -332,27 +332,10 @@ CATALOGUE: tuple[Check, ...] = (
             " and the key itself lives only in .env.",
     ),
     Check(
-        id="no-pr-triggers",
-        title="No workflow triggers on a pull request",
-        argv=("python3", "build/scripts/check_no_pr_triggers.py"),
-        classes=("ci",),
-        fix="Drop the pull_request trigger; keep push to main and dispatch.",
-    ),
-    Check(
         id="org-links",
         title="Every org link resolves",
         argv=("emacs", "-Q", "--script", "projects/ores.lisp/src/ores-check-org-links.el"),
         classes=("docs",),
-    ),
-    Check(
-        id="heading-numbers",
-        title="No org heading carries its own number",
-        argv=("python3", "build/scripts/check_heading_numbers.py"),
-        classes=("docs",),
-        fix="Run: python3 build/scripts/check_heading_numbers.py --write."
-            " Org numbers every exported section, so a heading that numbers"
-            " itself renders as '2.1. 1. The document's shape has one owner',"
-            " and the copy goes stale as soon as a section is inserted above it.",
     ),
     Check(
         id="skill-namespace",
@@ -410,19 +393,6 @@ CATALOGUE: tuple[Check, ...] = (
         paths=("doc/*", "build/scripts/check_pattern_uses.py"),
     ),
     Check(
-        id="trade-type-coverage",
-        title="The trade type coverage page matches its sources",
-        argv=("python3", "build/scripts/generate_trade_type_coverage.py", "--check"),
-        classes=("docs", "modeling", "tooling", "cpp"),
-        paths=("doc/knowledge/domain/ore_trade_type_coverage.org",
-               "doc/agile/versions/v0/sprint_30/hold_every_product_type_the_engine_supports/*",
-               "projects/ores.trading/modeling/ores.trading.trade_type_catalogue.org",
-               "projects/ores.synthetic/core/tests/data/generated_trades/*",
-               "external/ore/catalogue/*",
-               "build/scripts/generate_trade_type_coverage.py"),
-        fix="Run python3 build/scripts/generate_trade_type_coverage.py --write and commit the page.",
-    ),
-    Check(
         id="script-twins",
         title="The scripted twin recipes' seed and compiled table match the catalogue",
         argv=("python3", "projects/ores.sql/utility/generate_script_twins.py", "--check"),
@@ -464,23 +434,6 @@ CATALOGUE: tuple[Check, ...] = (
                "benchmarks/xml/inputs.tsv"),
         fix="Run ./benchmarks/xml/run.sh and commit benchmarks/xml/history.tsv.",
     ),
-    # The conventions document held every family in one type, and a unit that
-    # reflected it broke the MSVC build. This keeps a unit to one family.
-    Check(
-        id="translation-unit-budget",
-        title="No unit reflects more convention families than its budget",
-        argv=("python3", "build/scripts/check_translation_unit_budget.py"),
-        classes=("cpp",),
-        paths=("projects/ores.refdata/core/src/*",
-               "projects/ores.refdata/core/include/*",
-               "projects/ores.refdata/api/include/ores.refdata.api/domain/convention_family_registry.hpp",
-               "projects/ores.ore/core/src/*",
-               "projects/ores.ore/core/include/*",
-               "projects/ores.ore/service/src/*",
-               "build/scripts/check_translation_unit_budget.py"),
-        fix="Move each family's serialisation into a unit of its own, or lower the "
-            "ceiling in KNOWN when a file has improved.",
-    ),
     # The tree builds as a unity build. Generated code never collides; the
     # hand-written files that did are recorded, and the record only shrinks.
     Check(
@@ -494,62 +447,11 @@ CATALOGUE: tuple[Check, ...] = (
         fix="Name the new helper for what it does, or share one definition; when a "
             "recorded file no longer collides, remove it from cmake/unity_exclusions.cmake.",
     ),
-    # Two types of one qualified name share their template instantiations at
-    # link time, so a message can be encoded with the other type's layout.
-    Check(
-        id="unique-type-names",
-        title="No two headers define a type of the same name in one namespace",
-        argv=("python3", "build/scripts/check_unique_type_names.py"),
-        classes=("cpp",),
-        paths=("projects/*",
-               "build/scripts/check_unique_type_names.py"),
-        fix="Rename one of the two types; for a generated message, rename it in its model.",
-    ),
-    # A family is either supported by a table, migrating from a mapper, or
-    # unused. The census is a decision; this check is whether the tree still
-    # agrees with it.
-    Check(
-        id="xml-family-census",
-        title="Every ORE document family is classified and the tree agrees",
-        argv=("python3", "build/scripts/check_xml_family_coverage.py"),
-        classes=("cpp", "tooling"),
-        paths=("external/ore/examples/*",
-               "projects/ores.ore/core/src/xml/generated/*",
-               "projects/*/*/tests/xml_*_tests.cpp",
-               "build/scripts/check_xml_family_coverage.py"),
-        fix="Classify the family in build/scripts/check_xml_family_coverage.py, "
-            "or delete the test that names an unused one.",
-    ),
-    # A published area is part of a URL, so a declared area that belongs to no
-    # area at all is a URL nobody can name. One list of areas serves both the
-    # inventory's classification and this check.
-    Check(
-        id="http-areas",
-        title="Every declared HTTP area is published",
-        argv=("python3", "build/scripts/check_http_areas.py"),
-        classes=("modeling", "codegen"),
-        paths=("projects/*/modeling/*",
-               "build/scripts/route_classification.py",
-               "build/scripts/check_http_areas.py"),
-        fix="Declare the area in build/scripts/route_classification.py AREAS, or use "
-            "one that is already published.",
-    ),
     # The classification work needs a list that cannot be short. This reads the
     # routes from the code that registers them, on both surfaces, and fails when
     # one is answered but absent from the inventory, when the inventory names a
     # route nobody answers, or when a row disagrees with the decisions in
     # route_classification.
-    Check(
-        id="route-units",
-        title="Every route unit a component opts into is registered by its aggregate",
-        argv=("python3", "build/scripts/check_route_units.py"),
-        classes=("cpp", "codegen", "tooling"),
-        paths=("projects/ores.http/*",
-               "projects/ores.*/modeling/*",
-               "build/scripts/check_route_units.py"),
-        fix="Add the unit's register_routes call to the component's aggregate, or "
-            "remove the model's :ores.cpp.http-route.enabled: opt-in.",
-    ),
     Check(
         id="route-inventory",
         title="Every HTTP route is in the inventory",
@@ -587,21 +489,6 @@ CATALOGUE: tuple[Check, ...] = (
         after=("component-drift",),
         phase=PREPARE,
         fix="Run the same command with --all to regenerate, then commit.",
-    ),
-    Check(
-        id="template-sections",
-        title="A mustache line holds one section tag, so the renderer can strip it",
-        argv=("python3",
-              "projects/ores.codegen/scripts/check_template_sections.py"),
-        classes=("codegen", "modeling"),
-        paths=(
-            "projects/ores.codegen/library/templates/*",
-            "projects/ores.codegen/scripts/check_template_sections.py",
-            "projects/ores.codegen/scripts/template_section_baseline.json",
-        ),
-        fix="Give each section tag its own line. The renderer strips a line that"
-            " holds nothing but one tag, so a line chaining several tags leaks a"
-            " newline into every file the template produces.",
     ),
     Check(
         id="component-drift",
@@ -653,56 +540,6 @@ CATALOGUE: tuple[Check, ...] = (
         ),
         classes=("sql", "modeling"),
         fix="Run projects/ores.codegen/plantuml_er_generate.sh and commit the diagrams.",
-    ),
-    Check(
-        id="money-decimal-columns",
-        title="A money quantity is an exact decimal, not a binary float",
-        argv=("python3", "build/scripts/check_money_decimal_columns.py"),
-        classes=("modeling",),
-        fix="Give the column an exact decimal type and take the double out of"
-            " the domain type, or, when the column is a continuous quantity"
-            " such as a volatility, exclude its entity in the check. The rule"
-            " is in"
-            " doc/knowledge/architecture/exact_numbers_and_economic_change.org.",
-    ),
-    Check(
-        id="model-sql-types",
-        title="A column's model type is the type the table is created with",
-        argv=(CODEGEN_PY, "projects/ores.codegen/scripts/check_model_sql_types.py"),
-        classes=("modeling", "sql", "codegen"),
-        paths=(
-            "projects/*/modeling/*.org",
-            "projects/*/*/modeling/*.org",
-            "projects/ores.sql/create/*/*_create.sql",
-        ),
-        fix="Regenerate the component, then rebuild and recreate, or correct"
-            " the model's :type: when the model is the one that is wrong."
-            " model-drift compares structure and not types, so it stays green"
-            " while the two disagree.",
-    ),
-    Check(
-        id="entity-binary-types",
-        title="A row binds each column in the format its column's type defines",
-        argv=(CODEGEN_PY, "projects/ores.codegen/scripts/check_entity_binary_types.py"),
-        classes=("cpp", "sql", "modeling", "codegen"),
-        paths=(
-            "projects/*/*/include/*/repository/*_entity.hpp",
-            "projects/*/modeling/*.org",
-            "projects/*/*/modeling/*.org",
-            "projects/ores.sql/create/*/*_create.sql",
-            # The generator and its templates are what decide whether a column
-            # binds binary or as text, so a change there must run the check.
-            "projects/ores.codegen/src/*.py",
-            "projects/ores.codegen/src/*/*.py",
-            "projects/ores.codegen/library/templates/*",
-            "projects/ores.codegen/scripts/check_entity_binary_types.py",
-        ),
-        fix="Give the model the type its column has and regenerate, or state the"
-            " column as text when the row keeps a type the layer has no codec for."
-            " The statement names no parameter types, so the server infers each"
-            " from its column and refuses a member's bytes with incorrect binary"
-            " data format in bind parameter N. model-sql-types compares the model"
-            " with the table and neither of them with the member.",
     ),
     Check(
         id="sql-hygiene",
@@ -763,83 +600,6 @@ CATALOGUE: tuple[Check, ...] = (
         fix="Run projects/ores.sql/utility/generate_ore_parameters_dataset.py and commit the seed.",
     ),
     Check(
-        id="script-library-seed",
-        title="The script library seed is what ORE's library gives",
-        argv=("python3", "projects/ores.sql/utility/generate_script_library.py", "--check"),
-        classes=("sql",),
-        paths=(
-            "projects/ores.sql/populate/trading/trading_script_library_populate.sql",
-            "projects/ores.sql/utility/generate_script_library.py",
-            "external/ore/examples/Products/Input/scriptlibrary.xml",
-        ),
-        fix="Run projects/ores.sql/utility/generate_script_library.py and commit the seed.",
-    ),
-    Check(
-        id="ore-renderings-tables",
-        title="The reader's rendering tables are the ones the renderings file states",
-        argv=("python3", "projects/ores.ore/scripts/generate_renderings_tables.py", "--check"),
-        classes=("cpp", "sql"),
-        paths=(
-            "projects/ores.sql/utility/ore_renderings.json",
-            "projects/ores.sql/utility/ore_aliases.py",
-            "projects/ores.ore/scripts/generate_renderings_tables.py",
-            "projects/ores.ore/core/src/domain/conventions_renderings.hpp",
-            "projects/ores.ore/core/src/domain/conventions_fields.cpp",
-        ),
-        fix="Run projects/ores.ore/scripts/generate_renderings_tables.py and commit the header.",
-    ),
-    Check(
-        id="ore-parameter-value-sets",
-        title="The ore parameter value sets match their sources",
-        argv=("python3", "projects/ores.sql/utility/generate_value_sets.py", "--check"),
-        classes=("sql",),
-        paths=(
-            "projects/ores.sql/populate/reporting/reporting_ore_parameter_value_sets_populate.sql",
-            "projects/ores.sql/populate/reporting/reporting_ore_parameter_vocabularies_populate.sql",
-            "projects/ores.sql/utility/generate_value_sets.py",
-            "projects/ores.sql/utility/curve_value_sets.py",
-            "projects/ores.sql/utility/curve_parameter_rows.py",
-            "projects/ores.sql/utility/curve_terms.json",
-            "projects/ores.sql/utility/curve_term_curation.json",
-            "projects/ores.sql/utility/curve_value_set_curation.json",
-            "projects/ores.sql/utility/ore_parameter_vocabularies.json",
-            "projects/ores.sql/utility/ore_schema_types.py",
-            "projects/ores.sql/utility/ore_aliases.py",
-            "projects/ores.ore/core/src/domain/conventions_fields.cpp",
-            "projects/ores.sql/utility/convention_value_sets.py",
-            "projects/ores.sql/utility/convention_parameter_rows.py",
-            "projects/ores.sql/utility/convention_terms.json",
-            "projects/ores.sql/utility/convention_term_curation.json",
-            "projects/ores.seeder/datasets/ore_pricing_engines/pricing_vocabulary.json",
-            "projects/ores.seeder/datasets/ore_pricing_engines/curation/*",
-        ),
-        fix="Run projects/ores.sql/utility/generate_value_sets.py and commit the populate script.",
-    ),
-    Check(
-        id="parameter-value-sets-only",
-        title="A parameter's control and rule come only from its value set",
-        argv=("python3", "build/scripts/check_parameter_value_sets.py"),
-        classes=("sql", "modeling", "web", "cpp"),
-        paths=(
-            "projects/ores.sql/populate/reporting/reporting_ore_parameter_value_sets_populate.sql",
-            "projects/ores.sql/utility/generate_value_sets.py",
-            "projects/ores.sql/utility/setup_value_sets.py",
-            "projects/ores.sql/utility/convention_value_sets.py",
-            "projects/ores.sql/utility/curve_value_sets.py",
-            "projects/ores.seeder/datasets/ore_pricing_engines/curation/*",
-            "projects/ores.seeder/datasets/ore_pricing_engines/pricing_vocabulary.json",
-            "projects/ores.sql/create/analytics/analytics_pricing_pair_settings_create.sql",
-            "projects/ores.analytics/modeling/ores.analytics.pricing_pair_setting.org",
-            "projects/ores.sql/create/reporting/reporting_engine_settings_group_settings_create.sql",
-            "projects/ores.reporting/modeling/ores.reporting.engine_settings_group_setting.org",
-            "projects/ores.web/packages/bff/src/pricing-engines.ts",
-            "projects/ores.web/packages/web/src/api/pricingEngines.ts",
-        ),
-        fix="State the rule in the setting's value set and run"
-            " projects/ores.sql/utility/generate_value_sets.py, then commit the seed."
-            " A per-pair column has no place here: the set states the rule once.",
-    ),
-    Check(
         id="convention-kind-terms",
         title="The convention kind terms match the mapper and the ORE terms",
         argv=("python3", "projects/ores.sql/utility/generate_convention_kind_terms.py", "--check"),
@@ -878,60 +638,6 @@ CATALOGUE: tuple[Check, ...] = (
             " and commit the module.",
     ),
     Check(
-        id="shell-command-units",
-        title="The shell composes each command unit once, under one name",
-        argv=("python3", "build/scripts/check_shell_command_units.py", "projects/ores.shell"),
-        classes=("cpp", "tooling"),
-        paths=("projects/ores.shell/*",),
-        fix="Drop the repeated registration. Two branches that both wire the same"
-            " unit merge cleanly, and the shell then stops at start-up, which is"
-            " also where a person provisions a tenant.",
-    ),
-    Check(
-        id="curve-parameter-paths",
-        title="Every curve parameter path is one the ORE schema declares",
-        argv=("python3", "projects/ores.sql/utility/check_curve_parameter_paths.py"),
-        classes=("sql", "modeling"),
-        paths=(
-            "projects/ores.sql/populate/reporting/reporting_ore_parameters_artefact_populate.sql",
-            "projects/ores.sql/utility/check_curve_parameter_paths.py",
-            "projects/ores.sql/utility/curve_schema_exemptions.json",
-            "projects/ores.sql/utility/extract_curve_terms.py",
-            "external/ore/xsd/curveconfig.xsd",
-        ),
-        fix="Fix the attribution in extract_curve_terms.py, or state why the ORE"
-            " code reads the path where the schema omits it, in"
-            " curve_schema_exemptions.json, with the ORE source line.",
-    ),
-    Check(
-        id="ore-element-map",
-        title="The ORE element map and its columns are the tree's",
-        argv=("python3", "projects/ores.sql/utility/generate_ore_element_map.py",
-              "--check"),
-        classes=("sql", "cpp", "modeling"),
-        paths=(
-            "projects/ores.sql/populate/reporting/reporting_ore_parameter_vocabularies_populate.sql",
-            "projects/ores.sql/populate/reporting/reporting_ore_element_map_columns_populate.sql",
-            "projects/ores.sql/utility/generate_ore_element_map.py",
-            "projects/ores.sql/utility/generate_curve_column_guards.py",
-            "projects/ores.sql/utility/generate_convention_kind_terms.py",
-            "projects/ores.sql/utility/generate_value_sets.py",
-            "projects/ores.sql/utility/curve_value_sets.py",
-            "projects/ores.sql/utility/convention_value_sets.py",
-            "projects/ores.sql/utility/ore_parameter_vocabularies.json",
-            "projects/ores.sql/utility/ore_schema_types.py",
-            "projects/ores.sql/utility/ore_aliases.py",
-            "projects/ores.sql/utility/ore_renderings.json",
-            "projects/ores.sql/utility/curve_terms.json",
-            "projects/ores.sql/utility/convention_terms.json",
-            "projects/ores.sql/populate/reporting/reporting_ore_parameter_value_sets_populate.sql",
-            "external/ore/xsd/curveconfig.xsd",
-            "external/ore/xsd/conventions.xsd",
-        ),
-        fix="Run projects/ores.sql/utility/generate_ore_element_map.py and commit"
-            " the map and the column seed.",
-    ),
-    Check(
         id="curve-column-guards",
         title="The curve column map and its guard are the projection's",
         argv=(
@@ -953,45 +659,10 @@ CATALOGUE: tuple[Check, ...] = (
             " and commit the map, the guard and the drop.",
     ),
     Check(
-        id="marketdata-identity-columns",
-        title="The series identity projection matches the codec schema",
-        argv=("python3", "build/scripts/check_marketdata_identity_columns.py"),
-        classes=("sql", "cpp", "modeling"),
-        paths=(
-            "projects/ores.marketdata/api/include/ores.marketdata.api/datum/schema.hpp",
-            "projects/ores.marketdata/core/src/repository/market_series_identity_projector.cpp",
-            "projects/ores.marketdata/modeling/ores.marketdata.market_series_identity.org",
-            "projects/ores.sql/create/marketdata/marketdata_market_series_identity_create.sql",
-        ),
-        fix="Add the column to the create table, or place the field in the"
-            " projector's switch, to match the codec schema. One column per"
-            " identity field the schema declares, and no other.",
-    ),
-    Check(
-        id="generated-column-refs",
-        title="Generated code names no column its entity does not have",
-        argv=(CODEGEN_PY, "projects/ores.codegen/scripts/check_generated_column_refs.py"),
-        classes=("cpp", "sql", "modeling", "codegen"),
-        fix="Remove the column from the model's Table display or Indexes table,"
-            " or declare it in Columns, then regenerate the entity."
-            " check_model_drift cannot see this: the generator reproduces both"
-            " sections verbatim, so the output is in step with the model and"
-            " only the compiler or a database recreate disagrees.",
-    ),
-    Check(
         id="protocol-twins",
         title="Every protocol header has its TypeScript twin",
         argv=(CODEGEN_PY, "projects/ores.codegen/scripts/check_protocol_twin_coverage.py"),
         classes=("modeling", "codegen"),
-    ),
-    Check(
-        id="subject-conformance",
-        title="Every declared subject is inside the entity protocol",
-        argv=(CODEGEN_PY, "projects/ores.codegen/scripts/check_subject_conformance.py"),
-        classes=("modeling", "codegen"),
-        fix="Rename the verb to one of the closed set of eight, or move the"
-            " operation to the reserved ops namespace. A genuine exception goes"
-            " in subject_conformance_baseline.json with its reason.",
     ),
     Check(
         id="handler-permissions",
@@ -1032,15 +703,6 @@ CATALOGUE: tuple[Check, ...] = (
         phase=PREPARE,
     ),
     Check(
-        id="physical-inventory",
-        title="The physical-space inventories match the templates",
-        argv=(CODEGEN_PY, "projects/ores.codegen/scripts/regenerate_physical_space_inventories.py", "--check"),
-        classes=("modeling", "codegen"),
-        after=("component-drift",),
-        phase=PREPARE,
-        fix="Run the same command without --check, then commit the inventories.",
-    ),
-    Check(
         id="registry-exceptions",
         title="Every registry exception is justified",
         argv=(CODEGEN_PY, "projects/ores.codegen/scripts/check_registry_exceptions.py"),
@@ -1075,50 +737,11 @@ CATALOGUE: tuple[Check, ...] = (
         argv=(CODEGEN_PY, "projects/ores.codegen/scripts/check_history_registrar_composition.py"),
         classes=("services", "cpp", "modeling", "codegen"),
     ),
-    # A handler registrar nothing calls leaves its subjects with no responder, so
-    # every request on them times out. The generated file compiles and the
-    # service serves every other subject, so no build or test notices.
-    Check(
-        id="handler-registrars",
-        title="Every generated handler registrar has a responder",
-        argv=(CODEGEN_PY, "projects/ores.codegen/scripts/check_handler_registrar_composition.py"),
-        classes=("services", "cpp", "modeling", "codegen"),
-    ),
-    # A durable subject with no stream times out at the publisher, and two
-    # streams over one subject stop the second service starting. The server
-    # refuses both, so no running broker can show them; the check reads the
-    # declarations the services send at start. It needs no broker.
-    Check(
-        id="stream-coverage",
-        title="Every durable subject has one stream, and no two streams overlap",
-        argv=("python3", "build/scripts/check_stream_coverage.py"),
-        classes=("cpp", "services"),
-        paths=(
-            "projects/*/*/src/*",
-            "projects/*/*/include/*",
-            "build/scripts/check_stream_coverage.py",
-        ),
-        fix="Ensure the stream that covers the subject, from the routes table "
-            "the service reads (serve_step_commands does both), or move the "
-            "subject to one owner. A stream's filter must cover every subject "
-            "its service consumes and must not overlap another stream's.",
-    ),
     Check(
         id="populate-refs",
         title="Every populate script names a reference something defines",
         argv=(CODEGEN_PY, "projects/ores.codegen/scripts/check_populate_references.py"),
         classes=("sql", "modeling"),
-    ),
-    Check(
-        id="sql-reachability",
-        title="Every SQL file is reached by a schema entry point",
-        argv=(
-            CODEGEN_PY,
-            "projects/ores.codegen/scripts/check_sql_reachability.py",
-        ),
-        classes=("sql", "modeling"),
-        fix="Add an include to the tree's aggregator in dependency order, or"
-            " declare the file an entry point if it is run on its own.",
     ),
     Check(
         id="rls-widenings",
@@ -1154,14 +777,6 @@ CATALOGUE: tuple[Check, ...] = (
         classes=("cpp",),
     ),
     Check(
-        id="forward-declarable-includes",
-        title="No header includes the definition of a type it only names",
-        argv=("python3", "build/scripts/check_forward_declarable_includes.py"),
-        classes=("cpp", "codegen"),
-        fix="Take the type's declaration as forward_declarable_types.list names"
-            " it, or record the line in forward_declarable_includes.baseline.",
-    ),
-    Check(
         id="format",
         title="The changed C++ files are clang-formatted",
         argv=(
@@ -1188,16 +803,6 @@ CATALOGUE: tuple[Check, ...] = (
         # formatting step reads prettier from. It mutates what other checks
         # use, so it runs in the serial prepare phase like the other writers.
         phase=PREPARE,
-    ),
-    Check(
-        id="bff-list-requests",
-        title="Every hand-written list request states what the protocol decodes",
-        argv=(
-            CODEGEN_PY,
-            "projects/ores.codegen/scripts/check_bff_list_requests.py",
-        ),
-        classes=("web", "modeling", "codegen"),
-        fix="State the member the report names, or pass filter: null.",
     ),
     Check(
         id="backlog-indexes",
@@ -1445,9 +1050,7 @@ COMPASS_CODECS: dict[str, tuple[str, ...]] = {
     "tangle-shell": ("shell_recipe_library",),
     "tangle-http": ("http_recipe_library",),
     "lint": ("lint",),
-    "no-pr-triggers": ("no_pr_triggers",),
     "org-links": ("org_links",),
-    "heading-numbers": ("heading_numbers",),
     "skill-namespace": ("skill_namespace",),
     "skill-catalogue": ("skill_catalogue",),
     "skill-type-tables": ("skill_type_tables",),
@@ -1456,62 +1059,36 @@ COMPASS_CODECS: dict[str, tuple[str, ...]] = {
     "rule-identifiers": ("rule_identifiers",),
     "structure-notes": ("lint",),
     "pattern-uses": ("lint",),
-    "trade-type-coverage": ("trade_type_coverage",),
-    "translation-unit-budget": ("translation_unit_budget",),
     "unity-collisions": ("unity_collisions",),
-    "unique-type-names": ("unique_type_names",),
-    "xml-family-census": ("xml_family_census",),
-    "http-areas": ("model_rules",),
-    "route-units": ("model_rules",),
     "route-inventory": ("route_inventory",),
     "prototypes": ("prototypes",),
     "component-docs": ("component_docs",),
     "cmake-sources": ("component_files",),
-    "template-sections": ("template_sections",),
     "component-drift": ("codegen",),
     "drift-sweep": ("codegen",),
     "paste-blocks": ("codegen",),
     "model-drift": ("model_rules",),
     "er-diagram": ("er_diagram", "rls_coverage",),
-    "money-decimal-columns": ("model_rules",),
-    "model-sql-types": ("codegen",),
-    "entity-binary-types": ("entity_binary_types",),
     "sql-hygiene": ("sql_hygiene",),
-    "script-library-seed": ("script_library_seed",),
-    "ore-renderings-tables": ("ore_renderings_tables",),
-    "ore-parameter-value-sets": ("ore_value_sets",),
-    "parameter-value-sets-only": ("parameter_value_sets",),
     "convention-kind-terms": ("ore_value_sets",),
-    "shell-command-units": ("shell_command_units",),
-    "curve-parameter-paths": ("curve_parameter_paths",),
-    "ore-element-map": ("ore_value_sets",),
     "curve-column-guards": ("curve_sections_wiring",),
     "curve-sections-wiring": ("curve_sections_wiring",),
-    "marketdata-identity-columns": ("marketdata_identity_columns",),
-    "generated-column-refs": ("generated_column_refs",),
     "protocol-twins": ("protocol_twins", "model_rules"),
-    "subject-conformance": ("subject_conformance", "model_rules"),
     "handler-permissions": ("handler_permissions",),
     "open-reads": ("open_reads",),
     "shell-menus": ("shell_menus",),
     "route-auth": ("route_auth",),
     "recipe-inventories": ("recipe_inventories",),
-    "physical-inventory": ("physical_inventory",),
     "registry-exceptions": ("registry_exceptions",),
     "reachability": ("test_case_reachability",),
     "portable-stop": ("portable_cpp",),
     "event-registrars": ("event_registrars",),
     "history-registrars": ("history_registrars",),
-    "handler-registrars": ("handler_registrars",),
-    "stream-coverage": ("stream_coverage",),
     "populate-refs": ("populate_refs",),
-    "sql-reachability": ("sql_reachability",),
     "rls-widenings": ("rls_widenings",),
     "entity-writes": ("entity_writes",),
     "enum-attributes": ("exported_types",),
-    "forward-declarable-includes": ("forward_declarable_includes",),
     "exported-types": ("exported_types",),
-    "bff-list-requests": ("bff_list_requests",),
     "backlog-indexes": ("backlog_indexes",),
     "conventions-dataset": ("conventions_dataset",),
     "conventions-coverage": ("conventions_coverage",),

@@ -53,9 +53,9 @@ and form, and runs =mine_trade_types.py=, which joins that with ORE's source,
 the XSD, the Products script library, the curated
 =trade_type_twins.txt= and =trade_type_elements.txt=, and the catalogue. The
 result is =external/ore/catalogue/trade_types.tsv=, with the ORE commit in
-=ore_version.txt=. This page is generated from that table by
-=build/scripts/generate_trade_type_coverage.py=; its =--check= mode fails when
-the page is stale.
+=ore_version.txt=. compass-ng's =trade_type_coverage= codec generates this
+page from that table: =./compass.sh generate= rewrites it, and
+=./compass.sh check= fails when it is stale.
 
 ** Findings
 

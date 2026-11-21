@@ -7,12 +7,12 @@
 #+level: s1
 #+filetags: :move_codegen_and_gates_to_compass_ng:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/delete-the-python-gates-compass-ng-replaced
 #+pr:
-#+blocked_on: one week of merges on which compass-ng and the Python gates agree, from the switch-over on 2026-11-18
-#+blocked_since: 2026-11-18
+#+blocked_on:
+#+blocked_since:
 #+created: 2026-11-17
-#+updated: 2026-11-18
+#+updated: 2026-11-21
 #+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,12 +26,12 @@ One tool, not two, owns each build-free gate and each generated artefact.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BLOCKED |
+| State        | STARTED |
 | Parent story | [[id:E3BF90FE-43DF-4A30-9F2C-FF5E20128C88][Move codegen and the gates to compass-ng]] |
-| Now          | Blocked. |
-| Waiting on   | One week of merges on which compass-ng and the Python gates agree, from the switch-over on 2026-11-18, so 2026-11-25 at the earliest. |
-| Next         | On or after 2026-11-25, confirm the week of agreement and delete the scripts. |
-| Last touched | 2026-11-17                               |
+| Now          | Tier 1 deleted on this branch: 32 scripts, 15 test files, and 28 gates out of local_checks.py. |
+| Waiting on   | Nothing. |
+| Next         | Tier 2: switch or remove the workflows that still call the scripts, then delete them. |
+| Last touched | 2026-11-21 |
 
 * Acceptance
 
@@ -48,6 +48,20 @@ One tool, not two, owns each build-free gate and each generated artefact.
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
+compass-85 sorted the scripts into four tiers, from ORE main at 732fc2ee34:
+
+1. Deletable now: no caller outside the set. This branch.
+2. Called only by a GitHub workflow: switch or remove the workflow first.
+3. Still called by other code (=check_clean_standard.sh=, the CMake unity
+   exclusions, generators feeding generators): move the caller first.
+4. The Python generator and its 140 tests: after the =compass codegen= verbs
+   forward to compass-ng and =env_init.py= and =systemd_generate.py= stop
+   importing it.
+
+Each tier is checked against compass-ng itself before it goes: a full
+=compass-ng check= and =compass-ng diff= on the branch, because some scripts
+are inputs to compass-ng rather than gates.
+
 * Measurements
 
 Every number this task claims about a tree, with the command that produced it
@@ -63,6 +77,26 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+- 2026-11-21: the product owner waived the week of agreement: "we have been
+  running these so it's fine to delete, previous checks were so slow they
+  were unusable." The gates have run through compass-ng locally since
+  2026-11-18 and in CI since #4917.
+- Tier 1 kept four files compass-85 listed:
+  - =projects/ores.seeder/datasets/conventions/propose.py=: compass-ng's
+    =conventions_coverage= codec runs it (=conventions_coverage.propose=).
+  - =tools/ore_conventions/extract.py=: the documented data refresh runs it
+    before =propose.py=, and =test_extract.py= tests it.
+  - =projects/ores.sql/utility/generate_ore_element_map.py= and
+    =generate_value_sets.py=: compass-ng's =parameter_value_sets= codec reads
+    them as curation data. Deleting them gave
+    =parameter_value_sets/unresolved= and =ore_value_sets/refused=.
+- =build/scripts/tests/test_unity_checks.py= also tested
+  =check_unique_type_names.py=; those tests go, and the unity collision
+  tests stay.
+- The generated block of =doc/knowledge/domain/ore_trade_type_coverage.org=
+  still says to run =generate_trade_type_coverage.py --write=. compass-ng's
+  =trade_type_coverage= codec writes that line, so compass changes it.
 
 * Test Scenarios
 

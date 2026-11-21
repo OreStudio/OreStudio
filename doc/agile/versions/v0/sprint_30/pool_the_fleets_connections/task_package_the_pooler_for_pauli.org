@@ -132,9 +132,16 @@ Published as =ghcr.io/orestudio/ores-pgbouncer=, tags =main= and
 without credentials: an anonymous pull token fetches the manifest of =main= with
 HTTP 200, which is what a host with no login on it will do.
 
-What is left is the pod: =docker/run-pod.sh= still starts the service runtime and
-the NATS sidecar, and the pooler is a third container. And a deploy to pauli,
-which needs that first.
+What is left is the deploy path, and it is not the one this batch first assumed.
+=docker/run-pod.sh= is historical: =env_deploy.py= says it is the sequence that
+deployed to Newton in sprint 24, and pauli is deployed through the **quadlet**
+units =systemd_generate.py= renders (=cmd_quadlet= and =cmd_quadlet_deploy=, the
+latter with =--host= for a remote). So the pooler needs a quadlet unit beside
+the NATS one, not a line in =run-pod.sh=.
+
+pauli is reachable from this checkout (podman 5.8.6) but has no
+=~/ores-deploy= yet, so it has never been deployed from here. A first deploy is
+therefore the increment after the quadlet unit, not something to bolt onto it.
 
 * Test Scenarios
 

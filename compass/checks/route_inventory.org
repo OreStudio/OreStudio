@@ -834,6 +834,12 @@ the resources that must answer.
 | GET | /api/refdata/:resource/key/:key | projects/ores.web/packages/wire-protocol/src/records.ts | REFDATA_RECORDS | GET | /api/refdata/{resource}/key/{key} | one_key |
 | GET | /api/refdata/:resource/by/:parent | projects/ores.web/packages/wire-protocol/src/records.ts | REFDATA_RECORDS | GET | /api/refdata/{resource}/by/{parent} | list_by |
 | PUT | /api/refdata/:resource | projects/ores.web/packages/wire-protocol/src/records.ts | REFDATA_RECORDS | PUT | /api/refdata/{resource} | writable |
+| GET | /api/classifications/:list | projects/ores.web/packages/wire-protocol/src/classifications.ts | CLASSIFICATION_LISTS | GET | /api/classifications/{resource} | every |
+| POST | /api/classifications/:list/rows | projects/ores.web/packages/wire-protocol/src/classifications.ts | CLASSIFICATION_LISTS | POST | /api/classifications/{resource}/rows | every |
+| PUT | /api/classifications/:list/rows/:code | projects/ores.web/packages/wire-protocol/src/classifications.ts | CLASSIFICATION_LISTS | PUT | /api/classifications/{resource}/rows/{code} | every |
+| DELETE | /api/classifications/:list/rows/:code | projects/ores.web/packages/wire-protocol/src/classifications.ts | CLASSIFICATION_LISTS | DELETE | /api/classifications/{resource}/rows/{code} | every |
+| PUT | /api/classifications/:list/rows/:code/label | projects/ores.web/packages/wire-protocol/src/classifications.ts | CLASSIFICATION_LISTS | PUT | /api/classifications/{resource}/rows/{code}/label | every |
+| PUT | /api/classifications/:list/order | projects/ores.web/packages/wire-protocol/src/classifications.ts | CLASSIFICATION_LISTS | PUT | /api/classifications/{resource}/order | every |
 | DELETE | /api/refdata/:resource | projects/ores.web/packages/wire-protocol/src/records.ts | REFDATA_RECORDS | DELETE | /api/refdata/{resource} | writable |
 | GET | /api/synthetic/:resource | projects/ores.web/packages/bff/src/synthetic.ts | SYNTHETIC_RECORDS | GET | /api/synthetic/{resource} | every |
 | GET | /api/synthetic/:resource/key/:key | projects/ores.web/packages/bff/src/synthetic.ts | SYNTHETIC_RECORDS | GET | /api/synthetic/{resource}/key/{key} | one_key |

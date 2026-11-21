@@ -28,9 +28,9 @@ Move the one switch that sends the requests of ores.web to the C++ server, and t
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Serving the gap screen by screen; 7 routes stand between the flag and every screen. |
+| Now          | Serving the gap screen by screen; 1 route stands between the flag and every screen. |
 | Waiting on   | Nothing. The fleet starts, and the full build is green. |
-| Next         | The six classification routes, then the authorisation queue. |
+| Next         | The authorisation queue, then flagging the screens and driving them in a browser. |
 | Last touched | 2026-11-22                               |
 
 * Acceptance
@@ -52,13 +52,13 @@ proxy in front of a deployment sends =/cpp= to =ores.http= and =/api= to the BFF
 So this task is: name every screen in that variable, and prove the browser works
 against the gateway.
 
-What stands in the way is the inventory's own count. Of the BFF's 334 routes, 315
-are paired with a route =ores.http= answers and 19 are not:
+What stands in the way is the inventory's own count. Of the BFF's 334 routes, 321
+are paired with a route =ores.http= answers and 13 are not:
 
 | The gap | Routes | What this task does |
 |---------+--------+---------------------|
 | the agile and QA file-backed routes | 12 | out of scope by the task that decided them, because they read and write the checkout and a deployed gateway holds none |
-| the classifications | 6 | the list, its order and its rows: to serve, or to keep those screens on the BFF |
+| the classifications | 6 | done: ores.http answers one generated route per list at the address the screen calls, so the pairing names a family of 28 routes, and the order it lists the rows in is the screen's |
 | the market screens | 4 | done: curve analytics, the FX montage, instruments and the rate ladder are paired and proved on a live gateway |
 | the quotes screens | 4 | done: the list, its feeds, its history and the vols-by-delta fit are paired and proved on a live gateway |
 | the identity shape fields | 2 | done: the joined read the oresmd editor marks a URL's fields from is paired |
@@ -67,7 +67,7 @@ are paired with a route =ores.http= answers and 19 are not:
 A screen moves only when every route it calls is answered, so the flag cannot be
 set for a screen whose routes are missing: the browser would answer 404 where it
 answered a page, which is worse than the two-server deployment it has today. The
-plan is therefore to serve the 7 routes that are neither decided out nor
+plan is therefore to serve the 1 route that is neither decided out nor
 file-backed, screen by screen, and then to set the flag for the screens those
 routes complete.
 

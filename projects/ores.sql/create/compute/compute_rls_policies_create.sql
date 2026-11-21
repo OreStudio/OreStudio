@@ -133,8 +133,9 @@ with check (
 -- -----------------------------------------------------------------------------
 -- Hosts
 -- -----------------------------------------------------------------------------
--- The machines of the installation are system rows, and every tenant reads them:
--- the grid a tenant sees is the installation's grid. Writes stay the writer's.
+-- The machines are the installation's and carry the system tenant, so the
+-- operator's own session reads them and no tenant does. Entry E3 of the
+-- exceptions register states what a tenant may read of the grid.
 alter table ores_compute_hosts_tbl enable row level security;
 
 drop policy if exists hosts_tenant_isolation_policy
@@ -147,19 +148,6 @@ for all using (
 )
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
-);
-
--- One for-all policy above would let a tenant change or remove a shared row, so
--- the read of the installation's rows is its own policy. See
--- doc/knowledge/security/data_read_across_tenants.org.
-drop policy if exists hosts_tbl_shared_reference_read_policy
-    on ores_compute_hosts_tbl;
-
-create policy hosts_tbl_shared_reference_read_policy
-on ores_compute_hosts_tbl
-for select using (
-    tenant_id = ores_iam_current_tenant_id_fn()
-    or tenant_id = ores_utility_system_tenant_id_fn()
 );
 
 -- -----------------------------------------------------------------------------

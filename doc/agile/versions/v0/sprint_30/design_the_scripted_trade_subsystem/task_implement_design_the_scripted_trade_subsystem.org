@@ -1,0 +1,140 @@
+:PROPERTIES:
+:ID: 0A53E698-5A04-4A3E-B76E-3DFCA69E36A7
+:END:
+#+title: Task: Document the scripted trade architecture
+#+description: The architecture of scripted trades is spread over entity pages, a domain page, the trade type catalogue and code. Before any of it is built, the target architecture is documented to the project's knowledge standard, so the story's later tasks are cut from it.
+#+type: task
+#+level: s1
+#+filetags: :design_the_scripted_trade_subsystem:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E6359881-7919-4BBC-9B9C-03A8EEDB8A03][Design the scripted trade subsystem]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The architecture of scripted trades in ORE Studio is documented to the
+project's knowledge standard, as the target state the story's later tasks build
+to: what a scripted trade is, the forms a product is booked in, the script
+library, ORE's parser in =ores.trading.scripting=, the layers that validate a
+script, the product schema, the booking API, the shell commands, the editor,
+generation and valuation, and the components with their dependency graph.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:E6359881-7919-4BBC-9B9C-03A8EEDB8A03][Design the scripted trade subsystem]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-21                               |
+
+* Acceptance
+
+- each idea is one knowledge page whose title states its claim, under
+  =doc/knowledge/architecture=, linked to the others and to the existing pages
+  by org-roam =id:= links
+- the existing pages are reused and refactored, not restated: [[id:2F5B28D9-9AB7-401E-8EF3-612712F626C1][Generic Scripted Products]],
+  [[id:CC7CC29C-9413-4DF3-BC32-D1C8A978D295][Which trade types ORE carries and ORE Studio holds]], [[id:ED964111-1F24-4A3B-B4CE-665E2CF527B0][Product Type]], the [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]]
+  component overview, the script entity pages ([[id:833F8F79-7FF0-42B0-8C52-E3ED6596843E][ores.trading.script]],
+  [[id:B3FBDD1A-8FC6-4702-9600-B75581FC6494][ores.trading.scripted_instrument]] and their siblings) and the trade type
+  catalogue's scripted tables
+- the pages state the target state, not the history that led to it; where
+  today's code differs, the page names the difference as a gap a later task
+  closes
+- the component pages give each component's responsibility, public API and
+  dependencies, and a diagram shows the dependency graph with no cycle
+- one index page links every page of the architecture, and the knowledge index
+  links it
+- the story's later tasks are written from the pages
+
+* Plan
+
+First survey what the pages above and the code state today, then write one page
+per claim. The claims agreed with the user on 2026-11-21, each a candidate page:
+
+- A product is booked in one of the forms it offers: its own element, a
+  ScriptedTrade over a library script, or both.
+- Every product has a schema of its fields and its forms, which a booking form,
+  the shell, import and the generator all read.
+- A scripted trade names a library script and version, or states its script
+  inline; ORE accepts either.
+- The script library is versioned reference data; a trade states the version it
+  was booked on, and a correction to ORE's library is a version of its own.
+- A script's free variables are its inputs, and the inputs of a script with no
+  element of its own are that product's schema.
+- A twin recipe maps a native product's terms onto its script's inputs.
+- ORE's grammar is the one authority on whether a script parses: its Boost
+  Spirit parser is copied into =ores.trading.scripting= with its authorship,
+  kept diffable against ORE's, and shaped to ORE Studio's standards.
+- A scripted trade is validated in three layers: the editor's grammar as a
+  convenience, ORE's grammar on the server, and ORE's build of the trade.
+- The editor's tree-sitter grammar is tested against ORE's parser on the
+  library and on scripts ORE's random AST generator writes.
+- The engine is given a script's text; any compiled form of it, a syntax tree,
+  a computation graph or a device kernel, is a cache of one run.
+- One booking API books a product in either of its forms, and a free-form
+  scripted trade through the same validation.
+- ores.shell has commands to parse and validate a script and to describe a
+  product, and the ones that read no store need no login.
+- The generator draws each product's terms against its schema and books every
+  product and form through the booking API, so the path a person books on is
+  the path the tests prove; ORE values each.
+- The components of the subsystem and their dependency graph, with no cycle.
+
+The gaps today's code shows, to be named on the pages: script-only products are
+booked from a carrier native type's rows, not drawn against their own schema;
+the script inputs are mined into the seed, not derived by a parser; no trade
+states a script version; scripts whose product has an element of its own
+(the accumulators, TaRF, the outperformance option, the basket and rainbow
+variants) have no scripted form; nothing parses a script before ORE does.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -1,45 +1,41 @@
 :PROPERTIES:
-:ID: 179E60E8-59B5-456A-B2CC-55323052E234
+:ID: 31CB7BE4-C241-4FCC-BFA2-3AFF7839DE15
 :END:
-#+title: Task: Edit a scripted trade on its own screen
-#+description: A scripted trade is a script plus the variables it reads. Without an editor a person can only see it as rows, and a free text box would let them state a variable the script never reads or miss one it needs.
+#+title: Task: Scaffold story: Design the scripted trade subsystem
+#+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
 #+type: task
 #+level: s1
-#+filetags: :hold_every_product_type_the_engine_supports:sprint_30:v0:
+#+filetags: :design_the_scripted_trade_subsystem:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/design-the-scripted-trade-subsystem
 #+pr:
 #+blocked_on:
 #+blocked_since:
-#+created: 2026-11-15
-#+updated: 2026-11-15
+#+created: 2026-11-21
+#+updated: 2026-11-21
 #+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E6359881-7919-4BBC-9B9C-03A8EEDB8A03][Design the scripted trade subsystem]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-A person books or changes a generic ScriptedTrade on a screen of its own: they pick a library script, fill a form the screen draws from the script's inputs, and see the script's code read-only; a custom inline script is an advanced mode with a code editor.
+(Describe what user-visible-or-internal change this task produces.)
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
-| Parent story | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] |
+| State        | STARTED                              |
+| Parent story | [[id:E6359881-7919-4BBC-9B9C-03A8EEDB8A03][Design the scripted trade subsystem]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
-| Last touched | 2026-11-15                               |
+| Last touched | 2026-11-21                               |
 
 * Acceptance
 
-- picking a library script lays out one typed field per input, with arrays as editable lists and events as dates
-- the form refuses a value its input's rule refuses, and saving checks the variables against the script as the builder does
-- the script's code shows read-only beside the form
-- an inline script is edited in a code editor, its inputs are read from it, and the form follows them
-- a trade of each form the generator books opens, edits and saves through the screen
+-
 
 * Plan
 

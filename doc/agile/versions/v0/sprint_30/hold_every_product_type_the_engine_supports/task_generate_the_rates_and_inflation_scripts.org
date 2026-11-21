@@ -26,12 +26,12 @@ Every rates and inflation script in ORE's library is booked as a generic Scripte
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED |
 | Parent story | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] |
-| Now          | Not yet started.                       |
+| Now          | Abandoned on 2026-11-21; see Result. |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
-| Last touched | 2026-11-15                               |
+| Last touched | 2026-11-21 |
 
 * Acceptance
 
@@ -86,3 +86,5 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Abandoned on 2026-11-21, superseded by [[id:E6359881-7919-4BBC-9B9C-03A8EEDB8A03][Design the scripted trade subsystem]], which generates every script-only product against its own schema.

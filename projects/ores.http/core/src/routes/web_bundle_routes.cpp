@@ -81,7 +81,8 @@ web_bundle_routes::web_bundle_routes(std::filesystem::path root)
                              << " (" << manifest_.size() << " files)";
 }
 
-void web_bundle_routes::register_routes(std::shared_ptr<http::net::router> router,
+void web_bundle_routes::register_routes(std::shared_ptr<web_bundle_routes> self,
+                                        std::shared_ptr<http::net::router> router,
                                         std::shared_ptr<http::openapi::endpoint_registry>) {
     /*
      * Registered last, and in this order: the root, then one greedy pattern that
@@ -94,8 +95,10 @@ void web_bundle_routes::register_routes(std::shared_ptr<http::net::router> route
             .description("The built browser bundle's index")
             .tags({"web"})
             .auth_optional()
-            .handler([this](const http::domain::http_request& req)
-                         -> asio::awaitable<http::domain::http_response> { co_return index(req); })
+            .handler([self](const http::domain::http_request& req)
+                         -> asio::awaitable<http::domain::http_response> {
+                co_return self->index(req);
+            })
             .build());
 
     router->add_route(
@@ -104,9 +107,9 @@ void web_bundle_routes::register_routes(std::shared_ptr<http::net::router> route
             .description("A file of the built bundle, or the application shell for a screen path")
             .tags({"web"})
             .auth_optional()
-            .handler([this](const http::domain::http_request& req)
+            .handler([self](const http::domain::http_request& req)
                          -> asio::awaitable<http::domain::http_response> {
-                co_return answer(req.get_path_param("path"), req);
+                co_return self->answer(req.get_path_param("path"), req);
             })
             .build());
 }

@@ -28,9 +28,9 @@ Serve these composed views from ores.marketdata: an item's fixing series, the co
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Planned; the first view is not written. |
-| Waiting on   | Nothing.                               |
-| Next         | Serve the market data catalogue.       |
+| Now          | All six views served, tested and paired; the live run waits on a rebuilt database. |
+| Waiting on   | A database recreated from this checkout, so the market data service starts. |
+| Next         | Prove the six on a live gateway, then raise the PR. |
 | Last touched | 2026-11-21                               |
 
 * Acceptance
@@ -100,6 +100,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
+| The routes in scope | 6: the two catalogues, an item's series, the publishers, the coverage and the file | the inventory's pairing table, searched for =/api/marketdata/= | 23c075966b |
+| Routes in the tree | 1439 | =python3 build/scripts/route_inventory.py --check= | this branch |
+| The suite | 10 cases, 98 assertions | =ores.http.marketdata.tests "[marketdata_views]"= | this branch |
 |      |       |         |        |
 
 * Notes
@@ -128,3 +131,38 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+* Result
+
+The six views are served from =ores.http.marketdata= at the BFF's addresses and in
+the BFF's shapes, in five commits, one for each thing that could be checked on
+its own:
+
+1. the market data catalogue;
+2. the connectivity catalogue, whose rows are transformed rather than passed
+   through;
+3. an item's fixing series, the deepest join;
+4. the public publishers, the coverage and the file, which share one builder.
+
+What the work settled:
+
+- *A document column comes back as a document.* Two catalogue values are text in
+  the store, and a text that does not parse is drawn as an empty document, so one
+  bad record does not fail the tree for the rest.
+- *A null series, not an empty one.* An item's fixing series answers ={"series":
+  null}= for a URI the store does not hold, which is the difference between an
+  unknown item and an item with nothing.
+- *A publisher is public when it states a terms page.* The three public views
+  read the catalogue for those publishers alone, so a private publisher's rows
+  never travel to a screen that cannot show them.
+- *The file is not a view answer.* It answers =text/csv= with the publisher and
+  the range in its name, a =x-fixing-rows= count, and no cache, because it is
+  built on each request.
+- *A series without a pair is left out of the publishers' answer*, because a
+  screen there draws a pair and has nowhere to put a series without one.
+
+The live run is not made. The market data service refuses to start against the
+database on this machine — =column "provider_code" does not exist= — because the
+database was built on 2026-11-19 from a commit older than this checkout. The
+proof therefore rests on the suite and the gate until a database is recreated
+from this tree, which is the environment's call rather than the task's.

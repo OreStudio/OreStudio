@@ -317,6 +317,13 @@ PAIRS = {
     ("GET", "/api/marketdata/catalogue"): ("GET", "/api/marketdata/catalogue"),
     ("GET", "/api/marketdata/connectivity"): ("GET", "/api/marketdata/connectivity"),
     ("GET", "/api/marketdata/fixing-series"): ("GET", "/api/marketdata/fixing-series"),
+    ("GET", "/api/marketdata/public-rates"): ("GET", "/api/marketdata/public-rates"),
+    ("GET", "/api/marketdata/public-rates/coverage"): (
+        "GET",
+        "/api/marketdata/public-rates/coverage"),
+    ("GET", "/api/marketdata/public-rates/fixings.csv"): (
+        "GET",
+        "/api/marketdata/public-rates/fixings.csv"),
     ("GET", "/api/marketdata/subscriptions"): ("GET", "/api/marketdata/subscriptions"),
     ("POST", "/api/marketdata/subscriptions"): ("POST", "/api/marketdata/subscriptions"),
     ("DELETE", "/api/marketdata/subscriptions/:provider"): (

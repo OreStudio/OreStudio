@@ -8,7 +8,7 @@
 #+filetags: :every_floating_index_has_a_curve_and_fixings:sprint_30:v0:
 #+owner: marco
 #+branch: feature/bootstrap-the-hkd-hibor-term-curves
-#+pr:
+#+pr: 4992
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-21
@@ -111,7 +111,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4992][#4992]] | [sql] Bootstrap the HKD HIBOR term curves |
 
 * Review
 

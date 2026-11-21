@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :pool_the_fleets_connections:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/package-the-pooler-for-pauli
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -29,11 +29,11 @@ and reports it like any other container.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:A75C3063-896F-4DD5-A9BC-893A59EDFF7E][Pool the fleet's connections]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | The image, the generator's container shape and the deploy's transfer are written; the pod, the registry and pauli are not. |
+| Waiting on   | A host that can run podman, which this checkout cannot: /run/user is read-only here. |
+| Next         | Add the pooler to the pod, publish the image, deploy to pauli. |
 | Last touched | 2026-11-21                               |
 
 * Acceptance
@@ -89,6 +89,30 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+** Written, 2026-11-21
+
+- =docker/pgbouncer.Dockerfile=: =alpine:3.22=, =apk add pgbouncer=, no
+  configuration baked in. Alpine's package is 1.24 or later, past the
+  prepared-statement floor; Debian 12's 1.18 is below it.
+- =start_ci_pooler.sh print-config <port> <dir>= writes the container's shape:
+  it listens on the interface the pod gives it, reaches the database on the host
+  that runs the pod (=host.containers.internal=), and logs to stderr rather than
+  to a file inside the image.
+- =image_build.py= builds and tags =ores-pgbouncer= beside =ores-nats=, and
+  =env_deploy.py= transfers it with the other standalone images and stages its
+  configuration under =build/config/pooler/= on the remote.
+
+** Not written, and why
+
+The pooler is not yet a container of the pod: =docker/run-pod.sh= starts the
+service runtime and the NATS sidecar, and the pooler is a third. Nor is it
+published to the registry, nor named in the deployment recipe.
+
+And it has not been built: =podman build= fails here with "Failed to obtain
+podman configuration: /run/user/1000/libpod: read-only file system", so the
+Dockerfile is unproven. So is any deploy: pauli is another host and this
+checkout cannot reach it. Both are the next increment rather than a claim.
 
 * Test Scenarios
 

@@ -73,26 +73,43 @@ users() {
     done
 }
 
+# Writes the configuration. A host writes it under build/pgbouncer, log and all.
+# A container is given its own directory: there the log goes to stderr, which is
+# what podman captures, because a file inside the image is a file nobody reads.
 write_config() {
-    local port="$1"
-    users | sort -u > "${out}/${label}.users"
-    chmod 600 "${out}/${label}.users"
-    cat > "${out}/${label}.ini" <<EOF
+    local port="${1}"
+    local dir="${2:-${out}}"
+    local db_host_override="${3:-}"
+    mkdir -p "${dir}"
+    users | sort -u > "${dir}/${label}.users"
+    chmod 600 "${dir}/${label}.users"
+    local log_line="logfile = ${out}/${label}.log"
+    local listen_addr="127.0.0.1"
+    local db_host="127.0.0.1"
+    if [ "${dir}" != "${out}" ]; then
+        # In a container, loopback is the container itself, so the pooler must
+        # listen on every interface for the fleet's containers to reach it, and
+        # the database is on the host that runs them.
+        log_line=""
+        listen_addr="0.0.0.0"
+        db_host="${db_host_override:-host.containers.internal}"
+    fi
+    cat > "${dir}/${label}.ini" <<EOF
 [databases]
-* = host=127.0.0.1 port=5432
+* = host=${db_host} port=5432
 
 [pgbouncer]
-listen_addr = 127.0.0.1
+listen_addr = ${listen_addr}
 listen_port = ${port}
 auth_type = plain
-auth_file = ${out}/${label}.users
+auth_file = ${dir}/${label}.users
 pool_mode = transaction
 max_prepared_statements = 200
 default_pool_size = 20
 max_db_connections = 100
 max_client_conn = 500
-logfile = ${out}/${label}.log
-pidfile = ${out}/${label}.pid
+${log_line}
+pidfile = ${dir}/${label}.pid
 EOF
 }
 
@@ -127,6 +144,9 @@ stop() {
 case "${1:-}" in
     start) start "${2:-6432}" ;;
     stop) stop ;;
-    print-config) write_config "${2:-6432}"; cat "${out}/${label}.ini" ;;
+    print-config)
+        write_config "${2:-6432}" "${3:-}" "${4:-}"
+        cat "${3:-${out}}/${label}.ini"
+        ;;
     *) die "usage: $0 {start [port]|stop|print-config [port]}" ;;
 esac

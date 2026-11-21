@@ -66,6 +66,7 @@ DEFAULT_REMOTE_DB_PORT = "5433"
 
 # Image names — keep in sync with image_build.py (single source of truth).
 IMAGE_NATS = "localhost/ores-nats"
+IMAGE_PGBOUNCER = "localhost/ores-pgbouncer"
 IMAGE_COMPUTE = "localhost/ores-compute-wrapper"
 IMAGE_BASE = "localhost/ores-service-base"
 IMAGE_LIBS = "localhost/ores-service-libs"
@@ -376,6 +377,7 @@ def _stream_images(project_root, host, images):
     base_images = [i for i in images if "ores-service-base" in i]
     libs_images = [i for i in images if "ores-service-libs" in i]
     nats_images = [i for i in images if "ores-nats" in i]
+    pgbouncer_images = [i for i in images if "ores-pgbouncer" in i]
     compute_images = [i for i in images if "ores-compute-wrapper" in i]
     # The web image is standalone: it carries its own Node runtime, so it is
     # transferred whole rather than built on the host.
@@ -383,14 +385,15 @@ def _stream_images(project_root, host, images):
     # Everything else is a per-service image (localhost/<service_name>).
     overlay_images = [i for i in images
                       if i not in base_images + libs_images
-                      + nats_images + compute_images + web_images]
+                      + nats_images + pgbouncer_images
+                      + compute_images + web_images]
 
     # -- Phase 1: Transfer base and library images (once) -----------------
     for img in base_images + libs_images:
         _transfer_one_image(project_root, host, img)
 
     # -- Phase 2: Transfer standalone images (NATS, compute) --------------
-    for img in nats_images + compute_images + web_images:
+    for img in nats_images + pgbouncer_images + compute_images + web_images:
         _transfer_one_image(project_root, host, img)
 
     # -- Phase 3: Remote-build per-service overlays -----------------------
@@ -549,6 +552,27 @@ def _transfer_runtime(project_root, host, remote_root, profile_path,
               "start without a JWT signing key")
     _scp(project_root, host, stage_conf,
          f"{remote_root}/build/config/nats-{label}.conf")
+
+    # The pooler's configuration is generated for a container, not for the host:
+    # it listens on the pod's interface and reaches the database on the host that
+    # runs the pod. One script generates both shapes.
+    stage_pooler = project_root / "build" / "docker-stage" / "pooler"
+    stage_pooler.mkdir(parents=True, exist_ok=True)
+    pooler_port = "6432"
+    env_file = project_root / ".env"
+    if env_file.is_file():
+        for line in env_file.read_text(encoding="utf-8").splitlines():
+            if line.startswith("ORES_DB_POOLER_PORT="):
+                pooler_port = line.split("=", 1)[1].strip() or pooler_port
+                break
+    subprocess.run([
+        "bash", str(project_root / "build" / "scripts" / "start_ci_pooler.sh"),
+        "print-config", str(pooler_port), str(stage_pooler)], check=True,
+        stdout=subprocess.DEVNULL)
+    _ssh(host, f"mkdir -p {shlex.quote(remote_root)}/build/config/pooler",
+         check=True)
+    _scp(project_root, host, stage_pooler, f"{remote_root}/build/config/",
+         recursive=True)
     _scp(project_root, host, profile_path, f"{remote_root}/docker/.env")
 
 

@@ -1,0 +1,98 @@
+:PROPERTIES:
+:ID: 3DFF8A89-2283-41F4-B60F-A6BD74C0E941
+:END:
+#+title: Task: Raise the Windows clang toolchain the nightly installs
+#+description: windows-clang-release-ninja fails before compiling our code: MSVC 14.52's yvals_core.h asserts error STL1000: Unexpected compiler version, expected Clang 22 or newer. The workflow pins version 20 in the Install Clang step, so the leg cannot build against the STL the runner image now ships.
+#+type: task
+#+level: s1
+#+filetags: :keep_main_green:sprint_30:v0:
+#+owner: marco
+#+branch: hotfix/raise-the-windows-clang-toolchain
+#+pr: 4970
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4FCC628C-551E-4F7C-B1D7-69546174A9CD][Keep main green]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The Windows clang leg installs Clang 20 into a runner whose MSVC STL now refuses anything older than Clang 22. Install a toolchain the STL accepts.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:4FCC628C-551E-4F7C-B1D7-69546174A9CD][Keep main green]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-21                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4970][#4970]] | [ci] Install a Clang the runner's STL accepts |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The Install Clang step now asks for LLVM 22 instead of 20. The runner image's
+MSVC 14.52 standard library refuses anything older (error STL1000 from
+=yvals_core.h=), so the leg was failing on toolchain drift before it compiled
+a line of our code. The workflow says why the version follows the image rather
+than being a preference.
+
+PR #4970. Workflow YAML parses and =compass check --exclude-heavy= is 10/10.
+
+Unverified by construction: whether =install-llvm-action@v2= can fetch LLVM 22
+for Windows. If it cannot, the leg fails at install rather than at compile,
+which is at least a truthful failure. Pinning the runner image instead would
+stop the drift recurring and is a separate decision.

@@ -183,6 +183,18 @@ public:
     void set_pq_pool_settings(pq::pool_settings settings);
 
     /**
+     * @brief The endpoint the notification listener connects to, when it is not
+     * the one this context's service uses.
+     */
+    void set_listener_endpoint(std::string host, std::uint16_t port);
+
+    /**
+     * @brief The options a listener's connection opens with: this context's
+     * endpoint, or the listener's own when one is named.
+     */
+    [[nodiscard]] pq::connection_options listener_connection_options() const;
+
+    /**
      * @brief The session a transaction of this context sets.
      */
     pq::session_context pq_session() const;

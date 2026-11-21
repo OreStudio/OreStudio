@@ -36,8 +36,9 @@ script language and the two locations a script may occupy, is described in
 
 - [[id:358CC548-3892-45A1-A916-DF4A48ADED03][Library and Inline Scripts in Scripted Trades]] distinguishes a trade that references a library script from one
   that carries its own.
-- [[id:CCA8090C-26E0-4571-84BA-9115C110376C][Versioning of the Script Library]] treats the script library as versioned reference data,
-  including corrections to the scripts ORE distributes.
+- [[id:CCA8090C-26E0-4571-84BA-9115C110376C][Versioning of the Script Library]] treats ORE's script library as a world dataset, derived from ORE's
+  distribution by a methodology that corrects, parses and derives the inputs of every script, and the
+  scripts a tenant publishes beside it.
 - [[id:92449D70-09E2-4391-B716-A1001F22B271][Derivation of Script Inputs from Free Variables]] defines a script's inputs and their derivation, and their role as
   the fields of a product that has no native element.
 - [[id:206312C0-6398-4B9D-86F8-D8AEC9A5CEAD][Twin Recipes: Mapping Native Terms to Script Inputs]] describes how the terms of a native product populate the inputs of

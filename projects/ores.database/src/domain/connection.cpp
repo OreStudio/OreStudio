@@ -39,4 +39,20 @@ void connection::set_pool_settings(pq::pool_settings settings) {
     settings_ = settings;
 }
 
+void connection::set_listener_endpoint(std::string host, std::uint16_t port) {
+    std::scoped_lock lock(mutex_);
+    listener_host_ = std::move(host);
+    listener_port_ = port;
+}
+
+pq::connection_options connection::listener_options() const {
+    std::scoped_lock lock(mutex_);
+    auto r = options_;
+    if (!listener_host_.empty())
+        r.host = listener_host_;
+    if (listener_port_ != 0)
+        r.port = listener_port_;
+    return r;
+}
+
 }

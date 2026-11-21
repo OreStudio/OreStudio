@@ -38,6 +38,8 @@ const std::string database_pool_min_arg("db-pool-min");
 const std::string database_pool_max_arg("db-pool-max");
 const std::string database_pool_idle_arg("db-pool-idle");
 const std::string database_pool_backoff_arg("db-pool-backoff");
+const std::string database_listener_host_arg("db-listener-host");
+const std::string database_listener_port_arg("db-listener-port");
 
 }
 
@@ -72,6 +74,14 @@ boost::program_options::options_description database_configuration::make_options
         value<int>()->default_value(30),
         "Seconds a connection above db-pool-min lives once it is idle. Reads "
         "from ORES_<APP>_DB_POOL_IDLE env var.")(
+        "db-listener-host",
+        value<std::string>()->default_value(""),
+        "Host the notification listener connects to, when it is not the service's. "
+        "Empty means the service's own. Reads from ORES_<APP>_DB_LISTENER_HOST.")(
+        "db-listener-port",
+        value<int>()->default_value(0),
+        "Port the notification listener connects to, when it is not the service's. "
+        "Zero means the service's own. Reads from ORES_<APP>_DB_LISTENER_PORT.")(
         "db-pool-backoff",
         value<std::string>()->default_value("exponential"),
         "Backoff strategy for pool acquisition retries: exponential (default) "
@@ -123,6 +133,13 @@ database_configuration::read_options(const boost::program_options::variables_map
         BOOST_THROW_EXCEPTION(std::runtime_error(
             "db-pool-idle must be a positive number of seconds, but was: " +
             std::to_string(r.pool_idle) + ". Set ORES_<APP>_DB_POOL_IDLE env var."));
+
+    r.listener_host = vm[database_listener_host_arg].as<std::string>();
+    r.listener_port = vm[database_listener_port_arg].as<int>();
+    if (r.listener_port < 0 || r.listener_port > 65535)
+        BOOST_THROW_EXCEPTION(std::runtime_error(
+            "db-listener-port must be a port number, but was: " + std::to_string(r.listener_port) +
+            ". Set ORES_<APP>_DB_LISTENER_PORT env var."));
 
     r.pool_backoff = vm[database_pool_backoff_arg].as<std::string>();
     if (r.pool_backoff != "exponential" && r.pool_backoff != "linear")

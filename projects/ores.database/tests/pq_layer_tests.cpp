@@ -408,6 +408,24 @@ TEST_CASE("a pool that stays busy refuses with a retryable error", "[pq]") {
     }
 }
 
+TEST_CASE("a listener names its own endpoint while the service keeps its own", "[pq]") {
+    ores::testing::scoped_database_helper h;
+    const auto service = options_of(h);
+    ores::database::context ctx(service, h.tenant_id(), "", h.db_user());
+
+    // A context that names no listener endpoint listens where it works.
+    CHECK(ctx.listener_connection_options().host == service.host);
+    CHECK(ctx.listener_connection_options().port == service.port);
+
+    // A service whose traffic goes to a pooler names PostgreSQL's port here, and
+    // only here: the pool the rest of the context uses does not move.
+    ctx.set_listener_endpoint("postgres.internal", 5432);
+    CHECK(ctx.listener_connection_options().host == "postgres.internal");
+    CHECK(ctx.listener_connection_options().port == 5432);
+    CHECK(ctx.connection_options().host == service.host);
+    CHECK(ctx.connection_options().port == service.port);
+}
+
 TEST_CASE("a pool grows only when a caller waits for a connection", "[pq]") {
     ores::testing::scoped_database_helper h;
     pool p(options_of(h),

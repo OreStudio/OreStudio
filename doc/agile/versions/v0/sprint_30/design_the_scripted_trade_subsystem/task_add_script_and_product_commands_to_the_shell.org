@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-ores.shell.trading parses, lists the inputs of and prints a script with no login, by linking the parser, and validates a script, describes a product and books one through the trading service with a login.
+ores.shell.trading validates a script, describes a product and books one through the trading service with a login, beside the commands that need none, which the script library's dataset brought in.
 
 * Status
 
@@ -35,10 +35,8 @@ ores.shell.trading parses, lists the inputs of and prints a script with no login
 
 * Acceptance
 
-- script parse, script inputs and script print run with no session and no server
 - script validate, product describe and trade book go to the trading service and need a login
-- a recipe of the shell topic covers each command
-- script check prints each diagnostic as FILE:LINE:COLUMN: severity: message [code], needs no login, and exits with a non-zero status when any error is reported
+- a recipe of the shell topic covers each command, including those that need no login
 - a recipe binds script check as an Emacs compilation command and as a flymake or flycheck checker, so a script edited by hand is checked as it is saved
 
 * Plan
@@ -62,6 +60,8 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+Depends on [[id:D4DE184C-B7E4-47F8-BA9E-D25160E74EC4][Publish ORE's script library as a world dataset]], which delivers =script parse=, =script check=, =script inputs= and =script print=; this task's recipes for them, and the Emacs recipe, wait on it.
 
 The form of validation findings, numbered errors and warnings with line and column, is [[id:ECA442BB-48D7-47CB-9BAA-97FD1C0BBA9A][Diagnostic Reporting in Script Validation]].
 

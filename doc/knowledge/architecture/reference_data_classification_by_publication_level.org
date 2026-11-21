@@ -87,7 +87,7 @@ bundle names the tenant that holds the rows. One table carries the whole map.
 | Bundle | Level | Scope | Held in | Published | The values it carries |
 |--------+-------+-------+---------+-----------+-----------------------|
 | =system_core= | Platform | Platform | The system tenant | At database bring-up | The coding schemes, the template images, the provider, adapter and supplier catalogues, the system tenant's feeds, the ORE parameters and their value domains, the FX vol surface blueprints |
-| =world= | World | World | The system tenant | At database bring-up | ISO and FpML vocabularies, calendars and their exceptions and events, currency pairs and their conventions, currencies, commodities, equity underlyings |
+| =world= | World | World | The system tenant | At database bring-up | ISO and FpML vocabularies, calendars and their exceptions and events, currency pairs and their conventions, currencies, commodities, equity underlyings, ORE's script library |
 | =tenant_defaults= | Tenant | Tenant-wide | The tenant | When the tenant is created | The badges, the badge mappings and the code domains a tenant starts with |
 | =party_essentials= | Tenant | Party | The party's tenant | When the party is onboarded | The party's instrument conventions and its CRM topology |
 | =party_reporting= | Tenant | Party | The party's tenant | When the party is onboarded | The party's report definitions |

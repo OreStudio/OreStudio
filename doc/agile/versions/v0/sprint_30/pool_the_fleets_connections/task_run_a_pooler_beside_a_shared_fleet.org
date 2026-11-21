@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :pool_the_fleets_connections:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/run-a-pooler-beside-a-shared-fleet
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -30,11 +30,11 @@ is not using.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:A75C3063-896F-4DD5-A9BC-893A59EDFF7E][Pool the fleet's connections]] |
-| Now          | Not yet started.                       |
+| Now          | The blocking decision is found and written down; no code is written. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Give the context a second endpoint, then the unit. |
 | Last touched | 2026-11-21                               |
 
 * Acceptance
@@ -120,6 +120,27 @@ does on this host. A pooler reached over a network states =scram-sha-256= and a
 file of verifiers instead. The wildcard entry is what keeps the file free of
 per-database lines: a client that asks for =ores_dev_<env>= is sent to
 =ores_dev_<env>=, with its own credentials.
+
+** The block: one endpoint per context
+
+The acceptance asks for the services to name the pooler's port and the listener
+to name PostgreSQL's. The code cannot do that yet.
+=postgres_listener_service= connects with =ctx_.connection_options()=, and a
+context holds one endpoint. Point a service at a pooler and its =LISTEN= goes
+with it, where transaction pooling hands the session to somebody else at the
+next commit.
+
+So the first change is a second endpoint on the context - the listener's - which
+defaults to the service's own so that nothing moves unless an environment states
+it. It is two settings, =db-listener-host= and =db-listener-port=
+(=ORES_<APP>_DB_LISTENER_HOST/PORT=), read the way the database ones are, and
+they reach =postgres_listener_service= through the context rather than through a
+new parameter on every call site.
+
+The order is therefore: the second endpoint and its test; then the generated
+configuration and the unit; then the fleet run that measures
+=pg_stat_activity= before and after. Writing the unit first would produce a
+configuration that breaks the listener the moment an environment adopts it.
 
 ** Why not the host's own daemon
 

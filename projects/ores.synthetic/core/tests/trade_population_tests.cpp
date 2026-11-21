@@ -29,8 +29,8 @@
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_string.hpp>
+#include <charconv>
 #include <chrono>
-#include <cstdio>
 #include <format>
 #include <map>
 #include <optional>
@@ -2357,8 +2357,7 @@ TEST_CASE("a_window_barrier_twin_states_its_barrier_as_the_code_its_script_reads
     CHECK(seen > 0u);
 }
 
-TEST_CASE("a_target_business_day_skips_weekends_and_the_target_holidays",
-          "[trade_population]") {
+TEST_CASE("a_target_business_day_skips_weekends_and_the_target_holidays", "[trade_population]") {
     using namespace std::chrono;
     using ores::synthetic::service::target_business_day;
     // A business day stays.
@@ -2424,9 +2423,16 @@ TEST_CASE("a_generic_barrier_twin_states_its_codes_and_expires_on_a_business_day
 
             // ORE moves the native's expiry off a holiday and the script does not.
             const auto expiry = parameter("ExpiryDate").value.value_or("");
-            int y = 0;
-            unsigned m = 0, d = 0;
-            REQUIRE(std::sscanf(expiry.c_str(), "%d-%u-%u", &y, &m, &d) == 3);
+            REQUIRE(expiry.size() == 10u);
+            const auto number = [&](std::size_t at, std::size_t length) {
+                int out = 0;
+                const auto* first = expiry.data() + at;
+                REQUIRE(std::from_chars(first, first + length, out).ec == std::errc{});
+                return out;
+            };
+            const int y = number(0, 4);
+            const auto m = static_cast<unsigned>(number(5, 2));
+            const auto d = static_cast<unsigned>(number(8, 2));
             const std::chrono::year_month_day date{
                 std::chrono::year{y}, std::chrono::month{m}, std::chrono::day{d}};
             CHECK(ores::synthetic::service::target_business_day(date) == date);

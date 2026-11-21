@@ -8,7 +8,7 @@
 #+filetags: :move_codegen_and_gates_to_compass_ng:sprint_30:v0:
 #+owner: marco
 #+branch: feature/generate-env-with-compass
-#+pr: 4984
+#+pr: 4989
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-21
@@ -75,7 +75,13 @@ task and name that file in the Command column.
 - Version 36 declares =ORES_TEST_LOG_ENABLED=, as the product owner decided.
   Regenerating a logging-enabled file now keeps it, where env_init.py dropped
   it.
-- Known gap, in compass: the document cannot express the pooler turned off,
+- 2026-11-21, closed: compass-ng v0.0.9 lets a row's =when= compare, so the
+  pooler-off rows are in the document. compass-85 proved it byte-identical to
+  env_init.py with the pooler off, with PGPORT 5433 and with every option.
+  On solid_dirac: pooler on regenerates with only the timestamp changed;
+  pooler off writes all 18 database ports as 5432 and no listener lines. The
+  pin moves to v0.0.9, which the document needs.
+- Known gap (closed above), in compass: the document cannot express the pooler turned off,
   because a row's =when= only tests for empty. No environment or workflow sets
   =ORES_DB_POOLER_ENABLED=0= (all ten worktrees checked); compass-85 is adding
   a comparing =when= in v0.0.9.
@@ -97,6 +103,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4989][#4989]] | [compass] Express the pooler turned off in env_format |
 | [[https://github.com/OreStudio/OreStudio/pull/4984][#4984]] | [compass] Generate .env with compass-ng v0.0.8 |
 
 * Review

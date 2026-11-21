@@ -79,6 +79,23 @@ task and name that file in the Command column.
 
 * Notes
 
+** What the second PR found
+
+- =inputs_of= walks ORE's syntax tree with the rules the library's inputs were
+  mined by: an input is a variable a variant reads and neither declares nor
+  assigns, typed by its use, an array when indexed or passed to SIZE, with the
+  first REQUIRE whose first name is the input's as its rule. A call types its
+  arguments as it is met, so an input's place in the order is where the call
+  names it, as the mining's token scan placed it.
+- Over every script the store is seeded with, the derived inputs equal the
+  stored ones in name, type, array, rule and order; there is no difference to
+  explain.
+- ORE pads a node's arguments with nulls up to its most, so a variable is
+  indexed only when its first argument is there.
+- The tests' and sources' file-local helpers collided in the unity build; the
+  Spirit column arithmetic and the tests' file reading are each stated once, in
+  a shared header.
+
 ** What the first PR found
 
 - ORE's identifiers, whitespace and keywords are ASCII and its grammar has no

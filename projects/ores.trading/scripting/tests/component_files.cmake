@@ -20,6 +20,7 @@
 # Template: cmake_component_files_tests.mustache
 # To modify, update the template and regenerate.
 set(files
+    "inputs_tests.cpp"
     "main.cpp"
     "parse_tests.cpp"
 )

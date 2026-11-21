@@ -21,52 +21,11 @@
 #include "ores.trading.scripting/ore/ast_to_script_converter.hpp"
 #include "ores.trading.scripting/ore/random_ast_generator.hpp"
 #include "ores.trading.scripting/ore/script_parser.hpp"
+#include "spirit_columns.hpp"
 
 namespace ores::trading::scripting {
 
 namespace {
-
-/// The column width Spirit's position-tracking iterator gives a tab.
-constexpr std::size_t spirit_tab_width = 4;
-
-/// The text of a one-based line, without its line break.
-std::string_view line_of(std::string_view text, std::size_t line) {
-    std::size_t start = 0;
-    for (std::size_t current = 1; current < line; ++current) {
-        const auto next = text.find('\n', start);
-        if (next == std::string_view::npos)
-            return {};
-        start = next + 1;
-    }
-    const auto end = text.find('\n', start);
-    auto out =
-        text.substr(start, end == std::string_view::npos ? text.size() - start : end - start);
-    // A line ended by \r\n reads as one ended by \n.
-    if (out.ends_with('\r'))
-        out.remove_suffix(1);
-    return out;
-}
-
-/*
- * Spirit counts a column in bytes and widens a tab to the next multiple of four;
- * a diagnostic counts code points, a tab as one. Walk the line as Spirit does
- * until its column is reached, counting the code points passed.
- */
-std::size_t code_point_column(std::string_view line, std::size_t spirit_column) {
-    std::size_t spirit = 1, code_points = 1;
-    for (const char c : line) {
-        if (spirit >= spirit_column)
-            break;
-        if (c == '\t')
-            spirit += spirit_tab_width - (spirit - 1) % spirit_tab_width;
-        else
-            ++spirit;
-        // A UTF-8 continuation byte belongs to the code point before it.
-        if ((static_cast<unsigned char>(c) & 0xC0) != 0x80)
-            ++code_points;
-    }
-    return code_points;
-}
 
 diagnostic syntax_error(std::string_view text, const LocationInfo& where, std::string message) {
     diagnostic d;
@@ -74,9 +33,9 @@ diagnostic syntax_error(std::string_view text, const LocationInfo& where, std::s
     d.code = "SCR1001";
     d.message = std::move(message);
     if (where.initialised) {
-        const auto line = line_of(text, where.lineStart);
-        d.start =
-            position{.line = where.lineStart, .column = code_point_column(line, where.columnStart)};
+        const auto line = spirit_columns::line_of(text, where.lineStart);
+        d.start = position{.line = where.lineStart,
+                           .column = spirit_columns::code_point_column(line, where.columnStart)};
     }
     return d;
 }

@@ -105,6 +105,15 @@ task and name that file in the Command column.
   leave local_checks.py; compass-ng's own result fails on their findings.
   The pin moves to v0.0.5 in the same change, because an older compass-ng
   stops on a check document.
+- =generate_xml_bindings.py=, =regenerate_xml_bindings.sh= and
+  =test_generate_xml_bindings_derivation.py= are dead as code: compass-ng's
+  =xml_bindings= codec writes the 26 binding files byte for byte. They stay
+  for now, because compass compiles the family table, the =--exact-decimal=
+  money members among it, into =xml_bindings.cpp=. With the codec on, a
+  member added to the shell script's list is drift that
+  =./compass.sh generate= reverts, so until the table moves into an ORE
+  check document (asked of compass-85), adding a money member or an XSD
+  family needs a compass change.
 - =projects/ores.codegen/scripts/regenerate_list_request_descriptors.py=
   stayed until compass-ng's =list_request_table= codec ships (compass PR
   #132). It is the only writer of

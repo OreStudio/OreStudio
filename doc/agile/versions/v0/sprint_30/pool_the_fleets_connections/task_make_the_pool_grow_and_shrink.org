@@ -8,7 +8,7 @@
 #+filetags: :pool_the_fleets_connections:sprint_30:v0:
 #+owner: marco
 #+branch: feature/make-the-pool-grow-and-shrink
-#+pr:
+#+pr: 4958
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-21
@@ -170,7 +170,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4958][#4958]] | [database] Let the pool grow to a ceiling and shrink to its floor |
 
 * Review
 

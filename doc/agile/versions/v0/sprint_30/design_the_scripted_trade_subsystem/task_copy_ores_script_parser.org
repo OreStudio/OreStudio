@@ -125,7 +125,7 @@ via its "Verifies task" field.
 | 4964.3 | an error ORE's parser raises has no location | parse.cpp, parse.hpp | accept | the message says the position is unknown, and the header states it |
 | 4964.4 | the input is copied | parse.cpp | no change | ScriptParser takes a std::string |
 | 4964.5 | code_of returns a copy | diagnostic.cpp | no change | its fields are string views |
-| 4964.6 | the wide_types warning on ScriptGrammar | grammar.hpp | user | an exception names its approver, so it is the user's to add |
+| 4964.6 | the wide_types warning on ScriptGrammar | grammar.hpp | accept | excused in .compass.org, as the user approved, until 2027-11-21 |
 | 4964.7 | the four tangle diagnostics | - | no change | on main, not this PR |
 
 * Result

@@ -417,7 +417,8 @@ TEST_CASE("a_credit_scope_whose_conventions_lack_the_cds_convention_is_refused",
  */
 /// Whether the slot is a scripted form of a native slot: its twin or a script it carries.
 bool is_scripted_twin(const domain::trade_population_slot& slot) {
-    return slot.internal_identifier.contains("-scripted");
+    return slot.internal_identifier.ends_with("-scripted") ||
+           slot.internal_identifier.contains("-scripted-");
 }
 
 /// The codes the planner draws: the native slots' codes, without their twins.
@@ -2491,6 +2492,17 @@ TEST_CASE("each_script_with_no_element_of_its_own_is_carried_by_a_native_trade",
         }
     }
     CHECK(carried.size() == carrier_of.size());
+
+    // A script carried in the plan and not stated above fails too, so the two agree.
+    std::set<std::string> in_plan;
+    for (const auto& slot : plan.slots)
+        if (slot.internal_identifier.contains("-scripted-") &&
+            slot.instruments.scripted_instruments.size() == 1u)
+            in_plan.insert(slot.instruments.scripted_instruments[0].script_name);
+    std::set<std::string> stated;
+    for (const auto& [script, carrier] : carrier_of)
+        stated.insert(script);
+    CHECK(in_plan == stated);
 }
 
 TEST_CASE("a_transform_refuses_a_value_it_does_not_list", "[trade_population]") {

@@ -509,8 +509,10 @@ generic =ScriptedTrade=. It has no native trade to take its terms from, so a
 native type the generator books carries it: the recipe reads each input from the
 carrier's rows, as a twin recipe does, in the same grammar and through the same
 transforms. The carrier is still booked on its own; the carried trade is one
-more trade on its terms. An input the carrier states no term for takes a
-literal. The barrier levels here are ones the underlying never reaches, a
+more trade on its terms. A single-name script reads the first of a basket
+carrier's underlyings, by design: the basket's other names are the carrier's
+own terms, not the carried trade's. An input the carrier states no term for
+takes a literal. The barrier levels here are ones the underlying never reaches, a
 knock-in at zero (the User Guide's form of no barrier), a knock-out at one and a
 corridor from zero to ten million, because no carrier states a level near its
 underlying's price: each script is read and built, and prices as its form

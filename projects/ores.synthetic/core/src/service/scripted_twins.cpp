@@ -466,6 +466,7 @@ namespace {
 domain::trade_population_slot
 scripted_form_of(const domain::trade_population_slot& native,
                  const std::vector<const script_twin_recipe*>& recipe) {
+    const auto script = std::string(recipe.front()->script_name);
     std::vector<ores::trading::domain::script_input> inputs;
     std::vector<tb::scripted_variable> variables;
     int sequence = 0;
@@ -498,16 +499,15 @@ scripted_form_of(const domain::trade_population_slot& native,
                     return other != row && other->input_name == derived->base &&
                            other->data_type == "Event";
                 }))
-                throw trade_population_error("The " + native.trade_type_code + " " +
-                                             std::string(recipe.front()->script_name) +
+                throw trade_population_error("The " + native.trade_type_code + " " + script +
                                              " form derives " + std::string(row->input_name) +
                                              " from " + derived->base +
                                              ", which is no other Event input.");
             if (!event)
-                throw trade_population_error(
-                    "The " + native.trade_type_code + " " +
-                    std::string(recipe.front()->script_name) + " form finds no schedule for " +
-                    std::string(row->input_name) + " at " + std::string(row->source) + ".");
+                throw trade_population_error("The " + native.trade_type_code + " " + script +
+                                             " form finds no schedule for " +
+                                             std::string(row->input_name) + " at " +
+                                             std::string(row->source) + ".");
             std::visit([&](auto& e) { variable.value = std::move(e); }, *event);
             variables.push_back(std::move(variable));
             continue;
@@ -515,9 +515,8 @@ scripted_form_of(const domain::trade_population_slot& native,
         auto values = twin_source_values(native.instruments, native.trade_type_code, row->source);
         if (values.empty())
             throw trade_population_error(
-                "The " + native.trade_type_code + " " + std::string(recipe.front()->script_name) +
-                " form finds no value for " + std::string(row->input_name) + " at " +
-                std::string(row->source) + ".");
+                "The " + native.trade_type_code + " " + script + " form finds no value for " +
+                std::string(row->input_name) + " at " + std::string(row->source) + ".");
         for (auto& value : values)
             value = transformed(std::move(value), row->transform);
         if (row->is_array)
@@ -527,17 +526,15 @@ scripted_form_of(const domain::trade_population_slot& native,
         variables.push_back(std::move(variable));
     }
     auto built =
-        tb::scripted_trade_builder({.script_name = std::string(recipe.front()->script_name),
-                                    .inputs = std::move(inputs),
-                                    .variables = std::move(variables)})
+        tb::scripted_trade_builder(
+            {.script_name = script, .inputs = std::move(inputs), .variables = std::move(variables)})
             .build();
     if (!built)
-        throw trade_population_error(
-            "The " + native.trade_type_code + " " + std::string(recipe.front()->script_name) +
-            " form is refused at " + built.error().term + ": " + built.error().message);
+        throw trade_population_error("The " + native.trade_type_code + " " + script +
+                                     " form is refused at " + built.error().term + ": " +
+                                     built.error().message);
 
     domain::trade_population_slot twin = native;
-    const auto script = std::string(recipe.front()->script_name);
     if (recipe.front()->twin) {
         twin.trade_id = twin_id_for(native.trade_id, native.trade_type_code);
         twin.internal_identifier = native.internal_identifier + "-scripted";
@@ -556,14 +553,24 @@ scripted_form_of(const domain::trade_population_slot& native,
     return twin;
 }
 
-/// The recipe of each scripted form of a type, the twin first, each in input order.
+/*
+ * The recipe of each scripted form of a type, the twin first, each in input
+ * order. The generator writes a type's rows script by script, so a script whose
+ * rows come apart is a table the generator did not write.
+ */
 std::vector<std::vector<const script_twin_recipe*>> recipes_of(std::string_view trade_type_code) {
     std::vector<std::vector<const script_twin_recipe*>> out;
     for (const auto& row : script_twin_recipes) {
         if (row.trade_type_code != trade_type_code)
             continue;
-        if (out.empty() || out.back().front()->script_name != row.script_name)
+        if (out.empty() || out.back().front()->script_name != row.script_name) {
+            if (std::ranges::any_of(
+                    out, [&](const auto& r) { return r.front()->script_name == row.script_name; }))
+                throw trade_population_error("The " + std::string(trade_type_code) +
+                                             " recipe rows of " + std::string(row.script_name) +
+                                             " are not together.");
             out.emplace_back();
+        }
         out.back().push_back(&row);
     }
     return out;

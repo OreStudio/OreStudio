@@ -1630,6 +1630,18 @@ struct export_market_data_to_storage_request {
      * these datums.
      */
     std::optional<int> max_age_days;
+    /**
+     * @brief The oresmd addresses the run needs, or empty for every series of the tenant.
+     *
+     * A run gathers the market data its trade set resolves to, so the body carries the series
+     * that answer those addresses and no others. An address no series answers fails the export
+     * and is named, because a run that quietly lacks a quote fails much later, in an engine that
+     * can only report a curve it could not build. Absent keeps the whole-tenant export, which is
+     * what a caller that names no set still needs, and a list that is present but empty writes no
+     * series: a set whose trades name no market data needs none, and that is not the same request
+     * as a caller that asked for everything.
+     */
+    std::optional<std::vector<std::string>> requirements;
 
     friend bool operator==(const export_market_data_to_storage_request&,
                            const export_market_data_to_storage_request&) = default;
@@ -3300,6 +3312,8 @@ wire_fields(std::type_identity<export_market_data_to_storage_request>) {
                                       &export_market_data_to_storage_request::valuation_date},
         ::ores::utility::codec::field{"max_age_days",
                                       &export_market_data_to_storage_request::max_age_days},
+        ::ores::utility::codec::field{"requirements",
+                                      &export_market_data_to_storage_request::requirements},
     };
 }
 

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :run_a_report_with_market_data:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/export-the-market-data-a-trade-set-requires
+#+pr: 4973
 #+blocked_on: The requirement resolution, which says which series an export may write.
 #+blocked_since:
 #+created: 2026-10-07
 #+updated: 2026-11-08
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0E718054-03B7-43A5-9289-61E505235BBD][Run a report on the generated trades with the market data they need]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -32,12 +32,12 @@ two runs of one set on different dates read different rows.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:0E718054-03B7-43A5-9289-61E505235BBD][Run a report on the generated trades with the market data they need]] |
-| Now          | Not yet started.                       |
-| Waiting on   | [[id:7D9C535D-ED63-43A6-AD1D-54E6E73CF2CF][Resolve a trade set's market data requirements]] |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-07                               |
+| Now          | A run resolves its own trade set and refuses the data the market lacks. |
+| Waiting on   | Nothing. |
+| Next         | Nothing: the arc's next step is a run over generated data. |
+| Last touched | 2026-11-21                               |
 
 
 * Acceptance
@@ -55,6 +55,25 @@ The serializer already exists and is proven: =ore_export_service::write_all=
 walks the series, observations and fixings and renders the files ORE reads.
 What changes is the selection it walks and the date it reads at, so this task
 is mostly about the resolution task's output reaching it.
+
+The wiring, in three units that each build and test on its own:
+
+1. *The export names its requirements.* =export_market_data_to_storage_request=
+   gains =requirements=, the oresmd addresses the run needs. The handler reads
+   =ores_marketdata_requirement_coverage_fn= once for the whole list; a
+   requirement no series answers fails the export and is named, and the
+   answering addresses narrow the export. The narrowing lives in
+   =series_to_export=, beside the choice between the party's own series and the
+   world's fixing, so a required fixing is still written from the system tenant.
+2. *Trading answers what a set needs.* =trading.v1.ops.
+   resolve_market_data_requirements= takes trade ids and the as-of and returns
+   the distinct addresses =ores_trading_market_references_fn= reads from their
+   instrument rows. Trading owns the trades, so the resolution stays in the
+   service that can read them, and a legal address never leaves the database.
+3. *The run passes the set through.* =gather_market_data_request= gains
+   =trade_ids=, the workflow hands it the manifest =gather_trades= wrote, and
+   the step calls the trading verb before it calls the export. An empty set
+   keeps the whole-tenant gather a caller that names no set asks for.
 
 The documented stance above has to be reversed deliberately rather than
 quietly: the comment argues that a subset does not reproduce anything, and the
@@ -78,7 +97,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Requirements a run resolves from its trades | 98 from 467 trades | =evidence/run_narrowed_export.txt= | d92276f272 |
+| Requirements the market cannot answer | 93 of the 98, each named in the failure | =evidence/run_narrowed_export.txt= | d92276f272 |
+| Requirements resolved when the as-of is the day's first instant | 0, because the trades were booked during the day | =evidence/run_narrowed_export.txt= | d92276f272 |
+| Selection cases | 3 assertions: a required quote, a required world fixing, and the whole-tenant export when no set is named | =ores.marketdata.core.tests "[ore_export]"= | c50c8e1b87 |
 
 * Notes
 
@@ -97,7 +119,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4973][#4973]] | [marketdata,trading,reporting] Gather a set's market data |
 
 * Review
 
@@ -106,3 +128,47 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A run now gathers the market data its own trades need. The gather step hands the
+trade set to trading, trading answers the distinct oresmd addresses its
+instrument rows hold, and the export writes the series that answer them and
+refuses the ones the market does not hold, naming them.
+
+The pieces, each with its own test or measurement:
+
+- =export_market_data_to_storage_request.requirements=, read once through
+  =ores_marketdata_requirement_coverage_fn=. An address with no series fails the
+  export and is named; the answering addresses narrow the export in
+  =series_to_export=, beside the choice between the party's own series and the
+  world's fixing, so a required fixing is still written from the system tenant.
+- =trading.v1.ops.resolve_market_data_requirements=, backed by
+  =ores_trading_market_references_fn=, so the resolution stays in the service
+  that owns the trades.
+- =gather_market_data_request.trade_ids=, fed by the manifest =gather_trades=
+  wrote, so the run states its set rather than a caller choosing one.
+
+Measured on the acme_demo provision of 2026-11-21: 467 trades resolved to 98
+requirements, and the export refused the 93 the market does not hold, all of
+them commodity fixings and credit curves. That refusal is the acceptance; the
+data gap belongs to "Prove a run on generated trades and market data".
+
+Read on the way there: the as-of is the run's business date, and reading the
+trades at that day's first instant resolved nothing on a population booked
+during the day. The set is read at the close of the day it names, which is the
+rule the market coverage read already applied.
+
+The review of PR #4973 found the coverage read looser than the export: a
+system-tenant series answered any requirement of the same address, but the
+export takes from the system tenant only fixing series, so a quote the party did
+not hold passed the refusal and was never written. The read now answers a
+system-tenant series only for a fixing address. =requirements= also became
+optional, so a set whose trades resolve to nothing writes no series rather than
+falling back to the tenant.
+
+What is not proven live: a narrowed export that succeeds end to end, because
+this population's requirements are 93 of 98 missing. The selection is pinned by
+the unit test, and the success path is what the next task's run shows. The
+system-tenant fixing rule is stated in the read and in the export, but no case
+writes a system-tenant series of a requirement to prove the two agree; that
+needs a test that can write in the system tenant, which the export suite's
+fixture does not do.

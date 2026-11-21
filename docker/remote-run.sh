@@ -143,6 +143,14 @@ if [[ "$ROLE" == "compute" ]]; then
     fi
     run_uid="${ORES_REMOTE_USER:-$(id -u)}"
     run_gid="${ORES_REMOTE_GROUP:-$(id -g)}"
+    # Rootless podman needs keep-id to map the deploying user into the
+    # container. A rootful podman does not: keep-id would create a user
+    # namespace that does not own the host network namespace, and crun then
+    # cannot mount sysfs inside it.
+    userns_unit="UserNS=keep-id"
+    if [[ "$(podman info --format '{{.Host.Security.Rootless}}')" != "true" ]]; then
+        userns_unit=""
+    fi
     node_name="$(hostname)"
     units=()
     for replica in $(seq 1 "$replicas"); do
@@ -161,7 +169,7 @@ StartLimitIntervalSec=0
 Image=$image
 ContainerName=$container-$replica
 Network=host
-UserNS=keep-id
+$userns_unit
 User=$run_uid
 Group=$run_gid
 EnvironmentFile=$compute_env

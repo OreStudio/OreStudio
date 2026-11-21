@@ -82,6 +82,10 @@ for one whose legs determine it. It is independent of the market and of the
 family, and it is the attribute that the older eight-value =product_type_t= enum
 was trying to express when it also carried markets and a shape.
 
+The construction is how ORE reads a type. A product may still be booked in
+more than one form, its own element or a ScriptedTrade over a library script,
+as [[id:D18BD092-AF0C-449F-ACDA-F621655BA831][A product is booked in one of the forms it offers]] states.
+
 ** How the pricing engine types join
 
 The pricing configuration names its own products — 108 of them, in

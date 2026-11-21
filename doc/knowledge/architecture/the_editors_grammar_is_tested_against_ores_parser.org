@@ -1,0 +1,39 @@
+:PROPERTIES:
+:ID: 8CF94EFE-4699-4F7D-B59B-E695AFD723CA
+:END:
+#+title: The editor's grammar is tested against ORE's parser
+#+description: The tree-sitter grammar the editor highlights with is ORE Studio's own, so a differential test holds it to ORE's parser on the library and on generated scripts.
+#+type: knowledge
+#+level: cross
+#+filetags: :scripting:trading:architecture:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+
+* Summary
+
+The scripted trade editor in =ores.web= highlights and flags errors with a
+tree-sitter grammar, which parses incrementally and tolerates errors, as an
+editor needs. It is the one grammar ORE Studio writes, so a differential test
+holds it to ORE's: every script either parser accepts, the other must accept
+too. The corpus is every script of the library and scripts ORE's random syntax
+tree generator writes, printed back to text by ORE's converter.
+
+* Detail
+
+** The test
+
+For each script of the corpus, parse it with the copy of ORE's parser
+([[id:8FD7BD95-AAEC-4CF9-A9F4-D609A9DEFBD8][ORE's grammar is the one authority on whether a script parses]]) and with the tree-sitter grammar; the test fails on a script
+one accepts and the other refuses, and names it. The random scripts reach
+constructs the library never uses, so the test does not stop at what ORE's
+authors wrote.
+
+** What the grammar is for
+
+Highlighting, folding and errors as one types, in the editor of
+[[id:179E60E8-59B5-456A-B2CC-55323052E234][Edit a scripted trade on its own screen]]. It never decides a booking: the server parses with ORE's
+grammar ([[id:C2A45123-A9B3-49BA-BEFD-07E1703F7B84][A scripted trade is validated in three layers]]).
+
+** Where today's code differs
+
+No editor and no tree-sitter grammar exist.

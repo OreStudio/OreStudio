@@ -42,7 +42,9 @@ namespace ores::trading::domain {
  * and does not declare. The type is the one ORE's scripted trade states for it
  * (Number, Event, Index, Currency or Daycounter), and an array input states a list.
  * A value rule, where the library states one, says which values the script accepts.
- * The rows are mined from the code, not typed by hand.
+ * The rows are mined from the code, not typed by hand. Why a free variable is an
+ * input, and how the parser derives it, is [[id:92449D70-09E2-4391-B716-A1001F22B271][A script's
+ * free variables are its inputs]].
  */
 struct script_input final {
     /**

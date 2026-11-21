@@ -5176,7 +5176,8 @@ package "trading" #E8F5E9 {
     and does not declare. The type is the one ORE's scripted trade states for it
     (Number, Event, Index, Currency or Daycounter), and an array input states a list.
     A value rule, where the library states one, says which values the script accepts.
-    The rows are mined from the code, not typed by hand.
+    The rows are mined from the code, not typed by hand. Why a free variable is an
+    input, and how the parser derives it, is [[id:92449D70-09E2-4391-B716-A1001F22B271][A script's free variables are its inputs]].
     end note
 
     entity ores_trading_script_results_tbl <<temporal>> #C6F0D8 {
@@ -5233,7 +5234,8 @@ package "trading" #E8F5E9 {
     Script Twin Input Table
     One input of the generic ScriptedTrade that twins a native trade: the native
     trade type, the library script that carries its scripted form, the script input
-    the row states, and where in the native trade's rows its value comes from.
+    the row states, and where in the native trade's rows its value comes from. The
+    recipe's grammar and its place in booking are [[id:206312C0-6398-4B9D-86F8-D8AEC9A5CEAD][A twin recipe maps a native product's terms onto its script]].
     The generator books a product ORE carries in both forms twice, once as its own
     element and once as a generic ScriptedTrade on the same terms. The second form's
     variables are read from the first form's rows through these recipes, so the two
@@ -5300,7 +5302,8 @@ package "trading" #E8F5E9 {
     script. The only free text the trade keeps is the script itself, with the name
     of the variable its result lands in: a variable is a scripted_parameter row
     and an underlying block is an instrument_underlying row, so the trade states
-    no blob.
+    no blob. How a scripted trade names its script, or states its own, is
+    [[id:358CC548-3892-45A1-A916-DF4A48ADED03][A scripted trade names a library script or states its own]].
     The table stays flat by design: it holds no nested sub-struct, because
     what a script reads is a list of named variables and a list of underlying
     blocks, and both are rows of their own.
@@ -5416,7 +5419,8 @@ package "trading" #E8F5E9 {
     One script of ORE's script library. A scripted trade names a script by
     its library name, and the library states its code once for every trade of it.
     The rows are the system tenant's reference data, mined from the library ORE
-    ships (external/ore/examples/Products/Input/scriptlibrary.xml).
+    ships (external/ore/examples/Products/Input/scriptlibrary.xml). How the library
+    is held and versioned is [[id:CCA8090C-26E0-4571-84BA-9115C110376C][The script library is versioned reference data]].
     end note
 
     entity ores_trading_settlement_types_tbl <<temporal>> #C6F0D8 {

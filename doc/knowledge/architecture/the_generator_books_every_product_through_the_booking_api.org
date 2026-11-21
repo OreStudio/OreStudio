@@ -1,0 +1,45 @@
+:PROPERTIES:
+:ID: 8BA8D977-46CC-4DC6-9EFE-3FBE56B76A37
+:END:
+#+title: The generator books every product through the booking API
+#+description: Generated trades are drawn against each product's schema and booked through the path a person books on, so the tests prove that path for every product and form.
+#+type: knowledge
+#+level: cross
+#+filetags: :scripting:trading:architecture:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+
+* Summary
+
+The synthetic trade generator books every product in every form it offers
+through the booking API ([[id:3085E65E-413B-4E7A-B60A-5844A124C999][One booking API books a product in either form]]), drawing each product's terms against
+its schema ([[id:290A1069-A1EE-4DD1-8D23-1C60F76F8949][Every product has a schema of its fields and its forms]]) by rules held as data per field: an underlying from
+the scope, a level a stated distance from the underlying's price, a monthly
+schedule to expiry. So the path a person books on is the path the generated
+trades prove, and the ORE engine test proves ORE reads, builds and values every
+product and form.
+
+* Detail
+
+** What it proves
+
+- Every product books in every form: the generated population holds one trade
+  of each product in each form.
+- ORE reads and builds each, with no error the trade causes; the test's known
+  list holds only market data and engine configuration lines.
+- A product's two forms agree: the test values both and compares them, and a
+  pair that differs is listed with its reason and a bound.
+
+** Why levels are drawn from the price
+
+A barrier or a strike drawn as a fixed literal is reached by some underlyings
+and never by others. A level a stated distance from the underlying's price is
+reached as the product intends, so a barrier script's barrier logic is
+exercised.
+
+** Where today's code differs
+
+The generator books native trades through builders, then books scripted forms
+by evaluating recipes over the native rows in =ores.synthetic.core=, and books
+script-only products from a carrier type's rows with barriers set at levels no
+underlying reaches.

@@ -26,7 +26,8 @@
  *
  * One input of the generic ScriptedTrade that twins a native trade: the native
  * trade type, the library script that carries its scripted form, the script input
- * the row states, and where in the native trade's rows its value comes from.
+ * the row states, and where in the native trade's rows its value comes from. The
+ * recipe's grammar and its place in booking are [[id:206312C0-6398-4B9D-86F8-D8AEC9A5CEAD][A twin recipe maps a native product's terms onto its script]].
  *
  * The generator books a product ORE carries in both forms twice, once as its own
  * element and once as a generic ScriptedTrade on the same terms. The second form's

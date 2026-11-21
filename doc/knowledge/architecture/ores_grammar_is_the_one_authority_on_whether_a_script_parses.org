@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID: 8FD7BD95-AAEC-4CF9-A9F4-D609A9DEFBD8
+:END:
+#+title: ORE's grammar is the one authority on whether a script parses
+#+description: ORE's Boost Spirit parser is copied into ores.trading.scripting with its authorship, kept diffable against ORE's, and is the only grammar ORE Studio trusts.
+#+type: knowledge
+#+level: cross
+#+filetags: :scripting:trading:architecture:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+
+* Summary
+
+ORE parses a script with a Boost Spirit Qi grammar
+(=OREData/ored/scripting/grammar.cpp=, =scriptparser.cpp=, =ast.hpp=). ORE
+Studio copies that parser into =ores.trading.scripting= and trusts no other
+grammar, because a second grammar would drift from ORE's and either accept a
+script ORE refuses or refuse one ORE runs. The copy keeps ORE's authorship and
+licence, stays close enough to ORE's files to diff against each release, and is
+shaped to ORE Studio's standards only where that does not hide the diff.
+
+* Detail
+
+** What is copied
+
+The grammar, the syntax tree, the parser, and the parts of ORE's scripting that
+read a tree without a market: its printer, its converter back to script text,
+its static analysis of indices and events, and its random syntax tree generator,
+which writes scripts for the editor's test ([[id:8CF94EFE-4699-4F7D-B59B-E695AFD723CA][The editor's grammar is tested against ORE's parser]]). The engine, the
+models and the computation graph builder stay in ORE: ORE Studio never prices a
+script ([[id:708554F7-FA3A-49E1-8A11-4AE968C76758][The engine is given a script's text]]).
+
+** How the copy is kept
+
+- Each copied file keeps ORE's copyright header, and states the ORE commit it
+  was copied from.
+- The copy changes names and namespaces to ORE Studio's, and replaces the few
+  QuantLib types the tree uses (=QuantLib::ext::shared_ptr=, =Real=, =Size=)
+  with the standard library's, so it links no QuantLib.
+- A script diffs the copy against ORE's files at the commit it names, so an ORE
+  release's grammar change is seen and carried over by hand.
+
+** What it gives
+
+- =parse(text)= returns a syntax tree, or ORE's error with its line and column.
+- =inputs_of(tree)= returns the free variables, with type, array and rule
+  ([[id:92449D70-09E2-4391-B716-A1001F22B271][A script's free variables are its inputs]]).
+- =print(tree)= returns the script's text, normalised.
+
+** Who uses it
+
+The script library when a script is published ([[id:CCA8090C-26E0-4571-84BA-9115C110376C][The script library is versioned reference data]]), the booking API
+when a scripted trade is validated ([[id:3085E65E-413B-4E7A-B60A-5844A124C999][One booking API books a product in either form]]), and the shell's commands
+that need no login ([[id:B01292A4-0394-40E8-A0B4-2DBA3F46C052][The shell parses a script without a login]]).
+
+** Where today's code differs
+
+ORE Studio has no parser: a script is first parsed by ORE in a run.

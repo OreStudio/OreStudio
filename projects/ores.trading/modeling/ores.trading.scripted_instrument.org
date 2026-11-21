@@ -23,7 +23,8 @@ discriminates the exact product and =script_name= names the payoff
 script. The only free text the trade keeps is the script itself, with the name
 of the variable its result lands in: a variable is a =scripted_parameter= row
 and an underlying block is an =instrument_underlying= row, so the trade states
-no blob.
+no blob. How a scripted trade names its script, or states its own, is
+[[id:358CC548-3892-45A1-A916-DF4A48ADED03][A scripted trade names a library script or states its own]].
 
 The table stays flat by design: it holds no nested sub-struct, because
 what a script reads is a list of named variables and a list of underlying

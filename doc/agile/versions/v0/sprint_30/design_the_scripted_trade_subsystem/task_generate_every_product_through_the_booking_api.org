@@ -1,0 +1,91 @@
+:PROPERTIES:
+:ID: E6293E17-33BA-4973-A67F-62077A05E2C6
+:END:
+#+title: Task: Generate every product and form through the booking API
+#+description: The generator books scripted forms by evaluating recipes over native rows, and script-only products from a carrier type's rows with barriers no underlying reaches; scripts whose product has an element of its own have no scripted form.
+#+type: task
+#+level: s1
+#+filetags: :design_the_scripted_trade_subsystem:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E6359881-7919-4BBC-9B9C-03A8EEDB8A03][Design the scripted trade subsystem]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The generator draws each product's terms against its schema, by per-field rules held as data, and books every product in every form through the booking API, so the ORE engine test proves the path a person books on.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:E6359881-7919-4BBC-9B9C-03A8EEDB8A03][Design the scripted trade subsystem]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-21                               |
+
+* Acceptance
+
+- every product is generated in every form it offers, script-only products included
+- the carriers and the Script-only recipes table are removed
+- barrier and strike levels are drawn a stated distance from the underlying's price, so barrier logic is exercised
+- the scripts whose product has an element of its own, the accumulators, the TaRF, the outperformance option and the basket and rainbow variants, are booked in their scripted form and compared
+- the ORE engine test raises no error the trade causes and compares every product's forms
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+Cut from [[id:8BA8D977-46CC-4DC6-9EFE-3FBE56B76A37][The generator books every product through the booking API]], [[id:D18BD092-AF0C-449F-ACDA-F621655BA831][A product is booked in one of the forms it offers]], which states the target this task builds to; the components it touches are [[id:4E135FB5-6E0A-45CC-A805-F5B70F29DDB4][The scripted trade components depend in one direction]].
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

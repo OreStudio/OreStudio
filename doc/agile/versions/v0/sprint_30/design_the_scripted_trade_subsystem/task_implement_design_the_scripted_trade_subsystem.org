@@ -108,11 +108,35 @@ code changing, and the reader of a bare number cannot tell which tree it came
 from. Where the raw output matters, put it in an =evidence/= file beside the
 task and name that file in the Command column.
 
-| What | Value | Command | Commit |
-|------+-------+---------+--------|
-|      |       |         |        |
+| What                                 | Value                              | Command                                                                           | Commit          |
+|--------------------------------------+------------------------------------+-----------------------------------------------------------------------------------+-----------------|
+| Architecture pages written           | 15: a structure note and 14 claims | ls doc/knowledge/architecture, the pages this PR adds                             | HEAD of this PR |
+| Existing pages refactored to link in | 10                                 | git diff --stat, the pages under doc/knowledge and projects/ores.trading/modeling | HEAD of this PR |
+| Story tasks cut from the pages       | 7, beside the editor task          | the story's Tasks table                                                           | HEAD of this PR |
+| Unresolved id links the PR adds      | 0                                  | a scan of every id link in the changed files against every :ID:                   | HEAD of this PR |
+| compass-ng new diagnostics           | 0                                  | compass-ng check --ratchet origin/main                                            | HEAD of this PR |
 
 * Notes
+
+** What the survey found
+
+- The architecture lives where the rule of one component reading every ORE
+  document puts it ([[id:9697F09E-441A-4B51-869E-FC59433EEA1E][One component reads every ORE document, and none of them stores XML]]): a script's text is trading's data,
+  not an ORE document, so its parser belongs to =ores.trading=. ORE's parser
+  needs only Boost Spirit and a few header-only QuantLib types, so the copy can
+  replace those and link no QuantLib.
+- =ores.analytics.quant= is the precedent for a dependency-light specialist
+  sub-component consumed for what it computes; =ores.trading.scripting= takes
+  that role, below =ores.trading.api=, and returns its own types so the API can
+  depend on it with no cycle.
+- The seed's script inputs are mined from the code by a text script that
+  compass-ng now runs; the seed's header still names the retired
+  =generate_script_library.py=.
+- Generic Scripted Products already states ORE's side, the language and the two
+  places a script may live, so the new pages link it rather than restate it.
+- The catalogue's =Scripted forms= prose said a product absent from it has no
+  library script in ORE; the =Library scripts= table shows several that do, so
+  the prose now says so.
 
 * Test Scenarios
 
@@ -138,3 +162,12 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The scripted trade architecture is documented as its target state, in
+[[id:CF5A2387-58E8-45A3-8B5B-24FF1F1464B9][Scripted trades]], the structure note, and fourteen pages each stating one claim, from
+the forms a product is booked in to the components and their dependency graph,
+drawn with no cycle. Each page names where today's code differs. Ten existing
+pages link into them: the Trade structure note and the knowledge index, Generic
+Scripted Products, Product Type, the ores.trading overview, four script entity
+pages and the trade type catalogue. Seven tasks of the story are cut from the
+pages, each naming the pages it builds to.

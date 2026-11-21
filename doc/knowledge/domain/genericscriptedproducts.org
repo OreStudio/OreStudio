@@ -86,6 +86,9 @@ the catalogue lists the scripts. The two families are documented as
 separate knowledge notes: =Rainbow Options= and =Exotic Variance and
 Volatility Derivatives=.
 
+How ORE Studio holds, validates, books and values a scripted trade, and the
+forms a product is booked in, is [[id:CF5A2387-58E8-45A3-8B5B-24FF1F1464B9][Scripted trades]].
+
 ** Mathematical notes
 
 There are no formulas in this section of the catalogue. Each scripted

@@ -1,0 +1,91 @@
+:PROPERTIES:
+:ID: 26A4553A-3B98-45DF-8E3E-F5ABBFE1A1BD
+:END:
+#+title: Task: Book a product in either form through one API
+#+description: A trade is booked from rows a builder already made: no operation takes a product, its terms and a form, none validates a script, and the twin recipe is evaluated only by the generator.
+#+type: task
+#+level: s1
+#+filetags: :design_the_scripted_trade_subsystem:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E6359881-7919-4BBC-9B9C-03A8EEDB8A03][Design the scripted trade subsystem]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The trading service books a product in any form it offers, and a free-form scripted trade, through book, validate_script and book_scripted; every scripted booking passes the server's validation, and a trade records its product and form.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:E6359881-7919-4BBC-9B9C-03A8EEDB8A03][Design the scripted trade subsystem]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-21                               |
+
+* Acceptance
+
+- book validates the terms against the schema and builds the native element, or the scripted form through the twin recipe or, for a script-only product, the script's inputs
+- validate_script parses with ORE's grammar and checks the variables against the inputs by name and type, booking nothing
+- book_scripted books a library script by version or an inline script, for a person permitted to book one
+- a trade records its product and the form it was booked in, and reopens in that form
+- the twin recipe evaluator lives in ores.trading.api
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+Cut from [[id:3085E65E-413B-4E7A-B60A-5844A124C999][One booking API books a product in either form]], [[id:206312C0-6398-4B9D-86F8-D8AEC9A5CEAD][A twin recipe maps a native product's terms onto its script]], [[id:C2A45123-A9B3-49BA-BEFD-07E1703F7B84][A scripted trade is validated in three layers]], which states the target this task builds to; the components it touches are [[id:4E135FB5-6E0A-45CC-A805-F5B70F29DDB4][The scripted trade components depend in one direction]].
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

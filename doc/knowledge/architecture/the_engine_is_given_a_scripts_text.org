@@ -1,0 +1,44 @@
+:PROPERTIES:
+:ID: 708554F7-FA3A-49E1-8A11-4AE968C76758
+:END:
+#+title: The engine is given a script's text
+#+description: ORE interprets a script over path vectors and compiles its computation graph only within a run, so the artefact ORE Studio stores and sends is the script's text and version.
+#+type: knowledge
+#+level: cross
+#+filetags: :scripting:trading:architecture:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+
+* Summary
+
+ORE runs a script by interpreting its syntax tree over vectors, one value per
+Monte Carlo path or grid point, so the cost of interpreting is spread over the
+paths. Where the pricing configuration asks for a computation graph
+(=UseCG=, =UseAD=), ORE builds one from the tree and, on an OpenCL or CUDA
+device, compiles it into a kernel within the run, and nothing compiled outlives
+the run. ORE has no form of a script compiled ahead of time, so the artefact
+ORE Studio stores and sends is the script's text and its version.
+
+* Detail
+
+** What a run receives
+
+The trade, naming its script and version or stating it inline
+([[id:358CC548-3892-45A1-A916-DF4A48ADED03][A scripted trade names a library script or states its own]]), and a script library written from the rows of the versions the
+run's trades name ([[id:CCA8090C-26E0-4571-84BA-9115C110376C][The script library is versioned reference data]]). ORE parses, builds and prices; ORE Studio
+parses only to validate ([[id:8FD7BD95-AAEC-4CF9-A9F4-D609A9DEFBD8][ORE's grammar is the one authority on whether a script parses]]).
+
+** Why no compiled script is stored
+
+- A compiled form would be tied to one ORE build, compiler and platform, and
+  every ORE upgrade would invalidate it.
+- An inline script compiled to native code would run a person's code inside the
+  risk engine.
+- Revaluing a trade booked last year needs the text it was booked on, not a
+  binary built from it.
+
+** If a script is slow
+
+Measure where its time goes first. ORE's answer to a slow script is the
+computation graph on an external device, set per product tag in the pricing
+configuration; a cache ORE Studio adds, such as a warm ORE process, comes after.

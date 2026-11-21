@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: D18BD092-AF0C-449F-ACDA-F621655BA831
+:END:
+#+title: A product is booked in one of the forms it offers
+#+description: A product's forms are its own element, a ScriptedTrade over a library script, or both; the form is chosen at booking and recorded on the trade.
+#+type: knowledge
+#+level: cross
+#+filetags: :scripting:trading:architecture:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+
+* Summary
+
+A product is booked in one of the forms it offers. Its /native/ form is the
+element ORE reads it as, such as =EquityBasketOptionData=. Its /scripted/ form
+is a generic =ScriptedTrade= over a library script with the same payoff, such as
+=VanillaBasketOption=. Some products offer both, some only the native form, and
+some only the scripted form, because ORE has no element for them. The form is
+chosen when the trade is booked and recorded on the trade, so it reopens, amends
+and reports in the form it was booked in.
+
+* Detail
+
+** The three cases
+
+| Product offers | Example | Booked as |
+|----------------+---------+-----------|
+| native only | =Swap=, =FxForward= | its element |
+| both | =EquityBasketOption=, =FxGenericBarrierOption= | its element, or a ScriptedTrade over the script the =Scripted forms= table of [[id:A8E9807F-1BC8-4DA5-9A66-720D2444DA1B][the trade type catalogue]] names |
+| scripted only | a gamma swap, a corridor variance swap | a ScriptedTrade over its library script |
+
+A product with both forms states the same economic terms in either; booking it
+as scripted maps its terms onto the script's inputs, as
+[[id:206312C0-6398-4B9D-86F8-D8AEC9A5CEAD][A twin recipe maps a native product's terms onto its script]] states. A scripted-only product's fields are its script's inputs, as
+[[id:92449D70-09E2-4391-B716-A1001F22B271][A script's free variables are its inputs]] states.
+
+** Why a person chooses
+
+The two forms of one product price through different engines, so they cost and
+behave differently: a native element may have an analytic engine, while a
+script runs through ORE's scripted engines, by Monte Carlo or finite
+differences, as the pricing configuration sets for the script's product tag. The
+choice is shown with that cost, from the product's schema
+([[id:290A1069-A1EE-4DD1-8D23-1C60F76F8949][Every product has a schema of its fields and its forms]]). The ORE engine test values both forms of every product that
+has both and compares them, so a difference between them is seen.
+
+** What is recorded
+
+A trade records its product and the form it was booked in. A scripted trade
+also records the script and version it ran on ([[id:358CC548-3892-45A1-A916-DF4A48ADED03][A scripted trade names a library script or states its own]]). Reporting and
+risk group a scripted trade under its product, not under =ScriptedTrade=, which
+is only its form.
+
+** Where today's code differs
+
+- The =Library scripts= table of [[id:A8E9807F-1BC8-4DA5-9A66-720D2444DA1B][the trade type catalogue]] lists scripts whose product a
+  type of ours holds, the accumulators, the TaRF, the outperformance option,
+  and the basket and rainbow variants, with no scripted form booked.
+- A trade records neither its form as a choice nor its product when booked as
+  scripted: a ScriptedTrade is a trade type of its own.
+- A scripted-only product is booked from another product's rows, a carrier, not
+  as a product of its own.

@@ -17,7 +17,8 @@
 One script of ORE's script library. A scripted trade names a script by
 its library name, and the library states its code once for every trade of it.
 The rows are the system tenant's reference data, mined from the library ORE
-ships (=external/ore/examples/Products/Input/scriptlibrary.xml=).
+ships (=external/ore/examples/Products/Input/scriptlibrary.xml=). How the library
+is held and versioned is [[id:CCA8090C-26E0-4571-84BA-9115C110376C][The script library is versioned reference data]].
 
 * Flags
 :PROPERTIES:

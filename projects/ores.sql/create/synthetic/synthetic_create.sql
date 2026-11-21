@@ -61,11 +61,11 @@
 \ir ./synthetic_yield_curve_process_types_notify_trigger_create.sql
 \ir ./synthetic_ir_curve_index_families_create.sql
 \ir ./synthetic_ir_curve_index_families_notify_trigger_create.sql
-\ir ./synthetic_ir_curve_index_family_tenor_validate_fn_create.sql
 \ir ./synthetic_yield_curve_process_parameter_definitions_create.sql
 \ir ./synthetic_yield_curve_process_parameter_definitions_notify_trigger_create.sql
 \ir ./synthetic_ir_curve_generation_configs_create.sql
 \ir ./synthetic_ir_curve_generation_configs_notify_trigger_create.sql
+\ir ./synthetic_ir_curve_generation_configs_index_family_tenor_validate_trg_create.sql
 \ir ./synthetic_ir_curve_generation_config_process_parameter_values_create.sql
 \ir ./synthetic_ir_curve_generation_config_process_parameter_values_notify_trigger_create.sql
 \ir ./synthetic_ir_curve_generation_config_process_parameter_values_process_type_validate_trg_create.sql

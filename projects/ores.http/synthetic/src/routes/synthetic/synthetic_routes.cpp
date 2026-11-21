@@ -36,6 +36,8 @@
 #include "ores.http/routes/synthetic/gmm_component_web_routes.hpp"
 #include "ores.http/routes/synthetic/ir_curve_generation_config_process_parameter_value_web_routes.hpp"
 #include "ores.http/routes/synthetic/ir_curve_generation_config_web_routes.hpp"
+#include "ores.http/routes/synthetic/ir_curve_index_family_routes.hpp"
+#include "ores.http/routes/synthetic/ir_curve_index_family_web_routes.hpp"
 #include "ores.http/routes/synthetic/ir_curve_template_entry_web_routes.hpp"
 #include "ores.http/routes/synthetic/market_data_generation_config_web_routes.hpp"
 #include "ores.http/routes/synthetic/market_data_provider_web_routes.hpp"
@@ -45,8 +47,6 @@
 #include "ores.http/routes/synthetic/variance_calibration_input_web_routes.hpp"
 #include "ores.http/routes/synthetic/variance_calibration_web_routes.hpp"
 #include "ores.http/routes/synthetic/yield_curve_process_parameter_definition_web_routes.hpp"
-#include "ores.http/routes/synthetic/ir_curve_index_family_routes.hpp"
-#include "ores.http/routes/synthetic/ir_curve_index_family_web_routes.hpp"
 #include "ores.http/routes/synthetic/yield_curve_process_type_routes.hpp"
 #include "ores.http/routes/synthetic/yield_curve_process_type_web_routes.hpp"
 #include <boost/asio/awaitable.hpp>

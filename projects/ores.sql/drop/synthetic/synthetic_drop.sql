@@ -33,11 +33,11 @@
 \ir ./synthetic_yield_curve_process_parameter_definitions_drop.sql
 \ir ./synthetic_yield_curve_process_types_notify_trigger_drop.sql
 \ir ./synthetic_yield_curve_process_types_drop.sql
-\ir ./synthetic_ir_curve_index_family_tenor_validate_fn_drop.sql
 \ir ./synthetic_ir_curve_index_families_notify_trigger_drop.sql
 \ir ./synthetic_ir_curve_index_families_drop.sql
 \ir ./synthetic_ir_curve_template_entries_notify_trigger_drop.sql
 \ir ./synthetic_ir_curve_template_entries_drop.sql
+\ir ./synthetic_ir_curve_generation_configs_index_family_tenor_validate_trg_drop.sql
 \ir ./synthetic_ir_curve_generation_configs_notify_trigger_drop.sql
 \ir ./synthetic_ir_curve_generation_configs_drop.sql
 \ir ./synthetic_variance_calibrations_notify_trigger_drop.sql

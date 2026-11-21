@@ -28,6 +28,7 @@
 #include "ores.shell/app/commands/synthetic/gmm_component_commands.hpp"
 #include "ores.shell/app/commands/synthetic/ir_curve_generation_config_commands.hpp"
 #include "ores.shell/app/commands/synthetic/ir_curve_generation_config_process_parameter_value_commands.hpp"
+#include "ores.shell/app/commands/synthetic/ir_curve_index_family_commands.hpp"
 #include "ores.shell/app/commands/synthetic/ir_curve_template_entry_commands.hpp"
 #include "ores.shell/app/commands/synthetic/market_data_generation_config_commands.hpp"
 #include "ores.shell/app/commands/synthetic/market_data_provider_commands.hpp"
@@ -39,7 +40,6 @@
 #include "ores.shell/app/commands/synthetic/variance_calibration_input_commands.hpp"
 #include "ores.shell/app/commands/synthetic/variance_calibration_input_point_commands.hpp"
 #include "ores.shell/app/commands/synthetic/yield_curve_process_parameter_definition_commands.hpp"
-#include "ores.shell/app/commands/synthetic/ir_curve_index_family_commands.hpp"
 #include "ores.shell/app/commands/synthetic/yield_curve_process_type_commands.hpp"
 
 namespace ores::shell::app::commands {

@@ -1094,6 +1094,26 @@ def cmd_quadlet(project_root: Path, env: dict, args) -> int:
                                                  env_name, target_name,
                                                  log_level=log_level))
 
+    # Every service unit waits for the pooler when the environment runs one. It is
+    # written here rather than in each renderer because the ordering is the same
+    # sentence for all of them, and a renderer that is added later cannot forget
+    # it. Requires=, not Wants=: a service whose database port is the pooler
+    # cannot answer its first request without one.
+    if pooler:
+        pooler_service = _quadlet_unit_basename("pooler", env_name) + ".service"
+        skip = {_quadlet_unit_basename("pooler", env_name) + ".container",
+                _quadlet_unit_basename("nats-server", env_name) + ".container"}
+        for name in list(written):
+            if not name.endswith(".container") or name in skip:
+                continue
+            path = out_dir / name
+            text = path.read_text()
+            text = text.replace(
+                f"PartOf={target_name}",
+                f"PartOf={target_name}\nAfter={pooler_service}\nRequires={pooler_service}",
+                1)
+            path.write_text(text)
+
     write(target_name, render_quadlet_target(defs, env_name, pooler))
 
     print(f"Wrote {len(written)} Quadlet unit files to {out_dir}")

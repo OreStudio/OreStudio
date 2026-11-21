@@ -80,9 +80,25 @@ write_config() {
     local port="${1}"
     local dir="${2:-${out}}"
     local db_host_override="${3:-}"
+    local base="${label}"
     mkdir -p "${dir}"
-    users | sort -u > "${dir}/${label}.users"
-    chmod 600 "${dir}/${label}.users"
+    # A container is told where its configuration lives by the image, so it gets
+    # the name the entrypoint names. Its credential file is read by pgbouncer
+    # after it drops to its own user, so it must be readable by that user; the
+    # directory holding it is the deploy's, and that is what keeps it private.
+    local auth_path="${dir}/${label}.users"
+    if [ "${dir}" != "${out}" ]; then
+        base="pgbouncer"
+        # The image mounts the configuration here, so the file it reads names
+        # this path and not the one it was written to.
+        auth_path="/etc/pgbouncer/${base}.users"
+    fi
+    users | sort -u > "${dir}/${base}.users"
+    if [ "${dir}" != "${out}" ]; then
+        chmod 644 "${dir}/${base}.users"
+    else
+        chmod 600 "${dir}/${base}.users"
+    fi
     local log_line="logfile = ${out}/${label}.log"
     local listen_addr="127.0.0.1"
     local db_host="127.0.0.1"
@@ -94,7 +110,7 @@ write_config() {
         listen_addr="0.0.0.0"
         db_host="${db_host_override:-host.containers.internal}"
     fi
-    cat > "${dir}/${label}.ini" <<EOF
+    cat > "${dir}/${base}.ini" <<EOF
 [databases]
 * = host=${db_host} port=5432
 
@@ -102,14 +118,14 @@ write_config() {
 listen_addr = ${listen_addr}
 listen_port = ${port}
 auth_type = plain
-auth_file = ${dir}/${label}.users
+auth_file = ${auth_path}
 pool_mode = transaction
 max_prepared_statements = 200
 default_pool_size = 20
 max_db_connections = 100
 max_client_conn = 500
 ${log_line}
-pidfile = ${dir}/${label}.pid
+$(if [ "${dir}" != "${out}" ]; then echo "# no pidfile: the container cannot write beside a mounted configuration"; else echo "pidfile = ${dir}/${label}.pid"; fi)
 EOF
 }
 
@@ -146,7 +162,11 @@ case "${1:-}" in
     stop) stop ;;
     print-config)
         write_config "${2:-6432}" "${3:-}" "${4:-}"
-        cat "${3:-${out}}/${label}.ini"
+        if [ -n "${3:-}" ]; then
+            cat "${3}/pgbouncer.ini"
+        else
+            cat "${out}/${label}.ini"
+        fi
         ;;
     *) die "usage: $0 {start [port]|stop|print-config [port]}" ;;
 esac

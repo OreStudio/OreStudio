@@ -484,6 +484,29 @@ def _cmd_create(args, project_root):
     return 0
 
 
+def _commits_behind(owner, repo, base, head, project_root):
+    """How many commits of base the PR's head lacks, or None if GitHub
+    cannot say."""
+    p = subprocess.run(
+        ["gh", "api", f"repos/{owner}/{repo}/compare/{base}...{head}",
+         "--jq", ".behind_by"],
+        capture_output=True, text=True, cwd=str(project_root))
+    try:
+        return int(p.stdout.strip()) if p.returncode == 0 else None
+    except ValueError:
+        return None
+
+
+def _behind_reason(behind, base):
+    """The guard's reason when the branch lacks commits of its base: the
+    merge result is a tree no check has seen, so generated code can drift
+    against templates the branch never had."""
+    if not behind:
+        return ""
+    return (f"the branch is {behind} commit(s) behind {base}: take {base} in "
+            f"and run compass check, so the merged tree is the one checked")
+
+
 def _cmd_merge(args, project_root):
     if args.pr is not None and args.pr <= 0:
         print("❌ PR number must be a positive integer.", file=sys.stderr)
@@ -557,6 +580,18 @@ def _cmd_merge(args, project_root):
     # no checks at all is green rather than pending.
     if ci.returncode != 0 and "no checks reported" not in ci_output:
         blocked.append(f"CI is not green — compass pr checks {number}")
+    base_proc = subprocess.run(
+        ["gh", "pr", "view", str(number), "--json", "baseRefName",
+         "--jq", ".baseRefName"],
+        capture_output=True, text=True, cwd=str(project_root))
+    base = base_proc.stdout.strip() if base_proc.returncode == 0 else ""
+    if base and head:
+        behind = _commits_behind(owner, repo, base, head, project_root)
+        if behind is None:
+            print(f"⚠️  Could not tell whether the branch is behind {base}.",
+                  file=sys.stderr)
+        elif behind:
+            blocked.append(_behind_reason(behind, base))
     if task_id and task_result_empty:
         blocked.append(
             f"task * Result section is empty — write the result before "

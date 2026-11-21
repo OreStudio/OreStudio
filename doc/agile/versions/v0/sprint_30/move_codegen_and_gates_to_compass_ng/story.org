@@ -62,6 +62,7 @@ compass-ng generates the code and runs the build-free gates for every environmen
 | [[id:7295A0CF-CC31-4A58-8BBA-4AB7A4069B7E][Adopt the commit provenance check]] | DONE | 2026-11-21 | 2026-11-21 | Task for: Move codegen and the gates to compass-ng |
 | [[id:3ED6B006-F1EF-4A30-A9D7-5194D2E0825D][Generate .env with compass-ng]] | DONE | 2026-11-21 | 2026-11-21 | Task for: Move codegen and the gates to compass-ng |
 | [[id:336C7CA6-4C22-4062-9414-969CBCDA0C7D][Retire the component scaffold verifier]] | DONE | 2026-11-21 | 2026-11-21 | Task for: Move codegen and the gates to compass-ng |
+| [[id:F46CFE27-F83B-47CF-9753-29A8E0B01AF8][Refuse to merge a branch behind main without --force]] | DONE | 2026-11-21 | 2026-11-21 | Task for: Move codegen and the gates to compass-ng |
 
 * Decisions
 

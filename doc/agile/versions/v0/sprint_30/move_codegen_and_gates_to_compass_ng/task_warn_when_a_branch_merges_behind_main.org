@@ -1,0 +1,104 @@
+:PROPERTIES:
+:ID: F46CFE27-F83B-47CF-9753-29A8E0B01AF8
+:END:
+#+title: Task: Refuse to merge a branch behind main without --force
+#+description: Make compass pr merge refuse a branch that is behind its base unless --force is given, and say so in the merge skill and recipe.
+#+type: task
+#+level: s1
+#+filetags: :move_codegen_and_gates_to_compass_ng:sprint_30:v0:
+#+owner: marco
+#+branch: feature/warn-when-a-branch-is-behind-main
+#+pr: 4988
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E3BF90FE-43DF-4A30-9F2C-FF5E20128C88][Move codegen and the gates to compass-ng]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+compass pr merge refuses a branch that lacks commits of its base unless --force is given, so a merge result nobody checked, such as new templates beside old generated output, does not reach main by accident.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:E3BF90FE-43DF-4A30-9F2C-FF5E20128C88][Move codegen and the gates to compass-ng]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-21                               |
+
+* Acceptance
+
+- =compass pr merge= counts the commits of the base the PR's head lacks, and
+  refuses with a reason when there are any; =--force= merges anyway and
+  prints the reason.
+- When GitHub cannot say, the merge warns and is not blocked.
+- The merge skill and recipe list the guard.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+- Why: on 2026-11-21 main went red twice after merges whose branches were
+  behind it. #4975 last took main five hours before #4979 changed the
+  templates and merged 31 seconds before #4986, so main held new templates
+  beside old generated output; the check inventory race with #4980 was the
+  same. ORE runs no checks on a pull request, and the local gate checks a
+  branch against its own merge base, so nothing checked the merged tree
+  until the Compass check on main.
+- The product owner chose a guard that --force overrides, not a hard
+  refusal: sometimes a stale branch is meant to merge.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4988][#4988]] | [compass] Refuse to merge a branch behind main without --force |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+=compass pr merge= refuses a branch behind its base unless =--force= is
+given. Against GitHub: #4987's fresh branch is 0 behind; #4975's last commit
+is 5 behind main, so it would have been stopped; a missing ref gives no
+answer and only warns. Two new tests; the compass suite passes (561).

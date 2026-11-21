@@ -33,7 +33,9 @@ How do I merge a green, approved PR and delete its feature branch?
    this is recovering from a skipped step, not the normal path.
 
 2. /Merge/ — the guard rails are built in: the command refuses while
-   review threads are unresolved or CI is not green, merges (always
+   review threads are unresolved, CI is not green, or the branch is behind
+   its base (take the base in and run =compass check= first, or pass
+   =--force=), merges (always
    a merge commit — never squash/rebase), retries GitHub's transient
    base-branch-modified race, and deletes the remote branch
    (worktree-safe):

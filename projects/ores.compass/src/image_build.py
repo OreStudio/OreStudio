@@ -21,6 +21,9 @@ Image model::
     ores-nats
         Standalone NATS image.  docker/nats.Dockerfile.
 
+    ores-pgbouncer
+        Standalone transaction-pooler image.  docker/pgbouncer.Dockerfile.
+
     ores-compute-wrapper
         Standalone compute-node image.  docker/service-compute.Dockerfile.
 """
@@ -30,6 +33,7 @@ from __future__ import annotations
 import argparse
 import os
 import re
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -38,6 +42,7 @@ from pathlib import Path
 IMAGE_BASE = "localhost/ores-service-base"
 IMAGE_LIBS = "localhost/ores-service-libs"
 IMAGE_NATS = "localhost/ores-nats"
+IMAGE_PGBOUNCER = "localhost/ores-pgbouncer"
 IMAGE_COMPUTE = "localhost/ores-compute-wrapper"
 IMAGE_WEB = "localhost/ores-web"
 IMAGE_SHELL = "localhost/ores-shell"
@@ -231,6 +236,18 @@ def build_nats(project_root: Path, tag: str | None = None) -> str:
     return tag
 
 
+def build_pgbouncer(project_root: Path, tag: str | None = None) -> str:
+    if tag is None:
+        tag = _version_tag(project_root)
+    print(f"=== Building pooler image: {IMAGE_PGBOUNCER}:{tag} ===")
+    _run(_build_args([
+          "-t", f"{IMAGE_PGBOUNCER}:local",
+          "-t", f"{IMAGE_PGBOUNCER}:{tag}",
+          "-f", "docker/pgbouncer.Dockerfile", "."]),
+         project_root)
+    return tag
+
+
 def build_compute(project_root: Path, tag: str | None = None,
                   base_tag: str | None = None) -> str:
     """Build the compute-wrapper image. Requires the library image."""
@@ -270,20 +287,25 @@ def build_all(project_root: Path, tag: str | None = None,
     # 5. The web service, when its bundle was staged.
     build_web(project_root, tag)
 
-    # 6. NATS.
+    # 6. NATS and the pooler: the two infrastructure images.
     build_nats(project_root, tag)
+    build_pgbouncer(project_root, tag)
 
     return tag
 
 
 # --- Image existence checks (used by env_deploy) --------------------------
 
-def check_images_exist(project_root: Path, role: str = "runtime") -> bool:
+def check_images_exist(project_root: Path, role: str = "runtime",
+                       tag: str | None = None) -> bool:
     """Return True if all expected images for *role* are present locally.
+
+    *tag* defaults to this checkout's tag. A deploy that pins a tag passes it,
+    so the check covers the images that deploy will ship.
 
     Prints a helpful message on failure telling the user what to run.
     """
-    tag = _version_tag(project_root)
+    tag = tag or _version_tag(project_root)
     missing = missing_images(project_root, role, tag)
     if not missing:
         return True
@@ -372,7 +394,7 @@ def image_names(project_root: Path) -> list[str]:
     ores.iam.service.
     """
     names = ["ores-service-base", "ores-service-libs", "ores-nats",
-             "ores-compute-wrapper", "ores-web", "ores-shell"]
+             "ores-pgbouncer", "ores-compute-wrapper", "ores-web", "ores-shell"]
     names += runtime_services(project_root)
     return names
 
@@ -384,10 +406,22 @@ def _published(ref: str) -> bool:
     only fills the gaps and a nightly run that publishes the same commit
     twice costs nothing.
     """
+    # Ask the registry, not this machine. "podman manifest inspect" answers from
+    # local storage when the tag was just built, so a tag that never left this
+    # host read as already published and the publish pushed nothing.
+    if shutil.which("skopeo"):
+        result = subprocess.run(
+            ["skopeo", "inspect", "--no-tags", f"docker://{ref}"],
+            capture_output=True, text=True)
+        return result.returncode == 0
     result = subprocess.run(
-        [_ENGINE, "manifest", "inspect", ref],
+        [_ENGINE, "manifest", "inspect", f"docker://{ref}"],
         capture_output=True, text=True)
-    return result.returncode == 0
+    if result.returncode == 0:
+        return True
+    # A transport-less ref cannot be told apart from a local one, so treat it as
+    # unpublished: pushing twice costs time, publishing nothing costs a deploy.
+    return False
 
 
 def publish(project_root: Path, registry: str, tag: str | None = None,

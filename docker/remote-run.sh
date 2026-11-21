@@ -247,10 +247,36 @@ chmod -R u+rwX,go-rwx "$volume_mountpoint"
 
 mkdir -p "$nats_store_dir"
 
+# The fleet's services dial the pooler, not PostgreSQL direct, so it is part of
+# the deploy and starts before them. It mirrors the Quadlet unit: the same
+# image, host networking, and the configuration directory `compass env deploy`
+# stages.
+pooler_enabled="${ORES_DB_POOLER_ENABLED:-0}"
+pooler_container="ores-pgbouncer-${label}"
+pooler_image="localhost/ores-pgbouncer:${IMAGE_TAG}"
+pooler_config="$REMOTE_ROOT/build/config/pooler"
+pooler_port="${ORES_DB_POOLER_PORT:-6432}"
+if [[ "$pooler_enabled" == "1" && ! -f "$pooler_config/pgbouncer.ini" ]]; then
+    echo "Error: $pooler_config/pgbouncer.ini not found on remote — run: compass env deploy <host>" >&2
+    exit 1
+fi
+
+# Rootless podman needs keep-id to map the deploying user into the container.
+# A rootful podman does not: keep-id would create a user namespace that does
+# not own the host network namespace, and crun then cannot mount sysfs inside
+# it ("mount sysfs to sys: Operation not permitted").
+userns_args=()
+if [[ "$(podman info --format '{{.Host.Security.Rootless}}')" == "true" ]]; then
+    userns_args=(--userns=keep-id)
+fi
+
 # Every image the deploy needs must already be on this host. A deploy that
 # removes the running fleet and only then discovers a missing image leaves the
 # environment down, so the check comes before anything is stopped.
 required_images=("localhost/ores-nats:${IMAGE_TAG}")
+if [[ "$pooler_enabled" == "1" ]]; then
+    required_images+=("$pooler_image")
+fi
 for svc in $SERVICES; do
     required_images+=("localhost/${svc}:${IMAGE_TAG}")
 done
@@ -277,6 +303,32 @@ echo "=== Stopping old containers ==="
 for c in $(podman ps -aq --filter "name=ores-.*-${label}" 2>/dev/null); do
     podman rm -f "$c" >/dev/null 2>&1 || true
 done
+
+if [[ "$pooler_enabled" == "1" ]]; then
+    echo "=== Starting transaction pooler ($pooler_image) on port $pooler_port ==="
+    pooler_cid=$(podman run -d --network=host --name "$pooler_container" \
+        --env-file "$env_file" \
+        -v "$pooler_config:/etc/pgbouncer:ro" \
+        "$pooler_image")
+    echo "  Pooler container ID : $pooler_cid"
+
+    # Nothing starts before the port accepts a connection: a service that
+    # cannot reach its database exits during startup.
+    pooler_ready=0
+    for attempt in $(seq 1 20); do
+        if (exec 3<>"/dev/tcp/127.0.0.1/$pooler_port") 2>/dev/null; then
+            pooler_ready=1
+            break
+        fi
+        sleep 0.5
+    done
+    if [[ "$pooler_ready" != "1" ]]; then
+        echo "Error: the pooler did not accept a connection on 127.0.0.1:$pooler_port" >&2
+        podman logs "$pooler_container" >&2 || true
+        exit 1
+    fi
+    echo "  Pooler ready on 127.0.0.1:$pooler_port"
+fi
 
 echo "=== Starting NATS sidecar ($nats_image) ==="
 nats_cid=$(podman run -d --rm --network=host --name "$nats_container" \
@@ -308,7 +360,7 @@ for svc in $SERVICES; do
     fi
 
     echo -n "  $svc ... "
-    cid=$(podman run -d --network=host --userns=keep-id \
+    cid=$(podman run -d --network=host "${userns_args[@]}" \
         --name "$container" \
         --user "${ORES_REMOTE_USER:-$(id -u)}:${ORES_REMOTE_GROUP:-$(id -g)}" \
         --env-file "$env_file" \
@@ -346,7 +398,7 @@ if [[ "${WEB_ENABLED:-0}" == "1" ]]; then
     web_env="$REMOTE_ROOT/docker/.env.web"
     grep -v '^ORES_WEB_DOC_ROOT=' "$env_file" > "$web_env"
     echo -n "  ores.web.service ... "
-    if web_cid=$(podman run -d --network=host --userns=keep-id \
+    if web_cid=$(podman run -d --network=host "${userns_args[@]}" \
         --name "$web_container" \
         --user "${ORES_REMOTE_USER:-$(id -u)}:${ORES_REMOTE_GROUP:-$(id -g)}" \
         --env-file "$web_env" \
@@ -372,6 +424,15 @@ not_running=()
 echo
 echo "=== Runtime report ==="
 printf '  %-32s %s\n' "ores-nats" "$(podman ps --filter "name=$nats_container" --format '{{.Status}}' | head -1 || echo MISSING)"
+if [[ "$pooler_enabled" == "1" ]]; then
+    pooler_status=$(podman ps --filter "name=$pooler_container" --format '{{.Status}}' 2>/dev/null | head -1)
+    if [[ -n "$pooler_status" ]]; then
+        printf '  %-32s %s\n' "ores-pgbouncer" "$pooler_status"
+    else
+        printf '  %-32s %s\n' "ores-pgbouncer" "MISSING (podman logs $pooler_container)"
+        not_running+=("ores-pgbouncer")
+    fi
+fi
 for svc in $SERVICES; do
     container="ores-${svc//./-}-${label}"
     status=$(podman ps --filter "name=$container" --format '{{.Status}}' 2>/dev/null | head -1)

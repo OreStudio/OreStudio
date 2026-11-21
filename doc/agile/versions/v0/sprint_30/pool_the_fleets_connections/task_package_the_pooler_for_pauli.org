@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :pool_the_fleets_connections:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/package-the-pooler-for-pauli
+#+pr: 4972
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-21
@@ -29,11 +29,11 @@ and reports it like any other container.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:A75C3063-896F-4DD5-A9BC-893A59EDFF7E][Pool the fleet's connections]] |
-| Now          | Not yet started.                       |
+| Now          | The image is built, proven and published; the pod and the deploy to pauli are next. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Add the pooler to the pod, then deploy to pauli. |
 | Last touched | 2026-11-21                               |
 
 * Acceptance
@@ -90,6 +90,59 @@ task and name that file in the Command column.
 
 * Notes
 
+** Written, 2026-11-21
+
+- =docker/pgbouncer.Dockerfile=: =alpine:3.22=, =apk add pgbouncer=, no
+  configuration baked in. Alpine's package is 1.24 or later, past the
+  prepared-statement floor; Debian 12's 1.18 is below it.
+- =start_ci_pooler.sh print-config <port> <dir>= writes the container's shape:
+  it listens on the interface the pod gives it, reaches the database on the host
+  that runs the pod (=host.containers.internal=), and logs to stderr rather than
+  to a file inside the image.
+- =image_build.py= builds and tags =ores-pgbouncer= beside =ores-nats=, and
+  =env_deploy.py= transfers it with the other standalone images and stages its
+  configuration under =build/config/pooler/= on the remote.
+
+** Not written, and why
+
+The pooler is not yet a container of the pod: =docker/run-pod.sh= starts the
+service runtime and the NATS sidecar, and the pooler is a third. Nor is it
+published to the registry, nor named in the deployment recipe.
+
+** Built, run and published, 2026-11-21
+
+The build needs podman's runtime state under =/run/user=, which the workspace
+sandbox denies, so it ran with wider permissions. Running it found three faults
+that reading the file could not:
+
+- Alpine's package ships no =pgbouncer= user, and pgbouncer refuses to run as
+  root, so the image creates the user its entrypoint drops to.
+- The container expects =pgbouncer.ini=, which the generator did not write, and
+  its auth file must name the mount point rather than the directory it was
+  written to, because pgbouncer reads it after dropping privileges.
+- The mounted directory is read-only, so a pidfile inside it is a file it cannot
+  write, and the container shape carries none.
+
+Proof: =podman run= of the image answered =select 'pooled from the container'=
+against this environment's database, and its log shows the server connection
+with TLS established.
+
+Published as =ghcr.io/orestudio/ores-pgbouncer=, tags =main= and
+=0.0.30-07672ec35a1e=, digest =sha256:114f50e6...=, and made public. Verified
+without credentials: an anonymous pull token fetches the manifest of =main= with
+HTTP 200, which is what a host with no login on it will do.
+
+What is left is the deploy path, and it is not the one this batch first assumed.
+=docker/run-pod.sh= is historical: =env_deploy.py= says it is the sequence that
+deployed to Newton in sprint 24, and pauli is deployed through the **quadlet**
+units =systemd_generate.py= renders (=cmd_quadlet= and =cmd_quadlet_deploy=, the
+latter with =--host= for a remote). So the pooler needs a quadlet unit beside
+the NATS one, not a line in =run-pod.sh=.
+
+pauli is reachable from this checkout (podman 5.8.6) but has no
+=~/ores-deploy= yet, so it has never been deployed from here. A first deploy is
+therefore the increment after the quadlet unit, not something to bolt onto it.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -105,7 +158,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4972][#4972]] | [compass] Build the pooler as an image for the fleet's host |
 
 * Review
 

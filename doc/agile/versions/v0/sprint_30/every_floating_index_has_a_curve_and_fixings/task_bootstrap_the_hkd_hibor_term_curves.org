@@ -1,0 +1,100 @@
+:PROPERTIES:
+:ID: 83EBCA67-D67E-4D70-AD52-BAA9CDAEC2EE
+:END:
+#+title: Task: Bootstrap the HKD HIBOR term curves
+#+description: Add HKD HIBOR curves at 2W, 1M and 3M, built from HONIA and a stated spread as the other term curves are, so the 127 HKD trades of ACCOHK have a curve and fixings.
+#+type: task
+#+level: s1
+#+filetags: :every_floating_index_has_a_curve_and_fixings:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0F936789-FEBE-4330-97B9-DFE0837E4466][Every index a generated trade floats on has a curve and fixings]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+HKD gets HIBOR term curves at 2W, 1M and 3M, configured as the GBP, USD, CHF,
+JPY and EUR term curves are, built from the HONIA curve and a stated spread
+for each tenor. The fixing writer then states their fixings, and the HKD
+trades of ACCOHK have a curve to be valued on.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:0F936789-FEBE-4330-97B9-DFE0837E4466][Every index a generated trade floats on has a curve and fixings]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-21                               |
+
+* Acceptance
+
+- The ir curve bootstrap Ibor configs hold HKD HIBOR at 2W, 1M and 3M, each
+  with its spread and the source of that spread.
+- On a fresh acme_demo provision, the three HKD HIBOR fixing addresses
+  answer, which the evidence query shows.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| HKD HIBOR addresses with no fixings | 3, the floating index of 127 of ACCOHK's 252 trades | =evidence/fixing_gap_by_trade.sql=, readings in =evidence/fixing_gap_by_trade.txt= | c0f6ed8c38 |
+| HKD curves | HONIA only | =evidence/fixing_gap_by_trade.sql=, readings in =evidence/fixing_gap_by_trade.txt= | c0f6ed8c38 |
+
+* Notes
+
+- The existing term configs are in
+  =projects/ores.sql/populate/refdata/refdata_ir_curve_bootstrap_ibor_configs_populate.sql=.
+- The task Bootstrap every IBOR tenor the generated trades book added the
+  others. HKD was not among them, perhaps because the HK party's rates
+  config booked later; check before writing.
+- Coordinate with the task Resolve the curve quote names against the
+  synthetic feeds, which also changes curve configs.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

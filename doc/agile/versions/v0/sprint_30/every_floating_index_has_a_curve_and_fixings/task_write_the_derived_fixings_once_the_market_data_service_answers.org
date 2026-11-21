@@ -1,0 +1,115 @@
+:PROPERTIES:
+:ID: 232932EB-9DA3-4004-B6A7-699DC1133610
+:END:
+#+title: Task: Write the derived fixings once the market data service answers
+#+description: Make the fixing writer a reconciler: it waits for the market data service, writes what is missing, and runs again when that service returns, so no series is lost to start order.
+#+type: task
+#+level: s1
+#+filetags: :every_floating_index_has_a_curve_and_fixings:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0F936789-FEBE-4330-97B9-DFE0837E4466][Every index a generated trade floats on has a curve and fixings]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The fixing writer in =ores.synthetic.service= runs as a reconciler. It waits
+until the market data service answers, compares the series each curve states
+with what the market holds, and writes what is missing. It runs again when the
+market data service returns after a loss, and at a regular interval, so a
+fresh environment holds the same fixings as a restarted one. The writer
+already skips the days a series holds, so a run is safe to repeat.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:0F936789-FEBE-4330-97B9-DFE0837E4466][Every index a generated trade floats on has a curve and fixings]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-21                               |
+
+* Acceptance
+
+- On a fresh environment, without a restart, the synthetic log has no
+  =have no series: NATS request failed= line, and the derived fixing series
+  equal those after a restart (41 on the reading of this story).
+- Stop the market data service while the synthetic service runs, start it
+  again, and the writer completes the series it could not write, with no
+  restart of the synthetic service.
+- The service registry declares that the synthetic service depends on the
+  market data service.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Derived interest rate fixing series, first reading | 34; 7 lost to =no service is handling subject= at 03:17:04 | =evidence/fixing_gap_by_trade.sql=, readings in =evidence/fixing_gap_by_trade.txt= | c0f6ed8c38 |
+| Derived interest rate fixing series, after a restart | 41 (the 7 written) | =evidence/fixing_gap_by_trade.sql=, readings in =evidence/fixing_gap_by_trade.txt= | c0f6ed8c38 |
+
+* Notes
+
+- The writer is =fixing_history_writer= in =ores.synthetic.service=. It ran
+  at 03:17:04, while =compass services start= was still waiting for the
+  fleet; the start took 486 s and timed out on the market data official
+  adapter.
+- The pattern this task applies, and which the generic story should give
+  every service: a service states its dependencies as data in the service
+  registry (=:depends_on:=, today one value); the runner holds a waiting
+  state and reports ready to systemd only when each dependency answers; it
+  watches each dependency's heartbeat and marks itself degraded when one is
+  lost; and its startup work runs as reconcilers, idempotent, that run when
+  it becomes ready and again each time it leaves the degraded state.
+- The pieces exist: =Type=notify= and =READY=1= in =systemd_notify.cpp=, the
+  =heartbeat_publisher=, the telemetry =service_state= with =running= and
+  =lost=, and the client credentials provider that already retries the
+  start race with a backoff. See
+  =doc/knowledge/architecture/service_bootstrap_phases.org=.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

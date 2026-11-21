@@ -1,0 +1,105 @@
+:PROPERTIES:
+:ID: 53634267-4331-4416-BA39-57102F99EEC8
+:END:
+#+title: Task: Draw only the indices the market can serve
+#+description: The trade planner draws a floating index only from a data list of the indices that have a curve or a derivation, and a check refuses a population config that can draw outside it.
+#+type: task
+#+level: s1
+#+filetags: :every_floating_index_has_a_curve_and_fixings:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0F936789-FEBE-4330-97B9-DFE0837E4466][Every index a generated trade floats on has a curve and fixings]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The planner draws a floating index only from a list of the indices the
+market can serve: an index with a curve, or one a stated rule derives. The
+list is data, built from the curve configs and the derivation rules, so it
+grows when a curve is added and never by hand. A check refuses a population
+config that can draw an index outside the list, before a provision does.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:0F936789-FEBE-4330-97B9-DFE0837E4466][Every index a generated trade floats on has a curve and fixings]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-21                               |
+
+* Acceptance
+
+- A cross-currency swap's foreign leg, and every other drawn index, comes
+  from the servable list.
+- The check fails on a population config that can draw an index the list
+  does not hold, and names the config and the index.
+- The ACCOUK and ACCOUS rates configs book, or each refusal is a named gap.
+- On a fresh acme_demo provision, no cross-currency foreign leg names an
+  empty fixing address.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Cross-currency foreign legs with no fixings | 11, one trade each, all ACCOHK | =evidence/fixing_gap_by_trade.sql=, readings in =evidence/fixing_gap_by_trade.txt= | c0f6ed8c38 |
+| Of those, currencies with no curve at all | 7: AOA, BWP, IDR, MYR, OMR, SAR, THB | =evidence/fixing_gap_by_trade.sql=, readings in =evidence/fixing_gap_by_trade.txt= | c0f6ed8c38 |
+| Rates configs refused by the provision | 2: ACCOUK (PKR KIBOR foreign leg), ACCOUS (FRA on an index that is not an Ibor) | =evidence/fixing_gap_by_trade.sql=, readings in =evidence/fixing_gap_by_trade.txt= | c0f6ed8c38 |
+
+* Notes
+
+- The draw is =swap_choices_of= and the =CrossCurrencySwap= branch of
+  =build_rate_trade= in =projects/ores.synthetic/core/src/service/trade_population_planner.cpp=.
+- The convention set comes from ORE's examples, so it holds placeholder
+  =GENERIC= indices for currencies with no real Ibor.
+- The list could be a view over the curve configs and the rules of task 4;
+  decide whether the planner reads it through the market data service or
+  the refdata service.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

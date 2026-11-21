@@ -109,3 +109,4 @@
 
 \ir ./marketdata_publish_from_dq_create.sql
 \ir ./marketdata_requirement_coverage_functions_create.sql
+\ir ./marketdata_curve_quote_coverage_create.sql

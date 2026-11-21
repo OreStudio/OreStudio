@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :pool_the_fleets_connections:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/settle-the-statement-question
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -29,11 +29,11 @@ recorded as rejected with the number that rejected it.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:A75C3063-896F-4DD5-A9BC-893A59EDFF7E][Pool the fleet's connections]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-21                               |
 
 * Acceptance
@@ -54,17 +54,21 @@ recorded as rejected with the number that rejected it.
 
 * Plan
 
-Both halves need a running pooler, which the host cannot install (no root) and
-which the development environment does not carry yet, so the measurement starts
-from the container or unit that
+Both halves need a running pooler. The plan expected to wait for
 [[id:3D23B905-359A-4DE0-9F35-1B047A54385B][Run a pooler beside a shared fleet]]
-builds, or from the pauli image.
+because the host could not install one. That changed: =pgbouncer= 1.26.1 is
+installed from sid, and a second instance runs from the checkout as the user, so
+nothing here waits on another task.
 
-The two candidate measurements are a prepared statement executed N times against
-an unnamed one on the same table, timed end to end from the client, and the total
-statement time from =pg_stat_statements= for a provisioning run in each mode. The
-first is cheap and answers the shape; the second is the one that decides, because
-it weighs planning against the mix of statements a service really runs.
+The measurement is =pgbench= against this environment's database, because it can
+send the same script in both protocols from one binary: =M prepared= names the
+statement once, =M extended= parses and plans it on every execution. Two
+workloads bound the answer - =select 1=, where planning is most of the work, and a
+range lookup over 512,195 rows, where it is nothing.
+
+The pooler half runs the database suite through a transaction-mode instance twice,
+once with =max_prepared_statements = 0= and once at its default, both against the
+same checkout.
 
 * Measurements
 
@@ -78,9 +82,61 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| =select 1=, one client, named | 26,378 tps, 0.038 ms | =pgbench -n -c 1 -T 10 -M prepared -f tmp/bench/trivial.sql= | eed8cc25ef |
+| =select 1=, one client, unnamed | 16,980 tps, 0.059 ms | as above with =-M extended= | eed8cc25ef |
+| =select 1=, four clients, named / unnamed | 73,084 / 61,331 tps | as above with =-c 4= | eed8cc25ef |
+| Range lookup over 512,195 rows, one client, named / unnamed | 16.6 / 17.3 tps, about 60 ms | =-f tmp/bench/lookup.sql= | eed8cc25ef |
+| Range lookup, four clients, named / unnamed | 55.7 / 48.3 tps | =-c 4= | eed8cc25ef |
+| The database suite through a pooler with no statement tracking | prepared statements break: "prepared statement ores_pq_set_context already exists" | see Notes | eed8cc25ef |
+| The database suite through a pooler with tracking | 71 of 75 cases pass; the four that fail are connection-level cases, named in Notes | as above with =max_prepared_statements = 200= | eed8cc25ef |
+
+Planning costs about 21 microseconds a statement. That is 55 per cent of the
+work for a statement that returns nothing and nothing measurable for one that
+scans. Our repositories mostly run short indexed statements, which sit near the
+first case, not the second.
 
 * Notes
+
+** What the pooler does, exactly
+
+The first attempt at this looked like good news and was not. A name prepared by
+one client and executed by two later ones returned the right value, which reads
+as a pooler keeping prepared statements for everyone. It was the same server
+connection being reused: with sequential clients and =default_pool_size = 5=, the
+pool hands back the connection it just took in.
+
+Two concurrent clients show what happens. While one holds its server connection
+in =pg_sleep=, the other gets a second one, and executing the name there fails
+with "prepared statement does not exist" whether tracking is on or off. A
+pooler's prepared statements belong to the client that made them; it replays
+them onto whichever server connection that client lands on next. That is the
+arrangement our layer needs, because a repository prepares on a pooled
+connection and executes on later transactions of the same one.
+
+** The four cases the pooled run fails
+
+All four are connection-level cases, not statement cases, and they belong to
+[[id:83C4FD4E-888C-4C3F-BE3D-50136487B458][Prove the pooled path in CI]]:
+
+- =postgres_listener_service= times out, because a transaction pooler hands a
+  =LISTEN= to somebody else at the next commit. This is the story's decision
+  that the listener stays direct, seen from the other side.
+- =pq_layer_tests.cpp:527= terminates a backend by pid, and the pid it reads
+  through a pooler is the pooler's server connection.
+- =pq_layer_tests.cpp:554= expects a failed prepare to report its own error.
+- =pq_layer_tests.cpp:374= copies rows into a table with row-level security
+  forced, and =COPY FROM= refuses that under a pooled session.
+
+None of them touches the decision taken here, and none may be waved away: task 6
+is where they are either fixed or declared out of scope for the pooled path.
+
+** The previous decision is corrected
+
+An earlier note on the story said a name prepared by one client executed by two
+later clients, and concluded that a modern pooler needs no work for our
+statements. The conclusion stands - the pooler does replay a client's own
+statements - but the evidence for it was wrong, and is replaced by the
+measurement and the concurrent-client test above.
 
 * Test Scenarios
 
@@ -106,3 +162,24 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The prepared statements stay, and the pooler carries a version floor instead.
+
+=pgbench= against this environment's database, ten seconds a run: a statement
+that returns nothing runs 26,378 times a second named and 16,980 unnamed, so
+planning costs about 21 microseconds; a range lookup over 512,195 rows runs at
+16.6 and 17.3 a second, where the difference is lost in the scan. The
+repositories mostly run short indexed statements, which sit near the first
+figure.
+
+Through a transaction pooler, our layer breaks without statement tracking - the
+first prepare after a server connection changes reports "prepared statement
+ores_pq_set_context already exists" - and works with it, 71 of 75 database cases
+passing. The four that fail are connection-level cases and belong to
+[[id:83C4FD4E-888C-4C3F-BE3D-50136487B458][Prove the pooled path in CI]].
+
+So: the floor is pgbouncer 1.21 or later with =max_prepared_statements=, which
+1.24 and later default to 200, and the environments that run a pooler state that
+version in one place. Sending the statements unnamed is rejected, with the 21
+microseconds as the number that rejected it. The hand-written SQL already sends
+unnamed statements and does not change.

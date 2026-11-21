@@ -115,12 +115,16 @@ them.
   environment, and the idle period is what makes a ceiling affordable: an idle
   service holds its floor, not its burst. The single number it replaced answered
   two questions at once and could be right for neither.
-- *A pooler needs no work for prepared statements, 2026-11-21.* Measured on
-  pgbouncer 1.26.1: =max_prepared_statements= defaults to 200, so a name
-  prepared by one client executed by two later clients and returned the right
-  value. The version floor of 1.21 stands, and it excludes Debian 12's 1.18, but
-  no setting of ours has to change for the statements to survive. The remaining
-  task is the decision, not the code.
+- *The named statements stay, and the pooler carries the floor, 2026-11-21.*
+  Sending them unnamed costs about 21 microseconds a statement: a statement that
+  returns nothing ran 26,378 times a second named against 16,980 unnamed, and a
+  range lookup over half a million rows showed no difference. Our repositories
+  run short indexed statements, which sit near the first figure, so the cost is
+  real. The floor is pgbouncer 1.21 or later with =max_prepared_statements=,
+  which 1.24 and later default to 200, and it excludes Debian 12's 1.18. A
+  pooler keeps the statements of the client that made them and replays them onto
+  whichever server connection that client lands on next, which is exactly what a
+  repository that prepares on a pooled connection needs.
 - *pauli gets a container, a shared development host gets a unit, 2026-11-21.*
   pauli runs the fleet as podman containers pulled from the registry, NATS
   among them, so the pooler joins it the same way: an image, a configuration, and

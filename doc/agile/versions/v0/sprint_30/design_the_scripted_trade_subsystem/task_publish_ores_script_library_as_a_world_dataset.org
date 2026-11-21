@@ -54,20 +54,24 @@ ORE's script library arrives as a world dataset whose methodology extracts, corr
 
 * Plan
 
-Four PRs, each ending in a check.
+Five PRs, each ending in a check.
 
 1. The shell's =script= menu, which needs no session: =parse=, =check=,
    =inputs= and =print=, a local unit of =ores.shell.trading= linking
    =ores.trading.scripting=. The generator runs them through the shell's batch
-   mode, =ores.shell -f=, which exits non-zero when a command fails.
+   mode, =ores.shell --load=, which exits non-zero when a command fails.
 2. The dataset: the generator and its corrections file in =external/ore/tools/=,
-   the methodology step, the artefact tables of the script entities, the
-   publish function, the artefact type and the =world= bundle membership; the
-   =script_library_seed= output and the corrections populate script are retired.
-3. A scripted trade records its script's name, holding tenant and version, or
+   the methodology step, the staging tables of the seven script entities, the
+   SQL publish function, the artefact type and the =world= bundle membership,
+   and the build job's reproduction check; the =script_library_seed= output and
+   the corrections populate script are retired, and the twin recipes' populate
+   runs after the bring-up publish.
+3. The trading service's publish-from-DQ handler, so the dataset can be
+   republished over the bus as well as at bring-up.
+4. A scripted trade records its script's name, holding tenant and version, or
    its inline text and a hash, and a run writes the library from those
    versions.
-4. A tenant publishes its own script through the trading service, which parses
+5. A tenant publishes its own script through the trading service, which parses
    it and warns on a name the world library holds.
 
 * Measurements
@@ -84,8 +88,36 @@ task and name that file in the Command column.
 |------+-------+---------+--------|
 | ores.shell.trading.tests | 4932 assertions in 1743 test cases pass | build/output/linux-clang-release-ninja/publish/bin/ores.shell.trading.tests | f2de16c79c + PR 1 |
 | offline batch run | exit 0 for a clean script, exit 1 with =bad.txt:1:8: error: expected <Term> [SCR1001]= for one that does not parse, with no NATS server | ores.shell --nats-url nats://127.0.0.1:1 --load <file> | f2de16c79c + PR 1 |
+| bring-up publish | ore.script_library inserted 54; live: 54 scripts, 56 variants, 254 results, 6 calibrations, 12 strikes, 1 coarsening, 750 inputs, 321 twin recipes after it | compass db recreate -y -k, then verify_library.sql | 55d938cb53 + PR 2 |
+| republish unchanged | skipped 54 | select * from ores_dq_publish_dataset_fn('ore.script_library', system tenant) | 55d938cb53 + PR 2 |
+| republish after one staged change | updated 1, skipped 53; Accumulator01's input at version 2, a dropped result closed (4 to 3), others at version 1 | same, inside a rolled-back transaction | 55d938cb53 + PR 2 |
+| generator against the retired seed | equal but the 2 corrections, Accumulator02's Event list and 5 script descriptions | a row-by-row comparison of the seven tables | 55d938cb53 + PR 2 |
+| ores.trading.scripting.tests | 1200 assertions in 18 test cases; a planted wrong type fails the inputs test | ores.trading.scripting.tests | 55d938cb53 + PR 2 |
 
 * Notes
+
+** What the second PR found
+
+- The staging template wrote only the first column of a composite primary key,
+  so every staged script table lost its purpose or sequence number; it now
+  writes every key column, as the live table's template does. No existing
+  staged entity has a composite key, so nothing else changed.
+- Against the seed it retires, the generator differs where it should: the two
+  corrected scripts, each the seed's code with its correction applied;
+  Accumulator02's ObservationPeriodEndDates, now a list of Events; and five
+  script descriptions the seed took from section headings
+  (=RAINBOW OPTIONS -->=, the copyright line), now each script's own first line.
+  Every other row of the seven tables is equal.
+- Input descriptions sit under =Input Data:= or =Inputs:=, and an entry may
+  separate its name with a tab or wrap onto deeper lines, so an entry is read
+  as a name and its text, and the first entry of a name is kept.
+- The twin recipes became no dataset: they are platform data ORE Studio
+  authors, which a populate script writes, and they need the scripts only to
+  exist. They run after the bring-up publish, as the tenor convention
+  resolutions already do.
+- Every publish-from-DQ function writes another service's live tables outside
+  its repository, and each is excused for =entity_writes/sql_writer=; the
+  library's is excused the same way.
 
 ** What the first PR found
 
@@ -149,7 +181,11 @@ via its "Verifies task" field.
 
 * Result
 
-In progress: the first of four PRs is in. The shell's =script= menu parses,
+In progress: the first two of five PRs are in. The second publishes ORE's
+script library as the =ore.script_library= world dataset: a generator in
+=external/ore/tools/= extracts, corrects, parses and derives every script with
+the shell, and the bring-up publishes the staged rows, writing a new version
+only of a script that changed. In the first, the shell's =script= menu parses,
 checks and lists the inputs of a payoff script with no session and no server,
 and a batch run with =--load= exits non-zero when a command fails, which is the
 contract the library's generator calls it under.

@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ores.cpp.wire-codec.enabled: true
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :ID: E368A8CE-859D-4C4B-B0CC-83C0EC99FA74
 :END:
 #+title: ores.trading.script_coarsening

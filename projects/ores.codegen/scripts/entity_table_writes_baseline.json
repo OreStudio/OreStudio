@@ -815,6 +815,12 @@
       "name": "ores_marketdata_publish_surface_series_fn",
       "file": "projects/ores.sql/create/marketdata/marketdata_surface_series_create.sql",
       "reason": "writes the live market series a published surface blueprint names, as ores_marketdata_publish_curve_series_fn does for a curve"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_trading_publish_script_library_from_dq_fn",
+      "file": "projects/ores.sql/create/trading/trading_publish_from_dq_create.sql",
+      "reason": "writes the script library's live tables from its staging tables, as every publish from DQ does"
     }
   ]
 }

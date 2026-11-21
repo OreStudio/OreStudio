@@ -23,6 +23,9 @@
 -- =============================================================================
 -- Drop all trade tables in reverse dependency order.
 
+-- The publish functions read the script tables, so they go first
+\ir ./trading_publish_from_dq_drop.sql
+
 -- Views read the family tables, so they go first
 \ir ./trading_common_dates_vw_drop.sql
 

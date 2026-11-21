@@ -52,25 +52,27 @@ std::string unquoted(const std::string& sql) {
     return out;
 }
 
-/// The library the store is seeded with: each script's variants, in seed order.
-struct seeded_library {
+/// The library the store is published from: each script's variants, in the
+/// order the dataset stages them.
+struct staged_library {
     std::map<std::string, std::vector<std::pair<std::string, std::string>>> variants;
     std::map<std::string, std::vector<script_input>> inputs;
 };
 
-seeded_library seeded() {
+staged_library staged() {
     const auto sql = file_text(
-        project_root() / "projects/ores.sql/populate/trading/trading_script_library_populate.sql");
-    seeded_library out;
-    const std::regex variant(
-        R"re(\n    \('(\w+)', ores_utility_system_tenant_id_fn\(\), 0, '(\w+)', \$code\$([\s\S]*?)\$code\$)re");
+        project_root() / "projects/ores.sql/populate/ore/ore_script_library_artefact_populate.sql");
+    staged_library out;
+    const std::string row_head =
+        R"re(\n        \(v_dataset_id, ores_utility_system_tenant_id_fn\(\), 0, )re";
+    const std::regex variant(row_head + R"re('(\w+)', '(\w+)', \$code\$([\s\S]*?)\$code\$)re");
     for (auto m = std::sregex_iterator(sql.begin(), sql.end(), variant);
          m != std::sregex_iterator();
          ++m)
         out.variants[(*m)[1].str()].emplace_back((*m)[2].str(), (*m)[3].str());
     const std::regex input(
-        R"re(\n    \('(\w+)', ores_utility_system_tenant_id_fn\(\), 0, \d+, '(\w+)', '(\w+)', (true|false), (null|'(?:[^']|'')*'), )re");
-    const auto block = sql.substr(sql.find("insert into ores_trading_script_inputs_tbl"));
+        row_head + R"re('(\w+)', \d+, '(\w+)', '(\w+)', (true|false), (null|'(?:[^']|'')*'), )re");
+    const auto block = sql.substr(sql.find("insert into ores_dq_script_inputs_artefact_tbl"));
     for (auto m = std::sregex_iterator(block.begin(), block.end(), input);
          m != std::sregex_iterator();
          ++m) {
@@ -84,19 +86,6 @@ seeded_library seeded() {
     return out;
 }
 
-/*
- * The store corrects WorstOfBasketSwap after the seed, since ORE cannot parse it
- * as it ships (trading_script_library_corrections_populate.sql); the same
- * correction is applied here, and it changes no input.
- */
-std::string corrected(const std::string& name, std::string code) {
-    const std::string text = "couponAccumulation = couponAccumulation + (1-allAssetsTriggered)\n";
-    if (name == "WorstOfBasketSwap")
-        if (const auto at = code.find(text); at != std::string::npos)
-            code.insert(at + text.size() - 1, ";");
-    return code;
-}
-
 std::string described(const script_input& in) {
     return in.name + " " + in.type + (in.is_array ? "[]" : "") +
            (in.rule ? " {" + *in.rule + "}" : "");
@@ -104,24 +93,10 @@ std::string described(const script_input& in) {
 
 }
 
-TEST_CASE("the inputs the parser derives are the inputs the store holds", inputs_tags) {
-    const auto library = seeded();
+TEST_CASE("the inputs the parser derives are the inputs the dataset stages", inputs_tags) {
+    const auto library = staged();
     REQUIRE(library.variants.size() > 50u);
     REQUIRE(library.inputs.size() > 50u);
-
-    /*
-     * Where the derived inputs differ from the stored ones, the stored row is the
-     * mining's mistake, and the line says why; the store's rows are derived by the
-     * parser once the library is, and the line goes.
-     */
-    const std::set<std::string> known = {
-        // The default variant reads it untyped, and the mining kept that first
-        // use; the FD variant passes it to DATEINDEX as its schedule, and both
-        // compare it with ObservationDates, so it is a list of Events.
-        "Accumulator02: ObservationPeriodEndDates Event[] {ObservationPeriodEndDates"
-        "[SIZE(ObservationPeriodEndDates)] >= ObservationDates[SIZE(ObservationDates)]}"
-        " | stored ObservationPeriodEndDates Number[] {ObservationPeriodEndDates"
-        "[SIZE(ObservationPeriodEndDates)] >= ObservationDates[SIZE(ObservationDates)]}"};
 
     std::set<std::string> differing;
     std::size_t compared = 0;
@@ -133,7 +108,7 @@ TEST_CASE("the inputs the parser derives are the inputs the store holds", inputs
             ordered.begin(), ordered.end(), [](const auto& v) { return v.first == "default"; });
         std::vector<std::vector<script_input>> per_variant;
         for (const auto& [purpose, code] : ordered) {
-            const auto text = corrected(name, code);
+            const auto& text = code;
             const auto result = parse(text);
             INFO("variant " << purpose);
             REQUIRE(result.parsed());
@@ -142,8 +117,8 @@ TEST_CASE("the inputs the parser derives are the inputs the store holds", inputs
         const auto derived = merge_inputs(per_variant);
         const auto stored =
             library.inputs.contains(name) ? library.inputs.at(name) : std::vector<script_input>{};
-        // The names and their order must agree; a difference within an input is
-        // reported for the known list.
+        // The names and their order must agree, and every input's type, shape
+        // and rule; a difference within an input is reported by name.
         std::vector<std::string> derived_names, stored_names;
         for (const auto& in : derived)
             derived_names.push_back(in.name);
@@ -161,7 +136,7 @@ TEST_CASE("the inputs the parser derives are the inputs the store holds", inputs
     for (const auto& d : differing)
         report += "\n  " + d;
     INFO("differing inputs:" << report);
-    CHECK(differing == known);
+    CHECK(differing.empty());
 }
 
 TEST_CASE("an input takes its type from how the script uses it", inputs_tags) {

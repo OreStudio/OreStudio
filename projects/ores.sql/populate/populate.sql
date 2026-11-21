@@ -391,6 +391,12 @@ select ores_utility_allow_version_replace_fn();
 \echo '--- Tenor Convention Resolutions ---'
 \ir refdata/refdata_tenor_convention_resolutions_populate.sql
 
+-- The twin recipes name scripts of ORE's library, and a script exists only once
+-- the world publish above has written it.
+\echo ''
+\echo '--- Script Twin Recipes ---'
+\ir trading/trading_script_twin_inputs_populate.sql
+
 \echo ''
 \echo '=== System Population Complete ==='
 

@@ -17,8 +17,7 @@
 One script of ORE's script library. A scripted trade names a script by
 its library name, and the library states its code once for every trade of it.
 The rows are the system tenant's reference data, mined from the library ORE
-ships (=external/ore/examples/Products/Input/scriptlibrary.xml=). How the library
-is held and versioned is [[id:CCA8090C-26E0-4571-84BA-9115C110376C][The script library is versioned reference data]].
+ships (=external/ore/examples/Products/Input/scriptlibrary.xml=).
 
 * Flags
 :PROPERTIES:
@@ -125,3 +124,4 @@ std::optional<std::string>(std::string("Window barrier option"))
 * See also
 
 - [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.
+- [[id:CCA8090C-26E0-4571-84BA-9115C110376C][The script library is versioned reference data]] — how the library is held, versioned and corrected.

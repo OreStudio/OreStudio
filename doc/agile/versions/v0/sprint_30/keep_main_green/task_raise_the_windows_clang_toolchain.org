@@ -26,11 +26,11 @@ The Windows clang leg installs Clang 20 into a runner whose MSVC STL now refuses
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:4FCC628C-551E-4F7C-B1D7-69546174A9CD][Keep main green]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-21                               |
 
 * Acceptance
@@ -83,3 +83,16 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The Install Clang step now asks for LLVM 22 instead of 20. The runner image's
+MSVC 14.52 standard library refuses anything older (error STL1000 from
+=yvals_core.h=), so the leg was failing on toolchain drift before it compiled
+a line of our code. The workflow says why the version follows the image rather
+than being a preference.
+
+PR #4970. Workflow YAML parses and =compass check --exclude-heavy= is 10/10.
+
+Unverified by construction: whether =install-llvm-action@v2= can fetch LLVM 22
+for Windows. If it cannot, the leg fails at install rather than at compile,
+which is at least a truthful failure. Pinning the runner image instead would
+stop the drift recurring and is a separate decision.

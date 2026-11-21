@@ -1,0 +1,110 @@
+The six market data composed views, proved against the environment the systemd
+unit runs.
+
+Commit under test : the branch head, built from this checkout
+Database          : ores_dev_brave_hopper, recreated from this checkout and
+                    provisioned from the acme_demo profile; the adapters ingested
+                    966 ICE, 959 Tradeweb and 48 Frankfurter values
+Gateway           : ores.http.server-brave_hopper, http://localhost:20401
+Services running  : the whole fleet, started by the smoke run
+Account           : tenant_admin, in Acme Corporation, acting as its party
+
+What the run shows. The two catalogues answer whole: 23 providers and 26 feeds,
+and the connectivity answer with its publishers, suppliers, adapters, sessions,
+feeds, scopes and routes, the two document columns read back as documents. An
+item's fixing series answers 2,558 values from 2016-11-23 to 2026-11-20 with the
+publisher and the feed that carried it, and a URI the store does not hold answers
+a null series. The public publishers answer 15 publishers with their series, each
+pair read by the codec. The coverage answers 142 series. The file answers a CSV
+of 120 rows for a five-day range, named for the publisher and the range, with no
+cache.
+
+The run found one thing the port had to put right in the market data service:
+its fixing list could not be ordered by fixing_date, so a series' first and last
+value could only be had by reading every value. The model now marks the column
+sortable, and the coverage reads two values for each series and the count the
+service states, instead of 608,334 rows.
+
+--- 8< ---
+
+=== signing in ===
+signed in as: tenant_admin  outcome: party-required  tenant: Acme Corporation
+choose party: 200
+
+=== the market data catalogue
+HTTP 200
+Content-Type: application/json
+Cache-Control: private, max-age=300
+ETag: "cce3c657ef12a5c2-8810"
+providers: 23  feeds: 26
+  first provider: banxico Banco de Mexico
+  first feed: banxico-tiie-fondeo  publisher: banxico
+
+=== the connectivity catalogue
+HTTP 200
+Content-Type: application/json
+Cache-Control: private, max-age=300
+ETag: "f61b7133e458757b-79797"
+body (first 200): {"publishers":[{"code":"bcch","name":"Banco Central de Chile","kind":"reference","description":"The statistical database of the Banco Central de Chile, among them the average overnight interbank rate 
+
+=== an item's fixing series
+HTTP 200
+Content-Type: application/json
+Cache-Control: private, max-age=300
+ETag: "948fda3c22cc21d3-1868a"
+series: oresmd://fx/EUR?type=fixing&index=fx&source=ECB&ccy=CAD  provider: ecb
+  publisher: ecb  values: 2558  first: 2016-11-23  last: 2026-11-20
+  feeds: ['ecb-frankfurter']
+
+=== the public publishers
+HTTP 200
+Content-Type: application/json
+Cache-Control: private, max-age=300
+ETag: "1e02b9d8456bb7c4-797b"
+public providers: 15
+  bcch       Banco Central de Chile             feeds 1  series 0   accepted True
+  bcb        Banco Central do Brasil            feeds 1  series 0   accepted True
+  banxico    Banco de Mexico                    feeds 1  series 0   accepted True
+  boc        Bank of Canada                     feeds 2  series 27  accepted True
+     first series: {'id': '28ec5586-6416-4c4e-8fb2-6c24b6c5cad5', 'oresmd_uri': 'oresmd://fx/CAD?type=fixing&index=fx&source=BOC&ccy=AUD', 'base': 'CAD', 'quote': 'AUD'}
+  boe        Bank of England                    feeds 1  series 0   accepted True
+  boj        Bank of Japan                      feeds 1  series 0   accepted True
+  tcmb       Central Bank of the Republic of Türkiye feeds 1  series 21  accepted True
+     first series: {'id': 'a34a5b0d-c3c0-4e84-acd5-bb70ca6ea7a1', 'oresmd_uri': 'oresmd://fx/TRY?type=fixing&index=fx&source=TCMB&ccy=AED', 'base': 'TRY', 'quote': 'AED'}
+  cnb        Czech National Bank                feeds 1  series 0   accepted True
+  ecb        European Central Bank              feeds 2  series 36  accepted True
+     first series: {'id': 'ad0856bd-0c4c-4a47-837b-eaa96bf99e8b', 'oresmd_uri': 'oresmd://fx/EUR?type=fixing&index=fx&source=ECB&ccy=ARS', 'base': 'EUR', 'quote': 'ARS'}
+  nyfed      Federal Reserve Bank of New York   feeds 1  series 0   accepted True
+  imf        International Monetary Fund        feeds 1  series 48  accepted True
+     first series: {'id': '75cbbb32-da74-4cfc-8e93-205c872d1e6d', 'oresmd_uri': 'oresmd://fx/USD?type=fixing&index=fx&source=IMF&ccy=AED', 'base': 'USD', 'quote': 'AED'}
+  mas        Monetary Authority of Singapore    feeds 1  series 0   accepted True
+  norgesbank Norges Bank                        feeds 1  series 0   accepted True
+  rba        Reserve Bank of Australia          feeds 1  series 0   accepted True
+  riksbank   Sveriges Riksbank                  feeds 1  series 0   accepted True
+
+=== the public rates coverage
+HTTP 200
+Content-Type: application/json
+Cache-Control: private, max-age=300
+ETag: "0ffd8151a94fba25-34b0"
+coverage series: 142
+   015a67c7-d4d3-45dd-9e82-73fdd0705dce {'first': '2016-11-23', 'last': '2022-12-30', 'count': 1564}
+   03308365-679a-41cd-bd2e-03c48318e222 {'first': '2017-01-03', 'last': '2026-11-20', 'count': 2466}
+   042d43ee-f564-435b-8f08-363a47af9795 {'first': '2016-11-23', 'last': '2020-10-30', 'count': 1006}
+
+=== the public rates file
+HTTP 200
+Content-Type: text/csv; charset=utf-8
+cache-control: private, no-store
+x-fixing-rows: 120
+content-disposition: attachment; filename="ecb-fixings-2026-11-01_2026-11-05.csv"
+body (first 200): publisher,date,pair,item,value | ecb,2026-11-02,EUR/NOK,oresmd://fx/EUR?type=fixing&index=fx&source=ECB&ccy=NOK,10.3775 | ecb,2026-11-03,EUR/NOK,oresmd://fx/EUR?type=fixing&index=fx&source=ECB&ccy=NOK,10.
+
+=== an item the store does not hold
+{"series":null}
+HTTP 200
+
+=== the addresses refuse what the BFF refused
+/api/marketdata/catalogue?code=ECB             HTTP 400  {"code":"invalid-request","message":"This read cannot take code."}
+/api/marketdata/fixing-series                  HTTP 400  {"code":"invalid-request","message":"An item's fixings are named by its URI."}
+/api/marketdata/public-rates/fixings.csv       HTTP 400  {"code":"invalid-request","message":"The fixings file names a publisher, and a range and item if it wants them."}

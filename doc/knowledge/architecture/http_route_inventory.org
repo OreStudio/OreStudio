@@ -72,7 +72,7 @@ an API publishes no area, so it is counted under =(none)=.
 | auth | audit, iam, server | 65 | resource 60, transport capability 5 |
 | changes | core, server | 5 | transport capability 5 |
 | grid | compute, grid-app-versions, grid-downloads, grid-jobs, operations | 28 | composed view 6, resource 22 |
-| market-data | adapters, connectivity, curves, fixing-series, market-reads, marketdata, public-rates, quotes, series, series-identity-shapes, subscriptions | 91 | composed view 8, resource 83 |
+| market-data | adapters, connectivity, curves, fixing-series, market-reads, marketdata, public-rates, quotes, series, series-identity-shapes, subscriptions | 97 | composed view 14, resource 83 |
 | operations | core, inbox, operations, server, workflow | 10 | composed view 3, resource 5, transport capability 2 |
 | qa | qa | 6 | resource 6 |
 | reference-data | conventions, core, counterparties, curve-configuration, records, refdata, server, tenors | 306 | composed view 2, resource 304 |
@@ -151,7 +151,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | auth | 18 | 18 | 0 |
 | changes | 2 | 2 | 0 |
 | grid | 14 | 14 | 0 |
-| market-data | 41 | 25 | 16 |
+| market-data | 41 | 31 | 10 |
 | operations | 5 | 4 | 1 |
 | qa | 6 | 0 | 6 |
 | reference-data | 30 | 30 | 0 |
@@ -161,7 +161,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | trading | 24 | 24 | 0 |
 | workflow | 18 | 18 | 0 |
 | (none) | 35 | 29 | 6 |
-| total | 334 | 299 | 35 |
+| total | 334 | 305 | 29 |
 
 * The pairing
 
@@ -266,16 +266,16 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | POST =/api/market/instruments= | none |
 | POST =/api/market/rate-ladder= | none |
 | GET =/api/marketdata/adapters= | GET /api/marketdata/adapters |
-| GET =/api/marketdata/catalogue= | none |
-| GET =/api/marketdata/connectivity= | none |
-| GET =/api/marketdata/fixing-series= | none |
-| GET =/api/marketdata/public-rates= | none |
+| GET =/api/marketdata/catalogue= | GET /api/marketdata/catalogue |
+| GET =/api/marketdata/connectivity= | GET /api/marketdata/connectivity |
+| GET =/api/marketdata/fixing-series= | GET /api/marketdata/fixing-series |
+| GET =/api/marketdata/public-rates= | GET /api/marketdata/public-rates |
 | POST =/api/marketdata/public-rates/:code/accept-terms= | POST /api/marketdata/public-rates/{code}/accept-terms |
 | POST =/api/marketdata/public-rates/:code/withdraw-terms= | POST /api/marketdata/public-rates/{code}/withdraw-terms |
 | POST =/api/marketdata/public-rates/accept-terms= | POST /api/marketdata/public-rates/accept-terms |
-| GET =/api/marketdata/public-rates/coverage= | none |
+| GET =/api/marketdata/public-rates/coverage= | GET /api/marketdata/public-rates/coverage |
 | GET =/api/marketdata/public-rates/fixings= | GET /api/marketdata/public-rates/fixings |
-| GET =/api/marketdata/public-rates/fixings.csv= | none |
+| GET =/api/marketdata/public-rates/fixings.csv= | GET /api/marketdata/public-rates/fixings.csv |
 | GET =/api/marketdata/quotes= | none |
 | GET =/api/marketdata/quotes/feeds= | none |
 | GET =/api/marketdata/quotes/history= | none |
@@ -504,7 +504,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 
 * The inventory
 
-1433 routes: 334 answered by the BFF and 1099 by ores.http.
+1439 routes: 334 answered by the BFF and 1105 by ores.http.
 
 | Kind | Area | Method | Path | Server | Where | Note |
 |------+------+--------+------+--------+-------+------|
@@ -859,17 +859,23 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | resource | market-data | get | =/api/marketdata/adapters= | bff | projects/ores.web/packages/bff/src/adapters.ts:95 | Every adapter the service tracks, with what it serves, what it was asked to serve and the counts of the last demand it answered. |
 | resource | market-data | get | =/api/marketdata/adapters= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/adapter_routes.cpp:87 | Every adapter the market data service tracks, with what it serves, what it was asked to serve, and the kind of source its feed reads, joined from the feeds and the sessions. |
 | composed view | market-data | get | =/api/marketdata/catalogue= | bff | projects/ores.web/packages/bff/src/subscriptions.ts:179 | The providers and the feeds that serve them in one answer, two collection reads, so a subscription or a route can name a feed by id. |
+| composed view | market-data | get | =/api/marketdata/catalogue= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/catalogue_routes.cpp:78 | The providers and the feeds that serve them answered by ores.http at the address and in the shape the BFF answered: every provider by its code, and every feed by the publisher it belongs to, its default first and then by name. |
 | composed view | market-data | get | =/api/marketdata/connectivity= | bff | projects/ores.web/packages/bff/src/connectivity.ts:167 | The publishers, suppliers, adapters, sessions, feeds, scopes and routes the Connectivity screen draws, seven collection reads in one answer. |
+| composed view | market-data | get | =/api/marketdata/connectivity= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/connectivity_routes.cpp:233 | The connectivity catalogue answered by ores.http at the address and in the shape the BFF answered: the publishers and their suppliers, the adapters with their comma lists as lists and their configuration schema as fields, the sessions with their settings as a document, and the feeds with the scopes and routes each carries. |
 | composed view | market-data | get | =/api/marketdata/fixing-series= | bff | projects/ores.web/packages/bff/src/fixing-series.ts:43 | One item named by its oresmd URI: its series, the feeds and sessions that brought its values, and the fixings written against it. |
+| composed view | market-data | get | =/api/marketdata/fixing-series= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/fixing_series_routes.cpp:100 | One item's fixing series answered by ores.http at the address and in the shape the BFF answered: the series its oresmd URI names, its fixings oldest first, its publisher, and the feeds that carry it with the supplier behind each session. |
 | composed view | market-data | get | =/api/marketdata/public-rates= | bff | projects/ores.web/packages/bff/src/public-rates.ts:228 | Every public publisher with its terms, its feeds with their suppliers and asset classes, and the fixing series it fills, six collections read together. |
+| composed view | market-data | get | =/api/marketdata/public-rates= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/public_rates_views.cpp:292 | The public publishers answered by ores.http at the address and in the shape the BFF answered: each publisher that states a terms page, with its feeds, the supplier behind each session, the asset classes its scopes name, and the series it fills as pairs. |
 | resource | market-data | post | =/api/marketdata/public-rates/:code/accept-terms= | bff | projects/ores.web/packages/bff/src/public-rates.ts:494 | Records the acceptance of a publisher's terms as the service holds them, or withdraws it so the adapter no longer fetches the publisher. |
 | resource | market-data | post | =/api/marketdata/public-rates/:code/withdraw-terms= | bff | projects/ores.web/packages/bff/src/public-rates.ts:419 | Records the acceptance of a publisher's terms as the service holds them, or withdraws it so the adapter no longer fetches the publisher. |
 | resource | market-data | post | =/api/marketdata/public-rates/accept-terms= | bff | projects/ores.web/packages/bff/src/public-rates.ts:441 | Accepts the terms of several publishers at the versions read, each as the single accept would, and answers every publisher's outcome. |
 | resource | market-data | post | =/api/marketdata/public-rates/accept-terms= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/public_rate_routes.cpp:252 | The fixings the store holds for up to a dozen series, oldest first, and the three answers a person gives to a publisher's terms: accept one at the version read, withdraw one, and accept many in one request. |
 | composed view | market-data | get | =/api/marketdata/public-rates/coverage= | bff | projects/ores.web/packages/bff/src/public-rates.ts:316 | The first and last date and the count of every series a public publisher fills, computed from the public catalogue and its fixings. |
+| composed view | market-data | get | =/api/marketdata/public-rates/coverage= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/public_rates_views.cpp:398 | The public rates coverage answered by ores.http at the address and in the shape the BFF answered: each public series' first date, last date and count, with a series that holds no value left out. |
 | resource | market-data | get | =/api/marketdata/public-rates/fixings= | bff | projects/ores.web/packages/bff/src/public-rates.ts:330 | The fixings of up to a dozen series in one read, oldest first, by series. |
 | resource | market-data | get | =/api/marketdata/public-rates/fixings= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/public_rate_routes.cpp:194 | The fixings the store holds for up to a dozen series, oldest first, and the three answers a person gives to a publisher's terms: accept one at the version read, withdraw one, and accept many in one request. |
 | composed view | market-data | get | =/api/marketdata/public-rates/fixings.csv= | bff | projects/ores.web/packages/bff/src/public-rates.ts:360 | One publisher's fixings as a CSV file over a date range, the catalogue read to find the publisher's series and their fixings read after. |
+| composed view | market-data | get | =/api/marketdata/public-rates/fixings.csv= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/public_rates_views.cpp:439 | One public publisher's fixings as a file, answered by ores.http at the address and in the shape the BFF answered: the publisher's series, filtered by the range and the item the query names, written as CSV with the count of rows it carries. |
 | resource | market-data | post | =/api/marketdata/public-rates/{code}/accept-terms= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/public_rate_routes.cpp:215 | The fixings the store holds for up to a dozen series, oldest first, and the three answers a person gives to a publisher's terms: accept one at the version read, withdraw one, and accept many in one request. |
 | resource | market-data | post | =/api/marketdata/public-rates/{code}/withdraw-terms= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/public_rate_routes.cpp:236 | The fixings the store holds for up to a dozen series, oldest first, and the three answers a person gives to a publisher's terms: accept one at the version read, withdraw one, and accept many in one request. |
 | resource | market-data | get | =/api/marketdata/quotes= | bff | projects/ores.web/packages/bff/src/quotes.ts:415 | The feeds the caller may watch for display, the latest quote of each datum on them from the board each server fills by listening to every feed subject once, and one point of a provider's series over a span; every read asks the market data service which feeds the caller may watch. |

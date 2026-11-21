@@ -568,6 +568,12 @@ RULES = (
          BFF, COMPOSED, "market-data",
          "The providers and the feeds that serve them in one answer, two collection reads,"
          " so a subscription or a route can name a feed by id."),
+    Rule("the market data catalogue",
+         ("exact", "GET /api/marketdata/catalogue"),
+         CPP, COMPOSED, "market-data",
+         "The providers and the feeds that serve them answered by ores.http at the address and"
+         " in the shape the BFF answered: every provider by its code, and every feed by the"
+         " publisher it belongs to, its default first and then by name."),
     Rule("the public publishers",
          ("exact", "GET /api/marketdata/public-rates"),
          BFF, COMPOSED, "market-data",
@@ -583,11 +589,36 @@ RULES = (
          BFF, COMPOSED, "market-data",
          "One publisher's fixings as a CSV file over a date range, the catalogue read to"
          " find the publisher's series and their fixings read after."),
+    Rule("the public publishers",
+         ("exact", "GET /api/marketdata/public-rates"),
+         CPP, COMPOSED, "market-data",
+         "The public publishers answered by ores.http at the address and in the shape the BFF"
+         " answered: each publisher that states a terms page, with its feeds, the supplier behind"
+         " each session, the asset classes its scopes name, and the series it fills as pairs."),
+    Rule("the public rates coverage",
+         ("exact", "GET /api/marketdata/public-rates/coverage"),
+         CPP, COMPOSED, "market-data",
+         "The public rates coverage answered by ores.http at the address and in the shape the BFF"
+         " answered: each public series' first date, last date and count, with a series that"
+         " holds no value left out."),
+    Rule("the public rates file",
+         ("exact", "GET /api/marketdata/public-rates/fixings.csv"),
+         CPP, COMPOSED, "market-data",
+         "One public publisher's fixings as a file, answered by ores.http at the address and in"
+         " the shape the BFF answered: the publisher's series, filtered by the range and the item"
+         " the query names, written as CSV with the count of rows it carries."),
     Rule("the connectivity catalogue",
          ("exact", "GET /api/marketdata/connectivity"),
          BFF, COMPOSED, "market-data",
          "The publishers, suppliers, adapters, sessions, feeds, scopes and routes the"
          " Connectivity screen draws, seven collection reads in one answer."),
+    Rule("the connectivity catalogue",
+         ("exact", "GET /api/marketdata/connectivity"),
+         CPP, COMPOSED, "market-data",
+         "The connectivity catalogue answered by ores.http at the address and in the shape the"
+         " BFF answered: the publishers and their suppliers, the adapters with their comma"
+         " lists as lists and their configuration schema as fields, the sessions with their"
+         " settings as a document, and the feeds with the scopes and routes each carries."),
     Rule("the identity shape fields",
          ("regex", r"^GET /api/marketdata/(series-identity-shape-fields"
                    r"|series-classification-rules)$"),
@@ -600,6 +631,12 @@ RULES = (
          BFF, COMPOSED, "market-data",
          "One item named by its oresmd URI: its series, the feeds and sessions that brought"
          " its values, and the fixings written against it."),
+    Rule("an item's fixing series",
+         ("exact", "GET /api/marketdata/fixing-series"),
+         CPP, COMPOSED, "market-data",
+         "One item's fixing series answered by ores.http at the address and in the shape the BFF"
+         " answered: the series its oresmd URI names, its fixings oldest first, its publisher, and"
+         " the feeds that carry it with the supplier behind each session."),
     Rule("the report health",
          ("exact", "GET /api/reporting/report-health"),
          None, RESOURCE, "reporting",

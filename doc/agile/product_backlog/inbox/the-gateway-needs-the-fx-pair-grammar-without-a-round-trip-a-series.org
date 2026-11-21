@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: FCD971E6-F99C-44A0-87EA-3CB20F5D9BC6
+:END:
+#+title: The gateway needs the FX pair grammar without a round trip a series
+#+description: The public publishers view names each series by the pair its oresmd URI states. The grammar belongs to the codec and not to the gateway, but asking the service for it costs one round trip per series.
+#+type: capture
+#+level: cross
+#+filetags: :http:marketdata:architecture:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The gateway needs to read the pair an FX fixing URI states — its subject and
+its quote currency — and it should not own that grammar. Three ways, and the
+decision is open:
+
+1. *Ask the service*, =marketdata.v1.ops.parse_oresmd_uri=, which answers the
+   parts. Correct and already exists; costs one round trip for each series a
+   view names.
+2. *Call the codec*, =oresmd_uri_codec=, which lives in =ores.marketdata.api=
+   — a library the gateway part already links for its protocol types. No round
+   trip, no new dependency. The mapping from the codec's datum to the parts is
+   about ten lines, and the service's =parsed()= is that mapping.
+3. *Do nothing*, and let each view ask once per request for the series it
+   names, cached for the life of the request.
+
+* Why
+
+The public publishers view names each series by the pair its URI states, and
+the file view names the pair in a column. The BFF read the pair with a regular
+expression of its own, and its port must not copy that: the grammar is the
+codec's. The first port of the view hand-rolled the grammar, which is the
+mistake this capture exists to prevent repeating.
+
+The reason the decision is open is cost against layering. A round trip for each
+series is a cost a cached view can carry — the public catalogue is small — but
+it is a cost that grows with the catalogue and hides a fan-out inside one HTTP
+call. Calling the codec avoids it, and it is the same library the part already
+uses for its wire traits, so the question is whether the gateway may read a
+codec's answer directly or whether every such read belongs behind a service.
+
+The design says the gateway composes and does not compute, and that the URI
+grammar lives in the server. A codec compiled into the gateway is the server's
+own code, which suggests option 2 is allowed; what it needs is one decision
+recorded, so the next view does not decide again.
+
+* References
+
+- =projects/ores.marketdata/api/include/ores.marketdata.api/datum/oresmd_uri_codec.hpp=
+- =projects/ores.marketdata/core/src/service/oresmd_uri_service.cpp=, =parsed=
+- =projects/ores.http/marketdata/src/routes/marketdata/oresmd_routes.cpp=, the
+  codec's own HTTP route, which forwards rather than calling the codec
+- The public publishers view, =public_rates_views.cpp=, whose first port
+  hand-rolled the grammar and was rewritten to ask the service
+
+* See also
+
+- [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then
+  retire it — the remaining work]]

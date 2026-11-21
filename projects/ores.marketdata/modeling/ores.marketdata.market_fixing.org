@@ -73,6 +73,7 @@ Reference to =ores_marketdata_market_series_tbl(id)= — identifies the fixing i
 :type:     date
 :cpp_type: std::chrono::year_month_day
 :natural_key: true
+:sortable: true
 :END:
 
 Calendar date on which the index was fixed. Also the hypertable partition column.

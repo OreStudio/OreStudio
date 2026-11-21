@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/serve-the-market-data-views
+#+pr: 4968
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
 #+updated: 2026-11-09
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ Serve these composed views from ores.marketdata: an item's fixing series, the co
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-09                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-21                               |
 
 * Acceptance
 
@@ -42,9 +42,51 @@ Serve these composed views from ores.marketdata: an item's fixing series, the co
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Six views, served from =ores.http.marketdata=, which already answers the area's
+resources and is the part the inventory names as their owner. Every one of them
+is a join: the market data service answers collections, and the gateway sorts
+them, nests the children under their parent, and reads the two JSON documents
+the catalogue stores as text back into documents.
+
+Five of the six are kept for five minutes and carry an ETag. The sixth is a
+file: it states no cache policy because it is built on each request, and it is
+the only view here that answers with a body that is not JSON.
+
+The reads each view makes, as the BFF makes them:
+
+| View | Reads | The join |
+|------+-------+----------|
+| the market data catalogue | providers, feeds | each feed under the publisher its code names, the providers by code and the feeds by publisher, default first, then name |
+| the connectivity catalogue | publishers, suppliers, adapters, sessions, feeds, scopes, routes | the scopes and the routes under the feed they name, the adapter's comma lists as lists, and its configuration schema as the fields it states |
+| an item's fixing series | market series, providers, feeds, scopes, sessions, suppliers, fixings | the series the URI names, its fixings oldest first, and the feeds that carry it with the supplier behind each session |
+| the public publishers | the public catalogue | each provider's feeds and the series its sessions fill, the pair of every series, and the fixings behind them |
+| the public rates coverage | the public catalogue | each series' first date, last date and count, and only the series that hold one |
+| the public rates file | the public catalogue | the publisher's series, filtered by range and item, written as CSV |
+
+*The public catalogue* is one builder, not a route: the last three views read it
+and then answer differently. That is the same shape the BFF has, and it is why
+the three are one commit rather than three.
+
+Two facts the port settles rather than assumes.
+
+- *The JSON documents come back as documents.* Two catalogue columns hold a
+  document as text — a session's settings and an adapter's configuration schema.
+  A text that does not parse is drawn as an empty document, because a screen that
+  cannot draw one record must not fail the tree for the rest.
+- *The file is not a view answer.* It answers =text/csv= with a
+  =content-disposition= naming the publisher and the range, and a =x-fixing-rows=
+  count, so a person downloads it and a screen can say how many rows it holds.
+  The composed-view answer builder is for JSON and is not used here.
+
+The pieces land one commit each, in the order the table states them: the two
+catalogues, then the item's series, then the three public rates views. Each
+commit is a view the gate and a live run can check on its own.
+
+The tests prove what a test can reach without a service behind it: the query
+each view refuses, the reach of each read, the shape built from a stated reply,
+and the ETag with its five minutes. The joins across live data are proved on the
+gateway, as the grid views were, because the reply shapes are what a test cannot
+invent.
 
 * Measurements
 
@@ -58,6 +100,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
+| The routes in scope | 6: the two catalogues, an item's series, the publishers, the coverage and the file | the inventory's pairing table, searched for =/api/marketdata/= | 23c075966b |
+| Routes in the tree | 1439 | =python3 build/scripts/route_inventory.py --check= | this branch |
+| The suite | 10 cases, 98 assertions | =ores.http.marketdata.tests "[marketdata_views]"= | this branch |
 |      |       |         |        |
 
 * Notes
@@ -77,7 +122,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4968][#4968]] | [http,marketdata] Serve the six market data composed views |
 
 * Review
 
@@ -86,3 +131,57 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+* Result
+
+The six views are served from =ores.http.marketdata= at the BFF's addresses and in
+the BFF's shapes, in five commits, one for each thing that could be checked on
+its own:
+
+1. the market data catalogue;
+2. the connectivity catalogue, whose rows are transformed rather than passed
+   through;
+3. an item's fixing series, the deepest join;
+4. the public publishers, the coverage and the file, which share one builder.
+
+What the work settled:
+
+- *A document column comes back as a document.* Two catalogue values are text in
+  the store, and a text that does not parse is drawn as an empty document, so one
+  bad record does not fail the tree for the rest.
+- *A null series, not an empty one.* An item's fixing series answers ={"series":
+  null}= for a URI the store does not hold, which is the difference between an
+  unknown item and an item with nothing.
+- *A publisher is public when it states a terms page.* The three public views
+  read the catalogue for those publishers alone, so a private publisher's rows
+  never travel to a screen that cannot show them.
+- *The file is not a view answer.* It answers =text/csv= with the publisher and
+  the range in its name, a =x-fixing-rows= count, and no cache, because it is
+  built on each request.
+- *A series without a pair is left out of the publishers' answer*, because a
+  screen there draws a pair and has nowhere to put a series without one.
+
+* The live run
+
+The six views are proved against the gateway the systemd unit runs, on a database
+recreated from this checkout and provisioned from the acme_demo profile, whose
+adapters ingested 966 ICE, 959 Tradeweb and 48 Frankfurter values. The transcript
+is in [[file:evidence/market_data_views_live_run.txt][evidence/market_data_views_live_run.txt]].
+
+The run found two things the code had to answer, and both are worth recording.
+
+- *A series' first and last value could not be read.* The market data service's
+  fixing list refused an order by =fixing_date=, so the only way to state a
+  series' coverage was to read every value: 608,334 rows for the public
+  catalogue, which no HTTP call survives. The model now marks the column
+  =sortable=, and the coverage reads two values for each series and the count the
+  service states beside them.
+- *A view must read only what it answers.* The public publishers need each
+  series' pair but never its values, the coverage needs three facts for each
+  series, and the file needs one publisher's values inside a range. The catalogue
+  builder now reads the collections alone, and each view reads the values it
+  needs, in the order and the window it states.
+
+Two other facts the live run settled: the public catalogue is 15 publishers and
+142 series, and an item the store does not hold answers a null series rather
+than an error.

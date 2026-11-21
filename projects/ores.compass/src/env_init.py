@@ -144,6 +144,7 @@ WEB_PORT_OFFSET = 2
 SITE_PORT_OFFSET = 4
 NATS_PORT_OFFSET = 5
 NATS_MONITOR_PORT_OFFSET = 6
+POOLER_PORT_OFFSET = 7
 
 # The ores.web site config declares one entry per environment instance. The
 # BFF resolves its entry by id, so a checkout binds its label to a declared
@@ -941,6 +942,20 @@ ORES_TEST_DB_DDL_PASSWORD={test_ddl_pw}
     # pooler the fleet's ceilings are the server's worst case, which is why
     # they are stated here rather than in each service's code.
     service_pool_ceiling = {"marketdata": 16}
+
+    # Where several environments share one PostgreSQL, their connections
+    # terminate at a pooler that caps what reaches the server. The environment
+    # states whether it runs one; with none, every service names the database
+    # directly, which is what a developer's own instance needs.
+    pooler_port = base_port + POOLER_PORT_OFFSET
+    pooler_enabled = existing.get("ORES_DB_POOLER_ENABLED", "0") == "1"
+    out.append("\n# ---------------------------------------------------------------------------\n")
+    out.append("# Transaction pooler. A shared instance sees its cap rather than the sum\n")
+    out.append("# of every service's pool; an environment without one stays direct.\n")
+    out.append("# ---------------------------------------------------------------------------\n")
+    out.append(f"ORES_DB_POOLER_PORT={pooler_port}\n")
+    out.append(f"ORES_DB_POOLER_ENABLED={'1' if pooler_enabled else '0'}\n")
+
     for c in service_components:
         up = _upper(c)
         out.append("\n")
@@ -948,7 +963,15 @@ ORES_TEST_DB_DDL_PASSWORD={test_ddl_pw}
         out.append(f"ORES_{up}_SERVICE_DB_PASSWORD={service_pw[c]}\n")
         out.append(f"ORES_{up}_SERVICE_DB_DATABASE={db_name}\n")
         out.append(f"ORES_{up}_SERVICE_DB_HOST={db_host}\n")
-        out.append(f"ORES_{up}_SERVICE_DB_PORT={db_port_effective}\n")
+        if pooler_enabled:
+            # The service's requests go to the pooler; the listener stays on the
+            # database, because transaction pooling hands a LISTEN to another
+            # session at the next commit.
+            out.append(f"ORES_{up}_SERVICE_DB_PORT={pooler_port}\n")
+            out.append(f"ORES_{up}_SERVICE_DB_LISTENER_HOST={db_host}\n")
+            out.append(f"ORES_{up}_SERVICE_DB_LISTENER_PORT={db_port_effective}\n")
+        else:
+            out.append(f"ORES_{up}_SERVICE_DB_PORT={db_port_effective}\n")
         out.append(f"ORES_{up}_SERVICE_DB_POOL_MIN=2\n")
         out.append(
             f"ORES_{up}_SERVICE_DB_POOL_MAX={service_pool_ceiling.get(c, 8)}\n")
@@ -986,7 +1009,7 @@ ORES_TEST_DB_DDL_PASSWORD={test_ddl_pw}
             f"ORES_{m}_DB_PASSWORD={app['pw']}\n"
             f"ORES_{m}_DB_DATABASE={db_name}\n"
             f"ORES_{m}_DB_HOST={db_host}\n"
-            f"ORES_{m}_DB_PORT={db_port_effective}\n"
+            f"ORES_{m}_DB_PORT={pooler_port if pooler_enabled else db_port_effective}\n"
             # The gateway serves every HTTP request of the environment, so its
             # pool bursts wider than the services behind it.
             f"ORES_{m}_DB_POOL_MIN=2\n"

@@ -1,0 +1,304 @@
+:PROPERTIES:
+:ID: 03554F8C-7FFF-4735-BC5B-2CA45E58C621
+:END:
+#+title: Task: Make the market data connection follow the trades
+#+description: A party demands, is entitled to, and reads exactly the market data its trades name: every convention a trade references has a supplier, the supplier is chosen by a stated rank, and a booking that names a convention no entitled supplier covers is refused.
+#+type: task
+#+level: s1
+#+filetags: :run_a_report_with_market_data:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0E718054-03B7-43A5-9289-61E505235BBD][Run a report on the generated trades with the market data they need]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A party demands, is entitled to, and reads exactly the market data its trades
+name. Every fixing convention a generated trade can reference has at least one
+supplier in the catalogue. The demand a party raises is the set of items its own
+trades resolve to, not its provider's whole catalogue. The party's subscription
+covers that set, and a booking that names a convention no entitled supplier
+covers is refused at the boundary, naming the supplier that is missing.
+
+This task is the connection. It does not supply market data for an asset class
+and it does not change how a report binds to a published set.
+
+The predecessor, [[id:9EFEAA52-D458-4CCF-A6C6-7C5A6A2EF6DC][Give every generated trade type its market data and pricing
+engines]], measured what the generated population names and what the market
+answers: 133 addresses, 124 unanswered, and the FX and IR half of that gap
+diagnosed against the architecture. Its raw record, with every query, is
+=evidence/fx_and_ir_publishing_setup.txt= in this story's evidence directory. It
+lands with that task's branch, which was unmerged when this page was written.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:0E718054-03B7-43A5-9289-61E505235BBD][Run a report on the generated trades with the market data they need]] |
+| Now          | Scaffolded. The chain is stated and measured; no code changed. |
+| Waiting on   | Nothing.                               |
+| Next         | Step 1: give the vendor fixing conventions a supplier in the catalogue. |
+| Last touched | 2026-11-21                               |
+
+* The model
+
+** Two axes, not one
+
+The word =source= is doing two jobs in this subject, and the confusion in the
+diagnosis came from that.
+
+- *The fixing convention* is the instrument. It says who calculates the rate, at
+  what time, by what method: the ECB's 14:15 euro reference rate, WM/Refinitiv's
+  4pm London fix, which ORE spells =TR20H=, ICE's LIBOR, the New York Fed's
+  SOFR. A trade references a convention, because a convention is what its
+  cashflows settle on.
+- *The fixing supplier* is who sells us that convention's values: LSEG,
+  Bloomberg, a central bank's own portal, or this platform's derived feed. A firm
+  may hold one convention from several suppliers, and the choice between them is
+  commercial and operational rather than economic.
+- *The fixing series* is the stored data for one convention from one supplier for
+  one party.
+
+The model already carries both axes. The convention is inside the oresmd URI:
+=source= for FX, as in
+=oresmd://fx/EUR?type=fixing&index=fx&source=TR20H&ccy=USD=, and =name= with
+=tenor= for interest rates, as in
+=oresmd://ir/GBP?type=fixing&index=ibor&name=LIBOR&tenor=3M=. The supplier is
+=market_series.provider_code=. The word =source= names the convention inside the
+URI and the supplier in every other column.
+
+Two consequences follow, and both are in the measured data.
+
+1. A convention that one publisher calculates has that publisher as its only
+   supplier. The ECB's reference rate is published by the ECB. So the nine FX
+   pairs this tenant holds under =source=ECB=, =source=IMF= and =source=BOC= are
+   *different conventions* from the 4pm London fix the trades name, not alternate
+   spellings of it, and they cannot answer it. This corrects an earlier reading of
+   the same numbers.
+2. A vendor supplies a convention it does not calculate. LSEG supplies the
+   WM/Refinitiv 4pm London fix; that is the normal shape of a fixing contract, and
+   it is the shape this catalogue has no row for.
+
+** The chain
+
+The connection is a closure, and every link has one rule.
+
+1. *A trade names conventions, never suppliers.* Its market references are the
+   conventions its cashflows settle on.
+2. *A convention resolves to catalogue items.* The catalogue states the item's
+   identity, which includes the convention.
+3. *An item has suppliers.* A provider's vendor instrument maps to the item, so
+   the provider can serve it. Several providers may serve one item; then a rank
+   decides.
+4. *A party is entitled to suppliers, not items.* A subscription grants display,
+   non-display or derived rights on a provider, and a route names the source the
+   party uses for it. Derived data needs derived rights on the suppliers of its
+   inputs, which is what the =derived= provider exists for.
+5. *Demand is the party's items.* It is the union, over the parties routed to an
+   adapter, of the items their trades require, intersected with the feed's scope.
+6. *Storage is one copy per item and supplier.* The installation owns it.
+7. *The read resolves the convention to a supplier the party is entitled to,* by
+   the stated rank, and records the choice so two reads of one report agree.
+
+** How a bank does this**
+
+The chain above is the ordinary shape of market data management, and it is worth
+saying so, because it tells us which parts are conventions of the industry and
+which are ours:
+
+- A firm holds a *security and instrument master* — what exists — apart from its
+  *vendor inventory* — who can supply each item, in the vendor's own notation.
+  One instrument maps to several vendors' ids, and a *rank* gives a primary and
+  its fallbacks.
+- *Entitlements* are commercial grants per provider, per legal entity or desk,
+  with display, non-display and derived rights. They are audited, and metering
+  prices them.
+- *Derived data* carries its own rights regime: a curve bootstrapped from a
+  vendor's quotes is redistributable only if the licence says so.
+- *Consumers ask for instruments.* A risk run asks for the GBP 3M LIBOR fixing of
+  a date. It never names a vendor. The market data service answers from an
+  entitled supplier, and it is the service's job to know which.
+
+Our tree has the same parts and stops short of the consumer asking for
+instruments: it stores a supplier's identity in the trade, and then asks the
+market for that supplier by name.
+
+* What exists, and what does not
+
+| Link | State |
+|------+-------|
+| A trade names a convention | Yes, an oresmd market reference on the trade. The FX generator also freezes the convention it names. |
+| Convention to catalogue item | Yes, =ores_marketdata_market_data_mappings_tbl= maps a vendor instrument to the item. |
+| Item to supplier | Partial. Public publishers supply their own conventions, one vendor instrument each. *No data vendor supplies any FX fixing*: the 200-odd fixing mappings belong to ecb, imf, boc, tcmb and a dozen central banks, and the vendors supply FX spot only. |
+| Supplier to entitlement | The machinery works. The data does not: the demo's =subscribe_market_data= step is 18 hand-written rows, four vendors plus =derived=, with no public publisher and nothing for interest rates. |
+| Demand is the party's items | The hook exists and is never supplied. =demand_policy::requirements(party, provider)= can narrow a party's demand; =adapter_supervisor.cpp:229= calls =compute_demand(snap->catalogue, now)= with no policy, so every entitled route demands its provider's whole scoped catalogue. |
+| Entitlement follows the trades | No. Nothing computes a party's required items from its trades, and nothing checks that its subscriptions cover them. |
+| One copy per item and supplier | Partly. Fixings are stored once, in the system tenant. The read still goes through a party's own series. |
+| Read by convention and supplier | No. =series_to_export= selects series and =market_fixing_repository::read_latest_for_series= reads by series id, so a party with no public route reads no fixing, even though the installation holds 325,571 of them. |
+| Supplier chosen by rank | No. There is no market data configuration in the schema, and no rank anywhere. |
+
+* Acceptance
+
+- Every fixing convention a generated trade can name has at least one supplier in
+  the catalogue, and the simulator serves it. A query over the population's
+  conventions returns no convention without a supplier.
+- =compute_demand= is called with a requirements policy for every route, so a
+  party's demand is the set of items its own trades resolve to. A test pins the
+  demand of a party with two trades as those trades' items.
+- A party that is routed and subscribed still demands nothing for a provider
+  whose items its trades do not name.
+- A booking, or a run, that names a convention no entitled supplier covers is
+  refused, and the refusal names the convention and the supplier it would have
+  needed. A test asserts the refusal for one convention of each kind.
+- A freshly provisioned Acme's parties hold the subscriptions their trades
+  require, with no hand step. The closure of the population over the catalogue is
+  a subset of the parties' entitlements, and a check fails when it is not.
+- A report's fixings are read by convention and supplier under the party's
+  entitlement, and two runs of the same report over the same as-of read the same
+  values.
+- The supplier of a convention is chosen by a stated rank held in the tenant's
+  market data configuration, and the choice is recorded with the run.
+- A party that consumes a derived curve, surface or composite holds derived
+  rights on the suppliers of its inputs, and a run records which.
+- The number of market data errors a provisioned Acme's reports record for the
+  generated trades falls to zero, or to a list this task asserts by name with a
+  reason for each.
+
+* Plan
+
+The chain is a closure, so build it from the supply end inwards: each step is
+verifiable on its own and leaves the next one possible.
+
+1. *Give the vendor conventions a supplier.* Add vendor instruments and mappings
+   so that LSEG supplies the 4pm London FX fixings and ICE the LIBOR-style ones,
+   in the vendors' own notation, and add them to the feeds' scopes. The
+   simulator stands in for the vendor: no code path may know whether a source is
+   simulated, so the catalogue is the only change. Verify: a demand for a 4pm
+   London item yields the vendor's ids, and a provisioned tenant's series appear
+   under that provider.
+
+2. *Wire the requirements policy.* Point =demand_policy::requirements= at the
+   closure over the party's trades — =ores_trading_market_references_fn= already
+   lists a party's required addresses from its trades — and add
+   =composite_inputs= so a composite's inputs join its demand. Verify: the
+   demand of a party equals the items of its trades, and a party whose trades
+   name nothing demands nothing.
+
+3. *Make the entitlement follow the trades.* Compute the closure over a
+   population at booking and at run start, and refuse a booking whose conventions
+   no entitled supplier covers, naming the convention and the missing supplier.
+   This is the difference =closure(rho(...)) \ U= that
+   [[id:FD427B5B-BDC5-4803-AFCD-97A59E31FE25][Market Data Requirements and Resolution]] says must be raised and never
+   silently discarded. Verify: a unit test refuses one convention of each kind
+   with its reason, and a provisioned tenant raises nothing.
+
+4. *Read a fixing by convention and supplier.* Change the export and the fixings
+   read to resolve the convention to an entitled supplier, rather than to a
+   party's series, using the rule the target already states in
+   [[id:F4BBEF34-D84C-4AE6-A3AA-DC47C3EE06EE][Public sources publish daily fixings through an adapter]]: the reader reads
+   by item. Verify: a party with no public route reads the installation's
+   fixings of a convention it is entitled to, and reads nothing for one it is
+   not.
+
+5. *Choose the supplier by rank.* Add the tenant's market data configuration: a
+   rank per (item or convention family, provider), with a primary, fallbacks and
+   the derived source, and record the choice with each run. Verify: with two
+   suppliers of one item, the primary answers; remove its entitlement and the
+   fallback answers; the run records which one did.
+
+6. *Seed the demo from the closure.* Replace the hand-written
+   =subscribe_market_data= list with the subscriptions the closure over the
+   demo's trades requires, per party, so a fresh provision needs no hand step.
+   Verify: the closure check of step 3 passes on a fresh provision with no
+   manual subscription.
+
+7. *Derive the crosses.* The fifteen FX pairs no supplier quotes as a fixing are
+   crosses of two published bases. Build them as composites with lineage, and
+   give the consuming parties derived rights. Verify: a trade on one of the
+   crosses prices, and its fixing traces to the two driver fixings.
+
+Steps 1 and 2 are independent. Step 3 needs 1 and 2. Steps 4 and 5 need 3. Step
+6 needs 3, and step 7 needs 2 and 4.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it and
+the commit it was measured at. Where the raw output matters, it is in
+=evidence/fx_and_ir_publishing_setup.txt=, which names its own commands.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Fixing mappings, by supplier | ecb 44, imf 48, boc 27, tcmb 21, ore 2 (test rows), and one each for banxico, bcb, bcch, boe, boj, cnb, mas, norgesbank, nyfed, rba, riksbank. *No data vendor holds one.* | =compass sql -- -c "select v.provider_code, count(*) from ores_marketdata_market_data_mappings_tbl m join ores_marketdata_market_data_vendor_instruments_tbl v on v.id = m.vendor_instrument_id where m.valid_to > now() and m.oresmd_uri like '%type=fixing%' group by 1 order by 2 desc"= | 7bb52278f6 |
+| FX spot items the vendors supply | bloomberg 936, ice 910, tradeweb 910, derived 2275, lseg 14, demo 11 | the same query without the =type=fixing= filter | 7bb52278f6 |
+| The demo's subscription step | 18 (party, source, provider) rows, all vendor or derived, none public, none interest rate | =compass sql -- -c "select jsonb_pretty(s.arguments_json) from ores_iam_seed_profile_steps_tbl s join ores_iam_seed_profiles_tbl p on p.id = s.seed_profile_id where p.code = 'acme_demo' and s.step_kind = 'subscribe_market_data'"= | 7bb52278f6 |
+| The demand's narrowing hook | present, and called with no policy | =projects/ores.marketdata/service/src/app/adapter_supervisor.cpp:229= | 7bb52278f6 |
+| Durable fixings the installation holds | 325,571, all in the system tenant; the acme tenant holds none | =compass sql -- -c "select t.code, count(*) from ores_marketdata_market_fixings_tbl f join ores_iam_tenants_tbl t on t.id = f.tenant_id where f.valid_to > now() group by 1 order by 2 desc"= | b0add7a53e |
+| The population's requirement, answered and not | 133 addresses, 124 unanswered, 100 trade type and class rows | the measurement task's queries, in =evidence/generated_population_gap.sql= and =…_gap_class.sql= | 7bb52278f6 |
+
+* Notes
+
+- Read [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] first, then
+  [[id:F4BBEF34-D84C-4AE6-A3AA-DC47C3EE06EE][Public sources publish daily fixings through an adapter]],
+  [[id:083D4B54-549B-4D56-AE89-430A8A4277FF][Demand drives what an adapter publishes]] and
+  [[id:922C155B-6733-4D2B-A675-A7361A5BDC63][A system bundle installs the catalogue and the simulator installs its own
+  universe]]. The resolution step this task builds is argued in
+  [[id:FD427B5B-BDC5-4803-AFCD-97A59E31FE25][Market Data Requirements and Resolution]]; the read by item is the target in
+  [[id:FDD02CA9-1DAD-4162-95AC-C7C5C611DDDC][Tracking market data identity from fixing to report]].
+- =demand_calculator.cpp= already refuses =not_entitled= and =terms_not_accepted=,
+  and =demand_policy= already documents the hook. Step 2 supplies an input to code
+  that exists, which is why it is early in the plan.
+- The vocabulary is the likely cause of the confusion this task resolves. A
+  column called =source= holds a convention inside an oresmd URI and a supplier
+  outside one. If the model is touched anyway, renaming the URI's =source= to
+  =convention= is worth a separate task, and it is not this one: ORE's own index
+  names carry the same token, and the boundary format is not ours to change.
+- The earlier reading of the same numbers, that nine of the twenty-four FX pairs
+  "exist under another source" and so needed only a rename, was wrong in a way
+  worth keeping: the ECB reference rate and the 4pm London fix are two
+  instruments. A trade on one cannot be valued from the other.
+
+* Out of scope
+
+- Supplying market data for equity, commodity, credit, inflation or security.
+  That is [[id:9EFEAA52-D458-4CCF-A6C6-7C5A6A2EF6DC][Give every generated trade type its market data and pricing engines]],
+  which decides per class whether to source it or take the type out of the
+  generator.
+- The report's market binding to a published set, which is the consumption end of
+  [[id:FDD02CA9-1DAD-4162-95AC-C7C5C611DDDC][Tracking market data identity from fixing to report]].
+- The live vendor adapters. The catalogue rows are the same for a simulated and a
+  live source; connecting a real vendor is its own task.
+- Pricing the generated population to match ORE's own NPVs, which is
+  [[id:B4B85683-D59C-4526-A4BF-7A5B1127BA5E][Value the generated trades in a report and make them correct]].
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

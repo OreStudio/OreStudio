@@ -231,6 +231,26 @@ TEST_CASE("a_backfill_for_one_party_leaves_the_other_partys_series_unprojected",
     CHECK(identity_rows(h, second_id) == 1);
 }
 
+TEST_CASE("a_backfill_by_a_party_leaves_the_series_of_parties_it_cannot_see",
+          "[repository][series_identity][backfill]") {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    const auto seen = boost::uuids::random_generator{}();
+    const auto unseen = boost::uuids::random_generator{}();
+    const auto curve = fresh_curve_id();
+    const auto seen_id = insert_without_identity(h.context(), seen, zero_uri(curve));
+    const auto unseen_id = insert_without_identity(h.context(), unseen, zero_uri(curve));
+    const auto as_seen = h.context().with_party(h.context().tenant_id(), seen, {seen}, "test");
+
+    // The series table isolates by tenant and the identity table by party too, so
+    // the party reads the other party's series but could not write its identity.
+    CHECK_NOTHROW(market_series_identity_projector::project_missing(as_seen));
+
+    CHECK(identity_rows(h, seen_id) == 1);
+    CHECK(identity_rows(h, unseen_id) == 0);
+}
+
 TEST_CASE("a_backfill_leaves_the_system_tenants_series_to_the_system",
           "[repository][series_identity][backfill]") {
     auto lg(make_logger(test_suite));

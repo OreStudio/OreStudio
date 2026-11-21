@@ -402,6 +402,13 @@ market_series_identity_projector::project_missing(const ores::database::context&
     // and a tenant that projected them would write a row it cannot see.
     std::erase_if(series,
                   [&](const domain::market_series& s) { return s.tenant_id != ctx.tenant_id(); });
+    // The series table isolates by tenant alone and the identity table by party too,
+    // so a context that sees some parties reads series whose identity it could not
+    // write. No visible parties means the context sees them all, as the policy says.
+    if (const auto& visible = ctx.visible_party_ids(); !visible.empty())
+        std::erase_if(series, [&](const domain::market_series& s) {
+            return std::ranges::find(visible, s.party_id) == visible.end();
+        });
     if (party)
         std::erase_if(series, [&](const domain::market_series& s) { return s.party_id != *party; });
 

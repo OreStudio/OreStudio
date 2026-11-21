@@ -28,6 +28,7 @@
 #include "ores.shell/app/commands/synthetic/gmm_component_commands.hpp"
 #include "ores.shell/app/commands/synthetic/ir_curve_generation_config_commands.hpp"
 #include "ores.shell/app/commands/synthetic/ir_curve_generation_config_process_parameter_value_commands.hpp"
+#include "ores.shell/app/commands/synthetic/ir_curve_index_family_commands.hpp"
 #include "ores.shell/app/commands/synthetic/ir_curve_template_entry_commands.hpp"
 #include "ores.shell/app/commands/synthetic/market_data_generation_config_commands.hpp"
 #include "ores.shell/app/commands/synthetic/market_data_provider_commands.hpp"
@@ -73,6 +74,7 @@ void synthetic_entity_commands::register_commands(cli::Menu& root_menu,
     fx_vol_surface_feed_contributor_commands::register_commands(root_menu, session);
     variance_calibration_commands::register_commands(root_menu, session);
     yield_curve_process_type_commands::register_commands(root_menu, session);
+    ir_curve_index_family_commands::register_commands(root_menu, session);
     yield_curve_process_parameter_definition_commands::register_commands(root_menu, session);
 }
 

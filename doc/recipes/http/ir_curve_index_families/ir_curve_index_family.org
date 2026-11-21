@@ -1,0 +1,244 @@
+:PROPERTIES:
+:ID: BF13BB64-6E43-521F-8E2A-48A727208482
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: http_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I call the ir_curve_index_families endpoints over HTTP?
+#+description: Every endpoint the ir_curve_index_families resource answers over HTTP, with the request each one exports into the gateway's recipe library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:http:ir_curve_index_families:
+
+This file documents the ir_curve_index_families resource over HTTP, one section per endpoint. Every section exports its own Hurl file into =projects/ores.http/scripts/library/=. Running a file sends that one request, so a failure names the endpoint it came from.
+
+* Endpoints
+
+** =GET /api/v1/simulation/ir_curve_index_families=
+:PROPERTIES:
+:ID: C7952689-BE2B-5387-9AEE-EE5FC4F26839
+:END:
+
+List ir curve index families. It needs a session.
+
+It forwards to =synthetic.v1.ir_curve_index_families.list=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/simulation/ir_curve_index_families
+#+end_example
+
+#+name: ir_curve_index_families-list
+#+begin_src hurl :tangle ir_curve_index_families-list.hurl :exports none
+GET {{base_url}}/api/v1/simulation/ir_curve_index_families
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/simulation/ir_curve_index_families/__none__=
+:PROPERTIES:
+:ID: 5BBC3F67-BEC8-51BC-A758-7B6930A8566F
+:END:
+
+Get one ir curve index family. It needs a session.
+
+It forwards to =synthetic.v1.ir_curve_index_families.get=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/simulation/ir_curve_index_families/__none__
+#+end_example
+
+#+name: ir_curve_index_families-get
+#+begin_src hurl :tangle ir_curve_index_families-get.hurl :exports none
+GET {{base_url}}/api/v1/simulation/ir_curve_index_families/__none__
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/simulation/ir_curve_index_families/get-many=
+:PROPERTIES:
+:ID: 99A85C23-9748-561C-B098-B2D6C09BBBB6
+:END:
+
+Get many ir curve index families. It needs a session.
+
+It forwards to =synthetic.v1.ir_curve_index_families.get_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/simulation/ir_curve_index_families/get-many
+#+end_example
+
+#+name: ir_curve_index_families-get-many
+#+begin_src hurl :tangle ir_curve_index_families-get-many.hurl :exports none
+POST {{base_url}}/api/v1/simulation/ir_curve_index_families/get-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/simulation/ir_curve_index_families=
+:PROPERTIES:
+:ID: F1AD692C-C32A-5BF3-AF62-FD68D7FE4382
+:END:
+
+Create one ir curve index family. It needs a session.
+
+It forwards to =synthetic.v1.ir_curve_index_families.put=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/simulation/ir_curve_index_families
+#+end_example
+
+#+name: ir_curve_index_families-add
+#+begin_src hurl :tangle ir_curve_index_families-add.hurl :exports none
+POST {{base_url}}/api/v1/simulation/ir_curve_index_families
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =PUT /api/v1/simulation/ir_curve_index_families=
+:PROPERTIES:
+:ID: 6E63E72E-DBEA-5101-A10A-4D594EC78EF4
+:END:
+
+Replace one ir curve index family. It needs a session.
+
+It forwards to =synthetic.v1.ir_curve_index_families.put=.
+
+The request is:
+
+#+begin_example
+PUT /api/v1/simulation/ir_curve_index_families
+#+end_example
+
+#+name: ir_curve_index_families-set
+#+begin_src hurl :tangle ir_curve_index_families-set.hurl :exports none
+PUT {{base_url}}/api/v1/simulation/ir_curve_index_families
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/simulation/ir_curve_index_families/put-many=
+:PROPERTIES:
+:ID: C144A710-5D11-519F-9602-BB72257745C8
+:END:
+
+Write many ir curve index families. It needs a session.
+
+It forwards to =synthetic.v1.ir_curve_index_families.put_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/simulation/ir_curve_index_families/put-many
+#+end_example
+
+#+name: ir_curve_index_families-put-many
+#+begin_src hurl :tangle ir_curve_index_families-put-many.hurl :exports none
+POST {{base_url}}/api/v1/simulation/ir_curve_index_families/put-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =DELETE /api/v1/simulation/ir_curve_index_families/__none__=
+:PROPERTIES:
+:ID: DAE0C0F0-F23E-5C19-BF8C-CF442ADE3BB7
+:END:
+
+Delete one ir curve index family. It needs a session.
+
+It forwards to =synthetic.v1.ir_curve_index_families.delete=.
+
+The request is:
+
+#+begin_example
+DELETE /api/v1/simulation/ir_curve_index_families/__none__
+#+end_example
+
+#+name: ir_curve_index_families-delete
+#+begin_src hurl :tangle ir_curve_index_families-delete.hurl :exports none
+DELETE {{base_url}}/api/v1/simulation/ir_curve_index_families/__none__
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/simulation/ir_curve_index_families/delete-many=
+:PROPERTIES:
+:ID: 20FE169B-134D-5AD8-A1D3-0B873A96E92C
+:END:
+
+Delete many ir curve index families. It needs a session.
+
+It forwards to =synthetic.v1.ir_curve_index_families.delete_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/simulation/ir_curve_index_families/delete-many
+#+end_example
+
+#+name: ir_curve_index_families-delete-many
+#+begin_src hurl :tangle ir_curve_index_families-delete-many.hurl :exports none
+POST {{base_url}}/api/v1/simulation/ir_curve_index_families/delete-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/simulation/ir_curve_index_families/__none__/versions=
+:PROPERTIES:
+:ID: EED455AD-B83F-5A1A-8C04-EA744D6F70D5
+:END:
+
+List the recorded versions of one ir curve index family. It needs a session.
+
+It forwards to =synthetic.v1.ir_curve_index_families_versions.list=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/simulation/ir_curve_index_families/__none__/versions
+#+end_example
+
+#+name: ir_curve_index_families-versions
+#+begin_src hurl :tangle ir_curve_index_families-versions.hurl :exports none
+GET {{base_url}}/api/v1/simulation/ir_curve_index_families/__none__/versions
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/simulation/ir_curve_index_families/__none__/versions/0=
+:PROPERTIES:
+:ID: C8282D05-99F7-533F-B5A5-822958EB7296
+:END:
+
+Get one recorded version of one ir curve index family. It needs a session.
+
+It forwards to =synthetic.v1.ir_curve_index_families_versions.get=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/simulation/ir_curve_index_families/__none__/versions/0
+#+end_example
+
+#+name: ir_curve_index_families-version
+#+begin_src hurl :tangle ir_curve_index_families-version.hurl :exports none
+GET {{base_url}}/api/v1/simulation/ir_curve_index_families/__none__/versions/0
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+

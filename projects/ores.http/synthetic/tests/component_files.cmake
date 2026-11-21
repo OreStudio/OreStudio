@@ -32,6 +32,8 @@ set(files
     "gmm_component_web_routes_tests.cpp"
     "ir_curve_generation_config_process_parameter_value_web_routes_tests.cpp"
     "ir_curve_generation_config_web_routes_tests.cpp"
+    "ir_curve_index_family_routes_tests.cpp"
+    "ir_curve_index_family_web_routes_tests.cpp"
     "ir_curve_template_entry_web_routes_tests.cpp"
     "main.cpp"
     "market_data_generation_config_web_routes_tests.cpp"

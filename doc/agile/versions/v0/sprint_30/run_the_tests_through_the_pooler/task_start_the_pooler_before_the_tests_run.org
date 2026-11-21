@@ -1,0 +1,109 @@
+:PROPERTIES:
+:ID: 49A91902-32C2-49DB-A761-FC7FD2F2D126
+:END:
+#+title: Task: Start the pooler before the tests run
+#+description: The gate's ctest step and compass test run start the pooler and NATS when ORES_DB_POOLER_ENABLED is 1, and the test-run preflight refuses to run without a pooler and names the fix.
+#+type: task
+#+level: s1
+#+filetags: :run_the_tests_through_the_pooler:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CF800DC8-A36D-4DBA-B819-C98B409CD9F7][Run the tests through the pooler]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+When =ORES_DB_POOLER_ENABLED= is 1, the tests that connect as a service find
+pgbouncer listening:
+
+- The local gate's =ctest= check starts NATS and the pooler before it runs
+  the suites. It stops the marketdata and synthetic services as it does now.
+- =compass test run='s preflight (=_test_run_preflight= in
+  =projects/ores.compass/src/compass.py=) checks the pooler's port as it
+  checks the NATS port, and refuses with the fix when it is closed.
+- =compass services start= accepts =pooler= as a selector, as it accepts
+  =nats=, so the fix is one command.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:CF800DC8-A36D-4DBA-B819-C98B409CD9F7][Run the tests through the pooler]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Add the pooler selector to compass services. |
+| Last touched | 2026-11-21                               |
+
+* Acceptance
+
+- After =compass check='s =db= step, the =ctest= check passes the refdata,
+  inbox and workflow suites with the pooler on and no manual step.
+- =compass test run= with the pooler on and stopped exits non-zero, before
+  ctest starts, and prints the command that starts the pooler.
+- With the pooler off, neither the gate nor the preflight starts or asks for
+  a pooler.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+- The =db= check stops the fleet with =compass services stop=, which also
+  stops the pooler because its unit is =PartOf= the target
+  (=render_pooler_unit= in =projects/ores.compass/src/systemd_generate.py=).
+- The pooler's port is =ORES_DB_POOLER_PORT= in =.env=, base + 7; 21607 in
+  clever_dijkstra.
+- The log selector code in =compass_services.py= (=_resolve_units=)
+  already handles =nats= as a special name; the pooler can follow it.
+- Update =doc/llm/memory/start_the_fleet_before_running_tests.org= if the
+  rule changes.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

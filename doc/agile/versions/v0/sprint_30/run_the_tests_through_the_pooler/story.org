@@ -1,0 +1,94 @@
+:PROPERTIES:
+:ID: CF800DC8-A36D-4DBA-B819-C98B409CD9F7
+:END:
+#+title: Story: Run the tests through the pooler
+#+description: With the pooler on, which is the default, the local gate and compass test run give the tests a running pooler, the config parser tests read only the defaults, and pgTAP no longer runs beside ctest.
+#+type: story
+#+level: s2
+#+filetags: :sprint_30:v0:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+#+environment: clever_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The tests run through pgbouncer, the way the fleet does. Since PR #4962 and
+PR #4969 the pooler is on by default: =ORES_DB_POOLER_ENABLED= is 1, each
+service's database port in =.env= is the pooler's port (base + 7), and CMake
+gives the test suites every =.env= variable. A developer who runs the local
+gate or =compass test run= with the default =.env= gets a green run, and a red
+run names a real defect.
+
+** What was observed
+
+On 2026-11-21, in clever_dijkstra, with the pooler on, the local gate's ctest
+step had 16 failures. With the pooler off, the same tree passed 47 of 48 checks.
+An experiment found three causes, none of them in transaction pooling:
+
+1. Nothing runs the pooler while ctest runs. The gate's =db= step runs
+   =compass services stop=. The pooler unit =ores-pooler-<env>.service= is
+   =PartOf= the fleet target, so it stops too, and only the
+   =step-consumers= check starts the fleet again, at the end. The as-service
+   suites (refdata, inbox, workflow) then connect to a closed port.
+2. The 13 =config_parser_tests= are not sealed from the environment. Each one
+   asserts the default database port 5432, but ctest gives them
+   =ORES_<SVC>_SERVICE_DB_PORT= from =.env=. They strip the NATS variables
+   only. They passed before because the direct port equals the default.
+3. The =pgtap= check runs beside =ctest=. Both run after =db= on the same
+   database. =iam_tenant_purge_test= deadlocks in the gate and passes each
+   time it runs alone.
+
+With NATS and the pooler started by hand, =ores.refdata.core.tests= (199 s),
+=ores.inbox.core.tests= (21 s) and =ores.workflow.core.tests= (24 s) all
+passed. pgbouncer's log showed 26 logins for them: 12 as refdata_service, 10
+as inbox_service and 4 as workflow_service. So the tests work through the
+pooler. The gate and the tests around them do not.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Start the pooler before the tests run. |
+| Last touched  | 2026-11-21                               |
+
+* Acceptance
+
+- With the default =.env= (pooler on), =compass check= on a code change passes
+  every ctest suite and the pgtap check, with no step started by hand.
+- =compass test run= refuses to start when the pooler is on and not
+  listening, and names the command that starts it.
+- Each config parser test passes with any value of its service's variables in
+  the environment.
+- The pgtap check and the ctest check never run at the same time.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:49A91902-32C2-49DB-A761-FC7FD2F2D126][Start the pooler before the tests run]] | BACKLOG | | | The gate's ctest step and compass test run start the pooler and NATS when ORES_DB_POOLER_ENABLED is 1, and the test-run preflight refuses to run without a pooler and names the fix. |
+| [[id:CB04682B-706D-4AEF-BABB-E7F00A0FB63B][Seal the config parser tests from the environment]] | BACKLOG | | | scoped_environment_override strips variables by prefix, and each service's config parser test strips its own service variables, so a default asserts the default whatever the .env holds. |
+| [[id:9F0DCC25-CE62-41A3-9C5A-7BDED6BE5A30][Run pgTAP before ctest]] | BACKLOG | | | The local gate runs the pgtap check before ctest rather than beside it, so the two no longer write to the same database at the same time and iam_tenant_purge_test stops deadlocking. |
+
+* Decisions
+
+- The tests go through the pooler when it is on, as the fleet does. The cases
+  that cannot be pooled are already tagged =[direct]= in
+  =ores.database.tests= and use =ORES_TEST_DB_PORT=, which stays direct.
+- Sealing a test from the environment strips by prefix, not by a list of
+  names, so a variable added later cannot leak in the same way.
+
+* Out of scope
+
+- How CI starts the pooler. =build/scripts/start_ci_pooler.sh= and the pooled
+  job in =continuous-linux.yml= already do this; the story
+  [[id:A75C3063-896F-4DD5-A9BC-893A59EDFF7E][Pool the fleet's connections]] owns them.
+- Whether a statement may run through transaction pooling. The same story
+  owns that question.
+

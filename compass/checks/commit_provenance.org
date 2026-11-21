@@ -1,0 +1,46 @@
+:PROPERTIES:
+:ID: 3C1F0E52-7A4B-4E8D-9B61-2D5C8F7A9E03
+:END:
+#+title: Check: commit provenance
+#+description: Every commit of a branch, and its pull request, state the story, task and environment they belong to; the tables give compass-ng the trailers and the pull request's rows.
+#+type: check
+#+level: cross
+#+filetags: :compass:check:provenance:agile:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+
+This page gives the data of compass-ng's =commit_provenance= codec, which
+=compass-ng check --ratchet= runs over the commits of a branch and its
+pull request.
+
+* Rule
+
+Every commit of a branch carries a =Story-ID=, a =Task-ID= and an
+=Environment= trailer, and the pull request's Traceability table states
+the same story, task and environment.
+
+* Why
+
+A break on main is traced to the environment, story and task that caused
+it, from the commits alone.
+
+* Definition
+:PROPERTIES:
+:CODEC: commit_provenance
+:END:
+
+* Trailers
+
+| trailer     | document type | pattern         | pull request label | pull request column |
+|-------------+---------------+-----------------+--------------------+---------------------|
+| Story-ID    | story         |                 | Story              | 3                   |
+| Task-ID     | task          |                 | Task               | 3                   |
+| Environment |               | =[a-z]+_[a-z]+= | Environment        | 2                   |
+
+* Exemptions
+
+None. Every commit carries all three trailers: the commit that records a pull
+request on its task names the environment that opened the pull request.
+
+| subject | omits |
+|---------+-------|

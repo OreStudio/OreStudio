@@ -424,6 +424,36 @@ void report_execution_handler::gather_market_data(ores::nats::delivery delivery)
         md_req.storage_bucket = std::string(ores::storage::api::object_keys::ores_bucket);
         md_req.storage_key = key;
         md_req.fixings_storage_key = service::fixings_storage_key(req.report_instance_id);
+
+        // The market data a run gathers is the data its own trades need. Trading owns the
+        // trades, so it answers which addresses they name, and the export answers whether the
+        // market holds them.
+        if (!req.trade_ids.empty()) {
+            std::string resolution_error;
+            auto owner_for_trading =
+                run_token_client(req.tenant_id, req.report_instance_id, false, resolution_error);
+            ores::trading::messaging::resolve_market_data_requirements_request res_req;
+            res_req.trade_ids = req.trade_ids;
+            res_req.as_of = md_req.valuation_date;
+            std::optional<decltype(res_req)::response_type> res_resp;
+            if (owner_for_trading)
+                res_resp = nats_call(*owner_for_trading, res_req, resolution_error);
+            if (!res_resp || !res_resp->success) {
+                const auto failure =
+                    "resolve_market_data_requirements failed: " +
+                    (resolution_error.empty() ? (res_resp ? res_resp->message : "(no response)") :
+                                                resolution_error);
+                mark_instance_failed(req.tenant_id, req.report_instance_id, failure);
+                wf->fail(failure);
+                std::move(delivery).commit();
+                return;
+            }
+            md_req.requirements = res_resp->requirements;
+            ORES_LOG_SEV(lg(), info)
+                << "gather_market_data resolved the run's requirements"
+                << " | instance=" << req.report_instance_id << " trades=" << req.trade_ids.size()
+                << " requirements=" << md_req.requirements.size();
+        }
         ORES_LOG_SEV(lg(), info) << "gather_market_data asking marketdata to export | instance="
                                  << req.report_instance_id
                                  << " valuation_date=" << md_req.valuation_date.value_or("")

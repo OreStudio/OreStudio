@@ -107,6 +107,7 @@ public:
 
     /**
      * @brief gather-market-data <report_instance_id> <definition_id> <tenant_id> <correlation_id>
+     * <trade_ids>
      */
     static void process_gather_market_data(std::ostream& out,
                                            ores::nats::service::nats_client& session,

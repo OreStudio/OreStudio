@@ -275,6 +275,12 @@ registrar::register_handlers(ores::nats::service::client& nats,
             export_trades_to_storage_request::nats_subject,
             queue_group,
             [toh](ores::nats::message msg) { toh->export_trades_to_storage(std::move(msg)); }));
+        subs.push_back(nats.queue_subscribe(
+            resolve_market_data_requirements_request::nats_subject,
+            queue_group,
+            [toh](ores::nats::message msg) {
+                toh->resolve_market_data_requirements(std::move(msg));
+            }));
     }
     {
         // The blotter (hand-written handler, not codegen): one page of rows and

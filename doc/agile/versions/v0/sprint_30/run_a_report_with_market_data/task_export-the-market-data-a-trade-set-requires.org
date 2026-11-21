@@ -56,6 +56,25 @@ walks the series, observations and fixings and renders the files ORE reads.
 What changes is the selection it walks and the date it reads at, so this task
 is mostly about the resolution task's output reaching it.
 
+The wiring, in three units that each build and test on its own:
+
+1. *The export names its requirements.* =export_market_data_to_storage_request=
+   gains =requirements=, the oresmd addresses the run needs. The handler reads
+   =ores_marketdata_requirement_coverage_fn= once for the whole list; a
+   requirement no series answers fails the export and is named, and the
+   answering addresses narrow the export. The narrowing lives in
+   =series_to_export=, beside the choice between the party's own series and the
+   world's fixing, so a required fixing is still written from the system tenant.
+2. *Trading answers what a set needs.* =trading.v1.ops.
+   resolve_market_data_requirements= takes trade ids and the as-of and returns
+   the distinct addresses =ores_trading_market_references_fn= reads from their
+   instrument rows. Trading owns the trades, so the resolution stays in the
+   service that can read them, and a legal address never leaves the database.
+3. *The run passes the set through.* =gather_market_data_request= gains
+   =trade_ids=, the workflow hands it the manifest =gather_trades= wrote, and
+   the step calls the trading verb before it calls the export. An empty set
+   keeps the whole-tenant gather a caller that names no set asks for.
+
 The documented stance above has to be reversed deliberately rather than
 quietly: the comment argues that a subset does not reproduce anything, and the
 answer is that the *resolution* is what makes a subset reproducible — the set

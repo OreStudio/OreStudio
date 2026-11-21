@@ -548,6 +548,21 @@ Step 1: gather market data series.
 :cpp_type: std::string
 :END:
 
+*** trade_ids
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The trade set the run prices, as trade ids.
+ *
+ * The market data a run gathers is the data its own trades need, and only the
+ * trades can say what that is. An empty set gathers the tenant's market data as
+ * a whole, which is what a caller that names no set still asks for.
+ */
+#+end_src
+
 
 ** gather_market_data_result
 

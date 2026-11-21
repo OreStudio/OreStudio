@@ -31,13 +31,14 @@
 -- row's two columns. It raises rather than returning false so the operator
 -- reads the kind and the code that disagree instead of a constraint name.
 --
--- The function is security definer, and deliberately so. A catalogue is a
--- vocabulary of market facts: the equity underlyings, the currency pairs and
--- the commodities exist whether or not a particular tenant has published its
--- own copy, and a population writes as a service session that holds no
--- catalogue of its own. Reading them as the caller would refuse every
--- constituent the moment the writer's session tenant differed from the
--- catalogue's, which is exactly what the first population run did.
+-- The function is security definer because a population writes as a service
+-- session that holds no party, and because a catalogue row may be shared: the
+-- equity underlyings, the currency pairs and the commodities exist in the
+-- system tenant, and a tenant reads them where they lie. Owner rights mean no
+-- policy binds the read, so the function states the shared-reference predicate
+-- itself: the code names a row of the caller's tenant or a shared row of the
+-- system tenant, and never another tenant's row. A session that states no
+-- tenant therefore resolves only the system tenant's rows.
 create or replace function ores_trading_basket_constituent_resolves_fn(
     p_kind text,
     p_code text
@@ -51,18 +52,24 @@ begin
             select 1 from ores_refdata_equity_underlyings_tbl u
             where u.code = p_code
               and u.valid_to = ores_utility_infinity_timestamp_fn()
+              and (u.tenant_id = ores_iam_current_tenant_id_fn()
+                   or u.tenant_id = ores_utility_system_tenant_id_fn())
         ) into v_found;
     elsif v_kind = 'fx' then
         select exists (
             select 1 from ores_refdata_currency_pairs_tbl p
             where p.pair_code = p_code
               and p.valid_to = ores_utility_infinity_timestamp_fn()
+              and (p.tenant_id = ores_iam_current_tenant_id_fn()
+                   or p.tenant_id = ores_utility_system_tenant_id_fn())
         ) into v_found;
     elsif v_kind = 'commodity' then
         select exists (
             select 1 from ores_refdata_commodities_tbl c
             where c.code = p_code
               and c.valid_to = ores_utility_infinity_timestamp_fn()
+              and (c.tenant_id = ores_iam_current_tenant_id_fn()
+                   or c.tenant_id = ores_utility_system_tenant_id_fn())
         ) into v_found;
     else
         raise exception

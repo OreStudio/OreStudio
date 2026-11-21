@@ -31,7 +31,7 @@
  *
  * - the system tenant holds the world catalogue, from the bring-up publish;
  * - a tenant a person provisions holds no row of its own in any of six world
- *   catalogues, so no second copy exists;
+ *   catalogues, nor in the payment frequencies, so no second copy exists;
  * - the same tenant reads the system tenant's calendars and currencies;
  * - it sees one row for a currency, not two, so the shared read does not
  *   double a fact the tenant does not own;
@@ -48,7 +48,7 @@
 
 begin;
 
-select plan(12);
+select plan(14);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
 
@@ -106,6 +106,19 @@ select is(
          and valid_to = ores_utility_infinity_timestamp_fn()),
     0::bigint,
     'a provisioned tenant holds no currency pair and no pair convention of its own');
+
+select is(
+    (select count(*) from ores_refdata_payment_frequencies_tbl
+     where tenant_id = ores_iam_current_tenant_id_fn()
+       and valid_to = ores_utility_infinity_timestamp_fn()),
+    0::bigint,
+    'a provisioned tenant holds no payment frequency of its own, because the vocabulary is the platform''s');
+
+select is(
+    (select count(*) from ores_refdata_payment_frequencies_tbl
+     where valid_to = ores_utility_infinity_timestamp_fn()) > 0,
+    true,
+    'a tenant reads the payment frequencies the system tenant holds');
 
 select is(
     (select count(*) from ores_refdata_calendars_tbl

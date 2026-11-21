@@ -108,6 +108,7 @@ via its "Verifies task" field.
 | PR | Title |
 |----+-------|
 | [[https://github.com/OreStudio/OreStudio/pull/4979][#4979]] | [build] Adopt compass-ng v0.0.7 with main green |
+| [[https://github.com/OreStudio/OreStudio/pull/4980][#4980]] | [docs] Regenerate the check inventory after script_library_seed turned off |
 
 * Review
 

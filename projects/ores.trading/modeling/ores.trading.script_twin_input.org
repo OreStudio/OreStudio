@@ -174,11 +174,11 @@ The script the row belongs to.
 
 ** Checks
 
-| expression |
-|------------|
-| "data_type" in ('Number', 'Event', 'Index', 'Currency', 'Daycounter') |
-| "transform" is null or "transform" in ('barrier', 'flag', 'sign') |
-| "source" <> '' |
+| expression                                                                                      |
+|-------------------------------------------------------------------------------------------------|
+| "data_type" in ('Number', 'Event', 'Index', 'Currency', 'Daycounter')                           |
+| "transform" is null or "transform" in ('barrier', 'flag', 'kiko', 'pay_time', 'payoff', 'sign') |
+| "source" <> ''                                                                                  |
 
 * C++
 

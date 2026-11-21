@@ -1951,6 +1951,7 @@ TEST_CASE("every_product_with_a_recipe_has_a_twin_over_its_library_script", "[tr
         {"EquityBasketVarianceSwap", "BasketVarianceSwap"},
         {"EquityBestEntryOption", "BestEntryOption"},
         {"EquityForwardVolatilityAgreement", "ForwardVolatilityAgreement"},
+        {"EquityGenericBarrierOption", "GenericBarrierOption"},
         {"EquityPairwiseVarianceSwap", "PairwiseVarianceSwap"},
         {"EquityWindowBarrierOption", "WindowBarrierOption"},
         {"EquityRainbowOption", "MaxRainbowOption"},
@@ -1958,6 +1959,7 @@ TEST_CASE("every_product_with_a_recipe_has_a_twin_over_its_library_script", "[tr
         {"FxBasketVarianceSwap", "BasketVarianceSwap"},
         {"FxBestEntryOption", "BestEntryOption"},
         {"FxForwardVolatilityAgreement", "ForwardVolatilityAgreement"},
+        {"FxGenericBarrierOption", "GenericBarrierOption"},
         {"FxPairwiseVarianceSwap", "PairwiseVarianceSwap"},
         {"FxWindowBarrierOption", "WindowBarrierOption"},
         {"FxWorstOfBasketSwap", "WorstOfBasketSwap"},
@@ -2348,6 +2350,59 @@ TEST_CASE("a_window_barrier_twin_states_its_barrier_as_the_code_its_script_reads
                   native.instruments.instrument_barrier_levels[0].level.to_string());
             // No premium is stated, so the twin pays none.
             CHECK(value_of("PremiumAmount") == "0");
+            ++seen;
+        }
+    }
+    CHECK(seen > 0u);
+}
+
+TEST_CASE("a_generic_barrier_twin_states_its_codes_and_expires_on_a_business_day",
+          "[trade_population]") {
+    std::size_t seen = 0;
+    for (auto scope : {equity_scope(), fx_scope()}) {
+        scope.trades_per_book = 64;
+        const auto plan = plan_of(scope);
+        for (const auto& native : plan.slots) {
+            if (!native.trade_type_code.ends_with("GenericBarrierOption"))
+                continue;
+            INFO("trade type " << native.trade_type_code);
+            const auto twin = ores::synthetic::service::scripted_twin_of(native);
+            REQUIRE(twin.has_value());
+            const auto& rows = twin->instruments;
+            const auto parameter = [&](const char* name) {
+                const auto p = std::ranges::find_if(rows.scripted_parameters,
+                                                    [&](const auto& p) { return p.name == name; });
+                REQUIRE(p != rows.scripted_parameters.end());
+                return *p;
+            };
+            const auto values_of = [&](const char* name) {
+                const auto owner = parameter(name).sequence_number;
+                std::vector<std::string> out;
+                for (const auto& v : rows.scripted_parameter_values)
+                    if (v.parameter_sequence_number == owner)
+                        out.push_back(v.value);
+                return out;
+            };
+            REQUIRE(native.instruments.instrument_barriers.size() == 1u);
+            const auto& barrier = native.instruments.instrument_barriers[0];
+            const std::map<std::string, std::string> code_of = {
+                {"DownAndIn", "1"}, {"UpAndIn", "2"}, {"DownAndOut", "3"}, {"UpAndOut", "4"}};
+            CHECK(values_of("BarrierTypes") ==
+                  std::vector<std::string>{code_of.at(barrier.barrier_type)});
+            CHECK(values_of("BarrierRebatePayTimes") == std::vector<std::string>{"1"});
+            CHECK(parameter("PayoffType").value == "0");
+            CHECK(parameter("KikoType").value == "1");
+            CHECK(parameter("TransatlanticBarrierType").value == "0");
+
+            // ORE moves the native's expiry off a holiday and the script does not.
+            const auto expiry = parameter("ExpiryDate").value.value_or("");
+            std::istringstream in(expiry);
+            std::chrono::year_month_day date{};
+            in >> std::chrono::parse("%F", date);
+            REQUIRE_FALSE(in.fail());
+            const std::chrono::weekday day{std::chrono::sys_days{date}};
+            CHECK(day != std::chrono::Saturday);
+            CHECK(day != std::chrono::Sunday);
             ++seen;
         }
     }

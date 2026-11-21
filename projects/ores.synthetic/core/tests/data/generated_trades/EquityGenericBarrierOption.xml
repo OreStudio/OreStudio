@@ -13,17 +13,17 @@
         <OptionType>Put</OptionType>
         <PayoffType>Vanilla</PayoffType>
         <ExerciseDates>
-          <ExerciseDate>2029-12-02</ExerciseDate>
+          <ExerciseDate>2029-12-03</ExerciseDate>
         </ExerciseDates>
       </OptionData>
-      <SettlementDate>2029-12-07</SettlementDate>
+      <SettlementDate>2029-12-08</SettlementDate>
       <Quantity>6508.96</Quantity>
       <Strike>1342.37</Strike>
       <Barriers>
         <ScheduleData>
           <Rules>
             <StartDate>2025-12-02</StartDate>
-            <EndDate>2029-12-02</EndDate>
+            <EndDate>2029-12-03</EndDate>
             <Tenor>1D</Tenor>
             <Calendar>TARGET</Calendar>
             <Convention>F</Convention>

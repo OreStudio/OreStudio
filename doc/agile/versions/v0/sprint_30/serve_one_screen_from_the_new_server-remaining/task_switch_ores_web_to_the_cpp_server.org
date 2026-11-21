@@ -28,9 +28,9 @@ Move the one switch that sends the requests of ores.web to the C++ server, and t
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Serving the gap screen by screen; 1 route stands between the flag and every screen. |
+| Now          | The port is complete: every route ores.web calls is answered by ores.http, but for the 12 the design decided out. The switch itself is next. |
 | Waiting on   | Nothing. The fleet starts, and the full build is green. |
-| Next         | The authorisation queue, then flagging the screens and driving them in a browser. |
+| Next         | Name the screens in VITE_ORE_CPP_SCREENS and drive them in a browser against the gateway. |
 | Last touched | 2026-11-22                               |
 
 * Acceptance
@@ -52,8 +52,8 @@ proxy in front of a deployment sends =/cpp= to =ores.http= and =/api= to the BFF
 So this task is: name every screen in that variable, and prove the browser works
 against the gateway.
 
-What stands in the way is the inventory's own count. Of the BFF's 334 routes, 321
-are paired with a route =ores.http= answers and 13 are not:
+What stood in the way was the inventory's own count. Of the BFF's 334 routes, 322
+are now paired with a route =ores.http= answers and 12 are not:
 
 | The gap | Routes | What this task does |
 |---------+--------+---------------------|
@@ -62,14 +62,13 @@ are paired with a route =ores.http= answers and 13 are not:
 | the market screens | 4 | done: curve analytics, the FX montage, instruments and the rate ladder are paired and proved on a live gateway |
 | the quotes screens | 4 | done: the list, its feeds, its history and the vols-by-delta fit are paired and proved on a live gateway |
 | the identity shape fields | 2 | done: the joined read the oresmd editor marks a URL's fields from is paired |
-| the authorisation queue | 1 | the requests a decider may act on, with each deal as it stands now |
+| the authorisation queue | 1 | done: the requests a decider may act on with each deal as it stands now, paired and proved on a live gateway |
 
 A screen moves only when every route it calls is answered, so the flag cannot be
 set for a screen whose routes are missing: the browser would answer 404 where it
-answered a page, which is worse than the two-server deployment it has today. The
-plan is therefore to serve the 1 route that is neither decided out nor
-file-backed, screen by screen, and then to set the flag for the screens those
-routes complete.
+answered a page, which is worse than the two-server deployment it has today.
+Every route that is neither decided out nor file-backed is now served, so what
+remains is to set the flag for the screens and prove them in a browser.
 
 The end-to-end test is the second half and is the point of the task: build the
 web bundle with the flag set, bring up the fleet, and drive the screens a person
@@ -99,6 +98,13 @@ task and name that file in the Command column.
 
 * Notes
 
+- The authorisation queue is proved by its empty answer and its refusals: this
+  database holds no authorisation request, because one is raised by booking a
+  trade live and it holds no live booking. The row's members are proved by the
+  workflow suite instead. See =evidence/authorisation_queue_live_run.txt=.
+- A read this port answers refuses a query parameter it does not take, where the
+  BFF ignored one. That is the port's convention, and it tells a person their
+  query did nothing: the screens send only the parameters the routes declare.
 - The two desk reads that answer a table this environment does not seed are
   proved by their refusal alone: the database holds no rate quote at any
   currency, instrument type or instant tried, and no curve bootstrap

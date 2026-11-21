@@ -45,9 +45,31 @@ trades of ACCOHK have a curve to be valued on.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The term curves are not built from their overnight curve. Each is a provider
+feed of its own: a Cox-Ingersoll-Ross process with a stated level, whose
+quotes a projection bootstrap config reads and discounts on the currency's
+overnight curve. Deriving a term index from its overnight curve is the task
+Derive a term index from its overnight curve. This task follows the existing
+pattern, and states the level as HONIA plus a spread.
+
+1. Feeds (=synthetic_feeds_providers_populate.sql=): HKD HIBOR 2W, 1M and 3M
+   in the Tradeweb dataset, at HONIA's 4.50% plus 10bp, 20bp and 35bp, with
+   HONIA's kappa and sigma. The spreads are illustrative, not fitted to a
+   source, and the seed says so.
+2. Template: a curve states the fixings of its index from the deposit or FRA
+   that ends at the index tenor. The shared seven-pillar template starts at
+   1M, so a 2W curve would state no fixings, and GBP LIBOR 1W already does not
+   (=evidence/fixing_gap_by_trade.txt=). A curve whose tenor is shorter than
+   one month now starts with a spot deposit at its tenor. This covers HKD 2W,
+   GBP LIBOR 1W and EURIBOR 1W.
+3. Series and configs (=marketdata_market_series_ibor_curves_populate.sql=,
+   =refdata_ir_curve_bootstrap_ibor_configs_populate.sql=): three projection
+   configs on HKD-HONIA, A365F, with the seven pillars and their output and
+   quote series. A script wrote the rows; each id is a version 5 UUID of the
+   URL namespace over =ores:ir_curve:<curve>:<part>=.
+4. Vendor instruments: regenerated with =ores.marketdata.vendor-catalogue=
+   from a seeded database, as the seed's header says. It added 24 rows: 22
+   for HKD HIBOR and the 1W deposits of GBP LIBOR and EURIBOR.
 
 * Measurements
 

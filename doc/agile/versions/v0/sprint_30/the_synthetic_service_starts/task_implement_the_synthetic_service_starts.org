@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-11-13
 #+updated: 2026-11-13
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6A8F01EC-54BE-4730-B7EC-8CF6438A6725][Start the synthetic service on a fresh database]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,16 +26,17 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:6A8F01EC-54BE-4730-B7EC-8CF6438A6725][Start the synthetic service on a fresh database]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-13                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-21                               |
 
 * Acceptance
 
--
+- A kind whose registration states no simulate subject is not subscribed, so registration finishes and the service announces ready.
+- A start-up failure reports itself instead of hanging on a thread that never returns.
 
 * Plan
 
@@ -74,7 +75,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4684][#4684]] | [synthetic] Start the service: skip a kind with no simulator and let the clock stop |
 
 * Review
 
@@ -83,3 +84,7 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The work landed under the sibling task [[id:B036AA61-F8F3-4EA3-98FC-CAFE1F9ED75E][Stop the scheduler the portable way]], in =e457dc5095= on PR #4684: the registrar now skips a registered kind whose =simulate_subject= is empty, and the scheduler's stop token is wired to its own stop. This placeholder was left BACKLOG by mistake, so it is closed here and claims no code of its own.
+
+Measured on this checkout: =git merge-base --is-ancestor e457dc5095 origin/main= exits 0, so both halves are on main. At the time of the fix a recreated database reached =running=25 failed=0= and the log carried "Service ready" (=e457dc5095= message).

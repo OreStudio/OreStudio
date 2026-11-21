@@ -76,8 +76,9 @@ task and name that file in the Command column.
   at 03:17:04, while =compass services start= was still waiting for the
   fleet; the start took 486 s and timed out on the market data official
   adapter.
-- The pattern this task applies, and which the generic story should give
-  every service: a service states its dependencies as data in the service
+- The pattern this task applies, which the story
+  [[id:1DB97F87-9AE4-4848-94CC-3CC9D0B46430][A service waits for its dependencies and recovers when they return]]
+  gives every service: a service states its dependencies as data in the service
   registry (=:depends_on:=, today one value); the runner holds a waiting
   state and reports ready to systemd only when each dependency answers; it
   watches each dependency's heartbeat and marks itself degraded when one is

@@ -1,0 +1,99 @@
+:PROPERTIES:
+:ID: 11B23578-98E0-40D4-82E8-53E234D53C68
+:END:
+#+title: Task: Report ready only when the dependencies answer
+#+description: The service runner holds a waiting state until each declared dependency answers, tells systemd what it waits for and extends its start timeout, and only then sends READY.
+#+type: task
+#+level: s1
+#+filetags: :a_service_waits_for_its_dependencies_and_recovers:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1DB97F87-9AE4-4848-94CC-3CC9D0B46430][A service waits for its dependencies and recovers when they return]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The shared runner in =ores.service= holds a waiting state after phase 1. It
+probes each declared dependency until it answers, sends systemd
+=STATUS=waiting for <service>= and =EXTEND_TIMEOUT_USEC== while it waits, and
+sends =READY=1= only when each answers and the first run of its reconcilers
+has started. A service that waits longer than a stated limit logs which
+dependency it waits for.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:1DB97F87-9AE4-4848-94CC-3CC9D0B46430][A service waits for its dependencies and recovers when they return]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-21                               |
+
+* Acceptance
+
+- On a fresh environment, =systemctl --user status= shows what a waiting
+  service waits for.
+- No unit fails its start timeout because a dependency is slow.
+- A service reports ready only after each declared dependency answers.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| systemd messages the runner sends | =READY=1= only; no =STATUS== and no =EXTEND_TIMEOUT_USEC== | =grep -n 'READY\\|STATUS\\|EXTEND' projects/ores.service/src/service/systemd_notify.cpp= | 4c0011ec48 |
+| Units that failed on a fresh start | 1: =ores.marketdata.official= on its start timeout, 486 s in all | =compass services start= on 2026-11-21 | 4c0011ec48 |
+
+* Notes
+
+- The probe should be cheap and answered by every service; a ping subject the
+  runner registers in phase 1 serves, or the dependency's heartbeat.
+- This changes what =READY= means for the task Ready the market data service
+  before its usage sync: its usage sync becomes a reconciler of task 4.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -1,0 +1,101 @@
+:PROPERTIES:
+:ID: 037AF811-1B9D-4E51-805D-5C3BB002621D
+:END:
+#+title: Task: Run a service's startup work as reconcilers
+#+description: A service registers its startup work with the runner as reconcilers that are safe to repeat; the runner runs them when the service is ready, each time it leaves the degraded state, and at an interval.
+#+type: task
+#+level: s1
+#+filetags: :a_service_waits_for_its_dependencies_and_recovers:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1DB97F87-9AE4-4848-94CC-3CC9D0B46430][A service waits for its dependencies and recovers when they return]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A service registers its startup work with the runner as reconcilers. A
+reconciler reads what exists, writes what is missing, and is safe to repeat.
+The runner runs each one when the service becomes ready, again each time it
+leaves the degraded state, and at a stated interval. Phase 2 of
+=service_bootstrap_phases.org= becomes the place a service registers them.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:1DB97F87-9AE4-4848-94CC-3CC9D0B46430][A service waits for its dependencies and recovers when they return]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-21                               |
+
+* Acceptance
+
+- The runner offers a reconciler registration, with its dependencies, its
+  interval and its name in the log.
+- The synthetic service's fixing writer is a reconciler; the task
+  [[id:232932EB-9DA3-4004-B6A7-699DC1133610][Write the derived fixings once the market data service answers]]
+  uses it, or moves onto it if it lands first.
+- The market data service's usage sync runs as a reconciler after =READY=.
+- =service_bootstrap_phases.org= describes the states and the reconcilers.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Derived fixing series lost to start order on a fresh environment | 7, written after a restart | =evidence/fixing_gap_by_trade.txt= of the floating index story | 4c0011ec48 |
+
+* Notes
+
+- Candidates beyond the two above: the cache warm-ups of the
+  nats-event-cache facet, the IR curve feed's choice of its starting fixing,
+  and any one-shot startup query a service makes.
+- A reconciler that is not safe to repeat cannot be registered; say so in
+  its registration.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

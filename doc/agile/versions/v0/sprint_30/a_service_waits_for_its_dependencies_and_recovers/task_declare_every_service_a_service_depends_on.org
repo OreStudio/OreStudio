@@ -1,0 +1,102 @@
+:PROPERTIES:
+:ID: 72DFABCD-C1B2-470A-B474-524E2CEDB6CF
+:END:
+#+title: Task: Declare every service a service depends on
+#+description: The service registry's depends_on becomes a list of every service a service calls, and the systemd units and the service runner both read it.
+#+type: task
+#+level: s1
+#+filetags: :a_service_waits_for_its_dependencies_and_recovers:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1DB97F87-9AE4-4848-94CC-3CC9D0B46430][A service waits for its dependencies and recovers when they return]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+=:depends_on:= in =projects/modeling/service_registry.org= becomes a list,
+and each service lists every service it calls, at start or at run time. The
+systemd unit generator and the service runner both read the list. A check
+compares each list with the subjects the service's code calls, so a new call
+to another service cannot go undeclared.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:1DB97F87-9AE4-4848-94CC-3CC9D0B46430][A service waits for its dependencies and recovers when they return]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-21                               |
+
+* Acceptance
+
+- =:depends_on:= takes a list, and codegen and =compass systemd= read it.
+- The synthetic service lists the market data service among the others it
+  calls.
+- A check fails when a service calls a subject of a service its list does
+  not name, and names both.
+- The check's rule is data, as for the other checks compass-ng ports.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Services in the service registry | 21 | =grep -c '^:replicas:' projects/modeling/service_registry.org= | 4c0011ec48 |
+| Services whose only declared dependency is IAM | 19 | =grep '^:depends_on:' projects/modeling/service_registry.org= counted | 4c0011ec48 |
+| Services that declare another dependency | 1: the official rates adapter, on market data | the same | 4c0011ec48 |
+
+* Notes
+
+- The unit generator is =compass_services.py=; it writes =After== and
+  =Requires== from the registry today.
+- A service's calls can be found from its NATS client code, which names each
+  subject by its service prefix; decide whether the check reads the code or a
+  declaration the codegen writes.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -109,6 +109,6 @@ problem from the market data side.
 - A curve for AOA, BWP, IDR, MYR, OMR, SAR or THB. These leave the draw until
   someone needs them.
 - The generic wait for a service's dependencies across every service. Task 1
-  makes the fixing writer the first case and records the pattern; the general
-  mechanism is its own story.
+  makes the fixing writer the first case; the general mechanism is the story
+  [[id:1DB97F87-9AE4-4848-94CC-3CC9D0B46430][A service waits for its dependencies and recovers when they return]].
 - Equity, commodity, FX and inflation fixings.

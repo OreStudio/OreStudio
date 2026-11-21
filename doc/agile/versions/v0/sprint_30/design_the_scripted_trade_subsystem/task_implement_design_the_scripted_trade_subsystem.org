@@ -163,6 +163,12 @@ via its "Verifies task" field.
 | 4954.2 | five unresolved links in trade.org and knowledge.org | - | decline | they are on main and this PR adds none |
 | 4954.3 | every page with a gap names it, and every task cites its page | architecture pages, tasks | accept | already so: each page with a gap has the section, the engine page has no gap, and each task's Notes names its pages |
 | 4954.4 | say how each close-out check was made | task_close_out_the_trade_coverage.org | accept | each check names how it was made |
+| 4954.5 | the PR description names the old structure note and claim pages | PR body | accept | the body names the renamed structure note, the academic titles and the capture |
+| 4954.6 | the published URLs of the pages change | site | decline | the pages were never published from main, so no outside link to them exists |
+| 4954.7 | the capture's count is approximate | retitle capture | accept | the capture states the scan so it can be repeated |
+| 4954.8 | no Review row for the second round | this task | accept | these rows |
+| user.1 | titles read as assertions, as if unit test names | architecture pages | accept | retitled in academic style as signed off; files renamed; the capture records the 76 existing pages |
+| user.2 | the prose is informal | architecture pages | accept | rewritten in an academic register, and the linking sentences on other pages recast |
 
 * Result
 

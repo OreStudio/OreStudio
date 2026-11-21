@@ -21,7 +21,30 @@ scan of =doc/= finds about seventy-six such knowledge pages: forty-one under
 =doc/knowledge/demo=, six under =doc/knowledge/reporting= and two under
 =doc/knowledge/market_data=. The scan counts a title of four words or more that
 holds a finite verb and is not a question, so it both misses some and over-counts
-some; the first step is an exact list. Examples:
+some; the first step is an exact list. The scan, run from the repository root, is:
+
+#+begin_src python
+import re, pathlib
+verbs = (r"\b(is|are|has|have|reads|names|holds|becomes|takes|states|keeps|works|"
+         r"binds|closes|needs|owns|goes|stands|cannot|can|does|must|may|gives|"
+         r"writes|lands|carries|changes|stays|raises|knows|runs|lives|points|"
+         r"depends|parses|books|maps|derives|tested|validated|given|declared|"
+         r"computed|stored|withdrawn|published|shared|reaches|prices)\b")
+for p in pathlib.Path("doc").rglob("*.org"):
+    if "/agile/" in str(p):
+        continue
+    t = p.read_text(errors="ignore")
+    title = re.search(r"^#\+title:\s*(.+)$", t, re.M)
+    kind = re.search(r"^#\+type:\s*(\S+)", t, re.M)
+    if not (title and kind) or kind.group(1) != "knowledge":
+        continue
+    title = title.group(1)
+    if (re.search(verbs, title) and len(title.split()) >= 4
+            and not title.lower().startswith(("how ", "what ", "why ", "when ", "which ", "where "))):
+        print(p, "|", title)
+#+end_src
+
+Examples:
 
 | Assertion title | Page |
 |-----------------+------|

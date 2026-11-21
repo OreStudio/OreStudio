@@ -63,11 +63,11 @@ A bundle publish either reports the audit row it claims or no longer claims one.
 | Bundles that state their level | 20 of 20 | `dq_dataset_bundle_populate.sql` and the three other seed files | |
 | Publish functions with no dataset after this task | 1, retired | `dq_artefact_types_populate.sql` | |
 | Catalogue checks scoped to the caller | 1 function, 3 branches | `trading_basket_constituent_functions_create.sql` | |
-| pgTAP | 964 assertions in 101 files | `projects/ores.sql/test/run_tests.sh` | |
-| ctest | 107 of 107 suites, 891.8 s | `compass test run` | |
-| Ticks smoke | 38 subscriptions, 38 routes, 42,304 ticks, 24 adapters, 0 rejected | `compass smoke ticks` | |
-| Build | succeeded, 659 targets | `compass build` | |
-| Light checks | 57 of 59 | `compass check --exclude-heavy`; the two failures reproduce on origin/main | |
+| pgTAP | 964 assertions in 101 files, all pass | `projects/ores.sql/test/run_tests.sh` | |
+| ctest | 93 of 107 suites | `compass test run`; the 14 failures are an environment contract, recorded as capture 21DB6371 | |
+| Ticks smoke | 38 subscriptions, 38 routes, 74,707 ticks, 0 rejected | `compass smoke ticks` | |
+| Build | succeeded | `compass build` | |
+| Light checks | 60 of 60 | `compass check --exclude-heavy` | |
 
 * Notes
 
@@ -176,10 +176,20 @@ constraint, the twenty seeded levels and the bring-up publish. The pgTAP suites
 then ran on it, including two new files: one asserts that no table holds a
 publication history and that every bundle states a level from the closed set,
 the other provisions a tenant, publishes a commodity only that tenant holds, and
-proves the system tenant cannot resolve it while the tenant can. The C++ suites
-ran on the same database, and the ticks smoke provisioned a full ACME tenant
-through the handler that now enforces the level: 38 subscriptions, 38 routes,
-42,304 ticks and no rejected record.
+proves the system tenant cannot resolve it while the tenant can.
+
+The C++ suites ran on the same database: 93 of 107 pass. The 14 that do not are
+an environment contract and not this branch's work. Thirteen service suites fail
+one assertion, =parse_defaults_returns_expected_values=, because =ctest= loads
+the whole =.env= into every test process and =.env= now names the pooler's port
+as each service's DB port; clearing that one variable makes the assertion pass.
+The fourteenth, =ores.inbox.core.tests=, refuses a tenant id its own fixture
+creates and reproduces in isolation in code this branch does not touch. Capture
+21DB6371 records the first.
+
+The ticks smoke provisioned a full ACME tenant through the handler that now
+enforces the level: 38 subscriptions, 38 routes, 74,707 ticks and no rejected
+record. The light gates passed 60 of 60 on the rebased tree.
 
 **What this leaves open**
 

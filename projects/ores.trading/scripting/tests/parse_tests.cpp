@@ -167,6 +167,15 @@ TEST_CASE("a syntax error is located by line and code point column", tags) {
     CHECK(*d.start->column == 5u);
 }
 
+TEST_CASE("a script with Windows line endings is located as one without", tags) {
+    const auto result = parse("NUMBER x;\r\nx = 1;\r\n\tx = + ;\r\n");
+    REQUIRE_FALSE(result.parsed());
+    REQUIRE(result.diagnostics.size() == 1u);
+    REQUIRE(result.diagnostics[0].start.has_value());
+    CHECK(result.diagnostics[0].start->line == 3u);
+    CHECK(result.diagnostics[0].start->column == std::optional<std::size_t>{5});
+}
+
 TEST_CASE("a diagnostic prints as a compiler reports one", tags) {
     diagnostic d;
     d.code = "SCR1001";

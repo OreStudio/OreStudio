@@ -39,7 +39,12 @@ std::string_view line_of(std::string_view text, std::size_t line) {
         start = next + 1;
     }
     const auto end = text.find('\n', start);
-    return text.substr(start, end == std::string_view::npos ? text.size() - start : end - start);
+    auto out =
+        text.substr(start, end == std::string_view::npos ? text.size() - start : end - start);
+    // A line ended by \r\n reads as one ended by \n.
+    if (out.ends_with('\r'))
+        out.remove_suffix(1);
+    return out;
 }
 
 /*
@@ -95,7 +100,10 @@ parse_result parse(std::string_view text) {
             result.diagnostics.push_back(syntax_error(
                 text, error.stoppedParsingAt, "the script cannot be parsed from here"));
     } catch (const script_error& e) {
-        result.diagnostics.push_back(syntax_error(text, LocationInfo(), e.what()));
+        result.diagnostics.push_back(
+            syntax_error(text,
+                         LocationInfo(),
+                         std::string("ORE's parser failed at an unknown position: ") + e.what()));
     }
     return result;
 }

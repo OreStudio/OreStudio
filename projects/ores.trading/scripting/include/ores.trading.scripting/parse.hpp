@@ -46,7 +46,9 @@ struct parse_result final {
  * @brief Parses a script with ORE's grammar.
  *
  * ORE's grammar stops at the first syntax error, so a script that does not
- * parse yields one diagnostic, located where ORE stopped.
+ * parse yields one diagnostic, located where ORE stopped. Where ORE's parser
+ * raises an error of its own rather than stopping, the diagnostic states that
+ * its position is unknown and carries no location.
  */
 ORES_TRADING_SCRIPTING_EXPORT parse_result parse(std::string_view text);
 

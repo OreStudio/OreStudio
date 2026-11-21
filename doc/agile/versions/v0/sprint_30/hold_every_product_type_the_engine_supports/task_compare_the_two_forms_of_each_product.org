@@ -8,7 +8,7 @@
 #+filetags: :hold_every_product_type_the_engine_supports:sprint_30:v0:
 #+owner: marco
 #+branch: feature/compare-the-two-forms-of-each-product
-#+pr:
+#+pr: 4942
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-17
@@ -131,6 +131,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4942][#4942]] | [synthetic] Compare each scripted twin with its native trade |
 | [[https://github.com/OreStudio/OreStudio/pull/4815][#4815]] | [agile] Plan holding both forms on tables and comparing them (planning; this task is not delivered by it) |
 
 * Review

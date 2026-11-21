@@ -186,6 +186,7 @@
 \ir ./dq_engine_settings_execution_artefact_create.sql
 \ir ./dq_ore_parameter_value_domains_artefact_create.sql
 \ir ./dq_ore_parameters_artefact_create.sql
+\ir ./dq_knowledge_pages_artefact_create.sql
 \ir ./dq_configuration_analytics_artefact_create.sql
 \ir ./dq_configuration_analytic_parameters_artefact_create.sql
 \ir ./dq_configuration_market_bindings_artefact_create.sql

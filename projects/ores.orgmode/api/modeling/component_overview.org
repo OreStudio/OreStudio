@@ -1,0 +1,44 @@
+:PROPERTIES:
+:ID: 367BFE0C-8B08-4F0B-B2F7-1DECCC65816D
+:ores.cpp.scaffold.enabled: true
+:END:
+#+title: ores.orgmode.api
+#+description: The knowledge base's domain types and messages: the knowledge page and what is asked of it.
+#+type: ores.codegen.component
+#+level: cross
+#+filetags: 
+#+created: 2026-11-21
+#+updated: 2026-11-21
+#+name: orgmode.api
+#+full_name: ores.orgmode.api
+#+brief: Knowledge base domain types and messages
+
+* Diagram
+
+#+attr_html: :width 100% :alt ores.orgmode.api component diagram
+#+caption: ores.orgmode.api
+[[file:ores.orgmode.api.png][file:ores.orgmode.api.png]]
+
+* Summary
+
+(Three to five sentences: what this component does and why it exists.)
+
+* Inputs
+
+-
+
+* Outputs
+
+-
+
+* Entry points
+
+-
+
+* Dependencies
+
+-
+
+* See also
+
+-

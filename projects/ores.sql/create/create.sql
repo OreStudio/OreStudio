@@ -59,6 +59,7 @@
 \ir ./reporting/reporting_ore_parameter_value_set_catalogue_views_create.sql
 \ir ./synthetic/synthetic_create.sql
 \ir ./inbox/inbox_create.sql
+\ir ./orgmode/orgmode_create.sql
 
 -- Views that read tables of several components, so they come after all of them
 \ir ./trading/trading_trade_summaries_create.sql

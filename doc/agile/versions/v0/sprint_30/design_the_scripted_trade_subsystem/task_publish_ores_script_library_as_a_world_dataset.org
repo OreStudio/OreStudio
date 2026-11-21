@@ -8,7 +8,7 @@
 #+filetags: :design_the_scripted_trade_subsystem:sprint_30:v0:
 #+owner: marco
 #+branch:
-#+pr:
+#+pr: 4971
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-21
@@ -86,7 +86,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4971][#4971]] | [doc] Hold ORE's script library as a world dataset |
 
 * Review
 

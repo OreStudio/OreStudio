@@ -188,6 +188,14 @@ void context::set_pq_pool_settings(pq::pool_settings settings) {
     impl_->database->set_pool_settings(settings);
 }
 
+void context::set_listener_endpoint(std::string host, std::uint16_t port) {
+    impl_->database->set_listener_endpoint(std::move(host), port);
+}
+
+pq::connection_options context::listener_connection_options() const {
+    return impl_->database->listener_options();
+}
+
 pq::session_context context::pq_session() const {
     return {.tenant = impl_->tenant_id,
             .party = impl_->party_id,

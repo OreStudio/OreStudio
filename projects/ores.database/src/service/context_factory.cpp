@@ -153,6 +153,9 @@ context context_factory::make_context(const configuration& cfg) {
               cfg.service_account,
               policy);
 
+    r.set_listener_endpoint(cfg.database_options.listener_host,
+                            static_cast<std::uint16_t>(cfg.database_options.listener_port));
+
     r.set_pq_pool_settings(
         pq::pool_settings{.floor = cfg.pool_min,
                           .ceiling = cfg.pool_max,

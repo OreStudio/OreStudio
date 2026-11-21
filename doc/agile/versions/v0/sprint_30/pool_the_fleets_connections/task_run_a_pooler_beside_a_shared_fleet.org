@@ -32,9 +32,9 @@ is not using.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:A75C3063-896F-4DD5-A9BC-893A59EDFF7E][Pool the fleet's connections]] |
-| Now          | The blocking decision is found and written down; no code is written. |
+| Now          | The listener has its own endpoint. The generated configuration and the unit are next. |
 | Waiting on   | Nothing.                               |
-| Next         | Give the context a second endpoint, then the unit. |
+| Next         | Generate the configuration and the unit, then measure the fleet. |
 | Last touched | 2026-11-21                               |
 
 * Acceptance
@@ -171,6 +171,17 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+** The second endpoint is in, 2026-11-21
+
+=db-listener-host= and =db-listener-port= (=ORES_<APP>_DB_LISTENER_HOST/PORT=)
+reach the context, which hands the listener its own options. Both default to the
+service's own, so nothing moves for an environment that pools nothing. The
+database suite passes 84 cases with the new one, which states that naming a
+listener endpoint leaves the service's own endpoint alone.
+
+Still to do: generate the configuration and the unit from the environment, start
+it before the services, and measure =pg_stat_activity= before and after.
 
 ** Measured before this task started, 2026-11-21
 

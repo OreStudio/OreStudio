@@ -75,6 +75,23 @@ Tenant code or ID for multi-tenant isolation.
 Can be either a tenant code (e.g., "system", "acme") or a tenant UUID.
 Required for all operations in a multi-tenant environment.
 
+** listener_host
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The host the notification listener connects to, when it is not the one the
+service uses. Empty means the listener uses the service's host.
+
+** listener_port
+:PROPERTIES:
+:cpp_type: int
+:default_value: 0
+:END:
+
+The port the notification listener connects to, when it is not the one the
+service uses. Zero means the listener uses the service's port.
+
 ** pool_min
 :PROPERTIES:
 :cpp_type: int

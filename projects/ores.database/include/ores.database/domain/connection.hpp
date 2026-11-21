@@ -22,8 +22,10 @@
 #include "ores.database/export.hpp"
 #include "ores.database/pq/options.hpp"
 #include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <mutex>
+#include <string>
 
 namespace ores::database {
 
@@ -70,12 +72,30 @@ public:
      */
     void set_pool_settings(pq::pool_settings settings);
 
+    /**
+     * @brief The endpoint the notification listener connects to, when it is not
+     * the one this service uses.
+     *
+     * A transaction pooler hands a LISTEN to somebody else at the next commit,
+     * so an environment that pools its traffic names PostgreSQL's port here and
+     * leaves this service's port at the pooler's. An empty host and a zero port
+     * mean the listener uses the service's own endpoint.
+     */
+    void set_listener_endpoint(std::string host, std::uint16_t port);
+
+    /**
+     * @brief The options a listener's connection opens with.
+     */
+    [[nodiscard]] pq::connection_options listener_options() const;
+
 private:
     pq::connection_options options_;
     pq::open_policy policy_;
     mutable std::mutex mutex_;
     mutable std::unique_ptr<pq::pool> pool_;
     pq::pool_settings settings_;
+    std::string listener_host_;
+    std::uint16_t listener_port_ = 0;
 };
 
 }

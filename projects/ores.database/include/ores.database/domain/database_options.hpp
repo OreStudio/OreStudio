@@ -67,6 +67,16 @@ struct database_options final {
      */
     std::string tenant;
     /**
+     * @brief The host the notification listener connects to, when it is not the one the
+     * service uses. Empty means the listener uses the service's host.
+     */
+    std::string listener_host;
+    /**
+     * @brief The port the notification listener connects to, when it is not the one the
+     * service uses. Zero means the listener uses the service's port.
+     */
+    int listener_port{0};
+    /**
      * @brief The connections the pool keeps, so a request arriving after a quiet spell
      * does not wait for a login.
      */
@@ -96,6 +106,8 @@ struct database_options final {
         ::ores::utility::codec::field{"database", &database_options::database},
         ::ores::utility::codec::field{"port", &database_options::port},
         ::ores::utility::codec::field{"tenant", &database_options::tenant},
+        ::ores::utility::codec::field{"listener_host", &database_options::listener_host},
+        ::ores::utility::codec::field{"listener_port", &database_options::listener_port},
         ::ores::utility::codec::field{"pool_min", &database_options::pool_min},
         ::ores::utility::codec::field{"pool_max", &database_options::pool_max},
         ::ores::utility::codec::field{"pool_idle", &database_options::pool_idle},

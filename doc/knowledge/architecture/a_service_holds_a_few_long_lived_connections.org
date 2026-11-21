@@ -58,6 +58,13 @@ connections and bursts no wider than eight. A service whose work grows states a
 larger ceiling and changes no code; a service asked to hold fewer connections
 lowers its floor, which is the number an idle process keeps.
 
+The notification listener is the one connection that can name a different
+endpoint from the service's own: =ORES_<APP>_DB_LISTENER_HOST= and
+=..._DB_LISTENER_PORT= say where it connects, and both default to the service's
+own. An environment that pools its traffic names PostgreSQL's port there, because
+a transaction pooler hands a =LISTEN= to somebody else at the next commit, while
+the service's requests keep going to the pooler.
+
 ** When a connection breaks
 
 The pool replaces a broken connection in the background. The transaction that

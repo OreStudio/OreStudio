@@ -51,6 +51,8 @@
 #include "ores.synthetic.core/messaging/ir_curve_generation_config_process_parameter_value_history_provider_registrar.hpp"
 #include "ores.synthetic.core/messaging/ir_curve_generation_config_process_parameter_value_registrar.hpp"
 #include "ores.synthetic.core/messaging/ir_curve_generation_config_registrar.hpp"
+#include "ores.synthetic.core/messaging/ir_curve_index_family_history_provider_registrar.hpp"
+#include "ores.synthetic.core/messaging/ir_curve_index_family_registrar.hpp"
 #include "ores.synthetic.core/messaging/ir_curve_template_entry_history_provider_registrar.hpp"
 #include "ores.synthetic.core/messaging/ir_curve_template_entry_registrar.hpp"
 #include "ores.synthetic.core/messaging/market_data_generation_config_history_provider_registrar.hpp"
@@ -188,6 +190,11 @@ registrar::register_handlers(ores::nats::service::client& nats,
             subs.end(), std::make_move_iterator(s.begin()), std::make_move_iterator(s.end()));
     }
     {
+        auto s = register_ir_curve_index_family_handlers(nats, ctx, verifier);
+        subs.insert(
+            subs.end(), std::make_move_iterator(s.begin()), std::make_move_iterator(s.end()));
+    }
+    {
         auto s = register_yield_curve_process_parameter_definition_handlers(nats, ctx, verifier);
         subs.insert(
             subs.end(), std::make_move_iterator(s.begin()), std::make_move_iterator(s.end()));
@@ -295,6 +302,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
         register_fx_vol_surface_feed_contributor_history_provider(hist_registry);
         register_yield_curve_process_parameter_definition_history_provider(hist_registry);
         register_yield_curve_process_type_history_provider(hist_registry);
+        register_ir_curve_index_family_history_provider(hist_registry);
         subs.push_back(ores::history::messaging::register_history_handlers(
             nats, hist_registry, "synthetic", queue_group, ctx, verifier));
     }

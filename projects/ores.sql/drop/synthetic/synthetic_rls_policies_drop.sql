@@ -37,6 +37,7 @@ drop policy if exists fx_spot_generation_configs_tenant_isolation_policy on "ore
 drop policy if exists market_data_generation_configs_tenant_isolation_policy on "ores_synthetic_market_data_generation_configs_tbl";
 
 drop policy if exists yield_curve_process_types_tenant_isolation_policy on "ores_synthetic_yield_curve_process_types_tbl";
+drop policy if exists ir_curve_index_families_tenant_isolation_policy on "ores_synthetic_ir_curve_index_families_tbl";
 drop policy if exists market_data_providers_tenant_isolation_policy on "ores_synthetic_market_data_providers_tbl";
 
 drop policy if exists yield_curve_process_parameter_definitions_tenant_isolation_policy on "ores_synthetic_process_parameter_definitions_tbl";

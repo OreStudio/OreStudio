@@ -1,0 +1,278 @@
+:PROPERTIES:
+:ID: A6051CE4-29B2-4D05-A0FF-40ED1FD3C31D
+:ores.cpp.wire-codec.enabled: true
+:ores.cpp.http-route.enabled: true
+:END:
+#+title: ores.synthetic.ir_curve_index_family
+#+description: Reference data table of the rate index families a synthetic IR curve can name, and whether each admits an overnight curve, a term tenor or a dated tenor.
+#+type: ores.codegen.entity
+#+web_resource: ir-curve-index-families
+#+web_writes: many
+#+web_system_owned: true
+#+http_area: simulation
+#+component: synthetic
+#+filetags: :model:entity:synthetic:
+#+entity_singular: ir_curve_index_family
+#+entity_plural: ir_curve_index_families
+#+entity_title: IR Curve Index Family
+#+brief: A rate index family a synthetic IR curve names, such as sofr, euribor or hibor, and the tenors it admits.
+#+created: 2026-11-21
+#+updated: 2026-11-21
+
+The rate index families an [[id:8B840E8D-2763-4A1F-8BC2-6C9E354DB673][ir_curve_generation_config]] can name,
+one row per family, and the tenors each one admits. An overnight family, such
+as =sonia=, names no tenor. A term family, such as =euribor=, names one, and
+the curve then projects that tenor's rate and discounts off the overnight
+curve of its currency. A family can be both: =hibor= is an overnight index
+for CNH and a term index for HKD. A dated tenor, such as SOFR's =FOMC=, is
+neither: it names a curve whose pillars fall on meeting dates.
+
+This replaces the two lists the curve config's checks and the DQ publish
+function wrote out by hand, so a new family is a seed row rather than four
+edits. Scoped to =ores.synthetic=, as the yield curve process types are,
+because synthetic IR curve generation is its only consumer. Managed by the
+system tenant.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: synthetic
+:profile:   simple-lookup
+:system_tenant_validation: true
+:END:
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:      text
+:cpp_type:  std::string
+:primary_key: true
+:END:
+
+Unique family code, in the lower case the curve config stores it.
+
+Examples: 'sofr', 'euribor', 'hibor'.
+
+#+begin_src cpp :name generator
+std::string("family")
+#+end_src
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:natural_key: true
+:END:
+
+Human-readable name of the family, as a screen shows it, such as =HIBOR=.
+
+#+begin_src cpp :name generator
+std::string(faker::word::adjective()) + " Index"
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+What the family is, and where it is published.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+** admits_overnight
+:PROPERTIES:
+:type:          boolean
+:cpp_type:      bool
+:nullable:      false
+:default:       false
+:default_value: false
+:END:
+
+Whether a curve of this family may name no tenor: an overnight index curve
+that discounts off itself.
+
+#+begin_src cpp :name generator
+true
+#+end_src
+
+** admits_term
+:PROPERTIES:
+:type:          boolean
+:cpp_type:      bool
+:nullable:      false
+:default:       false
+:default_value: false
+:END:
+
+Whether a curve of this family may name a term tenor, such as =3M=: a
+projection curve that discounts off the overnight curve of its currency.
+
+#+begin_src cpp :name generator
+false
+#+end_src
+
+** dated_tenor
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:default:  ''
+:END:
+
+The one tenor code that names a meeting-dated curve of this family, such as
+=FOMC= for SOFR, or empty when the family has none. A dated curve discounts
+off itself, as an overnight curve does.
+
+#+begin_src cpp :name generator
+std::string()
+#+end_src
+
+** display_order
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  0
+:END:
+
+Order for UI display purposes.
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 100)
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_synthetic_ir_curve_index_families_tbl
+:END:
+
+** Checks
+
+| expression                                  |
+|---------------------------------------------|
+| "code" = lower("code")                      |
+| "admits_overnight" or "admits_term" or "dated_tenor" <> '' |
+
+** Extra drops
+
+#+begin_src sql :name body :implements 5E47F108-1350-4540-B3C2-E83DD5379B2D
+drop function if exists ores_synthetic_validate_ir_curve_index_family_fn;
+#+end_src
+
+* Validation function
+:PROPERTIES:
+:tenant_scope: system
+:order_by:     display_order
+:END:
+
+* Insert trigger
+** Validations
+
+| column             | validation_function               |
+|--------------------+-----------------------------------|
+| change_reason_code | ores_dq_validate_change_reason_fn |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:       api
+:has_batch_remove:   true
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: index_family
+:entity_plural_short:   index_families
+:entity_singular_words: IR curve index family
+:entity_plural_words:   IR curve index families
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: f
+:END:
+
+** Table display
+
+| column           | header           |
+|------------------+------------------|
+| code             | Code             |
+| name             | Name             |
+| admits_overnight | Overnight        |
+| admits_term      | Term             |
+| dated_tenor      | Dated Tenor      |
+| display_order    | Display Order    |
+| modified_by      | Modified By      |
+| version          | Version          |
+
+** Presentation
+:PROPERTIES:
+:domain_include:         ores.synthetic.api/domain/ir_curve_index_family.hpp
+:domain_class:           synthetic::domain::ir_curve_index_family
+:protocol_include:       ores.synthetic.api/messaging/ir_curve_index_family_protocol.hpp
+:collection_name:        index_families
+:key_field:              code
+:get_request_class:      synthetic::messaging::get_ir_curve_index_families_request
+:get_response_class:     synthetic::messaging::get_ir_curve_index_families_response
+:get_message_type:       get_ir_curve_index_families_request
+:save_request_class:     synthetic::messaging::save_ir_curve_index_family_request
+:save_response_class:    synthetic::messaging::save_ir_curve_index_family_response
+:save_message_type:      save_ir_curve_index_family_request
+:delete_request_class:   synthetic::messaging::delete_ir_curve_index_family_request
+:delete_response_class:  synthetic::messaging::delete_ir_curve_index_family_response
+:delete_message_type:    delete_ir_curve_index_family_request
+:END:
+
+*** Detail fields
+
+| field            | label         | widget              | type      | is_key | is_required | placeholder          |
+|------------------+---------------+---------------------+-----------+--------+-------------+----------------------|
+| code             | Code          | codeEdit            | line_edit | true   | true        | Enter family code    |
+| name             | Name          | nameEdit            | line_edit |        | true        | Enter name           |
+| description      | Description   | descriptionEdit     | text_edit |        | true        | Enter a description  |
+| admits_overnight | Overnight     | admitsOvernightEdit | check_box |        |             |                      |
+| admits_term      | Term          | admitsTermEdit      | check_box |        |             |                      |
+| dated_tenor      | Dated Tenor   | datedTenorEdit      | line_edit |        |             | Such as FOMC         |
+| display_order    | Display Order | displayOrderEdit    | spin_box  |        | true        |                      |
+
+*** Columns
+
+| enum_name       | field            | header        | type      | width |
+|-----------------+------------------+---------------+-----------+-------|
+| Code            | code             | Code          | string    | auto  |
+| Name            | name             | Name          | string    | auto  |
+| AdmitsOvernight | admits_overnight | Overnight     | bool      | 70    |
+| AdmitsTerm      | admits_term      | Term          | bool      | 70    |
+| DatedTenor      | dated_tenor      | Dated Tenor   | string    | auto  |
+| DisplayOrder    | display_order    | Display Order | int       | 70    |
+| Version         | version          | Version       | int       | 70    |
+| ModifiedBy      | modified_by      | Modified By   | string    | auto  |
+| RecordedAt      | recorded_at      | Recorded At   | timestamp | auto  |
+
+** Custom repository methods
+
+* See also
+
+- [[id:8B840E8D-2763-4A1F-8BC2-6C9E354DB673][IR Curve Generation Config]] -- the entity whose index family this catalogues.
+- [[id:B6FDABE7-C146-4B63-9C87-B18DEA09D27A][Yield Curve Process Type]] -- the catalogue of the same shape this follows.

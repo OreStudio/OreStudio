@@ -1,0 +1,142 @@
+:PROPERTIES:
+:ID: 581CF448-D6BD-485B-9C0A-16E16BB189B6
+:END:
+#+title: Task: Hold the index families as a catalogue
+#+description: The index families a synthetic IR curve can name, and whether each is a term or an overnight family, become a catalogue of data. The curve config's checks, the publish function's projection or discount choice and the web combo read it, so a new family is a seed row.
+#+type: task
+#+level: s1
+#+filetags: :every_floating_index_has_a_curve_and_fixings:sprint_30:v0:
+#+owner: marco
+#+branch: feature/bootstrap-the-hkd-hibor-term-curves
+#+pr: 4975
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0F936789-FEBE-4330-97B9-DFE0837E4466][Every index a generated trade floats on has a curve and fixings]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The index families a synthetic IR curve can name, and the tenors each one
+admits, are a catalogue of data. The curve config's insert trigger, the DQ
+publish function's projection or discount choice and the web form read it,
+so a new family, or a family that gains a term tenor as HIBOR does for HKD,
+is a seed row.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:0F936789-FEBE-4330-97B9-DFE0837E4466][Every index a generated trade floats on has a curve and fixings]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-21                               |
+
+* Acceptance
+
+- =ir_curve_index_family= holds every family the config accepted, with
+  whether it admits an overnight curve, a term tenor or a dated tenor.
+- The config's two hand-written family checks are gone; the insert trigger
+  checks the family and the tenor together against the catalogue.
+- The publish function no longer lists families, and every seeded curve
+  keeps its role.
+- The web form lists the families from the catalogue and checks the tenor
+  against the family's row.
+- =hibor= admits a term tenor, so the task Bootstrap the HKD HIBOR term curves
+  can state its curves.
+
+* Plan
+
+1. Model =ores.synthetic.ir_curve_index_family= on the yield curve process
+   type, the catalogue of the same shape and scope, and generate it.
+2. Wire what the process type wires by hand: the HTTP routes, the shell
+   commands, the core and event registrars, the history list, the SQL
+   create, drop and RLS scripts, a read permission and the seed.
+3. The tenor rule needs two columns, and a validation row passed one. Extend
+   the template so a row may name a second column (=with_column=), and write
+   the rule as =ores_synthetic_validate_ir_curve_index_family_tenor_fn=. The
+   template's source is its org block in
+   =ores.sql.schema.domain_entity_create.org=; the =.mustache= is tangled
+   from it.
+4. Base the publish function's role on the tenor and the catalogue.
+5. Make the web form read the catalogue; drop the two lists in =irCurve.ts=.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Places that listed the families by hand, before | 4: two checks in the config model, the publish function, the web =INDEX_FAMILIES= and =TERM_FAMILIES= | =grep -rn "'libor', 'euribor'"= and =grep -rn TERM_FAMILIES= | 41a0facc5f |
+| Families the web list lacked that the database accepted | 8: cdi, czeonia, buboron, telboron, tlref, camara, ibr, hibor | =INDEX_FAMILIES= against the model's check | 41a0facc5f |
+| Families seeded | 32 | =compass db recreate= summary line | 97532839b3 |
+| Tenor rule cases | 4 accepted (hibor 3M, hibor overnight, sofr FOMC, euribor 6M); 4 refused with a reason (estr 3M, sofr 3M, libor overnight, unknown wibor) | =compass sql -f tenor_rule.sql= | 97532839b3 |
+| Seeded configs and their roles | 38 configs load through the new trigger; every libor and euribor curve projection, every overnight curve and sofr FOMC self_discounting, as before | the same query | 97532839b3 |
+| Generated tests of the entity | synthetic api 31 cases, http 13, shell 17, all pass | the three test binaries filtered on the entity | 97532839b3 |
+| Web | typecheck clean; 245 synthetic screen tests and 87 BFF synthetic tests pass | =npm run typecheck=, =vitest run= | 97532839b3 |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4975][#4975]] | [synthetic,codegen,web] Hold the IR curve index families as a catalogue |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The IR curve index families are a catalogue, and the hand-written lists are
+gone.
+
+- =ir_curve_index_family= in =ores.synthetic=: 52 generated files and the
+  wiring the yield curve process type has, with a seed of 32 families. =hibor=
+  admits both an overnight curve (CNH) and a term tenor (HKD); =sofr= keeps
+  =FOMC= as its dated tenor.
+- Codegen: a validation row may name =with_column=, and the trigger passes it
+  as a second argument. No other entity's SQL changed.
+- =ores_synthetic_validate_ir_curve_index_family_tenor_fn= replaces the
+  config's two checks; the publish function's role reads the tenor and the
+  catalogue.
+- The web form lists the families from the catalogue and checks the tenor
+  against the family's row; =irCurve.ts= keeps the tenor as typed and
+  leaves the rule to the server.
+
+Found on the way: =compass generate= does not converge in one run after a
+template's org source changes. Codegen renders with the =.mustache= as it was
+before tangle rewrites it in the same run, so the first run writes the old
+output and =compass-ng check= reports drift; a second run converges. I first
+edited the =.mustache= alone, which tangle then reverted, and read the drift
+as compass-ng dropping =with_column=; it does not. Reported to compass-85 with
+the steps, for v0.0.7.
+
+Not changed: =indexTenorOf= in =irCurve.ts= still maps =FOMC= to the =1D=
+series tenor, mirroring the synthetic service's own rule; a family's dated
+tenor could feed it, and that is left for when a second dated tenor exists.

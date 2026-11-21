@@ -122,6 +122,7 @@ constexpr std::string_view history_types[]{
     "ores.synthetic.gmm_component",
     "ores.synthetic.ir_curve_generation_config",
     "ores.synthetic.ir_curve_generation_config_process_parameter_value",
+    "ores.synthetic.ir_curve_index_family",
     "ores.synthetic.ir_curve_template_entry",
     "ores.synthetic.market_data_generation_config",
     "ores.synthetic.market_data_provider",

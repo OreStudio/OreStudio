@@ -6969,8 +6969,10 @@ const fr: SourceCatalogue = {
             addTitle: 'Nouvelle courbe de taux',
             priceSource: 'Taux de départ issu de',
             tenorNeeded: 'Un indice à terme exige une durée, comme 3M ou 6M.',
-            tenorOnlyFomc:
-                "Seule la variante datée des réunions pour SOFR prend une durée, et c'est FOMC.",
+            tenorNotAdmitted:
+                'Cette famille est un indice au jour le jour : une courbe de cette famille ne prend pas de durée.',
+            tenorOnlyDated:
+                'Cette famille est un indice au jour le jour ; sa seule durée datée est {tenor}.',
             help: {
                 tenor: "La durée d'un indice à terme, comme 3M ou 6M. Laissez vide pour un indice au jour le jour. FOMC désigne la variante datée des réunions pour SOFR.",
                 role: {

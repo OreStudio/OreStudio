@@ -6869,7 +6869,8 @@ export const en: SourceCatalogue = {
             addTitle: 'New IR curve',
             priceSource: 'Starting rate from',
             tenorNeeded: 'A term index needs a tenor, such as 3M or 6M.',
-            tenorOnlyFomc: 'Only the meeting-dated variant of SOFR takes a tenor, and it is FOMC.',
+            tenorNotAdmitted: 'This family is an overnight index, so a curve of it takes no tenor.',
+            tenorOnlyDated: 'This family is an overnight index; its one dated tenor is {tenor}.',
             help: {
                 tenor: 'The tenor of a term index, such as 3M or 6M. Leave it empty for an overnight index. FOMC marks the meeting-dated variant of SOFR.',
                 role: {

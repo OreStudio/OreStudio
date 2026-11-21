@@ -105,8 +105,18 @@ task and name that file in the Command column.
   leave local_checks.py; compass-ng's own result fails on their findings.
   The pin moves to v0.0.5 in the same change, because an older compass-ng
   stops on a check document.
-- =generate_xml_bindings.py=, =regenerate_xml_bindings.sh= and
-  =test_generate_xml_bindings_derivation.py= are dead as code: compass-ng's
+- 2026-11-21, compass-ng v0.0.6: =compass/checks/xml_bindings.org= holds
+  the family table compass had compiled in (Families, Exact decimals,
+  Schema errata, Settings, Licence), so a money member is one Exact decimals
+  row and =./compass.sh generate=. That retires =generate_xml_bindings.py=,
+  =regenerate_xml_bindings.sh= and =test_generate_xml_bindings_derivation.py=.
+  The regenerate rewrote only banner lines, plus a route inventory line
+  number already stale on main. v0.0.6's =names_missing_file= rule also
+  found four template sources naming =generator.py= (folded into the
+  =codegen= package in 9d24a8ff52) and =setup_database.sh= (gone); their
+  org sources now name compass's =codegen= codec and =compass db recreate=.
+- Before v0.0.6: =generate_xml_bindings.py=, =regenerate_xml_bindings.sh= and
+  =test_generate_xml_bindings_derivation.py= were dead as code: compass-ng's
   =xml_bindings= codec writes the 26 binding files byte for byte. They stay
   for now, because compass compiles the family table, the =--exact-decimal=
   money members among it, into =xml_bindings.cpp=. With the codec on, a

@@ -10,11 +10,11 @@
 # Fails with exit 1 and a clear explanation when ORES_ENV_VERSION is missing
 # or older than the required version.  Warns (no failure) when newer.
 #
-# The required version + changelog are canonical in the org-mode log
-# doc/knowledge/architecture/env_format_version_log.org, read here via
-# `compass env version`.  Record a new version with:
-#   compass env new-version "what changed in .env"
-# then re-run `compass env init` to write the new ORES_ENV_VERSION.
+# The required version + changelog are canonical in the Versions table of
+# compass/checks/env_format.org, read here via `compass env version`.  Record
+# a new version with:
+#   compass env version new "what changed in .env" --adds NAME
+# then re-run `compass env configure` to write the new ORES_ENV_VERSION.
 #
 # NOTE: this shell guard is transitional.  When the remaining scripts move
 # to `compass db recreate`, the check becomes an internal compass call
@@ -40,7 +40,7 @@ if [[ "${CURRENT_VERSION}" -lt "${REQUIRED_ENV_VERSION}" ]]; then
     echo "  Your .env:  version ${CURRENT_VERSION}" >&2
     echo "  Required:   version ${REQUIRED_ENV_VERSION}" >&2
     echo "" >&2
-    echo "See doc/knowledge/architecture/env_format_version_log.org for details." >&2
+    echo "See compass/checks/env_format.org for what each version changed." >&2
     echo "" >&2
     echo "Fix: re-run 'compass env init' to regenerate .env:" >&2
     echo "  ./projects/ores.compass/compass.sh env init --preset ${ORES_PRESET:-<preset>} -y" >&2

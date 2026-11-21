@@ -71,7 +71,7 @@ def validate_env_version(project_root: Path, env: dict):
   Your .env:  version {current}
   Required:   version {required}
 
-See doc/knowledge/architecture/env_format_version_log.org for details.
+See compass/checks/env_format.org for what each version changed.
 
 Fix: re-run 'compass env configure' to regenerate .env:
   ./projects/ores.compass/compass.sh env configure --preset {preset} -y

@@ -8,7 +8,7 @@
 #+filetags: :search_the_knowledge_base:sprint_30:v0:
 #+owner: marco
 #+branch: feature/split-ores-orgmode-into-its-parts
-#+pr:
+#+pr: 4974
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-21
@@ -104,7 +104,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4974][#4974]] | [orgmode] Split ores.orgmode into a compound component with its parser part |
 
 * Review
 

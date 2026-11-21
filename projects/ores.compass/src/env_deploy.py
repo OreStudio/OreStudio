@@ -520,6 +520,17 @@ def _preflight(project_root, profile_path, role, env):
                 "(generates the NATS certs)")
 
 
+def _pooler_enabled(project_root: Path) -> bool:
+    """Whether this environment's .env runs a transaction pooler."""
+    env_file = project_root / ".env"
+    if not env_file.is_file():
+        return False
+    for line in env_file.read_text(encoding="utf-8").splitlines():
+        if line.startswith("ORES_DB_POOLER_ENABLED="):
+            return line.split("=", 1)[1].strip() == "1"
+    return False
+
+
 def _transfer_runtime(project_root, host, remote_root, profile_path,
                       label):
     print("=== Transferring to the remote host ===")
@@ -881,6 +892,10 @@ def _cmd_deploy(argv, project_root):
     tag = args.image_tag or _version_tag(project_root)
     if args.pull:
         pulled = ["ores-service-base", "ores-service-libs", "ores-nats"]
+        # The pooler is pulled only where the environment runs one, because it is
+        # only then that its unit is generated and something asks for it.
+        if _pooler_enabled(project_root):
+            pulled.append("ores-pgbouncer")
         pulled += _runtime_services(project_root)
         if _web_services(project_root):
             pulled.append("ores-web")

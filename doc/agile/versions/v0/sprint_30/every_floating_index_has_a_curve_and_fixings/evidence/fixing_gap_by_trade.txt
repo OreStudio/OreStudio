@@ -7,6 +7,12 @@ database (compass db recreate), the services started, and Acme provisioned
 with how_do_i_provision_the_system_with_acme_corporation_holding_group.ores
 (profile acme_demo).
 
+The branch this file was added on is based on e65e3da29f, later than the
+measured commit. Between the two, main changed the scripted trade recipes and
+two lines in each of the IR curve series seeds. The readings were not taken
+again on the later commit; the first task of the story measures again before
+it changes anything.
+
 == Trades by party
 
  party  | centre | trades

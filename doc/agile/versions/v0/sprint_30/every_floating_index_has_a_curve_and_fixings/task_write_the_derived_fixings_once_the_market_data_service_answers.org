@@ -111,6 +111,9 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | PR #4956 review: "7 more" reads as addresses, the evidence shows 3 more | =story.org=, sprint row, PR body | Accept | Now "7 more series, 3 of them named by trades" |
+| 2 | PR #4956 review: the no-empty-address criterion needs the no-curve currencies out of the draw | =task_draw_only_the_indices_the_market_can_serve.org=, =story.org= | Accept | The task's acceptance names the 7 currencies; the story's criterion points to it |
+| 3 | PR #4956 review: file a capture for the refused ACCOUK and ACCOUS configs | =story.org= | Decline | The task Draw only the indices the market can serve already owns them in its acceptance; the story's criterion now names that task |
+| 4 | PR #4956 review: tie the evidence to the branch base | =evidence/fixing_gap_by_trade.txt= | Accept | States the measured commit, the base, what changed between, and that task 1 measures again |
 
 * Result

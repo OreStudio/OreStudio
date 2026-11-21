@@ -2,7 +2,7 @@
 :ID: 0F936789-FEBE-4330-97B9-DFE0837E4466
 :END:
 #+title: Story: Every index a generated trade floats on has a curve and fixings
-#+description: Of the 21 interest rate fixing addresses the acme_demo trades name, 15 have no fixings: 127 HKD HIBOR trades of ACCOHK, 11 cross-currency foreign legs and one term SOFR bond leg. On a fresh environment 7 more are lost because the fixing writer runs once, before the market data service answers.
+#+description: Of the 21 interest rate fixing addresses the acme_demo trades name, 15 have no fixings: 127 HKD HIBOR trades of ACCOHK, 11 cross-currency foreign legs and one term SOFR bond leg. On a fresh environment the fixing writer runs once, before the market data service answers, and loses 7 more series, 3 of them named by trades.
 #+type: story
 #+level: s2
 #+filetags: :sprint_30:v0:
@@ -80,12 +80,15 @@ problem from the market data side.
 - On a fresh environment, without a restart, the derived fixing series are
   the same as after a restart.
 - The query in =evidence/fixing_gap_by_trade.sql= reports no empty interest
-  rate fixing address on a fresh acme_demo provision.
+  rate fixing address on a fresh acme_demo provision. The currencies with no
+  curve meet this by leaving the draw, under the task Draw only the indices
+  the market can serve.
 - ACCOHK's HKD HIBOR trades have a curve and fixings at each tenor they use.
 - No population config can draw an index the market cannot serve, and a check
   says so before a provision does.
 - The ACCOUK and ACCOUS rates configs book, or the reason they cannot is a
-  named gap with its own task.
+  named gap with its own task. The task Draw only the indices the market can
+  serve owns this.
 
 * Tasks
 

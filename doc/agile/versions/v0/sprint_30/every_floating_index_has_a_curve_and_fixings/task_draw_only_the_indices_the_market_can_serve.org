@@ -40,7 +40,8 @@ config that can draw an index outside the list, before a provision does.
 * Acceptance
 
 - A cross-currency swap's foreign leg, and every other drawn index, comes
-  from the servable list.
+  from the servable list. AOA, BWP, IDR, MYR, OMR, SAR and THB, which have no
+  curve, leave the draw.
 - The check fails on a population config that can draw an index the list
   does not hold, and names the config and the index.
 - The ACCOUK and ACCOUS rates configs book, or each refusal is a named gap.

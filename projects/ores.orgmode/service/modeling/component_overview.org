@@ -1,6 +1,5 @@
 :PROPERTIES:
 :ID: BC7D0742-2062-488E-89AC-148455B0FC50
-:ores.cpp.scaffold.enabled: true
 :ores.cpp.service-app.enabled: nil
 :ores.cpp.service-app.config_options_header.enabled: true
 :ores.cpp.service-app.config_options_impl.enabled: true
@@ -52,7 +51,6 @@ target_link_libraries(${lib_target_name}
     PUBLIC
         ores.service.lib
         ores.security.lib
-        ores.orgmode.core.lib
         ores.eventing.core.lib
         ores.nats.lib
         ores.database.lib

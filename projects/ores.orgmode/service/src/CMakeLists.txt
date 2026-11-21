@@ -42,7 +42,6 @@ target_link_libraries(${lib_target_name}
     PUBLIC
         ores.service.lib
         ores.security.lib
-        ores.orgmode.core.lib
         ores.nats.lib
         ores.database.lib
         ores.utility.lib
@@ -55,7 +54,6 @@ target_link_libraries(${lib_target_name}
     PUBLIC
         ores.service.lib
         ores.security.lib
-        ores.orgmode.core.lib
         ores.eventing.core.lib
         ores.nats.lib
         ores.database.lib

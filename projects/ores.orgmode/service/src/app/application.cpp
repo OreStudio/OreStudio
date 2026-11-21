@@ -19,9 +19,9 @@
  */
 #include "ores.orgmode.service/app/application.hpp"
 #include "ores.database/service/context_factory.hpp"
-#include "ores.orgmode.service/app/application_exception.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/subscription.hpp"
+#include "ores.orgmode.service/app/application_exception.hpp"
 #include "ores.service/service/domain_service_runner.hpp"
 #include "ores.service/service/heartbeat_publisher.hpp"
 #include "ores.utility/version/version.hpp"

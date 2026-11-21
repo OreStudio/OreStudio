@@ -93,6 +93,9 @@ task and name that file in the Command column.
 | republish after one staged change | updated 1, skipped 53; Accumulator01's input at version 2, a dropped result closed (4 to 3), others at version 1 | same, inside a rolled-back transaction | 55d938cb53 + PR 2 |
 | generator against the retired seed | equal but the 2 corrections, Accumulator02's Event list and 5 script descriptions | a row-by-row comparison of the seven tables | 55d938cb53 + PR 2 |
 | ores.trading.scripting.tests | 1200 assertions in 18 test cases; a planted wrong type fails the inputs test | ores.trading.scripting.tests | 55d938cb53 + PR 2 |
+| bus publish of the world bundle | 41 of 41 steps completed, ore.script_library among them; the trading service logged inserted=0 updated=0 after the bring-up publish | compass db recreate -y -k, services start, then bundles publish world --wait as super_admin | a2d0beeee1 |
+| bus republish after one staged change | the trading service logged updated=1; Accumulator01's first input at version 2, version 1 kept | the same, after an update of one staged input description | a2d0beeee1 |
+| trading publish tests | 10 assertions in 6 test cases (subject plan); the generated codec round trip within 18920 assertions in 5303 test cases | ores.trading.core.tests [publish], ores.trading.api.tests [codec] | a2d0beeee1 |
 
 * Notes
 

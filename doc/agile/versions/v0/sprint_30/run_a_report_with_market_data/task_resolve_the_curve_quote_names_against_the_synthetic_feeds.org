@@ -84,6 +84,8 @@ task and name that file in the Command column.
 | Market series the quotes are read against | 1,562, of which 0 carry a =term=, because a term is the point within a series | =evidence/curve_quote_coverage.txt= | 3fbae97db1 |
 | The pair the check and the codec both state | =IR_SWAP/RATE/GBP/0D/1D/1M= names =oresmd://ir/GBP?type=series&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D= | =ores_marketdata_curve_pillar_series_uri_fn=, with the pgTAP and unit tests | 3fbae97db1 |
 | A run that reads both spellings | ACCOUK NPV, instance =d91de176=, completed at version 5, compute outcome 1 and server state 5 | the run recipe's four queries | 3fbae97db1 |
+| Quotes no series answers, under the party-only rule the review settled | 0 of 420, unchanged | =evidence/curve_quote_coverage.sql= | 3c026c46d9 |
+| Cases the pgTAP test pins | 12: the mapping for a quoted, an indexed and a meeting-dated key, three keys the codec refuses, a gap, another party's series, the party's own series, and the invisible-party refusal | =projects/ores.sql/test/marketdata_curve_quote_coverage_test.sql= | 3c026c46d9 |
 
 * Notes
 
@@ -99,6 +101,19 @@ are identity, which is where
 The check reads the interest rate swap rate form only, because it is the only
 form a provision stores: all 420 quotes are one. A quote of another form is
 reported as one the check cannot answer rather than passed over silently.
+
+The review of PR #4959 found three faults in the first cut, each now closed
+with a case:
+
+- A session that could not see the party got no rows, which reads as "no gaps".
+  The call is refused with 42501 instead.
+- A quote was answered by a series of the party or of the system tenant. The
+  export writes a run's market data from the party's own quote series and takes
+  from the system tenant only fixing series, which answer an index and not a
+  quote, so the rule is the party's own series.
+- The reader was laxer than the codec: it upper-cased the type and quote
+  tokens, accepted an empty token, and passed a key whose start was a date and
+  whose end was a period. It now refuses what the codec refuses.
 
 * Test Scenarios
 
@@ -145,9 +160,16 @@ What the branch adds is the statement of the pair and a way to read the gap:
   [[id:7AE57098-08D4-4D4A-83D6-918FE520B68E][A pillar names the market series it reads]], which is where the naming rule
   already lived.
 
-Gates: site-page, format, db and pgtap all pass, pgtap over all 99 files, and
-the compass-ng ratchet reports 0 new diagnostics. The C++ unit test passed on
-its own binary before the gates ran.
+The review of PR #4959 changed the shape of the answer without changing the
+reading: a row now says whether the quote is unanswered or unreadable, the rule
+is the party's own series rather than the party's or the system tenant's, and a
+session that cannot see the party is refused instead of being told there are no
+gaps. Re-measured after the change: still 0 gaps of 420.
+
+Gates: site-page, no-committed-credentials, boost-deps, format, compass-ng (0
+new diagnostics), build, db, ctest (106/106), ticks-smoke, pgtap (every file)
+and step-consumers all pass on the first cut; site-page, db and pgtap were run
+again over the review fixes.
 
 The check reads the interest rate swap rate form only. That is every quote a
 provision stores today, and a quote of another form is reported as one the check

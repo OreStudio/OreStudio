@@ -312,7 +312,10 @@ std::string run_error_json(const reporting_domain::report_error_event& event) {
            ",\"subject\":" + json::write(event.subject) +
            ",\"subject_id\":" + json::write(event.subject_id) +
            ",\"cause\":" + json::write(event.cause) + ",\"time\":" + json::write(event.event_time) +
-           "}";
+           ",\"location\":" +
+           (event.location.empty() ? std::string("null") : json::write(event.location)) +
+           ",\"filename\":" +
+           (event.filename.empty() ? std::string("null") : json::write(event.filename)) + "}";
 }
 
 }

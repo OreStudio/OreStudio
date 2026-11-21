@@ -74,7 +74,7 @@ constexpr std::int64_t year_window = 365 * 24 * 60 * 60;
 constexpr std::string_view all_window = "all";
 
 /// The parameters the read names.
-constexpr std::initializer_list<std::string_view> parameters{"limit", "window"};
+constexpr std::initializer_list<std::string_view> parameters{"limit", "window", "as_of"};
 
 /// The earliest observation a window reads, or nothing when it reads all of
 /// them.
@@ -158,6 +158,11 @@ void series_routes::register_routes(
                     msg.filter.emplace();
                     msg.filter->observation_datetime_from =
                         observed_since(req.get_query_param("window"));
+                    // A screen that draws a chosen day states the instant its
+                    // window ends, so the read stops where that screen's other
+                    // reads do rather than at the deployment's clock.
+                    if (const auto as_of = req.get_query_param("as_of"); !as_of.empty())
+                        msg.filter->observation_datetime_to = as_of;
                     const auto reply = forwarding::forward(req, session, msg);
                     rr::require_ok(reply.result);
                     return http_response::json(

@@ -18,5 +18,4 @@
  *
  */
 
-drop trigger if exists ores_synthetic_ir_curve_configs_family_tenor_trg on "ores_synthetic_ir_curve_generation_configs_tbl";
-drop function if exists ores_synthetic_validate_ir_curve_index_family_tenor_fn;
+drop function if exists ores_synthetic_validate_ir_curve_index_family_tenor_fn(uuid, text, text);

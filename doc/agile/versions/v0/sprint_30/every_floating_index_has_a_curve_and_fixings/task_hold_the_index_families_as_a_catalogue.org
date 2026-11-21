@@ -59,7 +59,10 @@ is a seed row.
    create, drop and RLS scripts, a read permission and the seed.
 3. The tenor rule needs two columns, and a validation row passed one. Extend
    the template so a row may name a second column (=with_column=), and write
-   the rule as =ores_synthetic_validate_ir_curve_index_family_tenor_fn=.
+   the rule as =ores_synthetic_validate_ir_curve_index_family_tenor_fn=. The
+   template's source is its org block in
+   =ores.sql.schema.domain_entity_create.org=; the =.mustache= is tangled
+   from it.
 4. Base the publish function's role on the tenor and the catalogue.
 5. Make the web form read the catalogue; drop the two lists in =irCurve.ts=.
 
@@ -125,6 +128,14 @@ gone.
 - The web form lists the families from the catalogue and checks the tenor
   against the family's row; =irCurve.ts= keeps the tenor as typed and
   leaves the rule to the server.
+
+Found on the way: =compass generate= does not converge in one run after a
+template's org source changes. Codegen renders with the =.mustache= as it was
+before tangle rewrites it in the same run, so the first run writes the old
+output and =compass-ng check= reports drift; a second run converges. I first
+edited the =.mustache= alone, which tangle then reverted, and read the drift
+as compass-ng dropping =with_column=; it does not. Reported to compass-85 with
+the steps, for v0.0.7.
 
 Not changed: =indexTenorOf= in =irCurve.ts= still maps =FOMC= to the =1D=
 series tenor, mirroring the synthetic service's own rule; a family's dated

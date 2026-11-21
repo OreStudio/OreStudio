@@ -18,57 +18,57 @@
  *
  */
 
--- =============================================================================
--- Hand-written tenor rule for ir_curve_generation_config
--- =============================================================================
--- A curve config names an index family and a tenor, and the family's row in
--- ores_synthetic_ir_curve_index_families_tbl says which tenors it admits: no
--- tenor for an overnight curve, any tenor for a term curve, and its one dated
--- tenor, such as SOFR's FOMC, for a meeting-dated curve. The codegen
--- single-argument Validations mechanism cannot express a two-column rule, so
--- this trigger is written by hand, as the process type cross-check of the
--- parameter values is; the generated insert trigger validates the family
--- alone. Fires on insert and on update of either column.
---
--- The families are system-tenant reference data, so the lookup resolves
--- there, as the family's own validation function does.
-
-create or replace function ores_synthetic_validate_ir_curve_index_family_tenor_fn()
-returns trigger as $$
+/**
+ * The tenor rule of an IR curve's index family.
+ *
+ * A curve config names a family and a tenor, and the family's catalogue row says
+ * which tenors it admits: no tenor for an overnight curve, any tenor for a term
+ * curve, and the one dated tenor, such as SOFR's FOMC, for a meeting-dated
+ * curve. The insert trigger of ores_synthetic_ir_curve_generation_configs_tbl
+ * calls this with both columns, so a new family is a catalogue row and not an
+ * edit to a check.
+ *
+ * Returns the family, as every insert-trigger validation returns its column.
+ */
+create or replace function ores_synthetic_validate_ir_curve_index_family_tenor_fn(
+    p_tenant_id uuid,
+    p_family text,
+    p_tenor text
+) returns text as $$
 declare
     v_family ores_synthetic_ir_curve_index_families_tbl%rowtype;
-    v_tenor text := coalesce(NEW.tenor, '');
+    v_tenor text := coalesce(p_tenor, '');
 begin
+    p_family := ores_synthetic_validate_ir_curve_index_family_fn(p_tenant_id, p_family);
+
     select * into v_family
     from ores_synthetic_ir_curve_index_families_tbl
     where tenant_id = ores_utility_system_tenant_id_fn()
-      and code = NEW.index_family
+      and code = p_family
       and valid_to = ores_utility_infinity_timestamp_fn();
 
     -- The family validation passes everything through while the catalogue is
     -- still empty, during bootstrap; so does the tenor rule.
     if not found then
-        return NEW;
+        return p_family;
     end if;
 
     if v_tenor = '' then
         if not v_family.admits_overnight then
             raise exception 'Invalid tenor for index family %: the family has no overnight curve, so a curve of it names a tenor.',
-                NEW.index_family using errcode = '23514';
+                p_family using errcode = '23514';
         end if;
-    elsif v_tenor <> v_family.dated_tenor and not v_family.admits_term then
+    elsif v_tenor = v_family.dated_tenor then
+        return p_family;
+    elsif not v_family.admits_term then
         raise exception 'Invalid tenor % for index family %: the family has no term curve%.',
-            v_tenor, NEW.index_family,
+            v_tenor, p_family,
             case when v_family.dated_tenor <> ''
                  then ', and its one dated tenor is ' || v_family.dated_tenor
                  else '' end
             using errcode = '23514';
     end if;
 
-    return NEW;
+    return p_family;
 end;
 $$ language plpgsql security definer set search_path = public, pg_temp;
-
-create or replace trigger ores_synthetic_ir_curve_configs_family_tenor_trg
-before insert or update of index_family, tenor on "ores_synthetic_ir_curve_generation_configs_tbl"
-for each row execute function ores_synthetic_validate_ir_curve_index_family_tenor_fn();

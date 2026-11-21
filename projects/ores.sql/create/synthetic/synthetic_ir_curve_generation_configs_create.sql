@@ -143,8 +143,8 @@ begin
     -- Validate asset_class_code
     NEW.asset_class_code := ores_refdata_validate_asset_class_code_fn(NEW.tenant_id, NEW.asset_class_code);
 
-    -- Validate index_family
-    NEW.index_family := ores_synthetic_validate_ir_curve_index_family_fn(NEW.tenant_id, NEW.index_family);
+    -- Validate index_family with tenor
+    NEW.index_family := ores_synthetic_validate_ir_curve_index_family_tenor_fn(NEW.tenant_id, NEW.index_family, NEW.tenor);
 
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);

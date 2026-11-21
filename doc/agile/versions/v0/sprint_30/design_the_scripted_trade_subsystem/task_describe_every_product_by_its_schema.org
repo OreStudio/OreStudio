@@ -1,0 +1,90 @@
+:PROPERTIES:
+:ID: 6E4060D6-DF49-44C9-97E3-6CDB8F6954C3
+:END:
+#+title: Task: Describe every product by its schema
+#+description: A native product's fields are its builder's C++ terms and a script's inputs are rows only the scripted builder reads, so no surface can draw a product's fields.
+#+type: task
+#+level: s1
+#+filetags: :design_the_scripted_trade_subsystem:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E6359881-7919-4BBC-9B9C-03A8EEDB8A03][Design the scripted trade subsystem]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+describe_product serves every product's schema: its fields, with type, list or scalar, accepted values and description, and its forms, with the script and engine of each; a script-only product's fields are its script's inputs, and annotations are held as data.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:E6359881-7919-4BBC-9B9C-03A8EEDB8A03][Design the scripted trade subsystem]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-21                               |
+
+* Acceptance
+
+- every product of the catalogue and every script with no element of its own has a schema
+- labels, coded values, defaults and descriptions are annotations held as data
+- each form states the script it runs and the engine its product tag prices with
+- a test fails when a product has no schema
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+Cut from [[id:290A1069-A1EE-4DD1-8D23-1C60F76F8949][Product Schemas for Native and Scripted Products]], which states the target this task builds to; the components it touches are [[id:4E135FB5-6E0A-45CC-A805-F5B70F29DDB4][Component Architecture of the Scripted Trade Subsystem]].
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

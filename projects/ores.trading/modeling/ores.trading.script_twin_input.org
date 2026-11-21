@@ -227,3 +227,4 @@ The script the row belongs to.
 * See also
 
 - [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.
+- [[id:206312C0-6398-4B9D-86F8-D8AEC9A5CEAD][Twin Recipes: Mapping Native Terms to Script Inputs]] — the recipe's grammar and its place in booking.

@@ -1,0 +1,89 @@
+:PROPERTIES:
+:ID: F55E15D0-E20E-4309-A1BF-DE59C67C09E4
+:END:
+#+title: Task: Write the editor's grammar and test it against ORE's parser
+#+description: The scripted trade editor needs a grammar that parses as one types, which ORE's parser cannot do, and a grammar of ORE Studio's own drifts from ORE's unless a test holds it there.
+#+type: task
+#+level: s1
+#+filetags: :design_the_scripted_trade_subsystem:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E6359881-7919-4BBC-9B9C-03A8EEDB8A03][Design the scripted trade subsystem]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A tree-sitter grammar for ORE's script language highlights and flags errors in ores.web's editor, and a differential test holds it to ORE's parser on every library script and on scripts ORE's random syntax tree generator writes.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:E6359881-7919-4BBC-9B9C-03A8EEDB8A03][Design the scripted trade subsystem]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-21                               |
+
+* Acceptance
+
+- the grammar highlights and flags errors in the browser, compiled to WebAssembly
+- the differential test fails on any script one parser accepts and the other refuses, and names it
+- the corpus is every library script and a stated number of generated scripts
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+Cut from [[id:8CF94EFE-4699-4F7D-B59B-E695AFD723CA][Differential Testing of the Script Editor Grammar]], which states the target this task builds to; the components it touches are [[id:4E135FB5-6E0A-45CC-A805-F5B70F29DDB4][Component Architecture of the Scripted Trade Subsystem]].
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

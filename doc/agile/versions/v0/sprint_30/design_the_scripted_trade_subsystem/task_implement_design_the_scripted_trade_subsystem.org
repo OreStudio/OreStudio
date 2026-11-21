@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :design_the_scripted_trade_subsystem:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/implement-design-the-scripted-trade-subsystem
+#+pr: 4954
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-21
 #+updated: 2026-11-21
-#+environment:
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E6359881-7919-4BBC-9B9C-03A8EEDB8A03][Design the scripted trade subsystem]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -31,11 +31,11 @@ generation and valuation, and the components with their dependency graph.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:E6359881-7919-4BBC-9B9C-03A8EEDB8A03][Design the scripted trade subsystem]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-21                               |
 
 * Acceptance
@@ -48,9 +48,9 @@ generation and valuation, and the components with their dependency graph.
   component overview, the script entity pages ([[id:833F8F79-7FF0-42B0-8C52-E3ED6596843E][ores.trading.script]],
   [[id:B3FBDD1A-8FC6-4702-9600-B75581FC6494][ores.trading.scripted_instrument]] and their siblings) and the trade type
   catalogue's scripted tables
-- the pages state the target state, not the history that led to it; where
-  today's code differs, the page names the difference as a gap a later task
-  closes
+- the pages state only the target state, as it stands once the story is
+  complete; the differences from today's code are carried by the story's tasks,
+  not by the pages
 - the component pages give each component's responsibility, public API and
   dependencies, and a diagram shows the dependency graph with no cycle
 - one index page links every page of the architecture, and the knowledge index
@@ -108,11 +108,43 @@ code changing, and the reader of a bare number cannot tell which tree it came
 from. Where the raw output matters, put it in an =evidence/= file beside the
 task and name that file in the Command column.
 
-| What | Value | Command | Commit |
-|------+-------+---------+--------|
-|      |       |         |        |
+| What                                 |                                 Value | Command                                                                           |     Commit |
+|--------------------------------------+---------------------------------------+-----------------------------------------------------------------------------------+------------|
+| Architecture pages written           | 16: a structure note and 15 documents | ls doc/knowledge/architecture, the pages this PR adds                             | 5d662e0091 |
+| Existing pages refactored to link in |                                    10 | git diff --stat, the pages under doc/knowledge and projects/ores.trading/modeling | 5d662e0091 |
+| Story tasks cut from the pages       |             7, beside the editor task | the story's Tasks table                                                           | 5d662e0091 |
+| Unresolved id links the PR adds      |                                     0 | a scan of every id link in the changed files against every :ID:                   | 5d662e0091 |
+| compass-ng new diagnostics           |                                     0 | compass-ng check --ratchet origin/main                                            | 5d662e0091 |
 
 * Notes
+
+** The pages state only the target
+
+On review the user asked that the pages describe only the state after the story,
+not the code as it stands. The gaps the plan meant to name on the pages, a
+"Divergence from the current implementation" section on each, were removed;
+every gap was first checked to be an acceptance criterion of one of the story's
+tasks.
+
+** What the survey found
+
+- The architecture lives where the rule of one component reading every ORE
+  document puts it ([[id:9697F09E-441A-4B51-869E-FC59433EEA1E][One component reads every ORE document, and none of them stores XML]]): a script's text is trading's data,
+  not an ORE document, so its parser belongs to =ores.trading=. ORE's parser
+  needs only Boost Spirit and a few header-only QuantLib types, so the copy can
+  replace those and link no QuantLib.
+- =ores.analytics.quant= is the precedent for a dependency-light specialist
+  sub-component consumed for what it computes; =ores.trading.scripting= takes
+  that role, below =ores.trading.api=, and returns its own types so the API can
+  depend on it with no cycle.
+- The seed's script inputs are mined from the code by a text script that
+  compass-ng now runs; the seed's header still names the retired
+  =generate_script_library.py=.
+- Generic Scripted Products already states ORE's side, the language and the two
+  places a script may live, so the new pages link it rather than restate it.
+- The catalogue's =Scripted forms= prose said a product absent from it has no
+  library script in ORE; the =Library scripts= table shows several that do, so
+  the prose now says so.
 
 * Test Scenarios
 
@@ -129,12 +161,38 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4954][#4954]] | [doc] Document the scripted trade architecture; close the coverage story |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 4954.1 | org-roam links leak into generated SQL and C++ comments | entity pages | accept | the links move to each page's See also, which the generator does not copy; the generated files keep main's text |
+| 4954.2 | five unresolved links in trade.org and knowledge.org | - | decline | they are on main and this PR adds none |
+| 4954.3 | every page with a gap names it, and every task cites its page | architecture pages, tasks | accept | already so: each page with a gap has the section, the engine page has no gap, and each task's Notes names its pages |
+| 4954.4 | say how each close-out check was made | task_close_out_the_trade_coverage.org | accept | each check names how it was made |
+| 4954.5 | the PR description names the old structure note and claim pages | PR body | accept | the body names the renamed structure note, the academic titles and the capture |
+| 4954.6 | the published URLs of the pages change | site | decline | the pages were never published from main, so no outside link to them exists |
+| 4954.7 | the capture's count is approximate | retitle capture | accept | the capture states the scan so it can be repeated |
+| 4954.8 | no Review row for the second round | this task | accept | these rows |
+| user.1 | titles read as assertions, as if unit test names | architecture pages | accept | retitled in academic style as signed off; files renamed; the capture records the 76 existing pages |
+| user.2 | the prose is informal | architecture pages | accept | rewritten in an academic register, and the linking sentences on other pages recast |
+| 4954.9 | the order of diagnostics with no location is undefined | diagnostic page | accept | located diagnostics by line and column, then those about a variable by its name |
+| 4954.10 | the unit of a column is unstated | diagnostic page | accept | Unicode code points from one, a tab as one; the parser converts Spirit's byte positions, Emacs reads character columns, the editor converts to its own offsets |
+| 4954.11 | numbered means both the code and the position | diagnostic page | accept | numbered by the stable code; the position is the index |
+| 4954.12 | REQUIRE findings over trade values overlap SCR2 and SCR3 | diagnostic page | accept | a REQUIRE violation is SCR3, whether the value is a literal or a trade variable |
+| 4954.13 | when the editor asks for diagnostics is unstated | editor task | accept | after a pause in typing and on save |
+| user.3 | the validator must report numbered errors and warnings with line and column, as a compiler does, for Emacs and the editor | diagnostic page, four tasks | accept | Diagnostic Reporting in Script Validation, and the parser, booking, shell and editor tasks' acceptance |
+| user.4 | the pages must state only the target state | architecture pages | accept | the Divergence sections are removed; every gap is a task's acceptance |
 
 * Result
+
+The scripted trade architecture is documented as its target state, in
+[[id:CF5A2387-58E8-45A3-8B5B-24FF1F1464B9][Scripted Trades: An Architectural Overview]], the structure note, and fifteen documents, from
+the forms a product is booked in to the components and their dependency graph,
+drawn with no cycle. Ten existing
+pages link into them: the Trade structure note and the knowledge index, Generic
+Scripted Products, Product Type, the ores.trading overview, four script entity
+pages and the trade type catalogue. Seven tasks of the story are cut from the
+pages; the diagnostics of validation were added on review and threaded into
+four of them, each naming the pages it builds to.

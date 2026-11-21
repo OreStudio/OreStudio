@@ -1,0 +1,90 @@
+:PROPERTIES:
+:ID: D4DE184C-B7E4-47F8-BA9E-D25160E74EC4
+:END:
+#+title: Task: Parse and version the script library
+#+description: The library's inputs are mined into the seed by a text script, nothing parses a script before ORE does, and a trade names its script with no version, so a library change reprices it.
+#+type: task
+#+level: s1
+#+filetags: :design_the_scripted_trade_subsystem:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E6359881-7919-4BBC-9B9C-03A8EEDB8A03][Design the scripted trade subsystem]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A script is parsed when it is loaded or published, its inputs are derived by the parser, and a scripted trade records the version of the script it was booked on, or its inline text, so it revalues on the payoff it was booked with.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:E6359881-7919-4BBC-9B9C-03A8EEDB8A03][Design the scripted trade subsystem]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-21                               |
+
+* Acceptance
+
+- a script that does not parse fails the load or the publish, with the line and column ORE's grammar reports
+- the inputs inputs_of derives replace the mined ones in the store
+- a scripted trade records its library script's version, or its inline text and a hash of it
+- a run writes the library from the versions its trades name
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+Cut from [[id:CCA8090C-26E0-4571-84BA-9115C110376C][Versioning of the Script Library]], [[id:358CC548-3892-45A1-A916-DF4A48ADED03][Library and Inline Scripts in Scripted Trades]], [[id:92449D70-09E2-4391-B716-A1001F22B271][Derivation of Script Inputs from Free Variables]], which states the target this task builds to; the components it touches are [[id:4E135FB5-6E0A-45CC-A805-F5B70F29DDB4][Component Architecture of the Scripted Trade Subsystem]].
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

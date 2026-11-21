@@ -5,7 +5,7 @@
 #+description: About thirty scripts in ORE's library have no element of their own: gamma, corridor, conditional, KIKO and dispersion variance swaps, correlation swaps, volatility barrier options, ladder lock-ins, forward-starting options, rainbow call spreads and the worst-performance rainbows, among others. A trade of each can only be a generic ScriptedTrade, and none is generated.
 #+type: task
 #+level: s1
-#+filetags: :hold_every_product_type_the_engine_supports:sprint_30:v0:
+#+filetags: :design_the_scripted_trade_subsystem:sprint_30:v0:
 #+owner: marco
 #+branch: feature/generate-the-equity-fx-and-commodity-scripts
 #+pr: 4948
@@ -16,7 +16,7 @@
 #+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E6359881-7919-4BBC-9B9C-03A8EEDB8A03][Design the scripted trade subsystem]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Every equity, FX and commodity script in ORE's library that has no element of it
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | ABANDONED |
-| Parent story | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] |
+| Parent story | [[id:E6359881-7919-4BBC-9B9C-03A8EEDB8A03][Design the scripted trade subsystem]] |
 | Now          | Abandoned on 2026-11-21; see Result. |
 | Waiting on   | Nothing. |
 | Next         | None. |
@@ -153,4 +153,4 @@ table states how each of the library's 54 scripts is held, and the generator
 fails when one is missing or held otherwise than the recipes state. The rainbow,
 dispersion and option families follow.
 
-Abandoned on 2026-11-21, superseded by [[id:E6359881-7919-4BBC-9B9C-03A8EEDB8A03][Design the scripted trade subsystem]]: a script-only product is to be booked against a schema of its own, not from a carrier native type's rows. The first PR, #4948, is on main and stays until the new story replaces it.
+Abandoned on 2026-11-21, superseded by the design of this story: a script-only product is booked against a schema of its own, not from a carrier native type's rows. The task moved here from [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] when scripted trades became a story of their own. The first PR, #4948, is on main and stays until the new story replaces it.

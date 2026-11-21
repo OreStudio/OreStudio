@@ -2,7 +2,7 @@
 :ID: 0CAC2F0E-69EC-4497-8587-4E0A6593BC7D
 :END:
 #+title: Story: Hold every product type the engine supports
-#+description: Every product type ORE supports is held as columns and rows, built by a builder, generated for Acme in each form ORE reads it in, and accepted by ORE in the engine test; every library script is generated; a type ORE cannot carry is tagged and visible with its reason. Market data and pricing are out of scope.
+#+description: Every product type ORE supports is held as columns and rows, built by a builder, generated for Acme in each form ORE reads it in, and accepted by ORE in the engine test; a type ORE cannot carry is tagged with its reason. Scripted trades beyond a product's two forms are a story of their own. Market data and pricing are out of scope.
 #+type: story
 #+level: s2
 #+filetags: :trading:ore:codegen:synthetic:coverage:sprint_30:v0:
@@ -31,21 +31,21 @@ carries:
   roundtrip) reads and builds every generated trade, with no error the trade
   causes.
 
-Every script in ORE's library is generated as a generic =ScriptedTrade=. A trade
-type ORE cannot carry is tagged unsupported in the catalogue with its reason,
-and a person sees it. When the story is done, nothing on how a trade is
-represented is left to do: later work refactors for performance and
+A trade type ORE cannot carry is tagged unsupported in the catalogue with its
+reason. Scripted trades beyond a product's two forms, the scripts with no element
+of their own, free-form scripts and their editor, are the concern of
+[[id:E6359881-7919-4BBC-9B9C-03A8EEDB8A03][Design the scripted trade subsystem]]. Later work refactors for performance and
 data-oriented design, and prices the trades.
 
 * Status
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | ABANDONED                            |
+| State         | DONE                                 |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
-| Now           | Abandoned on 2026-11-21 for the scripted trade redesign; see Decisions. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Continued by [[id:E6359881-7919-4BBC-9B9C-03A8EEDB8A03][Design the scripted trade subsystem]]. |
+| Next          | Nothing. |
 | Last touched  | 2026-11-21 |
 
 * Acceptance
@@ -61,8 +61,8 @@ data-oriented design, and prices the trades.
 - every supported type has a builder, and every generic =ScriptedTrade= is built
   by one scripted builder that checks its variables against its script's inputs
 - the generator books every supported type through its builder; a product ORE
-  carries in two forms is booked in both; every script in ORE's library is
-  booked as a generic =ScriptedTrade=
+  carries in two forms, as the =Scripted forms= table names them, is booked in
+  both
 - the ORE engine test reads and builds every generated trade; its known list
   holds only lines of the market data or engine configuration kind, each with
   its reason, and a test fails when a line of the trade kind appears
@@ -70,11 +70,7 @@ data-oriented design, and prices the trades.
 - a check fails when the catalogue and ORE's trade builders drift apart, and a
   test fails when a type is added without a route, a builder and a generator
 - every defect the trade representation captures named is fixed with a test, or
-  shown fixed with evidence, and the tests are shown to catch defects by a
-  property-based roundtrip and a mutation run
-- the coverage, each type's measured level and the unsupported types are visible
-  on the catalogue's own page, and a scripted trade is edited on a screen of its
-  own
+  shown fixed with evidence
 
 * Tasks
 
@@ -107,11 +103,9 @@ data-oriented design, and prices the trades.
 | [[id:92988930-440A-4E1C-A1FC-050F6F6EA396][Model the credit products left out]] | DONE | 2026-11-17 | 2026-11-17 | CreditDefaultSwapOption and CBO are ORE credit products read natively. The credit family holds CDS, index CDS, index options, linked swaps and risk participation; these two are not held, and CBO is the credit basket obligation the family's basket tables were not extended for. |
 | [[id:9CF60F52-D798-45D3-A15A-776AE993BB36][Model the cash position]] | DONE | 2026-11-17 | 2026-11-17 | CashPosition is an ORE product that holds an amount of currency and no instrument facts. It is not held: the family's position tables cover securities and equity positions, not cash. |
 | [[id:589884B5-1B2C-4044-AAD4-40680C9F3F0C][Generate every product in both of its forms]] | DONE | 2026-11-19 | 2026-11-21 | ORE carries about fifteen products both as an element of their own and as a generic ScriptedTrade over a library script: the accumulators, TaRFs, basket, rainbow, best-entry, window and generic barrier options, worst-of basket swaps, basket and pairwise variance swaps, forward volatility agreements and the outperformance option. The generator books only the first form, so the second is never tested. |
-| [[id:CF1384A9-A358-4E56-82F7-AFC089AD4FEB][Generate the script-only equity, FX and commodity payoffs]] | ABANDONED | 2026-11-21 | 2026-11-21 | About thirty scripts in ORE's library have no element of their own: gamma, corridor, conditional, KIKO and dispersion variance swaps, correlation swaps, volatility barrier options, ladder lock-ins, forward-starting options, rainbow call spreads and the worst-performance rainbows, among others. A trade of each can only be a generic ScriptedTrade, and none is generated. |
-| [[id:873E2FA1-F1AE-4B77-8DF0-7BBB4F330B18][Generate the script-only rates and inflation payoffs]] | ABANDONED |  | 2026-11-21 | The library's rates and inflation scripts (AsianIrCapFloor, CMSCapFloorBarrier, ForwardStartingSwaption, LPISwap, FlooredAverageCPIZCIIS, IrregularYYIIS, MovingMaxYYIIS, LapseHedgeSwap and their kin) read IR and inflation indices, which the scripted generator never draws. None is generated. |
 | [[id:4017DBBE-006E-4D37-BA93-E44182D53517][Show the coverage in the UI]] | ABANDONED |  | 2026-11-21 | The catalogue is served and a trade summary names its products, but nothing shows a person which product types exist, which form ORE reads each one as, which table holds it, whether a builder and a generator exist for it, and which types the engine cannot carry. That answer belongs on the catalogue's own page. |
 | [[id:E1E6C776-190A-4D8F-AB98-1163E1F485A0][Prove the trade representation tests catch defects]] | ABANDONED |  | 2026-11-21 | The roundtrip and engine tests prove what the samples and the generator state. Two checks prove the tests themselves: a property-based roundtrip that reaches values neither states, and mutation testing that lists every reader or writer line no test watches. |
-| [[id:B19AE99F-0E8F-4701-9E9C-4987D5C5E4DA][Close out the trade coverage]] | ABANDONED |  | 2026-11-21 | The last task. Every type ORE carries is held, built, generated in each of its forms and accepted by ORE; the old constructors are gone; the known lists hold only market data and engine configuration; and a check fails when the catalogue and ORE drift apart. |
+| [[id:B19AE99F-0E8F-4701-9E9C-4987D5C5E4DA][Close out the trade coverage]] | DONE |  | 2026-11-21 | The last task. Every type ORE carries is held, built, generated in each of its forms and accepted by ORE; the old constructors are gone; the known lists hold only market data and engine configuration; and a check fails when the catalogue and ORE drift apart. |
 | [[id:FD598D4A-3CBE-4690-9290-F4E16C0272BA][Close out the coverage]] | ABANDONED |  |  | The last task: the catalogue names a table for every type, the generator books every type, and the exclusions are the only types absent. |
 | [[id:B9D6D5E2-05E5-45D4-AC50-155FA746359F][Model the equity auto delta hedged option]] | DONE | 2026-11-17 | 2026-11-17 | EquityAutoDeltaHedgedOption is a native ORE product: batches of equity options, each with its own option block, name, currency, strike and quantity, under a hedging volatility, drift and window. The option rows hold one block a trade, so its batches need rows of their own. |
 | [[id:3F138571-5512-453F-BEBB-192E6525D79B][Hold the native equity and fx types on their tables]] | DONE | 2026-11-17 | 2026-11-17 | CashPosition, EquityFutureOption, EquityPairwiseVarianceSwap, FxPairwiseVarianceSwap and FxAsianOption are native ORE products held as parameter rows of the scripted instrument table. Each moves to a table of its family, with its terms as columns. |
@@ -126,20 +120,17 @@ data-oriented design, and prices the trades.
 
 * Decisions
 
-*Abandoned.* Abandoned on 2026-11-21. Most of what it set out to do is delivered: every
-type ORE carries is held on its own tables, built by a builder, generated, and
-booked in both of its forms where the =Scripted forms= table names one, and the
-ORE engine test compares the two forms. Its remaining scripted work rested on an
-approach the user stepped back from: a script with no element of its own was
-booked from a carrier native type's rows, with no schema of its own. That can
-generate a trade, but it cannot back a booking form, a free-form scripted trade
-editor or an import. [[id:E6359881-7919-4BBC-9B9C-03A8EEDB8A03][Design the scripted trade subsystem]] replaces it with a product schema for every product,
-one booking API for both forms, and ORE's own parser in =ores.trading.scripting=.
-The scripted trade editor task moved to that story; the two script-only tasks
-are superseded by it; the coverage UI and the test-proving tasks are captured in
-the product backlog inbox; the close-out task closes with the story. The seven
-variance scripts EquityBasketVarianceSwap carries (PR #4948) stay on main until
-the new story replaces them.
+*Scripted trades are a story of their own.* Decided with the user on
+2026-11-21. Booking a script with no element of its own from a carrier native
+type's rows could generate a trade, but could not back a booking form, a
+free-form scripted trade editor or an import. Scripted trades beyond a product's
+two forms therefore moved to [[id:E6359881-7919-4BBC-9B9C-03A8EEDB8A03][Design the scripted trade subsystem]], which designs a product schema for every
+product, one booking API for both forms, and ORE's own parser in
+=ores.trading.scripting=. The two script-only tasks and the scripted trade
+editor task moved with them; the seven variance scripts EquityBasketVarianceSwap
+carries (PR #4948) stay on main until that story replaces them. The coverage
+page and the proof that the tests catch defects are captured in the product
+backlog inbox, and the story closes with the rest of its goal met.
 
 - A product's facts are modelled once, in the shape its terms demand, whether or
   not ORE reads the product through a script. Where ORE carries it as a
@@ -197,8 +188,30 @@ the new story replaces them.
 
 * Out of scope
 
+- Scripts with no element of its own, free-form scripted trades and the
+  scripted trade editor: [[id:E6359881-7919-4BBC-9B9C-03A8EEDB8A03][Design the scripted trade subsystem]].
+- Showing the coverage on the catalogue's own page: the capture
+  [[id:6FDC57EE-46FD-4BF8-B107-083F26803464][Show the trade type coverage in the UI]].
+- Proving the tests catch defects by a property-based roundtrip and a mutation
+  run: the capture [[id:3F6E0E12-63E8-4DF3-BBAF-AF9F9C31B580][Prove the trade tests catch defects]].
 - Market data, pricing engine configuration and valuation. They stay on
   [[id:47DEDD3C-082E-46A9-BD01-67DFAB9CFFA5][Make the generated trades value correctly in ORE]].
 - Refactoring the data model for performance or a stricter data-oriented design,
   such as splitting a type that carries too many columns. That follows this
   story.
+
+* Result
+
+Closed 2026-11-21. Every product type ORE carries is held as columns and rows of
+its own, built by a builder from typed terms, generated for Acme, and read and
+built by ORE in the engine test with no error of the trade kind; a type ORE
+cannot carry is tagged with its reason, and compass-ng's =trade_type_coverage=
+check fails when the catalogue and ORE drift apart. Every product the =Scripted
+forms= table names is booked in both of its forms (17 products), and the ORE
+engine test compares the two: 28 of 34 pairs agree to the cent, and the rest are
+listed with their reason and bound.
+
+Scripted trades beyond a product's two forms moved to [[id:E6359881-7919-4BBC-9B9C-03A8EEDB8A03][Design the scripted trade
+subsystem]], with the two script-only tasks and the scripted trade editor task.
+The coverage page and the proof that the tests catch defects are captured in the
+product backlog inbox.

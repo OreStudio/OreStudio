@@ -93,4 +93,4 @@ via its "Verifies task" field.
 
 * Result
 
-Abandoned on 2026-11-21 with its story, and kept as the inbox capture [[id:6FDC57EE-46FD-4BF8-B107-083F26803464][Show the trade type coverage in the UI]].
+Descoped from the story on 2026-11-21, which closed with the rest of its goal met, and kept as the inbox capture [[id:6FDC57EE-46FD-4BF8-B107-083F26803464][Show the trade type coverage in the UI]].

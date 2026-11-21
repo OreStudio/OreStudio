@@ -60,6 +60,11 @@ specific concept.
   taxonomy, FpML, the Common Domain Model, the vendor platforms, and
   ORE.
 
+- [[id:CF5A2387-58E8-45A3-8B5B-24FF1F1464B9][Scripted Trades: An Architectural Overview]] — trades whose payoff is
+  expressed as a script: the forms in which a product may be booked, the
+  holding and validation of scripts, and the booking and valuation of a
+  trade in either form.
+
 - [[id:9754A325-F6FB-4F44-AB56-660D980A3F11][Bond Issuance]] — the
   security issue at its clearest. What an issuer creates, why a
   re-opened tranche keeps the line's identifier, and why an issue

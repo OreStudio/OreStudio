@@ -1,0 +1,47 @@
+:PROPERTIES:
+:ID: 708554F7-FA3A-49E1-8A11-4AE968C76758
+:END:
+#+title: Script Execution and Compilation in ORE
+#+description: How ORE executes a script, the extent to which it compiles one, and the consequence that the artefact ORE Studio stores and transmits is the script's text and version.
+#+type: knowledge
+#+level: cross
+#+filetags: :scripting:trading:architecture:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+
+* Summary
+
+ORE executes a script by interpreting its syntax tree over vectors holding one
+value per Monte Carlo path or grid point, so that the cost of interpretation is
+amortised across paths. Where the pricing configuration requests a computation
+graph (=UseCG=, =UseAD=), ORE builds one from the tree and, on an OpenCL or CUDA
+device, compiles it into a kernel within the run; no compiled artefact persists
+beyond the run. ORE provides no form of ahead-of-time compilation, and the
+artefact that ORE Studio stores and transmits is accordingly the script's text
+and its version.
+
+* Detail
+
+** Inputs to a run
+
+A run receives each trade, referencing its script and version or carrying it
+inline ([[id:358CC548-3892-45A1-A916-DF4A48ADED03][Library and Inline Scripts in Scripted Trades]]), together with a script library written from the stored
+rows of the versions its trades reference ([[id:CCA8090C-26E0-4571-84BA-9115C110376C][Versioning of the Script Library]]). ORE parses,
+constructs and prices; ORE Studio parses only for validation ([[id:8FD7BD95-AAEC-4CF9-A9F4-D609A9DEFBD8][Script Parsing with ORE's Grammar]]).
+
+** Grounds for retaining no compiled form
+
+- A compiled form would be bound to a particular ORE build, compiler and
+  platform, and would be invalidated by every upgrade of ORE.
+- The compilation of inline scripts to native code would execute user-supplied
+  code within the risk engine.
+- The revaluation of a trade booked in a prior period requires the text on which
+  it was booked, not a binary derived from that text.
+
+** Performance
+
+The appropriate first step for a slow script is a measurement of where its time
+is spent. ORE's own provision for such cases is the computation graph executed
+on an external device, configured per product tag in the pricing configuration;
+any cache introduced by ORE Studio, such as a persistent ORE process, would
+follow only if that provision proved insufficient.

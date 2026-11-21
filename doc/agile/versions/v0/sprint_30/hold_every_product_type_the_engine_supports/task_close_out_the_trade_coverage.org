@@ -30,9 +30,9 @@ builder and its generator.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | ABANDONED |
+| State        | DONE |
 | Parent story | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] |
-| Now          | Abandoned on 2026-11-21; see Result. |
+| Now          | Done; see Result. |
 | Waiting on   | Nothing. |
 | Next         | None. |
 | Last touched | 2026-11-21 |
@@ -118,4 +118,16 @@ via its "Verifies task" field.
 
 * Result
 
-Abandoned on 2026-11-21 with its story. The coverage it would close is completed by [[id:E6359881-7919-4BBC-9B9C-03A8EEDB8A03][Design the scripted trade subsystem]].
+The story closes on 2026-11-21 with its goal met for every product type ORE
+carries, scripted trades beyond a product's two forms having moved to
+[[id:E6359881-7919-4BBC-9B9C-03A8EEDB8A03][Design the scripted trade subsystem]]. Checked at close:
+
+- no =construct_*= function remains in =projects=: a search for
+  =construct_[a-z_]*(= in the C++ sources of =projects= finds none;
+- the ORE engine test's known list holds 18 market data and 11 engine
+  configuration lines and no line of the trade kind, counted by the first
+  column of =generated_trades_known_ore_errors.txt=;
+- compass-ng's =trade_type_coverage= check, which fails when the catalogue and
+  ORE's builders drift apart, is enabled: =compass-ng config= prints
+  =trade_type_coverage.enabled = true=. The tests' own proof and the coverage page are captured
+in the backlog inbox.

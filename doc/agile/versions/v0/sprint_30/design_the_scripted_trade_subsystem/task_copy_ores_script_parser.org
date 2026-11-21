@@ -1,0 +1,95 @@
+:PROPERTIES:
+:ID: C6436C51-A6DB-422B-AC5E-B60255F90219
+:END:
+#+title: Task: Copy ORE's script parser into ores.trading.scripting
+#+description: ORE Studio has no parser of scripts: a script is first parsed by ORE, in a run, so a syntax error surfaces as a failed valuation.
+#+type: task
+#+level: s1
+#+filetags: :design_the_scripted_trade_subsystem:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E6359881-7919-4BBC-9B9C-03A8EEDB8A03][Design the scripted trade subsystem]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+ores.trading.scripting holds ORE's script grammar, syntax tree, printer, static analysis and random syntax tree generator, copied with ORE's authorship, diffable against ORE's files and linking no QuantLib, and offers parse, inputs_of and print.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:E6359881-7919-4BBC-9B9C-03A8EEDB8A03][Design the scripted trade subsystem]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-21                               |
+
+* Acceptance
+
+- the sub-component sits below ores.trading.api and depends only on ores.utility, ores.platform and Boost Spirit; the component catalogue lists it
+- every copied file keeps ORE's copyright header and names the ORE commit it was copied from, and a script diffs the copy against ORE's files at that commit
+- parse returns ORE's error with its line and column, and every script of the library parses
+- inputs_of agrees with the library's stored inputs for every script, and each difference is explained
+- parse and check report their findings as diagnostics: an error or a warning, a stable code such as SCR1001, the one-based line, the column where it can be determined, the end of the range where known, and a message naming the construct, input or variable concerned
+- the diagnostics are ordered by location and numbered by position, and the codes are held as data with their severity, title and explanation; a test reports each code at least once
+- check reports every input, value and usage finding of a parsed script together, and parse reports the first syntax error with its position, as ORE's grammar does
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+The form of validation findings, numbered errors and warnings with line and column, is [[id:ECA442BB-48D7-47CB-9BAA-97FD1C0BBA9A][Diagnostic Reporting in Script Validation]].
+
+Cut from [[id:8FD7BD95-AAEC-4CF9-A9F4-D609A9DEFBD8][Script Parsing with ORE's Grammar]], which states the target this task builds to; the components it touches are [[id:4E135FB5-6E0A-45CC-A805-F5B70F29DDB4][Component Architecture of the Scripted Trade Subsystem]].
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -89,6 +89,14 @@ retires the prototype once ores.web does what it does.
 - *ores.http only* (2026-11-21). The BFF-to-ores.http migration is nearly done,
   so the assistant's server side is ores.http and the services behind it, and
   nothing goes through the BFF. Taken over from solid_dirac the same day.
+- *ores.http speaks MCP itself, with boost.taar as the reference*
+  (2026-11-21). Context: no C++ MCP library is both mature and a fit; boost.taar
+  is the only one on Beast and in vcpkg, but its tools are compile-time C++
+  functions and its JSON is Boost.JSON. Decision: implement MCP's Streamable
+  HTTP transport in ores.http as an improvement of its own server, reading
+  boost.taar for how each part of the protocol is handled. Consequences: no new
+  dependency; the catalogue comes from ores.http's route registry; conformance
+  is tested against the official MCP conformance runner. See [[id:FC0847D1-9F09-42EF-A4BD-D5E3C34398EA][How ores.http serves MCP]].
 
 * Out of scope
 

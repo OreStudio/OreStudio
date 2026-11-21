@@ -141,6 +141,12 @@ authenticates (MCP specifies OAuth 2.1 with protected resource metadata; ORE
 issues its own sessions and tokens), and how a call made by the assistant is
 told apart from the person's own.
 
+* Decision
+
+Approved by the product owner on 2026-11-21: ores.http implements MCP itself,
+as an improvement and tidy-up of its own server, and boost.taar is the reference
+implementation. Recorded in the story's =* Decisions=.
+
 * See also
 
 - [[id:BBEDFA8E-D43D-4F48-8FD7-1A3CC9F47E3E][Bring the assistant into ores.web on the target architecture]]

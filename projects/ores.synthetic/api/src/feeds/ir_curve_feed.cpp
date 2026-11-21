@@ -73,9 +73,9 @@ ir_curve_feed::ir_curve_feed(
     : nats_(nats)
     , source_name_(std::move(source_name))
     , nats_subject_(std::move(nats_subject))
-    , currency_code_(std::move(currency_code))
-    , index_tenor_(index_tenor)
-    , role_(std::move(role))
+    , index_{.currency_code = std::move(currency_code),
+             .tenor = index_tenor,
+             .role = std::move(role)}
     , process_(std::move(process))
     , step_seconds_(step_speed / (arrival.ticks_per_hour / 3600.0))
     , arrival_(arrival)
@@ -105,7 +105,7 @@ ir_curve_feed::ir_curve_feed(
     {
         auto& shared = market_.values();
         board_member_ = shared.member_of(ores::analytics::quant::domain::market_member_kind::curve,
-                                         currency_code_);
+                                         index_.currency_code);
         board_spot_date_ = curve_spot_date;
     }
 
@@ -130,8 +130,12 @@ ir_curve_feed::ir_curve_feed(
     // format. The datums are built once, here, so a pillar the codec refuses fails when the
     // feed is built and not on the first tick.
     for (const auto& e : entries_) {
-        const ores::marketdata::core::pillar_quote quote{
-            currency_code_, index_tenor, e.start_tenor_code, e.point_id, e.start_date, e.end_date};
+        const ores::marketdata::core::pillar_quote quote{index_.currency_code,
+                                                         index_tenor,
+                                                         e.start_tenor_code,
+                                                         e.point_id,
+                                                         e.start_date,
+                                                         e.end_date};
         const auto made = ores::marketdata::core::pillar_quote_datum(quote);
         if (!made)
             throw std::invalid_argument("ir_curve_feed: the pillar " + e.start_tenor_code + " to " +
@@ -234,12 +238,12 @@ std::string ir_curve_feed::tick(const ores::analytics::quant::service::tick_cont
 std::optional<double> ir_curve_feed::index_rate() const {
     if (!process_)
         return std::nullopt;
-    if (const auto at = index_entry_of(entries_, index_tenor_); at)
+    if (const auto at = index_entry_of(entries_, index_.tenor); at)
         return price_ir_curve_entry(*process_, entries_[*at]);
     // A curve whose short end starts past the overnight tenor has no overnight deposit to
     // price: its index's rate is the short rate its process carries, which is what the model
     // states for the overnight tenor at that state.
-    if (index_tenor_ == "1D")
+    if (index_.tenor == "1D")
         return process_->current();
     return std::nullopt;
 }

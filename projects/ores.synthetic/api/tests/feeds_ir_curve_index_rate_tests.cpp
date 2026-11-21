@@ -29,7 +29,7 @@ const std::string index_rate_tags("[feeds][ir_curve][index_rate]");
 
 using namespace ores::synthetic::feed;
 
-const std::chrono::year_month_day spot{
+const std::chrono::year_month_day rate_spot{
     std::chrono::year{2026}, std::chrono::November, std::chrono::day{16}};
 
 ir_curve_resolved_entry
@@ -42,8 +42,8 @@ entry(const std::string& role, const std::string& start_tenor, const std::string
             .ticks_ahead_end = 1,
             .year_fraction = 0.25,
             .fixed_leg_schedule = {},
-            .start_date = spot,
-            .end_date = spot};
+            .start_date = rate_spot,
+            .end_date = rate_spot};
 }
 
 }

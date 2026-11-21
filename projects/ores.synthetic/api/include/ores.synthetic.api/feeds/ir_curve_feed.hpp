@@ -139,7 +139,7 @@ public:
      * owns.
      */
     const std::string& role() const override {
-        return role_;
+        return index_.role;
     }
 
     /**
@@ -207,11 +207,15 @@ private:
     ores::nats::service::client& nats_;
     std::string source_name_;
     std::string nats_subject_;
-    std::string currency_code_;
-    /// The tenor of the index the curve states: "1D" for an overnight index, the config's
-    /// own period for a term one.
-    std::string index_tenor_;
-    std::string role_;
+    /// The index this curve serves: the currency it is denominated in, the tenor of its
+    /// index ("1D" for an overnight one, the config's own period for a term one), and the use
+    /// its curve is built for.
+    struct index_spec final {
+        std::string currency_code;
+        std::string tenor;
+        std::string role;
+    };
+    index_spec index_;
     std::vector<std::string> series_uris_;
     std::vector<std::string> datum_uris_;
     std::unique_ptr<ores::analytics::quant::domain::i_yield_curve_process> process_;

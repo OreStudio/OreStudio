@@ -33,6 +33,7 @@ from __future__ import annotations
 import argparse
 import os
 import re
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -401,10 +402,22 @@ def _published(ref: str) -> bool:
     only fills the gaps and a nightly run that publishes the same commit
     twice costs nothing.
     """
+    # Ask the registry, not this machine. "podman manifest inspect" answers from
+    # local storage when the tag was just built, so a tag that never left this
+    # host read as already published and the publish pushed nothing.
+    if shutil.which("skopeo"):
+        result = subprocess.run(
+            ["skopeo", "inspect", "--no-tags", f"docker://{ref}"],
+            capture_output=True, text=True)
+        return result.returncode == 0
     result = subprocess.run(
-        [_ENGINE, "manifest", "inspect", ref],
+        [_ENGINE, "manifest", "inspect", f"docker://{ref}"],
         capture_output=True, text=True)
-    return result.returncode == 0
+    if result.returncode == 0:
+        return True
+    # A transport-less ref cannot be told apart from a local one, so treat it as
+    # unpublished: pushing twice costs time, publishing nothing costs a deploy.
+    return False
 
 
 def publish(project_root: Path, registry: str, tag: str | None = None,

@@ -30,11 +30,11 @@ always been so.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:A75C3063-896F-4DD5-A9BC-893A59EDFF7E][Pool the fleet's connections]] |
-| Now          | Written. The cluster under [[id:CE41E828-18EB-4E88-BB02-6A4930E7B67C][The data path]] now states the approach: a floor and a burst ceiling on the service's side, a pooler only where the database is shared, and the paths that stay direct. |
+| Now          | Nothing. |
 | Waiting on   | A review of the pages.                 |
-| Next         | The pool task makes the floor and ceiling real, and the statement task settles the pooler's version. |
+| Next         | Nothing. |
 | Last touched | 2026-11-21                               |
 
 * Acceptance

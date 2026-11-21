@@ -123,7 +123,7 @@ $$ language sql stable;
 -- Script library: trading.v1.ops.publish_script_library_from_dq
 -- =============================================================================
 
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=writes the script library's live tables from its staging tables, as every publish from DQ does; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=writes the script library's live tables from its staging tables, as every publish from DQ does
 create or replace function ores_trading_publish_script_library_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,

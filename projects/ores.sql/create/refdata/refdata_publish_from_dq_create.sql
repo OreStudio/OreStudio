@@ -37,7 +37,7 @@
 -- Countries
 -- =============================================================================
 
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check
 create or replace function ores_refdata_publish_countries_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
@@ -181,7 +181,7 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
 -- Currencies
 -- =============================================================================
 
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check
 create or replace function ores_refdata_publish_currencies_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
@@ -324,7 +324,7 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
 -- Currency Pairs
 -- =============================================================================
 
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check
 create or replace function ores_refdata_publish_currency_pairs_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
@@ -434,7 +434,7 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
 -- Currency Pair Conventions
 -- =============================================================================
 
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check
 create or replace function ores_refdata_publish_currency_pair_conventions_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
@@ -588,7 +588,7 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
 -- Account Types
 -- =============================================================================
 
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check
 create or replace function ores_refdata_publish_trading_account_types_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
@@ -691,7 +691,7 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
 -- Asset Classes
 -- =============================================================================
 
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check
 create or replace function ores_refdata_publish_asset_classes_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
@@ -794,7 +794,7 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
 -- Asset Measures
 -- =============================================================================
 
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check
 create or replace function ores_refdata_publish_asset_measures_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
@@ -897,7 +897,7 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
 -- Benchmark Rates
 -- =============================================================================
 
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check
 create or replace function ores_refdata_publish_benchmark_rates_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
@@ -1000,7 +1000,7 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
 -- Business Centres
 -- =============================================================================
 
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check
 create or replace function ores_refdata_publish_business_centres_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
@@ -1123,7 +1123,7 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
 -- Business Processes
 -- =============================================================================
 
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check
 create or replace function ores_refdata_publish_business_processes_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
@@ -1226,7 +1226,7 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
 -- Cashflow Types
 -- =============================================================================
 
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check
 create or replace function ores_refdata_publish_cashflow_types_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
@@ -1329,7 +1329,7 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
 -- Entity Classifications
 -- =============================================================================
 
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check
 create or replace function ores_refdata_publish_entity_classifications_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
@@ -1432,7 +1432,7 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
 -- Local Jurisdictions
 -- =============================================================================
 
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check
 create or replace function ores_refdata_publish_local_jurisdictions_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
@@ -1535,7 +1535,7 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
 -- Party Relationships
 -- =============================================================================
 
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check
 create or replace function ores_refdata_publish_party_relationships_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
@@ -1638,7 +1638,7 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
 -- Party Roles
 -- =============================================================================
 
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check
 create or replace function ores_refdata_publish_party_roles_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
@@ -1741,7 +1741,7 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
 -- Person Roles
 -- =============================================================================
 
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check
 create or replace function ores_refdata_publish_person_roles_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
@@ -1844,7 +1844,7 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
 -- Regulatory Corporate Sectors
 -- =============================================================================
 
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check
 create or replace function ores_refdata_publish_regulatory_corporate_sectors_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
@@ -1947,7 +1947,7 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
 -- Reporting Regimes
 -- =============================================================================
 
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check
 create or replace function ores_refdata_publish_reporting_regimes_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
@@ -2050,7 +2050,7 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
 -- Supervisory Bodies
 -- =============================================================================
 
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check
 create or replace function ores_refdata_publish_supervisory_bodies_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
@@ -2165,7 +2165,7 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
  * only inserts: it never changes an alias the tenant already holds, whatever
  * the mode.
  */
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check
 create or replace function ores_refdata_publish_counterparty_aliases_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
@@ -2287,7 +2287,7 @@ $$ language plpgsql stable security definer set search_path = public, pg_temp;
  * whose number the target party already holds, and one whose LEI names no
  * counterparty, are skipped. A publish only inserts.
  */
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check
 create or replace function ores_refdata_publish_netting_agreements_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
@@ -2370,7 +2370,7 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
  * agreement's party, so an agreement of another party leaves the set
  * unresolved rather than refused.
  */
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check
 create or replace function ores_refdata_publish_netting_sets_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
@@ -2454,7 +2454,7 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
  * already holds a CSA, and a code that names no set of the party, are
  * skipped. A publish only inserts.
  */
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check
 create or replace function ores_refdata_publish_csas_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
@@ -2561,7 +2561,7 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
  * and a code that names no set of the party, are skipped. A publish only
  * inserts.
  */
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check
 create or replace function ores_refdata_publish_netting_set_aliases_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
@@ -2652,7 +2652,7 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
  * The publish does nothing, and says why, when no owner can be found or the
  * party holds no official portfolio to anchor at.
  */
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check
 create or replace function ores_refdata_publish_sandbox_portfolios_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
@@ -2827,7 +2827,7 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
 -- LEI Counterparties
 -- =============================================================================
 
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check
 create or replace function ores_refdata_publish_lei_counterparties_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
@@ -3177,7 +3177,7 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
 -- LEI Parties
 -- =============================================================================
 
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check
 create or replace function ores_refdata_publish_lei_parties_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
@@ -3454,7 +3454,7 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
 -- Business Units
 -- =============================================================================
 
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check
 create or replace function ores_refdata_publish_business_units_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
@@ -3606,7 +3606,7 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
 -- Portfolios
 -- =============================================================================
 
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check
 create or replace function ores_refdata_publish_portfolios_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
@@ -3785,7 +3785,7 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
 -- Books
 -- =============================================================================
 
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check
 create or replace function ores_refdata_publish_books_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
@@ -3973,7 +3973,7 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
  * own configs).
  */
 
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check
 create or replace function ores_refdata_publish_crm_topology_bundles_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
@@ -4124,7 +4124,7 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
 -- Calendar Types
 -- =============================================================================
 
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check
 create or replace function ores_refdata_publish_calendar_types_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
@@ -4228,7 +4228,7 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
 -- Currency Groups
 -- =============================================================================
 
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=publishes a DQ dataset into the tenant, like every other publish_from_dq function; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=publishes a DQ dataset into the tenant, like every other publish_from_dq function
 create or replace function ores_refdata_publish_currency_groups_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
@@ -4332,7 +4332,7 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
 -- Payment Frequencies
 -- =============================================================================
 
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check
 create or replace function ores_refdata_publish_payment_frequencies_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
@@ -4438,7 +4438,7 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
 -- Calendars
 -- =============================================================================
 
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check
 create or replace function ores_refdata_publish_calendars_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
@@ -4549,7 +4549,7 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
 -- artefact's own id never reaches a tenant. replace_all closes only the
 -- events the dataset does not carry, after the upsert, so it keeps the
 -- ids of the events it carries.
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check
 create or replace function ores_refdata_publish_calendar_events_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
@@ -4664,7 +4664,7 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
 -- An exception's natural key is (calendar_code, exception_date). Its id belongs
 -- to the tenant, so the artefact's own id never reaches a tenant. The publish is
 -- set-based because one dataset holds tens of thousands of days.
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=publishes the QuantLib calendar holidays the DQ dataset stages into the tenant, like every other publish_from_dq function; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=publishes the QuantLib calendar holidays the DQ dataset stages into the tenant, like every other publish_from_dq function
 create or replace function ores_refdata_publish_calendar_exceptions_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
@@ -4773,7 +4773,7 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
 -- tenant has no other way to get them. replace_all closes only the
 -- schedules the dataset does not carry, after the upsert, so no schedule a
 -- resolution names is closed while the call runs.
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check
 create or replace function ores_refdata_publish_tenor_schedules_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
@@ -4914,7 +4914,7 @@ begin
 end;
 $$ language plpgsql security definer set search_path = public, pg_temp;
 
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check
 create or replace function ores_refdata_publish_currency_calendars_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
@@ -5013,7 +5013,7 @@ begin
 end;
 $$ language plpgsql security definer set search_path = public, pg_temp;
 
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check
 create or replace function ores_refdata_publish_currency_countries_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
@@ -5112,7 +5112,7 @@ begin
 end;
 $$ language plpgsql security definer set search_path = public, pg_temp;
 
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=publishes a DQ dataset into the tenant, like every other publish_from_dq function; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=publishes a DQ dataset into the tenant, like every other publish_from_dq function
 create or replace function ores_refdata_publish_currency_currency_groups_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
@@ -5211,7 +5211,7 @@ begin
 end;
 $$ language plpgsql security definer set search_path = public, pg_temp;
 
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check
 create or replace function ores_refdata_publish_currency_pair_convention_calendars_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
@@ -5527,7 +5527,7 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
 -- own guarantee, so a republish inserts nothing even when the guard misses a
 -- row. A full run of the SQL tests showed a republish failing on that index now
 -- and then, with the guard's inputs the same as on a run that passed.
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=the publish-from-dq function of the atomised tenor basis swap convention: it writes the central convention row and its two part tables, as every publish-from-dq function in this baseline writes its own service's tables; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=the publish-from-dq function of the atomised tenor basis swap convention: it writes the central convention row and its two part tables, as every publish-from-dq function in this baseline writes its own service's tables
 create or replace function ores_refdata_publish_tenor_basis_swap_conventions_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
@@ -5763,7 +5763,7 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
 -- the tenor basis swap there is no other form to close. A part is written only
 -- when the convention has no live row of it, and the mode has no effect: like
 -- the flat publisher, this one only inserts what is absent.
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=the publish-from-dq function of the atomised cross-currency fix-float convention: it writes the central convention row and its three part tables, as the tenor basis swap's publisher does; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=the publish-from-dq function of the atomised cross-currency fix-float convention: it writes the central convention row and its three part tables, as the tenor basis swap's publisher does
 create or replace function ores_refdata_publish_xccy_fix_float_conventions_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
@@ -5957,7 +5957,7 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
 -- the tenor basis swap there is no other form to close. A part is written only
 -- when the convention has no live row of it, and the mode has no effect: like
 -- the flat publisher, this one only inserts what is absent.
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=the publish-from-dq function of the atomised cross-currency basis convention: it writes the central convention row and its three part tables, as the fix-float convention's publisher does; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=the publish-from-dq function of the atomised cross-currency basis convention: it writes the central convention row and its three part tables, as the fix-float convention's publisher does
 create or replace function ores_refdata_publish_xccy_basis_conventions_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
@@ -6152,7 +6152,7 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
 -- the optional parts are not alternatives, so there is no other form to close. A part is written only
 -- when the convention has no live row of it, and the mode has no effect: like
 -- the flat publisher, this one only inserts what is absent.
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=the publish-from-dq function of the atomised commodity future convention: it writes the central convention row, its contract terms and its four optional part tables, as the cross-currency basis convention's publisher does; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=the publish-from-dq function of the atomised commodity future convention: it writes the central convention row, its contract terms and its four optional part tables, as the cross-currency basis convention's publisher does
 create or replace function ores_refdata_publish_commodity_future_conventions_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
@@ -6404,7 +6404,7 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
  * whose type the party already holds is skipped, and so is a contact that
  * would be a second primary one. A publish only inserts.
  */
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=publishes a DQ dataset into the party a publish names, like every other publish_from_dq function; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=publishes a DQ dataset into the party a publish names, like every other publish_from_dq function
 create or replace function ores_refdata_publish_party_contact_informations_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
@@ -6481,7 +6481,7 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
  * the country only. A country the tenant does not hold, and one the party
  * already works in, are skipped. A publish only inserts.
  */
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=publishes a DQ dataset into the party a publish names, like every other publish_from_dq function; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=publishes a DQ dataset into the party a publish names, like every other publish_from_dq function
 create or replace function ores_refdata_publish_party_countries_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
@@ -6552,7 +6552,7 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
  * the currency only. A currency the tenant does not hold, and one the party
  * already works in, are skipped. A publish only inserts.
  */
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=publishes a DQ dataset into the party a publish names, like every other publish_from_dq function; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=publishes a DQ dataset into the party a publish names, like every other publish_from_dq function
 create or replace function ores_refdata_publish_party_currencies_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
@@ -6624,7 +6624,7 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
  * tenant to tenant. A LEI that no counterparty of the tenant holds, and a
  * counterparty the party can already see, are skipped. A publish only inserts.
  */
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=publishes a DQ dataset into the party a publish names, like every other publish_from_dq function; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=publishes a DQ dataset into the party a publish names, like every other publish_from_dq function
 create or replace function ores_refdata_publish_party_counterparties_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
@@ -6792,7 +6792,7 @@ comment on function ores_refdata_publish_curve_configuration_from_dq_fn(uuid, uu
 -- nothing and never resets a series the calibration has claimed. The publish therefore
 -- never updates a blueprint: a change to a staged blueprint reaches a database only when
 -- it is recreated, and a party's copy only when it is provisioned again.
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=publishes the FX volatility surface blueprints the DQ dataset stages into the tenant, like every other publish_from_dq function; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=publishes the FX volatility surface blueprints the DQ dataset stages into the tenant, like every other publish_from_dq function
 create or replace function ores_refdata_publish_fx_vol_surface_blueprints_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
@@ -6915,7 +6915,7 @@ comment on function ores_refdata_publish_fx_vol_surface_blueprints_from_dq_fn(uu
 -- Commodities
 -- =============================================================================
 
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=a DQ publish function, written in SQL like every sibling; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=a DQ publish function, written in SQL like every sibling
 create or replace function ores_refdata_publish_legal_entities_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
@@ -7016,7 +7016,7 @@ begin
 end;
 $$ language plpgsql security definer set search_path = public, pg_temp;
 
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check
 create or replace function ores_refdata_publish_commodities_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
@@ -7119,7 +7119,7 @@ begin
 end;
 $$ language plpgsql security definer set search_path = public, pg_temp;
 
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=a DQ publish function, written in SQL like every sibling; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=a DQ publish function, written in SQL like every sibling
 create or replace function ores_refdata_publish_equity_underlyings_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,

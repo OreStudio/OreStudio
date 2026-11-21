@@ -35,7 +35,7 @@
  * caller's tenant.
  */
 
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check
 create or replace function ores_inbox_raise_notification_fn(
     p_kind_code text,
     p_link_route text,
@@ -83,7 +83,7 @@ begin
 end;
 $$ language plpgsql;
 
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check
 create or replace function ores_inbox_mark_notifications_read_fn(
     p_account_id uuid,
     p_notification_ids uuid[],
@@ -110,7 +110,7 @@ begin
 end;
 $$ language plpgsql;
 
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check
 create or replace function ores_inbox_clear_notifications_fn(
     p_account_id uuid,
     p_notification_ids uuid[],

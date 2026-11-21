@@ -52,7 +52,7 @@
 -- -----------------------------------------------------------------------------
 -- Tenant bootstrap reset
 -- -----------------------------------------------------------------------------
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check
 create or replace function ores_iam_reset_tenant_bootstrap_fn(
     p_tenant_code text,
     p_actor text default null

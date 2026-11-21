@@ -189,6 +189,9 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | SKILL_SCRIPTS names a deleted script and is unused. | build/scripts/local_checks.py | Accepted | Deleted (PR #4986). |
+| 2 | Four .compass.org RLS exception rows name the deleted script. | .compass.org | Accepted | Clause removed; the 220 exceptions still all excuse (PR #4986). |
+| 3 | compass:except headers name entity_table_writes_baseline.json. | projects/** | Accepted | No reader in ORE or compass: that baseline, core_link_edges_baseline.json and template_section_baseline.json are deleted, and 211 clauses naming the first two removed. money_decimal_columns.baseline stays: convert_money_column_to_decimal.py reads it (PR #4986). |
+| 4 | Historical agile pages name the deleted scripts. | doc/agile/** | Declined | Records of past work keep what was true then. |
 
 * Result

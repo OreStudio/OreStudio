@@ -236,7 +236,6 @@ def classify(changed: list[str]) -> tuple[set[str], dict[str, list[str]]]:
 # checks that had no CI job at all.
 # --------------------------------------------------------------------------
 
-SKILL_SCRIPTS = ("build/scripts/generate_skill*.py", "build/scripts/link_structure_notes.py")
 
 # The test preset names no job count, so ctest would run one suite at a time.
 # The suites that must not overlap already say so, with RESOURCE_LOCK or

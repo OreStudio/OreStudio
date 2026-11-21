@@ -80,7 +80,7 @@ end $$;
 -- Scrape function: point-in-time snapshot of all active queue depths
 -- ---------------------------------------------------------------------------
 
--- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check; recorded in entity_table_writes_baseline.json
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=predates the check
 create or replace function ores_mq_queue_stats_scrape_fn() returns void
 language sql security definer
 as $$

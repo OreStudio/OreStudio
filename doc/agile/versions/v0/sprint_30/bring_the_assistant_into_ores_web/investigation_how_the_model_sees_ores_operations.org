@@ -1,0 +1,40 @@
+:PROPERTIES:
+:ID: 6DFC4BF5-65AC-4E75-90EA-FBDC1272E01C
+:END:
+#+title: Investigation: How the model sees ORE's operations
+#+description: How a catalogue of every operation ores.http serves reaches a model through MCP without filling its context, and what each operation must state for that.
+#+type: investigation
+#+level: s1
+#+filetags: :agent:llm:mcp:http:investigation:bring_the_assistant_into_ores_web:sprint_30:v0:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+
+A point-in-time record, written while the story that commissioned it was open, of an [[id:A7F8D9E2-3C4B-4A5D-B67C-8E9F0A1B2C3D][investigation]] into How a catalogue of every operation ores.http serves reaches a model through MCP without filling its context, and what each operation must state for that..
+
+It is a snapshot, not a description of the system. Whatever it concludes that the code must keep doing belongs on the page that owns the subject; cite that page from code, recipes and models, not this one.
+
+* Context
+
+(Describe the original problem, research question, or incident that triggered this investigation. What was the observed behavior and why was it significant?)
+
+* Methodology
+
+(Describe how the investigation was conducted. List the tools used, the reproduction steps, the environment details, and the datasets involved.)
+
+* Paths taken
+
+(Provide a detailed log of the various approaches explored during the investigation. Be transparent about what was tried and why, especially for paths that were ultimately unsuccessful or abandoned. Link to related PRs, branches, or commits where available.)
+
+- [[https://github.com/OreStudio/OreStudio/pull/NNN][PR #NNN]] — (Describe what this approach was and why it failed or was set aside).
+
+* Conclusions
+
+(Summarize the ultimate findings of the investigation. What is the root cause? What have we learned about the system's behavior or limits?)
+
+* Recommendations
+
+(Suggest the next steps or new architectural approaches based on these findings. Focus on the high-level strategy rather than implementation-level detail. Identify any follow-up tasks or stories that should be created.)
+
+* See also
+
+- (Links to related knowledge docs, tasks, or external references.)

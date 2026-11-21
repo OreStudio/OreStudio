@@ -125,7 +125,8 @@ product owner approves them. The order follows what the rest depends on:
 1. How ores.http serves MCP, because the tool catalogue (question 3) and the
    machine operations (question 4) are both expressed through it. Started:
    [[id:FC0847D1-9F09-42EF-A4BD-D5E3C34398EA][How ores.http serves MCP]].
-2. The tool catalogue and how it fits a small model's context.
+2. The tool catalogue and how it fits a small model's context. Started:
+   [[id:6DFC4BF5-65AC-4E75-90EA-FBDC1272E01C][How the model sees ORE's operations]].
 3. User and machine operations, and how an outside MCP client authenticates.
 4. Where the agent loop runs, the chat in ores.web, confirmation of changes,
    the inference server, and the fate of the prototype.

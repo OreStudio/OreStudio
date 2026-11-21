@@ -42,6 +42,7 @@ one, start there rather than here.
 | [[id:4682A7D5-04FC-494B-BD7C-6816500EB3C9][Message Queue]] | How a subject is addressed, what a message must look like, and where a service binds to the bus |
 | [[id:B4E6F1A2-7C3D-4E5F-8A9B-0C1D2E3F4A5B][NATS service patterns]] | How a service must use the bus: the call each situation requires, its rationale, and the failure without it |
 | [[id:F1BC2C10-B23B-4979-9692-8FA7C29319CB][Data storage]] | Where the durable data lives, which interface reaches each store, and how to choose one |
+| [[id:929A4722-8F06-4DEF-B759-D0800D4AC6D5][A pooler stands where the database is shared]] | A pooler is a host and a port, so an environment chooses one or not: a shared instance takes one, a developer's own database needs none |
 | [[id:CE41E828-18EB-4E88-BB02-6A4930E7B67C][The data path]] | How a service reaches the database and how ticks reach the store, at one hundred thousand feeds |
 | [[id:8C011F45-3A10-4EF4-BB73-4BDEF38B743E][Data classification]] | How to tell what a data set is before choosing a shape, and how a set that crosses owners travels |
 | [[id:01083101-A83A-4294-81A4-DDF3192CEB14][Report Processing]] | How a report is scheduled, prepared, run on the compute grid, and recorded |

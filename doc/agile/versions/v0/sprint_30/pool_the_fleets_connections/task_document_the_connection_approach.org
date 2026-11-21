@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :pool_the_fleets_connections:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/document-the-connection-approach
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -30,11 +30,11 @@ always been so.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:A75C3063-896F-4DD5-A9BC-893A59EDFF7E][Pool the fleet's connections]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | Written. The cluster under [[id:CE41E828-18EB-4E88-BB02-6A4930E7B67C][The data path]] now states the approach: a floor and a burst ceiling on the service's side, a pooler only where the database is shared, and the paths that stay direct. |
+| Waiting on   | A review of the pages.                 |
+| Next         | The pool task makes the floor and ceiling real, and the statement task settles the pooler's version. |
 | Last touched | 2026-11-21                               |
 
 * Acceptance
@@ -109,3 +109,15 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The pages were corrected rather than added to, because the cluster already
+described most of this approach as though it were deployed.
+
+- *New:* [[id:929A4722-8F06-4DEF-B759-D0800D4AC6D5][A pooler stands where the database is shared]] — the address a service opens its connections to, which deployments put something at it, what must hold in both, and what a pooler costs and buys.
+- *Rewritten:* [[id:729F746E-36DD-40A2-A592-6972239E31F0][A service holds a few long-lived connections and never connects per query]] — the pool now states a floor it keeps and a ceiling a burst may reach, sized by the service's workers and lanes, with what happens at the ceiling.
+- *Corrected:* [[id:42930B6A-544A-4F7E-ACF4-9ABC60F2B408][The environments share the database through a transaction pooler]] — it stated the pooler as a fact of every environment; it now says where one stands, adds the idle timeout and the administrative paths to what goes around it, and states the prepared-statement condition instead of assuming it.
+- *Corrected:* the =ores.database= component overview and the multi-tenancy page, which both asserted a pooler in front of PostgreSQL for every service.
+- *Wired:* the new page into the knowledge index beside the data path.
+
+Every page is present tense and describes where the deployment lands, not the
+route taken; the numbers that motivate the shape stay in the story and the tasks.

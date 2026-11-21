@@ -25,10 +25,12 @@ service, built on libpq, the PostgreSQL C client.
 
 - A =context= names who a statement acts for: the tenant, the party and the
   parties it sees, the actor, and the service account. Copies of a context
-  share one =pq::pool= of long-lived connections to pgbouncer, which runs in
-  transaction pooling mode in front of PostgreSQL. The pool opens under
-  an open policy that retries a database that refuses connections while it
-  restarts.
+  share one =pq::pool= of long-lived connections, opened to the address the
+  service's configuration states: PostgreSQL directly, or a pooler in
+  transaction mode where the database is shared with other environments. The
+  pool keeps a floor of connections and may open more up to a ceiling, closing
+  what a burst leaves idle, and it opens under an open policy that retries a
+  database that refuses connections while it restarts.
 - Every call runs in one =pq::transaction=, which sets the context's tenant,
   party, visible parties, actor and service as transaction-local settings,
   pipelined with its first statement. The row-level security policies and
@@ -47,11 +49,14 @@ service, built on libpq, the PostgreSQL C client.
   throws =repository_exception= with the server's SQLSTATE.
 - A =health_monitor= probes the database, and a =postgres_listener_service=
   holds a direct connection to PostgreSQL for LISTEN/NOTIFY, which needs a
-  session that transaction pooling does not give.
+  session that transaction pooling does not give; it names PostgreSQL's address
+  even where the services name a pooler's.
 
 [[id:CE41E828-18EB-4E88-BB02-6A4930E7B67C][The data path]] sets out the design: pooled long-lived connections, a unit
 of work that hands repositories an open transaction, typed statements and
-classed errors.
+classed errors. [[id:929A4722-8F06-4DEF-B759-D0800D4AC6D5][A pooler stands
+where the database is shared]] states which deployments put a pooler at that
+address and which do not.
 
 The component owns no codegen entity models. It is hand-written
 infrastructure, and every type it exposes stays below the audit, history and

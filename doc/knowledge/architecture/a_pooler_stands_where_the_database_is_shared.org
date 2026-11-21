@@ -1,0 +1,66 @@
+:PROPERTIES:
+:ID: 929A4722-8F06-4DEF-B759-D0800D4AC6D5
+:END:
+#+title: A pooler stands where the database is shared
+#+description: A pooler is a host and a port, so an environment chooses one or not: a shared instance takes one to cap what the fleet costs it, and a developer's own database needs none.
+#+type: knowledge
+#+level: cross
+#+filetags: :architecture:database:connections:environments:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+
+* Summary
+
+A service reaches PostgreSQL at a host and a port it reads from its
+configuration, so a pooler is not a mode of the code: it is an address one
+environment may point its services at and another may not. An environment whose
+database is shared with other environments points them at a pooler, which caps
+what the fleet costs the instance. A developer's own database points them at
+PostgreSQL, and nothing else changes.
+
+* Detail
+
+** One code path, two deployments
+
+Nothing in a service knows whether a pooler stands in front of its database.
+The pool opens the connections its work needs ([[id:729F746E-36DD-40A2-A592-6972239E31F0][A service holds a few long-lived connections and never connects per query]]), each
+transaction sets its own context ([[id:3C334C3B-2760-4278-95B8-B71268E8FD18][A transaction sets its own tenant context, so any connection serves any tenant]]), and a
+statement's path is the same either way. What differs is what the *server* sees:
+a pooled host sees the pooler's cap, a direct host sees the service's own floor
+and burst.
+
+** Where a pooler stands
+
+| Setting | A pooler stands |
+|---------+-----------------|
+| A development machine | never, because the database is the developer's own |
+| A host running several environments against one instance | always, per environment |
+| A deployment host running the fleet as containers | always, as a container beside the fleet |
+| Continuous integration | in one job, so the pooled path is proven |
+
+The direct path is the default, and it is what a person needs to work on ORE
+Studio: nothing has to be installed, and no behaviour depends on a pooler being
+present ([[id:42930B6A-544A-4F7E-ACF4-9ABC60F2B408][The environments share the database through a transaction pooler]]).
+
+** What must hold in both**
+
+- Every setting a request makes is local to its transaction, so a connection
+  carries nothing between callers and can be pooled or not.
+- A statement keeps its meaning whether or not a pooler serves it, which is a
+  property of the pooler's prepared-statement support and is stated where the
+  pooler is described.
+- The paths that need a session - the listener on =LISTEN= - go around the
+  pooler in every deployment, so they are identical in both.
+
+** What it costs, and what it buys
+
+A deployment that runs a pooler gains a piece to operate and a place where a
+request can wait for a server connection. It buys a stated cap per environment
+instead of a sum of per-service pools nobody counts, and it frees the service's
+own pool to be sized to its work rather than to the instance's =max_connections=.
+
+* See also
+
+- [[id:CE41E828-18EB-4E88-BB02-6A4930E7B67C][The data path]] — the structure note that orders this cluster.
+- [[id:729F746E-36DD-40A2-A592-6972239E31F0][A service holds a few long-lived connections and never connects per query]] — the pool on the service's side of the address.
+- [[id:42930B6A-544A-4F7E-ACF4-9ABC60F2B408][The environments share the database through a transaction pooler]] — what stands at that address where the database is shared.

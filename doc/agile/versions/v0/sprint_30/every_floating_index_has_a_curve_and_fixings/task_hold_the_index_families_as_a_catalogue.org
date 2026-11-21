@@ -8,7 +8,7 @@
 #+filetags: :every_floating_index_has_a_curve_and_fixings:sprint_30:v0:
 #+owner: marco
 #+branch: feature/bootstrap-the-hkd-hibor-term-curves
-#+pr:
+#+pr: 4975
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-21
@@ -103,7 +103,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4975][#4975]] | [synthetic,codegen,web] Hold the IR curve index families as a catalogue |
 
 * Review
 

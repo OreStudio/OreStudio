@@ -43,7 +43,9 @@ The wrapper also removes the =.tar.gz= after it unpacks it.
 - After a recreate, a wrapper runs a job without a new package download.
 - A changed engine gets a new ID, so a wrapper never runs a stale package.
 - No =.tar.gz= stays in =packages/= after a package is unpacked.
-- Decide what removes the copies that other IDs left behind.
+- Decide what removes the copies that other IDs left behind. When the task
+  starts, make this testable, for example: after the change, the number of
+  package folders equals the number of distinct engine versions.
 
 * Plan
 

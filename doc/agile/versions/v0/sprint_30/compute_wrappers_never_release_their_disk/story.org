@@ -21,8 +21,11 @@ disk then stays bounded however often the database is recreated and however
 many jobs run.
 
 On 2026-11-20 the disk of the development machine filled to 0 bytes free.
-Postgres and git both failed. The wrapper run folders of all worktrees held
-about 320 GB. Two leaks cause this:
+Postgres and git both failed. On 2026-11-21 the wrapper run folders of the
+nine worktrees held 331 GiB, measured with
+=du -sc ores_dev_*/build/output/*/publish/run/wrappers= from the folder that
+holds the worktrees. The largest was bright_faraday with 71 GiB. Two leaks
+cause this:
 
 - The wrapper caches an engine under =packages/<app_version_id>/=. The seed
   =compute_ore_app_seed.sql= makes that ID with =gen_random_uuid()=, so each
@@ -49,7 +52,8 @@ about 320 GB. Two leaks cause this:
 - A wrapper removes job folders older than a configured age, and the default
   age is stated.
 - The size of the wrapper folders is measured before and after, on the same
-  workload.
+  workload. The task Remove job folders older than a set age closes last, so it
+  owns the measurement after both changes.
 
 * Tasks
 
@@ -62,7 +66,7 @@ about 320 GB. Two leaks cause this:
 
 * Out of scope
 
-- Removing a run's inputs and outputs from object storage. The story Give each
-  tenant its own buckets and scope the reaper owns that.
+- Removing a run's inputs and outputs from object storage. The story
+  [[id:4185CBED-B457-4623-A798-144EE34EC1F1][Give each tenant its own buckets and scope the reaper]] owns that.
 - Deleting the folders that exist today. Keep them until both tasks have
   analysed them; the user asked for this.

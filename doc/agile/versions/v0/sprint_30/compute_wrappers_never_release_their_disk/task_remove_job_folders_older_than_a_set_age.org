@@ -43,6 +43,8 @@ folders and from what a person needs to inspect a failed job.
 - The age is a wrapper setting with a stated default.
 - A job that runs now is never removed.
 - Decide whether a failed job's folder is kept longer than a successful one.
+- Measure the wrapper folders before and after both tasks, on the same
+  workload, for the story's acceptance.
 
 * Plan
 
@@ -63,7 +65,8 @@ task and name that file in the Command column.
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
 | Job folders in =node_1/jobs= (clever_dijkstra) | 995, from 2026-11-11 to 2026-11-20 | =ls jobs= and =ls -la --time-style=+%F jobs= | 73d064ad9a |
-| Largest job folders | 28 MB | =du -sh jobs/*= | 73d064ad9a |
+| Size of a job folder | median 1.8 MB, 90th percentile 3.7 MB, largest 28 MB | =du -sk jobs/*=, sorted | 0432e34058 |
+| Total of =node_1/jobs= | 2,842 MB over 995 folders | =du -sk jobs/*=, summed | 0432e34058 |
 | =jobs= per node (clever_dijkstra) | 2.7 GB to 3.0 GB, 5 nodes | =du -sh node_*/jobs= | 73d064ad9a |
 
 * Notes

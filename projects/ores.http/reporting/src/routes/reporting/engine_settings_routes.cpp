@@ -96,7 +96,7 @@ std::string setting_json_of(const engine_setting_row& setting,
                             const value_fields& fields,
                             const ores::reporting::domain::ore_parameter* documented) {
     const auto of_parameter =
-        [documented](std::string ores::reporting::domain::ore_parameter::* field) {
+        [documented](std::string ores::reporting::domain::ore_parameter::*field) {
             return documented == nullptr ? std::string() : documented->*field;
         };
     auto members = std::vector<std::string>{

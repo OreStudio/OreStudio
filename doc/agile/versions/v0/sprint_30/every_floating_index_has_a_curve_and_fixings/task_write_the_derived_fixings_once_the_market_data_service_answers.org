@@ -31,11 +31,11 @@ already skips the days a series holds, so a run is safe to repeat.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:0F936789-FEBE-4330-97B9-DFE0837E4466][Every index a generated trade floats on has a curve and fixings]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-21                               |
 
 * Acceptance
@@ -51,9 +51,18 @@ already skips the days a series holds, so a run is safe to repeat.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Add a generic =reconciler= to =ores.service=: a pass on a thread of its
+   own that runs again, after a wait that doubles to a cap, while it leaves
+   work; a kick runs it at once. This is the core of the task Run a service's
+   startup work as reconcilers, in the story A service waits for its
+   dependencies and recovers when they return, so the writer is its first
+   user rather than a writer with a retry of its own.
+2. Make the fixing writer keep each plan until it is written, keyed by its
+   index, and give the reconciler a pass over the plans not yet written. A
+   failure is a reason to try again. A history the plan cannot state is logged
+   and dropped, because a second attempt states the same nothing.
+3. Prove it on a fresh environment, and by stopping the market data service
+   under a running synthetic service.
 
 * Measurements
 
@@ -69,6 +78,10 @@ task and name that file in the Command column.
 |------+-------+---------+--------|
 | Derived interest rate fixing series, first reading | 34; 7 lost to =no service is handling subject= at 03:17:04 | =evidence/fixing_gap_by_trade.sql=, readings in =evidence/fixing_gap_by_trade.txt= | c0f6ed8c38 |
 | Derived interest rate fixing series, after a restart | 41 (the 7 written) | =evidence/fixing_gap_by_trade.sql=, readings in =evidence/fixing_gap_by_trade.txt= | c0f6ed8c38 |
+| Derived interest rate fixing series on a fresh environment, no restart | 41 series, 21,320 fixings; no =are not written= line in the synthetic log | =compass db recreate=, =compass services start=, then a count of the =derived= =oresmd://ir/= series | 73758769e4 |
+| Plans left when market data went during the curves' start | 3, reason =no service is handling subject ...market_series.list=, retried in 1,000 ms | =ores.synthetic.service.0.log=, 11:35:32 | 73758769e4 |
+| Time from market data's return to the writer done, no restart | 25 s (started 11:36:06, done 11:36:31); synthetic service active since 11:29:57, 0 restarts | =systemctl --user show -p NRestarts -p ActiveEnterTimestamp= | 73758769e4 |
+| Reconciler tests | 6 cases, 14 assertions, passed on 5 runs in a row; 89 cases in =ores.service.tests= | =ores.service.tests "[reconciler]"= | 73758769e4 |
 
 * Notes
 
@@ -117,3 +130,39 @@ via its "Verifies task" field.
 | 4 | PR #4956 review: tie the evidence to the branch base | =evidence/fixing_gap_by_trade.txt= | Accept | States the measured commit, the base, what changed between, and that task 1 measures again |
 
 * Result
+
+The fixing writer no longer loses a plan to start order. It keeps each plan
+until the plan is written, and a reconciler in =ores.service= runs the plans
+again, with a wait that doubles from 1 s to 60 s, while the market data
+service does not answer. New plans run at once.
+
+- =ores.service/service/reconciler.hpp=: =reconciler=, =reconciler_options=,
+  =reconcile_result= and =next_reconcile_delay=, with six unit tests. A
+  reason is logged as a warning when it changes and as debug when it repeats.
+- =fixing_history_writer= keeps its plans in a map by index; a later plan for
+  the same index replaces the earlier one, and a pass removes only the plan it
+  wrote.
+
+Acceptance:
+
+- Met: on a fresh environment, without a restart, the tenant holds 41 derived
+  interest rate fixing series and 21,320 fixings, the count of a restarted
+  one, and the log has no =are not written= line. That start had no race,
+  because the market data service answered before the curves started.
+- Met: with market data stopped as the curves started, the writer left 3
+  plans, said why, and finished 25 s after market data returned, with no
+  restart of the synthetic service. The series already held their days, so
+  this pass wrote no new fixings; it went through the failure and the retry.
+- Not met here: the service registry cannot yet declare that the synthetic
+  service depends on market data, because =:depends_on:= holds one service
+  and it names IAM. The task Declare every service a service depends on makes
+  it a list.
+
+Found on the way:
+
+- The market data service answered =marketdata.v1.feeds.list= before it had
+  subscribed =marketdata.v1.market_series.list=: the writer's first pass
+  failed on the second subject 1.1 s before I stopped the service. Recorded on
+  the task Report ready only when the dependencies answer.
+- The synthetic service's =adapter_fleet= retries =feeds.list= with its own
+  backoff. Recorded on the task Run a service's startup work as reconcilers.

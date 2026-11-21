@@ -70,6 +70,12 @@ task and name that file in the Command column.
 
 - The probe should be cheap and answered by every service; a ping subject the
   runner registers in phase 1 serves, or the dependency's heartbeat.
+- A service answers some subjects before it has subscribed the rest. On
+  2026-11-21 the market data service answered =marketdata.v1.feeds.list=
+  while =marketdata.v1.market_series.list= still had no responder, and the
+  synthetic service's fixing writer failed on the second. So a probe of one
+  subject is not proof the service is ready: the probe should be a subject
+  the runner subscribes after phase 1 is complete.
 - This changes what =READY= means for the task Ready the market data service
   before its usage sync: its usage sync becomes a reconciler of task 4.
 

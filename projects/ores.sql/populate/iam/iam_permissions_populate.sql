@@ -2112,6 +2112,7 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'analytics::pricing_model_product_parameters:write',  'Create and modify pricing model product parameters');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'analytics::pricing_model_product_parameters:delete', 'Delete pricing model product parameters');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'analytics::*', 'Full access to all analytics operations');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'orgmode::*', 'Full access to all org-mode operations');
 
     -- =============================================================================
     -- Storage Component Permissions

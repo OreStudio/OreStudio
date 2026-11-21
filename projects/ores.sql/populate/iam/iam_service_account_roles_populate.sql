@@ -78,6 +78,9 @@ select ores_iam_account_role_assign_fn(
     ores_utility_system_tenant_id_fn(), :'analytics_service_user', 'AnalyticsService');
 
 select ores_iam_account_role_assign_fn(
+    ores_utility_system_tenant_id_fn(), :'orgmode_service_user', 'OrgmodeService');
+
+select ores_iam_account_role_assign_fn(
     ores_utility_system_tenant_id_fn(), :'storage_service_user', 'StorageService');
 
 select ores_iam_account_role_assign_fn(

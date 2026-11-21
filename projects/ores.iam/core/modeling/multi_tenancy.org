@@ -599,9 +599,12 @@ first statement.
 ** Connection Pool
 
 - One pool per service process, shared by every tenant and party.
-- The pool opens its connections at startup and keeps them. No query opens a
-  connection.
-- pgbouncer bounds the server connections of the whole fleet.
+- The pool keeps a floor of connections and may open more up to a ceiling its
+  work needs, closing what a burst leaves idle. No query opens a connection.
+- Where the database is shared with other environments, a pooler bounds the
+  server connections of the whole fleet; where it is not, the service's own floor
+  and ceiling are the only connections there are
+  ([[id:929A4722-8F06-4DEF-B759-D0800D4AC6D5][A pooler stands where the database is shared]]).
 - RLS handles isolation at the query level.
 
 * Tenant Isolation Guarantees

@@ -42,14 +42,14 @@ The direct path is the default, and it is what a person needs to work on ORE
 Studio: nothing has to be installed, and no behaviour depends on a pooler being
 present ([[id:42930B6A-544A-4F7E-ACF4-9ABC60F2B408][The environments share the database through a transaction pooler]]).
 
-** What must hold in both**
+** What must hold in both
 
 - Every setting a request makes is local to its transaction, so a connection
   carries nothing between callers and can be pooled or not.
 - A statement keeps its meaning whether or not a pooler serves it, which is a
   property of the pooler's prepared-statement support and is stated where the
   pooler is described.
-- The paths that need a session - the listener on =LISTEN= - go around the
+- The paths that need a session — the listener on =LISTEN= — go around the
   pooler in every deployment, so they are identical in both.
 
 ** What it costs, and what it buys

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :run_a_report_with_market_data:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/generate-the-historical-fixings-the-trades-need
+#+pr: 4914
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-17
 #+updated: 2026-11-17
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0E718054-03B7-43A5-9289-61E505235BBD][Run a report on the generated trades with the market data they need]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ Every index a generated floating leg uses has fixings back to its earliest reset
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:0E718054-03B7-43A5-9289-61E505235BBD][Run a report on the generated trades with the market data they need]] |
-| Now          | Not yet started.                       |
+| Now          | A curve states its own index's fixings over 520 business days and the service writes them into the system tenant's series for that index. A fresh provision then holds 41 interest rate fixing series and 21,320 fixings, and 6 of the 21 interest rate fixing addresses the population names answer where none did. The 15 that do not name indices no generated curve covers, which is the curve's gap and not the fixing's. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-17                               |
+| Next         | The FX fixing addresses, then the curve configs the 15 name. |
+| Last touched | 2026-11-19                               |
 
 * Acceptance
 
@@ -46,6 +46,47 @@ Every index a generated floating leg uses has fixings back to its earliest reset
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
+1. *Measure the gap.* Recreate the database, provision the =acme_demo=
+   profile, and read the fixing addresses the population names with
+   =ores_trading_market_references_fn=, joined to the fixing series and
+   their rows. Record the count of addresses with no series holding a
+   point at or before the run's as-of, by asset class.
+2. *Carry a fixing on the direct tick path.* A synthetic feed publishes
+   ticks that name their oresmd address and carry the source. The
+   ingest reads such an address as a datum and drops an address that is
+   no datum. Teach it to read that address as an index instead, and to
+   send it to the fixing path with the date of the tick. The fixing then
+   lands in the series of each consumer of the source, under that
+   consumer's party, exactly as an adapter's fixing does. No mapping row
+   and no vendor id are needed, because the tick names the item itself.
+3. *A simulated source fills a gap and never overwrites.* A fixing from
+   a source on the =synthetic-local= session is written only on a date
+   the series does not hold, so a run republished after a restart adds
+   nothing and a public fixing is never replaced. A fixing from any
+   other source keeps the rule it has: a correction replaces the value
+   of its own date.
+4. *Derive the history from the curve.* A curve's index rate is the
+   price of the deposit entry at the index's own tenor, which the feed
+   already computes for its first pillar. The feed states the fixing of
+   the last $n$ business days from that rate: a mean-reverting walk
+   drawn from the run's seed and the index's address, shifted so the
+   newest fixing equals the curve's rate on the as-of. Two runs with one
+   seed state the same fixings, and the history and the curve agree on
+   the day the run starts.
+5. *Publish it once per start.* The feed publishes the history on its
+   producer subject before it ticks. The walk is a function of the seed
+   and the address, so a restart republishes the same values, which the
+   store drops as already held.
+6. *Prove it.* Re-provision, and show the fixing addresses of the
+   interest rate legs the population books now answer with a point at or
+   before the as-of. Record what is still empty, and which story owns it.
+
+Scope. This task states the fixings of the interest rate indices, which
+is what a generated floating leg resets on. The FX fixing addresses a
+generated trade names are a second kind: they are barrier and averaging
+observations, and the FX asset class is proved in the same sign-off, so
+they are measured here and taken next.
+
 * Measurements
 
 Every number this task claims about a tree, with the command that produced it
@@ -58,7 +99,13 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Trades the acme_demo profile books | 808 of the 1100 the mix states | =compass shell --no-login -l .runtime/provision-acme.ores= | b586ec39f9 |
+| Requirement addresses the population names, and the fixing addresses among them | 132, of which 68 are fixings | =compass sql -f evidence/fixing_coverage_query.sql= | b586ec39f9 |
+| Interest rate fixing addresses no series answers, before the writer | 21, and no fixing series in the tenant | the same query | b586ec39f9 |
+| Interest rate fixing addresses no series answers, after the writer | 15, and each names an index no generated curve states | the same query | f73b077f00 |
+| Fixing series the run keeps, and their days | 41 series, 21,320 fixings, system tenant, provider derived | the same query | f73b077f00 |
+| The derivation and its tests | 1,036 cases in =ores.synthetic.api.tests=, all passed | =compass test run --preset linux-clang-release-ninja -- -R synthetic.api= | f73b077f00 |
+| The coverage query and both readings | =evidence/fixing_coverage_query.sql= and =evidence/fixing_coverage.txt= | | b586ec39f9, f73b077f00 |
 
 * Notes
 
@@ -77,7 +124,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4914][#4914]] | [synthetic,marketdata] State the fixings of a curve's own index |
 
 * Review
 
@@ -86,3 +133,51 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A curve states the fixings of its own index, and a fresh provision holds them.
+The acme_demo provision of 2026-11-19 wrote 41 interest rate fixing series and
+21,320 fixings, all of them in the system tenant beside whatever a publisher
+fixes for the same index, and 6 of the 21 interest rate fixing addresses the
+808 trades name answer where none did before.
+
+What landed:
+
+- =ores.synthetic.api/feeds/index_fixings=: the address of an index's fixings,
+  written by the same codec the market reads, and the 520 business days of its
+  history at a level the curve states, drawn from the run's seed and shifted so
+  the newest day is the curve's own rate. Eleven cases hold it: the address of a
+  term and of an overnight index, the newest day at the level, the same seed
+  giving the same days, one index stating its own days, a held day left out
+  without moving the rest, a longer window keeping the days it shares with a
+  shorter one, and a level that is no rate.
+- =ir_curve_feed= states its index's rate: the deposit to the index's tenor, the
+  agreement that ends on it when the tenor is past the last deposit, and the
+  short rate the process carries when the curve starts past the overnight tenor.
+  Four cases hold the choice of entry.
+- =fixing_history_writer=, in the synthetic service, writes a plan's days into
+  the series the index already has, skipping the days that series holds, and
+  =generator_runner= tells it every generator a run starts.
+- =market_data_client::put_fixings= writes fixings through
+  =marketdata.v1.market_fixings.put_many=, and the SyntheticService role is
+  granted =marketdata::market_fixings:write=.
+
+What is not met, and why:
+
+- The third acceptance is not reached: 15 interest rate fixing addresses still
+  answer with nothing, because no generated curve states their index at their
+  tenor. A fixing is derived from the curve of its index and tenor, so the curve
+  is the gap. The addresses are listed in =evidence/fixing_coverage.txt=, and
+  =product_backlog/inbox/the_generated_population_floats_on_indices_no_gene.org=
+  records them with the two refused rate configs of the same provision.
+- The second acceptance is met in effect and not in the letter: the fixings are
+  kept under the system party, which is what a party's export falls back to for
+  an index it does not hold, so every party reads them; they are not copied into
+  each party's own series. A party that holds its own series of one of these
+  indices shadows the run's history for that index, which is how a published
+  fixing wins.
+- The fourth acceptance is met by construction and not yet observed: the writer
+  reads the days the series holds and leaves them, so a published fixing is
+  never replaced by a run. The public sources adapter was not running for this
+  provision, so the path is untested live.
+- No unit test covers =fixing_history_writer=: it needs a database and a live
+  market data service, and the proof it has is the provision above.

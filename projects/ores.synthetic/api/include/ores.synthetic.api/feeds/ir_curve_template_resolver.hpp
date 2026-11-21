@@ -194,6 +194,18 @@ ORES_SYNTHETIC_API_EXPORT double
 price_ir_curve_entry(const ores::analytics::quant::domain::i_yield_curve_process& process,
                      const ir_curve_resolved_entry& entry);
 
+/**
+ * @brief The entry that states the curve's own index rate, or nothing when it states none.
+ *
+ * The index's rate is the rate from spot to the index's own tenor: the deposit at that
+ * tenor, or, for a tenor past the last deposit, the forward rate agreement that ends on it,
+ * which states that period's rate. A curve whose grid begins past the index's tenor, such
+ * as a meeting-dated short end, states no rate for the index, and its fixings would describe
+ * a rate the curve does not name.
+ */
+ORES_SYNTHETIC_API_EXPORT std::optional<std::size_t>
+index_entry_of(const std::vector<ir_curve_resolved_entry>& entries, const std::string& index_tenor);
+
 }
 
 #endif

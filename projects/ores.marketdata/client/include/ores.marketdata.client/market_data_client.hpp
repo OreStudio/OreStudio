@@ -25,6 +25,7 @@
 #include "ores.marketdata.api/domain/market_observation.hpp"
 #include "ores.marketdata.api/domain/market_series.hpp"
 #include "ores.marketdata.api/messaging/fixing_read_operations_protocol.hpp"
+#include "ores.marketdata.api/messaging/market_fixing_protocol.hpp"
 #include "ores.marketdata.api/messaging/market_observation_protocol.hpp"
 #include "ores.marketdata.api/messaging/market_series_protocol.hpp"
 #include "ores.marketdata.api/messaging/observation_read_operations_protocol.hpp"
@@ -206,6 +207,19 @@ public:
     [[nodiscard]] std::expected<std::size_t, std::string>
     put_observations(const std::vector<messaging::market_observation_write>& writes,
                      const ores::utility::domain::change_intent& intent);
+
+    /**
+     * @brief Writes fixings; one at a date the series already holds is stored as its new
+     * version.
+     *
+     * Sends marketdata.v1.market_fixings.put_many. A fixing is a durable fact of a date, so a
+     * caller that must not replace a value reads the days the series holds first.
+     *
+     * @return The number of fixings written on success.
+     */
+    [[nodiscard]] std::expected<std::size_t, std::string>
+    put_fixings(const std::vector<messaging::market_fixing_write>& writes,
+                const ores::utility::domain::change_intent& intent);
 
 private:
     ores::nats::service::nats_client& nats_;

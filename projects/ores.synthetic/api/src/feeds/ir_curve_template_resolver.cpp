@@ -254,6 +254,23 @@ double price_ir_curve_entry(const ores::analytics::quant::domain::i_yield_curve_
                                 "'");
 }
 
+std::optional<std::size_t> index_entry_of(const std::vector<ir_curve_resolved_entry>& entries,
+                                          const std::string& index_tenor) {
+    // A deposit from spot to the index's tenor states the index's rate outright, and a forward
+    // rate agreement that ends on that tenor states it as the period's rate, which is how a
+    // curve whose tenor is past its last deposit carries its index.
+    std::optional<std::size_t> forward;
+    for (std::size_t i = 0; i < entries.size(); ++i) {
+        if (entries[i].point_id != index_tenor)
+            continue;
+        if (entries[i].curve_role == "DEPOSIT")
+            return i;
+        if (entries[i].curve_role == "FRA" && !forward)
+            forward = i;
+    }
+    return forward;
+}
+
 void append_curve_points(std::chrono::year_month_day spot_date,
                          const std::vector<ir_curve_resolved_entry>& entries,
                          const ores::analytics::quant::domain::i_yield_curve_process& process,

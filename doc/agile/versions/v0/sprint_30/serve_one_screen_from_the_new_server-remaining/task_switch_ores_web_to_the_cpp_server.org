@@ -89,11 +89,12 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| The BFF routes paired with a C++ route | 311 of 334 | the coverage table of =doc/knowledge/architecture/http_route_inventory.org= | d0013b80e8 |
-| The BFF routes not paired, by gap | 23: 12 file-backed, 6 classifications, 4 market screens, 1 authorisation queue | the same table | d0013b80e8 |
-| The routes left to serve before the flag | 11 | the same table, less the 12 decided out | d0013b80e8 |
+| The BFF routes paired with a C++ route | 315 of 334 | the coverage table of =doc/knowledge/architecture/http_route_inventory.org= | c6745e30f3 |
+| The BFF routes not paired, by gap | 19: 12 file-backed, 6 classifications, 1 authorisation queue | the same table | c6745e30f3 |
+| The routes left to serve before the flag | 7 | the same table, less the 12 decided out | c6745e30f3 |
 | The two identity shape views, proved live | 43 rules and 29 fields, identical as sets to the BFF's answer | =evidence/shape_fields_live_run.txt= | d0013b80e8 |
-| The market data suite | 807 assertions in 89 cases | =compass test run -- -R ores.http.marketdata= | d0013b80e8 |
+| The four desk reads, proved live | the same answer as the BFF at all four addresses; two payloads and two refusals shown | =evidence/market_reads_live_run.txt= | c6745e30f3 |
+| The market data suite | 862 assertions in 91 cases | =compass test run -- -R ores.http.marketdata= | c6745e30f3 |
 
 * Notes
 

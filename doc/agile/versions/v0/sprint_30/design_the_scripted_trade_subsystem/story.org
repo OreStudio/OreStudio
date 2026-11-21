@@ -23,9 +23,9 @@ One scripted trade subsystem serves every way a scripted trade enters ORE Studio
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
-| Now           | Not yet started.                       |
+| Now           | The story is scaffolded; the architecture is not yet documented. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Document the scripted trade architecture. |
 | Last touched  | 2026-11-21                               |
 
 * Acceptance

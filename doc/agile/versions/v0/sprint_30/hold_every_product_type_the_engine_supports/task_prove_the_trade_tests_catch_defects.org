@@ -29,8 +29,8 @@ A property-based roundtrip writes and reads many generated instruments of each t
 | State        | ABANDONED |
 | Parent story | [[id:0CAC2F0E-69EC-4497-8587-4E0A6593BC7D][Hold every product type the engine supports]] |
 | Now          | Abandoned on 2026-11-21; see Result. |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Waiting on   | Nothing. |
+| Next         | None. |
 | Last touched | 2026-11-21 |
 
 * Acceptance

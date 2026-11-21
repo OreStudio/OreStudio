@@ -27,19 +27,23 @@
 #include <cstddef>
 #include <memory>
 #include <mutex>
+#include <thread>
 #include <vector>
 
 namespace ores::database::pq {
 
 /**
- * @brief A service's few long-lived connections.
+ * @brief A service's few long-lived connections, elastic between a floor and a
+ * ceiling.
  *
- * Every connection opens when the pool is made and lives as long as the pool,
- * so no query pays for a lookup, a login and a teardown. A lease takes one
- * connection and gives it back on every path. A connection that broke, or
- * that comes back still inside a transaction because a rollback or a copy
- * failed, is reset when it is next leased, so no caller inherits another's
- * transaction or settings.
+ * The floor opens when the pool is made and lives as long as the pool, so no
+ * query pays for a lookup, a login and a teardown. A caller that finds nothing
+ * idle opens one more when the ceiling allows it, and a connection above the
+ * floor closes once it has been idle for the stated period, so an idle service
+ * holds only its floor. A lease takes one connection and gives it back on every
+ * path. A connection that broke, or that comes back still inside a transaction
+ * because a rollback or a copy failed, is reset when it is next leased, so no
+ * caller inherits another's transaction or settings.
  *
  * A lease must not outlive its pool.
  */
@@ -67,8 +71,16 @@ public:
     };
 
     /**
-     * @brief Opens @p size connections, retrying a failure to connect under
+     * @brief Opens the floor connections, retrying a failure to connect under
      * @p policy.
+     */
+    pool(connection_options options,
+         pool_settings settings,
+         open_policy policy = {},
+         std::chrono::milliseconds acquire_timeout = std::chrono::seconds(5));
+
+    /**
+     * @brief A pool that keeps @p size connections and opens no more.
      */
     pool(connection_options options,
          std::size_t size,
@@ -87,27 +99,47 @@ public:
     ~pool();
 
     /**
-     * @brief Leases a connection, waiting at most the acquire timeout. A pool
-     * that stays busy for that long is a retryable failure.
+     * @brief Leases a connection, opening one if nothing is idle and the ceiling
+     * allows it, and waiting at most the acquire timeout. A pool that stays busy
+     * for that long is a retryable failure.
      */
     [[nodiscard]] lease acquire();
 
-    [[nodiscard]] std::size_t size() const noexcept {
-        return size_;
-    }
+    /**
+     * @brief The connections the pool holds or is opening: idle, leased, and a
+     * slot reserved for a caller whose login has not finished.
+     */
+    [[nodiscard]] std::size_t size() const;
 
     [[nodiscard]] std::size_t idle() const;
 
+    [[nodiscard]] const pool_settings& settings() const noexcept {
+        return settings_;
+    }
+
 private:
-    void open_all();
+    struct idle_connection final {
+        std::unique_ptr<connection> connection;
+        std::chrono::steady_clock::time_point since;
+    };
+
+    void open_floor();
     void give_back(std::unique_ptr<connection> c) noexcept;
+    void release_slot() noexcept;
+    void reap();
+    void start_reaper();
+    void stop_reaper() noexcept;
 
     connection_options options_;
-    std::size_t size_;
+    pool_settings settings_;
     std::chrono::milliseconds acquire_timeout_;
     mutable std::mutex mutex_;
     std::condition_variable available_;
-    std::vector<std::unique_ptr<connection>> idle_;
+    std::condition_variable reaper_wakeup_;
+    std::vector<idle_connection> idle_;
+    std::size_t open_ = 0;
+    bool stopping_ = false;
+    std::thread reaper_;
 };
 
 }

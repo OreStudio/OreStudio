@@ -91,7 +91,8 @@ run() is const and keeps no state: the connection, the two
 database contexts, the event pipeline and the subscriptions
 are all locals, so the service's lifetime is the coroutine's.
 make_context asks ores.database's context_factory for a pool
-of db_opts.pool_size connections, ten attempts one second
+that keeps db_opts.pool_min connections and bursts to
+db_opts.pool_max, ten attempts one second
 apart, and stamps the context's service account as
 db_opts.user. The context is built twice, once for the event
 source and once for the handler registrar, because those are

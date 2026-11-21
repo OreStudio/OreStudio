@@ -49,8 +49,12 @@ public:
     struct configuration {
         /// Database connection options.
         database::database_options database_options;
-        /// Number of connections in the pool.
-        std::size_t pool_size;
+        /// Connections the pool keeps.
+        std::size_t pool_min;
+        /// Connections a burst may open.
+        std::size_t pool_max;
+        /// How long a connection above the floor lives once it is idle.
+        std::size_t pool_idle_seconds;
         /// Number of retry attempts when acquiring a connection.
         std::size_t num_attempts;
         /// Wait time between retry attempts.
@@ -76,7 +80,9 @@ public:
     using configuration = context_factory::configuration;
     return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"database_options", &configuration::database_options},
-        ::ores::utility::codec::field{"pool_size", &configuration::pool_size},
+        ::ores::utility::codec::field{"pool_min", &configuration::pool_min},
+        ::ores::utility::codec::field{"pool_max", &configuration::pool_max},
+        ::ores::utility::codec::field{"pool_idle_seconds", &configuration::pool_idle_seconds},
         ::ores::utility::codec::field{"num_attempts", &configuration::num_attempts},
         ::ores::utility::codec::field{"wait_time_in_seconds", &configuration::wait_time_in_seconds},
         ::ores::utility::codec::field{"service_account", &configuration::service_account},

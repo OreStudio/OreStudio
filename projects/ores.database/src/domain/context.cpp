@@ -184,8 +184,8 @@ pq::pool& context::pq_pool() const {
     return impl_->database->pool();
 }
 
-void context::set_pq_pool_size(std::size_t size) {
-    impl_->database->set_pool_size(size);
+void context::set_pq_pool_settings(pq::pool_settings settings) {
+    impl_->database->set_pool_settings(settings);
 }
 
 pq::session_context context::pq_session() const {

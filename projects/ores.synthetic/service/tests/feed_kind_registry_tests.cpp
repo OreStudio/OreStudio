@@ -288,7 +288,9 @@ ores::database::context make_test_context() {
     const auto opts = ores::testing::test_database_manager::make_database_options();
     return ores::database::context_factory::make_context(
         ores::database::context_factory::configuration{.database_options = opts,
-                                                       .pool_size = 1,
+                                                       .pool_min = 1,
+                                                       .pool_max = 1,
+                                                       .pool_idle_seconds = 30,
                                                        .num_attempts = 1,
                                                        .wait_time_in_seconds = 1,
                                                        .service_account = opts.user});

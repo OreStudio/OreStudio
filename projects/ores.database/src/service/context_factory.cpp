@@ -153,7 +153,10 @@ context context_factory::make_context(const configuration& cfg) {
               cfg.service_account,
               policy);
 
-    r.set_pq_pool_size(cfg.pool_size);
+    r.set_pq_pool_settings(
+        pq::pool_settings{.floor = cfg.pool_min,
+                          .ceiling = cfg.pool_max,
+                          .idle_after = std::chrono::seconds(cfg.pool_idle_seconds)});
     // Open the pool now, under the open policy, so a service that cannot
     // reach its database fails at start rather than at its first request.
     try {

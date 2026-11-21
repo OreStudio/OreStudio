@@ -50,7 +50,10 @@ ores::database::context application::make_context(const ores::database::database
     using ores::database::context_factory;
 
     context_factory::configuration cfg{.database_options = db_opts,
-                                       .pool_size = static_cast<std::size_t>(db_opts.pool_size),
+                                       .pool_min = static_cast<std::size_t>(db_opts.pool_min),
+                                       .pool_max = static_cast<std::size_t>(db_opts.pool_max),
+                                       .pool_idle_seconds =
+                                           static_cast<std::size_t>(db_opts.pool_idle),
                                        .num_attempts = 10,
                                        .wait_time_in_seconds = 1,
                                        .service_account = db_opts.user};

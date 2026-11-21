@@ -43,8 +43,14 @@ is not using.
   part of =ores-<env>.target=, and started before every service unit.
 - Its configuration lives under =build/config/= with the rest, and states the
   transaction mode, the prepared-statement support the statement task decided,
-  =default_pool_size=, =max_db_connections= and an idle server timeout, so the
-  server's budget is one number a reader can find.
+  =default_pool_size=, =max_db_connections=, =max_client_conn= and an idle
+  server timeout, so the server's budget is one number a reader can find.
+- The pooler authenticates each client with that client's own password, against
+  a credential file generated from the environment's =.env=, so no user is
+  written by hand and no environment's credentials are readable by another.
+- The pooler's port is derived from the environment's base port and stated in
+  its =.env=; =base_port + 7= is the free offset (0 and 1 are the gateway, 2 the
+  web, 4 the site, 5 and 6 NATS and its monitor).
 - The services' connection options name the pooler's port; the listener's and the
   administrative paths' name PostgreSQL's, and both are stated in the
   environment's =.env=.
@@ -71,6 +77,60 @@ Where the binary comes from for a development host: the host package
 this host runs services as systemd units rather than containers - the container
 is pauli's task. The version floor is whatever the statement task decided.
 
+** What the configuration must state
+
+Measured on this host (Debian forky/sid, pgbouncer 1.26.1), the installed default
+file sets only the paths, the listen address and =auth_type = md5=; every other
+value is the built-in default. =pool_mode= is wrong for us, =max_db_connections=
+caps nothing, and =max_client_conn= is below what one fleet asks for, so the
+generated file states them rather than inheriting:
+
+| Setting | Built-in default | What the generated file states |
+|---------+------------------+--------------------------------|
+| =pool_mode= | =session= | =transaction= |
+| =max_prepared_statements= | 200 | left alone: 200 is already right |
+| =max_db_connections= | 0, unlimited | the environment's server budget |
+| =max_client_conn= | 100 | above the fleet's worst case |
+| =default_pool_size= | 20 | the per-database share of the same budget |
+| =server_idle_timeout= | 600 | the idle period the environment states |
+
+The credential file is the part that has to be generated rather than written.
+=pgbouncer= refuses a client in two ways that both read as a password failure:
+=auth_type = md5= with an empty userlist, and =auth_type = any=, which this
+version refuses outright with "auth_type=any requires forced user" unless every
+database entry pins a =user=. Neither works when every service logs in as
+itself, so the file states:
+
+#+begin_example
+[databases]
+* = host=<db host> port=<db port>
+
+[pgbouncer]
+listen_addr = 127.0.0.1
+listen_port = <base_port + 7>
+auth_type = plain
+auth_file = <checkout>/build/config/pgbouncer-<label>.users
+pool_mode = transaction
+max_client_conn = <the fleet's worst case>
+max_db_connections = <this environment's budget>
+#+end_example
+
+=plain= sends the password across loopback in clear, which is what =psql= already
+does on this host. A pooler reached over a network states =scram-sha-256= and a
+file of verifiers instead. The wildcard entry is what keeps the file free of
+per-database lines: a client that asks for =ores_dev_<env>= is sent to
+=ores_dev_<env>=, with its own credentials.
+
+** Why not the host's own daemon
+
+The package installs a system-wide unit on 6432 that reads
+=/etc/pgbouncer/pgbouncer.ini=. It cannot serve the fleet: its config is
+root-only, it defines no databases, its userlist is empty, it runs in session
+mode, and it caps nothing. One daemon for every environment also puts every
+environment's credentials in one file. This task disables it
+(=systemctl disable --now pgbouncer=) and runs one pooler per environment as a
+user unit, from a config the environment generates.
+
 Verification is deliberately about the server: the connection count from
 =pg_stat_activity= grouped by =datname= and =client_addr=, before and after, idle
 and during a provisioning run.
@@ -90,6 +150,37 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+** Measured before this task started, 2026-11-21
+
+Taken while answering whether a pooler was needed at all, on
+=ores_dev_merry_newton= with pgbouncer 1.26.1 installed from sid.
+
+- The server carries 199 connections of =max_connections = 1500=, across eight
+  development databases, of which 187 are idle. The heaviest environment,
+  =ores_dev_prime_origin=, holds 105 because its =.env= states four connections a
+  service rather than two. Nothing is short of connections today.
+- The elastic pool moves the per-environment worst case from about 42 to about
+  155, and leaves the idle case at about 34. Eight environments bursting at once
+  would reach about 1240 of the 1500.
+- A named prepared statement prepared by one client and executed by two later
+  clients through a transaction-mode pooler returned the right value, with
+  =max_prepared_statements= left at its default. The repositories' pattern works
+  behind a modern pooler with no setting of its own.
+- Debian's =pgbouncer= versions: bullseye 1.15, bookworm 1.18, trixie 1.24.1,
+  forky and sid 1.26.1. There is no bookworm backport, so a Debian 12 host
+  cannot meet the statement floor from the archive.
+
+** What went wrong with the host daemon, 2026-11-21
+
+Worth keeping because the error messages mislead. The system unit started, and
+every client failed with "password authentication failed" - not because the
+password was wrong, but because =auth_type = md5= with an empty =userlist.txt=
+refuses everybody. Switching to =any= moved the failure to "bouncer config
+error", which the log explains as "auth_type=any requires forced user". Neither
+message names the real cause. A pooler configured per environment does not reach
+either state, because its credential file is generated from the same =.env= the
+services read.
 
 * Test Scenarios
 

@@ -57,7 +57,9 @@ TEST_CASE("database_options_default_values", "[database]") {
     CHECK(sut.port == 5432);
     CHECK(sut.user.empty());
     CHECK(sut.database.empty());
-    CHECK(sut.pool_size == 2);
+    CHECK(sut.pool_min == 2);
+    CHECK(sut.pool_max == 8);
+    CHECK(sut.pool_idle == 30);
 }
 
 TEST_CASE("database_options_custom_values", "[database]") {
@@ -77,14 +79,18 @@ TEST_CASE("database_options_custom_values", "[database]") {
     CHECK(sut.user == "app_user");
 }
 
-TEST_CASE("database_options_custom_pool_size", "[database]") {
+TEST_CASE("database_options_custom_pool_settings", "[database]") {
     auto lg(make_logger(test_suite));
-    ORES_LOG_SEV(lg, info) << "Testing database_options with custom pool_size";
+    ORES_LOG_SEV(lg, info) << "Testing database_options with custom pool settings";
 
     database_options sut;
-    sut.pool_size = 8;
+    sut.pool_min = 4;
+    sut.pool_max = 16;
+    sut.pool_idle = 5;
 
-    CHECK(sut.pool_size == 8);
+    CHECK(sut.pool_min == 4);
+    CHECK(sut.pool_max == 16);
+    CHECK(sut.pool_idle == 5);
 }
 
 TEST_CASE("database_options_streaming", "[database]") {

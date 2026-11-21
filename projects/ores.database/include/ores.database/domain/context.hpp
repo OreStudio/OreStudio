@@ -33,6 +33,7 @@ namespace ores::database {
 namespace pq {
 struct connection_options;
 struct open_policy;
+struct pool_settings;
 class pool;
 class transaction;
 struct session_context;
@@ -176,9 +177,10 @@ public:
     pq::pool& pq_pool() const;
 
     /**
-     * @brief The number of connections the pool opens, when it opens.
+     * @brief The connections the pool keeps and the ones a burst may reach,
+     * when it opens.
      */
-    void set_pq_pool_size(std::size_t size);
+    void set_pq_pool_settings(pq::pool_settings settings);
 
     /**
      * @brief The session a transaction of this context sets.

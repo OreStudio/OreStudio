@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :pool_the_fleets_connections:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/make-the-pool-grow-and-shrink
+#+pr: 4958
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-21
@@ -30,11 +30,11 @@ service holds only its floor.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:A75C3063-896F-4DD5-A9BC-893A59EDFF7E][Pool the fleet's connections]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-21                               |
 
 * Acceptance
@@ -57,19 +57,71 @@ service holds only its floor.
 
 * Plan
 
-=pq::pool= is one class with one mutex, one condition variable and a vector of
-idle connections; its constructor opens everything and =acquire= only waits. The
-change is local: open on demand up to the ceiling, timestamp a connection when it
-is given back, and reap above the floor on acquire or on a small timer.
+=pq::pool= is one class with one mutex and a vector of idle connections; its
+constructor opens everything and =acquire= only waits. The change is local: open
+on demand up to the ceiling, timestamp a connection when it is given back, and
+reap above the floor on a small timer. The timer needs a second condition
+variable, because the reaper waits for a period while an acquirer waits for a
+connection, and one wakeup cannot serve both.
 
 The settings replace =db-pool-size= with a floor, a ceiling and an idle period,
-read the way the others are (=ORES_<APP>_DB_POOL_*=), keeping a single-number
-form working as "floor = ceiling = that number" so an environment that states one
-number keeps its meaning.
+read the way the others are (=ORES_<APP>_DB_POOL_*=).
+
+The plan expected to keep a single-number form so that an environment stating one
+number kept its meaning. Measured before the work: no environment stated it, so
+the setting is replaced rather than aliased. What survives is the type-level
+form - =pq::pool= still takes one number and keeps exactly that many - which is
+what the tests and a deliberately fixed pool mean.
 
 Sizing is the other half and belongs with
 [[id:06195DFF-0D7C-4298-A0CF-464338CE728E][Size the connection pool and the
 step's lanes together]], which owns the numbers this task only carries.
+
+** What the pool became
+
+=pq::pool= now carries =pool_settings= - a floor, a ceiling and an idle period -
+and its constructor opens the floor under the open policy, as it always did.
+=acquire= takes one of two paths under the lock: it takes an idle connection if
+there is one, and otherwise reserves a slot when =open_ < ceiling= and opens a
+connection outside the lock, so a slow login does not hold the pool for everyone
+else. A reserve that fails gives the slot back and rethrows.
+
+The reap is a thread the pool owns, started only when the ceiling is above the
+floor: it waits on its own condition variable until the oldest idle connection
+has been idle for the period, moves it out, unlocks, closes it, and takes the
+lock again. Closing outside the lock is what keeps a teardown that blocks from
+blocking a lease. A connection above the floor is reaped; the floor never is.
+
+=give_back= stamps the connection as idle now and pushes it to the back, so
+=acquire= takes the hottest and the reaper closes the coldest from the front.
+The wait an acquirer does is on "something is idle, or a slot is free", so a
+caller cannot sleep through a reap that made room.
+
+** What the settings became
+
+=db-pool-size= is gone. Three settings replace it, in the model, in =database_options=,
+in =context_factory::configuration= and in the CLI:
+
+| Setting | Field | Default | Means |
+|---------+-------+---------+-------|
+| =--db-pool-min= | =pool_min= | 2 | the connections the pool keeps |
+| =--db-pool-max= | =pool_max= | 8 | the ceiling a burst may reach |
+| =--db-pool-idle= | =pool_idle= | 30 | seconds an idle connection above the floor lives |
+
+A non-positive floor, a non-positive idle period, and a ceiling below the floor
+are each refused in words at the boundary, as =db-pool-size= was. The pool itself
+raises a ceiling below the floor, and treats an idle period of nothing as the
+shortest wait rather than as no wait, so a pool built directly from settings
+cannot hold a ceiling under its floor or a reaper that spins.
+
+The single-number form survives at the type level: =pq::pool= has a constructor
+that takes one number and keeps exactly that many, which is what every test that
+says =pool(options, 1)= means.
+
+The .env states all three per service, in =env_init.py=: every service keeps two
+and bursts to eight, the marketdata service bursts to sixteen because it runs two
+provisioning steps with four lanes each, and the gateway bursts to sixteen because
+it serves every HTTP request of the environment. The .env format version is 34.
 
 * Measurements
 
@@ -83,9 +135,33 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Services whose generated =application.cpp= states the pool | 17 | =grep -rln "db_opts.pool_min" projects/*/service/src/app | wc -l= | on top of 9f30c82fb8 |
+| Remaining references to =pool_size= in the tree | 0 | =grep -rn "pool_size" --include=*.cpp --include=*.hpp --include=*.py --include=*.puml projects | grep -v venv | wc -l= | on top of 9f30c82fb8 |
+| Build of the targets the change reaches | 347 of 347, 28m02s, 0 warnings | =compass build ores.database.tests ores.iam.service.tests ores.marketdata.service.tests ores.inbox.core.tests ores.refdata.core.tests ores.workflow.core.tests ores.synthetic.service.tests ores.http.server ores.compute.service= | 177587f9e9 |
+| Suites the change reaches | 7 suites, 1221 test cases, all pass | =compass test run -- -R "ores.database.tests|ores.iam.service.tests|ores.inbox.core.tests|ores.refdata.core.tests|ores.workflow.core.tests|ores.synthetic.service.tests|ores.marketdata.service.tests"= | 177587f9e9 |
+
+The first two were measured on this branch before its own commit existed, so
+they name the commit the branch stands on rather than one that contains the
+change.
 
 * Notes
+
+=compass test run= reported the suite totals as 83, 82, 15, 558, 85, 70 and
+328 test cases, which is 1221, with every assertion passing. The 328-case
+suite is the marketdata service, and it includes the ingest-loop case the
+inbox records as failing under load
+([[id:4712BE7F-25E7-477E-90AE-524C91569671][The ingest loop tests fail when the machine is
+loaded]]); it passed on this run.
+
+** The database had to be rebuilt first
+
+The first run of the marketdata suite failed 30 cases on
+=column "provider_code" does not exist=, and a second run crashed the ingest
+loop. Neither was this change: the environment's database predated main's
+schema, exactly as =compass bearings= warned before the work started, and no
+relation carried both =series_id= and =provider_code=. After
+=compass db recreate -y -k= the relation exists and the suite passes. Recorded
+because a reader of 30 red cases would otherwise look for a cause in the pool.
 
 * Test Scenarios
 
@@ -96,13 +172,13 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:36FDD33A-6406-4CF6-9687-807BF36A172E][Four lanes of a provisioning step meet no acquisition failure]] | PENDING | The fleet-run proof of the last acceptance line: a provisioned party's three publish steps record no acquisition failure. |
 
 * PRs
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4958][#4958]] | [database] Let the pool grow to a ceiling and shrink to its floor |
 
 * Review
 
@@ -111,3 +187,24 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A service's pool now keeps a stated floor and may burst to a stated ceiling,
+closing what the burst leaves idle, so the number a service asks for is what its
+work needs rather than what the server can spare. The marketdata service states
+sixteen because it runs two provisioning steps with four lanes each.
+
+Evidence, at =177587f9e9=:
+
+- the nine targets the change reaches build, 347 of 347, in 28 minutes, with no
+  warnings;
+- the seven suites that assert on pool settings pass, 1221 test cases;
+- =db-pool-min=, =db-pool-max= and =db-pool-idle= are stated per service in the
+  environment, and the .env format is 34.
+
+What is still owed: the acceptance line that the marketdata service runs a
+provisioning step with its four lanes and records no acquisition failure. The
+pool can now serve that burst, but proving it means running a provisioned party
+against the fleet, which is a fleet run and not a unit test. It is carried by
+[[id:36FDD33A-6406-4CF6-9687-807BF36A172E][Four lanes of a provisioning step meet
+no acquisition failure]] rather than claimed here, and that scenario is PENDING
+until somebody runs it.

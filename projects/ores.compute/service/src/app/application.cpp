@@ -56,7 +56,10 @@ ores::database::context application::make_context(const ores::database::database
     using ores::database::context_factory;
 
     context_factory::configuration cfg{.database_options = db_opts,
-                                       .pool_size = static_cast<std::size_t>(db_opts.pool_size),
+                                       .pool_min = static_cast<std::size_t>(db_opts.pool_min),
+                                       .pool_max = static_cast<std::size_t>(db_opts.pool_max),
+                                       .pool_idle_seconds =
+                                           static_cast<std::size_t>(db_opts.pool_idle),
                                        .num_attempts = 10,
                                        .wait_time_in_seconds = 1,
                                        .service_account = db_opts.user};
@@ -145,11 +148,11 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
 
     // The handlers share this pool: every claim, submit, heartbeat and read of every node and
     // screen. A pool of two made the claims wait for a connection past the node's timeout when
-    // the grid was busy, so it is larger than the loops' own pools, which each run one query at
-    // a time.
-    constexpr int handler_pool_size = 8;
+    // the grid was busy, so its ceiling is wider than the loops' own pools, which each run one
+    // query at a time.
+    constexpr int handler_pool_ceiling = 8;
     auto handler_database = cfg.database;
-    handler_database.pool_size = std::max(handler_database.pool_size, handler_pool_size);
+    handler_database.pool_max = std::max(handler_database.pool_max, handler_pool_ceiling);
 
     // Bound before the await, so no lambda of the call lives in this frame; see run().
     auto service_run = ores::service::service::run(

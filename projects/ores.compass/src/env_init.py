@@ -933,6 +933,14 @@ ORES_TEST_DB_DDL_PASSWORD={test_ddl_pw}
         "reporting": [("HTTP_BASE_URL", http_base_url)],
         "trading": [("HTTP_BASE_URL", http_base_url)],
     }
+    # Every service's pool keeps a floor and may burst to a ceiling, and a
+    # connection above the floor closes once it has been idle for DB_POOL_IDLE
+    # seconds. The ceiling is the concurrency the work has, not a share of the
+    # server: the marketdata service runs two provisioning steps at once with
+    # four lanes each, so its ceiling is above the rest. On a host without a
+    # pooler the fleet's ceilings are the server's worst case, which is why
+    # they are stated here rather than in each service's code.
+    service_pool_ceiling = {"marketdata": 16}
     for c in service_components:
         up = _upper(c)
         out.append("\n")
@@ -941,6 +949,10 @@ ORES_TEST_DB_DDL_PASSWORD={test_ddl_pw}
         out.append(f"ORES_{up}_SERVICE_DB_DATABASE={db_name}\n")
         out.append(f"ORES_{up}_SERVICE_DB_HOST={db_host}\n")
         out.append(f"ORES_{up}_SERVICE_DB_PORT={db_port_effective}\n")
+        out.append(f"ORES_{up}_SERVICE_DB_POOL_MIN=2\n")
+        out.append(
+            f"ORES_{up}_SERVICE_DB_POOL_MAX={service_pool_ceiling.get(c, 8)}\n")
+        out.append(f"ORES_{up}_SERVICE_DB_POOL_IDLE=30\n")
         for opt, val in service_extra_opts.get(c, []):
             out.append(f"ORES_{up}_SERVICE_{opt}={val}\n")
     out.append(
@@ -974,7 +986,12 @@ ORES_TEST_DB_DDL_PASSWORD={test_ddl_pw}
             f"ORES_{m}_DB_PASSWORD={app['pw']}\n"
             f"ORES_{m}_DB_DATABASE={db_name}\n"
             f"ORES_{m}_DB_HOST={db_host}\n"
-            f"ORES_{m}_DB_PORT={db_port_effective}\n")
+            f"ORES_{m}_DB_PORT={db_port_effective}\n"
+            # The gateway serves every HTTP request of the environment, so its
+            # pool bursts wider than the services behind it.
+            f"ORES_{m}_DB_POOL_MIN=2\n"
+            f"ORES_{m}_DB_POOL_MAX=16\n"
+            f"ORES_{m}_DB_POOL_IDLE=30\n")
 
     out.append(f"""
 # ---------------------------------------------------------------------------

@@ -65,16 +65,17 @@ public:
     pq::pool& pool() const;
 
     /**
-     * @brief The number of connections the pool opens, when it opens.
+     * @brief The connections the pool keeps and the ones a burst may reach,
+     * when it opens.
      */
-    void set_pool_size(std::size_t size);
+    void set_pool_settings(pq::pool_settings settings);
 
 private:
     pq::connection_options options_;
     pq::open_policy policy_;
     mutable std::mutex mutex_;
     mutable std::unique_ptr<pq::pool> pool_;
-    std::size_t size_ = 2;
+    pq::pool_settings settings_;
 };
 
 }

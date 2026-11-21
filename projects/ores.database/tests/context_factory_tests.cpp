@@ -36,14 +36,18 @@ TEST_CASE("context_factory_configuration_construction", "[context_factory]") {
     sut.database_options.database = "test_db";
     sut.database_options.user = "test_user";
     sut.database_options.password = "test_pass";
-    sut.pool_size = 10;
+    sut.pool_min = 2;
+    sut.pool_max = 10;
+    sut.pool_idle_seconds = 30;
     sut.num_attempts = 3;
     sut.wait_time_in_seconds = 5;
 
     CHECK(sut.database_options.host == "localhost");
     CHECK(sut.database_options.port == 5432);
     CHECK(sut.database_options.database == "test_db");
-    CHECK(sut.pool_size == 10);
+    CHECK(sut.pool_min == 2);
+    CHECK(sut.pool_max == 10);
+    CHECK(sut.pool_idle_seconds == 30);
     CHECK(sut.num_attempts == 3);
     CHECK(sut.wait_time_in_seconds == 5);
 }
@@ -58,7 +62,9 @@ TEST_CASE("context_factory_configuration_streaming", "[context_factory]") {
     sut.database_options.database = "production";
     sut.database_options.user = "app_user";
     sut.database_options.password = "secret";
-    sut.pool_size = 20;
+    sut.pool_min = 1;
+    sut.pool_max = 20;
+    sut.pool_idle_seconds = 60;
     sut.num_attempts = 5;
     sut.wait_time_in_seconds = 10;
 
@@ -73,7 +79,8 @@ TEST_CASE("context_factory_configuration_streaming", "[context_factory]") {
     CHECK(json_output.find(R"("host":"db.example.com")") != std::string::npos);
     CHECK(json_output.find(R"("database":"production")") != std::string::npos);
     CHECK(json_output.find(R"("user":"app_user")") != std::string::npos);
-    CHECK(json_output.find(R"("pool_size":20)") != std::string::npos);
+    CHECK(json_output.find(R"("pool_min":1)") != std::string::npos);
+    CHECK(json_output.find(R"("pool_max":20)") != std::string::npos);
     // The password is not part of the shape, so it is never printed.
     CHECK(json_output.find("secret") == std::string::npos);
 }
@@ -84,7 +91,9 @@ TEST_CASE("context_factory_configuration_default_values", "[context_factory]") {
 
     context_factory::configuration sut{};
 
-    CHECK(sut.pool_size == 0);
+    CHECK(sut.pool_min == 0);
+    CHECK(sut.pool_max == 0);
+    CHECK(sut.pool_idle_seconds == 0);
     CHECK(sut.num_attempts == 0);
     CHECK(sut.wait_time_in_seconds == 0);
     CHECK(sut.database_options.host == "localhost");

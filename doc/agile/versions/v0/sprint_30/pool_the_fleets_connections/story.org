@@ -29,9 +29,9 @@ them.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
-| Now           | The approach is settled and the tasks are cut. The first is the documentation, because the target state is what the rest is measured against. |
+| Now           | The approach is documented and the pool is elastic: a service keeps a floor, bursts to a ceiling and closes what the burst leaves idle. |
 | Waiting on    | Nothing.                               |
-| Next          | [[id:C06698BB-529F-40B8-80B2-9EB57C1B3780][Document the connection approach]]. |
+| Next          | [[id:5C2A4734-FE8D-4097-9720-31515FA03CA5][Settle the statement question]], which the pooler work measured. |
 | Last touched  | 2026-11-21                               |
 
 * Acceptance
@@ -56,7 +56,7 @@ them.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:C06698BB-529F-40B8-80B2-9EB57C1B3780][Document the connection approach]] | BACKLOG | | | State where the fleet lands: which connections a service keeps and which it may burst to, what a pooler does where the database is shared, and why a developer's own database needs neither. Knowledge pages, written as the target state. |
-| [[id:CE661B08-A485-4326-9558-3AE58C5208CD][Make the pool grow and shrink]] | BACKLOG | | | The pool opens everything it will ever open when it is made, so two connections is a ceiling on concurrency rather than a cushion. Give it a floor and a burst ceiling, and close what a burst leaves idle. |
+| [[id:CE661B08-A485-4326-9558-3AE58C5208CD][Make the pool grow and shrink]] | DONE | 2026-11-21 | 2026-11-21 | The pool opens everything it will ever open when it is made, so two connections is a ceiling on concurrency rather than a cushion. Give it a floor and a burst ceiling, and close what a burst leaves idle. |
 | [[id:5C2A4734-FE8D-4097-9720-31515FA03CA5][Settle the statement question]] | BACKLOG | | | Named prepared statements work directly and through pgbouncer 1.21 and later, and through nothing else in transaction mode. Measure what keeping them is worth, and decide between the version floor and unnamed statements. |
 | [[id:3D23B905-359A-4DE0-9F35-1B047A54385B][Run a pooler beside a shared fleet]] | BACKLOG | | | Where several environments share one PostgreSQL, the fleet's connections terminate at a pooler that caps what reaches the server. A systemd unit and a configuration, with the listener and the administrative paths left direct. |
 | [[id:24C47B49-2A5C-42D0-87C2-5E514D8BC9B3][Package the pooler for pauli]] | BACKLOG | | | pauli runs the fleet as podman containers pulled from the registry, NATS among them. The pooler joins it: an image, a configuration, and the services' options pointing at it. |
@@ -109,6 +109,18 @@ them.
   pooling would hand to somebody else at the next commit, and =compass db
   recreate= and the schema restore are not request traffic. They name
   PostgreSQL's port while the services name the pooler's.
+- *The pool states two numbers, not one, 2026-11-21.* It keeps a floor and may
+  burst to a ceiling, and closes what a burst leaves idle. The three settings
+  are =db-pool-min=, =db-pool-max= and =db-pool-idle=, stated per service in the
+  environment, and the idle period is what makes a ceiling affordable: an idle
+  service holds its floor, not its burst. The single number it replaced answered
+  two questions at once and could be right for neither.
+- *A pooler needs no work for prepared statements, 2026-11-21.* Measured on
+  pgbouncer 1.26.1: =max_prepared_statements= defaults to 200, so a name
+  prepared by one client executed by two later clients and returned the right
+  value. The version floor of 1.21 stands, and it excludes Debian 12's 1.18, but
+  no setting of ours has to change for the statements to survive. The remaining
+  task is the decision, not the code.
 - *pauli gets a container, a shared development host gets a unit, 2026-11-21.*
   pauli runs the fleet as podman containers pulled from the registry, NATS
   among them, so the pooler joins it the same way: an image, a configuration, and

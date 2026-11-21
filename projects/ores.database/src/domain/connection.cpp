@@ -30,13 +30,13 @@ connection::~connection() = default;
 pq::pool& connection::pool() const {
     std::scoped_lock lock(mutex_);
     if (!pool_)
-        pool_ = std::make_unique<pq::pool>(options_, size_, policy_);
+        pool_ = std::make_unique<pq::pool>(options_, settings_, policy_);
     return *pool_;
 }
 
-void connection::set_pool_size(std::size_t size) {
+void connection::set_pool_settings(pq::pool_settings settings) {
     std::scoped_lock lock(mutex_);
-    size_ = size;
+    settings_ = settings;
 }
 
 }

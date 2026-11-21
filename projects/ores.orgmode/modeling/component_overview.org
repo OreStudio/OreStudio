@@ -1,16 +1,18 @@
 :PROPERTIES:
-:ID: 647EA42E-3E11-4898-97BA-8DD2B9949897
+:ID: E93FA0E8-3439-4CDC-B092-4B02C530AA10
 :END:
 #+title: ores.orgmode
-#+description: Pure C++ library parsing org-mode agile/knowledge docs into a document structure and resolving id: links via the org-roam SQLite index.
+#+description: Org-mode in ORE: the parser, and the knowledge service that loads, indexes and searches ORE's org pages.
 #+type: ores.codegen.component
 #+level: cross
-#+filetags: :orgmode:foundation:component:
-#+created: 2026-07-06
-#+updated: 2026-09-26
+#+filetags: :orgmode:knowledge:component:
+#+created: 2026-11-21
+#+updated: 2026-11-21
 #+name: orgmode
 #+full_name: ores.orgmode
-#+brief: C++ org-mode parsing and link resolution
+#+brief: Org-mode parsing and the knowledge service
+#+component_kind: composite
+#+parts: parser
 
 * Diagram
 
@@ -20,68 +22,28 @@
 
 * Summary
 
-=ores.orgmode= parses the subset of org-mode syntax this project's
-agile and knowledge docs actually use — frontmatter =#+= keywords, the
-=:PROPERTIES:= drawer, headings, paragraphs, lists, tables, and
-=[[id:UUID][text]]= links — into a C++ document structure. It also
-resolves those =id:= links against the existing org-roam SQLite index
-(the same database =compass search=/=compass show= read from), so a
-caller can walk from a task to its parent story, a story to its
-sprint, etc. Pure C++, no UI/database/NATS dependency: usable directly
-from =ores.shell= and from any future consumer. Entity model is ported
-and adapted from an earlier project, =dogen.org=, rather than designed
-from scratch.
+=ores.orgmode= is org-mode in ORE. =ores.orgmode.parser= parses org pages
+into documents and resolves =id:= links. The knowledge service, which will load
+ORE's org pages, index them into sections and answer searches and page reads,
+joins as =ores.orgmode.core= and =ores.orgmode.service= with its first tables;
+see [[id:05FE6068-3CBD-4B93-B6AE-47A5689F1FCB][Search the knowledge base from ores.web]].
 
 * Inputs
 
-- A path to a =.org= file on disk (any doc under =doc/= or a component's
-  =modeling/= directory).
-- The org-roam SQLite index (=org-roam.db=, built and maintained by
-  =compass index=) for link resolution.
+-
 
 * Outputs
 
-- A parsed document structure: frontmatter keywords (including
-  =#+type:=), the =:ID:= property, a tree of headings with their body
-  content (paragraphs/lists/tables), and the document's outgoing
-  =id:= links.
-- For each =id:= link, the resolved target's path/title/type (or an
-  explicit "unresolved" result for a dangling link).
+-
 
 * Entry points
 
-- Parse: read a =.org= file path, return the document structure.
-- Resolve: given a document (or a single link), query the org-roam
-  index and return the resolved target.
+-
 
 * Dependencies
 
-- None beyond the standard library and this project's usual JSON/
-  reflection glue (=ores.platform=) for the corpus-wide JSON-dump test.
-  Reads (does not write) the org-roam SQLite index directly — no NATS,
-  no =ores.database=.
+-
 
 * See also
 
-- [[id:A85B16E3-5A42-4484-A570-13EE7CFA9F50][ores.orgmode: C++ org-mode parsing and org-roam link resolution]] — the driving story.
-- [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]] — simple vs. composite component layout.
-
-#+begin_src cmake :name extra_dependencies
-target_link_libraries(${lib_target_name}
-    PRIVATE
-        Boost::boost
-        unofficial::sqlite3::sqlite3)
-#+end_src
-
-#+begin_src cmake :name extra_test_dependencies
-target_link_libraries(${tests_target_name}
-    PRIVATE
-        ${lib_target_name}
-        ores.utility.lib
-        ores.testing.lib
-        ores.logging.lib
-        Catch2::Catch2
-        faker-cxx::faker-cxx
-        unofficial::sqlite3::sqlite3
-        Threads::Threads)
-#+end_src
+-

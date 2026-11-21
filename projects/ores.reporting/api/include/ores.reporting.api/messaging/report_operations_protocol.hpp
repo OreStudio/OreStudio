@@ -384,6 +384,14 @@ struct gather_market_data_request {
     std::string definition_id;
     std::string tenant_id;
     std::string correlation_id;
+    /**
+     * @brief The trade set the run prices, as trade ids.
+     *
+     * The market data a run gathers is the data its own trades need, and only the
+     * trades can say what that is. An empty set gathers the tenant's market data as
+     * a whole, which is what a caller that names no set still asks for.
+     */
+    std::vector<std::string> trade_ids;
 
     friend bool operator==(const gather_market_data_request&,
                            const gather_market_data_request&) = default;
@@ -1223,6 +1231,7 @@ wire_fields(std::type_identity<publish_ore_parameters_from_dq_request>) {
         ::ores::utility::codec::field{"tenant_id", &gather_market_data_request::tenant_id},
         ::ores::utility::codec::field{"correlation_id",
                                       &gather_market_data_request::correlation_id},
+        ::ores::utility::codec::field{"trade_ids", &gather_market_data_request::trade_ids},
     };
 }
 

@@ -33,6 +33,7 @@
 #include "ores.marketdata.core/repository/market_series_identity_projector.hpp"
 #include "ores.marketdata.core/repository/market_series_identity_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
+#include "ores.marketdata.core/repository/requirement_coverage_repository.hpp"
 #include "ores.marketdata.core/service/market_series_service.hpp"
 #include "ores.marketdata.core/service/ore_export_service.hpp"
 #include "ores.nats/domain/message.hpp"
@@ -595,8 +596,49 @@ public:
                 << req->valuation_date.value_or("") << "' to " << req->storage_bucket << "/"
                 << req->storage_key;
 
+            // A run gathers the market data its trade set resolves to. The addresses the run
+            // needs arrive in the request, and one the market cannot answer fails the export
+            // here, naming it, rather than in an engine that can only report a curve it
+            // could not build.
+            std::optional<std::set<std::string>> requirements;
+            if (req->requirements && req->requirements->empty()) {
+                // The caller named a set, and the set needs no market data. That is not the
+                // same request as one that names no set, which keeps the whole-tenant export.
+                requirements = std::set<std::string>{};
+                ORES_LOG_SEV(market_series_handler_lg(), info)
+                    << "export_to_storage: the run names no requirement, so no series is written";
+            } else if (req->requirements) {
+                repository::requirement_coverage_repository coverage_repo;
+                std::set<std::string> answered;
+                std::vector<std::string> missing;
+                for (const auto& one :
+                     coverage_repo.read(ctx, *req->requirements, req->valuation_date)) {
+                    if (one.answered)
+                        answered.insert(one.oresmd_uri);
+                    else
+                        missing.push_back(one.oresmd_uri);
+                }
+                if (!missing.empty()) {
+                    std::string named;
+                    for (const auto& uri : missing)
+                        named += (named.empty() ? "" : ", ") + uri;
+                    resp.message = "The market holds no series for " +
+                                   std::to_string(missing.size()) +
+                                   " requirement(s) of the run: " + named;
+                    ORES_LOG_SEV(market_series_handler_lg(), error)
+                        << msg.subject << ": " << resp.message;
+                    reply(nats_, msg, resp);
+                    return;
+                }
+                requirements = std::move(answered);
+                ORES_LOG_SEV(market_series_handler_lg(), info)
+                    << "export_to_storage: the run needs " << req->requirements->size()
+                    << " series, and the market answers every one";
+            }
+
             service::ore_export_service svc(ctx);
-            const auto written = svc.write_all(req->valuation_date, req->max_age_days);
+            const auto written =
+                svc.write_all(req->valuation_date, req->max_age_days, requirements);
             const auto exported_ms = since();
 
             ores::storage::net::storage_transfer transfer(http_base_url,

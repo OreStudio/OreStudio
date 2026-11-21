@@ -18,8 +18,8 @@
  *
  */
 #include "ores.shell/app/commands/orgmode_commands.hpp"
-#include "ores.orgmode/indexing/resolver.hpp"
-#include "ores.orgmode/parser/parser.hpp"
+#include "ores.orgmode.parser/indexing/resolver.hpp"
+#include "ores.orgmode.parser/parsing/parser.hpp"
 #include "ores.shell/app/shell_root_menu.hpp"
 #include <cli/cli.h>
 #include <filesystem>
@@ -50,7 +50,7 @@ std::filesystem::path find_org_roam_db() {
 /**
  * @brief First `id:` link found via depth-first search, or nullptr.
  */
-const orgmode::domain::link* first_link(const orgmode::domain::heading& h) {
+const orgmode::parser::domain::link* first_link(const orgmode::parser::domain::heading& h) {
     if (!h.links.empty())
         return &h.links.front();
     for (const auto& child : h.children) {
@@ -60,7 +60,7 @@ const orgmode::domain::link* first_link(const orgmode::domain::heading& h) {
     return nullptr;
 }
 
-const orgmode::domain::link* first_link(const orgmode::domain::document& doc) {
+const orgmode::parser::domain::link* first_link(const orgmode::parser::domain::document& doc) {
     for (const auto& h : doc.headings) {
         if (const auto* found = first_link(h))
             return found;
@@ -79,9 +79,9 @@ void orgmode_commands::register_commands(cli::Menu& root_menu) {
 }
 
 void orgmode_commands::process_doc_show(std::ostream& out, const std::string& path) {
-    orgmode::domain::document doc;
+    orgmode::parser::domain::document doc;
     try {
-        doc = orgmode::parser::parse_file(path);
+        doc = orgmode::parser::parsing::parse_file(path);
     } catch (const std::exception& e) {
         out << "Could not parse '" << path << "': " << e.what() << "\n";
         return;
@@ -105,7 +105,7 @@ void orgmode_commands::process_doc_show(std::ostream& out, const std::string& pa
         return;
     }
     try {
-        const orgmode::indexing::resolver resolver(db_path);
+        const orgmode::parser::indexing::resolver resolver(db_path);
         const auto resolved = resolver.resolve(*link);
         if (!resolved) {
             out << "Link target not found in the index (dangling link).\n";

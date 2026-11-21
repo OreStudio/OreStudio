@@ -143,20 +143,20 @@ report_operations gather-trades __none__ __none__ __none__ __none__
 :ID: C211383C-BB63-538D-A87D-5213D1F5B8DE
 :END:
 
-Sends =gather_market_data_request= and prints =gather_market_data_result=, so the shape is the protocol's and the meaning is the service's. It reads =report_instance_id=, =definition_id=, =tenant_id=, =correlation_id=, in that order. The caller must have established a session first.
+Sends =gather_market_data_request= and prints =gather_market_data_result=, so the shape is the protocol's and the meaning is the service's. It reads =report_instance_id=, =definition_id=, =tenant_id=, =correlation_id=, =trade_ids=, in that order. The caller must have established a session first.
 
 
 The command is shaped like this:
 
 #+begin_example
-report_operations gather-market-data <report_instance_id> <definition_id> <tenant_id> <correlation_id>
+report_operations gather-market-data <report_instance_id> <definition_id> <tenant_id> <correlation_id> <trade_ids>
 #+end_example
 
 It is addressed at =reporting.v1.ops.gather_market_data=.
 
 #+name: report_operations-gather-market-data
 #+begin_src ores-shell :tangle report_operations-gather-market-data.ores :exports none
-report_operations gather-market-data __none__ __none__ __none__ __none__
+report_operations gather-market-data __none__ __none__ __none__ __none__ __none__
 #+end_src
 
 ** =assemble-bundle=

@@ -39,8 +39,10 @@ REGISTRY = ROOT / "projects" / "modeling" / "service_registry.org"
 
 
 def registered_services(registry: Path) -> set[str]:
-    """The registry's entries: each is a top-level heading named for its binary."""
-    return set(re.findall(r"^\* (\S+)\s*$", registry.read_text(encoding="utf-8"), re.M))
+    """The registry's entries: each is a top-level heading named for its binary,
+    a dotted name such as ores.iam.service, so a one-word heading is not one."""
+    return set(re.findall(r"^\* (ores(?:\.[a-z0-9_]+)+)\s*$",
+                          registry.read_text(encoding="utf-8"), re.M))
 
 
 def service_parts(projects: Path) -> dict[str, Path]:

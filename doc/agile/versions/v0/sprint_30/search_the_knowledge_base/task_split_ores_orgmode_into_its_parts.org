@@ -110,7 +110,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The regenerated test main registers the database listener, so the pure parser's tests need a test database. | =parser/tests/main.cpp= | Fixed | =#+test_fixture: none= in the overview, as =ores.analytics.quant= has; the tests now run with no database settings at all. |
+| 2 | The registry match counts any one-word top-level heading as a service. | =check_service_registration.py= | Fixed | Only dotted =ores.*= names match. |
+| 3 | The overview glob finds parts one level deep only. | =check_service_registration.py= | No change | Every part is one level deep. |
+| 4 | Check that =nats_certs.py= works from the compass entry point. | =nats_certs.py= | No change | =compass env configure= ran it and issued a certificate from the registry. |
+| 5 | Check that =export.hpp= exists for a scaffolded part. | stub template | No change | Codegen emits it with the stubs; the scaffolded parts built and linked. |
+| 6 | The parser's tests link =ores.openssl_cleanup=. | =parser/tests/CMakeLists.txt= | No change | It is the test template's baseline, as for =quant=. |
 
 * Result
 

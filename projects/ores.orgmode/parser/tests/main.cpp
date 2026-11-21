@@ -22,23 +22,8 @@
  * Template: cpp_component_test_main.cpp.mustache
  * To modify, update the template and regenerate.
  */
-#include "ores.testing/database_lifecycle_listener.hpp"
-#include "ores.testing/logging_listener.hpp"
 #include <catch2/catch_session.hpp>
-#include <catch2/reporters/catch_reporter_registrars.hpp>
-#include <openssl/crypto.h>
-
-CATCH_REGISTER_LISTENER(ores::testing::logging_listener)
-CATCH_REGISTER_LISTENER(ores::testing::database_lifecycle_listener)
 
 int main(int argc, char* argv[]) {
-    // Runs OPENSSL_cleanup() however main returns.
-    struct openssl_cleanup final {
-        ~openssl_cleanup() {
-            OPENSSL_cleanup();
-        }
-    } cleanup;
-
-    ores::testing::logging_listener::set_test_module_name("ores.orgmode.parser.tests");
     return Catch::Session().run(argc, argv);
 }

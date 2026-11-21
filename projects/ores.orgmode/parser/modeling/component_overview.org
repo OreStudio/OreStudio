@@ -11,6 +11,7 @@
 #+name: orgmode.parser
 #+full_name: ores.orgmode.parser
 #+brief: C++ org-mode parsing and link resolution
+#+test_fixture: none
 
 * Diagram
 

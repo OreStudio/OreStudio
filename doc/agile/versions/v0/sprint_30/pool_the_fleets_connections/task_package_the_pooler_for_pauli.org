@@ -1,0 +1,116 @@
+:PROPERTIES:
+:ID: 24C47B49-2A5C-42D0-87C2-5E514D8BC9B3
+:END:
+#+title: Task: Package the pooler for pauli
+#+description: pauli runs the fleet as podman containers pulled from the registry, NATS among them. The pooler joins it: an image, a configuration, and the services' options pointing at it.
+#+type: task
+#+level: s1
+#+filetags: :pool_the_fleets_connections:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A75C3063-896F-4DD5-A9BC-893A59EDFF7E][Pool the fleet's connections]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+pauli runs the pooler as a podman container beside the fleet, pulled from the
+same registry as the services, and every service on pauli reaches PostgreSQL
+through it. A deploy of pauli starts the pooler before the services that need it
+and reports it like any other container.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:A75C3063-896F-4DD5-A9BC-893A59EDFF7E][Pool the fleet's connections]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-21                               |
+
+* Acceptance
+
+- A =pgbouncer= image is built from a Dockerfile in =docker/=, on the smallest
+  base that carries it (Alpine, whose package is 1.24 or later and past the
+  prepared-statement floor), and published to the registry under the same tagging
+  scheme as the service images: =0.0.30-<commit>= and =main=.
+- Its configuration is generated from the environment, the same file the unit
+  would use, mounted read-only into the container.
+- =compass env deploy pauli= deploys the pooler with the fleet, ordered before the
+  services, and its report names it as it names nats and the services.
+- The services on pauli connect to the pooler; the listener and the
+  administrative paths do not.
+- pauli's =pg_stat_activity= shows the fleet arriving from the pooler, and the
+  count of server connections settling to the cap.
+- A deploy that finds the pooler image missing stops before it stops anything, as
+  the service images already do.
+- The deployment recipe records the pooler beside nats, so a person bringing up a
+  host knows it exists and why.
+
+* Plan
+
+=env_deploy.py= already deploys three kinds of container - the fleet's
+service-runtime images, =localhost/ores-nats=, and the compute and web images -
+and marks them (=IMAGE_NATS= at line 68, the NATS configuration staged from
+=build/config/nats-<label>.conf=, the ordering at lines 378-393). The pooler is a
+fourth: an =IMAGE_PGBOUNCER=, its configuration staged beside NATS's, and the same
+start ordering and missing-image guard.
+
+The image follows =docker/nats.Dockerfile= in intent and not in base: NATS is a
+static Go binary and gets =scratch=, while =pgbouncer= links libevent, OpenSSL and
+c-ares, so the smallest honest base is =alpine:3.22= with =apk add
+--no-install-recommends pgbouncer=, about 410 KiB installed. Nothing of ours is
+linked into it, so musl is safe.
+
+The recipe to update is the deployment runbook for the remote host
+(=doc/recipes/compass/how-do-i-deploy-the-service-runtime-to-a-remote-wsl-host.org=),
+which lists what a deploy starts.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

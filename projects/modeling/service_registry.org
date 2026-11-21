@@ -559,6 +559,8 @@
 
 - --port {http_port}
 - --storage-dir ../storage
+- --web-dir ../web
+- --site-config ../web/environments.json
 
 * ores.web.service
 :PROPERTIES:

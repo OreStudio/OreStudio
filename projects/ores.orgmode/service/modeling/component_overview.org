@@ -1,6 +1,12 @@
 :PROPERTIES:
 :ID: BC7D0742-2062-488E-89AC-148455B0FC50
 :ores.cpp.scaffold.enabled: true
+:ores.cpp.service-app.enabled: nil
+:ores.cpp.service-app.config_options_header.enabled: true
+:ores.cpp.service-app.config_options_impl.enabled: true
+:ores.cpp.service-app.config_parser_header.enabled: true
+:ores.cpp.service-app.config_parser_impl.enabled: true
+:ores.cpp.service-app.config_parser_exception.enabled: true
 :END:
 #+title: ores.orgmode.service
 #+description: The knowledge service: indexes loaded org pages and answers searches and page reads over NATS.

@@ -17,21 +17,29 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-/**
- * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_service_app_application.cpp.mustache
- * To modify, update the template and regenerate.
- */
 #include "ores.orgmode.service/app/application.hpp"
 #include "ores.database/service/context_factory.hpp"
 #include "ores.orgmode.service/app/application_exception.hpp"
+#include "ores.nats/service/client.hpp"
+#include "ores.nats/service/subscription.hpp"
+#include "ores.service/service/domain_service_runner.hpp"
+#include "ores.service/service/heartbeat_publisher.hpp"
 #include "ores.utility/version/version.hpp"
-#include <boost/throw_exception.hpp>
+#include <boost/asio/co_spawn.hpp>
+#include <boost/asio/detached.hpp>
+#include <memory>
+#include <string>
+#include <string_view>
+#include <vector>
 
 namespace ores::orgmode::service::app {
 
 using namespace ores::logging;
 
+namespace {
+constexpr std::string_view service_name = "ores.orgmode.service";
+constexpr std::string_view service_version = ORES_VERSION;
+}
 
 ores::database::context application::make_context(const ores::database::database_options& db_opts) {
     using ores::database::context_factory;
@@ -53,16 +61,26 @@ application::application() = default;
 boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                                               const config::options& cfg) const {
 
-
     ORES_LOG_SEV(lg(), info) << ores::utility::version::format_startup_message(
-        "ores.orgmode.service", 0, 1);
+        std::string(service_name), 0, 1);
 
-    auto ctx = make_context(cfg.database);
-    (void)ctx;
-    (void)io_ctx;
+    ores::nats::service::client nats(cfg.nats);
+    nats.connect();
 
-    // TODO: register domain handlers and run NATS server
-    ORES_LOG_SEV(lg(), warn) << "ores.orgmode.service service is not yet implemented.";
+    // The knowledge search story adds the handlers; until then the service runs
+    // and beats so the fleet starts it, watches it and deploys it.
+    auto service_run = ores::service::service::run(
+        io_ctx,
+        nats,
+        make_context(cfg.database),
+        std::string(service_name),
+        [](auto&, auto, auto) { return std::vector<ores::nats::service::subscription>{}; },
+        [&nats](boost::asio::io_context& ioc) {
+            auto hb = std::make_shared<ores::service::service::heartbeat_publisher>(
+                std::string(service_name), std::string(service_version), nats);
+            boost::asio::co_spawn(ioc, [hb]() { return hb->run(); }, boost::asio::detached);
+        });
+    co_await std::move(service_run);
     co_return;
 }
 

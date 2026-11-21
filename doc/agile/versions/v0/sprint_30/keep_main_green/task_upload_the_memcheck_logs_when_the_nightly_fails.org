@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:4FCC628C-551E-4F7C-B1D7-69546174A9CD][Keep-main-green]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-21                               |
 
 * Acceptance
@@ -83,3 +83,23 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The Linux nightly now uploads its valgrind logs when it fails:
+=Testing/Temporary/MemoryChecker.*.log= and =LastTest.log=, kept for seven
+days and named for the matrix variant. A memcheck failure reports a count and
+nothing else, and the stacks it counts lived in the build tree, which the
+runner discards; that is what made the four defects on
+=ores.http.marketdata.tests= untraceable.
+
+PR #4976. Workflow YAML parses; =compass check --exclude-heavy= passed every
+check it ran (the web check hit its own 900 second timeout on a loaded box,
+unrelated to a workflow edit).
+
+No suppression was added, and that is the substance of what this pair of tasks
+found. Built in a debug tree and run with the CI's own valgrind options, the
+suite reports no invalid reads, writes or uninitialised uses; the harness
+thread TLS record it does carry is already covered by "Pthread TLS Allocation
+via std::thread" in =build/valgrind/custom.supp=, so with the suppressions
+applied the run leaves only a libc =atexit= block, which is reachable rather
+than lost. The four defects the CI leg counts therefore come from something
+this box does not reproduce, and the next red run now brings its own evidence.

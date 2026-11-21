@@ -965,6 +965,11 @@ void http_session::parse_query_params(const std::string& target, domain::http_re
     }
 
     for (const auto& param : result->params()) {
+        // A query that names nothing — a bare "?" or a doubled "&" — states no
+        // parameter, so it is not one a read can be refused for. A screen that
+        // builds its address from an empty set of parameters writes one.
+        if (param.key.empty())
+            continue;
         req.query_params.emplace(std::string(param.key), std::string(param.value));
     }
 }

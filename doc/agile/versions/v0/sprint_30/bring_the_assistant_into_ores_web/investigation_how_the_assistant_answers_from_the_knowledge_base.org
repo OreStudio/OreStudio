@@ -58,49 +58,52 @@ agile records.
 
 ** The shape of a document
 
-A page is stored once, in one internal format, and ores.http renders what each
-reader needs from it. Storing HTML as well, or instead, would keep a second form
-that can drift from the first, and would fix link and anchor rules at export
-time; rendering in the service keeps those rules in ORE's code.
+A page is stored once, in the format it is written in: org. Three forms were
+weighed.
 
-*The internal format is Markdown*: CommonMark with GFM tables, LaTeX math as
-=$...$= and =$$...$$=, and links between knowledge pages as wiki links on the
-org id, =[[id:...][Volatility]]= becoming =[[576D0E28-...|Volatility]]=.
-Markdown, because the model reads it directly and well; a document tree
-(Pandoc's JSON, say) would need a renderer for every kind of node and a second
-form for the model, and org itself has no C++ parser.
+| Stored as | For | Against |
+|-----------+-----+---------|
+| HTML | Shown as it is | A second form beside the source; link and anchor rules fixed at export; searching it means stripping markup |
+| Markdown, rendered in ores.http by md4c (port =md4c= 0.6.0) | The model reads it directly; md4c parses tables, math and wiki links | A conversion from org at export, which can lose what Markdown cannot say; a new dependency |
+| Org | No conversion at all; ORE already parses it on both sides | The model is given org, or a form made from it |
 
-*ores.http renders it with md4c* (MIT, port =md4c= 0.6.0 in our vcpkg). md4c
-parses CommonMark with GFM tables, LaTeX math spans and wiki links, and does not
-write HTML itself: it reports each element to callbacks. So one parse gives
-three things:
+ORE already has both halves of the org form:
 
-- *HTML, for a person*, written by ORE: an anchor on every heading so a
-  citation can point at its section, wiki links rewritten to ores.web's page for
-  that id, math left as LaTeX for the page to typeset. ores.web still cleans it
-  before inserting it, and the site's content security policy applies.
-- *Sections, for the model and the search*: the heading path and the Markdown
-  between one heading and the next. A section's Markdown is the passage the
-  model is given.
-- *Search text*: a =tsvector= from the title, the heading path and the
-  section's text, weighted in that order.
+- =ores.orgmode=, a C++ library, parses a page into a tree of headings, each
+  with its level, title, id, body lines, bullet lists, tables, and links by
+  target id and text. Its corpus test parses every =.org= file in the
+  repository and dumps it to JSON. =ores.shell= already uses it.
+- =@ores/org=, a package of ores.web, renders org text as safe HTML with
+  uniorg and rehype-sanitize. It renders the scenario documents today.
 
-The parse that splits sections runs when the pages are loaded, so a search reads
-stored sections; HTML is rendered when a page is asked for, and can be cached.
-cmark and cmark-gfm (both in vcpkg) were the other parsers considered; neither
-reads math or wiki links.
+So the shape is:
 
-The rows:
+- *The page, stored as org text* with its org id as the key, its title,
+  description and tags. The id is the key everywhere, so links between pages
+  stay what they are in org, =[[id:...][Volatility]]=.
+- *Its sections, made when the pages are loaded* by =ores.orgmode=: one per
+  heading, with its heading path (=Volatility > Implied volatility=), its anchor
+  (the heading's id, or one made from its title), its text, and a =tsvector=
+  from the title, the heading path and the text, weighted in that order.
+- *Its links*, from the parsed tree: from page, to page.
 
-| Table | One row per | Holds |
-|-------+-------------+-------|
-| page | page | org id, title, description, tags, the page's Markdown, its source path, when it was exported |
-| section | heading of a page | page id, order, anchor, heading path (=Volatility > Implied volatility=), level, Markdown, the weighted =tsvector= |
-| link | link between two pages | from page, to page |
+Each reader is served from these:
 
-A search returns sections; the answer links each section's page at its anchor,
-and the page is shown whole. The links between pages let a search lift a
-structure note and its neighbours, as compass's own search does.
+- *A person.* ores.http answers a page as JSON, its id, title, description,
+  tags and org text, and ores.web renders the org with =@ores/org=, turning an
+  =id:= link into ores.web's page for that id and giving each heading its
+  anchor. Sending org text rather than =ores.orgmode='s tree keeps every inline
+  mark, which the tree does not hold, and needs no new renderer in ores.web.
+- *The model.* The passage it is given is a section written from the parsed
+  tree as plain Markdown, headings, paragraphs, lists and tables, with each link
+  reduced to its text, because small models read Markdown better than org.
+- *The search.* The sections' =tsvector=.
+
+Two parsers read the same text, each for its own job: =ores.orgmode= in the
+service for sections, search and the model, and uniorg in the browser for the
+page. What =ores.orgmode= does not model, such as source blocks or formulas,
+stays as plain lines in a section's text, which search and the model can still
+use; the corpus test shows every page parses.
 
 ** Where to search
 
@@ -145,15 +148,15 @@ structure note and its neighbours, as compass's own search does.
 * Recommendations
 
 1. A compass-ng export of the user-facing corpus, the domain knowledge, the
-   manual and the glossary, as Markdown in the internal format above, with each
-   page's id, title, description and tags. Which documents are user-facing is declared on the
+   manual and the glossary: each page's org text with its id, title,
+   description and tags. Which pages are user-facing is declared on the page
+   (a tag or a keyword), so the export does not guess. Which documents are user-facing is declared on the
    document (a tag or a keyword), so the export does not guess.
 2. A pass that loads the export into PostgreSQL, as system data every tenant
-   reads, replaced whole on each load: pages, their sections with a weighted
-   =tsvector=, and links.
-3. In ores.http: md4c to split pages into sections when they are loaded and to
-   render a page as HTML when it is asked for; a route that serves a page by its
-   id, which ores.web shows as a page; a route that searches passages; and the same two as MCP
+   reads, replaced whole on each load: pages, their sections made by
+   =ores.orgmode= with a weighted =tsvector=, and links.
+3. In ores.http: a route that answers a page by its id as JSON with its org
+   text, which ores.web renders with =@ores/org= as a page; a route that searches passages; and the same two as MCP
    tools (=find_knowledge=, =read_knowledge=) and the pages as MCP resources.
 4. In the agent loop: retrieve before the model is called, give it the numbered
    passages, and build the answer's links from what was retrieved.

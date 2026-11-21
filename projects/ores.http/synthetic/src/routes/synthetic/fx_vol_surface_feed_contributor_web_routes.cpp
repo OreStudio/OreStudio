@@ -140,6 +140,50 @@ std::string fx_vol_surface_feed_contributor_web_routes::catalogue_entry(const ht
            R"json(,"search":false,"sortable":[],"readPermission":"synthetic::fx_vol_surface_feed_contributors:read","writePermission":"synthetic::fx_vol_surface_feed_contributors:write","deletePermission":"synthetic::fx_vol_surface_feed_contributors:delete"})json";
 }
 
+/// The order, the search and the filters a query states, on a page request.
+///
+/// A whole read takes the same query a paged one takes: a screen that searches a
+/// list it holds whole reads the rows that match, not the list.
+messaging::list_fx_vol_surface_feed_contributors_request fx_vol_surface_feed_contributor_web_query(
+    messaging::list_fx_vol_surface_feed_contributors_request msg, const http_request& req) {
+    const std::string page_sentence = "A page names an offset and a limit of 1 to 1000.";
+    const auto sort = req.get_query_param("sort");
+    if (!sort.empty()) {
+        constexpr std::string_view sortable[] = {""};
+        if (std::find(std::begin(sortable), std::end(sortable) - 1, sort) == std::end(sortable) - 1)
+            rr::invalid("fx-vol-surface-feed-contributors cannot be ordered by " + sort + ".");
+        msg.order.field = sort;
+    }
+    const auto descending = req.get_query_param("descending");
+    if (!descending.empty() && descending != "true" && descending != "false")
+        rr::invalid(page_sentence);
+    msg.order.descending = descending == "true";
+
+    const auto search = req.get_query_param("search");
+    if (!search.empty())
+        rr::invalid("fx-vol-surface-feed-contributors cannot be searched.");
+
+    for (const auto& [name, value] : req.query_params) {
+        if (!name.starts_with("f."))
+            continue;
+        const auto member = name.substr(2);
+        constexpr std::string_view filters[] = {"feed_id", "contributor_id", ""};
+        if (std::find(std::begin(filters), std::end(filters) - 1, member) == std::end(filters) - 1)
+            rr::invalid("fx-vol-surface-feed-contributors cannot be filtered by " + member + ".");
+    }
+    if (const auto raw = req.get_query_param("f.feed_id"); !raw.empty()) {
+        if (!msg.filter)
+            msg.filter = messaging::fx_vol_surface_feed_contributors_filter{};
+        msg.filter->feed_id = rr::read<boost::uuids::uuid>(raw, "f.feed_id");
+    }
+    if (const auto raw = req.get_query_param("f.contributor_id"); !raw.empty()) {
+        if (!msg.filter)
+            msg.filter = messaging::fx_vol_surface_feed_contributors_filter{};
+        msg.filter->contributor_id = rr::read<boost::uuids::uuid>(raw, "f.contributor_id");
+    }
+    return msg;
+}
+
 boost::asio::awaitable<http_response>
 fx_vol_surface_feed_contributor_web_routes::handle_list(const http_request& req,
                                                         nats_client& session) {
@@ -153,8 +197,10 @@ fx_vol_surface_feed_contributor_web_routes::handle_list(const http_request& req,
                 const auto reply = ores::http::forwarding::forward(
                     req,
                     session,
-                    fx_vol_surface_feed_contributor_web_page(
-                        offset, fx_vol_surface_feed_contributor_web_page_size));
+                    fx_vol_surface_feed_contributor_web_query(
+                        fx_vol_surface_feed_contributor_web_page(
+                            offset, fx_vol_surface_feed_contributor_web_page_size),
+                        req));
                 rr::require_ok(reply.result);
                 const auto& got = reply.fx_vol_surface_feed_contributors;
                 rows.insert(rows.end(), got.begin(), got.end());
@@ -180,44 +226,8 @@ fx_vol_surface_feed_contributor_web_routes::handle_list(const http_request& req,
         if (limit < 1 || limit > 1000)
             rr::invalid(page_sentence);
 
-        auto msg = fx_vol_surface_feed_contributor_web_page(offset, limit);
-        const auto sort = req.get_query_param("sort");
-        if (!sort.empty()) {
-            constexpr std::string_view sortable[] = {""};
-            if (std::find(std::begin(sortable), std::end(sortable) - 1, sort) ==
-                std::end(sortable) - 1)
-                rr::invalid("fx-vol-surface-feed-contributors cannot be ordered by " + sort + ".");
-            msg.order.field = sort;
-        }
-        const auto descending = req.get_query_param("descending");
-        if (!descending.empty() && descending != "true" && descending != "false")
-            rr::invalid(page_sentence);
-        msg.order.descending = descending == "true";
-
-        const auto search = req.get_query_param("search");
-        if (!search.empty())
-            rr::invalid("fx-vol-surface-feed-contributors cannot be searched.");
-
-        for (const auto& [name, value] : req.query_params) {
-            if (!name.starts_with("f."))
-                continue;
-            const auto member = name.substr(2);
-            constexpr std::string_view filters[] = {"feed_id", "contributor_id", ""};
-            if (std::find(std::begin(filters), std::end(filters) - 1, member) ==
-                std::end(filters) - 1)
-                rr::invalid("fx-vol-surface-feed-contributors cannot be filtered by " + member +
-                            ".");
-        }
-        if (const auto raw = req.get_query_param("f.feed_id"); !raw.empty()) {
-            if (!msg.filter)
-                msg.filter = messaging::fx_vol_surface_feed_contributors_filter{};
-            msg.filter->feed_id = rr::read<boost::uuids::uuid>(raw, "f.feed_id");
-        }
-        if (const auto raw = req.get_query_param("f.contributor_id"); !raw.empty()) {
-            if (!msg.filter)
-                msg.filter = messaging::fx_vol_surface_feed_contributors_filter{};
-            msg.filter->contributor_id = rr::read<boost::uuids::uuid>(raw, "f.contributor_id");
-        }
+        const auto msg = fx_vol_surface_feed_contributor_web_query(
+            fx_vol_surface_feed_contributor_web_page(offset, limit), req);
 
         const auto reply = ores::http::forwarding::forward(req, session, msg);
         rr::require_ok(reply.result);

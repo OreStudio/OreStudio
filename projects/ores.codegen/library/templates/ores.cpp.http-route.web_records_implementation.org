@@ -199,6 +199,55 @@ std::string {{unit}}_routes::catalogue_entry(const http_request& req) {
 {{/writes_many}}
 }
 
+/// The order, the search and the filters a query states, on a page request.
+///
+/// A whole read takes the same query a paged one takes: a screen that searches a
+/// list it holds whole reads the rows that match, not the list.
+messaging::{{list_request}} {{unit}}_query(messaging::{{list_request}} msg,
+                                         const http_request& req) {
+    const std::string page_sentence = "A page names an offset and a limit of 1 to 1000.";
+    const auto sort = req.get_query_param("sort");
+    if (!sort.empty()) {
+        constexpr std::string_view sortable[] = { {{#sortable}}"{{name}}", {{/sortable}}"" };
+        if (std::find(std::begin(sortable), std::end(sortable) - 1, sort) == std::end(sortable) - 1)
+            rr::invalid("{{key}} cannot be ordered by " + sort + ".");
+        msg.order.field = sort;
+    }
+    const auto descending = req.get_query_param("descending");
+    if (!descending.empty() && descending != "true" && descending != "false")
+        rr::invalid(page_sentence);
+    msg.order.descending = descending == "true";
+
+    const auto search = req.get_query_param("search");
+{{#search}}
+    if (!search.empty()) {
+        msg.filter = messaging::{{filter_name}}{};
+        msg.filter->search = search;
+    }
+{{/search}}
+{{^search}}
+    if (!search.empty())
+        rr::invalid("{{key}} cannot be searched.");
+{{/search}}
+
+    for (const auto& [name, value] : req.query_params) {
+        if (!name.starts_with("f."))
+            continue;
+        const auto member = name.substr(2);
+        constexpr std::string_view filters[] = { {{#filters}}"{{member}}", {{/filters}}"" };
+        if (std::find(std::begin(filters), std::end(filters) - 1, member) == std::end(filters) - 1)
+            rr::invalid("{{key}} cannot be filtered by " + member + ".");
+    }
+{{#filters}}
+    if (const auto raw = req.get_query_param("f.{{member}}"); !raw.empty()) {
+        if (!msg.filter)
+            msg.filter = messaging::{{filter_name}}{};
+        msg.filter->{{member}} = rr::read<{{{read_type}}}>(raw, "f.{{member}}");
+    }
+{{/filters}}
+    return msg;
+}
+
 boost::asio::awaitable<http_response> {{unit}}_routes::handle_list(const http_request& req,
                                                                    nats_client& session) {
     try {
@@ -208,7 +257,8 @@ boost::asio::awaitable<http_response> {{unit}}_routes::handle_list(const http_re
             // advances by the rows that arrived and ends on an empty page, or on
             // a short one once it holds the total.
             for (std::uint32_t offset = 0;;) {
-                const auto reply = ores::http::forwarding::forward(req, session, {{unit}}_page(offset, {{unit}}_page_size));
+                const auto reply = ores::http::forwarding::forward(
+                    req, session, {{unit}}_query({{unit}}_page(offset, {{unit}}_page_size), req));
                 rr::require_ok(reply.result);
                 const auto& got = reply.{{rows_member}};
                 rows.insert(rows.end(), got.begin(), got.end());
@@ -232,46 +282,7 @@ boost::asio::awaitable<http_response> {{unit}}_routes::handle_list(const http_re
         if (limit < 1 || limit > 1000)
             rr::invalid(page_sentence);
 
-        auto msg = {{unit}}_page(offset, limit);
-        const auto sort = req.get_query_param("sort");
-        if (!sort.empty()) {
-            constexpr std::string_view sortable[] = { {{#sortable}}"{{name}}", {{/sortable}}"" };
-            if (std::find(std::begin(sortable), std::end(sortable) - 1, sort) == std::end(sortable) - 1)
-                rr::invalid("{{key}} cannot be ordered by " + sort + ".");
-            msg.order.field = sort;
-        }
-        const auto descending = req.get_query_param("descending");
-        if (!descending.empty() && descending != "true" && descending != "false")
-            rr::invalid(page_sentence);
-        msg.order.descending = descending == "true";
-
-        const auto search = req.get_query_param("search");
-{{#search}}
-        if (!search.empty()) {
-            msg.filter = messaging::{{filter_name}}{};
-            msg.filter->search = search;
-        }
-{{/search}}
-{{^search}}
-        if (!search.empty())
-            rr::invalid("{{key}} cannot be searched.");
-{{/search}}
-
-        for (const auto& [name, value] : req.query_params) {
-            if (!name.starts_with("f."))
-                continue;
-            const auto member = name.substr(2);
-            constexpr std::string_view filters[] = { {{#filters}}"{{member}}", {{/filters}}"" };
-            if (std::find(std::begin(filters), std::end(filters) - 1, member) == std::end(filters) - 1)
-                rr::invalid("{{key}} cannot be filtered by " + member + ".");
-        }
-{{#filters}}
-        if (const auto raw = req.get_query_param("f.{{member}}"); !raw.empty()) {
-            if (!msg.filter)
-                msg.filter = messaging::{{filter_name}}{};
-            msg.filter->{{member}} = rr::read<{{{read_type}}}>(raw, "f.{{member}}");
-        }
-{{/filters}}
+        const auto msg = {{unit}}_query({{unit}}_page(offset, limit), req);
 
         const auto reply = ores::http::forwarding::forward(req, session, msg);
         rr::require_ok(reply.result);

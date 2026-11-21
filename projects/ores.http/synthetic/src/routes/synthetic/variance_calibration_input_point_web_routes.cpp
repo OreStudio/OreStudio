@@ -140,6 +140,46 @@ std::string variance_calibration_input_point_web_routes::catalogue_entry(const h
            R"json(,"search":false,"sortable":["fixing_date"],"readPermission":"synthetic::variance_calibration_input_points:read","writePermission":"synthetic::variance_calibration_input_points:write","deletePermission":"synthetic::variance_calibration_input_points:delete"})json";
 }
 
+/// The order, the search and the filters a query states, on a page request.
+///
+/// A whole read takes the same query a paged one takes: a screen that searches a
+/// list it holds whole reads the rows that match, not the list.
+messaging::list_variance_calibration_input_points_request
+variance_calibration_input_point_web_query(
+    messaging::list_variance_calibration_input_points_request msg, const http_request& req) {
+    const std::string page_sentence = "A page names an offset and a limit of 1 to 1000.";
+    const auto sort = req.get_query_param("sort");
+    if (!sort.empty()) {
+        constexpr std::string_view sortable[] = {"fixing_date", ""};
+        if (std::find(std::begin(sortable), std::end(sortable) - 1, sort) == std::end(sortable) - 1)
+            rr::invalid("variance-calibration-input-points cannot be ordered by " + sort + ".");
+        msg.order.field = sort;
+    }
+    const auto descending = req.get_query_param("descending");
+    if (!descending.empty() && descending != "true" && descending != "false")
+        rr::invalid(page_sentence);
+    msg.order.descending = descending == "true";
+
+    const auto search = req.get_query_param("search");
+    if (!search.empty())
+        rr::invalid("variance-calibration-input-points cannot be searched.");
+
+    for (const auto& [name, value] : req.query_params) {
+        if (!name.starts_with("f."))
+            continue;
+        const auto member = name.substr(2);
+        constexpr std::string_view filters[] = {"input_id", ""};
+        if (std::find(std::begin(filters), std::end(filters) - 1, member) == std::end(filters) - 1)
+            rr::invalid("variance-calibration-input-points cannot be filtered by " + member + ".");
+    }
+    if (const auto raw = req.get_query_param("f.input_id"); !raw.empty()) {
+        if (!msg.filter)
+            msg.filter = messaging::variance_calibration_input_points_filter{};
+        msg.filter->input_id = rr::read<boost::uuids::uuid>(raw, "f.input_id");
+    }
+    return msg;
+}
+
 boost::asio::awaitable<http_response>
 variance_calibration_input_point_web_routes::handle_list(const http_request& req,
                                                          nats_client& session) {
@@ -153,8 +193,10 @@ variance_calibration_input_point_web_routes::handle_list(const http_request& req
                 const auto reply = ores::http::forwarding::forward(
                     req,
                     session,
-                    variance_calibration_input_point_web_page(
-                        offset, variance_calibration_input_point_web_page_size));
+                    variance_calibration_input_point_web_query(
+                        variance_calibration_input_point_web_page(
+                            offset, variance_calibration_input_point_web_page_size),
+                        req));
                 rr::require_ok(reply.result);
                 const auto& got = reply.variance_calibration_input_points;
                 rows.insert(rows.end(), got.begin(), got.end());
@@ -180,39 +222,8 @@ variance_calibration_input_point_web_routes::handle_list(const http_request& req
         if (limit < 1 || limit > 1000)
             rr::invalid(page_sentence);
 
-        auto msg = variance_calibration_input_point_web_page(offset, limit);
-        const auto sort = req.get_query_param("sort");
-        if (!sort.empty()) {
-            constexpr std::string_view sortable[] = {"fixing_date", ""};
-            if (std::find(std::begin(sortable), std::end(sortable) - 1, sort) ==
-                std::end(sortable) - 1)
-                rr::invalid("variance-calibration-input-points cannot be ordered by " + sort + ".");
-            msg.order.field = sort;
-        }
-        const auto descending = req.get_query_param("descending");
-        if (!descending.empty() && descending != "true" && descending != "false")
-            rr::invalid(page_sentence);
-        msg.order.descending = descending == "true";
-
-        const auto search = req.get_query_param("search");
-        if (!search.empty())
-            rr::invalid("variance-calibration-input-points cannot be searched.");
-
-        for (const auto& [name, value] : req.query_params) {
-            if (!name.starts_with("f."))
-                continue;
-            const auto member = name.substr(2);
-            constexpr std::string_view filters[] = {"input_id", ""};
-            if (std::find(std::begin(filters), std::end(filters) - 1, member) ==
-                std::end(filters) - 1)
-                rr::invalid("variance-calibration-input-points cannot be filtered by " + member +
-                            ".");
-        }
-        if (const auto raw = req.get_query_param("f.input_id"); !raw.empty()) {
-            if (!msg.filter)
-                msg.filter = messaging::variance_calibration_input_points_filter{};
-            msg.filter->input_id = rr::read<boost::uuids::uuid>(raw, "f.input_id");
-        }
+        const auto msg = variance_calibration_input_point_web_query(
+            variance_calibration_input_point_web_page(offset, limit), req);
 
         const auto reply = ores::http::forwarding::forward(req, session, msg);
         rr::require_ok(reply.result);

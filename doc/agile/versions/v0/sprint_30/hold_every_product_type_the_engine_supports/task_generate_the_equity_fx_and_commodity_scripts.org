@@ -132,6 +132,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 4948.1 | recipes_of relies on the generator's row order | scripted_twins.cpp | accept | a comment states it, and a script whose rows come apart is refused |
+| 4948.2 | the -scripted match is loose | tests | accept | a -scripted suffix or a -scripted- infix only |
+| 4948.3 | the test's map restates the table | trade_population_tests.cpp | accept | the plan's carried scripts must be exactly the map's, so a script added to the table alone fails it |
+| 4948.4 | the seed parsing is fragile | generate_script_twins.py | decline | it fails loudly on a new layout, which is the intent |
+| 4948.5 | the first-underlying choice is not stated | catalogue | accept | the Script-only recipes prose states it |
+| 4948.6 | the script name is rebuilt on error paths | scripted_twins.cpp | accept | one local |
+| 4948.7 | no barrier bites, so barrier logic is not tested | - | defer | noted in the task; a carrier with a level near its underlying is a follow-up |
 
 * Result

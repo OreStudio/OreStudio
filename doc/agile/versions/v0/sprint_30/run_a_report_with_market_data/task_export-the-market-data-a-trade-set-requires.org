@@ -157,6 +157,18 @@ trades at that day's first instant resolved nothing on a population booked
 during the day. The set is read at the close of the day it names, which is the
 rule the market coverage read already applied.
 
+The review of PR #4973 found the coverage read looser than the export: a
+system-tenant series answered any requirement of the same address, but the
+export takes from the system tenant only fixing series, so a quote the party did
+not hold passed the refusal and was never written. The read now answers a
+system-tenant series only for a fixing address. =requirements= also became
+optional, so a set whose trades resolve to nothing writes no series rather than
+falling back to the tenant.
+
 What is not proven live: a narrowed export that succeeds end to end, because
 this population's requirements are 93 of 98 missing. The selection is pinned by
-the unit test, and the success path is what the next task's run shows.
+the unit test, and the success path is what the next task's run shows. The
+system-tenant fixing rule is stated in the read and in the export, but no case
+writes a system-tenant series of a requirement to prove the two agree; that
+needs a test that can write in the system tenant, which the export suite's
+fixture does not do.

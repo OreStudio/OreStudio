@@ -1,0 +1,34 @@
+# The quotes of every ACME party's curve configuration, and the ones no series
+# answers. Checkout 3fbae97db1, on a fresh acme_demo provision of 2026-11-21.
+# Command: compass sql -f evidence/curve_quote_coverage.sql
+    party  |       configuration       | quotes | gaps
+-----------+---------------------------+--------+------
+    ACCOHK | HK curve configuration    |     84 |    0
+    ACCOUK | UK curve configuration    |    204 |    0
+    ACCOUS | US curve configuration    |     84 |    0
+    ACMCOR | Group curve configuration |     48 |    0
+(4 rows)
+
+# The market the quotes are read against: 1,562 series, of which 420 are the
+# interest-rate swap series the quotes name. No series carries a term, because
+# the term is the point within a series rather than part of its identity.
+# Command: compass sql -- -c "select count(*) as series,
+#   count(*) filter (where oresmd_uri like '%term=%') as with_term
+#   from ores_marketdata_market_series_tbl where valid_to > now();"
+ series | with_term
+--------+-----------
+   1562 |         0
+
+# A curve configuration's quote and the series it reads, in the codec's own
+# spelling. Command: compass sql -- -c "select
+#   ores_marketdata_curve_pillar_series_uri_fn('IR_SWAP/RATE/GBP/0D/1D/1M');"
+                       ores_marketdata_curve_pillar_series_uri_fn
+--------------------------------------------------------------------------
+ oresmd://ir/GBP?type=series&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D
+
+# The run that shows the configuration and the market meet in a valuation:
+# ACCOUK's NPV over the provisioned book, report instance
+# d91de176-cd75-48b0-95d7-afd84b1b7010, completed at version 5 with the compute
+# result outcome=1 and server_state=5.
+# Command: compass sql -- -c "select i.version, s.name ..." and the
+# ores_compute_batches_tbl/ores_compute_results_tbl join the run recipe states.

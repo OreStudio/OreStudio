@@ -26,12 +26,12 @@ The ACME curve configurations name their quotes with ORE keys that are based on 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:0E718054-03B7-43A5-9289-61E505235BBD][Run a report on the generated trades with the market data they need]] |
-| Now          | Not yet started.                       |
-| Waiting on   | The feed naming refactor of the environment brave hopper (PR 3152). |
-| Next         | Read the naming rule of the refactor when it lands. |
-| Last touched | 2026-10-12                               |
+| Now          | Nothing. |
+| Waiting on   | Nothing. The feed naming refactor landed. |
+| Next         | Nothing. |
+| Last touched | 2026-11-21                               |
 
 * Acceptance
 
@@ -46,6 +46,27 @@ The ACME curve configurations name their quotes with ORE keys that are based on 
 3. Match each key to a feed series and list the keys that have none.
 4. Fix the side that is wrong, and record the rule in a knowledge page.
 
+What was done, in that order:
+
+1. The rule the refactor left is the one
+   [[id:7AE57098-08D4-4D4A-83D6-918FE520B68E][A pillar names the market series it reads]] states: an oresmd URI is the
+   identity and an ORE key is a boundary spelling. The pair that turns one into
+   the other was never written down for a curve configuration's quotes, so it is
+   now a section of that page.
+2. The keys are the 420 rows of =ores_refdata_curve_quotes_tbl= a provision
+   publishes, and they are all of one form: =IR_SWAP/RATE/<ccy>/<start>/<index
+   tenor>/<term>=.
+3. The match is a function, not a query run once:
+   =ores_marketdata_curve_pillar_series_uri_fn(quote_text)= states the series
+   address a quote names, and =ores_marketdata_curve_quote_coverage_fn(tenant,
+   party)= lists the quotes no series answers. The SQL pair is asserted against
+   the codec's own answer by a pgTAP test and a unit test, so neither spelling
+   can drift.
+4. No side was wrong. Every quote a provisioned ACME holds is answered by a
+   series the synthetic IR curves publish. The term the key ends with is the
+   point within the series, which is why reading the keys and the series as
+   text made them look unmatched.
+
 * Measurements
 
 Every number this task claims about a tree, with the command that produced it
@@ -58,11 +79,26 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Curve configurations a provision publishes | 4: ACCOUK 204 quotes, ACCOHK 84, ACCOUS 84, ACMCOR 48 | =evidence/curve_quote_coverage.txt= | 3fbae97db1 |
+| Quotes no series answers | 0 of 420 | =evidence/curve_quote_coverage.sql= into =evidence/curve_quote_coverage.txt= | 3fbae97db1 |
+| Market series the quotes are read against | 1,562, of which 0 carry a =term=, because a term is the point within a series | =evidence/curve_quote_coverage.txt= | 3fbae97db1 |
+| The pair the check and the codec both state | =IR_SWAP/RATE/GBP/0D/1D/1M= names =oresmd://ir/GBP?type=series&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D= | =ores_marketdata_curve_pillar_series_uri_fn=, with the pgTAP and unit tests | 3fbae97db1 |
+| A run that reads both spellings | ACCOUK NPV, instance =d91de176=, completed at version 5, compute outcome 1 and server state 5 | the run recipe's four queries | 3fbae97db1 |
 
 * Notes
 
 The inbox capture "Feeds required to run the ACME reports" lists the series each report needs.
+
+A quote key and a series address look unmatched when read as text, and that is
+how this task was written: the key ends with a term and the series does not. The
+term is the datum's coordinate, so a series never carries it, and the two are
+one datum. What settles the question is the schema's statement of which fields
+are identity, which is where
+[[id:7AE57098-08D4-4D4A-83D6-918FE520B68E][A pillar names the market series it reads]] already points.
+
+The check reads the interest rate swap rate form only, because it is the only
+form a provision stores: all 420 quotes are one. A quote of another form is
+reported as one the check cannot answer rather than passed over silently.
 
 * Test Scenarios
 
@@ -88,3 +124,33 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A curve configuration's quote and the market series that answers it are one
+datum in two spellings, and the difference between them is the term: a key ends
+with one and a series never carries one, because the term is the point within
+the series. A provisioned ACME holds 420 quotes across four configurations and
+the market answers every one, so no side was wrong and nothing needed fixing.
+
+What the branch adds is the statement of the pair and a way to read the gap:
+
+- =ores_marketdata_curve_pillar_series_uri_fn(quote_text)=, the series address a
+  quote names.
+- =ores_marketdata_curve_quote_coverage_fn(tenant, party)=, the quotes of a
+  party's curve configurations that no series answers, one row per quote with
+  its reason.
+- A pgTAP test over a staged and published configuration, and a unit test that
+  asserts the codec's own answer against the same address, so the SQL spelling
+  and the codec cannot drift apart unseen.
+- The pair written into
+  [[id:7AE57098-08D4-4D4A-83D6-918FE520B68E][A pillar names the market series it reads]], which is where the naming rule
+  already lived.
+
+Gates: site-page, format, db and pgtap all pass, pgtap over all 99 files, and
+the compass-ng ratchet reports 0 new diagnostics. The C++ unit test passed on
+its own binary before the gates ran.
+
+The check reads the interest rate swap rate form only. That is every quote a
+provision stores today, and a quote of another form is reported as one the check
+cannot answer rather than passed over. When a configuration holds a quote of
+another family, this check must learn that family's spelling before it can be
+trusted about it.

@@ -43,31 +43,35 @@ before any tenant exists and no tenant holds a copy of it.
 
 ** The methodology
 
-The methodology is a step of the ORE catalogue's =external/ore/methodology.txt=,
-as the examples, the schemas and the engine package are, and it states how to
+The methodology is a numbered step of the ORE catalogue's
+=external/ore/methodology.txt=, placed before the final commit step, beside the
+steps for the examples, the schemas and the engine package. It states how to
 reproduce the staged rows from a clean checkout: the ORE commit whose examples
 the repository carries, the build of =ores.shell= the generator calls, the
 command that runs the generator, the files it reads and writes, the
 verification, and the commit. The generator is
-=external/ore/tools/generate_script_library.py=, a script of the repository like
-those of the ISO and FpML datasets, which reads ORE's =scriptlibrary.xml= from
-=external/ore/examples/= and writes the dataset's populate files. It derives the
-staged rows in four steps, in order.
+=external/ore/tools/generate_script_library.py=, a script of the repository
+beside the catalogue's other tools. It reads one file, the library of ORE's
+product examples, =external/ore/examples/Products/Input/scriptlibrary.xml=; the
+other copies of =scriptlibrary.xml= under =external/ore/examples/= belong to
+individual examples and are not read. It writes the dataset's populate files, and
+it is the only generator of the library's rows. It derives them in four steps,
+in order.
 
 1. *Extraction.* Every script of ORE's =scriptlibrary.xml= is read, with its
    variants, results and calibrations, as ORE distributes it.
 2. *Correction.* Where ORE distributes a script that ORE itself cannot execute,
    the methodology applies a correction to its text. The corrections are data,
-   held in a file beside the generator, each with the script and variant it
-   corrects, the text it replaces, its replacement and the reason. A correction
-   applies only
-   when its text occurs exactly once, has no effect once the code already
-   contains its replacement, and otherwise causes the generation to fail, so that
-   any change ORE makes to the script is reviewed. The corrections comprise a
-   missing semicolon in =WorstOfBasketSwap= and the =FD= variant of
-   =GenericBarrierOption=, which rolled its values back only as far as the first
-   monitoring date. The methodology names each, and the dataset therefore records
-   that its scripts differ from ORE's and where.
+   held in one file beside the generator, each with the script and variant it
+   corrects, the text it replaces, its replacement and the reason; that file is
+   their only list, and the methodology names the file rather than repeating
+   them. A correction applies only when its text occurs exactly once, has no
+   effect once the code already contains its replacement, and otherwise causes
+   the generation to fail, so that any change ORE makes to the script is
+   reviewed. The corrections comprise a missing semicolon in =WorstOfBasketSwap=
+   and the =FD= variant of =GenericBarrierOption=, which rolled its values back
+   only as far as the first monitoring date. The dataset therefore records that
+   its scripts differ from ORE's and where.
 3. *Parsing.* Every script is parsed with ORE's grammar
    ([[id:8FD7BD95-AAEC-4CF9-A9F4-D609A9DEFBD8][Script Parsing with ORE's Grammar]]) by the shell's =script check= command, and a
    script that fails to parse causes the generation to fail with the diagnostic
@@ -81,9 +85,14 @@ staged rows in four steps, in order.
 Parsing and derivation are performed by the generator and not by the publish
 function, because the bring-up publishes the =world= bundle in SQL before any
 service runs. The staged rows are generated and committed, and are never edited
-by hand; a check runs the generator and verifies that its output equals the
-committed files, and a test of the scripting component verifies that the staged
-inputs of every script equal those its parser derives.
+by hand. Since the generator calls a built =ores.shell=, the check that runs it
+and verifies that its output equals the committed files belongs to the build
+job, after the shell is built, and not to the documentation check, which builds
+nothing. A change to the parser that changes a script's derived inputs therefore
+fails that check until the rows are regenerated, which is intended: the change
+to the stored inputs is reviewed with the change that causes it. A test of the
+scripting component verifies that the staged inputs of every script equal those
+its parser derives.
 
 ** Versions of the library
 

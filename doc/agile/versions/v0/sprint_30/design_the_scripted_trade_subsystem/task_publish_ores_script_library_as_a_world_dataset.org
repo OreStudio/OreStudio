@@ -36,12 +36,13 @@ ORE's script library arrives as a world dataset whose methodology extracts, corr
 * Acceptance
 
 - the library is a dataset of the Open Source Risk Engine catalogue
-- the generator is =external/ore/tools/generate_script_library.py=, which reads =scriptlibrary.xml= from =external/ore/examples/= and writes the dataset's populate files
-- the corrections are a data file beside the generator, each naming its script and variant, the text it replaces, its replacement and the reason
-- =external/ore/methodology.txt= gains a step that states exactly how to reproduce the staged rows from a clean checkout: the ORE commit, the build of =ores.shell= the generator calls, the command, the files read and written, the corrections, the verification and the commit; following it on a fresh checkout reproduces the committed files byte for byte
+- the generator is =external/ore/tools/generate_script_library.py=, which reads only =external/ore/examples/Products/Input/scriptlibrary.xml= and writes the dataset's populate files
+- it replaces the =script_library_seed= step of =compass generate= as the only generator of the library's rows, so =trading_script_library_populate.sql= and its include in =populate_trading.sql= go
+- the corrections are a data file beside the generator, each naming its script and variant, the text it replaces, its replacement and the reason; the file is their only list
+- =external/ore/methodology.txt= gains a numbered step before its final commit step that states exactly how to reproduce the staged rows from a clean checkout: the ORE commit, the build of =ores.shell= the generator calls, the command, the files read and written, the corrections, the verification and the commit; following it on a fresh checkout reproduces the committed files byte for byte
 - its rows are staged in the artefact tables of the script, variant, input, result and calibration entities, which opt in through their models, whose descriptions then state that the rows are derived by the dataset's methodology
 - the trading service's publish function writes the staged rows into the system tenant, and the dataset is a member of the =world= bundle
-- a check runs the generator and verifies its output equals the committed files
+- a check in the build job, after =ores.shell= is built, runs the generator and verifies its output equals the committed files
 - the populate scripts that load the library and correct it today are retired; the corrections are steps of the methodology, under the same exactly-once rule
 - the shell's =script parse=, =script check=, =script inputs= and =script print= run with no session and no server, and =script check= prints each diagnostic as FILE:LINE:COLUMN: severity: message [code] and exits with a non-zero status on any error
 - the generator parses every script with =script check= and fails on a script that does not parse, with its line and column
@@ -103,5 +104,10 @@ via its "Verifies task" field.
 | 4971.3 | the tenant name rule is unenforced and a later ORE release can collide | versioning_of_the_script_library.org | accept | no constraint: the tenant's own script wins at booking, a warning on publish, a later release leaves it in force |
 | 4971.4 | how a world script's version resolves for another tenant | versioning_of_the_script_library.org | accept | a trade records name, holding tenant and version; the run reads world rows through the shared-reference read |
 | 4971.5 | the model descriptions' follow-up is not an acceptance item | task | accept | added to the staging criterion |
+| 4971.6 | which scriptlibrary.xml is the source | versioning_of_the_script_library.org | accept | Products/Input/scriptlibrary.xml; the examples' own copies are not read |
+| 4971.7 | ISO and FpML do not keep generators in a tools directory | versioning_of_the_script_library.org | accept | the precedent claim dropped; the generator sits beside the catalogue's other tools |
+| 4971.8 | the compass generate step for the library is not retired | task | accept | the new generator replaces script_library_seed; its populate file and include go |
+| 4971.9 | the reproduction check needs a built shell | both | accept | it runs in the build job after the shell; a parser change that moves inputs fails it until regenerated, by intent |
+| 4971.10 | wrap; corrections listed in two places | versioning_of_the_script_library.org | accept | re-wrapped; the data file is the only list and the methodology names it |
 
 * Result

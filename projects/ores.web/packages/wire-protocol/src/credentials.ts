@@ -204,7 +204,12 @@ export async function readAccountSignIns(
         offset: page.offset,
         limit: page.limit,
         order: { field: 'start_time', descending: true },
-        filter: { account_id: account.id, account_id_one_of: null },
+        filter: {
+            account_id: account.id,
+            account_id_one_of: null,
+            agent_grant_id: null,
+            agent_grant_id_one_of: null,
+        },
     };
     const [loginInfo, sessions] = await Promise.all([
         readLoginInfo(caller, account.id),

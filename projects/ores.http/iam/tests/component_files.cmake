@@ -28,6 +28,7 @@ set(files
     "account_routes_tests.cpp"
     "account_screen_routes_tests.cpp"
     "agent_grant_operations_routes_tests.cpp"
+    "agent_key_exchange_tests.cpp"
     "audit_routes_tests.cpp"
     "auth_event_operations_routes_tests.cpp"
     "auth_session_routes_tests.cpp"

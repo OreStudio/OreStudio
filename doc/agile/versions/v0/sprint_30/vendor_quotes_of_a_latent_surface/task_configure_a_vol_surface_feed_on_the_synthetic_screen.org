@@ -42,11 +42,11 @@ gamma could make the generator publish an arbitrageable surface. See
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:8EC92006-17BB-4575-BA13-2BE5ED5327C3][Build each party's volatility surfaces from vendor quotes of a latent surface]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-22                               |
 
 * Acceptance
@@ -141,7 +141,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Vol feeds in the Bloomberg FX folder list | 14 of 40 feeds | =check_vol_bff.py= (scratchpad) as =super_admin= against the live BFF | 91f09af3e5 |
+| Vol feeds that read as running while the adapters hold them | 14 of 14 | =try_vol_start.py= (scratchpad) as =super_admin= | 72d584d900 |
+| Hand start of a vol feed | 409, with the reason | =try_vol_start.py= (scratchpad) | 72d584d900 |
+| Fleet, surface and registry tests | 18 cases, 115 assertions pass | =ores.synthetic.service.tests "[shared_surfaces],[generator_fleet],[feed_kind_registry]"= | 72d584d900 |
+| BFF synthetic tests | 91 pass | =npx vitest run src/synthetic.test.ts= | b8e798efc7 |
 
 * Notes
 
@@ -173,6 +177,28 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: the id helpers sat between two import statements. | =bff/src/synthetic.ts= | Accept | Moved below the imports (b8e798efc7). |
+| 2 | Local review: the FX tally loop names its two tables again beside =feed_tables=. | =feed_overview_handler.hpp= | Decline | The FX tally needs the FX tables only; a second array for two names adds a layer for no gain. |
+| 3 | Misspell check over the changed files. | all | Clean | =misspell-fixer= exit 0. |
 
 * Result
+
+The Provider tab lists each provider's vol surface feeds beside its spot
+and curve feeds, in the folder lists and the folder counts. A vol surface
+feed has its own page at =/market-data/synthetic/vol/<id>=, in the FX and
+IR language: Details, Calibration, Surface, Expiries, Contributors,
+Arrivals and History, with add, edit and revert. The Surface tab edits the
+SSVI start, the skew and curvature dynamics and the three correlations,
+each card with its own Edit, and the forms refuse values outside the
+tables' bounds. Gamma shows as fixed at one half with the reason, and no
+form edits it. The BFF writes the four vol resources for a system session
+only, and reads rows whose ids the DQ publish derived.
+
+A vol surface feed reads as running while a provider's simulated source
+holds it. Its page shows that state with no Start or Stop, and the service
+refuses a hand start with the reason. A control for the simulated source
+itself is the follow-on task
+[[id:BC75AE1F-BD6B-46E0-BA50-794DBD35576E][Start and stop a provider's simulated source from the Provider tab]].
+
+All acceptance items are met. The screens are in English, French and
+Portuguese.

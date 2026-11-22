@@ -7136,6 +7136,7 @@ const pt: SourceCatalogue = {
             add: 'Nova superfície de volatilidade',
             addTitle: 'Nova superfície de volatilidade',
             engine: 'SSVI',
+            held: 'Corre enquanto uma fonte simulada de um fornecedor a mantém.',
             samePair: 'As moedas base e de cotação têm de ser diferentes.',
             removeWarning:
                 'O feed para se estiver a correr. Os seus vencimentos e ligações a contribuidores são apagados primeiro, depois o feed. O histórico de cada um fica.',

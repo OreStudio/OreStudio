@@ -162,6 +162,25 @@ describe('the vol surface feed screens', () => {
         }
     });
 
+    it('shows whether a provider holds the surface and offers no Start or Stop', () => {
+        for (const [running, word] of [
+            [true, '>Running<'],
+            [false, '>Stopped<'],
+        ] as const) {
+            const html = render(`/market-data/synthetic/vol/${FEED_ID}`, (client) => {
+                writer(client);
+                client.setQueryData(['records', 'fx-vol-surface-feeds', 'key', FEED_ID], {
+                    ...feed,
+                    running,
+                });
+            });
+            expect(html).toContain(word);
+            expect(html).toContain('Runs while a simulated source of a provider holds it.');
+            expect(html).not.toContain('>Start</button>');
+            expect(html).not.toContain('>Stop</button>');
+        }
+    });
+
     it('draws the SSVI start, dynamics and correlations, each with its own Edit', () => {
         const html = render(`/market-data/synthetic/vol/${FEED_ID}?tab=surface`, writer);
         expect(html).toContain('Start skew (ρ)');

@@ -573,6 +573,7 @@ export const VOL_FEED_KIND: FeedKind = {
         },
     ],
     afterAdd: 'expiries',
+    heldByProvider: true,
 };
 
 export function volFeedPath(id?: string): string {

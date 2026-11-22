@@ -7084,6 +7084,7 @@ export const en: SourceCatalogue = {
             add: 'New vol surface',
             addTitle: 'New vol surface',
             engine: 'SSVI',
+            held: 'Runs while a simulated source of a provider holds it.',
             samePair: 'The base and quote currencies must differ.',
             removeWarning:
                 'The feed stops if it runs. Its expiries and contributor links are deleted first, then the feed. The history of each stays.',

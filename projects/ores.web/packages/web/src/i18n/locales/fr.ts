@@ -7192,6 +7192,7 @@ const fr: SourceCatalogue = {
             add: 'Nouvelle surface de volatilité',
             addTitle: 'Nouvelle surface de volatilité',
             engine: 'SSVI',
+            held: "Tourne tant qu'une source simulée d'un fournisseur la tient.",
             samePair: 'Les devises de base et de cotation doivent être différentes.',
             removeWarning:
                 "Le flux s'arrête s'il tourne. Ses échéances et ses liens vers les contributeurs sont supprimés d'abord, puis le flux. L'historique de chacun reste.",

@@ -23,6 +23,8 @@ set(files
     "account_contact_information_eventing_integration_tests.cpp"
     "account_status_eventing_integration_tests.cpp"
     "account_type_eventing_integration_tests.cpp"
+    "agent_grant_eventing_integration_tests.cpp"
+    "agent_key_eventing_integration_tests.cpp"
     "main.cpp"
     "messaging_account_party_handler_tests.cpp"
     "messaging_auth_bootstrap_party_tests.cpp"

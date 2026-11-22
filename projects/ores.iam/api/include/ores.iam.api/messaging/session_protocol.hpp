@@ -61,6 +61,7 @@ struct session_write {
     std::uint64_t bytes_received{};
     std::string country_code;
     std::string protocol;
+    std::optional<boost::uuids::uuid> agent_grant_id;
 
     friend bool operator==(const session_write&, const session_write&) = default;
 };
@@ -88,7 +89,9 @@ struct session_lookup {
 
 struct sessions_filter {
     std::optional<boost::uuids::uuid> account_id;
+    std::optional<std::optional<boost::uuids::uuid>> agent_grant_id;
     std::optional<std::vector<boost::uuids::uuid>> account_id_one_of;
+    std::optional<std::vector<boost::uuids::uuid>> agent_grant_id_one_of;
 
     friend bool operator==(const sessions_filter&, const sessions_filter&) = default;
 };
@@ -320,6 +323,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.sessions.deleted";
         utility::codec::field{"bytes_received", &session_write::bytes_received},
         utility::codec::field{"country_code", &session_write::country_code},
         utility::codec::field{"protocol", &session_write::protocol},
+        utility::codec::field{"agent_grant_id", &session_write::agent_grant_id},
     };
 }
 
@@ -379,7 +383,9 @@ inline constexpr std::string_view deleted = "iam.v1.events.sessions.deleted";
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<sessions_filter>) {
     return ::ores::utility::codec::field_list{
         utility::codec::field{"account_id", &sessions_filter::account_id},
+        utility::codec::field{"agent_grant_id", &sessions_filter::agent_grant_id},
         utility::codec::field{"account_id_one_of", &sessions_filter::account_id_one_of},
+        utility::codec::field{"agent_grant_id_one_of", &sessions_filter::agent_grant_id_one_of},
     };
 }
 

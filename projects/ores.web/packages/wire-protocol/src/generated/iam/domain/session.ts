@@ -44,4 +44,5 @@ export interface Session {
     bytes_received: number;
     country_code: string;
     protocol: string;
+    agent_grant_id: string | null;
 }

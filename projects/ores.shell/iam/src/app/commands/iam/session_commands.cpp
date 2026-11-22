@@ -141,7 +141,7 @@ void session_commands::register_commands(cli::Menu& root_menu, nats_client& sess
         },
         "add <start_time> <account_id> <end_time> <client_ip> <client_identifier> "
         "<client_version_major> <client_version_minor> <bytes_sent> <bytes_received> "
-        "<country_code> <protocol> <reason> <commentary>");
+        "<country_code> <protocol> <agent_grant_id> <reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -150,7 +150,7 @@ void session_commands::register_commands(cli::Menu& root_menu, nats_client& sess
         },
         "set <id> <start_time> <account_id> <end_time> <client_ip> <client_identifier> "
         "<client_version_major> <client_version_minor> <bytes_sent> <bytes_received> "
-        "<country_code> <protocol> <reason> <commentary> [--version <n>]");
+        "<country_code> <protocol> <agent_grant_id> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -159,7 +159,7 @@ void session_commands::register_commands(cli::Menu& root_menu, nats_client& sess
         },
         "put-many --count <n> <id> <start_time> <account_id> <end_time> <client_ip> "
         "<client_identifier> <client_version_major> <client_version_minor> <bytes_sent> "
-        "<bytes_received> <country_code> <protocol> <reason> <commentary>");
+        "<bytes_received> <country_code> <protocol> <agent_grant_id> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -346,8 +346,8 @@ void session_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 11 + 2) {
-            fail(out) << "Expected " << (11 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 12 + 2) {
+            fail(out) << "Expected " << (12 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -370,6 +370,8 @@ void session_commands::process_add(std::ostream& out,
         session_read_token(
             req.change.write.country_code, parsed->positionals[next++], "country_code");
         session_read_token(req.change.write.protocol, parsed->positionals[next++], "protocol");
+        session_read_token(
+            req.change.write.agent_grant_id, parsed->positionals[next++], "agent_grant_id");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -414,8 +416,8 @@ void session_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 12 + 2) {
-            fail(out) << "Expected " << (12 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 13 + 2) {
+            fail(out) << "Expected " << (13 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -438,6 +440,8 @@ void session_commands::process_set(std::ostream& out,
         session_read_token(
             req.change.write.country_code, parsed->positionals[next++], "country_code");
         session_read_token(req.change.write.protocol, parsed->positionals[next++], "protocol");
+        session_read_token(
+            req.change.write.agent_grant_id, parsed->positionals[next++], "agent_grant_id");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -494,8 +498,8 @@ void session_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 12 + 2) {
-            fail(out) << "Expected " << (change_count * 12 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 13 + 2) {
+            fail(out) << "Expected " << (change_count * 13 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -520,6 +524,8 @@ void session_commands::process_put_many(std::ostream& out,
             session_read_token(
                 change.write.country_code, parsed->positionals[next++], "country_code");
             session_read_token(change.write.protocol, parsed->positionals[next++], "protocol");
+            session_read_token(
+                change.write.agent_grant_id, parsed->positionals[next++], "agent_grant_id");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }

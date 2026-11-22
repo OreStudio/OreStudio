@@ -1,0 +1,369 @@
+:PROPERTIES:
+:ID: B4A01B2E-A25D-448B-BC85-06431ED326C9
+:ores.cpp.wire-codec.enabled: true
+:END:
+#+title: ores.iam.agent_grant_messages
+#+description: Codegen operation model for creating and revoking agent grants and keys, and exchanging a key for a token.
+#+type: ores.codegen.operation
+#+component: iam
+#+subcomponent: api
+#+entity_singular: agent_grant_operations
+#+namespace: ores::iam::messaging
+#+brief: Create and revoke agent grants and keys, and exchange a key.
+#+filetags: :model:operation:iam:agents:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+
+Creating and revoking agent grants and their keys, and exchanging a key for a
+token. The agent grant and agent key tables are readable through their
+generated entity protocols and writable only here, because each write needs a
+check no row write can express: a grant is made by its person in their own
+session, never by an agent, and only its person or an administrator revokes
+it. [[id:A7E2942C-66AD-449C-B80B-CA789EBC34FA][Agent grants: delegated consent for LLM agents]] states the rules.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include "ores.iam.api/domain/agent_grant.hpp"
+#include "ores.iam.api/domain/agent_key.hpp"
+#include <cstdint>
+#include <string>
+#include <vector>
+#+end_src
+
+* Messages
+
+** create_agent_grant_request
+:PROPERTIES:
+:subject: iam.v1.agent_grants.put
+:response: create_agent_grant_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Records a person's consent that one named agent acts for them.
+ *
+ * Sent by the person, with their own session, who must hold
+ * iam::agent_grants:create and every permission of the role. The grant's
+ * tenant and party are the session's, and its grantor is the session's
+ * account. Refused when the session names an agent, so an agent never makes a
+ * grant, and when the role names a permission withheld from agents. The
+ * response carries the grant's first key, the only time it is shown.
+ */
+#+end_src
+
+*** agent_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The name the person gives the agent.
+ */
+#+end_src
+
+*** role
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The name of the role the agent acts under.
+ */
+#+end_src
+
+*** valid_days
+:PROPERTIES:
+:cpp_type: int
+:default: 30
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How many days the grant serves, from one to ninety.
+ */
+#+end_src
+
+** create_agent_grant_response
+
+#+begin_src cpp :name comment
+/**
+ * @brief The grant and its first key, or why there is none.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** grant_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** key
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The key, shown this once and never stored.
+ */
+#+end_src
+
+** create_agent_key_request
+:PROPERTIES:
+:subject: iam.v1.ops.create_agent_key
+:response: create_agent_key_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Makes another key for a grant, so a key can be replaced.
+ *
+ * Sent by the grant's person, with their own session.
+ */
+#+end_src
+
+*** grant_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** create_agent_key_response
+
+#+begin_src cpp :name comment
+/**
+ * @brief The new key, or why there is none.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** key_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** key
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The key, shown this once and never stored.
+ */
+#+end_src
+
+** revoke_agent_grant_request
+:PROPERTIES:
+:subject: iam.v1.ops.revoke_agent_grant
+:response: revoke_agent_grant_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Ends a grant, and with it every key that redeems it.
+ *
+ * Sent by the grant's person or by an administrator.
+ */
+#+end_src
+
+*** grant_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** reason
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** revoke_agent_grant_response
+
+#+begin_src cpp :name comment
+/**
+ * @brief Whether the grant was revoked.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** revoke_agent_key_request
+:PROPERTIES:
+:subject: iam.v1.ops.revoke_agent_key
+:response: revoke_agent_key_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Ends one key, leaving the grant and its other keys.
+ *
+ * Sent by the grant's person or by an administrator.
+ */
+#+end_src
+
+*** key_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** reason
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** revoke_agent_key_response
+
+#+begin_src cpp :name comment
+/**
+ * @brief Whether the key was revoked.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** exchange_agent_key_request
+:PROPERTIES:
+:subject: iam.v1.ops.exchange_agent_key
+:response: exchange_agent_key_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Asks IAM for a token, presenting an agent's key.
+ *
+ * Sent by ores.http, with its own token, when a request carries an agent key
+ * as its bearer token. The key names the tenant to read it in.
+ */
+#+end_src
+
+*** key
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** exchange_agent_key_response
+
+#+begin_src cpp :name comment
+/**
+ * @brief The token naming the person and the agent, or why there is none.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** token
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** expires_at
+:PROPERTIES:
+:cpp_type: std::int64_t
+:default: 0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief When the token stops working, in seconds since the epoch.
+ */
+#+end_src
+
+** list_own_agent_grants_request
+:PROPERTIES:
+:subject: iam.v1.ops.list_own_agent_grants
+:response: list_own_agent_grants_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Lists the caller's own agent grants and their keys.
+ *
+ * A self read: sent by a person who holds iam::agent_grants:create, with
+ * their own session, and answering only grants whose grantor is the caller.
+ * Reading another person's grants is the privileged read of the generated
+ * entity protocol, which needs iam::agent_grants:read.
+ */
+#+end_src
+
+** list_own_agent_grants_response
+
+#+begin_src cpp :name comment
+/**
+ * @brief The caller's grants and their keys, never a key's secret.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** grants
+:PROPERTIES:
+:cpp_type: std::vector<ores::iam::domain::agent_grant>
+:END:
+
+*** keys
+:PROPERTIES:
+:cpp_type: std::vector<ores::iam::domain::agent_key>
+:END:
+
+* See also
+
+- [[id:A7E2942C-66AD-449C-B80B-CA789EBC34FA][Agent grants: delegated consent for LLM agents]] — the rules these operations carry out.
+- [[id:ED9E53BF-27A3-4261-9767-3A25B98BFCA4][ores.iam.agent_grant]] and [[id:6BA5BFE5-F559-464C-89EA-C071D3199C3F][ores.iam.agent_key]] — the tables they write.

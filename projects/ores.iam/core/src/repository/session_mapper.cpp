@@ -61,6 +61,7 @@ domain::session session_mapper::map(const session_entity& v) {
     r.bytes_received = v.bytes_received;
     r.country_code = v.country_code;
     r.protocol = v.protocol;
+    r.agent_grant_id = v.agent_grant_id;
 
     ORES_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -83,6 +84,7 @@ session_entity session_mapper::map(const domain::session& v) {
     r.bytes_received = v.bytes_received;
     r.country_code = v.country_code;
     r.protocol = v.protocol;
+    r.agent_grant_id = v.agent_grant_id;
 
     ORES_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;

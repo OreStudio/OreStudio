@@ -841,6 +841,36 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'iam.v1.agent_grants.list': {
+        asOf: true,
+        filter: ['grantor_account_id', 'id_one_of', 'grantor_account_id_one_of'],
+        rows: ['grants'],
+    },
+    'iam.v1.agent_grants.list_by_grantor_account_id': {
+        asOf: false,
+        filter: ['grantor_account_id', 'id_one_of', 'grantor_account_id_one_of'],
+        rows: ['grants'],
+    },
+    'iam.v1.agent_grants_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'iam.v1.agent_keys.list': {
+        asOf: true,
+        filter: ['grant_id', 'id_one_of', 'grant_id_one_of'],
+        rows: ['keys'],
+    },
+    'iam.v1.agent_keys.list_by_grant_id': {
+        asOf: false,
+        filter: ['grant_id', 'id_one_of', 'grant_id_one_of'],
+        rows: ['keys'],
+    },
+    'iam.v1.agent_keys_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
     'iam.v1.auth_events.list': {
         asOf: false,
         filter: [],
@@ -860,6 +890,11 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         asOf: false,
         filter: [],
         rows: [],
+    },
+    'iam.v1.ops.list_own_agent_grants': {
+        asOf: false,
+        filter: [],
+        rows: ['grants', 'keys'],
     },
     'iam.v1.ops.list_role_holders': {
         asOf: false,
@@ -1003,7 +1038,7 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
     },
     'iam.v1.sessions.list': {
         asOf: false,
-        filter: ['account_id', 'account_id_one_of'],
+        filter: ['account_id', 'agent_grant_id', 'account_id_one_of', 'agent_grant_id_one_of'],
         rows: ['sessions'],
     },
     'iam.v1.tenant_statuses.list': {

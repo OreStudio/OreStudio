@@ -40,6 +40,10 @@
 \ir ./iam_account_party_drop.sql
 
 -- Run grants (dropped before the accounts and roles they reference)
+\ir ./iam_agent_keys_notify_trigger_drop.sql
+\ir ./iam_agent_keys_drop.sql
+\ir ./iam_agent_grants_notify_trigger_drop.sql
+\ir ./iam_agent_grants_drop.sql
 \ir ./iam_run_grants_notify_trigger_drop.sql
 \ir ./iam_run_grants_drop.sql
 

@@ -38,8 +38,8 @@ create table if not exists "ores_orgmode_knowledge_index_pages_tbl" (
     check ("page_id" <> '')
 );
 
--- A section is a heading's own text, or, at order 0, the text above a page's
--- first heading. The heading path is the titles from the page's top heading
+-- A section is a heading's own text, or, at order 0, the page itself, whose
+-- text is the page's description. The heading path is the titles from the page's top heading
 -- down to this one, joined by " / ".
 create table if not exists "ores_orgmode_knowledge_index_sections_tbl" (
     "page_id" text not null references ores_orgmode_knowledge_index_pages_tbl (page_id) on delete cascade,
@@ -88,6 +88,11 @@ declare
     v_sections bigint;
     v_links bigint;
 begin
+    -- A second rebuild that finds nothing to delete, as on empty tables, would
+    -- insert the first one's keys before that one commits, and fail; so the
+    -- rebuilds take turns.
+    perform pg_advisory_xact_lock(hashtext('ores_orgmode_replace_knowledge_index_fn'));
+
     delete from ores_orgmode_knowledge_index_links_tbl;
     delete from ores_orgmode_knowledge_index_sections_tbl;
     delete from ores_orgmode_knowledge_index_pages_tbl;

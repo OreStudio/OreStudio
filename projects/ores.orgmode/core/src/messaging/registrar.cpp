@@ -36,16 +36,6 @@ std::vector<ores::nats::service::subscription>
 registrar::register_handlers(ores::nats::service::client& nats,
                              const ores::database::context& ctx,
                              std::optional<ores::security::jwt::jwt_authenticator> verifier) {
-    // The bootstrap publishes the pages in SQL before the service starts, so
-    // the service indexes what it finds. A failure leaves the old index and the
-    // service up: the reindex operation can rebuild it once the cause is fixed.
-    try {
-        service::knowledge_indexer(ctx).reindex();
-    } catch (const std::exception& e) {
-        using namespace ores::logging;
-        ORES_LOG_SEV(lg(), error) << "Knowledge index rebuild at start failed: " << e.what();
-    }
-
     auto subs = register_knowledge_page_handlers(nats, ctx, verifier);
 
     auto ih = std::make_shared<index_handler>(nats, ctx, std::move(verifier));
@@ -60,6 +50,18 @@ registrar::register_handlers(ores::nats::service::client& nats,
               [pdq](ores::nats::delivery delivery) { pdq->handle(std::move(delivery)); });
     subs.push_back(
         ores::service::messaging::serve_step_commands(nats, "ores.orgmode.service", routes));
+
+    // The bootstrap publishes the pages in SQL before the service starts, so
+    // the service indexes what it finds, after it subscribes so that requests
+    // are served meanwhile from the previous index. A failure leaves that index
+    // and the service up: the reindex operation can rebuild it once the cause
+    // is fixed.
+    try {
+        service::knowledge_indexer(ctx).reindex();
+    } catch (const std::exception& e) {
+        using namespace ores::logging;
+        ORES_LOG_SEV(lg(), error) << "Knowledge index rebuild at start failed: " << e.what();
+    }
 
     return subs;
 }

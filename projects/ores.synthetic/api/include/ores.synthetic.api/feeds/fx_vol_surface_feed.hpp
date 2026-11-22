@@ -197,7 +197,8 @@ public:
      * A surface whose drivers the run's market does not know -- one started after the market
      * was built, or a run with no market at all -- publishes nothing and says so. Stepping it
      * on zeros would move it on noise nobody chose, and throwing would fill the log with one
-     * failure a tick.
+     * failure a tick. The log names the reason once, when it changes, and again when the
+     * surface publishes after it.
      */
     std::string tick(const ores::analytics::quant::service::tick_context& context);
     void stop() override;
@@ -222,6 +223,9 @@ public:
     std::size_t detach(const std::string& adapter_id);
 
 private:
+    /// The status of a tick that publishes nothing for @p reason, logged when the reason changes.
+    std::string refuse(std::string reason);
+
     /// Where this surface's three inputs are on the run's values, resolved when it is built.
     std::optional<ores::analytics::quant::domain::market_board::member_id> base_curve_id_;
     std::optional<ores::analytics::quant::domain::market_board::member_id> quote_curve_id_;
@@ -245,6 +249,8 @@ private:
     double sensitivity_ = 1.0;
     std::optional<std::size_t> handle_;
     std::atomic<std::uint64_t> published_{0};
+    /// Why the last tick published nothing, or empty when it published. Only the tick reads it.
+    std::string refusal_;
     /// The adapters attached, each with the contributor it serves and that contributor's targets.
     struct sink final {
         std::string contributor;

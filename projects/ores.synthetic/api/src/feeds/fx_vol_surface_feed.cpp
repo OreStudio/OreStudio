@@ -52,6 +52,11 @@ using ores::analytics::quant::service::run_market;
 
 namespace {
 
+auto& fx_vol_surface_feed_lg() {
+    static auto instance = ores::logging::make_logger("ores.synthetic.api.fx_vol_surface_feed");
+    return instance;
+}
+
 constexpr int days_in_a_year = 365;
 
 /// The emitter a row describes, or the exception a feed cannot start without.
@@ -297,23 +302,37 @@ void fx_vol_surface_feed::start() {
         [this](const tick_context& context) { return tick(context); });
 }
 
+std::string fx_vol_surface_feed::refuse(std::string reason) {
+    if (reason != refusal_) {
+        ORES_LOG_SEV(fx_vol_surface_feed_lg(), ores::logging::warn)
+            << "Synthetic surface '" << source_name_ << "' publishes nothing: " << reason;
+        refusal_ = reason;
+    }
+    return "no market: " + reason;
+}
+
 std::string fx_vol_surface_feed::tick(const tick_context& context) {
     // The normals come from the market, one for each forward variance and one for each driver.
     // A surface the market does not drive publishes nothing: its block was never in the market
     // the run built, and stepping it on nothing would move it on noise nobody chose.
     const auto wanted = static_cast<std::size_t>(emitter_.surface().expiries.size() + 2);
     if (context.drivers.size() != wanted)
-        return std::format("no market: {} of {} driver(s)", context.drivers.size(), wanted);
+        return refuse(std::format("{} of {} driver(s)", context.drivers.size(), wanted));
     // The market of each expiry, from the three values this surface reads: the pair's spot
     // and its two currencies' curves. A curve moves when its feed ticks, so a strike moves
     // with it and no restart is needed.
     const auto inputs =
         fx_vol_board_inputs(market_.values(), *base_curve_id_, *quote_curve_id_, *spot_id_);
     if (!inputs)
-        return "no market: " + inputs.error();
+        return refuse(inputs.error());
     if (const auto built = fx_vol_expiry_markets(*inputs, expiry_periods_, expiry_rule_, markets_);
         !built)
-        return "no market: " + built.error();
+        return refuse(built.error());
+    if (!refusal_.empty()) {
+        ORES_LOG_SEV(fx_vol_surface_feed_lg(), ores::logging::info)
+            << "Synthetic surface '" << source_name_ << "' publishes again";
+        refusal_.clear();
+    }
     const auto points = emitter_.step(context.drivers, markets_);
     const auto& codec = ores::nats::default_wire_codec();
     const auto now = context.observed_at;

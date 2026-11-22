@@ -56,16 +56,20 @@ import hashlib
 import os
 import re
 import shlex
+import shutil
 import subprocess
 import sys
 from pathlib import Path
 
 # Defaults used when the per-host profile does not override them.
 DEFAULT_REMOTE_ROOT = "~/ores-deploy"
-DEFAULT_REMOTE_DB_PORT = "5433"
+# PostgreSQL's own default. A host that keeps its database elsewhere says so in
+# its profile, and only then does the profile carry a PGPORT.
+DEFAULT_REMOTE_DB_PORT = "5432"
 
 # Image names — keep in sync with image_build.py (single source of truth).
 IMAGE_NATS = "localhost/ores-nats"
+IMAGE_PGBOUNCER = "localhost/ores-pgbouncer"
 IMAGE_COMPUTE = "localhost/ores-compute-wrapper"
 IMAGE_BASE = "localhost/ores-service-base"
 IMAGE_LIBS = "localhost/ores-service-libs"
@@ -231,12 +235,12 @@ def _generate_profile(project_root, profile_path, src_env_path, host,
                       remote_root, remote_db_port):
     """Derive the .env.<host> profile from docker/.env using the
     sprint-24 Newton session's rewrites: every *_DB_PORT matching the
-    local ORES_DB_PORT becomes the remote port (Postgres is native on
-    the WSL host at localhost:5433), and every absolute path under the
-    checkout becomes $REMOTE_ROOT (the WSL host has no checkout of this
-    repo). The remote configuration block is appended with the values
-    in effect, so the file is inspectable/editable and self-contained —
-    and usable by every other command via `--env <host>`."""
+    local ORES_DB_PORT becomes the remote port, and every absolute path
+    under the checkout becomes $REMOTE_ROOT (the remote host has no
+    checkout of this repo). The remote configuration block is appended
+    with the values in effect, so the file is inspectable/editable and
+    self-contained — and usable by every other command via `--env
+    <host>`."""
     src = src_env_path.read_text(encoding="utf-8")
     local_db_port = _read_env(src_env_path).get("ORES_DB_PORT", "5432")
     project_root_s = str(project_root)
@@ -259,7 +263,7 @@ def _generate_profile(project_root, profile_path, src_env_path, host,
     # already lives off 5432 (see env_init.py). The remote profile must
     # carry it whenever the remote Postgres is off the default port —
     # this is what makes `compass db recreate -y -k --env <host>` target
-    # the remote DB (the sprint-24 session added PGPORT=5433 by hand).
+    # the remote DB.
     if remote_db_port != "5432" and not any(
             line.startswith("PGPORT=") for line in out):
         out.append(f"PGPORT={remote_db_port}")
@@ -376,6 +380,7 @@ def _stream_images(project_root, host, images):
     base_images = [i for i in images if "ores-service-base" in i]
     libs_images = [i for i in images if "ores-service-libs" in i]
     nats_images = [i for i in images if "ores-nats" in i]
+    pgbouncer_images = [i for i in images if "ores-pgbouncer" in i]
     compute_images = [i for i in images if "ores-compute-wrapper" in i]
     # The web image is standalone: it carries its own Node runtime, so it is
     # transferred whole rather than built on the host.
@@ -383,14 +388,15 @@ def _stream_images(project_root, host, images):
     # Everything else is a per-service image (localhost/<service_name>).
     overlay_images = [i for i in images
                       if i not in base_images + libs_images
-                      + nats_images + compute_images + web_images]
+                      + nats_images + pgbouncer_images
+                      + compute_images + web_images]
 
     # -- Phase 1: Transfer base and library images (once) -----------------
     for img in base_images + libs_images:
         _transfer_one_image(project_root, host, img)
 
     # -- Phase 2: Transfer standalone images (NATS, compute) --------------
-    for img in nats_images + compute_images + web_images:
+    for img in nats_images + pgbouncer_images + compute_images + web_images:
         _transfer_one_image(project_root, host, img)
 
     # -- Phase 3: Remote-build per-service overlays -----------------------
@@ -517,6 +523,17 @@ def _preflight(project_root, profile_path, role, env):
                 "(generates the NATS certs)")
 
 
+def _pooler_enabled(project_root: Path) -> bool:
+    """Whether this environment's .env runs a transaction pooler."""
+    env_file = project_root / ".env"
+    if not env_file.is_file():
+        return False
+    for line in env_file.read_text(encoding="utf-8").splitlines():
+        if line.startswith("ORES_DB_POOLER_ENABLED="):
+            return line.split("=", 1)[1].strip() == "1"
+    return False
+
+
 def _transfer_runtime(project_root, host, remote_root, profile_path,
                       label):
     print("=== Transferring to the remote host ===")
@@ -549,6 +566,35 @@ def _transfer_runtime(project_root, host, remote_root, profile_path,
               "start without a JWT signing key")
     _scp(project_root, host, stage_conf,
          f"{remote_root}/build/config/nats-{label}.conf")
+
+    # The pooler's configuration is generated for a container, not for the host:
+    # it listens on the pod's interface and reaches the database on the host that
+    # runs the pod. One script generates both shapes. A host that runs no pooler
+    # receives neither the configuration nor the credential file it carries.
+    if _pooler_enabled(project_root):
+        stage_pooler = project_root / "build" / "docker-stage" / "pooler"
+        # Written in full each run, but a file this run does not write would
+        # outlive the user it names, so the stage starts empty.
+        shutil.rmtree(stage_pooler, ignore_errors=True)
+        stage_pooler.mkdir(parents=True, exist_ok=True)
+        pooler_port = (_read_env(project_root / ".env").get("ORES_DB_POOLER_PORT")
+                       or "6432")
+        # A remote environment keeps PostgreSQL off the default port, so the
+        # pooler is told the port the remote host listens on, not this one's.
+        remote_db_port = _read_env(profile_path).get("PGPORT", "5432")
+        pooler_env = dict(os.environ, PGPORT=remote_db_port)
+        subprocess.run([
+            "bash", str(project_root / "build" / "scripts" / "start_ci_pooler.sh"),
+            # The quadlet unit runs the pooler with Network=host, so the database
+            # is on the container's own loopback rather than on a pod alias.
+            "print-config", str(pooler_port), str(stage_pooler), "127.0.0.1"],
+            check=True,
+            env=pooler_env,
+            stdout=subprocess.DEVNULL)
+        _ssh(host, f"mkdir -p {shlex.quote(remote_root)}/build/config/pooler",
+             check=True)
+        _scp(project_root, host, stage_pooler, f"{remote_root}/build/config/",
+             recursive=True)
     _scp(project_root, host, profile_path, f"{remote_root}/docker/.env")
 
 
@@ -828,8 +874,8 @@ def _cmd_deploy(argv, project_root):
     # A transfer deploy needs the images built locally; a pull deploy fetches
     # them from the registry instead.
     import image_build  # noqa: PLC0415
-    if not args.pull and not image_build.check_images_exist(project_root,
-                                                            args.role):
+    if not args.pull and not image_build.check_images_exist(
+            project_root, args.role, tag=args.image_tag):
         return 1
 
     if args.role == "compute":
@@ -857,6 +903,10 @@ def _cmd_deploy(argv, project_root):
     tag = args.image_tag or _version_tag(project_root)
     if args.pull:
         pulled = ["ores-service-base", "ores-service-libs", "ores-nats"]
+        # The pooler is pulled only where the environment runs one, because it is
+        # only then that its unit is generated and something asks for it.
+        if _pooler_enabled(project_root):
+            pulled.append("ores-pgbouncer")
         pulled += _runtime_services(project_root)
         if _web_services(project_root):
             pulled.append("ores-web")
@@ -864,9 +914,13 @@ def _cmd_deploy(argv, project_root):
     else:
         svc_images = [f"localhost/{s}:{tag}"
                       for s in _runtime_services(project_root)]
-        _stream_images(project_root, remote_host,
-                       [f"{IMAGE_BASE}:{tag}", f"{IMAGE_LIBS}:{tag}",
-                        *svc_images, f"{IMAGE_NATS}:{tag}"])
+        streamed = [f"{IMAGE_BASE}:{tag}", f"{IMAGE_LIBS}:{tag}",
+                    *svc_images, f"{IMAGE_NATS}:{tag}"]
+        # The stream path carries the same standalone images the pull path does,
+        # so a host that runs a pooler receives its image here too.
+        if _pooler_enabled(project_root):
+            streamed.append(f"{IMAGE_PGBOUNCER}:{tag}")
+        _stream_images(project_root, remote_host, streamed)
     _transfer_runtime(project_root, remote_host, remote_root,
                       profile_path, _label(profile_env, project_root))
     _deploy_runtime(project_root, remote_host, profile_env, remote_root, tag)

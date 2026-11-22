@@ -35,13 +35,39 @@
 #   build/scripts/expose-web.sh <ssh-host> status
 #
 # Environment:
-#   WEB_PORT   port the BFF listens on locally (default 21402)
+#   WEB_PORT   port the BFF listens on locally. Unset, it is read from the
+#              host profile (.env.<ssh-host>), then from .env, so the proxy
+#              follows the environment instead of a port written twice.
 set -euo pipefail
 
 host="${1:?usage: expose-web.sh <ssh-host> <setup|on|off|status> [args]}"
 action="${2:?usage: expose-web.sh <ssh-host> <setup|on|off|status> [args]}"
-web_port="${WEB_PORT:-21402}"
+root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 helper="/usr/local/bin/ores-web-close"
+
+die() {
+    echo "expose-web: $*" >&2
+    exit 1
+}
+
+# The web port one environment file states, or nothing.
+port_of() {
+    [ -f "$1" ] || return 1
+    local value
+    value="$(sed -n 's/^ORES_WEB_PORT=//p' "$1" | tail -1 | sed 's/["[:space:]]//g')"
+    [ -n "$value" ] && printf '%s' "$value"
+}
+
+web_port="${WEB_PORT:-}"
+if [ -z "$web_port" ]; then
+    web_port="$(port_of "$root/.env.$host" || port_of "$root/.env" || true)"
+fi
+[ -n "$web_port" ] || die "cannot tell which port the web listens on: set WEB_PORT, or ORES_WEB_PORT in .env.$host or .env"
+
+# The port the host's Caddyfile proxies to, or nothing when it has none.
+caddy_port() {
+    ssh "$host" "sed -n 's/.*reverse_proxy 127.0.0.1:\([0-9][0-9]*\).*/\1/p' /etc/caddy/Caddyfile 2>/dev/null | head -1"
+}
 
 # One rule, inserted at the head of the host's own input chain, and removed by
 # the handle nftables gives it. A separate table does not work here: every base
@@ -143,7 +169,8 @@ case "$action" in
         # Closed is the default, so the service must not start with the machine.
         ssh "$host" "systemctl disable caddy >/dev/null 2>&1 || true; systemctl stop caddy >/dev/null 2>&1 || true"
         install_helper
-        echo "Caddy is configured for ${hostname}; open it with: $0 ${host} on"
+        echo "Caddy is configured for ${hostname}, proxying 127.0.0.1:${web_port}."
+        echo "Open it with: $0 ${host} on"
         ;;
     on)
         shift 2
@@ -154,11 +181,21 @@ case "$action" in
                 *) echo "unknown argument: $1" >&2; exit 2 ;;
             esac
         done
+        # An exposure that proxies to a port nothing listens on answers 502 to
+        # every visitor, so the two ports are compared before the port opens.
+        proxied="$(caddy_port)"
+        [ -n "$proxied" ] || die "no Caddyfile on $host: run $0 $host setup <hostname>"
+        if [ "$proxied" != "$web_port" ]; then
+            die "$host proxies 127.0.0.1:$proxied but the web listens on $web_port: run $0 $host setup <hostname>"
+        fi
         open_rules
         ssh "$host" "systemctl start caddy"
         ssh "$host" "systemctl stop ores-web-close.service 2>/dev/null || true"
         if [[ -n "$duration" ]]; then
             install_helper
+            # An earlier exposure may still hold the timer and its unit name,
+            # so both are cancelled before this one is scheduled.
+            ssh "$host" "systemctl stop ores-web-close.timer ores-web-close.service >/dev/null 2>&1 || true; systemctl reset-failed ores-web-close.timer ores-web-close.service >/dev/null 2>&1 || true"
             # A timer that did not start leaves the exposure open for good, so
             # a failure closes it now rather than leaving it to a person.
             if ! ssh "$host" "systemd-run --on-active='${duration}' --unit=ores-web-close ${helper} >/dev/null 2>&1"; then
@@ -176,13 +213,22 @@ case "$action" in
     off)
         ssh "$host" "systemctl stop caddy >/dev/null 2>&1 || true"
         close_rules
-        ssh "$host" "systemctl stop ores-web-close.service 2>/dev/null || true"
+        ssh "$host" "systemctl stop ores-web-close.timer ores-web-close.service >/dev/null 2>&1 || true; systemctl reset-failed ores-web-close.timer ores-web-close.service >/dev/null 2>&1 || true"
         echo "Caddy stopped and port 443 closed."
         ;;
     status)
         printf 'caddy      : %s\n' "$(ssh "$host" "systemctl is-active caddy 2>/dev/null || true")"
         printf 'firewall   : %s\n' "$(ssh "$host" "nft -a list chain inet filter input 2>/dev/null | grep -q 'comment \"${rule_comment}\"' && echo 'open (443)' || echo closed")"
-        printf 'certificate: %s\n' "$(ssh "$host" "ls -1 /var/lib/caddy/.local/share/caddy/certificates/*/*.crt 2>/dev/null | head -2 | tr '\n' ' ' || true")"
+        proxied="$(caddy_port)"
+        if [ -z "$proxied" ]; then
+            printf 'proxy      : no Caddyfile: run %s %s setup <hostname>\n' "$0" "$host"
+        elif [ "$proxied" = "$web_port" ]; then
+            printf 'proxy      : 127.0.0.1:%s (matches the environment)\n' "$proxied"
+        else
+            printf 'proxy      : 127.0.0.1:%s but the web listens on %s: run setup again\n' "$proxied" "$web_port"
+        fi
+        # Caddy keeps one directory per issuer and one per name under it.
+        printf 'certificate: %s\n' "$(ssh "$host" "ls -1 /var/lib/caddy/.local/share/caddy/certificates/*/*/*.crt 2>/dev/null | xargs -r -n1 basename | tr '\n' ' ' || true")"
         ;;
     *)
         echo "unknown action: ${action} (expected setup, on, off or status)" >&2

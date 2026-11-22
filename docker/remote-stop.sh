@@ -39,8 +39,9 @@ else
         source "$env_file"
     fi
     label="${ORES_CHECKOUT_LABEL:-ores}"
-    echo "=== Stopping NATS + services containers (label '$label') ==="
-    # remote-run.sh names containers "ores-nats-<label>" and
+    echo "=== Stopping NATS, pooler + services containers (label '$label') ==="
+    # remote-run.sh names containers "ores-nats-<label>",
+    # "ores-pgbouncer-<label>" and
     # "ores-<service-dotted-to-dashes>-<label>" -- remove them all, scoped
     # to this label so other environments' containers are left alone.
     for c in $(podman ps -aq --filter "name=ores-.*-${label}" 2>/dev/null); do

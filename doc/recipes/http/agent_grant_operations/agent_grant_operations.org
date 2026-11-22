@@ -1,0 +1,129 @@
+:PROPERTIES:
+:ID: DC5484A1-587E-5912-9DCB-2052FA14739E
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: http_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I call the agent_grant_operations endpoints over HTTP?
+#+description: Every endpoint the agent_grant_operations resource answers over HTTP, with the request each one exports into the gateway's recipe library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:http:agent_grant_operations:
+
+This file documents the agent_grant_operations resource over HTTP, one section per endpoint. Every section exports its own Hurl file into =projects/ores.http/scripts/library/=. Running a file sends that one request, so a failure names the endpoint it came from.
+
+* Endpoints
+
+** =POST /api/v1/iam/agent_grants/put=
+:PROPERTIES:
+:ID: 5FD1F26D-5D29-58D6-8468-4D27BE29F52A
+:END:
+
+Create agent grant. It needs a session.
+
+It forwards to =iam.v1.agent_grants.put=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/iam/agent_grants/put
+#+end_example
+
+#+name: agent_grant_operations-create-agent-grant
+#+begin_src hurl :tangle agent_grant_operations-create-agent-grant.hurl :exports none
+POST {{base_url}}/api/v1/iam/agent_grants/put
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/iam/ops/create_agent_key=
+:PROPERTIES:
+:ID: 79469AB4-F2EB-5F6F-A957-84FCC0B92BF5
+:END:
+
+Create agent key. It needs a session.
+
+It forwards to =iam.v1.ops.create_agent_key=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/iam/ops/create_agent_key
+#+end_example
+
+#+name: agent_grant_operations-create-agent-key
+#+begin_src hurl :tangle agent_grant_operations-create-agent-key.hurl :exports none
+POST {{base_url}}/api/v1/iam/ops/create_agent_key
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/iam/ops/revoke_agent_grant=
+:PROPERTIES:
+:ID: 4B02DA50-79EF-5086-AD87-C17B4F0A2083
+:END:
+
+Revoke agent grant. It needs a session.
+
+It forwards to =iam.v1.ops.revoke_agent_grant=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/iam/ops/revoke_agent_grant
+#+end_example
+
+#+name: agent_grant_operations-revoke-agent-grant
+#+begin_src hurl :tangle agent_grant_operations-revoke-agent-grant.hurl :exports none
+POST {{base_url}}/api/v1/iam/ops/revoke_agent_grant
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/iam/ops/revoke_agent_key=
+:PROPERTIES:
+:ID: C97C237D-CB2E-5690-8F7D-F7204BB0118C
+:END:
+
+Revoke agent key. It needs a session.
+
+It forwards to =iam.v1.ops.revoke_agent_key=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/iam/ops/revoke_agent_key
+#+end_example
+
+#+name: agent_grant_operations-revoke-agent-key
+#+begin_src hurl :tangle agent_grant_operations-revoke-agent-key.hurl :exports none
+POST {{base_url}}/api/v1/iam/ops/revoke_agent_key
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/iam/ops/list_own_agent_grants=
+:PROPERTIES:
+:ID: E357A951-4F77-5BC1-8F8B-546E22737657
+:END:
+
+List own agent grants. It needs a session.
+
+It forwards to =iam.v1.ops.list_own_agent_grants=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/iam/ops/list_own_agent_grants
+#+end_example
+
+#+name: agent_grant_operations-list-own-agent-grants
+#+begin_src hurl :tangle agent_grant_operations-list-own-agent-grants.hurl :exports none
+POST {{base_url}}/api/v1/iam/ops/list_own_agent_grants
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+

@@ -1,6 +1,7 @@
 :PROPERTIES:
 :ID: B4A01B2E-A25D-448B-BC85-06431ED326C9
 :ores.cpp.wire-codec.enabled: true
+:ores.cpp.http-route.enabled: true
 :END:
 #+title: ores.iam.agent_grant_messages
 #+description: Codegen operation model for creating and revoking agent grants and keys, and exchanging a key for a token.
@@ -37,6 +38,7 @@ it. [[id:A7E2942C-66AD-449C-B80B-CA789EBC34FA][Agent grants: delegated consent f
 :PROPERTIES:
 :subject: iam.v1.agent_grants.put
 :response: create_agent_grant_response
+:http_route: true
 :END:
 
 #+begin_src cpp :name comment
@@ -125,6 +127,7 @@ it. [[id:A7E2942C-66AD-449C-B80B-CA789EBC34FA][Agent grants: delegated consent f
 :PROPERTIES:
 :subject: iam.v1.ops.create_agent_key
 :response: create_agent_key_response
+:http_route: true
 :END:
 
 #+begin_src cpp :name comment
@@ -179,6 +182,7 @@ it. [[id:A7E2942C-66AD-449C-B80B-CA789EBC34FA][Agent grants: delegated consent f
 :PROPERTIES:
 :subject: iam.v1.ops.revoke_agent_grant
 :response: revoke_agent_grant_response
+:http_route: true
 :END:
 
 #+begin_src cpp :name comment
@@ -222,6 +226,7 @@ it. [[id:A7E2942C-66AD-449C-B80B-CA789EBC34FA][Agent grants: delegated consent f
 :PROPERTIES:
 :subject: iam.v1.ops.revoke_agent_key
 :response: revoke_agent_key_response
+:http_route: true
 :END:
 
 #+begin_src cpp :name comment
@@ -332,6 +337,7 @@ it. [[id:A7E2942C-66AD-449C-B80B-CA789EBC34FA][Agent grants: delegated consent f
 :PROPERTIES:
 :subject: iam.v1.ops.list_own_agent_grants
 :response: list_own_agent_grants_response
+:http_route: true
 :END:
 
 #+begin_src cpp :name comment

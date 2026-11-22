@@ -46,7 +46,7 @@ full catalogue through MCP's paginated =tools/list=, as an option.
 
 Grouping operations by the first segments of their paths gave 71 areas, too
 wide a first step ([[id:6DFC4BF5-65AC-4E75-90EA-FBDC1272E01C][How the model sees ORE's operations]]). The routes already belong to published
-areas: [[proj:doc/knowledge/architecture/http_route_inventory.org][The HTTP route inventory]] maps them to sixteen, from =access= to =workflow=, as design
+areas: [[id:34CB899A-D114-4B54-9A0E-E3BEE5FF49F2][The HTTP route inventory]] maps them to sixteen, from =access= to =workflow=, as design
 section 11.2 publishes them. Those are the catalogue's areas. The entity below
 an area, and the operation's name, are declared on the route; where the
 codegen generates a route, its model supplies both.
@@ -67,7 +67,7 @@ construction, and the OpenAPI document gains the same metadata.
 
 - [[id:47B179BF-C982-4BB1-AF4F-35E00B9D2750][Agents]] — the structure note that orders this cluster.
 - [[id:6DFC4BF5-65AC-4E75-90EA-FBDC1272E01C][How the model sees ORE's operations]] — the investigation behind the five tools and its measurements.
-- [[proj:doc/knowledge/architecture/http_route_inventory.org][The HTTP route inventory]] — answers the investigation's open question: the sixteen published areas are the catalogue's first step.
+- [[id:34CB899A-D114-4B54-9A0E-E3BEE5FF49F2][The HTTP route inventory]] — answers the investigation's open question: the sixteen published areas are the catalogue's first step.
 - [[id:5E479832-A0B2-4BC6-B008-BAD505F4E145][The MCP transport in ores.http]] — the methods that carry these tools.
 
 * Sources

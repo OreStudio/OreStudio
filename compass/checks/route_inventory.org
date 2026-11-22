@@ -53,7 +53,9 @@ derives. A row holds the line's text, and an empty row is an empty line.
 
 | line |
 |------|
-| \ |
+| :PROPERTIES: |
+| :ID: 34CB899A-D114-4B54-9A0E-E3BEE5FF49F2 |
+| :END: |
 | #+title: The HTTP route inventory |
 | #+description: Every route the BFF and ores.http answer today, read from the code that registers them, decided against the design's four-way rule, with the published area map and the composed views' obligations. |
 | #+type: knowledge |

@@ -1,0 +1,80 @@
+:PROPERTIES:
+:ID: 1123ACA9-A228-4A78-94F2-EE3E1C69BB8F
+:END:
+#+title: Correct one artefact prototype
+#+description: One staged row corrected and republished: the artefact rows of a dataset, the row opened as a record, the change, and the republish that carries it.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:dq:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+
+| Item          | Where                                        |
+|---------------+----------------------------------------------|
+| Prototype     | [[file:correct-one-artefact/][the prototype]] |
+| Gemini review | none                                         |
+| Group         | [[file:index.org][DQ prototypes]]                    |
+
+* Summary
+
+This prototype argues that a correction is two acts and not one: the staged row
+is saved, and then the dataset is republished to carry it, because a publish
+takes a dataset and never a row. The screen states the reach of each act before
+it is taken, so nobody is surprised that the target table still holds the old
+value after a save. It answers to
+[[id:FC857853-3657-4B61-AB19-4E264B28EB88][Correct one artefact]].
+
+It is throwaway. It reads no server, opens with no build and no session, and
+draws mock data. Its first half cannot be built today at all, which the page
+states rather than disguising.
+
+* Detail
+
+** What it argues
+
+- *A save is not a publish.* The two are separate acts with different reaches,
+  and the screen says which one has happened. A single "Save" that implied the
+  target changed would be the defect the prototype exists to prevent.
+- *The row is a record page.* Key, values, provenance and the change, in the
+  record screen's shape, because a staged row is a record with an editor.
+- *The other rows are the risk.* A correction republishes the dataset, so the
+  receipt's skipped count is what proves the correction disturbed nothing else.
+  One updated and 10,990 skipped is the successful outcome.
+- *The read is missing.* Nothing reads an artefact table over the bus, so the
+  first card is drawn as the shape the screen needs and the page says the server
+  does not carry it.
+
+** The screens
+
+Two cards on one page: the staged rows of the dataset, with a search and a count
+of what it read; and the chosen row as a record page, whose edit form states the
+reason and the commentary the system requires of a correction.
+
+** States, by query string
+
+=?row=<key>=, =?edit=1=, =?saved=1=, =?republished=1=, =?q=<text>=,
+=?gaps=0=. The bar at the foot walks the four states in order.
+
+** What is fake
+
+The dataset, its three rows, the change reasons, and both receipts. The search
+filters the mock rows client-side; a real screen would filter on the server, and
+the page says how many rows it read for that reason.
+
+** Where the code lives
+
+[[proj:doc/prototypes/dq/correct-one-artefact/][=doc/prototypes/dq/correct-one-artefact/=]]:
+=index.html=, =prototype.js=, and the shared =management.css= and
+=management.js=.
+
+** Verdict
+
+The two-act shape holds and is the part worth keeping. One question is left open:
+whether the republish can be narrowed to the corrected rows once the artefact
+tables are served, because running a whole dataset to change one value is
+tolerable only while the skipped count is trustworthy.
+
+* See also
+
+- [[file:index.org][DQ prototypes]] — the group this belongs to.
+- [[id:FC857853-3657-4B61-AB19-4E264B28EB88][Correct one artefact]] — the journey it answers.

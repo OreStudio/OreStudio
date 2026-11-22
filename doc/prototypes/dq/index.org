@@ -13,10 +13,12 @@
 
 Staged reference data and the act of publishing it: whether the installation
 holds what its valuations read, and what a publish does to the tables that carry
-it. Two prototypes answer to this group. The first draws the coverage screen, a
-roster by level beside the members of one bundle and the reason a member is not
-ready. The second draws the publish itself as five steps, with the preview that
-makes a run readable before it happens.
+it. Five prototypes answer to this group, one per journey. The first draws the
+coverage screen, a roster by level beside the members of one bundle and the
+reason a member is not ready. The second draws a bundle publish as five steps,
+with the preview that makes a run readable before it happens. The other three
+draw the narrower doors: one dataset on its own, one staged row corrected and
+republished, and a published value traced back to its dataset.
 
 The set was signed off on 2026-11-22, on the pages as they stand; each design
 note records it and the questions it hands to the build.
@@ -33,7 +35,11 @@ argues. Neither carries a review yet, so the review column says =none= for both.
 | Prototype              | What it argues | Open it | Review |
 |------------------------+----------------+---------+--------|
 | [[file:reference-data-coverage.org][Reference data coverage]] | That completeness is one screen, and that the level is the first thing it reads: a tenant holding a platform or world bundle would hold a second copy of a fact. The member table says what is staged, what is published, and which of four reasons keeps a member from being ready — because each reason has a different owner. The published figure is a count and not a tick, so a run that wrote nothing stays visible. | [[file:reference-data-coverage/][prototype]] | none |
+| [[file:publish-a-dataset.org][Publish a dataset]] | That one catalogue is a smaller screen than a set, and that its interesting fact is the destination: the staging table, the target table and the subject come from the artefact type, and the tenant from the level the dataset's bundle carries. None of the three is a control. The page also states the half the model cannot enforce: the dataset verb names no level, so nothing refuses a tenant that publishes a world dataset into itself. | [[file:publish-a-dataset/][prototype]] | none |
 | [[file:publish-a-bundle.org][Publish a bundle]] | That a bundle publish is a run a person reads before it happens: the members in the closure's order, the optional ones that publish only when asked, the mode, and the insert, update and skip counts per member. The target tenant is read from the bundle's level and never chosen, and the receipt says what a run leaves — which is not a history row, because nothing writes one. | [[file:publish-a-bundle/][prototype]] | none |
+
+| [[file:correct-one-artefact.org][Correct one artefact]] | That a correction is two acts: the staged row is saved, then the dataset is republished to carry it, because a publish takes a dataset and never a row. The page states the reach of each act, and the receipt's skipped count is what proves the other 10,990 rows were left alone. Its first card cannot be built today, because nothing reads an artefact table over the bus. | [[file:correct-one-artefact/][prototype]] | none |
+| [[file:trace-a-published-value.org][Trace a published value]] | That half the trace question is answerable: the provenance on a row walks back to the dataset that published it. The forward question — which trades reference the value — has no path, because a trade names a convention by a text column and no subject searches it. The page states the gap instead of drawing an empty list, which would read as "no trade uses this". | [[file:trace-a-published-value/][prototype]] | none |
 
 * Adding a prototype
 

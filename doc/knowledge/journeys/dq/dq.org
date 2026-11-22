@@ -39,12 +39,15 @@ the journey itself carries no state. See
 | Journey | Actor | Gist |
 |---------+-------+------|
 | [[id:5344ADC1-E729-4846-BE07-C6BC2169C4C9][Is my reference data complete?]] | data quality operator, tenant administrator | Read what the tenant holds at each level, name why a member is not ready, and publish what fills the gap |
+| [[id:23E34C1D-4C42-450A-BF19-E5165739D20C][Publish a dataset]] | data quality operator | Publish one catalogue, read the preview, and read what the run wrote |
+| [[id:4E233C8D-E3CA-4D37-AC43-1F81EF3AA133][Publish a bundle]] | data quality operator | Publish a set in dependency order, with its optional members and a receipt per member |
+| [[id:FC857853-3657-4B61-AB19-4E264B28EB88][Correct one artefact]] | data quality operator | Change one staged value and republish the dataset, and read that the other rows were skipped |
+| [[id:84DB1AC9-9384-43BB-A97A-2A17261DA50F][Find the trade a published value belongs to]] | data quality operator, market risk analyst | Walk a value back to the dataset that published it, and forward to what references it |
 
-Three more are named by
-[[id:34A4373F-1BD1-4710-885B-95B3C3A3B8F7][Design and build the DQ screens from
-the journeys]] and are not written yet: publishing one dataset, publishing a
-bundle, correcting a single artefact, and finding the trade a published value
-belongs to.
+The five cover the question, the two doors into a publish, the correction and the
+trace. Two of them are partly answered by the tree and say so: the trace cannot
+find the trades that reference a value, because the reference is text and no
+subject searches it.
 
 * Related
 

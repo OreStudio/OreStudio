@@ -2,12 +2,12 @@
 :ID: 153D67F4-F420-4983-AA3F-0A3246477BEE
 :END:
 #+title: How do I discover the physical-space catalogue?
-#+description: Use compass codegen entity archetypes to list every ores.* address in TS/facet/archetype notation, or an entity's supported set with per-archetype enabled/disabled status.
+#+description: Read the technical-space and facet pages in the codegen template library; each facet page lists its archetypes, templates and admitted model types.
 #+type: recipe
 #+level: cross
 #+filetags: :codegen:compass:entity:archetypes:recipe:
 #+created: 2026-07-19
-#+updated: 2026-07-19
+#+updated: 2026-11-22
 
 The physical space is the graph of =ores.*= technical-space/facet/archetype
 nodes under [[proj:projects/ores.codegen/library/templates][=projects/ores.codegen/library/templates/=]] that
@@ -22,70 +22,30 @@ entity will generate and why others are excluded?
 
 * Answer
 
-With no arguments, =archetypes= prints the full catalogue grouped by
-technical space (TS) and facet, each archetype shown with its source
-template:
+The catalogue is the set of pages in
+[[proj:projects/ores.codegen/library/templates][=projects/ores.codegen/library/templates=]]. Each technical space
+(=ores.cpp.org=, =ores.sql.org=, =ores.cmake.org= and the rest) and each facet
+(=ores.cpp.domain.org=, =ores.cpp.repository.org= and so on) has its own page.
+A facet page names the model types it admits (=#+model_types:=), its default,
+and each archetype with its template. List the facets:
 
-#+begin_src sh :results verbatim
-./compass.sh codegen entity archetypes
+#+begin_src sh
+git grep -l '^#+type: facet' -- projects/ores.codegen/library/templates
 #+end_src
 
-Narrow to one TS or facet with =--address= (always the full =ores.*= form —
-the same value =--address= takes everywhere else in =codegen entity=):
-
-#+begin_src sh :results verbatim
-./compass.sh codegen entity archetypes --address ores.cpp
-./compass.sh codegen entity archetypes --address ores.cpp.repository
-#+end_src
-
-With =--entity=, the same tree is shown annotated with ✅/❌ per TS, facet,
-and archetype — computed from the entity's model type (facet
-=#+model_types=) and its =:ores.*.enabled:= property-drawer overrides
-(most-specific wins, resolved by [[proj:projects/ores.codegen/src/codegen/physical_space.py][=codegen/physical_space.py=]], the B5
-supported-set engine). Each ❌ names the reason: an inadmissible model
-type, an explicit =:ores.*.enabled: false= override (naming the exact key
-that matched), or a facet/archetype =#+default: disabled=.
-
-#+begin_src sh :results verbatim
-./compass.sh codegen entity archetypes --entity badge_mapping_junction --address ores.cpp
-#+end_src
-
-#+begin_example
-Supported set for: badge_mapping_junction  (junction, dq)
-  ores.* bindings: :ores.cpp.protocol.enabled: false, :ores.cpp.service.enabled: false, ...
-
-ores.cpp  ✅ [technical space — in supported set]
-  ores.cpp.domain  ✅ [facet — model types: schema domain_entity junction]
-    ores.cpp.domain.class_header       ✅  cpp_domain_type_class.hpp.mustache
-    ...
-  ores.cpp.protocol  ❌ [facet — excluded by :ores.cpp.protocol.enabled: false]
-    ores.cpp.protocol.protocol_header  ❌  cpp_protocol.hpp.mustache  (excluded by :ores.cpp.protocol.enabled: false)
-  ores.cpp.service  ❌ [facet — excluded by :ores.cpp.service.enabled: false]
-    ores.cpp.service.service_header    ❌  cpp_service.hpp.mustache  (excluded by :ores.cpp.service.enabled: false)
-#+end_example
-
-=--address= and =--entity= combine — the tree is narrowed to that address
-first, then annotated. Every address printed (catalogue or entity mode) is
-a valid =--address= value for =compass codegen entity generate=.
+A model turns a facet or archetype off with an =:ores.*.enabled: false=
+property, the most specific key winning. To see what a model actually feeds,
+run =./compass.sh diff --scope <model>=: it reports the count of outputs.
 
 * Script
 
-=archetypes= is implemented as =_cmd_archetypes= in
-[[proj:projects/ores.compass/src/compass_codegen_entity.py][=projects/ores.compass/src/compass_codegen_entity.py=]], dispatched from
-=run()= in the same file. It delegates all graph loading and supported-set
-resolution to [[proj:projects/ores.codegen/src/codegen/physical_space.py][=codegen/physical_space.py=]] (=load_graph=,
-=compute_target_set=, =_enabled_overrides=) — no new physical-space logic,
-only presentation.
+The pages are data that compass-ng's =codegen= codec reads; nothing else
+renders the catalogue.
 
 * Tested by
 
-Manual: run =./compass.sh codegen entity archetypes --entity
-badge_mapping_junction --address ores.cpp= (a junction with
-=:ores.cpp.service.enabled: false= in its model) and verify every
-=ores.cpp.service.*= archetype shows ❌ with that key named as the reason;
-run with a =domain_entity= entity and =--address ores.sql.schema= and
-verify =sql.schema.junction_create= / =sql.schema.table_create= show ❌
-(model type not admitted) while =sql.schema.domain_entity_create= shows ✅.
+Run the =git grep= and verify that it lists the facet pages, among them
+=ores.cpp.domain.org=.
 
 * See also
 

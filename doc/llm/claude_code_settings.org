@@ -62,7 +62,6 @@ last section in each array carries no comma.
 <<perm-build>>,
 <<perm-sql>>,
 <<perm-compass>>,
-<<perm-codegen>>,
 <<perm-tests>>,
 <<perm-vcs>>,
 <<perm-gh-pr>>,
@@ -262,29 +261,11 @@ cd /mnt/development/Development/OreStudio/ores_dev_brave_hopper && ./compass.sh 
 
 ** Code generation
 
-=codegen.sh= is the main entry point for C++ and SQL
-code generation via =ores.codegen= (=regenerate=, =generate=
-subcommands). compass-ng's =er_diagram= codec writes the PlantUML ER
-diagrams on =./compass.sh generate=.
-
-The grant is per-script rather than per-directory for the same reason
-as SQL: a directory wildcard would permit running arbitrary scripts in
-a large codegen tree.
-
-*Invocation convention:* always call codegen using one of the relative
-forms below from the project root — with or without the =./= prefix.
-Never use an absolute path; absolute paths do not match the patterns
-below and trigger a permission prompt.
-
-Common invocations:
-- =./projects/ores.codegen/codegen.sh regenerate --component refdata --address ores.cpp=
-- =projects/ores.codegen/codegen.sh regenerate --component refdata --address ores.cpp=
-- =projects/ores.codegen/codegen.sh generate --model path/to/model.json --address ores.cpp=
-
-#+begin_src json :tangle no :noweb-ref perm-codegen
-      "Bash(./projects/ores.codegen/codegen.sh *)",
-      "Bash(projects/ores.codegen/codegen.sh *)"
-#+end_src
+=./compass.sh generate= writes every generated file and =./compass.sh diff=
+previews the change; both forward to compass-ng, and the compass grant above
+covers them. compass-ng's =er_diagram= codec also writes the PlantUML ER
+diagrams. No separate code generation script needs a grant: the Python
+generator and its =codegen.sh= wrapper are deleted.
 
 ** Test execution
 

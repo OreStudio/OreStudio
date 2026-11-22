@@ -87,7 +87,7 @@ route_repository::read_latest_all_tenants(context ctx) {
 After editing the org model run:
 
 #+begin_src sh
-./compass.sh codegen entity generate <entity>
+./compass.sh generate --scope <path/to/model.org>
 #+end_src
 
 The generated =.hpp= will contain the declaration and the generated

@@ -42,11 +42,9 @@ justification before proceeding.
 ** Generate and integrate each layer
 
 #+begin_src sh
-# SQL (table DDL, trigger, RLS, artefact table)
-./compass.sh codegen entity generate <entity> --address ores.sql.schema
-
-# C++ API and core (domain type, repository, service, handler)
-./compass.sh codegen entity generate <entity> --address ores.cpp
+# Every layer the model admits: SQL schema, then C++ API, core and service
+./compass.sh diff --scope projects/ores.<component>/modeling/ores.<component>.<entity>.org
+./compass.sh generate --scope projects/ores.<component>/modeling/ores.<component>.<entity>.org
 #+end_src
 
 Follow the [[id:0CBA2F23-7F5F-433D-921A-D9C056BD9CA8][compass-codegen-add-entity]] skill for CMakeLists integration,

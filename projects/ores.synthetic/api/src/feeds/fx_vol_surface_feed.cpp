@@ -26,6 +26,7 @@
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.refdata.core/mapping/fx_option_convention_mapping.hpp"
+#include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <chrono>
 #include <format>
@@ -51,6 +52,11 @@ using ores::analytics::quant::service::tick_context;
 using ores::analytics::quant::service::run_market;
 
 namespace {
+
+auto& fx_vol_surface_feed_lg() {
+    static auto instance = ores::logging::make_logger("ores.synthetic.api.fx_vol_surface_feed");
+    return instance;
+}
 
 constexpr int days_in_a_year = 365;
 
@@ -172,6 +178,10 @@ std::string fx_pair_member_code(std::string_view base, std::string_view quote) {
     return std::string(base) + "/" + std::string(quote);
 }
 
+std::string curve_member_code(const boost::uuids::uuid& collection, std::string_view currency) {
+    return boost::uuids::to_string(collection) + "/" + std::string(currency);
+}
+
 std::expected<fx_vol_market_inputs, std::string>
 fx_vol_board_inputs(const ores::analytics::quant::domain::market_board& values,
                     ores::analytics::quant::domain::market_board::member_id base_curve,
@@ -243,12 +253,13 @@ fx_vol_surface_feed::fx_vol_surface_feed(
     // by the one function its feed publishes it under, so the two agree by construction.
     {
         auto& values = market_.values();
-        base_curve_id_ =
-            values.member_of(ores::analytics::quant::domain::market_member_kind::curve, base);
-        quote_curve_id_ =
-            values.member_of(ores::analytics::quant::domain::market_member_kind::curve, quote);
-        spot_id_ = values.member_of(ores::analytics::quant::domain::market_member_kind::spot,
-                                    fx_pair_member_code(base, quote));
+        using ores::analytics::quant::domain::market_member_kind;
+        board_ = {.base_curve = values.member_of(market_member_kind::curve,
+                                                 curve_member_code(input.config.config_id, base)),
+                  .quote_curve = values.member_of(market_member_kind::curve,
+                                                  curve_member_code(input.config.config_id, quote)),
+                  .spot =
+                      values.member_of(market_member_kind::spot, fx_pair_member_code(base, quote))};
     }
     // The expiry each market is solved at, in the order the emitter quotes them: the emitter
     // sorted the expiries, so the periods are taken from its order rather than sorted again,
@@ -297,23 +308,37 @@ void fx_vol_surface_feed::start() {
         [this](const tick_context& context) { return tick(context); });
 }
 
+std::string fx_vol_surface_feed::refuse(std::string reason) {
+    if (reason != refusal_) {
+        ORES_LOG_SEV(fx_vol_surface_feed_lg(), ores::logging::warn)
+            << "Synthetic surface '" << source_name_ << "' publishes nothing: " << reason;
+        refusal_ = reason;
+    }
+    return "no market: " + reason;
+}
+
 std::string fx_vol_surface_feed::tick(const tick_context& context) {
     // The normals come from the market, one for each forward variance and one for each driver.
     // A surface the market does not drive publishes nothing: its block was never in the market
     // the run built, and stepping it on nothing would move it on noise nobody chose.
     const auto wanted = static_cast<std::size_t>(emitter_.surface().expiries.size() + 2);
     if (context.drivers.size() != wanted)
-        return std::format("no market: {} of {} driver(s)", context.drivers.size(), wanted);
+        return refuse(std::format("{} of {} driver(s)", context.drivers.size(), wanted));
     // The market of each expiry, from the three values this surface reads: the pair's spot
     // and its two currencies' curves. A curve moves when its feed ticks, so a strike moves
     // with it and no restart is needed.
     const auto inputs =
-        fx_vol_board_inputs(market_.values(), *base_curve_id_, *quote_curve_id_, *spot_id_);
+        fx_vol_board_inputs(market_.values(), board_.base_curve, board_.quote_curve, board_.spot);
     if (!inputs)
-        return "no market: " + inputs.error();
+        return refuse(inputs.error());
     if (const auto built = fx_vol_expiry_markets(*inputs, expiry_periods_, expiry_rule_, markets_);
         !built)
-        return "no market: " + built.error();
+        return refuse(built.error());
+    if (!refusal_.empty()) {
+        ORES_LOG_SEV(fx_vol_surface_feed_lg(), ores::logging::info)
+            << "Synthetic surface '" << source_name_ << "' publishes again";
+        refusal_.clear();
+    }
     const auto points = emitter_.step(context.drivers, markets_);
     const auto& codec = ores::nats::default_wire_codec();
     const auto now = context.observed_at;

@@ -66,23 +66,6 @@ generates cleanly, work through the [[id:7404E44E-06AB-4DDB-8A85-294ED3B4051C][p
 fixed manual integration steps (registrar wiring, NATS event-relay
 wiring, ...) codegen does not and will not wire up for you.
 
-** Wire the component (first entity in a component only)
-
-If =projects/ores.<component>/modeling/= is the first org model in
-this component, add a =modeling_dir= entry to the component's
-=COMPONENTS= record in
-[[proj:projects/ores.codegen/src/codegen/manifest.py][=projects/ores.codegen/src/codegen/manifest.py=]]:
-
-#+begin_src python
-"<component>-cpp": Component(
-    name="<component>-cpp",
-    modeling_dir="projects/ores.<component>/modeling",
-),
-#+end_src
-
-Existing components that already have =modeling_dir= set need no change
-to add another entity.
-
 ** Regenerate
 
 #+begin_src sh :results verbatim
@@ -92,8 +75,8 @@ to add another entity.
 compass-ng renders the new model at every address it supports, with the
 rest of what changed.
 
-Codegen discovers models through =modeling_dir= alone: org files whose
-=#+type:= says =ores.codegen.entity=.
+compass-ng finds the model by its =#+type: ores.codegen.entity= line, so
+the first entity of a component needs no registration.
 
 * Script
 

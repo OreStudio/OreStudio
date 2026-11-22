@@ -61,10 +61,10 @@ Do not write the unit. Generate it.
 
 5. *Refresh the part file lists.* The part declares =#+component_kind: adapter=,
    so codegen owns its two file lists. The scan is a directory listing, and
-   only this script writes it:
+   compass-ng's =component_files= codec writes it:
 
    #+begin_src sh
-   projects/ores.codegen/venv/bin/python projects/ores.codegen/scripts/regenerate_cmake_component_files.py --component ores.shell.{component}
+   ./compass.sh generate
    #+end_src
 
 6. *Build and test.*

@@ -56,12 +56,11 @@ under =datasets/<name>/=. Each dataset has:
   (name, version, methodology, contents, see-also).
 - Optional companion files (e.g. =methodology.txt=).
 
-The seeder is thin: =seeder.sh= delegates to
-=ores.codegen.generator= which renders the mustache templates
-(=sql_catalog_populate.mustache=,
-=sql_country_populate.mustache=, ...) against each JSON. Templates
-*stay in =ores.codegen/library/templates/== — the seeder does
-not own them.
+The seeder is thin: each dataset's =generate_sql.py= writes its SQL,
+and compass-ng's =conventions_dataset= codec checks the conventions one.
+Its mustache templates (=sql_catalog_populate.mustache=,
+=sql_country_populate.mustache=, ...) *stay in
+=ores.codegen/library/templates/== — the seeder does not own them.
 
 * Roadmap: synthesised flavour (not built)
 
@@ -99,9 +98,9 @@ ready when a use case appears.
 
 * Entry points
 
-- =seeder.sh generate <dataset>= — primary CLI; renders all
-  artefacts declared in the dataset's =model.json=.
-- =src/seeder.py= — thin shim that imports =codegen.generator=.
+- =python3 projects/ores.seeder/datasets/<dataset>/generate_sql.py= —
+  writes the dataset's SQL.
+- =src/seeder.py= — a placeholder module for future synthesised data.
 
 * Dependencies
 

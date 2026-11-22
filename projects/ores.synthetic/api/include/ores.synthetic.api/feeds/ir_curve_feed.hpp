@@ -86,6 +86,7 @@ public:
                   std::string currency_code,
                   std::string index_tenor,
                   std::string role,
+                  std::optional<std::string> board_curve_code,
                   std::unique_ptr<ores::analytics::quant::domain::i_yield_curve_process> process,
                   const ores::analytics::quant::domain::arrival_spec& arrival,
                   std::vector<ir_curve_resolved_entry> entries,

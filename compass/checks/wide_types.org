@@ -325,7 +325,7 @@ when its type sheds fields; remove it when the type is at or under fifteen.
 | projects/ores.reporting/core/include/ores.reporting.core/repository/ore_file_entity.hpp | ore_file_entity | 20 |
 | projects/ores.reporting/core/include/ores.reporting.core/repository/report_metric_entity.hpp | report_metric_entity | 20 |
 | projects/ores.synthetic/api/include/ores.synthetic.api/domain/variance_calibration_input.hpp | variance_calibration_input | 20 |
-| projects/ores.synthetic/api/include/ores.synthetic.api/feeds/fx_vol_surface_feed.hpp | fx_vol_surface_feed | 20 |
+| projects/ores.synthetic/api/include/ores.synthetic.api/feeds/fx_vol_surface_feed.hpp | fx_vol_surface_feed | 19 |
 | projects/ores.synthetic/api/include/ores.synthetic.api/messaging/feed_config_protocol.hpp | feed_start | 20 |
 | projects/ores.synthetic/api/include/ores.synthetic.api/messaging/ir_curve_generation_config_protocol.hpp | ir_curve_generation_config_write | 20 |
 | projects/ores.synthetic/core/include/ores.synthetic.core/repository/calibration_policy_entity.hpp | calibration_policy_entity | 20 |

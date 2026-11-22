@@ -2,12 +2,12 @@
 :ID: 872903C8-1522-49EA-A378-647FA6F48C4F
 :END:
 #+title: How do I preview entity codegen changes as a diff?
-#+description: Use compass codegen entity generate --diff to generate into a temp dir and view a unified diff against on-disk files without writing anything.
+#+description: Run ./compass.sh diff --scope on the entity model to see, as a unified diff, what generate would change; nothing is written.
 #+type: recipe
 #+level: cross
 #+filetags: :codegen:compass:entity:diff:recipe:
 #+created: 2026-06-26
-#+updated: 2026-06-26
+#+updated: 2026-11-22
 
 Useful when a template has changed and you want to audit the impact on a
 specific entity before committing any regenerated files. See
@@ -20,59 +20,36 @@ to disk?
 
 * Answer
 
-Pass =--diff= to =compass codegen entity generate=:
+Run =diff= scoped to the entity's model:
 
 #+begin_src sh
-./compass.sh codegen entity generate country --diff
+./compass.sh diff --scope projects/ores.refdata/modeling/ores.refdata.country.org
 #+end_src
 
-This generates the entity's full supported set into a temp directory and
-prints a unified diff against the on-disk files. Nothing is written to the
-working tree.
-
-To restrict to one facet:
+It prints a unified diff of every output the model feeds that =generate= would
+change, and writes nothing. It exits 0 when nothing would change and 1 when
+something would. =--scope= also takes a template, to audit what a template
+change does to the tree:
 
 #+begin_src sh
-./compass.sh codegen entity generate country --address ores.sql.schema --diff
+./compass.sh diff --scope projects/ores.codegen/library/templates/sql_schema_domain_entity_create.mustache
 #+end_src
 
-Sample output:
-
-#+begin_example
-Diffing country (domain_entity, refdata) — ores.sql.schema
---- a/projects/ores.sql/create/refdata/refdata_countries_create.sql
-+++ b/projects/ores.sql/create/refdata/refdata_countries_create.sql
-@@ -17,15 +17,16 @@
--/*
-+/**
-  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
-- * Template: sql_schema_create.mustache
-+ * Template: sql_schema_domain_entity_create.mustache
-  * To modify, update the template and regenerate.
-...
-#+end_example
-
-If there are no differences, the command prints =✅ No differences.= and
-exits 0. If differences exist it exits 1 — useful in CI scripts.
-
-=--diff= and =--dry-run= are mutually exclusive. Use =--dry-run= to list
-output paths; use =--diff= to see content changes.
+=--files= lists every changed file in place of counts by codec and template,
+and =--skip-stale= leaves out the files already stale at =HEAD=, so the diff
+is your change's own.
 
 * Script
 
-=--diff= is handled by =_diff_entity= in
-[[proj:projects/ores.compass/src/compass_codegen_entity.py][=projects/ores.compass/src/compass_codegen_entity.py=]]. It calls
-=generate_from_model= from =codegen.core= directly, capturing stdout and
-suppressing logging to keep diff output clean.
+=./compass.sh generate= and =./compass.sh diff= forward to compass-ng through
+=cmd_compass_ng= in [[proj:projects/ores.compass/src/compass.py][=compass.py=]]; its =codegen= codec renders the templates
+of [[proj:projects/ores.codegen/library/templates][=projects/ores.codegen/library/templates=]].
 
 * Tested by
 
-Run =./compass.sh codegen entity generate country --address ores.sql.schema --diff=
-against a stale entity and verify a non-empty unified diff is printed with
-no spurious log lines.
+Change one property of a model, run the scoped =diff=, and verify that it
+shows the change in that model's outputs only.
 
 * See also
 
 - [[id:8010834F-9179-4ECD-999D-5D017D393D36][How do I generate a codegen entity?]]
-- [[id:839B1943-34A9-443B-9483-CFC45D6A7644][How do I diff generated files for an entity?]]
-- [[id:BF893756-546E-4EAF-BB3C-C88BD16B3935][How do I show generated files for a codegen entity?]]

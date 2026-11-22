@@ -32,25 +32,22 @@ per invocation; the composite components (=ores.dq=, =ores.iam=,
 * How to use this skill
 
 Run the steps in order. No step is skippable, and partial codegen
-coverage is not a valid end state. The drift check lives at
-=projects/ores.codegen/scripts/check_component_drift.py= and runs in two
-modes: =--component <name>= regenerates one component in place and
-exits non-zero on any diff against the checked-in files or on any
-untracked file the regeneration materializes; =--all= runs the same
-check over the shared =COMPONENTS_UNDER_TEST= list in
-=component_registry.py=, the set the
-compass-pr-raise gate covers. Measure a component not yet at zero drift with
-=--component=; it cannot pass =--all= until it joins the list.
-This is the tool that measures, the surveys and regenerations below do
-the work.
+coverage is not a valid end state. The drift check is compass-ng's
+=codegen= codec. =./compass.sh diff --scope <model>= shows what one model's
+outputs would become, and =./compass.sh check --codec codegen= reports every
+generated file that differs from what the codec renders, over the
+=COMPONENTS_UNDER_TEST= list in =component_registry.py=. compass-ng writes
+only files whose content differs, so a regeneration's diff is its change and
+nothing else. This is the tool that measures, the surveys and regenerations
+below do the work.
 
-1. *Establish the baseline before any model edit.* Regenerate the
-   component's models with the files untouched and diff against the
-   checked-in output. Whatever differs is pre-existing drift: record
+1. *Establish the baseline before any model edit.* Run
+   =./compass.sh diff --scope= on each of the component's models with the
+   files untouched. Whatever differs is pre-existing drift: record
    it and revert the output. A later diff is attributable only against
    this baseline. Both pilots found real codegen bugs this way, before
    touching any model: the pilot's =currency_calendar= had stale
-   includes and missing facets; the dq run's =org_loader.py= never read
+   includes and missing facets; the dq run's model loader never read
    the =lookup_entity= primary-key heading and silently corrupted DDL
    for every lookup entity in the repo.
 
@@ -66,7 +63,7 @@ the work.
 
 3. *Compute resolved feature values.* For each entity, read the
    features the profile catalogue assigns and the entity's own
-   properties, and resolve defaults the way =org_loader.py= does.
+   properties, and resolve defaults the way the =codegen= codec does.
    Compare *every* profile-assigned feature against the entity's
    actual resolved value, not only the features the entity already
    sets: an unset feature that the profile fixes to a value is a real
@@ -96,8 +93,10 @@ the work.
    that baseline — zero *additional* diff — before keeping the edit;
    otherwise revert and flag it. Any additional diff is a bug in the
    profile, the matching, or a template: find the root cause in
-   =org_loader.py=, the template, or the archetype, fix it at the
+   the model, the template, or the archetype, fix it at the
    source, and add a regression test. Workarounds are not a fix.
+   Scope each regeneration with =--scope <model>=, so the diff holds that
+   entity's outputs alone.
    Regenerate a second time and require byte-identical output: the
    component's regeneration must be idempotent.
 
@@ -135,8 +134,8 @@ the work.
    =codegen= codec then checks that list: =./compass.sh check= runs it
    before a PR, and =compass-check.yml= runs it on every push to main. The gate lands
    only on a component at verified zero drift: it enforces the method,
-   it does not replace it. Run =--all= once more before the PR that
-   lands the gate.
+   it does not replace it. Run =./compass.sh check --codec codegen= once
+   more before the PR that lands the gate.
 
 ** Exception: an entity too complex to code-generate
 

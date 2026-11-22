@@ -1,0 +1,127 @@
+:PROPERTIES:
+:ID: 5549B26A-16CF-4FBE-AC51-75202A1CD51E
+:END:
+#+title: Task: Publish every vendor volatility surface on the quotes board
+#+description: Strike each synthetic surface against its own collection's discounting curve, so all fourteen surfaces publish their vendor quotes.
+#+type: task
+#+level: s1
+#+filetags: :marketdata:synthetic:volatility:vendor_quotes_of_a_latent_surface:sprint_30:v0:
+#+owner: marco
+#+branch: feature/show-vol-quotes-on-the-quotes-board
+#+pr: 5004
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8EC92006-17BB-4575-BA13-2BE5ED5327C3][Build each party's volatility surfaces from vendor quotes of a latent surface]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The quotes screen shows the observed volatility quotes each vendor contributes to the latent FX volatility surfaces, for every pair the Bloomberg collection quotes.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:8EC92006-17BB-4575-BA13-2BE5ED5327C3][Build each party's volatility surfaces from vendor quotes of a latent surface]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-22                               |
+
+* Acceptance
+
+- Each of the fourteen synthetic surfaces publishes bloomberg, ice and tradeweb quotes in a provisioned ACME environment.
+- The quotes board of an ACME party carries 910 fx_option quotes for each of bloomberg, ice and tradeweb.
+- A surface that publishes nothing logs why, once, and logs again when it publishes.
+
+* Plan
+
+The quotes screen showed no vendor volatility quotes. The vendor
+surfaces are generated, offered and demanded, but eleven of the fourteen
+surfaces refused every tick: each tick reads the pair's two currency
+curves from the run's board, and the board held one curve per currency
+that every curve feed wrote. A USD LIBOR curve, the FOMC short end and
+the Uniform Volatility Demo collection's three-pillar curves all end
+before a surface's longest expiry, so whichever ticked last decided the
+board, and the surface published nothing.
+
+1. Show the failure with a test: a projection curve's tick publishes its
+   currency's board curve.
+2. Let only the curve that discounts a currency write the board: a
+   discount or self-discounting curve on the overnight index.
+3. Name a board curve by its collection as well as its currency, so a
+   surface reads its own vendor's curves.
+4. Log why a surface publishes nothing, once when the reason changes, so
+   the next failure of this kind is visible.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Surfaces with vendor ticks in 8 minutes, before the fix | 0 of 14 | =compass sql -- -v since=... -f vol_pairs_since.sql= (ticks joined to tick coords, =instrument=fx_option=) | b878dc6782 |
+| Surfaces with vendor ticks in 8 minutes, after the fix | 14 of 14 | same | f8918e50da |
+| Vendor =fx_option= quotes on Acme Corporation Plc's quotes board, after the fix | 910 each for bloomberg, ice and tradeweb | =GET /api/marketdata/quotes?after=N=, paged | f8918e50da |
+| =ores.synthetic.api.tests= | 1069 test cases, 10049 assertions, all pass | =ores.synthetic.api.tests= | b3d23d5e41 |
+
+* Notes
+
+- The refusal reasons came from a temporary log of the surface tick's
+  status, which the scheduler drops: =the quote curve ends at 2028-11-22,
+  before 2029-11-23= and =the base curve ends at 2036-11-22, before
+  2036-11-24=. The permanent log in this task replaces it.
+- Spots stay keyed by pair. The surface's quotes do not depend on the
+  spot's level once the discounts are held (the design note measures it
+  to 1e-12), so another collection's spot changes nothing a vendor quotes.
+- Provisioning step 66, =give_party_surface_blueprints=, still ends with
+  warnings: the parties' blueprints wait for derived quotes. That is the
+  derived end-of-day source, not the vendor quotes, and is out of scope.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5004][#5004]] | [synthetic] Publish every vendor volatility surface on the quotes board |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The predicate's comment still said one curve per currency | =ir_curve_template_resolver.hpp= | accept | Fixed in 3c52f2d6ce |
+| 2 | Changed lines not clang-formatted | five files | accept | Fixed in 8789467685 |
+| 3 | =fx_vol_surface_feed= over its 20-field ceiling | =fx_vol_surface_feed.hpp= | accept | The three board members are one value, b3d23d5e41 |
+| 4 | Misspell check | changed paths | accept | Clean, exit 0 |
+
+* Result
+
+Every vendor volatility surface publishes. In a fresh ACME environment
+all fourteen synthetic surfaces publish their bloomberg, ice and
+tradeweb quotes, and the quotes board of Acme Corporation Plc carries
+910 =fx_option= quotes for each of the three vendors: fourteen pairs,
+thirteen expiries, five points each. A curve now writes the run's board
+only when it discounts its currency, and a board curve is named by its
+collection and its currency. A surface that publishes nothing logs why.
+All three acceptance criteria are met.

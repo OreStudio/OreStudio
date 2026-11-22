@@ -23,10 +23,20 @@
 #include "ores.marketdata.api/conventions/convention_lookup.hpp"
 #include "ores.synthetic.api/domain/trade_population_plan.hpp"
 #include <chrono>
+#include <set>
 #include <string>
 #include <vector>
 
 namespace ores::synthetic::tests {
+
+/**
+ * @brief The fixing addresses the Products market serves: one curve for each
+ * index the example's swaps float on.
+ */
+inline std::set<std::string> ore_example_served_fixing_uris() {
+    return {"oresmd://ir/EUR?type=fixing&index=ibor&name=EURIBOR&tenor=6M",
+            "oresmd://ir/USD?type=fixing&index=ibor&name=LIBOR&tenor=3M"};
+}
 
 /**
  * @brief The conventions of ORE's Products example the generated trades build
@@ -162,6 +172,7 @@ inline domain::trade_generation_scope trade_generation_scope_recipe() {
     scope.currency_pairs = {{.base = "EUR", .quote = "USD"}, {.base = "GBP", .quote = "USD"}};
     scope.credit_reference_entities = {"529900T8BM49AURSDO55", "5493001KJTIIGC8Y1R12"};
     scope.conventions = ore_example_conventions();
+    scope.served_fixing_uris = ore_example_served_fixing_uris();
     // The curve a bond is discounted on, as a generation config names it; the
     // Products example builds this one.
     scope.reference_curve_id = "EUR-EURIBOR-6M";

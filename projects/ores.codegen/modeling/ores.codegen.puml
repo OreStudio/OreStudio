@@ -29,16 +29,15 @@ package "Inputs" #E8F4FD {
 }
 
 package "Generators" #F2F2F2 {
-    [codegen.py\n(C++ / SQL / TypeScript)] as gen
     [doc_generate.py\n(org documents)] as docgen
     [fpml_parser.py\n(FPML XML → JSON)] as fpml
-    [plantuml_er_generate.py\n(ER diagrams)] as ergen
+    [plantuml_er_parse_sql.py\n(SQL parser)] as ergen
 }
 
-package "Shell Wrappers" #FFF8E8 {
-    [codegen.sh] as gensh
-    [plantuml_er_generate.sh] as ersh
-    [validate_docs.sh] as valsh
+package "compass-ng" #FFF8E8 {
+    [codegen codec\n(C++ / SQL / TypeScript)] as gen
+    [er_diagram codec] as ersh
+    [component_docs codec] as valsh
 }
 
 package "Outputs" #E8FDE8 {
@@ -48,7 +47,6 @@ package "Outputs" #E8FDE8 {
     [PlantUML ER Diagrams\n(database schema)] as erdiag
 }
 
-gensh --> gen
 ersh --> ergen
 valsh --> orgdocs
 

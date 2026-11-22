@@ -118,3 +118,22 @@ TEST_CASE("a_negative_level_states_no_history_and_a_zero_one_states_zeros", inde
 TEST_CASE("a_history_of_no_days_is_empty", index_fixings_tags) {
     CHECK(derive_fixing_history(0.05, a_friday, 0, 42, gbp_libor_3m, {}).value().empty());
 }
+
+TEST_CASE("the_curves_serve_one_address_each_and_the_meeting_dated_curve_none",
+          index_fixings_tags) {
+    const auto curve = [](std::string currency, std::string family, std::string tenor) {
+        ores::synthetic::domain::ir_curve_generation_config c;
+        c.currency_code = std::move(currency);
+        c.index_family = std::move(family);
+        c.tenor = std::move(tenor);
+        return c;
+    };
+
+    const auto served = served_fixing_uris({curve("GBP", "libor", "3M"),
+                                            curve("USD", "sofr", ""),
+                                            curve("USD", "sofr", "FOMC"),
+                                            curve("", "libor", "6M")});
+
+    CHECK(served ==
+          std::set<std::string>{gbp_libor_3m, "oresmd://ir/USD?type=fixing&index=ibor&name=SOFR"});
+}

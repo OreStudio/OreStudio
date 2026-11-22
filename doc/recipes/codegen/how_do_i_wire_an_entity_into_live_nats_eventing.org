@@ -17,10 +17,11 @@ How do I wire a domain_entity into live NATS eventing instead of hand-wiring app
 
 * Answer
 
-Generate the per-entity event-mapping registrar:
+Enable the =ores.cpp.nats-event-registrar= facet on the entity's model if
+it is off, then generate that model's outputs:
 
 #+begin_src sh
-./compass.sh codegen entity generate <entity-slug> --address ores.cpp.nats-event-registrar
+./compass.sh generate --scope projects/ores.<component>/modeling/ores.<component>.<entity-slug>.org
 #+end_src
 
 This produces =<entity>_event_registrar.hpp/cpp= in the component's =.service= layer (not =.core=, since the pipeline depends on =ores.eventing.core=), declaring and defining =register_<entity>_event_mapping(event_source, event_bus, nats)=. It registers the entity's Postgres channel (=product_component_entity_plural=, matching what the =notify_trigger= SQL archetype already emits) and republishes the resulting event to NATS via the shared =ores::eventing::service::publish_entity_event= helper.
@@ -33,11 +34,11 @@ subs.push_back(register_<entity>_event_mapping(event_source, event_bus, nats));
 
 If =application.cpp= still hand-wires the entity (an =#include= + =register_mapping<T>()= call + =event_bus.subscribe<T>()= lambda), remove that block — the generated registrar replaces it exactly.
 
-*Before regenerating*, check the entity's =nats-eventing= output isn't stale (=compass codegen entity generate <entity-slug> --address ores.cpp.nats-eventing --diff=). If it drifts, the changed-event's id field may rename (e.g. =ids= -> =<entity>_ids=), breaking any existing consumer of the old name — audit those first.
+*Before regenerating*, check the entity's =nats-eventing= output isn't stale (=./compass.sh diff --scope <model>= shows what would change). If it drifts, the changed-event's id field may rename (e.g. =ids= -> =<entity>_ids=), breaking any existing consumer of the old name — audit those first.
 
 * Script
 
-=./compass.sh codegen entity generate <entity-slug> --address ores.cpp.nats-event-registrar= — thin wrapper over =ores.codegen='s =generate.py= resolving the entity model, the =ores.cpp.nats-event-registrar= facet's two archetypes, and the =component_service_dir= output path.
+=./compass.sh generate --scope <model>= — compass-ng's =codegen= codec renders the =ores.cpp.nats-event-registrar= facet's two archetypes into the =component_service_dir= output path.
 
 * Tested by
 

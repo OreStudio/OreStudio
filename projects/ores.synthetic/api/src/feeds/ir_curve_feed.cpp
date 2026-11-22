@@ -30,6 +30,7 @@
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.synthetic.api/domain/yield_curve_process_parameter_mapping.hpp"
 #include "ores.synthetic.api/feeds/feed_factory.hpp"
+#include "ores.synthetic.api/feeds/fx_vol_surface_feed.hpp"
 #include "ores.synthetic.api/feeds/producer_subject.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -62,6 +63,7 @@ ir_curve_feed::ir_curve_feed(
     std::string currency_code,
     std::string index_tenor,
     std::string role,
+    std::optional<std::string> board_curve_code,
     std::unique_ptr<ores::analytics::quant::domain::i_yield_curve_process> process,
     const ores::analytics::quant::domain::arrival_spec& arrival,
     std::vector<ir_curve_resolved_entry> entries,
@@ -99,13 +101,13 @@ ir_curve_feed::ir_curve_feed(
     if (entries_.empty())
         throw std::invalid_argument("ir_curve_feed: entries must not be empty");
 
-    // The run's board holds this curve, so a surface on a pair that names this currency
-    // solves its strikes against the same discounts this feed prices its pillars off. The
-    // member is taken once, here, so a tick writes by index.
-    {
-        auto& shared = market_.values();
-        board_member_ = shared.member_of(ores::analytics::quant::domain::market_member_kind::curve,
-                                         index_.currency_code);
+    // The run's board holds the curve that discounts this currency in this curve's collection,
+    // so a surface of that collection solves its strikes against the same discounts this feed
+    // prices its pillars off. A curve given no code is another curve of the currency and leaves
+    // the board alone. The member is taken once, here, so a tick writes by index.
+    if (board_curve_code) {
+        board_member_ = market_.values().member_of(
+            ores::analytics::quant::domain::market_member_kind::curve, *board_curve_code);
         board_spot_date_ = curve_spot_date;
     }
 
@@ -465,29 +467,30 @@ std::shared_ptr<ir_curve_feed> make_ir_curve_feed(
                                  record.value.to_string() + ", its fixed initial rate")
         << (record.note.empty() ? "" : ". " + record.note);
 
-    auto feed = std::make_shared<ir_curve_feed>(nats,
-                                                cfg.source_name,
-                                                producer_subject(cfg.source_name),
-                                                cfg.currency_code,
-                                                ir_curve_index_tenor(cfg),
-                                                cfg.role,
-                                                std::move(process),
-                                                arrival,
-                                                std::move(resolved),
-                                                market,
-                                                step_speed,
-                                                cfg.sensitivity,
-                                                std::move(adapter_targets),
-                                                refctx.spot);
+    auto feed = std::make_shared<ir_curve_feed>(
+        nats,
+        cfg.source_name,
+        producer_subject(cfg.source_name),
+        cfg.currency_code,
+        ir_curve_index_tenor(cfg),
+        cfg.role,
+        ir_curve_discounts_its_currency(cfg) ?
+            std::optional(curve_member_code(cfg.config_id, cfg.currency_code)) :
+            std::nullopt,
+        std::move(process),
+        arrival,
+        std::move(resolved),
+        market,
+        step_speed,
+        cfg.sensitivity,
+        std::move(adapter_targets),
+        refctx.spot);
     feed->record_start_source(std::move(record));
 
     // The curve also states the fixings of its own index, because a generated leg that has
     // already reset needs them and no publisher fixes these indices.
-    // The meeting-dated variant of an overnight curve is a shape of one curve's short end, not
-    // an index of its own, so the index's fixings come from the standard curve alone.
     if (cfg.tenor != "FOMC") {
-        if (const auto uri = index_fixing_uri(cfg.currency_code, cfg.index_family, cfg.tenor);
-            !uri) {
+        if (const auto uri = curve_fixing_uri(cfg); !uri) {
             ORES_LOG_SEV(ir_curve_feed_lg(), warn)
                 << "Curve " << cfg.source_name << " states no fixings: " << uri.error();
         } else if (const auto level = feed->index_rate(); !level) {

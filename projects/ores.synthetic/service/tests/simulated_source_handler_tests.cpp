@@ -41,11 +41,11 @@
 
 namespace {
 
-namespace messaging = ores::synthetic::messaging;
+namespace source_messaging = ores::synthetic::messaging;
 using ores::synthetic::service::simulated_source_handler;
 using ores::synthetic::service::source_control;
 
-const std::string secret("simulated-source-handler-test-secret");
+const std::string source_test_secret("simulated-source-handler-test-source_test_secret");
 
 // The sources the handler sees, and the stops and starts it asked for.
 class fake_sources final : public source_control {
@@ -54,7 +54,7 @@ public:
         all_.push_back({.source_name = std::move(name), .provider_code = "bloomberg"});
     }
 
-    std::vector<messaging::simulated_source> sources() const override {
+    std::vector<source_messaging::simulated_source> sources() const override {
         return all_;
     }
     bool stop(const std::string& source_name) override {
@@ -72,12 +72,12 @@ public:
     std::vector<std::string> starts;
 
 private:
-    std::vector<messaging::simulated_source> all_;
+    std::vector<source_messaging::simulated_source> all_;
 };
 
-std::string token_for(const std::string& tenant_id, const std::vector<std::string>& roles) {
-    auto signer =
-        ores::security::jwt::jwt_authenticator::create_hs256(secret, test_issuer, test_audience);
+std::string source_token_for(const std::string& tenant_id, const std::vector<std::string>& roles) {
+    auto signer = ores::security::jwt::jwt_authenticator::create_hs256(
+        source_test_secret, test_issuer, test_audience);
     auto claims = ores::security::jwt::jwt_claims::with_ttl(std::chrono::minutes(5));
     claims.subject = "simulated-source-handler-test";
     claims.issuer = test_issuer;
@@ -91,7 +91,7 @@ std::string token_for(const std::string& tenant_id, const std::vector<std::strin
 // The handler answers on the message's reply subject; with none it takes its no-reply path, and
 // the test reads the effects instead.
 template <typename Req>
-ores::nats::message request_message(const Req& req, const std::string& token) {
+ores::nats::message source_request_message(const Req& req, const std::string& token) {
     ores::nats::message msg;
     msg.subject = "ores.test.request";
     msg.data = ores::nats::default_wire_codec().encode(req);
@@ -100,14 +100,14 @@ ores::nats::message request_message(const Req& req, const std::string& token) {
     return msg;
 }
 
-struct fixture {
+struct source_fixture {
     ores::nats::service::client nats;
     ores::database::context ctx;
     std::optional<ores::security::jwt::jwt_authenticator> verifier;
     std::string source = "test-sim-" + boost::uuids::to_string(boost::uuids::random_generator()());
     fake_sources sources{source};
 
-    fixture()
+    source_fixture()
         : nats(ores::testing::make_nats_options())
         , ctx(ores::database::context_factory::make_context(
               ores::database::context_factory::configuration{
@@ -118,7 +118,7 @@ struct fixture {
                   .num_attempts = 1,
                   .wait_time_in_seconds = 1})) {
         verifier = ores::security::jwt::jwt_authenticator::create_hs256(
-            secret, test_issuer, test_audience);
+            source_test_secret, test_issuer, test_audience);
     }
 
     simulated_source_handler handler() {
@@ -131,37 +131,39 @@ struct fixture {
     }
 };
 
-const std::string run = std::string(ores::synthetic::service::run_permission);
+const std::string source_run_permission = std::string(ores::synthetic::service::run_permission);
 
 }
 
 TEST_CASE("a tenant may not stop a simulated source, which serves every tenant",
           "[simulated_source_handler][integration]") {
-    fixture f;
+    source_fixture f;
     const auto tenant = boost::uuids::to_string(boost::uuids::random_generator()());
-    f.handler().stop(request_message(
-        messaging::stop_simulated_source_request{
+    f.handler().stop(source_request_message(
+        source_messaging::stop_simulated_source_request{
             .source_name = f.source, .reason_code = "system.test", .commentary = "a tenant"},
-        token_for(tenant, {run})));
+        source_token_for(tenant, {source_run_permission})));
     CHECK(f.sources.stops.empty());
     CHECK(f.stored().empty());
 }
 
 TEST_CASE("a stopped source is recorded with its reason, and a start removes the record",
           "[simulated_source_handler][integration]") {
-    fixture f;
+    source_fixture f;
     const auto system =
-        token_for(std::string(ores::database::service::tenant_context::system_tenant_id), {run});
+        source_token_for(std::string(ores::database::service::tenant_context::system_tenant_id),
+                         {source_run_permission});
 
     // Without the run permission the system tenant is refused too.
-    f.handler().stop(request_message(
-        messaging::stop_simulated_source_request{.source_name = f.source,
-                                                 .reason_code = "system.test"},
-        token_for(std::string(ores::database::service::tenant_context::system_tenant_id), {})));
+    f.handler().stop(source_request_message(
+        source_messaging::stop_simulated_source_request{.source_name = f.source,
+                                                        .reason_code = "system.test"},
+        source_token_for(std::string(ores::database::service::tenant_context::system_tenant_id),
+                         {})));
     CHECK(f.sources.stops.empty());
 
-    f.handler().stop(request_message(
-        messaging::stop_simulated_source_request{
+    f.handler().stop(source_request_message(
+        source_messaging::stop_simulated_source_request{
             .source_name = f.source, .reason_code = "system.test", .commentary = "for a test"},
         system));
     CHECK(f.sources.stops == std::vector<std::string>{f.source});
@@ -172,14 +174,14 @@ TEST_CASE("a stopped source is recorded with its reason, and a start removes the
     CHECK(stored.front().change_commentary == "for a test");
 
     // A stopped source is not stopped twice.
-    f.handler().stop(
-        request_message(messaging::stop_simulated_source_request{.source_name = f.source,
-                                                                 .reason_code = "system.test"},
-                        system));
+    f.handler().stop(source_request_message(
+        source_messaging::stop_simulated_source_request{.source_name = f.source,
+                                                        .reason_code = "system.test"},
+        system));
     CHECK(f.sources.stops.size() == 1);
 
-    f.handler().start(request_message(
-        messaging::start_simulated_source_request{.source_name = f.source}, system));
+    f.handler().start(source_request_message(
+        source_messaging::start_simulated_source_request{.source_name = f.source}, system));
     CHECK(f.sources.starts == std::vector<std::string>{f.source});
     CHECK(f.stored().empty());
 }

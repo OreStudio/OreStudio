@@ -76,3 +76,18 @@ This page documents a test scenario verifying [[id:CE661B08-A485-4326-9558-3AE58
 | Worktree      |       |
 
 * Notes
+
+** 2026-11-22 — not run, and why
+
+Its preconditions are not met in the environment this was attempted from:
+
+- =.env= is an older format than the checkout expects, so every command that
+  reads it refuses until =compass env configure= runs.
+- The database is out of sync with the checkout's schema, so a tenant would
+  have to be recreated before a provisioning run could succeed.
+
+So the precondition — "a provisioned tenant whose parties have market data, and
+no step failed" — cannot be established without readying the environment.
+
+Run =compass env configure=, then =compass db recreate -y -k=, then the
+provisioning script this scenario names, then read the journal as Step 3 says.

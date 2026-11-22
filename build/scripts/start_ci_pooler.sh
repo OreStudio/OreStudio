@@ -100,11 +100,11 @@ write_config() {
         auth_path="/etc/pgbouncer/${base}.users"
     fi
     users | sort -u > "${dir}/${base}.users"
-    if [ "${dir}" != "${out}" ]; then
-        chmod 644 "${dir}/${base}.users"
-    else
-        chmod 600 "${dir}/${base}.users"
-    fi
+    # The credential file is read by the pooler and by root and by nobody else.
+    # The directory is traversable so a container's root can reach the file and
+    # not listable, so a local user of the host cannot even see the names in it.
+    chmod 600 "${dir}/${base}.users"
+    chmod 711 "${dir}"
     local log_line="logfile = ${out}/${label}.log"
     local pid_line="pidfile = ${dir}/${label}.pid"
     local listen_addr="127.0.0.1"

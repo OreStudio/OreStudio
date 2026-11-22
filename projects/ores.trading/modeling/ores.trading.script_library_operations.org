@@ -3,13 +3,13 @@
 :ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.trading.script_library_operations
-#+description: Codegen operation model for reading the versions of the script library that a run's trades name.
+#+description: Codegen operation model for the script library: reading the versions a run's trades name, and a tenant's publish of its own script.
 #+type: ores.codegen.operation
 #+component: trading
 #+subcomponent: api
 #+entity_singular: script_library_operation
 #+namespace: ores::trading::messaging
-#+brief: Reads stated versions of the script library.
+#+brief: Reads stated versions of the script library and publishes a tenant's script.
 #+filetags: :model:operation:trading:
 #+created: 2026-11-22
 #+updated: 2026-11-22
@@ -24,6 +24,11 @@ A version is the script's row at that version together with every row beneath
 the script that carries it as its script version. A stated version the store
 does not hold is returned as missing rather than refused, so that the caller
 can name each one in the failure of its run.
+
+A tenant publishes a script of its own through the same service. The service
+parses each variant with ORE's grammar, derives the inputs, and writes the script
+as the next version in the tenant, so that the tenant's bookings resolve the
+name to its own script before the world library's.
 
 The handler stays hand-written beside this model, because an operation model
 generates no service handler.
@@ -218,6 +223,351 @@ generates no service handler.
 #+begin_src cpp :name comment
 /**
  * @brief The stated versions the store does not hold, in the order stated.
+ */
+#+end_src
+
+** published_result
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief One result a variant of a published script reports, in the order the script states it.
+ */
+#+end_src
+
+*** variable
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The variable whose value the engine reports.
+ */
+#+end_src
+
+*** rename
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The name the engine reports it under, when it differs.
+ */
+#+end_src
+
+** published_calibration
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief One calibration of a variant of a published script.
+ */
+#+end_src
+
+*** index_variable
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The variable naming the index the engine calibrates.
+ */
+#+end_src
+
+*** strikes
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The variables naming the strikes the engine calibrates at, in order.
+ */
+#+end_src
+
+** published_variant
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief One variant of a published script: its code and what the engine reads beside it.
+ */
+#+end_src
+
+*** purpose
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief What the variant is for: default for the variant a trade prices with, or the purpose ORE names, such as AMC.
+ */
+#+end_src
+
+*** code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The variant's text in ORE's payoff language.
+ */
+#+end_src
+
+*** npv_variable
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The variable whose value is the trade's NPV.
+ */
+#+end_src
+
+*** results
+:PROPERTIES:
+:cpp_type: std::vector<published_result>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The results the variant reports.
+ */
+#+end_src
+
+*** calibrations
+:PROPERTIES:
+:cpp_type: std::vector<published_calibration>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The calibrations the variant asks for.
+ */
+#+end_src
+
+*** coarsenings
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The schedules the engine may coarsen, in order.
+ */
+#+end_src
+
+** script_diagnostic
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief One finding of the parse of a published script, located in the variant it concerns.
+ */
+#+end_src
+
+*** purpose
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The variant the finding is in.
+ */
+#+end_src
+
+*** severity
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief error or warning; an error refuses the publish.
+ */
+#+end_src
+
+*** code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The diagnostic's code, such as SCR1001.
+ */
+#+end_src
+
+*** line
+:PROPERTIES:
+:cpp_type: int
+:default:  0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The one-based line of the finding's start, or 0 where its position is unknown.
+ */
+#+end_src
+
+*** column
+:PROPERTIES:
+:cpp_type: std::optional<int>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The one-based column of the finding's start, where known.
+ */
+#+end_src
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief What the finding says.
+ */
+#+end_src
+
+** publish_script_request
+:PROPERTIES:
+:subject:  trading.v1.ops.publish_script
+:response: publish_script_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Publishes a script of the caller's tenant as its next version.
+ *
+ * The trading service parses each variant with ORE's grammar and derives the
+ * script's inputs from the variants, so the inputs are never stated by the
+ * caller. A script whose parse reports an error is refused with the
+ * diagnostics, and nothing is written.
+ */
+#+end_src
+
+*** name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The script's name, which a scripted trade of the tenant names.
+ */
+#+end_src
+
+*** product_tag
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The product tag the engine prices the script with.
+ */
+#+end_src
+
+*** description
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief What the script pays.
+ */
+#+end_src
+
+*** variants
+:PROPERTIES:
+:cpp_type: std::vector<published_variant>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The script's variants; one must be the default.
+ */
+#+end_src
+
+** publish_script_response
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The version a publish wrote, or why it wrote none.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default:  false
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Whether the script is published.
+ */
+#+end_src
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief What the publish did, or why it refused.
+ */
+#+end_src
+
+*** version
+:PROPERTIES:
+:cpp_type: int
+:default:  0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The script's version in the tenant after the publish; unchanged when the script equals its current version.
+ */
+#+end_src
+
+*** diagnostics
+:PROPERTIES:
+:cpp_type: std::vector<script_diagnostic>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The parse's findings, errors and warnings, by variant.
+ */
+#+end_src
+
+*** warnings
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief What the caller should know that does not refuse the publish, such as a name the world library also holds.
  */
 #+end_src
 

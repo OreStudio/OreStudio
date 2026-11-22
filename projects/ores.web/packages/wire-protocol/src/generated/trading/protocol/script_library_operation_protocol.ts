@@ -99,8 +99,150 @@ export interface ExportScriptLibraryResponse {
     missing: ScriptPin[];
 }
 
+/**
+ * @brief One result a variant of a published script reports, in the order the script states it.
+ */
+export interface PublishedResult {
+    /**
+     * @brief The variable whose value the engine reports.
+     */
+    variable: string;
+    /**
+     * @brief The name the engine reports it under, when it differs.
+     */
+    rename: string | null;
+}
+
+/**
+ * @brief One calibration of a variant of a published script.
+ */
+export interface PublishedCalibration {
+    /**
+     * @brief The variable naming the index the engine calibrates.
+     */
+    index_variable: string;
+    /**
+     * @brief The variables naming the strikes the engine calibrates at, in order.
+     */
+    strikes: string[];
+}
+
+/**
+ * @brief One variant of a published script: its code and what the engine reads beside it.
+ */
+export interface PublishedVariant {
+    /**
+     * @brief What the variant is for: default for the variant a trade prices with, or the purpose ORE names, such as AMC.
+     */
+    purpose: string;
+    /**
+     * @brief The variant's text in ORE's payoff language.
+     */
+    code: string;
+    /**
+     * @brief The variable whose value is the trade's NPV.
+     */
+    npv_variable: string;
+    /**
+     * @brief The results the variant reports.
+     */
+    results: PublishedResult[];
+    /**
+     * @brief The calibrations the variant asks for.
+     */
+    calibrations: PublishedCalibration[];
+    /**
+     * @brief The schedules the engine may coarsen, in order.
+     */
+    coarsenings: string[];
+}
+
+/**
+ * @brief One finding of the parse of a published script, located in the variant it concerns.
+ */
+export interface ScriptDiagnostic {
+    /**
+     * @brief The variant the finding is in.
+     */
+    purpose: string;
+    /**
+     * @brief error or warning; an error refuses the publish.
+     */
+    severity: string;
+    /**
+     * @brief The diagnostic's code, such as SCR1001.
+     */
+    code: string;
+    /**
+     * @brief The one-based line of the finding's start, or 0 where its position is unknown.
+     */
+    line: number;
+    /**
+     * @brief The one-based column of the finding's start, where known.
+     */
+    column: number | null;
+    /**
+     * @brief What the finding says.
+     */
+    message: string;
+}
+
+/**
+ * @brief Publishes a script of the caller's tenant as its next version.
+ *
+ * The trading service parses each variant with ORE's grammar and derives the
+ * script's inputs from the variants, so the inputs are never stated by the
+ * caller. A script whose parse reports an error is refused with the
+ * diagnostics, and nothing is written.
+ */
+export interface PublishScriptRequest {
+    /**
+     * @brief The script's name, which a scripted trade of the tenant names.
+     */
+    name: string;
+    /**
+     * @brief The product tag the engine prices the script with.
+     */
+    product_tag: string | null;
+    /**
+     * @brief What the script pays.
+     */
+    description: string | null;
+    /**
+     * @brief The script's variants; one must be the default.
+     */
+    variants: PublishedVariant[];
+}
+
+/**
+ * @brief The version a publish wrote, or why it wrote none.
+ */
+export interface PublishScriptResponse {
+    /**
+     * @brief Whether the script is published.
+     */
+    success: boolean;
+    /**
+     * @brief What the publish did, or why it refused.
+     */
+    message: string;
+    /**
+     * @brief The script's version in the tenant after the publish; unchanged when the script equals its current version.
+     */
+    version: number;
+    /**
+     * @brief The parse's findings, errors and warnings, by variant.
+     */
+    diagnostics: ScriptDiagnostic[];
+    /**
+     * @brief What the caller should know that does not refuse the publish, such as a name the world library also holds.
+     */
+    warnings: string[];
+}
+
 export const subjects = {
     export_script_library_request: 'trading.v1.ops.export_script_library',
+    publish_script_request: 'trading.v1.ops.publish_script',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -109,4 +251,5 @@ export const subjects = {
  */
 export const requiresSession = {
     export_script_library_request: true,
+    publish_script_request: true,
 } as const;

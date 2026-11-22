@@ -133,6 +133,172 @@ struct export_script_library_response {
 };
 
 /**
+ * @brief One result a variant of a published script reports, in the order the script states it.
+ */
+struct published_result {
+    /**
+     * @brief The variable whose value the engine reports.
+     */
+    std::string variable;
+    /**
+     * @brief The name the engine reports it under, when it differs.
+     */
+    std::optional<std::string> rename;
+
+    friend bool operator==(const published_result&, const published_result&) = default;
+};
+
+/**
+ * @brief One calibration of a variant of a published script.
+ */
+struct published_calibration {
+    /**
+     * @brief The variable naming the index the engine calibrates.
+     */
+    std::string index_variable;
+    /**
+     * @brief The variables naming the strikes the engine calibrates at, in order.
+     */
+    std::vector<std::string> strikes;
+
+    friend bool operator==(const published_calibration&, const published_calibration&) = default;
+};
+
+/**
+ * @brief One variant of a published script: its code and what the engine reads beside it.
+ */
+struct published_variant {
+    /**
+     * @brief What the variant is for: default for the variant a trade prices with, or the purpose
+     * ORE names, such as AMC.
+     */
+    std::string purpose;
+    /**
+     * @brief The variant's text in ORE's payoff language.
+     */
+    std::string code;
+    /**
+     * @brief The variable whose value is the trade's NPV.
+     */
+    std::string npv_variable;
+    /**
+     * @brief The results the variant reports.
+     */
+    std::vector<published_result> results;
+    /**
+     * @brief The calibrations the variant asks for.
+     */
+    std::vector<published_calibration> calibrations;
+    /**
+     * @brief The schedules the engine may coarsen, in order.
+     */
+    std::vector<std::string> coarsenings;
+
+    friend bool operator==(const published_variant&, const published_variant&) = default;
+};
+
+/**
+ * @brief One finding of the parse of a published script, located in the variant it concerns.
+ */
+struct script_diagnostic {
+    /**
+     * @brief The variant the finding is in.
+     */
+    std::string purpose;
+    /**
+     * @brief error or warning; an error refuses the publish.
+     */
+    std::string severity;
+    /**
+     * @brief The diagnostic's code, such as SCR1001.
+     */
+    std::string code;
+    /**
+     * @brief The one-based line of the finding's start, or 0 where its position is unknown.
+     */
+    int line = 0;
+    /**
+     * @brief The one-based column of the finding's start, where known.
+     */
+    std::optional<int> column;
+    /**
+     * @brief What the finding says.
+     */
+    std::string message;
+
+    friend bool operator==(const script_diagnostic&, const script_diagnostic&) = default;
+};
+
+/**
+ * @brief Publishes a script of the caller's tenant as its next version.
+ *
+ * The trading service parses each variant with ORE's grammar and derives the
+ * script's inputs from the variants, so the inputs are never stated by the
+ * caller. A script whose parse reports an error is refused with the
+ * diagnostics, and nothing is written.
+ */
+struct publish_script_request {
+    using response_type = struct publish_script_response;
+    static constexpr std::string_view nats_subject = "trading.v1.ops.publish_script";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    /**
+     * @brief The script's name, which a scripted trade of the tenant names.
+     */
+    std::string name;
+    /**
+     * @brief The product tag the engine prices the script with.
+     */
+    std::optional<std::string> product_tag;
+    /**
+     * @brief What the script pays.
+     */
+    std::optional<std::string> description;
+    /**
+     * @brief The script's variants; one must be the default.
+     */
+    std::vector<published_variant> variants;
+
+    friend bool operator==(const publish_script_request&, const publish_script_request&) = default;
+};
+
+/**
+ * @brief The version a publish wrote, or why it wrote none.
+ */
+struct publish_script_response {
+    /**
+     * @brief Whether the script is published.
+     */
+    bool success = false;
+    /**
+     * @brief What the publish did, or why it refused.
+     */
+    std::string message;
+    /**
+     * @brief The script's version in the tenant after the publish; unchanged when the script equals
+     * its current version.
+     */
+    int version = 0;
+    /**
+     * @brief The parse's findings, errors and warnings, by variant.
+     */
+    std::vector<script_diagnostic> diagnostics;
+    /**
+     * @brief What the caller should know that does not refuse the publish, such as a name the world
+     * library also holds.
+     */
+    std::vector<std::string> warnings;
+
+    friend bool operator==(const publish_script_response&,
+                           const publish_script_response&) = default;
+};
+
+/**
  * @brief The members of script_pin, named as the wire names them and in the order
  * the type declares them.
  *
@@ -186,6 +352,109 @@ struct export_script_library_response {
     };
 }
 
+/**
+ * @brief The members of published_result, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<published_result>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"variable", &published_result::variable},
+        ::ores::utility::codec::field{"rename", &published_result::rename},
+    };
+}
+
+/**
+ * @brief The members of published_calibration, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<published_calibration>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"index_variable", &published_calibration::index_variable},
+        ::ores::utility::codec::field{"strikes", &published_calibration::strikes},
+    };
+}
+
+/**
+ * @brief The members of published_variant, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<published_variant>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"purpose", &published_variant::purpose},
+        ::ores::utility::codec::field{"code", &published_variant::code},
+        ::ores::utility::codec::field{"npv_variable", &published_variant::npv_variable},
+        ::ores::utility::codec::field{"results", &published_variant::results},
+        ::ores::utility::codec::field{"calibrations", &published_variant::calibrations},
+        ::ores::utility::codec::field{"coarsenings", &published_variant::coarsenings},
+    };
+}
+
+/**
+ * @brief The members of script_diagnostic, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<script_diagnostic>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"purpose", &script_diagnostic::purpose},
+        ::ores::utility::codec::field{"severity", &script_diagnostic::severity},
+        ::ores::utility::codec::field{"code", &script_diagnostic::code},
+        ::ores::utility::codec::field{"line", &script_diagnostic::line},
+        ::ores::utility::codec::field{"column", &script_diagnostic::column},
+        ::ores::utility::codec::field{"message", &script_diagnostic::message},
+    };
+}
+
+/**
+ * @brief The members of publish_script_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<publish_script_request>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"name", &publish_script_request::name},
+        ::ores::utility::codec::field{"product_tag", &publish_script_request::product_tag},
+        ::ores::utility::codec::field{"description", &publish_script_request::description},
+        ::ores::utility::codec::field{"variants", &publish_script_request::variants},
+    };
+}
+
+/**
+ * @brief The members of publish_script_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<publish_script_response>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"success", &publish_script_response::success},
+        ::ores::utility::codec::field{"message", &publish_script_response::message},
+        ::ores::utility::codec::field{"version", &publish_script_response::version},
+        ::ores::utility::codec::field{"diagnostics", &publish_script_response::diagnostics},
+        ::ores::utility::codec::field{"warnings", &publish_script_response::warnings},
+    };
+}
+
 }
 namespace ores::utility::codec {
 
@@ -222,6 +491,65 @@ struct ORES_TRADING_API_EXPORT
     static std::string
     write_msgpack(const ores::trading::messaging::export_script_library_response& v);
     static ores::trading::messaging::export_script_library_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::published_result> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::published_result& v);
+    static ores::trading::messaging::published_result read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::published_result& v);
+    static ores::trading::messaging::published_result read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::published_calibration> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::published_calibration& v);
+    static ores::trading::messaging::published_calibration read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::published_calibration& v);
+    static ores::trading::messaging::published_calibration
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::published_variant> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::published_variant& v);
+    static ores::trading::messaging::published_variant read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::published_variant& v);
+    static ores::trading::messaging::published_variant
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::script_diagnostic> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::script_diagnostic& v);
+    static ores::trading::messaging::script_diagnostic read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::script_diagnostic& v);
+    static ores::trading::messaging::script_diagnostic
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::publish_script_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::publish_script_request& v);
+    static ores::trading::messaging::publish_script_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::publish_script_request& v);
+    static ores::trading::messaging::publish_script_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::publish_script_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::publish_script_response& v);
+    static ores::trading::messaging::publish_script_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::publish_script_response& v);
+    static ores::trading::messaging::publish_script_response
     read_msgpack(std::span<const std::byte> data);
 };
 }

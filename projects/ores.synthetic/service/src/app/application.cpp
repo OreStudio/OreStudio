@@ -41,6 +41,7 @@
 #include "ores.service/service/heartbeat_publisher.hpp"
 #include "ores.synthetic.api/domain/step_subjects.hpp"
 #include "ores.synthetic.api/feeds/feed_factory.hpp"
+#include "ores.synthetic.api/feeds/fx_spot_feed.hpp"
 #include "ores.synthetic.core/messaging/registrar.hpp"
 #include "ores.synthetic.service/app/application_exception.hpp"
 #include "ores.synthetic.service/messaging/event_registrar.hpp"
@@ -391,28 +392,29 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
      * loop reads its driver source without a lock, so the source must be in place before the
      * loop runs.
      *
-     * A surface hangs off the spot feed of its own pair: the block's anchor is that feed's
+     * A surface hangs off the spot feed its config names: the block's anchor is that feed's
      * series, so the surface's forward variances, skew and curvature load on the very series
-     * the spot publishes. A pair with no spot feed has no anchor, and its surface is left out
-     * with a warning rather than started to move on its own.
+     * the spot publishes, the same feed whose level the surface reads. A surface that names no
+     * spot feed has no anchor, and it is left out with a warning rather than started to move on
+     * its own.
      */
     {
         const auto rows = registry.rows(db_ctx);
-        std::map<std::pair<std::string, std::string>, std::uint64_t> spot_series;
+        std::map<std::string, std::uint64_t> spot_series;
         for (const auto& row : rows)
-            if (row.candidate.fx_pair && !row.candidate.block)
-                spot_series[*row.candidate.fx_pair] =
+            if (row.kind->kind == feed::fx_spot_feed_kind)
+                spot_series[row.candidate.source_name] =
                     ores::analytics::quant::math::series_key(row.candidate.source_name);
 
         for (const auto& row : rows) {
             if (!row.candidate.block)
                 continue;
-            const auto anchor = spot_series.find(*row.candidate.fx_pair);
+            const auto anchor = spot_series.find(row.candidate.spot_source_name);
             if (anchor == spot_series.end()) {
                 ORES_LOG_SEV(lg(), warn)
-                    << "Synthetic surface '" << row.candidate.source_name << "' has no spot feed "
-                    << "for " << row.candidate.fx_pair->first << "/"
-                    << row.candidate.fx_pair->second << ", so it is not in the run's market";
+                    << "Synthetic surface '" << row.candidate.source_name
+                    << "' names no spot feed by its URI and provider, so it is not in the run's "
+                    << "market";
                 continue;
             }
             try {

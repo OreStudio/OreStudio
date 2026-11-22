@@ -102,7 +102,8 @@ struct tick_board final {
     tick_board() {
         eur = values.member_of(market_member_kind::curve, curve_member_code({}, "EUR"));
         usd = values.member_of(market_member_kind::curve, curve_member_code({}, "USD"));
-        spot = values.member_of(market_member_kind::spot, fx_pair_member_code("EUR", "USD"));
+        spot = values.member_of(market_member_kind::spot,
+                                spot_member_code("synthetic.test.spot.eurusd"));
     }
 
     market_board values{4};
@@ -194,7 +195,7 @@ TEST_CASE("a surface names the member the run has not published", "[fx_vol_surfa
     board.values.publish_curve(board.usd, tick_spot_date, quote, at);
     inputs = fx_vol_board_inputs(board.values, board.eur, board.usd, board.spot);
     REQUIRE_FALSE(inputs);
-    CHECK(inputs.error() == "spot:EUR/USD");
+    CHECK(inputs.error() == "spot:synthetic.test.spot.eurusd");
 
     // With all three published the surface reads them back, under the name the spot feed writes,
     // and what it reads is what was published rather than merely the right number of points.

@@ -72,6 +72,9 @@ generate_synthetic_fx_vol_surface_feed(utility::generation::generation_context& 
     r.segment_correlation = 0.9;
     r.start_skew = -0.1;
     r.start_curvature = 0.8;
+    r.spot_oresmd_uri =
+        std::string("oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD");
+    r.spot_provider_code = std::string("bloomberg");
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

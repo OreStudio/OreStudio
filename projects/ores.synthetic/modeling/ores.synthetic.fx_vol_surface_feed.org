@@ -369,6 +369,39 @@ The curvature the surface starts at, and the level the curvature driver reverts 
 0.8
 #+end_src
 
+** spot_oresmd_uri
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:no_generator_suffix: true
+:END:
+
+The oresmd quote URI of the spot this surface reads and correlates with, such as
+"oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD". A URI names what
+is observed and not who observes it, so it names one spot only with
+spot_provider_code: the pair is the key a market series has, and two providers that
+quote one spot keep two series.
+
+#+begin_src cpp :name generator
+std::string("oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD")
+#+end_src
+
+** spot_provider_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:no_generator_suffix: true
+:END:
+
+The provider of the spot this surface reads, with spot_oresmd_uri: the spot feed whose
+collection is this provider's and whose URI is that one.
+
+#+begin_src cpp :name generator
+std::string("bloomberg")
+#+end_src
+
 * Artefact columns
 :PROPERTIES:
 :key: id
@@ -523,6 +556,7 @@ import carries the row's own id, which its expiries and contributor links name.
 | "segment_correlation" >= 0 and "segment_correlation" < 1 |
 | "start_skew" > -1 and "start_skew" < 1 |
 | "start_curvature" > 0 and "start_curvature" < 1.4142135623730951 |
+| "spot_oresmd_uri" like 'oresmd://fx/%' |
 
 * Foreign keys
 
@@ -548,6 +582,7 @@ import carries the row's own id, which its expiries and contributor links name.
 | base_currency_code  | ores_refdata_validate_currency_fn         |
 | quote_currency_code | ores_refdata_validate_currency_fn         |
 | asset_class_code    | ores_refdata_validate_asset_class_code_fn |
+| spot_provider_code  | ores_marketdata_validate_provider_fn      |
 
 * Validation function
 :PROPERTIES:

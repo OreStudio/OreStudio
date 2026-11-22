@@ -420,6 +420,8 @@ seeded_configs seed_configs(ores::testing::scoped_database_helper& h,
         surface.segment_correlation = 0.9;
         surface.start_skew = -0.1;
         surface.start_curvature = 0.8;
+        surface.spot_oresmd_uri = fx_enabled.oresmd_uri;
+        surface.spot_provider_code = main_container.provider_code;
         surface.modified_by = db_user;
         surface.performed_by = db_user;
         surface.change_reason_code = "system.test";
@@ -754,6 +756,43 @@ TEST_CASE("a_volatility_surface_builds_from_its_rows_and_its_pair_convention",
     const auto built = f.registry.factory().make(target.row.kind->kind, bctx, *outcome.input);
     REQUIRE(built != nullptr);
     CHECK(built->source_name() == seeds.surface_enabled_source);
+
+    // The surface reads and correlates with the one spot feed its config names, by its URI and
+    // its provider, and not with whichever feed of the pair ticked last.
+    CHECK(target.row.candidate.spot_source_name == seeds.fx_enabled_source);
+}
+
+TEST_CASE("a_volatility_surface_naming_no_spot_feed_is_refused_with_the_reason",
+          "[feed_config_handler][integration]") {
+    config_fixture f;
+    const auto test_party = resolve_test_party(f.db);
+    const auto seeds = seed_configs(f.db, test_party);
+    const auto surface_id = boost::uuids::to_string(seeds.surface_enabled_id);
+
+    // A URI names what is observed, not who observes it: the same spot URI under a provider
+    // whose collection holds no such spot feed names no feed at all.
+    auto ctx = f.db.context();
+    auto row =
+        ores::synthetic::repository::fx_vol_surface_feed_repository().read_latest(ctx, surface_id);
+    REQUIRE(row.size() == 1);
+    auto renamed = row.front();
+    renamed.spot_provider_code = "lseg";
+    renamed.change_commentary = "names a provider with no spot feed";
+    ores::synthetic::repository::fx_vol_surface_feed_repository().write(ctx, renamed);
+
+    for (const auto& target : f.registry.targets(ctx)) {
+        if (target.row.candidate.feed_config_id != surface_id)
+            continue;
+        CHECK(target.row.candidate.spot_source_name.empty());
+        const auto outcome = target.row.candidate.build_input({});
+        CHECK_FALSE(outcome.input.has_value());
+        CHECK(outcome.skip_reason ==
+              "The surface EUR/USD names no spot feed: no collection of provider 'lseg' has a "
+              "current spot feed at " +
+                  renamed.spot_oresmd_uri);
+        return;
+    }
+    FAIL("the surface feed is not a start target");
 }
 
 TEST_CASE("feed_config_reports_not_found_and_disabled_uniformly",

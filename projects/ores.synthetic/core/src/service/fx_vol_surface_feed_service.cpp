@@ -167,6 +167,8 @@ fx_vol_surface_feed_to_domain(const messaging::fx_vol_surface_feed_write& write)
     v.segment_correlation = write.segment_correlation;
     v.start_skew = write.start_skew;
     v.start_curvature = write.start_curvature;
+    v.spot_oresmd_uri = write.spot_oresmd_uri;
+    v.spot_provider_code = write.spot_provider_code;
     return v;
 }
 

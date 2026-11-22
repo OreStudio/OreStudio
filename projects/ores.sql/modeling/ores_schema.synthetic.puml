@@ -423,6 +423,8 @@ package "synthetic" #F9FBE7 {
         * segment_correlation : double
         * start_skew : double
         * start_curvature : double
+        * spot_oresmd_uri : text
+        * spot_provider_code : text
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>

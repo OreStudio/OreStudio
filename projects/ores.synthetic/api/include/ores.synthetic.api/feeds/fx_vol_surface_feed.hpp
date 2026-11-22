@@ -71,6 +71,8 @@ struct fx_vol_surface_feed_build_input final {
     std::vector<double> deltas;
     /// The pair's expiry date rule: the date each expiry the surface quotes is struck at.
     ores::analytics::quant::service::fx_expiry_date_rule expiry_rule;
+    /// The source name of the spot feed the config names by URI and provider.
+    std::string spot_source_name;
 };
 
 /**
@@ -91,8 +93,8 @@ struct fx_vol_market_inputs final {
  *
  * A surface may tick before any curve has, and a curve may be stopped, so a member that is not
  * published is not an error but an ordering: the answer names the member -- =curve:EUR=,
- * =spot:EUR/USD= -- and the caller decides what to do about it. The names are the members' own,
- * because that is what a reader of the run's board looks for.
+ * =spot:synthetic.bloomberg.eurusd= -- and the caller decides what to do about it. The names are
+ * the members' own, because that is what a reader of the run's board looks for.
  *
  * @param values The run's board.
  * @param base_curve The member of the pair's base currency, which is the foreign side.
@@ -126,13 +128,13 @@ fx_vol_expiry_markets(const fx_vol_market_inputs& inputs,
                       std::vector<ores::analytics::quant::math::fx_market>& out);
 
 /**
- * @brief The member code a pair's spot is published under, such as =EUR/USD=.
+ * @brief The member code a spot is published under: the source name of its feed.
  *
- * The spot feed and the surface feed both name a pair, and they must name it the same way, so
- * the string is built in one place.
+ * Two collections may quote one pair, so a pair code would let either replace the other. A
+ * surface names the one spot feed it reads, and that feed publishes under its own name.
  */
-[[nodiscard]] ORES_SYNTHETIC_API_EXPORT std::string fx_pair_member_code(std::string_view base,
-                                                                        std::string_view quote);
+[[nodiscard]] ORES_SYNTHETIC_API_EXPORT std::string
+spot_member_code(std::string_view spot_source_name);
 
 /**
  * @brief The member code a currency's discounting curve is published under: the collection

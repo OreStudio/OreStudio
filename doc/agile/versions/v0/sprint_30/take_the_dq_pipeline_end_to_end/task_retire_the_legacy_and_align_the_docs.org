@@ -12,8 +12,8 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-14
-#+updated: 2026-11-14
-#+environment:
+#+updated: 2026-11-22
+#+environment: swift_curie swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7D2BBBBC-36A3-4BFB-9673-0F9005991D94][Take the DQ pipeline end to end, from a seeded artefact table to a published system]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ No document describes removed code, and no legacy pattern is left uncatalogued.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:7D2BBBBC-36A3-4BFB-9673-0F9005991D94][Take the DQ pipeline end to end, from a seeded artefact table to a published system]] |
-| Now          | Not yet started.                       |
+| Now          | The artefact guide states the one way only: all 186 artefact tables are generated, and the legacy pattern and its table are gone. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-14                               |
+| Next         | The publication pipeline, the database lifecycle page and the journey pages that name the Librarian; then the counts and the plan marking. |
+| Last touched | 2026-11-22                              |
 
 * Acceptance
 

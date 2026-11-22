@@ -26,12 +26,12 @@ ORE's script library arrives as a world dataset whose methodology extracts, corr
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:E6359881-7919-4BBC-9B9C-03A8EEDB8A03][Design the scripted trade subsystem]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-21                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-22                               |
 
 * Acceptance
 
@@ -111,8 +111,30 @@ task and name that file in the Command column.
 | reading stated versions | 13 assertions in 2 test cases: Accumulator01's current version reads back as one script row with variants and results all carrying that version; a version and a tenant the store does not hold are named as missing | ores.trading.core.tests "[script_library]" | b7e988f819 |
 | suites after the change | ores.ore.core.tests 521050 assertions in 574 cases pass; the export_script_library codec round trip 12 assertions in 3 cases | the two test binaries | b7e988f819 |
 | pins in the live store | 52 of 53 current scripted trades pinned, all in the generic form; the one without a pin is RoundTripScript | a count over ores_trading_scripted_instruments_tbl | b7e988f819 |
+| tenant publish | 32 assertions in 4 test cases: a tenant's Accumulator01 is published with the world-name warning and its derived inputs, and a trade booked in the tenant records the tenant's own version; an equal republish keeps the version, a changed one writes version 2 and closes the dropped AMC variant; a script that does not parse is refused with a located diagnostic and writes nothing; a script with no default variant is refused | ores.trading.core.tests "[service][script_library][publish]" | PR 7 head |
+| trading core suite after the publish | 1886 assertions pass in three runs in a row; one earlier run failed the sixth PR's reader test on the tenant's own Accumulator01, fixed by keeping the world row | ores.trading.core.tests -r junit, three times | PR 7 head |
 
 * Notes
+
+** What the seventh PR found
+
+A tenant's publish writes through the generated repositories in one unit of
+work rather than through a SQL function. A SQL function that writes the live
+tables would need an exception to =entity_writes/sql_writer=, as each publish
+from DQ has; the repositories' replace claims already write the next version in
+the caller's tenant, and a row the new version drops is closed through the
+repository's remove.
+
+The tenant's script wins with no further change: the pin trigger of the fifth
+PR resolves a name to the trade's own tenant before the system tenant. The test
+books a trade in a test tenant after the publish and finds the tenant's version
+recorded on it, which the fifth PR's test, run in the system tenant, could not
+show.
+
+The full suite found the sixth PR's reader test assuming the test tenant holds
+no =Accumulator01= of its own. Catch runs cases in a random order, and when the
+publish test ran first the read of the name returned the tenant's row beside
+the world's. The reader test now keeps the system tenant's row.
 
 ** What the sixth PR found
 
@@ -307,20 +329,33 @@ via its "Verifies task" field.
 
 * Result
 
-In progress: the first six of seven PRs are in. The sixth has each run write
-the script library from the versions its scripted trades name, read from the
-trading service with the run's token, and refuse a run whose trades name a
-script the store cannot supply. The fifth records on each
-scripted trade the script it was booked on: the tenant and version of a library
-script, or the SHA-256 of an inline one, set by the store on every write. The fourth makes a script
-version name the whole script: every row beneath a script carries the version
-of its script row, so any version reads back exactly. The third gives the trading
-service a handler for the script library's publish step, so a bundle
-published over the bus publishes the library as the bring-up does. The second publishes ORE's
-script library as the =ore.script_library= world dataset: a generator in
-=external/ore/tools/= extracts, corrects, parses and derives every script with
-the shell, and the bring-up publishes the staged rows, writing a new version
-only of a script that changed. In the first, the shell's =script= menu parses,
-checks and lists the inputs of a payoff script with no session and no server,
-and a batch run with =--load= exits non-zero when a command fails, which is the
-contract the library's generator calls it under.
+Done in seven PRs; every acceptance criterion is met.
+
+- ORE's script library is the =ore.script_library= dataset of the Open Source
+  Risk Engine catalogue and a member of the =world= bundle. The generator
+  =external/ore/tools/generate_script_library.py= reads only ORE's product
+  examples' =scriptlibrary.xml=, applies the corrections of its data file,
+  parses each script with =ores.shell= and derives its inputs, and writes the
+  staged rows; the methodology states each step, the build job checks that the
+  committed files are reproduced, and the seed and the correcting populate
+  scripts are retired.
+- The shell's =script parse=, =check=, =inputs= and =print= run with no session
+  and no server, and =check= prints diagnostics in compiler form and exits
+  non-zero on an error.
+- The trading service publishes the dataset at bring-up and over the bus, and a
+  republish writes a new version only of a script whose rows changed. A version
+  names the whole script: every row beneath it carries the script's version, so
+  any version reads back exactly.
+- A scripted trade records its library script's holding tenant and version, or
+  the SHA-256 of an inline script, set by the store on every write; an
+  amendment keeps its version.
+- A run writes =scriptlibrary.xml= from the versions its trades name, read from
+  trading with the run token, and is refused, naming the trade or version,
+  when the store cannot supply one.
+- A tenant publishes its own script through =trading.v1.ops.publish_script=:
+  each variant is parsed and a script with an error is refused with its
+  diagnostics, the inputs are derived, a name the world library holds draws a
+  warning, and the tenant's trades then book on the tenant's own script.
+
+The tasks of the story now name their ores.http and BFF routes, and a backlog
+task covers a screen for the script library.

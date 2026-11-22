@@ -112,6 +112,17 @@ A version of a script arises in one of two ways.
   a name a tenant already uses leaves that tenant's script in force; no
   constraint forbids the pair, since the two rows lie in different tenants.
 
+  The operation is =trading.v1.ops.publish_script=, under
+  =trading::scripts:write=. The caller states the script's name, product tag,
+  description and variants, each with its code, NPV variable, results,
+  calibrations and coarsenings; one variant is the default. The service never
+  takes the inputs from the caller: it derives them from the variants, the
+  default variant's first. It writes the script and every row beneath it
+  through the trading repositories in one transaction, so a failure leaves the
+  previous version whole. A script equal to its current version writes nothing.
+  A publish in the system tenant is refused, as the world library is published
+  from its dataset.
+
 A version of a script is the version of its script row together with the rows
 beneath it that carry the same number. A change writes the script row first, as
 a new version, then every row of the script, each stamped in =script_version=

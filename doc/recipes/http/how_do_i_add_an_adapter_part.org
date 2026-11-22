@@ -72,7 +72,7 @@ contain a CMakeLists.txt file".
    =--address ores.doc.http-recipe=. Add the unit to the aggregate, regenerate
    the file lists, then
    =python3 build/scripts/route_inventory.py --write= and
-   =projects/ores.codegen/scripts/regenerate_http_recipe_inventory.py=.
+   =./compass.sh generate=, which rewrites the HTTP recipe inventory.
 
 The area in =#+http_area:= must be one =build/scripts/route_classification.py=
 publishes, and the classification needs a rule for the =/api/v1/<area>/=

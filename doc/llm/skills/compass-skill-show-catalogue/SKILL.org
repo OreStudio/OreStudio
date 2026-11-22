@@ -44,10 +44,10 @@ domain-grouped view.
    =SKILL.org= sources:
 
    #+begin_src sh :results verbatim
-   python3 build/scripts/generate_skills_catalogue.py --check
+   compass-ng check --codec skill_catalogue
    #+end_src
 
-   If stale, run without =--check= first (and flag the drift to the
+   If stale, run =./compass.sh generate= first (and flag the drift to the
    user — generated docs should not go stale on main).
 
 3. /Check the deployed bundle is fresh/ — =compass bearings= already

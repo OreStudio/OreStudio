@@ -129,6 +129,10 @@ export interface RevokeAgentKeyResponse {
  */
 export interface ExchangeAgentKeyRequest {
     key: string;
+    /**
+     * @brief The agent's address as ores.http saw it, for its session and the log.
+     */
+    client_address: string;
 }
 
 /**

@@ -40,6 +40,7 @@ set(files
     "agent_grant_protocol_codec_roundtrip_tests.cpp"
     "agent_key_codec_roundtrip_tests.cpp"
     "agent_key_protocol_codec_roundtrip_tests.cpp"
+    "agent_token_issue_codec_roundtrip_tests.cpp"
     "auth_event_codec_roundtrip_tests.cpp"
     "auth_event_operations_protocol_codec_roundtrip_tests.cpp"
     "authorization_protocol_codec_roundtrip_tests.cpp"

@@ -100,19 +100,11 @@ struct agent_grant final {
     std::chrono::system_clock::time_point not_after;
 
     /**
-     * @brief When the grant was revoked; empty while it is active.
+     * @brief When the grant was revoked; empty while it is active. Who revoked it and why are the
+     * revoking version's modified_by and change commentary, as for any change, so the grant holds
+     * no column of its own for them.
      */
     std::chrono::system_clock::time_point revoked_at = {};
-
-    /**
-     * @brief Who revoked the grant: its person, or an administrator.
-     */
-    std::string revoked_by;
-
-    /**
-     * @brief Why the grant was revoked, in the revoker's words.
-     */
-    std::string revoke_reason;
 
     /**
      * @brief Username of the person who last modified this agent grant.

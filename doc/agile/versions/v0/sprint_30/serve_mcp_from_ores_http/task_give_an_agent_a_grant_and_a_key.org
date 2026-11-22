@@ -69,7 +69,7 @@ the run grant ([[id:78B82824-0BBB-4442-A9FA-E1F265DF57BD][Run grants and run tok
 
 | Entity | Columns | Notes |
 |--------+---------+-------|
-| =ores.iam.agent_grant= | id, party_id, grantor_account_id, agent_name, scope (=read_only= or =read_write=), not_after, revoked_at, revoked_by, revoke_reason | tenant and party isolation; readable over the wire, written only by IAM's operations, as the run grant |
+| =ores.iam.agent_grant= | id, party_id, grantor_account_id, agent_name, role_id, not_after (required, at most ninety days), revoked_at; who revoked and why are the revoking version's audit envelope | tenant and party isolation; readable over the wire, written only by IAM's operations, as the run grant |
 | =ores.iam.agent_key= | id, grant_id, secret_hash, revoked_at | the id is the key's lookup prefix; the secret is never stored |
 | =ores_iam_agent_token_issue_log_tbl= | when, tenant, party, grant, key, account, outcome, reason | hand-written, as the run token's issue log; it gives each key's last use without versioning the key on every call |
 

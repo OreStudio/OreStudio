@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: iam
-Tables: 27
+Tables: 28
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -361,8 +361,6 @@ package "iam" #E8F4FD {
         * role_id : uuid <<FK>>
         * not_after : timestamptz
           revoked_at : timestamptz
-          revoked_by : text
-          revoke_reason : text
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -417,6 +415,39 @@ package "iam" #E8F4FD {
     several keys, so a key can be replaced before the old one is revoked.
     The table is readable over the wire and written only by IAM's own operations:
     :client_read_only: removes the generic write verbs from the wire.
+    end note
+
+    entity ores_iam_agent_token_issues_tbl  #F7E5FF {
+        * id : text <<PK>>
+        * issued_at : timestamptz <<PK>>
+        --
+        * tenant_id : text <<FK>>
+        * party_id : text <<FK>>
+        * grant_id : text <<FK>>
+        * key_id : text <<FK>>
+        * session_id : text <<FK>>
+        * grantor_account_id : text <<FK>>
+        * client_address : text
+        * outcome : text
+        * reason : text
+    }
+
+    note right of ores_iam_agent_token_issues_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Agent Token Issue Table
+    A row says that ores.http exchanged an LLM agent's key, for which grant, key and
+    session, from which client address, and whether the token was issued or
+    refused. It never holds the key. The exchange reads it to find a key's open
+    session, and the grants page reads it for each key's last use. The rows are
+    append-only, so the model states :current_state:.
+    The table is an audit log like the run token issue log, and follows it: its
+    tenant_id is an ordinary text column isolated by a policy in
+    iam_rls_policies_create.sql, and only IAM's own exchange writes it, each row
+    through a session of its own tenant. No retention policy is set.
+    The table is internal, so only the data layer and the SQL schema are generated.
+    The reads stay hand-written in agent_token_issue_log.
     end note
 
     entity ores_iam_auth_events_tbl  #F7E5FF {

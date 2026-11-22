@@ -129,36 +129,12 @@ std::chrono::system_clock::now() + std::chrono::hours(24 * 30)
 :default_value: {}
 :END:
 
-When the grant was revoked; empty while it is active.
+When the grant was revoked; empty while it is active. Who revoked it and why
+are the revoking version's =modified_by= and change commentary, as for any
+change, so the grant holds no column of its own for them.
 
 #+begin_src cpp :name generator
 std::chrono::system_clock::time_point{}
-#+end_src
-
-** revoked_by
-:PROPERTIES:
-:type:     text
-:cpp_type: std::string
-:nullable: true
-:END:
-
-Who revoked the grant: its person, or an administrator.
-
-#+begin_src cpp :name generator
-std::string("")
-#+end_src
-
-** revoke_reason
-:PROPERTIES:
-:type:     text
-:cpp_type: std::string
-:nullable: true
-:END:
-
-Why the grant was revoked, in the revoker's words.
-
-#+begin_src cpp :name generator
-std::string("")
 #+end_src
 
 * SQL

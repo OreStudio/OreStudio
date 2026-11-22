@@ -213,6 +213,10 @@ struct exchange_agent_key_request {
      */
     static constexpr bool requires_session = true;
     std::string key;
+    /**
+     * @brief The agent's address as ores.http saw it, for its session and the log.
+     */
+    std::string client_address;
 
     friend bool operator==(const exchange_agent_key_request&,
                            const exchange_agent_key_request&) = default;
@@ -405,6 +409,8 @@ struct list_own_agent_grants_response {
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<exchange_agent_key_request>) {
     return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"key", &exchange_agent_key_request::key},
+        ::ores::utility::codec::field{"client_address",
+                                      &exchange_agent_key_request::client_address},
     };
 }
 

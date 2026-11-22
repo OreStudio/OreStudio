@@ -64,8 +64,6 @@ struct agent_grant_entity {
     boost::uuids::uuid role_id;
     db_timestamp not_after;
     std::optional<db_timestamp> revoked_at;
-    std::optional<std::string> revoked_by;
-    std::optional<std::string> revoke_reason;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
@@ -88,8 +86,6 @@ struct agent_grant_entity {
                query_builder::bind("role_id", &e::role_id) |
                query_builder::bind("not_after", &e::not_after) |
                query_builder::bind("revoked_at", &e::revoked_at) |
-               query_builder::bind("revoked_by", &e::revoked_by) |
-               query_builder::bind("revoke_reason", &e::revoke_reason) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |
                query_builder::bind("change_reason_code", &e::change_reason_code) |

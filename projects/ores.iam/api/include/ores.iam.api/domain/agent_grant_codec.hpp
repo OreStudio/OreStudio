@@ -56,8 +56,6 @@ namespace ores::iam::domain {
         utility::codec::field{"role_id", &agent_grant::role_id},
         utility::codec::field{"not_after", &agent_grant::not_after},
         utility::codec::field{"revoked_at", &agent_grant::revoked_at},
-        utility::codec::field{"revoked_by", &agent_grant::revoked_by},
-        utility::codec::field{"revoke_reason", &agent_grant::revoke_reason},
         utility::codec::field{"modified_by", &agent_grant::modified_by},
         utility::codec::field{"performed_by", &agent_grant::performed_by},
         utility::codec::field{"change_reason_code", &agent_grant::change_reason_code},

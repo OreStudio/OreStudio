@@ -40,8 +40,6 @@ export interface AgentGrant {
     role_id: string;
     not_after: string;
     revoked_at: string;
-    revoked_by: string;
-    revoke_reason: string;
     modified_by: string;
     performed_by: string;
     change_reason_code: string;

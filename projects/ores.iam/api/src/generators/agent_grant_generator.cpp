@@ -52,8 +52,6 @@ domain::agent_grant generate_synthetic_agent_grant(utility::generation::generati
     r.role_id = ctx.generate_uuid();
     r.not_after = std::chrono::system_clock::now() + std::chrono::hours(24 * 30);
     r.revoked_at = std::chrono::system_clock::time_point{};
-    r.revoked_by = std::string("");
-    r.revoke_reason = std::string("");
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

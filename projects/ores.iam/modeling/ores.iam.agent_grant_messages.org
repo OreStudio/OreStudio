@@ -281,6 +281,17 @@ it. [[id:A7E2942C-66AD-449C-B80B-CA789EBC34FA][Agent grants: delegated consent f
 :cpp_type: std::string
 :END:
 
+*** client_address
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The agent's address as ores.http saw it, for its session and the log.
+ */
+#+end_src
+
 ** exchange_agent_key_response
 
 #+begin_src cpp :name comment

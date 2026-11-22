@@ -54,8 +54,6 @@ domain::agent_grant agent_grant_mapper::map(const agent_grant_entity& v) {
     r.role_id = v.role_id;
     r.not_after = v.not_after;
     r.revoked_at = v.revoked_at.value_or(db_timestamp{});
-    r.revoked_by = v.revoked_by.value_or("");
-    r.revoke_reason = v.revoke_reason.value_or("");
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -79,8 +77,6 @@ agent_grant_entity agent_grant_mapper::map(const domain::agent_grant& v) {
     r.role_id = v.role_id;
     r.not_after = v.not_after;
     r.revoked_at = v.revoked_at == db_timestamp{} ? std::nullopt : std::optional(v.revoked_at);
-    r.revoked_by = v.revoked_by.empty() ? std::nullopt : std::optional(v.revoked_by);
-    r.revoke_reason = v.revoke_reason.empty() ? std::nullopt : std::optional(v.revoke_reason);
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

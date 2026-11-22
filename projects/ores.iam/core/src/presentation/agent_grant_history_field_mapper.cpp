@@ -47,8 +47,6 @@ render_agent_grant_fields(const domain::agent_grant& v) {
                       .value = ores::platform::time::datetime::to_iso8601_utc(v.not_after)});
     fields.push_back({.name = "Revoked At",
                       .value = ores::platform::time::datetime::to_iso8601_utc(v.revoked_at)});
-    fields.push_back({.name = "Revoked By", .value = v.revoked_by});
-    fields.push_back({.name = "Revoke Reason", .value = v.revoke_reason});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

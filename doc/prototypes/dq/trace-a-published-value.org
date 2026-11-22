@@ -75,6 +75,9 @@ point. The open question is whether the forward half belongs in this screen at
 all before the reference becomes an identifier: if it never does, this page is a
 provenance screen and the trades question needs its own home in the trading area.
 
+*Signed off* on 2026-11-22 by Marco, on the page as it stands. The open question
+above is a note for the build.
+
 * See also
 
 - [[file:index.org][DQ prototypes]] — the group this belongs to.

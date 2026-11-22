@@ -74,6 +74,9 @@ whether the republish can be narrowed to the corrected rows once the artefact
 tables are served, because running a whole dataset to change one value is
 tolerable only while the skipped count is trustworthy.
 
+*Signed off* on 2026-11-22 by Marco, on the page as it stands. The open question
+above is a note for the build.
+
 * See also
 
 - [[file:index.org][DQ prototypes]] — the group this belongs to.

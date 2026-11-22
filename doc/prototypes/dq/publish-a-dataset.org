@@ -74,6 +74,9 @@ answer to a verb that cannot check what the model requires. One question is left
 open — whether this belongs on the same page as the coverage screen, since a
 person reaches it from a gap there, or stays a page of its own with the bundle.
 
+*Signed off* on 2026-11-22 by Marco, on the page as it stands. The open question
+above is a note for the build.
+
 * See also
 
 - [[file:index.org][DQ prototypes]] — the group this belongs to.

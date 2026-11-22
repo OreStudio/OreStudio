@@ -20,7 +20,7 @@ with the preview that makes a run readable before it happens. The other three
 draw the narrower doors: one dataset on its own, one staged row corrected and
 republished, and a published value traced back to its dataset.
 
-The set was signed off on 2026-11-22, on the pages as they stand; each design
+The five were signed off on 2026-11-22, on the pages as they stand; each design
 note records it and the questions it hands to the build.
 
 Each one is a static page under =doc/prototypes/=, opens with no build and no

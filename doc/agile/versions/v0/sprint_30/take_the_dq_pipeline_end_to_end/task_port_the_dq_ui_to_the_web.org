@@ -45,7 +45,7 @@ that precedent and its field tables.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:7D2BBBBC-36A3-4BFB-9673-0F9005991D94][Take the DQ pipeline end to end]] |
-| Now          | The Qt area is inventoried, all five journeys are written, and five prototypes answer them. |
+| Now          | All five journeys are written and their five prototypes are signed off. |
 | Waiting on   | Nothing. The publish model is settled. |
 | Next         | Build the screens from the shared parts, then prove each journey on a fresh database. |
 | Last touched | 2026-11-22                              |
@@ -109,9 +109,8 @@ not ready; its wireframe is rendered beside it.
 Five prototypes answer the five journeys, one each, listed on
 [[proj:doc/prototypes/dq/index.org][=doc/prototypes/dq/index.org=]]: coverage,
 publish a dataset, publish a bundle, correct one artefact, and trace a published
-value. All are drawn on the project's prototype shell. Coverage and publish a
-bundle were signed off on 2026-11-22; the other three are drawn and not yet
-signed off. Review cells stay at =none=, because a review there is a generated
+value. All are drawn on the project's prototype shell and all five were signed off on
+2026-11-22. Review cells stay at =none=, because a review there is a generated
 alternative to the agreed design and none has been generated.
 
 The Qt area is inventoried in

@@ -101,6 +101,12 @@ task and name that file in the Command column.
 
 * Notes
 
+- The =compass:except(sql_reachability/missing_include)= in
+  =projects/ores.sql/populate/orgmode/orgmode_populate.sql= excuses a false
+  positive: compass read the psql variable =:knowledge_pages_populate= as a
+  path. compass PR #160 fixes it. Delete the exception once the pinned
+  compass-ng carries #160; compass-85 will name the version.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

@@ -53,7 +53,7 @@ parties may agree the conditions for exercise in advance.
 Traders expire their own books. They need to see, for each cut, the options
 still to decide; to exclude a book with a recorded reason that reports show;
 and to see which of the day's cuts are complete. See
-[[id:FE1C63AB-A242-4B02-86AA-8035EEC8DF54][Expiry management works cut by cut, on frozen spots, with a preview before commit]].
+[[id:FE1C63AB-A242-4B02-86AA-8035EEC8DF54][Expiry is processed cut by cut against frozen spot rates]].
 
 * See also
 

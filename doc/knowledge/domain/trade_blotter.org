@@ -425,14 +425,14 @@ simultaneously).
 The Expiry Manager is the screen that decides every option at a cut: the
 working set, the spots held still, the tolerance, the actions and views, the cut
 timeline, the preview and the undo. It is described in
-[[id:FE1C63AB-A242-4B02-86AA-8035EEC8DF54][Expiry management works cut by cut, on frozen spots, with a preview before commit]],
+[[id:FE1C63AB-A242-4B02-86AA-8035EEC8DF54][Expiry is processed cut by cut against frozen spot rates]],
 within the [[id:C9887852-42C9-48BE-8E8C-BB66FCC48E83][Expiries]] cluster.
 
 * Fixing Manager
 
 The Fixing Manager is the screen on which operations authorise the observations
 that live trades require. Its roles, fields and control reports are described in
-[[id:B5CA0D8F-D9C5-4F09-ABD7-7ED6F0FEF1A5][Fixing management shows every required fixing and reports those not applied]],
+[[id:B5CA0D8F-D9C5-4F09-ABD7-7ED6F0FEF1A5][Fixing management authorises every fixing that live trades require]],
 within the [[id:784D9D97-721A-42EC-BA91-A85764979CD0][Fixings]] cluster.
 
 * Barrier Management

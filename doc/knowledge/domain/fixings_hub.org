@@ -35,7 +35,7 @@ Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
    crosses and composites.
 5. [[id:7B09CA1B-606D-493F-A784-676BAE701FC8][The WM/Reuters 4pm fix is the dominant FX benchmark]] —
    the leading FX source and the research on it.
-6. [[id:1BA05AA4-1B24-48B4-83F9-366624D0A88E][The products that require fixings, and what each fixing settles]] —
+6. [[id:1BA05AA4-1B24-48B4-83F9-366624D0A88E][Products that settle on fixings]] —
    swaps, non-deliverable trades, digitals, barriers, averages, volatility swaps.
 7. [[id:53DB3AF1-6FA4-4B53-9D8E-A65F739F6F4D][A fixing date follows the calendar of the rate it observes]] —
    fixing holidays and the dates of non-deliverable forwards.
@@ -43,13 +43,13 @@ Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
    the controlled process.
 9. [[id:C6A619F3-B2B6-42D5-9C41-5269A84BC96C][An observation is stored once per source and never stamped on the trades it fixes]] —
    the storage principle and its invariants.
-10. [[id:B5CA0D8F-D9C5-4F09-ABD7-7ED6F0FEF1A5][Fixing management shows every required fixing and reports those not applied]] —
+10. [[id:B5CA0D8F-D9C5-4F09-ABD7-7ED6F0FEF1A5][Fixing management authorises every fixing that live trades require]] —
     the operational view and the control reports.
-11. [[id:D4CA27E5-8194-470B-A422-B77C53545560][A fixing replaces a projected rate with an observed one, which moves value, risk and P&L]] —
+11. [[id:D4CA27E5-8194-470B-A422-B77C53545560][A fixing replaces a projected rate with an observed one]] —
     valuation, risk jumps and attribution.
-12. [[id:2400E0FE-AEF0-4F9A-8392-F7D2E0E2A1E2][A data model for fixings: sources, definitions, observations and events]] —
+12. [[id:2400E0FE-AEF0-4F9A-8392-F7D2E0E2A1E2][A data model for fixings]] —
     the entities, and what ORE Studio holds today.
-13. [[id:5AF9CEEF-A878-443A-8C32-C6E9F6C26FC9][The fixing sources ORE Studio supports, and the cut each one serves]] —
+13. [[id:5AF9CEEF-A878-443A-8C32-C6E9F6C26FC9][Each option cut requires a fixing source observed at its instant]] —
     the standard sources, the cut each serves, and their producers.
 14. [[id:F24FA489-790A-4065-B8E1-DCC141595356][A simulated fixing source is a publisher the simulator serves]] —
     how the simulator produces the fixings of a simulated source.

@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 16A04B6A-AB93-4C50-9273-E18CC0130C5F
 :END:
-#+title: An option ends in one of three ways: exercised, expired or settled from a fixing
+#+title: Expiry resolves an option by exercise, lapse or fixing
 #+description: Expiry ends an option's risk: it is exercised into a trade or cash, expires worthless, or settles from a fixing.
 #+type: knowledge
 #+audience: user

@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 0E638BE0-E3DA-4D05-A2FC-0F52FC1D24FC
 :END:
-#+title: Every expiry event has an inverse, and an option past its expiry waits for a decision
+#+title: Every expiry event has an inverse
 #+description: An exercise or an expiry can be reversed; an option past its cut is in a waiting state until the holder decides.
 #+type: knowledge
 #+audience: user

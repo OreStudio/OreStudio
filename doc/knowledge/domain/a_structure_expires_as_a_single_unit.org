@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 04278F00-8B96-4987-9AF1-61E971B9087C
 :END:
-#+title: An expiry action defaults by product, and a structure expires as one
+#+title: A structure expires as a single unit
 #+description: Each product has a default expiry action; a structure is expired and netted as one, by FX or by cash.
 #+type: knowledge
 #+audience: user
@@ -70,7 +70,7 @@ of an expiry.
 * See also
 
 - [[id:C9887852-42C9-48BE-8E8C-BB66FCC48E83][Expiries]] — the structure note.
-- [[id:16A04B6A-AB93-4C50-9273-E18CC0130C5F][An option ends in one of three ways]] — completes: how each action settles.
+- [[id:16A04B6A-AB93-4C50-9273-E18CC0130C5F][Expiry resolves an option by exercise, lapse or fixing]] — completes: how each action settles.
 
 * Sources
 

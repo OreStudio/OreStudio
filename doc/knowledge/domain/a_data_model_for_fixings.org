@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 2400E0FE-AEF0-4F9A-8392-F7D2E0E2A1E2
 :END:
-#+title: A data model for fixings: sources, definitions, observations and events
+#+title: A data model for fixings
 #+description: The entities fixings imply, their invariants, and how far the ORE Studio market data store already holds them.
 #+type: knowledge
 #+audience: user
@@ -80,7 +80,7 @@ checks both need that answer: a generated trade should name only a definition
 that has a producer.
 
 The supported sources and their producers are listed in
-[[id:5AF9CEEF-A878-443A-8C32-C6E9F6C26FC9][The fixing sources ORE Studio supports, and the cut each one serves]], and the
+[[id:5AF9CEEF-A878-443A-8C32-C6E9F6C26FC9][Each option cut requires a fixing source observed at its instant]], and the
 path by which the simulator fills a simulated source is in
 [[id:F24FA489-790A-4065-B8E1-DCC141595356][A simulated fixing source is a publisher the simulator serves]].
 

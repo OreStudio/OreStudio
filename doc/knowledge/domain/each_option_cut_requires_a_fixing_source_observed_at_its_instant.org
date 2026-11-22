@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 5AF9CEEF-A878-443A-8C32-C6E9F6C26FC9
 :END:
-#+title: The fixing sources ORE Studio supports, and the cut each one serves
+#+title: Each option cut requires a fixing source observed at its instant
 #+description: The standard FX, NDF and interest rate fixing sources, the option cut each serves, and whether its values are observed or simulated.
 #+type: knowledge
 #+audience: user

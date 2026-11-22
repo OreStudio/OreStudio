@@ -54,7 +54,7 @@ the fixings that follow expiries are in
 | Non-deliverable warnings | Holiday conflicts on expiry, delivery and fixing dates |
 
 The fixing controls are in
-[[id:B5CA0D8F-D9C5-4F09-ABD7-7ED6F0FEF1A5][Fixing management shows every required fixing and reports those not applied]].
+[[id:B5CA0D8F-D9C5-4F09-ABD7-7ED6F0FEF1A5][Fixing management authorises every fixing that live trades require]].
 The front-office screen marks expired trades and those expiring or maturing
 today; see [[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade Blotter]].
 

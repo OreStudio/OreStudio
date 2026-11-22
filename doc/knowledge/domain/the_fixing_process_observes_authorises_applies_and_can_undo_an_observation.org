@@ -87,7 +87,7 @@ unfix is an event, gives the undo and the audit for free.
 * See also
 
 - [[id:784D9D97-721A-42EC-BA91-A85764979CD0][Fixings]] — the structure note.
-- [[id:B5CA0D8F-D9C5-4F09-ABD7-7ED6F0FEF1A5][Fixing management shows every required fixing and reports those not applied]] — completes: the views and the controls.
+- [[id:B5CA0D8F-D9C5-4F09-ABD7-7ED6F0FEF1A5][Fixing management authorises every fixing that live trades require]] — completes: the views and the controls.
 - [[id:24748A22-DB67-4E22-A52F-5D0FBA668D10][Trade]] — completes: the trade life cycle the fixings drive.
 
 * Sources

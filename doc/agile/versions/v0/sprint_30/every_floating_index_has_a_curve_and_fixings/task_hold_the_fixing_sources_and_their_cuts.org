@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Hold the fixing sources of The fixing sources ORE Studio supports, and the cut each one serves as reference data: label, administrator, kind (published, keyed, derived), asset, time and zone, holiday calendar, rounding, status (active or ceased) and producer (observed or simulated). Give the cut code its entity, as the cuts story designed it, and have each cut name its fixing source. Seed the WM/R cut sources, the central-bank FX references, the settlement rate options of the non-deliverable currencies and the interest rate indices.
+Hold the fixing sources of [[id:5AF9CEEF-A878-443A-8C32-C6E9F6C26FC9][Each option cut requires a fixing source observed at its instant]] as reference data: label, administrator, kind (published, keyed, derived), asset, time and zone, holiday calendar, rounding, status (active or ceased) and producer (observed or simulated). Give the cut code its entity, as the cuts story designed it, and have each cut name its fixing source. Seed the WM/R cut sources, the central-bank FX references, the settlement rate options of the non-deliverable currencies and the interest rate indices.
 
 * Status
 

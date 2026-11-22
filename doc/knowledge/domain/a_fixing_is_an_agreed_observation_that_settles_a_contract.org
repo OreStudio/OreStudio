@@ -72,7 +72,7 @@ fixing's identity. The oresmd URI names a fixing with =type=fixing=; see
 
 - [[id:784D9D97-721A-42EC-BA91-A85764979CD0][Fixings]] — the structure note.
 - [[id:0CBDBE85-17DF-4A77-A231-FFB2101FC0CC][A fixing automates the decision an expiry leaves to the holder]] — contrasts: the manual counterpart.
-- [[id:1BA05AA4-1B24-48B4-83F9-366624D0A88E][The products that require fixings]] — exemplifies: what each fixing settles.
+- [[id:1BA05AA4-1B24-48B4-83F9-366624D0A88E][Products that settle on fixings]] — exemplifies: what each fixing settles.
 
 * Sources
 

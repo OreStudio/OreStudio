@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 1BA05AA4-1B24-48B4-83F9-366624D0A88E
 :END:
-#+title: The products that require fixings, and what each fixing settles
+#+title: Products that settle on fixings
 #+description: Swaps, NDFs, NDOs, digitals, discrete barriers, averages and volatility swaps each need fixings for a different result.
 #+type: knowledge
 #+audience: user

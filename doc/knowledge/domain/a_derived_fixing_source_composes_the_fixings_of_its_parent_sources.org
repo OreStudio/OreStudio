@@ -45,7 +45,7 @@ once the later parent is published. See
 
 A view of required fixings should show, for a derived source, the parent
 sources it was computed from, so that an authoriser can check each parent. See
-[[id:B5CA0D8F-D9C5-4F09-ABD7-7ED6F0FEF1A5][Fixing management shows every required fixing and reports those not applied]].
+[[id:B5CA0D8F-D9C5-4F09-ABD7-7ED6F0FEF1A5][Fixing management authorises every fixing that live trades require]].
 
 * See also
 

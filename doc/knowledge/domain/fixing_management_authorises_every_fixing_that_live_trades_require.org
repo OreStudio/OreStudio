@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: B5CA0D8F-D9C5-4F09-ABD7-7ED6F0FEF1A5
 :END:
-#+title: Fixing management shows every required fixing and reports those not applied
+#+title: Fixing management authorises every fixing that live trades require
 #+description: A fixings view lists the observations live trades require for authorisation; control reports find fixings not applied.
 #+type: knowledge
 #+audience: user

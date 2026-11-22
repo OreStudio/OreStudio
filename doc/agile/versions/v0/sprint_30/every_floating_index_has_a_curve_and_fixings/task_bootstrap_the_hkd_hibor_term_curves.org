@@ -29,11 +29,11 @@ trades of ACCOHK have a curve to be valued on.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:0F936789-FEBE-4330-97B9-DFE0837E4466][Every index a generated trade floats on has a curve and fixings]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-21                               |
 
 * Acceptance
@@ -85,6 +85,9 @@ task and name that file in the Command column.
 |------+-------+---------+--------|
 | HKD HIBOR addresses with no fixings | 3, the floating index of 127 of ACCOHK's 252 trades | =evidence/fixing_gap_by_trade.sql=, readings in =evidence/fixing_gap_by_trade.txt= | c0f6ed8c38 |
 | HKD curves | HONIA only | =evidence/fixing_gap_by_trade.sql=, readings in =evidence/fixing_gap_by_trade.txt= | c0f6ed8c38 |
+| Empty interest rate fixing addresses after this task | 12 of 21, none of them HKD HIBOR (15 before) | =evidence/fixing_gap_by_trade.sql=, readings in =evidence/hkd_hibor_fixings.txt= | f3b7e74012 |
+| Fixings of HKD HIBOR 2W, 1M and 3M, GBP LIBOR 1W and EURIBOR 1W | 520 each, on a fresh provision with no restart | the query in =evidence/hkd_hibor_fixings.txt= | f3b7e74012 |
+| Vendor instruments the regeneration added | 24, none changed | =git diff= of =marketdata_vendor_instruments_populate.sql= | 08cffa2e72 |
 
 * Notes
 
@@ -124,3 +127,35 @@ via its "Verifies task" field.
 | 5 | The pooler story doc could go in a separate PR | =run_the_tests_through_the_pooler= | Decline | Kept on this branch on purpose, so the story is reviewed with the work in flight. |
 
 * Result
+
+HKD has HIBOR term curves at 2W, 1M and 3M. Each is a Tradeweb feed at
+HONIA's level plus a stated, illustrative spread, with a projection bootstrap
+config on HKD-HONIA and its series and pillars. On a fresh acme_demo
+provision with no restart, each of the three HKD HIBOR fixing addresses holds
+520 fixings, and no ACCOHK trade floats on an empty HKD HIBOR address. The
+empty interest rate fixing addresses went from 15 to 12; the 12 left belong
+to the tasks Draw only the indices the market can serve and Derive a term
+index from its overnight curve (=evidence/hkd_hibor_fixings.txt=).
+
+A curve now starts with a spot deposit at its tenor when no deposit or FRA of
+the template ends there. This gave GBP LIBOR 1W and EURIBOR 1W their fixings
+too, 520 each; before, they stated none.
+
+The local gate at f3b7e74012 ran 14 checks and failed 2. Neither failure
+comes from this change:
+
+- ctest failed the 16 suites the pooler breaks on main, the set the story
+  Run the tests through the pooler describes: 13 config parser suites and
+  the refdata, inbox and workflow core suites.
+- ticks-smoke failed at services start. The market data service writes 5496
+  demand intervals before it reports ready, misses systemd's start timeout,
+  and the official rates adapter then fails on the dependency. The task
+  Ready the market data service before its usage sync owns this.
+
+Acceptance:
+
+- The IBOR bootstrap configs hold HKD HIBOR at 2W, 1M and 3M, each with its
+  spread; the spreads are stated as illustrative, not sourced. Met.
+- On a fresh acme_demo provision, the three HKD HIBOR fixing addresses
+  answer. Met.
+

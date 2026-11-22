@@ -1,0 +1,41 @@
+The fixing gap after the HKD HIBOR term curves, read with fixing_gap_by_trade.sql
+beside this file.
+
+Environment clever_dijkstra, branch feature/bootstrap-the-hkd-hibor-term-curves
+at f3b7e74012, 2026-11-21: a fresh database (compass db recreate -y -k), the
+services started (24 of 25 units; ores.marketdata.official did not start, the
+start-order gap of the story A service waits for its dependencies and recovers
+when they return), and Acme provisioned with
+how_do_i_provision_the_system_with_acme_corporation_holding_group.ores
+(profile acme_demo). No service was restarted.
+
+== The gap
+
+ trades | ir_fixing_addresses | empty_ir_fixing_addresses
+--------+---------------------+---------------------------
+    927 |                  21 |                        12
+
+The 12 empty addresses are the 11 cross-currency foreign legs of ACCOHK (AOA,
+BWP, COP IBR, IDR, JPY EYTIBOR, KRW, MYR, OMR, PLN WIBOR, SAR SAIBOR, THB
+BIBOR) and USD SOFR 1M of one ACCOUS Ascot. No HKD HIBOR address is empty.
+
+== The fixings of the new curves, and of the 1W curves the template change reaches
+
+ oresmd_uri                                                   | fixings
+--------------------------------------------------------------+---------
+ oresmd://ir/EUR?type=fixing&index=ibor&name=EURIBOR&tenor=1W |     520
+ oresmd://ir/GBP?type=fixing&index=ibor&name=LIBOR&tenor=1W   |     520
+ oresmd://ir/HKD?type=fixing&index=ibor&name=HIBOR&tenor=1M   |     520
+ oresmd://ir/HKD?type=fixing&index=ibor&name=HIBOR&tenor=2W   |     520
+ oresmd://ir/HKD?type=fixing&index=ibor&name=HIBOR&tenor=3M   |     520
+
+Query:
+
+select s.oresmd_uri, count(f.*) as fixings
+from ores_marketdata_market_series_tbl s
+left join ores_marketdata_market_fixings_tbl f
+  on f.series_id = s.id and f.valid_to = ores_utility_infinity_timestamp_fn()
+where s.valid_to = ores_utility_infinity_timestamp_fn()
+  and s.oresmd_uri like 'oresmd://ir/%type=fixing%'
+  and (s.oresmd_uri like '%HKD?%name=HIBOR%' or s.oresmd_uri like '%tenor=1W%')
+group by 1 order by 1;

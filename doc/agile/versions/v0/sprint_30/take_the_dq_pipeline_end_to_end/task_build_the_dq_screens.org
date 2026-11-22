@@ -9,7 +9,7 @@
 #+owner: marco
 #+branch: feature/build-the-dq-screens
 #+pr:
-#+blocked_on: the DQ reads on both deployments, the coverage operation, the per-dataset preview, the artefact read and write, and the published-row count
+#+blocked_on: the DQ reads on the C++ server, the coverage operation, the per-dataset preview, the artefact read and write, and the published-row count
 #+blocked_since: 2026-11-22
 #+created: 2026-11-22
 #+updated: 2026-11-22
@@ -29,7 +29,7 @@ ores.web shows each dataset, its artefacts, whether it is published, and offers 
 | State        | BACKLOG                              |
 | Parent story | [[id:7D2BBBBC-36A3-4BFB-9673-0F9005991D94][Take the DQ pipeline end to end, from a seeded artefact table to a published system]] |
 | Now          | Not yet started. The design it builds from is signed off and on main. |
-| Waiting on   | The DQ reads on both deployments, and the operations the journeys name. |
+| Waiting on   | The DQ reads on the C++ server, and the operations the journeys name. |
 | Next         | The coverage screen, once its reads answer on both deployments. |
 | Last touched | 2026-11-22                               |
 
@@ -42,9 +42,9 @@ ores.web shows each dataset, its artefacts, whether it is published, and offers 
 * Plan
 
 1. Serve the reads the screens need from both deployments, as
-   [[id:43B17B69-D1CA-4333-98BF-462AA5ECD8EF][Serve the DQ reads from both the C++ server and the BFF]]
-   does: one web API module through =baseFor('dq')=, and the same paths on
-   =ores.http= and on the BFF.
+   [[id:43B17B69-D1CA-4333-98BF-462AA5ECD8EF][Serve the DQ reads from the C++ server]]
+   does: one web API module against =ores.http=. The BFF is not served, because
+   it is being decommissioned.
 2. Build the operations the journeys read: the coverage operation over the three
    discovery functions, the per-dataset preview, and the published-row count.
 3. Build the artefact read and write, without which the correction cannot start.

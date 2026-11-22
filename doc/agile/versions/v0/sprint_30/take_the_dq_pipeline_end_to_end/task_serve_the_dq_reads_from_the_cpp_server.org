@@ -1,0 +1,82 @@
+:PROPERTIES:
+:ID: 43B17B69-D1CA-4333-98BF-462AA5ECD8EF
+:END:
+#+title: Task: Serve the DQ reads from the C++ server
+#+description: The DQ screens need DQ reads and the C++ server has no DQ HTTP part. The BFF is being decommissioned, so only ores.http is served.
+#+type: task
+#+level: s1
+#+filetags: :take_the_dq_pipeline_end_to_end:sprint_30:v0:
+#+owner: marco
+#+branch: feature/build-the-dq-screens
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7D2BBBBC-36A3-4BFB-9673-0F9005991D94][Take the DQ pipeline end to end, from a seeded artefact table to a published system]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The DQ reads the screens need answer on ores.http, so a DQ screen runs on the surviving deployment. The BFF is not served: it is being decommissioned.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:7D2BBBBC-36A3-4BFB-9673-0F9005991D94][Take the DQ pipeline end to end, from a seeded artefact table to a published system]] |
+| Now          | Clocked on. There is no DQ part on ores.http, and the BFF is not served. |
+| Waiting on   | Nothing.                               |
+| Next         | The DQ reads the coverage screen needs, on ores.http. |
+| Last touched | 2026-11-22                               |
+
+* Acceptance
+
+- ores.http gains a dq part that answers the reads the coverage screen needs: datasets, dataset bundles, bundle members by bundle code, and artefact types.
+- One web API module, api/dq.ts, sends every call to ores.http.
+- A route test on the generated part proves each read answers, and the module's unit test proves the screen reads what the route returns.
+
+* Plan
+
+1. Scaffold =projects/ores.http/dq= by copying a part of the same shape, and add
+   it to the http tree's CMake.
+2. Turn on =:ores.cpp.http-route.enabled: true= on the DQ models the screens read:
+   =ores.dq.dataset=, =ores.dq.dataset_bundle=,
+   =ores.dq.dataset_bundle_member_junction=, =ores.dq.artefact_type=.
+3. Generate, and check the part renders into =projects/ores.http/dq/= with a test.
+4. Register the part's aggregate in the server's application, and build.
+5. Add =api/dq.ts= to ores.web with the reads typed, and a unit test.
+
+The BFF is not in the plan: it is being decommissioned.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+The C++ server has HTTP parts for analytics, assets, compute, core, iam,
+marketdata, refdata, reporting, synthetic, trading and workflow, and none for
+dq: the reads the screens need are served by nobody.
+
+The BFF is deliberately not served, because it is being decommissioned. Writing
+a route there would be work for a component on its way out; the screens are
+built against =ores.http=.
+
+Most of the route code is generated: a DQ entity model that opts into
+=:ores.cpp.http-route.enabled: true= renders its route header, implementation and
+tests into =projects/ores.http/dq/=, so this task is the part's scaffold, the
+facet on the right models, the aggregate registration and the build.

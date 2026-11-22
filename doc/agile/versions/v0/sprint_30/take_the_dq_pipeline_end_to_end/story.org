@@ -28,7 +28,7 @@ driven.
 | State         | STARTED                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
 | Now           | The design is delivered and signed off: five journeys and five prototypes. The screens are not built. |
-| Waiting on    | The DQ reads on both deployments, which no server serves today. |
+| Waiting on    | The DQ reads on the C++ server, which no server serves today. |
 | Next          | Serve the reads, then build coverage and the two publish journeys. |
 | Last touched  | 2026-11-22                               |
 
@@ -91,7 +91,7 @@ levels, so it can only be designed once 1 and 2 have an answer.
 | [[id:B8609EB8-C1C1-4280-A487-C76D78AC8877][Review the publishing pipeline end to end]] | DONE | 2026-11-14 | 2026-11-21 | The analysis: documented model, implemented model, inventories, defects. |
 | [[id:E9BBFCCD-8E21-4C92-AAD1-A07941AD1C8B][Publish every seeded dataset at the level it belongs]] | ABANDONED | | | Superseded: its scope is the six mop-up tasks below. |
 | [[id:34A4373F-1BD1-4710-885B-95B3C3A3B8F7][Design and build the DQ screens from the journeys]] | DONE | 2026-11-22 | 2026-11-22 | Journeys first, prototypes, then screens built from the shared parts. Not a port. |
-| [[id:43B17B69-D1CA-4333-98BF-462AA5ECD8EF][Serve the DQ reads from both the C++ server and the BFF]] | STARTED | 2026-11-22 | | No deployment serves a DQ read today; this gives both the same paths. |
+| [[id:43B17B69-D1CA-4333-98BF-462AA5ECD8EF][Serve the DQ reads from the C++ server]] | STARTED | 2026-11-22 | | No server serves a DQ read today; this gives ores.http the ones the screens need. |
 | [[id:E25ACD77-495D-4D8E-832B-69B44C213D18][Build the DQ screens from the signed-off prototypes]] | BACKLOG | | | The design half is done; this builds the screens, and the operations they read. |
 | [[id:7F37FF2D-EDF1-4F69-AAA5-EA57B91DAF53][Settle the three levels and the bundle map]] | DONE | 2026-11-14 | 2026-11-14 | One documented level model, one bundle per level, and no name that means two opposite things. |
 | [[id:56FB3A5C-FDC7-4F98-A5F3-CE46DB551882][Publish the world at database bring-up]] | DONE | 2026-11-14 | 2026-11-14 | A recreated database carries the canonical reference data, so no test has to provision or publish for itself. |
@@ -100,7 +100,7 @@ levels, so it can only be designed once 1 and 2 have an answer.
 | [[id:16127025-230A-4723-A04E-02906ED26CCC][Make the publish guarantees real]] | DONE | 2026-11-21 | 2026-11-21 | The audit row and the atomicity left, the level is enforced, and the catalogue checks read the caller's tenant. |
 | [[id:9D8A7038-FF2B-4F09-9BD3-E487B5ED0A48][Retire the legacy patterns and align the documentation]] | DONE | 2026-11-22 | 2026-11-22 | The catalogued legacy patterns are retired and the documents state the live model once. |
 | [[id:E25ACD77-495D-4D8E-832B-69B44C213D18][Build the DQ screens from the signed-off prototypes]] | BACKLOG | | | The five DQ journeys and their signed-off prototypes are on main; the screens themselves are not built, and three of the five need operations the server does not serve. |
-| [[id:43B17B69-D1CA-4333-98BF-462AA5ECD8EF][Serve the DQ reads from both the C++ server and the BFF]] | STARTED | 2026-11-22 | | The DQ screens need DQ reads that no deployment serves today: the C++ server has no DQ HTTP part, and the BFF has no DQ route. Both must answer the same paths before a screen can run on either. |
+| [[id:43B17B69-D1CA-4333-98BF-462AA5ECD8EF][Serve the DQ reads from the C++ server]] | STARTED | 2026-11-22 | | The C++ server has no DQ HTTP part, so the reads the screens need are served by nobody. The BFF is not served: it is being decommissioned. |
 
 * Decisions
 

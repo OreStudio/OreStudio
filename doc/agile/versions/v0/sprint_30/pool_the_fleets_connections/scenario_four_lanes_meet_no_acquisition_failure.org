@@ -35,7 +35,7 @@ This page documents a test scenario verifying [[id:CE661B08-A485-4326-9558-3AE58
 | Parent story  | [[id:A75C3063-896F-4DD5-A9BC-893A59EDFF7E][Pool the fleet's connections]]   |
 | Target screen | None: this scenario reads the fleet's journal. |
 | Clients       |                                          |
-| State         | PENDING                               |
+| State         | PASSED                                |
 
 * Steps
 
@@ -69,11 +69,11 @@ This page documents a test scenario verifying [[id:CE661B08-A485-4326-9558-3AE58
 
 | Field         | Value |
 |---------------+-------|
-| Status        |       |
-| Completed at  |       |
-| Branch        |       |
-| Commit        |       |
-| Worktree      |       |
+| Status        | PASSED |
+| Completed at  | 2026-11-22 18:00 |
+| Branch        | feature/diagnose-the-provision-stall |
+| Commit        | be4c78c522 |
+| Worktree      | ores_dev_merry_newton |
 
 * Notes
 
@@ -115,3 +115,39 @@ provision the system inside the step's budget.
 
 Next: start the fleet, wait for every unit to report healthy, then rerun this
 scenario's Step 2 and watch =pg_stat_activity= while it runs.
+
+** 2026-11-22 — passed, on a rebuilt tree
+
+The two attempts above shared one cause, and it was not the pool. Every
+executable in the tree was older than the libraries it loads: =ores.shell= and
+=ores.dq.service= were linked on 21 November at 14:57, and the libraries those
+binaries call were rebuilt on 22 November. A full =compass build= relinked 691
+targets, and the faults went with the skew. Three symptoms, one cause:
+
+- =ores.dq.service= took the =system_core= request, died in the copy its own
+  decoder made of it, and left the publishing step with a transport timeout. The
+  core dump names the frame: =publish_bundle_request::publish_bundle_request=
+  copying a string whose data pointer was =0x5c=.
+- A shell command against the same subject reported =std::bad_alloc= before any
+  reply arrived. After the relink the same command reaches =dq= and reads the
+  refusal the handler states.
+- =system_provision= reported no progress for 20m 17s after that death, because
+  the step holds its phase record still while it waits on a run that cannot
+  finish.
+
+The run after the rebuild: =.env= at version 36, the database recreated
+(5m 07s), the fleet started with 24 of 25 units (the official provider adapter
+stays down without its vendor tokens), then the provisioning script.
+
+- =system_provision= completed, publishing =system_core=.
+- =publish_party_curves= completed in 11m 41s, =publish_party_forwards= in 45s,
+  =publish_party_surfaces= in 0.13s.
+- =complete_provisioning= marked the tenant active at 18:00:39.
+- =journalctl --user -u ores.marketdata.service-merry_newton --since "-90 min"=
+  holds no =No connection came free= line, and neither does the service's log
+  file. The pool of two that this scenario indicts recorded nothing.
+
+Four steps ended with warnings, and none of them is the pool: one staff photo
+the account insert cannot see although it sits live in the system tenant, 72
+party curves deferred behind funding curves that have published nothing, and the
+four surfaces no party holds a blueprint for. The first is captured in the inbox.

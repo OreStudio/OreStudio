@@ -106,7 +106,7 @@ generated files behind, both merged green because the check that would
 have caught them ran nowhere.
 
 Both enforced sets are deliberately partial, and the partiality is what
-makes them worth having. =check_component_drift.py= carries a registry
+makes them worth having. compass-ng's =codegen= codec checks a registry
 of components verified to regenerate byte-identical, and a component
 joins only once it does; compass-ng's =model_rules= codec carries named
 exceptions for bindings that cannot yet be satisfied. A gate that

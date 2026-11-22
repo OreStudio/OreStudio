@@ -98,14 +98,10 @@ the missing-function's name (derived from =flag_source=) isn't
 validated against the library at generation time. A backlog capture
 tracks giving this a build-time-or-earlier signal instead.
 
-** Regenerating: use the entity-scoped tool, not component-wide
+** Regenerating
 
-=./compass.sh codegen entity generate <entity> [--address <addr>]=
-targets exactly one entity. =./compass.sh codegen regenerate
---component <c> --address <addr>= regenerates *every* entity in the
-component — on a component with accumulated template drift against
-stale entities (common in this codebase), that diff can span dozens
-of unrelated files needing manual discard. See
+=./compass.sh generate --scope <model>= writes one entity's outputs, and
+only those whose content changed. See
 [[id:90BD6F75-FFCC-4D27-B92F-5EBCB923B4AB][How do I regenerate all layers for a domain entity?]].
 
 * See also
@@ -119,4 +115,4 @@ of unrelated files needing manual discard. See
   the capture that introduced =flagged_combo= itself.
 - [[id:A083FE26-521D-4046-9E58-AFB901B28809][Story: Codegen developer experience improvements]] — related codegen
   friction; its "no entity-level filter" item is stale now that
-  =compass codegen entity generate= exists.
+  =./compass.sh generate --scope <model>= exists.

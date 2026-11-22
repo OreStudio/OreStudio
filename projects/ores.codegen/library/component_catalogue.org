@@ -5,7 +5,7 @@
 #+description: Literate source for the codegen component registry. Maps each component name to its org-model directory and any org-type exclusions.
 #+type: ores.codegen.component_catalogue
 
-Consumed directly by =src/codegen/manifest.py= at startup via =_load_components()=. This file is the authoritative source; there is no intermediate JSON.
+Read by compass-ng's =codegen= codec from its library. This file is the authoritative source; there is no intermediate JSON.
 
 JSON model support was decommissioned (all models migrated to org). Every
 component discovers models exclusively through its =modeling_dir= — org

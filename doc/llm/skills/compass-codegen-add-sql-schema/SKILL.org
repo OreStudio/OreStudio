@@ -35,7 +35,7 @@ case, extend the template first, then generate.
    =ores.codegen.junction= for composite-text-PK association tables.
 
 2. /Generate the SQL schema/ (output goes to [[proj:projects/ores.sql][=projects/ores.sql/=]]):
-   =cd projects/ores.codegen && ./codegen.sh generate --model <path-to-model>.org --address ores.sql.schema=
+   =./compass.sh generate --scope <path-to-model>.org=
 
 3. /Register/ the generated file in the component orchestration script.
 

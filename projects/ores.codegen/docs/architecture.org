@@ -7,14 +7,16 @@
 #+level: cross
 #+filetags: :codegen:architecture:knowledge:
 #+created: 2026-05-18
-#+updated: 2026-07-17
+#+updated: 2026-11-22
 
 * Summary
 
 This document records how =ores.codegen= is built and how its parts
-fit together: where its code and data live, how the generator picks
-templates for models, how it handles modelines and licence headers,
-and the conventions it enforces.
+fit together: where its data lives, how templates are picked for
+models, how modelines and licence headers are handled, and the
+conventions it enforces. The renderer is compass-ng's =codegen= codec,
+which reads this component's library; the Python generator that
+rendered it before is deleted.
 
 For /what/ the component is and /how to operate it/, see
 [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] (the component model) and the recipes it links to.
@@ -25,105 +27,49 @@ For /what/ the component is and /how to operate it/, see
 
 #+begin_example
 projects/ores.codegen/
-├── library/
-│   ├── component_catalogue.org  # Component → models-dir/glob/modeling-dir (read by manifest.py)
+├── library/                 # compass-ng's codegen.library
+│   ├── component_catalogue.org
 │   ├── data/                # Static data (licences, modelines)
 │   │   ├── licence-GPL-v3.txt
-│   │   └── modeline.org     # Editor modelines — MASD-style org, read directly by core.py
+│   │   └── modeline.org     # Editor modelines, MASD-style org
 │   └── templates/           # Mustache templates + the ores.* physical-space
 │                             # graph (root -> technical space -> facet ->
 │                             # archetype), one org node per graph element,
 │                             # tangled to the .mustache files alongside them
-│       ├── ores.*.org       # Physical-space graph nodes (root/ts/facet/archetype)
-│       ├── sql_*.mustache
-│       └── doc_*.org.mustache
-├── models/                  # Legacy JSON model files (being migrated to org)
-│   └── <component>/         # e.g. refdata/, trade/, dq/, iam/
-├── output/                  # Default destination for generated files
-├── scripts/                 # Shell scripts for common operations
-├── src/                     # Python source
-│   ├── codegen/             # CLI package (codegen.py entry point)
-│   │   ├── __init__.py
-│   │   ├── cli.py           # argparse entry point; dispatches subcommands
-│   │   ├── core.py          # Model classification, rendering, output resolution
-│   │   ├── generate.py      # generate / regenerate subcommand implementations
-│   │   ├── org_loader.py    # Parses org-mode model files (entity/junction/...)
-│   │   ├── physical_space.py # Loads the ores.* graph; computes supported/target sets
-│   │   ├── manifest.py      # Named component registry
-│   │   ├── list_cmd.py      # =list= subcommand
-│   │   ├── diff_cmd.py      # =diff= subcommand
-│   │   └── migrate_*.py     # One-off JSON → org migration scripts, per model type
-│   ├── doc_generate.py      # v2 information-architecture doc generator
-│   ├── fpml_parser.py       # FPML Genericode XML → JSON models
+├── scripts/                 # Data scripts, e.g. component_registry.py
+├── src/                     # Python data generators, not code generation
+│   ├── doc_generate.py      # Document scaffolds for compass add, story, task
+│   ├── plantuml_er_parse_sql.py # SQL parser compass-ng's er_diagram runs
 │   ├── images_generate_sql.py
 │   └── lei_extract_subset.py
-├── modeling/
-│   └── ores.codegen.org     # Component model (the entry point)
-├── docs/
-│   ├── architecture.org     # This document
-│   ├── cpp_generation_analysis.md
-│   └── doc_generator.md
-├── requirements.txt
-├── codegen.sh               # Wrapper: activates venv and calls codegen.py
-├── plantuml_er_generate.sh  # PlantUML ER diagram wrapper
-└── validate_docs.sh         # Documentation validation wrapper
+├── modeling/                # Component model
+├── docs/                    # This document and its siblings
+└── requirements.txt
 #+end_example
 
 ** Internal modules
 
 | File                                     | Purpose                                                                  |
 |-------------------------------------------+--------------------------------------------------------------------------|
-| =src/codegen/cli.py=                     | Argparse entry point; parses subcommands and dispatches                  |
-| =src/codegen/core.py=                    | Model classification (=get_model_type=), rendering, output-path resolution |
-| =src/codegen/generate.py=                | =generate= and =regenerate= subcommand implementations                   |
-| =src/codegen/org_loader.py=              | Parses org-mode model files (entity, junction, field-group, ...) into model data |
-| =src/codegen/physical_space.py=          | Loads the [[id:D7D53D71-C9E8-43AE-AA42-E58E57CD76C8][ores physical-space graph]]; computes supported/target archetype sets |
-| =src/codegen/manifest.py=                | Named component registry (maps component name → models dir + glob)       |
-| =src/codegen/list_cmd.py=                | =list= subcommand implementation                                         |
-| =src/codegen/diff_cmd.py=                | =diff= subcommand implementation                                         |
-| =src/doc_generate.py=                    | v2 information-architecture document generator (task/story/sprint/...)   |
-| =src/fpml_parser.py=                     | FPML Genericode XML → JSON models                                       |
+| =src/doc_generate.py=                    | Document generator for the compass scaffolds (task, story, sprint, ...)  |
+| =src/plantuml_er_parse_sql.py=           | SQL parser that compass-ng's =er_diagram= codec runs                    |
 | =external/iso/iso_generate_metadata_sql.py= | ISO standards → SQL (kept beside the dataset it generates from)       |
 | =src/images_generate_sql.py=             | Image artefacts (flags, crypto icons) → SQL                              |
 | =src/lei_extract_subset.py=              | LEI dataset subset extractor                                             |
 | [[id:D7D53D71-C9E8-43AE-AA42-E58E57CD76C8][ores physical-space graph]]            | One org node per graph element (root/technical-space/facet/archetype); declares which templates generate for which model types |
-| [[id:B3CBBDED-7CD9-423B-94D8-F5C4C0488CEA][=library/component_catalogue.org=]]    | Maps component names to discovery roots; read directly by =manifest.py=  |
-| [[id:9340037F-54A6-44A7-9FC6-2CE739B81167][=library/data/modeline.org=]]          | Editor modeline strings per language; read directly by =core.py=         |
+| [[id:B3CBBDED-7CD9-423B-94D8-F5C4C0488CEA][=library/component_catalogue.org=]]    | Maps component names to discovery roots                                  |
+| [[id:9340037F-54A6-44A7-9FC6-2CE739B81167][=library/data/modeline.org=]]          | Editor modeline strings per language                                     |
 | =library/data/=                          | Static data files (licences, modelines)                                  |
 | =library/templates/=                     | Mustache templates + the physical-space graph nodes                      |
-| =models/=                                | Legacy JSON model files (component-by-component migration to org is ongoing) |
-| =output/=                                | Default destination for generated files                                  |
 
 ** Main generator functions
 
-In =src/codegen/core.py= (model classification and rendering) and
-=src/codegen/physical_space.py= (graph traversal):
-
-- =get_model_type(filename, path=None)= — classify a model file's type
-  (=domain_entity=, =junction=, =schema=, =field_group=, ...).
-  Org models are classified via their =#+type:= frontmatter first;
-  filename-suffix predicates (=is_junction_model=, ...) are the
-  fallback for legacy JSON models with no frontmatter. The =table=
-  type (and its =is_table_model= predicate) was retired once every
-  entity migrated to =domain_entity= — see [[id:9023BDE0-979F-422F-BC73-985D6A80E7CB][Retire legacy codegen profile system; add junction support to physical-space codegen]].
-- =load_graph(templates_dir)= (in =physical_space.py=) — parse the
-  [[id:D7D53D71-C9E8-43AE-AA42-E58E57CD76C8][ores physical-space graph]] org nodes into a =Graph= of technical
-  spaces, facets, and archetypes.
-- =compute_supported_set(properties, graph, model_type)= — the
-  archetypes an entity *can* generate, from facet =#+model_types:= plus
-  the entity's =:ores.*.enabled:= drawer overrides.
-- =compute_target_set(address, graph)= — the archetypes to generate
-  *this run*: all facets under an =--address=, or every facet if none given.
-- =resolve_targets(model_path, base_dir, address=, properties=)=
-  (in =generate.py=) — the single resolver used by both the CLI and the
-  compass wrapper; combines supported ∩ target into concrete
-  (template, output path) units. See [[*Addressing system][Addressing system]] below for how
-  =address= narrows the target set.
-- =resolve_output_path(pattern, model_data, model_type)= — expand an
-  output path pattern using model fields.
-- =render_template(template_path, data)= — render a Mustache template
-  with the given data.
-- =generate_from_model()= — orchestrate generation for one model file.
+compass-ng's =codegen= codec classifies each model by its =#+type:= line,
+loads the physical-space graph from the template library, computes each
+model's supported set from the facets' =#+model_types:= and the model's
+=:ores.*.enabled:= overrides, resolves each output path from the archetype's
+pattern, renders the Mustache template and formats C++ and TypeScript. It
+writes an output only when its content differs.
 
 ** Template system
 
@@ -138,7 +84,7 @@ In =src/codegen/core.py= (model classification and rendering) and
 
 - =library/data/licence-GPL-v3.txt= — full GPL v3 licence text used in
   generated headers.
-- [[id:9340037F-54A6-44A7-9FC6-2CE739B81167][=library/data/modeline.org=]] — per-language editor modeline strings (MASD-style org hierarchy; read directly by =core.py= via =_load_modelines_from_org()=).
+- [[id:9340037F-54A6-44A7-9FC6-2CE739B81167][=library/data/modeline.org=]] — per-language editor modeline strings (MASD-style org hierarchy), read by the =codegen= codec.
 
 ** Model types and file naming
 
@@ -177,10 +123,9 @@ The =*_table.json=/=*_table.org= =table= model type and its
 entity table now expresses the same shape (primary key, columns,
 validation function, insert trigger, coding scheme, image id) as a
 =domain_entity= model with no C++ sections, rendered via
-=sql_schema_domain_entity_create.mustache=. The generator still shares
-the field-normalisation logic (=normalise_sql_table_context()= /
-=domain_entity_to_table_context()= in =core.py=/=org_loader.py=) — only
-the separate =table= model type and its dedicated template are gone.
+=sql_schema_domain_entity_create.mustache=. The =codegen= codec
+applies the same field normalisation to every entity — only the separate
+=table= model type and its dedicated template are gone.
 
 *** Domain entity schema mappings (=*_domain_entity.json= files)
 
@@ -214,33 +159,34 @@ the C++ portion.
 
 ** Addressing system
 
-The physical-space *address* is the selector: every entity's
-generation footprint is its supported set on the [[id:D7D53D71-C9E8-43AE-AA42-E58E57CD76C8][ores physical-space
-graph]] (root → technical space → facet → archetype), narrowed by
-=--address= to a subtree of that graph and by the model's own
-=:ores.*.enabled:= drawer overrides. There is no separate profile
-declaration to maintain — an entity's =ores.*= binding *is* its
-generation footprint.
+The physical-space *address* names a subtree of the [[id:D7D53D71-C9E8-43AE-AA42-E58E57CD76C8][ores physical-space
+graph]] (root → technical space → facet → archetype). Every entity's
+generation footprint is its supported set on that graph, narrowed by the
+model's own =:ores.*.enabled:= drawer overrides. There is no separate profile
+declaration to maintain — an entity's =ores.*= binding *is* its generation
+footprint.
 
-Examples: =--address ores.sql.schema= generates SQL DDL only;
-=--address ores.cpp= generates every C++ facet (domain, generator,
-repository, service, protocol, ...); =--address ores.cpp.repository=
-generates just the repository facet; omitting =--address= generates
-an entity's full supported set.
+=./compass.sh generate= writes every model's footprint; =--scope <model>=
+limits a run to the outputs of one model, and =--scope <template>= to the
+outputs of one template.
 
 ** Component registry
 
-Named components are declared in [[id:B3CBBDED-7CD9-423B-94D8-F5C4C0488CEA][=library/component_catalogue.org=]], read directly
-by =src/codegen/manifest.py= at startup.  See [[id:B3CBBDED-7CD9-423B-94D8-F5C4C0488CEA][component_catalogue.org]] for the full
-16-component table (name, models_dir, entity_glob, exclude_suffix, modeling_dir).
+Named components are declared in [[id:B3CBBDED-7CD9-423B-94D8-F5C4C0488CEA][=library/component_catalogue.org=]], in the
+library that compass-ng's =codegen= codec reads. See [[id:B3CBBDED-7CD9-423B-94D8-F5C4C0488CEA][component_catalogue.org]] for
+the full table (name, models_dir, entity_glob, exclude_suffix, modeling_dir).
 
 ** Retired scripts
 
-The following shell scripts have been deleted and replaced by =codegen.sh=:
+Code generation runs through =./compass.sh generate= alone. These scripts are
+deleted:
 
-| Deleted script                    | Replacement command                                                  |
-|-----------------------------------+----------------------------------------------------------------------|
-| =generate_refdata_schema.sh=      | =codegen.sh regenerate --component refdata --address ores.sql.schema=            |
+| Deleted script                     | Replacement command                         |
+|------------------------------------+---------------------------------------------|
+| =generate_refdata_schema.sh=       | =./compass.sh generate=                     |
+| =codegen.sh=, =codegen.py=         | =./compass.sh generate= and =./compass.sh diff= |
+| =plantuml_er_generate.sh=          | =./compass.sh generate= (the =er_diagram= codec) |
+| =validate_docs.sh=                 | =compass-ng check --codec component_docs=   |
 
 ** Modeline configurations
 
@@ -306,14 +252,14 @@ To add a new facet or template:
 1. Add the Mustache template to =library/templates/=.
 2. Add an entry to [[id:D7D53D71-C9E8-43AE-AA42-E58E57CD76C8][ores physical-space graph]] under the relevant facet heading,
    adding a row to the templates table with =template=, =output= pattern, and optionally =model_types=.
-3. If adding a new model type, update =get_model_type()= in =src/codegen/core.py=
-   and add any preprocessing logic in the =generate_from_model()= dispatch block.
+3. A new model type needs a change to compass-ng's =codegen= codec, which
+   classifies models by their =#+type:= line.
 
 To add a new named component:
 
 1. Add a row to [[id:B3CBBDED-7CD9-423B-94D8-F5C4C0488CEA][=library/component_catalogue.org=]] with the component's =models_dir=,
    =entity_glob=, =exclude_suffix=, and =modeling_dir=.
-2. The component is then available as =codegen.sh regenerate --component <name>=.
+2. =./compass.sh generate= then covers the component's models.
 
 * See also
 

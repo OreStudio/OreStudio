@@ -372,24 +372,19 @@ This filter prevents, for instance, the =component= scaffold facet from
 inadvertently running against entity models, and the =domain= facet
 from running against SQL-only table models.
 
-*** Invoking =--address=
+*** Scoping a run
 
-Generation is scoped at invocation time via the CLI's =--address=:
+=./compass.sh generate= renders every entity's full supported set and
+writes only the outputs whose content changed. =--scope <path>= limits a
+run to the outputs of the units that read one input, a model or a
+template:
 
 #+begin_src sh
-./projects/ores.codegen/codegen.sh generate \
-  --component refdata \
-  --address ores.cpp.domain
+./compass.sh generate --scope projects/ores.refdata/modeling/ores.refdata.country.org
 #+end_src
 
-Omitting =--address= generates the entity's full supported set; giving
-an address restricts the run to the facets under that physical-space
-subtree. *Component scope* is handled by =src/codegen/manifest.py=:
-the manifest maps component names to their model discovery roots
-(=models_dir= for legacy JSON models; =modeling_dir= for org-mode
-model files). It does not assign a default address — that is always
-either omitted (full supported set) or given explicitly by the
-developer, a [[id:F663DF66-4F62-0884-DB23-BB2D6A42B644][skill]], or a compass recipe. *Product scope* — activation
+*Component scope* is data: the component catalogue maps component names
+to their model discovery roots, and compass-ng's =codegen= codec reads it. *Product scope* — activation
 applying across the whole product — is expressed the same way, by a
 technical-space or root address (=ores.cpp=, =ores=), and by
 [[id:F663DF66-4F62-0884-DB23-BB2D6A42B644][skills]] that bundle common multi-facet invocations into a single
@@ -397,28 +392,11 @@ command.
 
 *** Target set and the generation set
 
-The *target set* $T$ is what to generate in this particular run.
-Default: $T = S_e$, the entity's own supported set. The CLI
-=--address= argument overrides $T$:
-
-#+begin_src sh
-# T = S_e — generate everything the entity supports
-./projects/ores.codegen/codegen.sh generate --component refdata
-
-# T = all sql archetypes
-./projects/ores.codegen/codegen.sh generate --component refdata --address sql
-
-# T = all cpp.presentation archetypes
-./projects/ores.codegen/codegen.sh generate --component refdata --address cpp.presentation
-#+end_src
-
-There is no =--profile= flag; the entity's =ores.*= binding IS the
-generation footprint, and =--address= is a filter on it, never an
-expansion. *What generates* for entity $e$ is $T \cap S_e$. When
-$T \cap S_e = \emptyset$ the run emits a warning ("=<entity>=: nothing
-to generate for address =<addr>=") and continues; an =--address=
-value unknown to the
-facet catalogue is an error.
+The *target set* $T$ is what to generate in this particular run. Every
+run takes $T = S_e$, the entity's own supported set: the entity's =ores.*=
+binding IS the generation footprint, and there is no =--profile= or
+=--address= flag to narrow it. *What generates* for entity $e$ is $S_e$,
+and compass-ng writes the part of it whose content changed.
 
 *** Technical-space to facet map
 
@@ -426,10 +404,7 @@ The TS→facet map lives in each technical space's own =* Facets= table
 in the [[id:D7D53D71-C9E8-43AE-AA42-E58E57CD76C8][ores physical-space graph]] — [[id:C3F9DCE5-200A-4324-8904-B56BB73FD9CB][ores.cpp]], [[id:230D4E62-E2CC-464E-8EFD-E5CF2FA7EB0E][ores.sql]], and the
 other TS root nodes — which is the sole source of truth for which
 facets belong to which technical space; it is not reproduced here. All
-supported/target set logic lives in =codegen/physical_space.py= —
-isolated from dispatch code and covered by a dedicated test suite
-(=tests/test_physical_space.py=); this is deliberately complex logic
-and must not be diffused across multiple modules.
+supported-set logic lives in compass-ng's =codegen= codec.
 
 ** The facet catalogue
 

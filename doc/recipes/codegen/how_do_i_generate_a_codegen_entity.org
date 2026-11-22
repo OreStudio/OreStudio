@@ -2,12 +2,12 @@
 :ID: 8010834F-9179-4ECD-999D-5D017D393D36
 :END:
 #+title: How do I generate a codegen entity?
-#+description: Use compass codegen entity generate to regenerate an entity's full supported set. Supports --address to restrict to one facet (per-layer commands table included) and --dry-run to preview paths.
+#+description: Run ./compass.sh generate --scope on the entity model to write the outputs that model feeds, and only those whose content changed.
 #+type: recipe
 #+level: cross
 #+filetags: :codegen:compass:entity:recipe:
 #+created: 2026-06-26
-#+updated: 2026-06-26
+#+updated: 2026-11-22
 
 For background on the physical-space graph (facets) and metatypes, see
 [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]].
@@ -18,97 +18,42 @@ How do I regenerate all codegen output for an entity?
 
 * Answer
 
-Run =compass codegen entity generate <name-or-id>= from the project root:
+Edit the entity's model under its component's =modeling/= directory, then run
+=generate= scoped to that model, from the project root:
 
 #+begin_src sh
-./compass.sh codegen entity generate country
+./compass.sh generate --scope projects/ores.refdata/modeling/ores.refdata.country.org
 #+end_src
 
-The entity resolves by name or org-roam UUID prefix. Omitting =--address=
-generates the entity's full supported set — every facet its model type and
-=:ores.*.enabled:= overrides admit (e.g. =ores.cpp.domain=,
-=ores.cpp.repository=, =ores.cpp.service=, =ores.sql.schema=,
-=ores.cpp.protocol=, …):
+=--scope= limits the run to the outputs of the units that read the file, and
+to what they feed. compass-ng writes only the outputs whose content differs,
+so an unchanged file keeps its timestamp. Every layer the model's type and its
+=:ores.*.enabled:= overrides admit is covered in one run: the SQL schema and
+populate scripts, the C++ domain, repository, service, protocol, handler and
+eventing files, and the CMake lists.
 
-#+begin_example
-Generating country (domain_entity, refdata) — supported set
-#+end_example
-
-*Restrict to one facet* with =--address=:
+Preview first, which writes nothing:
 
 #+begin_src sh
-./compass.sh codegen entity generate country --address ores.sql.schema
-./compass.sh codegen entity generate country --address ores.cpp.domain
+./compass.sh diff --scope projects/ores.refdata/modeling/ores.refdata.country.org
 #+end_src
 
-*One command per layer* — the facet addresses you'll reach for most often
-when regenerating a single layer (e.g. during a commissioning task):
-
-| Layer                    | Facet address                 | What it writes                             |
-|--------------------------+--------------------------------+---------------------------------------------|
-| SQL schema               | =ores.sql.schema=              | table DDL, insert/update triggers, indexes |
-| SQL populate             | =ores.sql.populate=            | seed-data DML                              |
-| C++ domain struct        | =ores.cpp.domain=              | domain struct + JSON I/O                   |
-| C++ repository           | =ores.cpp.repository=          | repository class (libpq statements)        |
-| C++ service              | =ores.cpp.service=             | service class wrapping the repository      |
-| C++ NATS protocol        | =ores.cpp.protocol=            | request/response message structs           |
-| C++ NATS handler         | =ores.cpp.nats-handler=        | message handler class                      |
-| C++ NATS sub-registrar   | =ores.cpp.nats-sub-registrar=  | per-entity subject registration            |
-| C++ NATS eventing        | =ores.cpp.nats-eventing=       | domain-changed event struct                |
-| C++ generator (synthetic)| =ores.cpp.generator=           | synthetic-data generator function          |
-| C++ enum                 | =ores.cpp.enum=                | enum type + string conversion              |
-| CMake component wiring   | =ores.cmake.component=         | component CMakeLists.txt entries           |
-
-=--address= accepts only one facet per invocation — there is no accumulating
-flag. To touch several layers without regenerating the whole entity, run
-the command once per address:
-
-#+begin_src sh
-./compass.sh codegen entity generate counterparty_identifier --address ores.cpp.repository
-./compass.sh codegen entity generate counterparty_identifier --address ores.cpp.service
-./compass.sh codegen entity generate counterparty_identifier --address ores.cpp.protocol
-./compass.sh codegen entity generate counterparty_identifier --address ores.cpp.nats-handler
-./compass.sh codegen entity generate counterparty_identifier --address ores.cpp.nats-sub-registrar
-#+end_src
-
-*Preview paths without writing* with =--dry-run=:
-
-#+begin_src sh
-./compass.sh codegen entity generate country --dry-run
-#+end_src
-
-*Preview as a unified diff* (generate to temp, compare to disk) with =--diff=:
-
-#+begin_src sh
-./compass.sh codegen entity generate country --diff
-./compass.sh codegen entity generate country --address ores.sql.schema --diff
-#+end_src
-
-=--dry-run= and =--diff= are mutually exclusive.
-
-After generating, review changes with:
-
-#+begin_src sh
-./compass.sh codegen entity diff country
-#+end_src
+Without =--scope=, =generate= covers the whole tree. A warm run with no change
+takes a few seconds, so after a template change or a change that reaches
+several models, run it unscoped.
 
 * Script
 
-=compass codegen entity generate= (alias =gen=) is the =_cmd_generate=
-handler in [[proj:projects/ores.compass/src/compass_codegen_entity.py][=projects/ores.compass/src/compass_codegen_entity.py=]]. It calls
-=_generate_single= from =codegen.generate= directly (no subprocess to
-=codegen.sh=).
+=./compass.sh generate= and =./compass.sh diff= forward to compass-ng through
+=cmd_compass_ng= in [[proj:projects/ores.compass/src/compass.py][=compass.py=]]; its =codegen= codec renders the templates
+of [[proj:projects/ores.codegen/library/templates][=projects/ores.codegen/library/templates=]].
 
 * Tested by
 
-Run =./compass.sh codegen entity generate country --dry-run= and verify
-the entity's full output-path set is printed across every applicable facet.
-Run without =--dry-run= and verify the stale files are updated (=entity
-show= should then show ✅).
+Run the scoped =diff= on a current model: it reports 0 to write and the count
+of outputs the model feeds (98 for =ores.refdata.country.org=).
 
 * See also
 
-- [[id:BF893756-546E-4EAF-BB3C-C88BD16B3935][How do I show generated files for a codegen entity?]]
 - [[id:872903C8-1522-49EA-A378-647FA6F48C4F][How do I preview entity codegen changes as a diff?]]
-- [[id:839B1943-34A9-443B-9483-CFC45D6A7644][How do I diff generated files for an entity?]]
 - [[id:923AE3E7-5B55-43F4-967C-0E71AB9F2C46][How do I list codegen entities?]]

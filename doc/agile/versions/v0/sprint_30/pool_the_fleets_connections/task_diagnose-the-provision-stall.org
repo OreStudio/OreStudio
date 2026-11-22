@@ -8,7 +8,7 @@
 #+filetags: :pool_the_fleets_connections:sprint_30:v0:
 #+owner: marco
 #+branch: feature/diagnose-the-provision-stall
-#+pr:
+#+pr: 5026
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-22
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5026][#5026]] | [iam] Unblock the provisioning stall and ask again when a service is gone |
 
 * Review
 

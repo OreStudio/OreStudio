@@ -271,11 +271,20 @@ export function upstreamsOf(
     );
     const uri = show(feed['spot_oresmd_uri']);
     const provider = show(feed['spot_provider_code']);
-    const spot = spots.find(
-        (row) =>
-            show(row['oresmd_uri']) === uri && providerOf.get(show(row['config_id'])) === provider,
-    );
     const collection = show(feed['config_id']);
+    // One URI and provider can name a spot in more than one readable collection; the service
+    // reads the one in the surface's own collection first, and so does the screen.
+    const spot = spots
+        .filter(
+            (row) =>
+                show(row['oresmd_uri']) === uri &&
+                providerOf.get(show(row['config_id'])) === provider,
+        )
+        .sort(
+            (left, right) =>
+                Number(show(right['config_id']) === collection) -
+                Number(show(left['config_id']) === collection),
+        )[0];
     const curveUpstream = (role: 'baseCurve' | 'quoteCurve', currency: string): Upstream => ({
         role,
         currency,

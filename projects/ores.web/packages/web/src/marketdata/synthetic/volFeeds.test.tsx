@@ -336,6 +336,18 @@ describe('what a vol surface reads', () => {
         expect(kept['spot_oresmd_uri']).toBe('oresmd://fx/X');
     });
 
+    it('prefers the spot in the surface own collection when two collections name it', () => {
+        const other = { ...spots[1], id: 'spot-other', config_id: 'elsewhere' };
+        const both = [other, ...spots];
+        const [spot] = upstreamsOf(
+            feed,
+            both,
+            [...collections, { id: 'elsewhere', provider_code: 'bloomberg' }],
+            curves,
+        );
+        expect(spot?.row?.['id']).toBe('spot-bbg');
+    });
+
     it('says what it looked for when no feed matches', () => {
         const [spot] = upstreamsOf(
             { ...feed, spot_provider_code: 'lseg' },

@@ -113,13 +113,25 @@ spot_feed_named(const ores::database::context& ctx,
     std::map<boost::uuids::uuid, std::string> provider_of_collection;
     for (const auto& collection : repo::market_data_generation_config_repository().read_latest(ctx))
         provider_of_collection.emplace(collection.id, collection.provider_code);
+    // A tenant reads its own rows and the system tenant's, so one URI and provider can name a
+    // spot in each. The nearest wins: the surface's own collection, then its own tenant.
+    const auto nearness = [&cfg](const ores::synthetic::domain::fx_spot_generation_config& spot) {
+        if (spot.config_id == cfg.config_id)
+            return 0;
+        return spot.tenant_id == cfg.tenant_id ? 1 : 2;
+    };
+    std::optional<ores::synthetic::domain::fx_spot_generation_config> nearest;
     for (const auto& spot : repo::fx_spot_generation_config_repository().read_latest(ctx)) {
         if (spot.oresmd_uri != cfg.spot_oresmd_uri)
             continue;
         const auto provider = provider_of_collection.find(spot.config_id);
-        if (provider != provider_of_collection.end() && provider->second == cfg.spot_provider_code)
-            return spot.source_name;
+        if (provider == provider_of_collection.end() || provider->second != cfg.spot_provider_code)
+            continue;
+        if (!nearest || nearness(spot) < nearness(*nearest))
+            nearest = spot;
     }
+    if (nearest)
+        return nearest->source_name;
     return std::unexpected("The surface " + cfg.base_currency_code + "/" + cfg.quote_currency_code +
                            " names no spot feed: no collection of provider '" +
                            cfg.spot_provider_code + "' has a current spot feed at " +

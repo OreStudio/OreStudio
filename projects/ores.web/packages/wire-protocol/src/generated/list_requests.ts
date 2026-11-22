@@ -1809,16 +1809,6 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
-    'orgmode.v1.knowledge_pages.list': {
-        asOf: true,
-        filter: ['id_one_of'],
-        rows: ['pages'],
-    },
-    'orgmode.v1.knowledge_pages_versions.list': {
-        asOf: false,
-        filter: ['version', 'from_version', 'to_version'],
-        rows: ['versions'],
-    },
     'refdata.v1.asset_class_codes.list': {
         asOf: true,
         filter: ['code_one_of'],

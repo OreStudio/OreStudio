@@ -25,7 +25,7 @@ hide circle
 skinparam linetype ortho
 
 note as IndexNote
-819 tables in 22 groups.
+814 tables in 21 groups.
 Each group is drawn in its own file, named under its heading.
 Table naming: <component>_<entity>_tbl
 end note
@@ -426,7 +426,6 @@ entity "dq_staging" as dq_staging {
   ores_dq_ip2country_artefact_tbl
   ores_dq_ir_curve_generation_configs_artefact_tbl
   ores_dq_ir_curve_template_entries_artefact_tbl
-  ores_dq_knowledge_pages_artefact_tbl
   ores_dq_legal_entities_artefact_tbl
   ores_dq_lei_bic_artefact_tbl
   ores_dq_lei_entities_artefact_tbl
@@ -488,7 +487,7 @@ entity "dq_staging" as dq_staging {
 }
 note bottom of dq_staging
 Data Staging
-187 tables — ores_schema.dq_staging.puml
+186 tables — ores_schema.dq_staging.puml
 end note
 
 entity "dq_datasets" as dq_datasets {
@@ -990,17 +989,6 @@ entity "inbox" as inbox {
 note bottom of inbox
 Inbox — Approval Requests and Notifications
 18 tables — ores_schema.inbox.puml
-end note
-
-entity "orgmode" as orgmode {
-  ores_orgmode_knowledge_index_links_tbl
-  ores_orgmode_knowledge_index_pages_tbl
-  ores_orgmode_knowledge_index_sections_tbl
-  ores_orgmode_knowledge_pages_tbl
-}
-note bottom of orgmode
-Knowledge Base (Org Pages)
-4 tables — ores_schema.orgmode.puml
 end note
 
 

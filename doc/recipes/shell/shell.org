@@ -2280,11 +2280,3 @@ tangled into the runnable script library
 * Ir Curve Index Families
 
 - [[id:BF13BB64-6E43-521F-8E2A-48A727208482][How do I run the ir_curve_index_families commands from the shell?]]
-
-* Knowledge Pages
-
-- [[id:057079A6-AB6E-5320-B12F-60AC2197EEB6][How do I run the knowledge_pages commands from the shell?]]
-
-* Index Operations
-
-- [[id:A1C69627-AC93-5EA6-B1F7-70484AEDC1FA][How do I run the index_operations commands from the shell?]]

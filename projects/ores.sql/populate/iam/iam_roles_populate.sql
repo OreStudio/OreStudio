@@ -178,7 +178,6 @@ BEGIN
     -- The wildcard above does not cover an installation code, so the read of
     -- the deployment as a whole is granted by name.
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'SuperAdmin', 'installation::deployment:read');
-    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'SuperAdmin', 'installation::knowledge_index:rebuild');
 
     -- Assign permissions to TenantAdmin role
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'TenantAdmin', '*');
@@ -1274,11 +1273,6 @@ BEGIN
     PERFORM ores_iam_roles_upsert_fn(ores_utility_system_tenant_id_fn(), 'AnalyticsService', 'Analytics pricing engine domain service', false);
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'AnalyticsService', 'analytics::*');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'AnalyticsService', 'iam::tenants:read');
-
-    -- Org-mode service: full own-component access
-    PERFORM ores_iam_roles_upsert_fn(ores_utility_system_tenant_id_fn(), 'OrgmodeService', 'Org-mode knowledge base domain service', false);
-    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'OrgmodeService', 'orgmode::*');
-    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'OrgmodeService', 'iam::tenants:read');
 
     -- HTTP server service: gateway that validates sessions and forwards to domain services
     PERFORM ores_iam_roles_upsert_fn(ores_utility_system_tenant_id_fn(), 'HttpService', 'HTTP REST API server — session validation and domain gateway', false);

@@ -116,7 +116,6 @@ Current composite components and their active sub-components:
 | =ores.iam= | =api=, =client=, =core=, =service=, =modeling= |
 | =ores.marketdata= | =api=, =core=, =service= |
 | =ores.ore= | =api=, =core=, =service= |
-| =ores.orgmode= | =parser=, =modeling= |
 | =ores.refdata= | =api=, =client=, =core=, =service=, =modeling= |
 | =ores.reporting= | =api=, =core=, =service=, =modeling= |
 | =ores.scheduler= | =api=, =core=, =service=, =modeling= |
@@ -176,7 +175,6 @@ protocol types.
 | =database= | =ores.telemetry= | Database persistence layer — owns the DB schema and repository for the group when the persistence concern is large enough to separate from =core=. |
 | =quant= | =ores.analytics= | Dependency-light quantitative math library — CRM spanning-tree topology, the derived-rate engine and stochastic price processes. It carries no database or NATS dependency and is consumed for its mathematics alone, by =ores.refdata.core=, the =ores.synthetic= api and service, and =ores.marketdata.service=. No part of =ores.analytics= links it today, so its placement here records where the mathematics belongs by subject rather than an existing dependency. |
 | =scripting= | =ores.trading= | ORE's payoff script grammar, syntax tree and parser, copied from ORE by an import script that records the ORE commit, with a façade that reports diagnostics. It carries no database, messaging or QuantLib dependency and knows no trading type, so =ores.trading.api= and the other readers of scripts depend on it without a cycle; see [[id:4E135FB5-6E0A-45CC-A805-F5B70F29DDB4][Component Architecture of the Scripted Trade Subsystem]]. |
-| =parser= | =ores.orgmode= | Dependency-light org-mode library — parses org pages into documents of headings, properties, lists, tables and links, and resolves =id:= links through the org-roam index. It carries no database or NATS dependency; =ores.shell= uses it, and the knowledge service will index the knowledge pages with it. |
 
 ** Application-layer roles (=ores.shell=)
 

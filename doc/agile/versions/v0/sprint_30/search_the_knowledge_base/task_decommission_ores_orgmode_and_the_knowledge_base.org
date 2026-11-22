@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :search_the_knowledge_base:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/decommission-ores-orgmode-and-the-knowledge-base
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -36,7 +36,7 @@ the agile browser and the scenario runner use it, and they move to compass in
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:05FE6068-3CBD-4B93-B6AE-47A5689F1FCB][Search the knowledge base from ores.web]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

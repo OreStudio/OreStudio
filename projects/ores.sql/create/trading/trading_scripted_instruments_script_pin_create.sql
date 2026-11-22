@@ -68,7 +68,7 @@ begin
     from ores_trading_scripted_instruments_tbl i
     where i.tenant_id = NEW.tenant_id
       and i.trade_id = NEW.trade_id
-    order by i.valid_from desc
+    order by i.valid_from desc, i.version desc
     limit 1;
     if found and v_version is not null and exists (
         select 1 from ores_trading_scripts_tbl s

@@ -141,7 +141,8 @@ names the same script, so an amendment does not move the trade onto a newer
 script, and otherwise takes the current version: the trade's own tenant's script
 of that name first, else the system tenant's. A stated version is checked
 against the store, and a name no library holds is recorded with no version, so
-that the run, which needs the script, is what fails.
+that the run, which needs the script, is what fails. Such a trade has no version
+to keep, so a later amendment that states none takes the version current then.
 
 * See also
 

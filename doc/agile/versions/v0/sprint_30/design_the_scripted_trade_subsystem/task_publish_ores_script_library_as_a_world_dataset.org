@@ -76,7 +76,9 @@ is three: a version must first name a whole script, which the rows did not.
    its inline text and a hash.
 6. A run writes the library from the versions its trades name.
 7. A tenant publishes its own script through the trading service, which parses
-   it and warns on a name the world library holds.
+   it and warns on a name the world library holds. Its test books a trade in that
+   tenant and shows the tenant's own script wins over the world script of the
+   same name, which PR 5's test, run in the system tenant, could not show.
 
 * Measurements
 
@@ -258,6 +260,12 @@ via its "Verifies task" field.
 | 4994.4 | a long line in the function comment | trading_publish_from_dq_create.sql | accept | re-wrapped |
 | 4994.5 | long insert column lists | trading_publish_from_dq_create.sql | accept | wrapped |
 | 4994.6 | a regeneration could reorder the column | none | reject | the column order comes from the model; a regeneration of the branch changes no file |
+| 5001.1 | the trigger depends on name order; note it beside the generated trigger | none | reject | the generated file is overwritten on regeneration, so the note lives in the pin trigger's header; the order decides only that the tenant is validated first, as the trade's latest row is its current one either way |
+| 5001.2 | the latest-row lookup has no tie-breaker | trading_scripted_instruments_script_pin_create.sql | accept | orders by version after valid_from |
+| 5001.3 | a trade booked on an unknown name never pins until amended | versioning_of_the_script_library.org | accept | the doc says a later amendment takes the version current then |
+| 5001.4 | the shell's add, set and put-many take three more arguments | none | reject | the shell commands are generated with every column positional, as for every entity; the generated recipes and scripts carry the change |
+| 5001.5 | PR 7 must test a tenant's own script winning | task | accept | PR 7's plan names the test |
+| 5001.6 | the exception for the row struct | none | no change | approved |
 
 * Result
 

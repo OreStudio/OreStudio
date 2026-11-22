@@ -99,6 +99,17 @@ TEST_CASE("an array of uuids is an array of the same strings", "[codec][json]") 
     CHECK(wire_json::read<std::vector<boost::uuids::uuid>>(wire_json::write(ids)) == ids);
 }
 
+TEST_CASE("a time of day is the HH:MM:SS string the wire carries", "[codec][json]") {
+    using namespace std::chrono_literals;
+    const ores::platform::time::time_of_day four_pm(16h, 0min);
+
+    CHECK(wire_json::write(four_pm) == "\"16:00:00\"");
+    CHECK(wire_json::read<ores::platform::time::time_of_day>(wire_json::write(four_pm)) == four_pm);
+    CHECK(wire_json::read<ores::platform::time::time_of_day>("\"12:30\"") ==
+          ores::platform::time::time_of_day(12h, 30min));
+    CHECK_THROWS(wire_json::read<ores::platform::time::time_of_day>("\"25:00\""));
+}
+
 TEST_CASE("a tenant id, a date and a decimal are the strings the wire carries", "[codec][json]") {
     const auto tenant =
         *ores::utility::uuid::tenant_id::from_string("3f2504e0-4f89-11d3-9a0c-0305e82c3301");

@@ -223,6 +223,18 @@ struct sampler<std::chrono::year_month_day> {
 };
 
 template <>
+struct sampler<ores::platform::time::time_of_day> {
+    static ores::platform::time::time_of_day make(std::size_t which) {
+        using namespace std::chrono;
+        if (which < 2)
+            return which == 0 ?
+                       ores::platform::time::time_of_day(hours{16}, minutes{0}) :
+                       ores::platform::time::time_of_day(hours{23}, minutes{59}, seconds{59});
+        return ores::platform::time::time_of_day(seconds{static_cast<long>(which % 86'400)});
+    }
+};
+
+template <>
 struct sampler<std::chrono::system_clock::time_point> {
     static std::chrono::system_clock::time_point make(std::size_t which) {
         using namespace std::chrono;

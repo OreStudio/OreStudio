@@ -193,4 +193,29 @@ std::chrono::year_month_day datetime::from_iso8601_date(const std::string& str) 
     return date;
 }
 
+std::string datetime::to_iso8601_time(const time_of_day& time) {
+    return std::format("{:%H:%M:%S}", time.hms());
+}
+
+time_of_day datetime::from_iso8601_time(const std::string& str) {
+    const auto two_digits = [&](std::size_t at) {
+        const char a = str[at];
+        const char b = str[at + 1];
+        if (a < '0' || a > '9' || b < '0' || b > '9')
+            throw std::invalid_argument("from_iso8601_time: failed to parse: " + str);
+        return (a - '0') * 10 + (b - '0');
+    };
+    const bool with_seconds = str.size() == 8;
+    if ((str.size() != 5 && !with_seconds) || str[2] != ':' || (with_seconds && str[5] != ':'))
+        throw std::invalid_argument("from_iso8601_time: failed to parse: " + str);
+
+    const int hh = two_digits(0);
+    const int mm = two_digits(3);
+    const int ss = with_seconds ? two_digits(6) : 0;
+    if (hh > 23 || mm > 59 || ss > 59)
+        throw std::invalid_argument("from_iso8601_time: not a time of day: " + str);
+
+    return time_of_day(std::chrono::hours{hh}, std::chrono::minutes{mm}, std::chrono::seconds{ss});
+}
+
 }

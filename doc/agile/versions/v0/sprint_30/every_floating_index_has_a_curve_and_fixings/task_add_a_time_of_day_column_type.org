@@ -26,11 +26,11 @@ Give the codegen a time-of-day column type. The PostgreSQL column is time withou
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:0F936789-FEBE-4330-97B9-DFE0837E4466][Every index a generated trade floats on has a curve and fixings]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | The runtime type and its codecs are built and tested. |
+| Waiting on   | compass v0.0.13, which carries =:type: time=. |
+| Next         | Add the =is_time= branches beside every =is_date= branch in the templates. |
 | Last touched | 2026-11-22                               |
 
 * Acceptance
@@ -40,9 +40,24 @@ Give the codegen a time-of-day column type. The PostgreSQL column is time withou
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The work has two halves.
+
+1. The runtime half, which needs no codegen change:
+   - =ores::platform::time::time_of_day=: seconds since midnight, in the
+     range 00:00:00 to 23:59:59. The constructor refuses a value out of
+     range. Comparison is defaulted.
+   - =datetime::to_iso8601_time= and =from_iso8601_time=: the text form
+     "HH:MM:SS". The parser also reads "HH:MM" and refuses fractions of a
+     second.
+   - =text_form<time_of_day>=, which JSON and msgpack use for the leaf.
+   - The PostgreSQL binding =codec<time_of_day>=: OID 1083, array OID 1183,
+     binary microseconds since midnight. The decoder refuses a value with a
+     fraction of a second.
+   - =query_builder= filter value, the faker sampler and the digest's
+     canonical form.
+2. The template half, which waits on compass v0.0.13: an =is_time= branch
+   beside every =is_date= branch in the entity, generator, repository,
+   history field mapper and service templates.
 
 * Measurements
 
@@ -59,6 +74,11 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+compass-ng v0.0.12 derives the type flags from =:type:= only. A model
+property such as =:is_date: true= has no effect, and an unknown type leaves
+the generated TypeScript type empty, so prettier fails. No workaround
+exists before v0.0.13.
 
 * Test Scenarios
 

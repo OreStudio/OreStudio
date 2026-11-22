@@ -161,6 +161,9 @@ TEST_CASE("every codec carries its value through the server unchanged", "[pq]") 
           year_month_day(year{1999} / December / 31));
     CHECK(echo(p, ctx, "date", year_month_day(year{2026} / October / 27)) ==
           year_month_day(year{2026} / October / 27));
+    using ores::platform::time::time_of_day;
+    CHECK(echo(p, ctx, "time", time_of_day(16h, 0min)) == time_of_day(16h, 0min));
+    CHECK(echo(p, ctx, "time", time_of_day(23h, 59min, 59s)) == time_of_day(23h, 59min, 59s));
 
     for (const auto text : {"0",
                             "0.00000000000000000001",
@@ -725,4 +728,11 @@ TEST_CASE("a pool with one attempt gives up at once", "[pq]") {
     const auto began = std::chrono::steady_clock::now();
     CHECK_THROWS_AS(pool(unreachable, 1, open_policy{.attempts = 1}), store_error);
     CHECK(std::chrono::steady_clock::now() - began < std::chrono::seconds(1));
+}
+
+TEST_CASE("a time with a fraction of a second is not a time of day", "[pq]") {
+    std::string half_past_noon;
+    wire::put_u64(half_past_noon, 43'200'500'000);
+    const auto bytes = std::as_bytes(std::span(half_past_noon.data(), half_past_noon.size()));
+    CHECK_THROWS(codec<ores::platform::time::time_of_day>::decode(bytes));
 }

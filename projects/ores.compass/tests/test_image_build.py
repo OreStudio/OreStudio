@@ -25,13 +25,14 @@ class TestImageNames:
         monkeypatch.setattr(image_build, "runtime_services", lambda root: [])
         assert image_names(Path(".")) == [
             "ores-service-base", "ores-service-libs", "ores-nats",
-            "ores-compute-wrapper", "ores-web", "ores-shell"]
+            "ores-pgbouncer", "ores-compute-wrapper", "ores-web",
+            "ores-shell"]
 
     def test_every_runtime_service_is_a_name(self, monkeypatch):
         monkeypatch.setattr(
             image_build, "runtime_services",
             lambda root: ["ores.iam.service", "ores.trade.service"])
-        assert image_names(Path("."))[6:] == [
+        assert image_names(Path("."))[7:] == [
             "ores.iam.service", "ores.trade.service"]
 
 
@@ -51,7 +52,7 @@ class TestPublish:
             pushed = publish(Path("."), "ghcr.io/orestudio", "1.0.0-abc",
                              "main")
 
-        assert pushed == 7
+        assert pushed == 8
         pushes = [c for c in calls if "push" in c]
         assert [c[-1] for c in pushes] == [
             "ghcr.io/orestudio/ores-service-base:1.0.0-abc",
@@ -60,6 +61,8 @@ class TestPublish:
             "ghcr.io/orestudio/ores-service-libs:main",
             "ghcr.io/orestudio/ores-nats:1.0.0-abc",
             "ghcr.io/orestudio/ores-nats:main",
+            "ghcr.io/orestudio/ores-pgbouncer:1.0.0-abc",
+            "ghcr.io/orestudio/ores-pgbouncer:main",
             "ghcr.io/orestudio/ores-compute-wrapper:1.0.0-abc",
             "ghcr.io/orestudio/ores-compute-wrapper:main",
             "ghcr.io/orestudio/ores-web:1.0.0-abc",
@@ -100,7 +103,8 @@ class TestPublish:
             pushed = publish(Path("."), "ghcr.io/orestudio", "1.0.0-abc",
                              dry_run=True)
 
-        assert pushed == 6
+        # base, libraries, NATS, the pooler, the compute wrapper, web and shell
+        assert pushed == 7
         assert calls == []
 
 

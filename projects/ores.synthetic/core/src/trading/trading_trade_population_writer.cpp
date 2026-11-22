@@ -39,6 +39,8 @@
 #include "ores.refdata.api/messaging/overnight_index_convention_protocol.hpp"
 #include "ores.refdata.api/messaging/swap_convention_protocol.hpp"
 #include "ores.refdata.api/messaging/yield_curve_config_protocol.hpp"
+#include "ores.synthetic.api/feeds/index_fixings.hpp"
+#include "ores.synthetic.api/messaging/ir_curve_generation_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/trade_generation_book_protocol.hpp"
 #include "ores.synthetic.api/messaging/trade_generation_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/trade_generation_counterparty_protocol.hpp"
@@ -341,6 +343,16 @@ trading_trade_population_writer::resolve_scope(const boost::uuids::uuid& config_
     for (const auto& entity : read(legal_entity_req).legal_entities)
         if (!entity.lei.empty())
             scope.credit_reference_entities.push_back(entity.lei);
+
+    /*
+     * A floating leg is drawn only on an index a curve serves, and the curves
+     * the tenant sees, its own and the system's provider feeds, are the market
+     * there is. So the scope carries the fixing addresses those curves state.
+     */
+    ores::synthetic::messaging::list_ir_curve_generation_configs_request curves_req;
+    curves_req.limit = page;
+    scope.served_fixing_uris =
+        feed::served_fixing_uris(read(curves_req).ir_curve_generation_configs);
 
     /*
      * A trade builder reads the terms it does not draw from the tenant's

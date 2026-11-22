@@ -20,6 +20,7 @@
 #ifndef ORES_SYNTHETIC_API_FEEDS_INDEX_FIXINGS_HPP
 #define ORES_SYNTHETIC_API_FEEDS_INDEX_FIXINGS_HPP
 
+#include "ores.synthetic.api/domain/ir_curve_generation_config.hpp"
 #include "ores.synthetic.api/export.hpp"
 #include <chrono>
 #include <cstdint>
@@ -57,6 +58,29 @@ struct index_fixing final {
  */
 ORES_SYNTHETIC_API_EXPORT std::expected<std::string, std::string> index_fixing_uri(
     const std::string& currency, const std::string& index_family, const std::string& tenor);
+
+/**
+ * @brief The address of the fixings a curve states for its own index.
+ *
+ * A curve states the fixings of the index of its family and tenor. The
+ * meeting-dated variant of an overnight curve, tenor =FOMC=, is a shape of one
+ * curve's short end and not an index of its own, so it states none: the
+ * standard curve of the family states them.
+ *
+ * @return The address, or why the curve states no fixings.
+ */
+ORES_SYNTHETIC_API_EXPORT std::expected<std::string, std::string>
+curve_fixing_uri(const domain::ir_curve_generation_config& curve);
+
+/**
+ * @brief The fixing addresses a set of curves serves.
+ *
+ * One address per curve that states fixings, as =curve_fixing_uri= gives it. A
+ * trade that floats on an index outside this set has no fixings, so a generator
+ * draws only indices inside it.
+ */
+ORES_SYNTHETIC_API_EXPORT std::set<std::string>
+served_fixing_uris(const std::vector<domain::ir_curve_generation_config>& curves);
 
 /**
  * @brief How a history's days move away from the level the curve states.

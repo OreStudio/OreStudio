@@ -416,7 +416,22 @@ namespace {
  * three aliases is not three times as likely. Conventions that state other
  * legs on one index, such as USD LIBOR 3M with an annual and a semiannual
  * fixed leg, are two swaps, and the builder is told which by id.
+ *
+ * Only a swap on an index the market serves is drawn: the conventions name
+ * indices of every currency ORE's examples know, and a trade on one no curve
+ * serves has no fixings and cannot be valued.
  */
+/*
+ * Whether a swap convention may be drawn: it names the fixing address of its
+ * index, and a curve serves that address. Every draw of a floating index from
+ * the conventions asks this, so a trade never floats on an index with no
+ * fixings.
+ */
+bool drawable(const ores::refdata::domain::swap_convention& swap,
+              const domain::trade_generation_scope& scope) {
+    return swap.oresmd_uri && scope.served_fixing_uris.contains(*swap.oresmd_uri);
+}
+
 struct swap_choice final {
     ores::marketdata::datum::market_reference index;
     std::string convention;
@@ -445,7 +460,7 @@ swap_choices swap_choices_of(const domain::trade_generation_scope& scope) {
     };
     std::map<std::string, const ores::refdata::domain::swap_convention*> swaps;
     for (const auto& swap : scope.conventions.swaps) {
-        if (!swap.oresmd_uri)
+        if (!drawable(swap, scope))
             continue;
         auto [it, added] = swaps.emplace(legs_of(swap), &swap);
         if (!added && swap.id < it->second->id)
@@ -2514,7 +2529,7 @@ ores::marketdata::datum::market_reference credit_curve_of(const std::string& lei
 swap_choice underlying_index_of(const domain::trade_generation_scope& scope) {
     namespace md = ores::marketdata::datum;
     for (const auto& swap : scope.conventions.swaps) {
-        if (!swap.oresmd_uri)
+        if (!drawable(swap, scope))
             continue;
         auto index = md::market_reference::parse(*swap.oresmd_uri);
         if (index && index->index() != nullptr && index->index()->subject() == scope.currency_code)
@@ -3075,7 +3090,7 @@ namespace {
 std::optional<swap_choice> funding_index_in(const domain::trade_generation_scope& scope,
                                             const std::string& currency) {
     for (const auto& swap : scope.conventions.swaps) {
-        if (!swap.oresmd_uri)
+        if (!drawable(swap, scope))
             continue;
         auto index = ores::marketdata::datum::market_reference::parse(*swap.oresmd_uri);
         if (index && index->index() != nullptr && index->index()->get("tenor") != nullptr &&

@@ -1,0 +1,56 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title Authorising, applying and undoing a fixing
+
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+
+participant "Fixing source" as source
+actor "Operations" as ops
+participant "Fixing management" as fm
+participant "Product services" as products
+database "Trades" as trades
+
+== Subscribe ==
+products -> fm : a booked trade names its fixing schedule
+note right of fm : only sources that a live trade needs are followed
+
+== Observe ==
+source -> fm : publish the observation
+fm -> fm : store it once, unofficial
+
+== Authorise ==
+ops -> fm : compare with the front-office rate
+ops -> fm : authorise, or overkey and authorise
+fm -> fm : mark official; keep the published value
+
+== Apply ==
+fm -> products : fix event (observation, version)
+products -> trades : find the trades whose schedule names it
+products -> trades : book coupons, fixing trades and cash,\nlabelled with the event
+products --> fm : progress; excluded books reported
+
+== Undo ==
+ops -> fm : undo for all trades, a time, a book,\na currency or a trade
+fm -> products : undo event (scope)
+products -> trades : reverse every action labelled\nwith the fix event
+fm -> fm : mark unofficial
+
+@enduml

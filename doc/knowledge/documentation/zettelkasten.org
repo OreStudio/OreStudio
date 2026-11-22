@@ -91,13 +91,17 @@ those costs a later reader more than the step would have cost the author.
    its evidence. =* See also= links the related pages, each with its relation
    (see /Choosing the connection is the work/). =* Sources= lists every work
    cited, in full.
-5. *Link and wire.* The page links to the pages it relies on, the structure
+5. *Draw what the prose describes as a process or a structure.* A lifecycle,
+   an interaction between components or a structure of parts is drawn as a UML
+   diagram, as /Diagrams/ in /The house style/ states.
+6. *Link and wire.* The page links to the pages it relies on, the structure
    note of its cluster lists it, and the page links back to that structure note
    from its =* See also=. A page with no way in is not part of the graph.
-6. *Check.* Run =compass-ng check= for the links and the back-links, review the
+7. *Check.* Run =compass-ng check= for the links and the back-links, review the
    prose against [[id:180D0EB5-C08A-4C96-B266-3DF593E8F5E3][Review and write academic prose]], and build the page with
    =compass site page <file>= to read it as a reader will.
-7. *Commit* with the component bracket =[doc]=.
+8. *Commit* with the component bracket =[doc]=, the diagrams' sources and
+   images included.
 
 ** The house style
 
@@ -128,6 +132,32 @@ Private notes and unpublished material are never cited. A citation names the
 author, the year and the work in the text, and appears in full in =* Sources=,
 with a link where a stable public address exists. Each citation is checked
 against the source before the page is committed: author, year, venue and page.
+
+*** Diagrams
+
+A page draws a UML diagram wherever a picture states a point more clearly than
+prose: a lifecycle, an interaction between components, or a structure of parts.
+The diagram supports the argument and does not replace it; the prose still
+states what the diagram shows.
+
+| What the page describes | Diagram |
+|-------------------------+---------|
+| The states an object passes through and what moves it | State diagram |
+| Messages between components, actors or services over time | Sequence diagram |
+| Components and the interfaces between them | Component diagram |
+| Types and their relations | Class diagram |
+| Tables and their keys | Entity-relationship diagram |
+
+Each diagram is written in PlantUML. Its source sits beside the page, with a
+file name that names the diagram's subject, and opens with the licence header
+the other diagrams carry. The image is rendered with
+=plantuml -tpng <file>.puml=, and both the source and the image are committed.
+The page embeds the image with a =proj:= link, under a =#+caption:= that states
+in one sentence what the diagram shows, followed by a line naming the source
+and the command that regenerates it. A diagram draws one point; two points are
+two diagrams. A rendered diagram is read before it is committed, so that a
+label that overlaps or a layout that misleads is caught. The process is
+exemplified in [[id:CA61B445-B6DC-41D3-ACF9-D3FB32D0D342][The fixing process: observation, authorisation, application and reversal]].
 
 *** Titles
 

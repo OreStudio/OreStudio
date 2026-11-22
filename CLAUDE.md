@@ -16,7 +16,9 @@ before writing. In short: search first and link instead of repeating;
 academic prose; every claim derived, cited or labelled unsupported, with
 academic papers preferred and private notes never cited; a title that reads
 like an academic paper title (a noun phrase, never a sentence); the file name
-is the title in snake case. Review with the `compass-doc-review-academic`
+is the title in snake case. Draw a PlantUML diagram, rendered to PNG and
+embedded with a caption, wherever a lifecycle, a component interaction or a
+structure is described. Review with the `compass-doc-review-academic`
 skill before committing.
 
 **Code comments:** the `compass-code-review-comments` skill sets the rules for

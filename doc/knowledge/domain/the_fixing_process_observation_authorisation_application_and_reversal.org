@@ -23,6 +23,31 @@ and redone.
 
 * Detail
 
+** The process in outline
+
+An observation passes through four states. It is required once a booked trade
+names its source and date, dormant if it is keyed before that date, unofficial
+once the source publishes it or a person keys it, and official once operations
+authorise it. Authorisation and undo move it between the last two states, and
+each move raises the event that fixes or unfixes the trades.
+
+#+caption: The lifecycle of one fixing observation, from the subscription that requires it to its authorisation, with overkeying, the dormant state of a value keyed in advance, and the undo that returns it to unofficial.
+[[proj:doc/knowledge/domain/fixing_observation_lifecycle.png]]
+
+Source: [[./fixing_observation_lifecycle.puml][=fixing_observation_lifecycle.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/domain/fixing_observation_lifecycle.puml=.
+
+The interaction runs through fixing management, which owns the observation,
+and the product services, which own the trades. Fixing management never writes
+a trade; it raises the event, and each product service books or reverses the
+actions its trades need.
+
+#+caption: The interaction between a fixing source, operations, fixing management and the product services when a fixing is observed, authorised, applied to the trades whose schedules name it, and undone.
+[[proj:doc/knowledge/domain/fixing_process_sequence.png]]
+
+Source: [[./fixing_process_sequence.puml][=fixing_process_sequence.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/domain/fixing_process_sequence.puml=.
+
 ** Subscribe and observe
 
 Booking a trade that needs fixings subscribes it to its sources. The process

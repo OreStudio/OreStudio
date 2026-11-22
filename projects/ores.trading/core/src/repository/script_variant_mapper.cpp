@@ -44,6 +44,7 @@ domain::script_variant script_variant_mapper::map(const script_variant_entity& v
     r.purpose = v.purpose;
     r.code = v.code;
     r.npv_variable = v.npv_variable;
+    r.script_version = v.script_version;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -64,6 +65,7 @@ script_variant_entity script_variant_mapper::map(const domain::script_variant& v
     r.version = v.version;
     r.code = v.code;
     r.npv_variable = v.npv_variable;
+    r.script_version = v.script_version;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

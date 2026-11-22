@@ -36,6 +36,7 @@ create table if not exists "ores_trading_script_variants_tbl" (
     "version" integer not null,
     "code" text not null,
     "npv_variable" text not null,
+    "script_version" integer not null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,

@@ -41,6 +41,7 @@ export interface ScriptCalibrationStrikeWrite {
     calibration_number: number;
     sequence_number: number;
     strike_variable: string;
+    script_version: number;
 }
 
 export interface ScriptCalibrationStrikeChange {

@@ -40,6 +40,7 @@ export interface ScriptInput {
     is_array: boolean;
     value_rule: string | null;
     description: string | null;
+    script_version: number;
     modified_by: string;
     performed_by: string;
     change_reason_code: string;

@@ -40,6 +40,7 @@ render_script_result_fields(const domain::script_result& v) {
     fields.push_back({.name = "Script Name", .value = v.script_name});
     fields.push_back({.name = "Variable", .value = v.variable});
     fields.push_back({.name = "Rename", .value = v.rename.value_or(std::string{})});
+    fields.push_back({.name = "Script Version", .value = std::to_string(v.script_version)});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

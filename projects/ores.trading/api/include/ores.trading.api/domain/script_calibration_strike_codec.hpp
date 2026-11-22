@@ -54,6 +54,7 @@ namespace ores::trading::domain {
         utility::codec::field{"calibration_number", &script_calibration_strike::calibration_number},
         utility::codec::field{"sequence_number", &script_calibration_strike::sequence_number},
         utility::codec::field{"strike_variable", &script_calibration_strike::strike_variable},
+        utility::codec::field{"script_version", &script_calibration_strike::script_version},
         utility::codec::field{"modified_by", &script_calibration_strike::modified_by},
         utility::codec::field{"performed_by", &script_calibration_strike::performed_by},
         utility::codec::field{"change_reason_code", &script_calibration_strike::change_reason_code},

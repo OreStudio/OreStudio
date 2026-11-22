@@ -50,6 +50,7 @@ generate_synthetic_script_variant(utility::generation::generation_context& ctx) 
     r.purpose = std::string("default");
     r.code = std::string("Option = 0;");
     r.npv_variable = std::string("Option");
+    r.script_version = 1;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

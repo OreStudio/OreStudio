@@ -58,6 +58,7 @@ struct script_calibration_strike_write {
     int calibration_number{};
     int sequence_number{};
     std::string strike_variable;
+    int script_version{};
 
     friend bool operator==(const script_calibration_strike_write&,
                            const script_calibration_strike_write&) = default;
@@ -395,6 +396,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.script_calibratio
                               &script_calibration_strike_write::calibration_number},
         utility::codec::field{"sequence_number", &script_calibration_strike_write::sequence_number},
         utility::codec::field{"strike_variable", &script_calibration_strike_write::strike_variable},
+        utility::codec::field{"script_version", &script_calibration_strike_write::script_version},
     };
 }
 

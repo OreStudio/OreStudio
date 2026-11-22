@@ -54,7 +54,9 @@ ORE's script library arrives as a world dataset whose methodology extracts, corr
 
 * Plan
 
-Five PRs, each ending in a check.
+Seven PRs, each ending in a check. The fourth step of the first plan, a trade
+records its script's version and a run writes the library from those versions,
+is three: a version must first name a whole script, which the rows did not.
 
 1. The shell's =script= menu, which needs no session: =parse=, =check=,
    =inputs= and =print=, a local unit of =ores.shell.trading= linking
@@ -68,10 +70,12 @@ Five PRs, each ending in a check.
    runs after the bring-up publish.
 3. The trading service's publish-from-DQ handler, so the dataset can be
    republished over the bus as well as at bring-up.
-4. A scripted trade records its script's name, holding tenant and version, or
-   its inline text and a hash, and a run writes the library from those
-   versions.
-5. A tenant publishes its own script through the trading service, which parses
+4. A script version names the whole script: every row beneath a script carries
+   the version of its script row, and the state of any version reads back.
+5. A scripted trade records its script's name, holding tenant and version, or
+   its inline text and a hash.
+6. A run writes the library from the versions its trades name.
+7. A tenant publishes its own script through the trading service, which parses
    it and warns on a name the world library holds.
 
 * Measurements
@@ -96,8 +100,27 @@ task and name that file in the Command column.
 | bus publish of the world bundle | 41 of 41 steps completed, ore.script_library among them; the trading service logged inserted=0 updated=0 after the bring-up publish | compass db recreate -y -k, services start, then bundles publish world --wait as super_admin | a2d0beeee1 |
 | bus republish after one staged change | the trading service logged updated=1; Accumulator01's first input at version 2, version 1 kept | the same, after an update of one staged input description | a2d0beeee1 |
 | trading publish tests | 10 assertions in 6 test cases (subject plan); the generated codec round trip within 18920 assertions in 5303 test cases | ores.trading.core.tests [publish], ores.trading.api.tests [codec] | a2d0beeee1 |
+| script versions | 7 of 7 pgTAP assertions: every current row carries its script's version after bring-up; a changed script's earlier version reads back as it was, its current rows as staged, an unchanged script keeps its version | pg_prove -U $ORES_TEST_DB_USER projects/ores.sql/test/trading_script_library_versions_test.sql | 9d0e657bec + PR 4 |
+| suites after the column | ores.trading.api.tests 21118 assertions in 5601 cases; ores.trading.core.tests 1841 in 282; ores.ore.core.tests 521015 in 567; ores.trading.scripting.tests 1200 in 18; all pass | the four test binaries | 9d0e657bec + PR 4 |
 
 * Notes
+
+** What the fourth PR found
+
+A trade could not have recorded a version that meant anything. A change to a
+script wrote its script row and its child rows as new versions, but each row's
+version counts that row's own writes, so the numbers did not line up, and the
+insert triggers stamp =valid_from= with =clock_timestamp()= while the publish
+closed rows at =current_timestamp=, so no instant separated one version from
+the next. Every child row now carries =script_version=, the version the script
+row was given in the same publish, and the published state function reads any
+version by that number.
+
+The column is not staged: the six models declare their staging bodies in
+=* Artefact columns=, listing the columns they had, so the staging tables are
+unchanged. A column option that leaves one column out of the default staging
+projection would be shorter, but the codegen that =compass-ng= runs is its own
+binary, so the option belongs there.
 
 ** What the third PR found
 

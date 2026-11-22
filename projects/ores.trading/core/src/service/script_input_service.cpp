@@ -149,6 +149,7 @@ domain::script_input script_input_to_domain(const messaging::script_input_write&
     v.is_array = write.is_array;
     v.value_rule = write.value_rule;
     v.description = write.description;
+    v.script_version = write.script_version;
     return v;
 }
 

@@ -46,6 +46,7 @@ domain::script_result script_result_mapper::map(const script_result_entity& v) {
     r.sequence_number = v.sequence_number;
     r.variable = v.variable;
     r.rename = v.rename;
+    r.script_version = v.script_version;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -67,6 +68,7 @@ script_result_entity script_result_mapper::map(const domain::script_result& v) {
     r.version = v.version;
     r.variable = v.variable;
     r.rename = v.rename;
+    r.script_version = v.script_version;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

@@ -43,6 +43,7 @@ render_script_input_fields(const domain::script_input& v) {
     fields.push_back({.name = "Is Array", .value = v.is_array ? "true" : "false"});
     fields.push_back({.name = "Value Rule", .value = v.value_rule.value_or(std::string{})});
     fields.push_back({.name = "Description", .value = v.description.value_or(std::string{})});
+    fields.push_back({.name = "Script Version", .value = std::to_string(v.script_version)});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

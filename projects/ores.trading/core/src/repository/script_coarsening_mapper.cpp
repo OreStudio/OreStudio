@@ -45,6 +45,7 @@ domain::script_coarsening script_coarsening_mapper::map(const script_coarsening_
     r.purpose = v.purpose;
     r.sequence_number = v.sequence_number;
     r.eligible_schedule = v.eligible_schedule;
+    r.script_version = v.script_version;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -65,6 +66,7 @@ script_coarsening_entity script_coarsening_mapper::map(const domain::script_coar
     r.tenant_id = v.tenant_id;
     r.version = v.version;
     r.eligible_schedule = v.eligible_schedule;
+    r.script_version = v.script_version;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

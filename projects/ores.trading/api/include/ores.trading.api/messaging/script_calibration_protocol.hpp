@@ -55,6 +55,7 @@ struct script_calibration_write {
     std::string purpose;
     int sequence_number{};
     std::string index_variable;
+    int script_version{};
 
     friend bool operator==(const script_calibration_write&,
                            const script_calibration_write&) = default;
@@ -383,6 +384,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.script_calibratio
         utility::codec::field{"purpose", &script_calibration_write::purpose},
         utility::codec::field{"sequence_number", &script_calibration_write::sequence_number},
         utility::codec::field{"index_variable", &script_calibration_write::index_variable},
+        utility::codec::field{"script_version", &script_calibration_write::script_version},
     };
 }
 

@@ -77,6 +77,15 @@ struct script_calibration_strike final {
     std::string strike_variable;
 
     /**
+     * @brief The version of the script row this row belongs to.
+     *
+     * A change to a script writes a new version of the script row and every one of its rows, so the
+     * rows that carry one script version are the whole script as that version states it, and a
+     * trade that records the version reads them back exactly. The publish function writes it.
+     */
+    int script_version = 0;
+
+    /**
      * @brief Username of the person who last modified this script calibration strike.
      */
     std::string modified_by;

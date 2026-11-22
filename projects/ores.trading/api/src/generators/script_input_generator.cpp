@@ -52,6 +52,7 @@ domain::script_input generate_synthetic_script_input(utility::generation::genera
     r.is_array = false;
     r.value_rule = std::optional<std::string>(std::string("BarrierType == 1"));
     r.description = std::optional<std::string>(std::string("option strike"));
+    r.script_version = 1;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

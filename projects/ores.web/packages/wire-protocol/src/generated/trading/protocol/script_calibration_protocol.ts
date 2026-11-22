@@ -39,6 +39,7 @@ export interface ScriptCalibrationWrite {
     purpose: string;
     sequence_number: number;
     index_variable: string;
+    script_version: number;
 }
 
 export interface ScriptCalibrationChange {

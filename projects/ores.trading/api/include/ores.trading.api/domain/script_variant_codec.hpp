@@ -53,6 +53,7 @@ namespace ores::trading::domain {
         utility::codec::field{"purpose", &script_variant::purpose},
         utility::codec::field{"code", &script_variant::code},
         utility::codec::field{"npv_variable", &script_variant::npv_variable},
+        utility::codec::field{"script_version", &script_variant::script_version},
         utility::codec::field{"modified_by", &script_variant::modified_by},
         utility::codec::field{"performed_by", &script_variant::performed_by},
         utility::codec::field{"change_reason_code", &script_variant::change_reason_code},

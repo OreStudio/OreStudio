@@ -51,6 +51,7 @@ generate_synthetic_script_result(utility::generation::generation_context& ctx) {
     r.sequence_number = 1;
     r.variable = std::string("currentNotional");
     r.rename = std::optional<std::string>(std::string("notionalCurrency"));
+    r.script_version = 1;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

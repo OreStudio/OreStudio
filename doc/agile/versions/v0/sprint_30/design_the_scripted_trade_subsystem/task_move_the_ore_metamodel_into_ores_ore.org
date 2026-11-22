@@ -8,7 +8,7 @@
 #+filetags: :design_the_scripted_trade_subsystem:sprint_30:v0:
 #+owner: marco
 #+branch: feature/move-the-ore-parameters-into-ores-ore
-#+pr: 5028
+#+pr: 5039
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-22
@@ -186,6 +186,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5039][#5039]] | [ore] Move the parameters of ORE's documents from ores.reporting into ores.ore |
 | [[https://github.com/OreStudio/OreStudio/pull/5028][#5028]] | [ore] Move the ORE files from ores.reporting into ores.ore |
 
 * Review

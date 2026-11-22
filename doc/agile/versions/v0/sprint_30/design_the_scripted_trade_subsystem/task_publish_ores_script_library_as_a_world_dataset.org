@@ -269,7 +269,9 @@ via its "Verifies task" field.
 
 * Result
 
-In progress: the first four of seven PRs are in. The fourth makes a script
+In progress: the first five of seven PRs are in. The fifth records on each
+scripted trade the script it was booked on: the tenant and version of a library
+script, or the SHA-256 of an inline one, set by the store on every write. The fourth makes a script
 version name the whole script: every row beneath a script carries the version
 of its script row, so any version reads back exactly. The third gives the trading
 service a handler for the script library's publish step, so a bundle

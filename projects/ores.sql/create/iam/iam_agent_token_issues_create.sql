@@ -90,7 +90,7 @@ begin
 
         perform public.create_hypertable(
             '"ores_iam_agent_token_issues_tbl"',
-            '',
+            'issued_at',
             chunk_time_interval => interval '1 day',
             if_not_exists => true
         );

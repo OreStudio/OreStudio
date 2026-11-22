@@ -134,6 +134,16 @@ from the store causes the failure of any run that requires it, and the engine
 reads the stored versions rather than the copy distributed with ORE
 ([[id:708554F7-FA3A-49E1-8A11-4AE968C76758][Script Execution and Compilation in ORE]]).
 
+The store records the version, so every path that writes a scripted trade,
+booking, an import of an ORE portfolio or a generator, records it the same way.
+A trade that states no version keeps the version of its latest row when that row
+names the same script, so an amendment does not move the trade onto a newer
+script, and otherwise takes the current version: the trade's own tenant's script
+of that name first, else the system tenant's. A stated version is checked
+against the store, and a name no library holds is recorded with no version, so
+that the run, which needs the script, is what fails. Such a trade has no version
+to keep, so a later amendment that states none takes the version current then.
+
 * See also
 
 - [[id:CF5A2387-58E8-45A3-8B5B-24FF1F1464B9][Scripted Trades: An Architectural Overview]] — the structure note for the subsystem.

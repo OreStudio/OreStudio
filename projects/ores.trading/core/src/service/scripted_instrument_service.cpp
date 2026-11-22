@@ -152,6 +152,9 @@ scripted_instrument_to_domain(const messaging::scripted_instrument_write& write)
     v.script_npv = write.script_npv;
     v.description = write.description;
     v.data_element = write.data_element;
+    v.script_tenant_id = write.script_tenant_id;
+    v.script_version = write.script_version;
+    v.script_hash = write.script_hash;
     return v;
 }
 

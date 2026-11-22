@@ -483,6 +483,7 @@
 -- Scripted instruments (depends on reference data above)
 \ir ./trading_scripted_instruments_create.sql
 \ir ./trading_scripted_instruments_notify_trigger_create.sql
+\ir ./trading_scripted_instruments_script_pin_create.sql
 -- Trades (depend on the classification lookups above)
 
 -- Structure members (depend on the structure and on the trade the leg is, so

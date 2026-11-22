@@ -62,6 +62,9 @@ struct scripted_instrument_entity {
     std::optional<std::string> script_npv;
     std::optional<std::string> description;
     std::optional<std::string> data_element;
+    std::optional<boost::uuids::uuid> script_tenant_id;
+    std::optional<int> script_version;
+    std::optional<std::string> script_hash;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
@@ -86,6 +89,9 @@ struct scripted_instrument_entity {
                query_builder::bind("script_npv", &e::script_npv) |
                query_builder::bind("description", &e::description) |
                query_builder::bind("data_element", &e::data_element) |
+               query_builder::bind("script_tenant_id", &e::script_tenant_id) |
+               query_builder::bind("script_version", &e::script_version) |
+               query_builder::bind("script_hash", &e::script_hash) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |
                query_builder::bind("change_reason_code", &e::change_reason_code) |

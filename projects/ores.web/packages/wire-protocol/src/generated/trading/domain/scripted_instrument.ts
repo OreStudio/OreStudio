@@ -39,5 +39,8 @@ export interface ScriptedInstrument {
     script_npv: string;
     description: string;
     data_element: string | null;
+    script_tenant_id: string | null;
+    script_version: number | null;
+    script_hash: string | null;
     audit: AuditRecord;
 }

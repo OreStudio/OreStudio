@@ -351,6 +351,7 @@
 \ir ./trading_composite_instruments_drop.sql
 
 -- Scripted instruments
+\ir ./trading_scripted_instruments_script_pin_drop.sql
 \ir ./trading_scripted_instruments_notify_trigger_drop.sql
 \ir ./trading_scripted_instruments_drop.sql
 

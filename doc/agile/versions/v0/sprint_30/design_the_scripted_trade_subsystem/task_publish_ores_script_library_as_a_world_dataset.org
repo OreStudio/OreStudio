@@ -8,7 +8,7 @@
 #+filetags: :design_the_scripted_trade_subsystem:sprint_30:v0:
 #+owner: marco
 #+branch: feature/publish-ores-script-library-as-a-world-dataset
-#+pr: 4994
+#+pr: 5001
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-21
@@ -76,7 +76,9 @@ is three: a version must first name a whole script, which the rows did not.
    its inline text and a hash.
 6. A run writes the library from the versions its trades name.
 7. A tenant publishes its own script through the trading service, which parses
-   it and warns on a name the world library holds.
+   it and warns on a name the world library holds. Its test books a trade in that
+   tenant and shows the tenant's own script wins over the world script of the
+   same name, which PR 5's test, run in the system tenant, could not show.
 
 * Measurements
 
@@ -102,8 +104,23 @@ task and name that file in the Command column.
 | trading publish tests | 10 assertions in 6 test cases (subject plan); the generated codec round trip within 18920 assertions in 5303 test cases | ores.trading.core.tests [publish], ores.trading.api.tests [codec] | a2d0beeee1 |
 | script versions | 9 of 9 pgTAP assertions: every current row carries its script's version after bring-up; a changed script's earlier version reads back as it was, its current rows as staged, an unchanged script keeps its version | pg_prove -U $ORES_TEST_DB_USER projects/ores.sql/test/trading_script_library_versions_test.sql | 9d0e657bec + PR 4 |
 | suites after the column | ores.trading.api.tests 21118 assertions in 5601 cases; ores.trading.core.tests 1841 in 282; ores.ore.core.tests 521015 in 567; ores.trading.scripting.tests 1200 in 18; all pass | the four test binaries | 9d0e657bec + PR 4 |
+| script pin | 9 of 9 pgTAP assertions, among them: a library trade records the system tenant and current version, an inline trade the SHA-256 of its text, an amendment keeps its version after the library moves on, a stated missing version is refused | pg_prove -U $ORES_TEST_DB_USER projects/ores.sql/test/trading_scripted_instrument_script_pin_test.sql | 12c04dcb75 + PR 5 |
+| ctest with the services and the pooler up | 93 of 107 pass; ores.synthetic.core.tests failed on the pin, which its booking comparison now clears as store-set, and passes 5041 assertions in 167 cases after; the 13 others fail only parse_defaults_returns_expected_values, as the .env points each service's database port at the pooler, and pass with the port variable unset | compass test run, then the suite | 12c04dcb75 + PR 5 |
 
 * Notes
+
+** What the fifth PR found
+
+The pin is set by a trigger on the scripted instruments table rather than by
+the booking service, because three paths write the table: booking, the import
+of an ORE portfolio and the generators. The trigger fires after the generated
+insert trigger, as Postgres fires a table's triggers in name order; by then the
+generated trigger has validated the tenant and closed the trade's current row,
+so an amendment's previous pin is read from the trade's latest row.
+
+A name no library holds is recorded with no version rather than refused. The
+generators name =Autocallable=, which ORE's library does not hold, and the run,
+which needs the script, is where its absence is an error.
 
 ** What the fourth PR found
 
@@ -195,6 +212,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5001][#5001]] | [trading] Record the script a scripted trade was booked on |
 | [[https://github.com/OreStudio/OreStudio/pull/4994][#4994]] | [trading] Name the script version on every row of a script |
 | [[https://github.com/OreStudio/OreStudio/pull/4993][#4993]] | [trading] Publish the script library from DQ over the bus |
 | [[https://github.com/OreStudio/OreStudio/pull/4978][#4978]] | [trading] Publish ORE's script library as a world dataset |
@@ -242,10 +260,18 @@ via its "Verifies task" field.
 | 4994.4 | a long line in the function comment | trading_publish_from_dq_create.sql | accept | re-wrapped |
 | 4994.5 | long insert column lists | trading_publish_from_dq_create.sql | accept | wrapped |
 | 4994.6 | a regeneration could reorder the column | none | reject | the column order comes from the model; a regeneration of the branch changes no file |
+| 5001.1 | the trigger depends on name order; note it beside the generated trigger | none | reject | the generated file is overwritten on regeneration, so the note lives in the pin trigger's header; the order decides only that the tenant is validated first, as the trade's latest row is its current one either way |
+| 5001.2 | the latest-row lookup has no tie-breaker | trading_scripted_instruments_script_pin_create.sql | accept | orders by version after valid_from |
+| 5001.3 | a trade booked on an unknown name never pins until amended | versioning_of_the_script_library.org | accept | the doc says a later amendment takes the version current then |
+| 5001.4 | the shell's add, set and put-many take three more arguments | none | reject | the shell commands are generated with every column positional, as for every entity; the generated recipes and scripts carry the change |
+| 5001.5 | PR 7 must test a tenant's own script winning | task | accept | PR 7's plan names the test |
+| 5001.6 | the exception for the row struct | none | no change | approved |
 
 * Result
 
-In progress: the first four of seven PRs are in. The fourth makes a script
+In progress: the first five of seven PRs are in. The fifth records on each
+scripted trade the script it was booked on: the tenant and version of a library
+script, or the SHA-256 of an inline one, set by the store on every write. The fourth makes a script
 version name the whole script: every row beneath a script carries the version
 of its script row, so any version reads back exactly. The third gives the trading
 service a handler for the script library's publish step, so a bundle

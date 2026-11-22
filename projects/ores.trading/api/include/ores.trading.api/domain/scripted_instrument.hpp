@@ -97,6 +97,31 @@ struct scripted_instrument final {
      */
     std::optional<std::string> data_element;
 
+    /**
+     * @brief The tenant that holds the library script the trade was booked on: the trade's own
+     * tenant when it holds a script of that name, else the system tenant, which holds ORE's
+     * library. Empty when the trade states its script inline, or names a script no library holds.
+     *
+     * The store sets it when a row states no version: from the trade's current row when that row
+     * names the same script, so an amendment keeps the script the trade was booked on, else from
+     * the current library.
+     */
+    std::optional<boost::uuids::uuid> script_tenant_id;
+
+    /**
+     * @brief The version of the library script the trade was booked on, in the tenant
+     * script_tenant_id names. The rows of the script that carry this version are the script the
+     * trade runs, whatever the library holds later. Empty when script_tenant_id is.
+     */
+    std::optional<int> script_version;
+
+    /**
+     * @brief The SHA-256 of the inline script, as lower-case hexadecimal. The store computes it
+     * from script_body on every write, so it identifies the text the trade states. Empty when the
+     * trade names a library script.
+     */
+    std::optional<std::string> script_hash;
+
     ores::dq::domain::audit_record audit;
     /**
      * @brief Value equality.
@@ -124,6 +149,8 @@ struct scripted_instrument final {
     ores::utility::digest::append_member(out, "script_body", v.script_body);
     ores::utility::digest::append_member(out, "script_npv", v.script_npv);
     ores::utility::digest::append_member(out, "data_element", v.data_element);
+    ores::utility::digest::append_member(out, "script_tenant_id", v.script_tenant_id);
+    ores::utility::digest::append_member(out, "script_version", v.script_version);
     out.push_back('}');
     return out;
 }

@@ -54,6 +54,9 @@ namespace ores::trading::domain {
         utility::codec::field{"script_npv", &scripted_instrument::script_npv},
         utility::codec::field{"description", &scripted_instrument::description},
         utility::codec::field{"data_element", &scripted_instrument::data_element},
+        utility::codec::field{"script_tenant_id", &scripted_instrument::script_tenant_id},
+        utility::codec::field{"script_version", &scripted_instrument::script_version},
+        utility::codec::field{"script_hash", &scripted_instrument::script_hash},
         utility::codec::field{"audit", &scripted_instrument::audit},
     };
 }

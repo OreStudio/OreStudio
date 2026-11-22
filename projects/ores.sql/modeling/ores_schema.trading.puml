@@ -5287,6 +5287,9 @@ package "trading" #E8F5E9 {
           script_npv : text
           description : text
           data_element : text
+          script_tenant_id : uuid <<FK>>
+          script_version : integer
+          script_hash : text
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>

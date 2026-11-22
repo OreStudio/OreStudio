@@ -88,6 +88,16 @@ public:
         }
     }
 
+    /// The surfaces that run, each once whatever number of adapters hold it.
+    [[nodiscard]] std::vector<surface_ptr> held() const {
+        const std::lock_guard lock(mu_);
+        std::vector<surface_ptr> out;
+        out.reserve(surfaces_.size());
+        for (const auto& [_, surface] : surfaces_)
+            out.push_back(surface);
+        return out;
+    }
+
     /// How many surfaces run.
     [[nodiscard]] std::size_t running_count() const {
         const std::lock_guard lock(mu_);

@@ -205,6 +205,12 @@ struct feed_kind final {
                                                    const std::string& feed_config_id)>
         candidates;
 
+    /**
+     * The kind runs only while a provider's simulated source holds it, so no operator starts it
+     * by hand: a run of its own would be a second market beside the one the vendors quote.
+     */
+    bool held_by_adapters = false;
+
     /** This kind's simulate subject. */
     std::string simulate_subject;
     /** Decodes this kind's own simulate request into the shared envelope. */

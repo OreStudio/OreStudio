@@ -693,6 +693,8 @@ def cmd_stop(ctx, args):
 
     if args.service:
         return _stop_one(ctx, args)
+    if getattr(args, "keep_infra", False):
+        return _stop_keeping_infra(ctx)
 
     print(f"[systemctl --user stop {ctx.target_name}]")
     # PartOf=<target> on every generated unit means stopping the target
@@ -704,6 +706,23 @@ def cmd_stop(ctx, args):
         return 1
 
     print(f"Stopped  : {ctx.target_name} (and every unit it aggregates).")
+    return 0
+
+
+def _stop_keeping_infra(ctx):
+    """Stop every registry service and leave the pooler and nats-server up.
+
+    Neither is a registry service, so the units the registry names are the
+    fleet less its infrastructure. The database tests connect through the
+    pooler, so a stop that took it down would fail them."""
+    units = [f"{unit}.service" for unit, _log in _service_units(ctx)]
+    print(f"[systemctl --user stop <{len(units)} service units>]")
+    result = _systemctl(["stop", *units], check=False)
+    if result.returncode != 0 and "not loaded" not in (result.stderr or ""):
+        print(result.stderr, file=sys.stderr)
+        return 1
+    print(f"Stopped  : {len(units)} service unit(s); the pooler and "
+          f"nats-server still run.")
     return 0
 
 
@@ -960,6 +979,9 @@ def run(argv, project_root: Path, env_file: Path | None = None) -> int:
                                      "(cascades via PartOf=)")
     _common(sp)
     _service_argument(sp)
+    sp.add_argument("--keep-infra", action="store_true",
+                    help="Stop every service but leave the pooler "
+                         "(pgbouncer) and nats-server running.")
 
     sr = sub.add_parser("restart", help="systemctl --user restart the fleet, "
                                         "or just one service. Regenerates the "

@@ -600,6 +600,11 @@ feed_kind_registry::folder_subtree(const ores::database::context& ctx,
 
 feed_start_attempt feed_kind_registry::make_feed(const feed_start_target& target,
                                                  const feed::feed_build_context& bctx) const {
+    if (target.row.kind && target.row.kind->held_by_adapters)
+        return {.feed = {},
+                .failure = "Feed " + target.row.candidate.feed_config_id +
+                           " runs while a provider's simulated source holds it, so it is not "
+                           "started by hand."};
     if (!target.startable())
         return {.feed = {},
                 .failure = "Feed config is not enabled: " + target.row.candidate.feed_config_id};
@@ -651,6 +656,7 @@ feed_kind make_fx_vol_surface_kind() {
     feed_kind k;
     k.kind = std::string(fx_vol_surface_feed_kind);
     k.config_permission = "synthetic::fx_vol_surface_feeds:read";
+    k.held_by_adapters = true;
 
     k.candidates = [](const ores::database::context& ctx, const std::string& id) {
         repo::fx_vol_surface_feed_repository feed_repo;

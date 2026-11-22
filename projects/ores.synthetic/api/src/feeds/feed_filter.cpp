@@ -120,6 +120,17 @@ std::string feeds_query() {
         from ores_synthetic_ir_curve_generation_configs_tbl f
         join ores_synthetic_market_data_generation_configs_tbl c
           on c.id = f.config_id and c.valid_to = ores_utility_infinity_timestamp_fn()
+        where f.valid_to = ores_utility_infinity_timestamp_fn()
+        union all
+        select f.id::text, 'fx_vol_surface',
+               f.base_currency_code || '/' || f.quote_currency_code,
+               f.source_name, '', f.folder_id, f.enabled, f.auto_start,
+               f.asset_class_code, f.ticks_per_hour, 'ssvi',
+               f.base_currency_code || '/' || f.quote_currency_code,
+               c.provider_code, f.tenant_id::text
+        from ores_synthetic_fx_vol_surface_feeds_tbl f
+        join ores_synthetic_market_data_generation_configs_tbl c
+          on c.id = f.config_id and c.valid_to = ores_utility_infinity_timestamp_fn()
         where f.valid_to = ores_utility_infinity_timestamp_fn())sql";
 }
 

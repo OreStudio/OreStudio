@@ -28,6 +28,7 @@
 #include <stdexcept>
 #include <string>
 #include <thread>
+#include <utility>
 #include <vector>
 
 namespace {
@@ -128,6 +129,13 @@ class recording_surface final {
 public:
     using point_targets = std::map<std::string, std::string>;
 
+    explicit recording_surface(std::string source_name = "synthetic.vol.eurusd")
+        : source_name_(std::move(source_name)) {}
+
+    const std::string& source_name() const {
+        return source_name_;
+    }
+
     void attach(const std::string& adapter_id, const std::string&, point_targets) {
         adapters_[adapter_id] = true;
     }
@@ -151,6 +159,7 @@ public:
     std::size_t attached_at_start = 0;
 
 private:
+    std::string source_name_;
     std::map<std::string, bool> adapters_;
 };
 
@@ -159,9 +168,8 @@ using recording_hold = ores::synthetic::service::basic_shared_surface_hold<recor
 
 // One offer: the id it answers and the feed, by source name, that it builds.
 generator_offer offer_of(const std::string& pair, const std::string& source_name) {
-    return {.id = pair_id(pair), .make = [source_name] {
-                return std::make_shared<named_generator>(source_name);
-            }};
+    return {.id = pair_id(pair),
+            .make = [source_name] { return std::make_shared<named_generator>(source_name); }};
 }
 
 std::shared_ptr<domain::i_feed> feed_named(const std::string& source_name) {
@@ -334,4 +342,30 @@ TEST_CASE("a surface built again after its last adapter left is a new path", "[s
     again.start();
     CHECK(builds == 2);
     CHECK(surfaces.running_count() == 1);
+}
+
+TEST_CASE("a held surface runs under its feed's own source name", "[shared_surfaces]") {
+    recording_surfaces surfaces;
+    const auto make = [] {
+        return std::make_shared<recording_surface>("synthetic.vol.eurusd");
+    };
+    recording_hold bloomberg(
+        surfaces, "feed-1", "bloomberg-a", "c-bbg", "synthetic.vol.eurusd.bloomberg", {}, make);
+    recording_hold ice(surfaces, "feed-1", "ice-a", "c-ice", "synthetic.vol.eurusd.ice", {}, make);
+    const auto names = [&surfaces] {
+        std::vector<std::string> out;
+        for (const auto& surface : surfaces.held())
+            out.push_back(surface->source_name());
+        return out;
+    };
+    CHECK(names().empty());
+
+    bloomberg.start();
+    ice.start();
+    CHECK(names() == std::vector<std::string>{"synthetic.vol.eurusd"});
+
+    bloomberg.stop();
+    CHECK(names() == std::vector<std::string>{"synthetic.vol.eurusd"});
+    ice.stop();
+    CHECK(names().empty());
 }

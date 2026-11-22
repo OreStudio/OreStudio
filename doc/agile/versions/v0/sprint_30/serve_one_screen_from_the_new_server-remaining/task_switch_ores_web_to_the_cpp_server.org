@@ -8,7 +8,7 @@
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/switch-ores-web-to-the-cpp-server
-#+pr:
+#+pr: 5027
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
@@ -139,7 +139,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5027][#5027]] | [http] Serve the web app from the C++ server |
 
 * Review
 

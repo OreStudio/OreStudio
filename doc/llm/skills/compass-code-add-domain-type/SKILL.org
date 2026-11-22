@@ -36,7 +36,7 @@ shape, they generate flat data-carrying structs plus persistence/UI
 layers. See e.g. =ores.analytics.quant='s own domain types
 (=currency_id=, =ccy_pair=, ...), which are hand-authored for exactly
 this reason — no codegen banner, not listed in
-=compass codegen entity list=. Justify the choice in the file header
+the entity models. Justify the choice in the file header
 either way.
 
 1. /Create an org-mode entity model/ under the target component's
@@ -57,11 +57,9 @@ either way.
 
 2. /Generate the C++ artefacts/ via compass, not the generator script
    directly:
-   =compass codegen generate --model <path/to/model.org> --address ores.cpp=
-   (=compass codegen entity generate <entity>= regenerates an
-   already-modelled entity's full supported set;
-   =compass codegen entity list= / =show= / =diff= inspect what
-   exists and whether it's stale).
+   =./compass.sh generate --scope <path/to/model.org>=. It writes every
+   output the model feeds and only those whose content changed;
+   =./compass.sh diff --scope <path/to/model.org>= previews them.
 
 3. /Build and verify/: use [[id:654D4A70-E63D-4C18-B5A5-886066E36314][cmake-runner]] to confirm the component
    library compiles cleanly.

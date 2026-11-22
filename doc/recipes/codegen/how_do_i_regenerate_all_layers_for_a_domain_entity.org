@@ -2,12 +2,12 @@
 :ID: 90BD6F75-FFCC-4D27-B92F-5EBCB923B4AB
 :END:
 #+title: How do I regenerate all layers for a domain entity?
-#+description: Run all codegen profiles (SQL, all C++) for a single domain entity in one pass and validate the output.
+#+description: Run ./compass.sh generate --scope on the domain entity model: one run writes every layer the model feeds, SQL and C++.
 #+type: recipe
 #+level: cross
 #+filetags: :codegen:recipe:entity:regenerate:
 #+created: 2026-06-26
-#+updated: 2026-11-18
+#+updated: 2026-11-22
 
 This recipe covers all code generation profiles for a =domain_entity= model.
 See [[id:FE693595-6693-459B-AD9B-EB7E3ABBBC88][ores.codegen architecture]] for the profile system and [[id:F556E446-EB91-4656-BEDC-15AE0F7B5ECD][Entity commissioning process reference]] for output location checks and drift classification.
@@ -18,39 +18,31 @@ How do I regenerate all the code for a domain entity?
 
 * Answer
 
-Use =compass codegen entity generate <entity>= — it targets exactly one entity across every applicable profile (SQL and all C++ layers), so there is no component-wide diff to scope or discard:
+One scoped =generate= writes every layer of the entity, SQL and every C++
+facet its model admits:
 
 #+begin_src sh
-./compass.sh codegen entity generate rounding_type
+./compass.sh diff --scope projects/ores.refdata/modeling/ores.refdata.rounding_type.org
+./compass.sh generate --scope projects/ores.refdata/modeling/ores.refdata.rounding_type.org
 #+end_src
 
-Pass =--address <address>= to restrict to one layer (e.g. =ores.cpp.repository=, =ores.sql.schema=) when you only touched one facet's inputs:
-
-#+begin_src sh
-./compass.sh codegen entity generate book --address ores.cpp.repository
-#+end_src
-
-Companion commands for the same entity-scoped workflow:
-
-#+begin_src sh
-./compass.sh codegen entity list                # every entity, grouped by metatype
-./compass.sh codegen entity show book            # generated files + staleness, this entity only
-./compass.sh codegen entity diff book             # git diff of this entity's generated files only
-#+end_src
-
-For a template change, or any change that reaches more than one entity, run =./compass.sh diff= and then =./compass.sh generate=. compass-ng writes only the outputs whose inputs changed, and the gate keeps the tree drift-free, so the diff it leaves is the change's own.
+Only the outputs whose content changed are written, so the resulting
+=git diff= is the entity's change and nothing else. For a template change, or
+any change that reaches more than one entity, run =./compass.sh diff= and then
+=./compass.sh generate= over the whole tree.
 
 *Before committing*, verify each generated file landed in the correct split project directory — not the stale monolith paths. See [[id:F556E446-EB91-4656-BEDC-15AE0F7B5ECD][Entity commissioning process reference]] § Codegen sync task acceptance criteria, output location check.
 
-For per-layer details and drift notes, see the individual layer recipes in the See also section.
-
 * Script
 
-=./compass.sh codegen entity generate <entity>= is the entry point (=compass_codegen_entity.py=, lazily loaded when =entity= is codegen's first argument). With no =--address=, it runs every profile applicable to that entity's metatype. See [[id:FE693595-6693-459B-AD9B-EB7E3ABBBC88][ores.codegen architecture]] for the profile/address registry.
+=./compass.sh generate= and =./compass.sh diff= forward to compass-ng through
+=cmd_compass_ng= in [[proj:projects/ores.compass/src/compass.py][=compass.py=]]; its =codegen= codec renders the templates
+of [[proj:projects/ores.codegen/library/templates][=projects/ores.codegen/library/templates=]].
 
 * Tested by
 
-Manual: run the command for a target entity, inspect the diff (already scoped — no manual filtering needed), verify output paths against the location table in [[id:F556E446-EB91-4656-BEDC-15AE0F7B5ECD][Entity commissioning process reference]].
+Manual: run the scoped =generate= for a target entity, inspect the diff and
+verify the output paths against the location table in [[id:F556E446-EB91-4656-BEDC-15AE0F7B5ECD][Entity commissioning process reference]].
 
 * See also
 

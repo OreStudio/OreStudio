@@ -80,8 +80,8 @@ nowhere else in the file, and nowhere else in the toolchain.
 
 Applying the abstract test to a concrete generator requires knowing
 where to look, and it is worth being precise about that: the operative
-source is =projects/ores.codegen/src/codegen/core.py=, =org_loader.py=,
-and the =library/templates/*.mustache= templates themselves. What
+source is compass-ng's =codegen= codec and the =library/templates/*.mustache=
+templates themselves. What
 actually distinguishes a feature from a computed predicate, though, is
 not which file happens to consult its value — it is the direction the
 value travels. A feature's value flows from the model's author to the
@@ -209,8 +209,8 @@ cannot change the object graph.
 
 ** Bundle: =ores.sql.schema= (SQL projection configuration)
 
-Authored on the model's =sql= section; all read through in
-=codegen/core.py=/=org_loader.py= (never computed). These tune the
+Authored on the model's =sql= section; all read through by
+compass-ng's =codegen= codec (never computed). These tune the
 generated DDL, triggers and rules for a fixed entity. Full narrative,
 worked examples, and the tenant-scoping-is-a-policy note: [[id:729E44CA-6AB7-4ADB-BA54-B1AD5A12DD27][Codegen entity
 meta-model — SQL]] § "Projection configuration (variability)" — this
@@ -237,10 +237,10 @@ table is the cross-facet index only.
 
 ** Bundle: =ores.presentation= (presentation projection configuration)
 
-Authored on the model's =** Presentation= drawer, read through in
-=codegen/core.py= and, for several knobs, directly by Mustache's
+Authored on the model's =** Presentation= drawer, read through by
+compass-ng's =codegen= codec and, for several knobs, directly by Mustache's
 dotted-path section lookup in the templates that project the drawer (no
-explicit Python =.get()= call at all — see § "Telling variability from
+explicit lookup in the codec at all — see § "Telling variability from
 structure" above). These configure the presentation projection — the
 columns, the detail fields, and how each is rendered — without touching
 the domain object graph. (The many /computed/ =presentation.*= values —
@@ -297,7 +297,7 @@ Not yet reconciled into a single vocabulary; tracked by
 ** Excluded: structural predicates
 
 The following are the values templates branch on that are *not*
-variability. Every one is *computed* by =codegen/core.py= from other,
+variability. Every one is *computed* by compass-ng's =codegen= codec from other,
 already-known facts about the entity — reflecting the structure of
 the types the facets will generate, not a choice about how to project
 them — so each is a structural fact, not a configuration choice. They

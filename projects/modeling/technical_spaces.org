@@ -77,9 +77,8 @@ The [[id:787A7429-71D5-4295-829B-A9B56275B1F8][PMM]] is instantiated by two comp
 
 - The [[id:D7D53D71-C9E8-43AE-AA42-E58E57CD76C8][ores physical-space graph]] — each facet node's Archetypes table maps a
   [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][profile]] name to the Mustache templates that belong to it; read directly
-  by =codegen/core.py= (no intermediate JSON; see [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability
-  Model]] § "The test" for the =src/generator.py= → =codegen/*.py= file
-  split).
+  by compass-ng's =codegen= codec (no intermediate JSON; see [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability
+  Model]] § "The test").
 - =projects/ores.codegen/library/templates/= — the archetype catalogue,
   where each =.mustache= file is one archetype within a facet. The
   directory layout mirrors the TS→Part→Facet hierarchy.

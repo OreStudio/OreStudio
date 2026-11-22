@@ -51,12 +51,9 @@ How do I add a new source file to a component?
 
 compass-ng's =component_files= codec, which renders the =ores.cmake.component.files_src=/=files_tests= codegen
 archetypes (=cmake_component_files_src.mustache=/
-=cmake_component_files_tests.mustache=) via the same
-=generate_from_model()= the rest of codegen uses. The file list itself
-is a directory scan injected into the render context at generation
-time, since a source list isn't data the component's own model carries.
-=projects/ores.codegen/scripts/regenerate_cmake_component_files.py= keeps
-only =--check=; without it, the script runs =compass-ng generate=.
+=cmake_component_files_tests.mustache=). The file list itself is a
+directory scan injected into the render context at generation time, since a
+source list isn't data the component's own model carries.
 
 
 * Tested by

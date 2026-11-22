@@ -75,8 +75,7 @@ The full template source. Edit here and re-tangle with
     ADDRESS
     -------
     ores.cpp.field-group  — use via:
-      codegen.sh generate --model path/to/foo_field_group.org \
-             --address ores.cpp.field-group
+      ./compass.sh generate --scope path/to/foo_field_group.org
 
     WHAT NOT TO USE IT FOR
     ----------------------

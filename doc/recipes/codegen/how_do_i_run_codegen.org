@@ -33,29 +33,25 @@ diff, which writes nothing, then write with generate:
 A new model file needs no step of its own: =generate= finds it and writes its
 outputs.
 
-** The older entry points
+** One model or one template
 
-=./compass.sh codegen generate=, =codegen regenerate=, =codegen entity
-generate= and =projects/ores.codegen/codegen.sh generate|regenerate= all run
-=compass-ng generate= now, and with =--dry-run= or =--diff= they run
-=compass-ng diff=. Their =--model=, =--address=, =--component= and =--entity=
-arguments no longer narrow the run. The Python generator rewrote every file it
-rendered, so a regenerate of one template touched thousands of files; these
-entry points no longer reach it.
-
-The read-only entity reports stay:
+=--scope= limits a run to the outputs of the units that read one file, a model
+or a template, and to what they feed:
 
 #+begin_src sh
-./compass.sh codegen entity list
-./compass.sh codegen entity show country
-./compass.sh codegen entity archetypes --entity country
+./compass.sh diff --scope projects/ores.refdata/modeling/ores.refdata.country.org
+./compass.sh generate --scope projects/ores.refdata/modeling/ores.refdata.country.org
 #+end_src
+
+=./compass.sh codegen generate= and =codegen regenerate= also run
+=compass-ng generate=, or =compass-ng diff= with =--dry-run=; their other
+arguments no longer narrow the run. The Python generator they used to call is
+deleted: it rewrote every file it rendered.
 
 * Script
 
 =./compass.sh generate= and =diff= forward to compass-ng through =cmd_compass_ng=
-in [[proj:projects/ores.compass/src/compass.py][=compass.py=]]. =cmd_codegen= in the same file forwards the older verbs,
-and [[proj:projects/ores.compass/src/compass_codegen_entity.py][=compass_codegen_entity.py=]] holds the entity reports.
+in [[proj:projects/ores.compass/src/compass.py][=compass.py=]], and =cmd_codegen= in the same file forwards the older verbs.
 
 * Tested by
 

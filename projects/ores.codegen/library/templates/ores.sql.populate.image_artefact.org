@@ -22,7 +22,7 @@ image, in the order the artefact rows are inserted. =manifest.json= is the
 dataset's metadata, and it carries the two things the payload does not:
 which dataset this is, and where the image files live.
 
-The enrichment in =codegen/core.py= joins them. It selects the manifest
+The enrichment in compass-ng's =codegen= codec joins them. It selects the manifest
 dataset whose =artefact_type= is =images=, takes the directory from that
 manifest's first source =data_dir=, resolves it against the manifest's own
 directory, and reads one image file per key listed in the payload. A key may

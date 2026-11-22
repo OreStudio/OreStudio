@@ -51,8 +51,7 @@ contain a CMakeLists.txt file".
    header. It is the one file in the part that lists the units, and
    =check_route_units= fails when an opted-in model's unit is missing from it.
 
-6. Generate the file lists:
-   =projects/ores.codegen/scripts/regenerate_cmake_component_files.py --component ores.http.<comp>=
+6. Generate the file lists: =./compass.sh generate=.
 
 7. Draw the diagram:
    =build/scripts/generate_component_puml.py --project ores.http.<comp>=

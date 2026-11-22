@@ -62,12 +62,7 @@ truth for both humans and codegen — the standalone
    C++ address is the technical space rather than one facet, because the
    opt-in scaffold below is a sibling of =ores.cpp.component=.
    #+begin_src sh
-   ./projects/ores.codegen/codegen.sh generate \
-     --model projects/ores.COMPONENT/api/modeling/component_overview.org \
-     --address ores.cmake.component
-   ./projects/ores.codegen/codegen.sh generate \
-     --model projects/ores.COMPONENT/api/modeling/component_overview.org \
-     --address ores.cpp
+   ./compass.sh generate --scope projects/ores.COMPONENT/api/modeling/component_overview.org
    #+end_src
    Repeat per part (=.api=, =.core=, =.service=), each against its own
    overview file.
@@ -133,7 +128,7 @@ component's generated files and its registration.
 * Reference
 
 - [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]] — split rules, facet placement, CMake dep chain.
-- [[id:08FBD248-257A-A474-DD43-DB08949978F1][ORE Studio Codegen]] — model schema, physical-space graph, =codegen.sh= usage.
+- [[id:08FBD248-257A-A474-DD43-DB08949978F1][ORE Studio Codegen]] — model schema and physical-space graph.
 - [[id:B0B99088-D88E-4980-A4EE-7D6A9A8E96A5][component-model-creator]] — write the architecture docs once scaffold is working.
 - [[id:654D4A70-E63D-4C18-B5A5-886066E36314][cmake-runner]] — build and test commands.
 

@@ -20,11 +20,11 @@
 #ifndef ORES_TRADING_CORE_MESSAGING_PUBLISH_FROM_DQ_HANDLER_HPP
 #define ORES_TRADING_CORE_MESSAGING_PUBLISH_FROM_DQ_HANDLER_HPP
 
-#include "ores.trading.core/export.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.nats/domain/delivery.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.trading.core/export.hpp"
 
 namespace ores::trading::messaging {
 

@@ -18,13 +18,13 @@
  *
  */
 #include "ores.trading.core/messaging/publish_from_dq_handler.hpp"
-#include "ores.trading.core/service/publish_subject_plan.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.dq.api/messaging/publish_from_dq_protocol.hpp"
 #include "ores.logging/logger.hpp"
 #include "ores.nats/domain/delivery.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
+#include "ores.trading.core/service/publish_subject_plan.hpp"
 #include "ores.utility/codec/json_codec.hpp"
 #include <cstdint>
 #include <format>

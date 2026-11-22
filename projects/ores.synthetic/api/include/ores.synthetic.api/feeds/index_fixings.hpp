@@ -52,6 +52,8 @@ struct index_fixing final {
  *
  * The address is written by the codec the market reads, so a series a feed creates
  * and a series a trade requires are one text, and not two spellings of one index.
+ * The pgTAP test synthetic_curve_fixing_addresses_test.sql builds the same address
+ * in SQL to check every curve against the conventions; change both together.
  *
  * @return The address, or why the index has none: an empty currency or family, or
  * an index ORE's own name grammar does not read back.

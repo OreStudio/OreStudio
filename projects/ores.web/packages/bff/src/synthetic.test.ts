@@ -1473,6 +1473,95 @@ describe('synthetic writes', () => {
         });
     });
 
+    const VOL_FEED = {
+        id: ID,
+        config_id: OTHER,
+        base_currency_code: 'EUR',
+        quote_currency_code: 'USD',
+        source_name: 'synthetic.bloomberg.vol.eurusd',
+        ticks_per_hour: 12,
+        enabled: true,
+        auto_start: true,
+        folder_id: null,
+        asset_class_code: 'fx',
+        arrival_mode: 'periodic',
+        branching_ratio: 0,
+        decay: 1,
+        sensitivity: 1,
+        skew_reversion: 2,
+        skew_volatility: 0.3,
+        curvature_reversion: 2,
+        curvature_volatility: 0.3,
+        spot_variance_correlation: -0.3,
+        spot_skew_correlation: -0.5,
+        segment_correlation: 0.9,
+        start_skew: -0.1,
+        start_curvature: 0.8,
+    };
+
+    it('saves a vol surface feed from a system session', async () => {
+        const { server, sessionId, calls } = buildTestServer(
+            {
+                'synthetic.v1.fx_vol_surface_feeds.put_many': {
+                    result: ok,
+                    fx_vol_surface_feeds: [{ ...VOL_FEED, version: 4 }],
+                },
+            },
+            SYSTEM_TENANT,
+        );
+        const response = await send(
+            server,
+            sessionId,
+            'PUT',
+            '/api/synthetic/fx-vol-surface-feeds',
+            {
+                intent: INTENT,
+                changes: [{ write: { ...VOL_FEED, start_skew: -0.2 }, version: 3 }],
+            },
+        );
+        expect(response.statusCode).toBe(200);
+        expect(calls[0]?.body).toMatchObject({
+            changes: [
+                {
+                    write: { start_skew: -0.2, start_curvature: 0.8 },
+                    precondition: { kind: 'must_match_version', version: 3 },
+                },
+            ],
+        });
+    });
+
+    it('refuses a vol surface curvature outside the bound gamma at one half sets', async () => {
+        const { server, sessionId, calls } = buildTestServer({}, SYSTEM_TENANT);
+        const response = await send(
+            server,
+            sessionId,
+            'PUT',
+            '/api/synthetic/fx-vol-surface-feeds',
+            {
+                intent: INTENT,
+                changes: [{ write: { ...VOL_FEED, start_curvature: 1.5 }, version: 3 }],
+            },
+        );
+        expect(response.statusCode).toBe(400);
+        expect(calls).toHaveLength(0);
+    });
+
+    it('refuses a tenant session a write to a vol surface feed', async () => {
+        const { server, sessionId, calls } = buildTestServer({});
+        const response = await send(
+            server,
+            sessionId,
+            'PUT',
+            '/api/synthetic/fx-vol-surface-feeds',
+            {
+                intent: INTENT,
+                changes: [{ write: VOL_FEED, version: 3 }],
+            },
+        );
+        expect(response.statusCode).toBe(403);
+        expect(calls).toHaveLength(0);
+    });
+
     it('removes many rows unconditionally in one call', async () => {
         const { server, sessionId, calls } = buildTestServer({
             'synthetic.v1.gmm_components.delete_many': { result: ok },

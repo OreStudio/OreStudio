@@ -56,18 +56,22 @@ import {
 } from '@ores/wire-protocol/generated/synthetic/protocol/variance_calibration_input_point_protocol';
 import {
     subjects as volFeedSubjects,
+    type FxVolSurfaceFeedWrite,
     type FxVolSurfaceFeedsFilter,
 } from '@ores/wire-protocol/generated/synthetic/protocol/fx_vol_surface_feed_protocol';
 import {
     subjects as volFeedExpirySubjects,
+    type FxVolSurfaceFeedExpiryWrite,
     type FxVolSurfaceFeedExpiriesFilter,
 } from '@ores/wire-protocol/generated/synthetic/protocol/fx_vol_surface_feed_expiry_protocol';
 import {
     subjects as volContributorSubjects,
+    type FxVolContributorWrite,
     type FxVolContributorsFilter,
 } from '@ores/wire-protocol/generated/synthetic/protocol/fx_vol_contributor_protocol';
 import {
     subjects as volFeedContributorSubjects,
+    type FxVolSurfaceFeedContributorWrite,
     type FxVolSurfaceFeedContributorsFilter,
 } from '@ores/wire-protocol/generated/synthetic/protocol/fx_vol_surface_feed_contributor_protocol';
 import { subjects as tenorSubjects } from '@ores/wire-protocol/generated/refdata/protocol/tenor_protocol';
@@ -517,6 +521,31 @@ const SYNTHETIC_RECORDS: readonly SyntheticResource[] = [
             remove: volFeedSubjects.delete_fx_vol_surface_feed_request,
             removeMany: volFeedSubjects.delete_many_fx_vol_surface_feeds_request,
         },
+        writes: z.strictObject({
+            id: idSchema,
+            config_id: idSchema,
+            base_currency_code: code,
+            quote_currency_code: code,
+            source_name: label,
+            ticks_per_hour: z.int().positive(),
+            enabled: z.boolean(),
+            auto_start: z.boolean(),
+            folder_id: idSchema.nullable(),
+            asset_class_code: code.default('fx'),
+            arrival_mode: code.default('periodic'),
+            branching_ratio: z.number().min(0).lt(1).default(0),
+            decay: z.number().positive().default(1),
+            sensitivity: z.number().positive().default(1),
+            skew_reversion: z.number().min(0),
+            skew_volatility: z.number().min(0),
+            curvature_reversion: z.number().min(0),
+            curvature_volatility: z.number().min(0),
+            spot_variance_correlation: z.number().gt(-1).lt(1),
+            spot_skew_correlation: z.number().gt(-1).lt(1),
+            segment_correlation: z.number().min(0).lt(1),
+            start_skew: z.number().gt(-1).lt(1),
+            start_curvature: z.number().positive().lt(Math.SQRT2),
+        }) satisfies z.ZodType<FxVolSurfaceFeedWrite>,
     },
     {
         key: 'fx-vol-surface-feed-expiries',
@@ -537,6 +566,14 @@ const SYNTHETIC_RECORDS: readonly SyntheticResource[] = [
             remove: volFeedExpirySubjects.delete_fx_vol_surface_feed_expiry_request,
             removeMany: volFeedExpirySubjects.delete_many_fx_vol_surface_feed_expiries_request,
         },
+        writes: z.strictObject({
+            id: idSchema,
+            feed_id: idSchema,
+            tenor: code,
+            atm_vol: z.number().positive(),
+            variance_reversion: z.number().min(0),
+            variance_volatility: z.number().min(0),
+        }) satisfies z.ZodType<FxVolSurfaceFeedExpiryWrite>,
     },
     {
         key: 'fx-vol-contributors',
@@ -552,6 +589,19 @@ const SYNTHETIC_RECORDS: readonly SyntheticResource[] = [
             remove: volContributorSubjects.delete_fx_vol_contributor_request,
             removeMany: volContributorSubjects.delete_many_fx_vol_contributors_request,
         },
+        writes: z.strictObject({
+            id: idSchema,
+            provider_code: code,
+            noise: z.number().min(0),
+            wing_widening: z.number().min(0),
+            expiry_widening: z.number().min(0),
+            quote_step: z.number().min(0),
+            missing_probability: z.number().min(0).max(1),
+            stale_probability: z.number().min(0).max(1),
+            outlier_probability: z.number().min(0).max(1),
+            outlier_size: z.number().min(0),
+            bias: z.number(),
+        }) satisfies z.ZodType<FxVolContributorWrite>,
     },
     {
         key: 'fx-vol-surface-feed-contributors',
@@ -575,6 +625,11 @@ const SYNTHETIC_RECORDS: readonly SyntheticResource[] = [
             removeMany:
                 volFeedContributorSubjects.delete_many_fx_vol_surface_feed_contributors_request,
         },
+        writes: z.strictObject({
+            id: idSchema,
+            feed_id: idSchema,
+            contributor_id: idSchema,
+        }) satisfies z.ZodType<FxVolSurfaceFeedContributorWrite>,
     },
     {
         key: 'process-types',
@@ -694,7 +749,7 @@ function resourceName(resource: SyntheticResource): string {
 }
 
 /** The resources whose rows are feeds, which the tick read reads a feed through. */
-const FEED_KEYS = ['fx-feeds', 'ir-curve-feeds'] as const;
+const FEED_KEYS = ['fx-feeds', 'ir-curve-feeds', 'fx-vol-surface-feeds'] as const;
 
 const FEED_RESOURCES = new Map(
     FEED_KEYS.map((key): [string, SyntheticResource] => {

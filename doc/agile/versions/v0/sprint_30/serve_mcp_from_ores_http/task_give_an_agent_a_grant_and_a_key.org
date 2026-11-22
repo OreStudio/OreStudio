@@ -35,8 +35,11 @@ A person signed in to ores.web creates a grant for one agent: its name, read onl
 
 * Acceptance
 
-- A grant is created, listed and revoked in ores.web; it names a role the
-  person holds, and has an expiry of at most ninety days.
+- A grant is created, listed and revoked in ores.web by a person who holds
+  =iam::agent_grants:create=, seeded on the role =AgentDelegator= and not on
+  Member; administrators list everyone's with =iam::agent_grants:read= and
+  revoke with =iam::agent_grants:revoke=. A grant names a role the person
+  holds, and has an expiry of at most ninety days.
 - Its key is shown once, stored only as the hash of its secret, and never
   appears in a log, a refusal or a row.
 - A request with a valid key acts as the person, with =act= =agent:<grant id>=

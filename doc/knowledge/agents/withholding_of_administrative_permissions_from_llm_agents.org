@@ -32,7 +32,7 @@ anybody deciding so.
 | Rule | Examples | Why |
 |------+----------+-----|
 | Every =installation::= code | =installation::deployment:read= | the deployment as a whole is outside any person's tenant |
-| Every =iam::= code that is not a read | =iam::accounts:create=, =iam::roles:assign=, =iam::accounts:reset_password=, =iam::sessions:end=, =iam::run_grants:revoke=, the agent grant and key operations | an agent never changes who may do what, or makes a grant of its own |
+| Every =iam::= code that is not a read, and =iam::agent_grants:read= | =iam::accounts:create=, =iam::roles:assign=, =iam::accounts:reset_password=, =iam::sessions:end=, =iam::run_grants:revoke=, =iam::agent_grants:create= and =:revoke=, and the read of other people's grants | an agent never changes who may do what, or makes a grant of its own |
 | Every =inbox::= code that is not a read | =inbox::approvals:decide_operations=, =inbox::approvals:set_mode=, =inbox::approval_policies:write= | an agent never decides a request, and never changes the rules that hold its own writes ([[id:381D87BB-4E2D-47BA-8853-6132CF900305][Six-eyes approval of LLM agent writes]]) |
 | The writes on trade authorisation requests | =trading::trade_authorisation_requests:write= | an agent never authorises a trade, its own or another's |
 | Every code ending =:exchange=, =:mint=, =:impersonate=, =:enter_as_service= or =:provision= | =iam::run_grants:exchange=, =iam::storage_capabilities:mint=, =iam::tenants:impersonate= | each one creates an identity or a capability, which only IAM and services may do |

@@ -111,6 +111,10 @@ The analysis is in [[id:FC0847D1-9F09-42EF-A4BD-D5E3C34398EA][How ores.http serv
   credential at rest, with an expiry of at most ninety days; IAM's entry into
   the tenant a key names is registered; and an agent's calls form sessions of
   their own, shown apart from its person's ([[id:4DCD0684-F6AE-4E84-BB9D-2AE2DAFDB667][Sessions of LLM agents]]).
+- *Delegating to an agent is a permission* (2026-11-22, product owner):
+  =iam::agent_grants:create=, on a seeded role =AgentDelegator= and not on
+  Member, so each tenant decides who may use agents; administrators read and
+  revoke everyone's grants with =iam::agent_grants:read= and =:revoke=.
 
 * Investigations
 

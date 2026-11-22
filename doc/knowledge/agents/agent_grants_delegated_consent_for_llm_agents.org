@@ -91,11 +91,28 @@ exchange, at most five minutes later ([[id:1162906F-BB72-486E-9A11-30D567C65F3E]
 Source: [[./agent_grant_states.puml][=agent_grant_states.puml=]]. Regenerate with
 =plantuml -tpng doc/knowledge/agents/agent_grant_states.puml=.
 
+** Who may delegate
+
+Delegating to an agent is itself a permission, so each tenant decides who may
+do it and nobody does by default.
+
+| Permission | Lets a person | Held by |
+|------------+---------------+---------|
+| =iam::agent_grants:create= | create a grant and its keys for themselves, list their own grants, and revoke their own | a role a tenant administrator assigns; IAM seeds =AgentDelegator= |
+| =iam::agent_grants:read= | list every grant in their parties | administrators |
+| =iam::agent_grants:revoke= | revoke anyone's grant or key, and end their agents' sessions | administrators |
+
+Member holds none of them. Listing one's own grants is a self read and listing
+another person's a privileged read, two subjects rather than one, as
+[[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised reads]] requires. All three are IAM permissions that are not reads, or
+that read other people's access, so no agent ever holds them ([[id:1679B2CE-05C2-4CFF-9A4B-47EC721CB10A][Withholding of administrative permissions from LLM agents]]).
+
 ** Where a person governs it
 
-A person creates, lists and revokes their grants on one page of ores.web. The
-page shows each grant's agent, role, expiry, keys and when each key was last
-used, links to the agent's sessions ({SES}), and links to what the agent did ([[id:2D36D474-2CF9-4498-AF49-818CEF080B98][Auditing of LLM agent actions]]).
+A person who holds =iam::agent_grants:create= creates, lists and revokes their
+grants on one page of ores.web. The page shows each grant's agent, role,
+expiry, keys and when each key was last used, links to the agent's sessions
+([[id:4DCD0684-F6AE-4E84-BB9D-2AE2DAFDB667][Sessions of LLM agents]]), and links to what the agent did ([[id:2D36D474-2CF9-4498-AF49-818CEF080B98][Auditing of LLM agent actions]]).
 
 * Patterns used
 

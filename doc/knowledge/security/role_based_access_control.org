@@ -58,6 +58,9 @@ defines others. Some permissions no agent ever holds, whatever its role: every
 and every permission that mints or exchanges an identity. IAM withholds them by
 rule, expanding =*= and =component::*= first so a wildcard never reaches an
 agent ([[id:1679B2CE-05C2-4CFF-9A4B-47EC721CB10A][Withholding of administrative permissions from LLM agents]]).
+Delegating to an agent is a permission of its own, =iam::agent_grants:create=,
+which Member does not hold: IAM seeds a role =AgentDelegator= for it, so a
+tenant decides who may use agents at all.
 
 Every person account holds *Member*. Member holds the reads every person's
 screens need and nothing more: the reference data vocabulary, and the

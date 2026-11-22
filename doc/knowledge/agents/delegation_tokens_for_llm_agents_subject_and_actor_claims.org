@@ -33,13 +33,13 @@ the key by its id, compares the hash of its secret, and checks that the key and
 its grant are active, that the grant is inside its expiry, and that the person
 is active. It computes the permissions: the grant's role intersected with the
 person's current permissions, less the permissions no agent ever holds
-({WH}). It opens or reuses the key's session ({SES}), appends a row to the
+([[id:1679B2CE-05C2-4CFF-9A4B-47EC721CB10A][Withholding of administrative permissions from LLM agents]]). It opens or reuses the key's session ([[id:4DCD0684-F6AE-4E84-BB9D-2AE2DAFDB667][Sessions of LLM agents]]), appends a row to the
 issue log, and issues a JSON Web Token (Jones, Bradley and Sakimura, 2015)
 that lasts five minutes. Exchanges are limited per tenant and per key, and a
 refusal is logged with its reason and never with the key.
 
 =ores.http= keeps the token in memory, keyed by the hash of the key, while it
-has more than 20% of its life left, as a run token is kept ({GR}); it never
+has more than 20% of its life left, as a run token is kept ([[id:78B82824-0BBB-4442-A9FA-E1F265DF57BD][Run grants and run tokens]]); it never
 keeps one past its expiry, and never writes one anywhere. So most calls need no
 exchange.
 

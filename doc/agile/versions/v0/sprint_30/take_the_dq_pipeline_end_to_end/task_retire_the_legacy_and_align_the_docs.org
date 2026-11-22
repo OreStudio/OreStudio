@@ -26,11 +26,11 @@ No document describes removed code, and no legacy pattern is left uncatalogued.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                 |
 | Parent story | [[id:7D2BBBBC-36A3-4BFB-9673-0F9005991D94][Take the DQ pipeline end to end, from a seeded artefact table to a published system]] |
-| Now          | The artefact guide states the one way only: all 186 artefact tables are generated, and the legacy pattern and its table are gone. |
+| Now          | Every document that described removed code describes the live model, and every count matches the file. |
 | Waiting on   | Nothing.                               |
-| Next         | The publication pipeline, the database lifecycle page and the journey pages that name the Librarian; then the counts and the plan marking. |
+| Next         | Nothing.                               |
 | Last touched | 2026-11-22                              |
 
 * Acceptance
@@ -53,10 +53,20 @@ No document describes removed code, and no legacy pattern is left uncatalogued.
 |------+-------+---------+--------|
 | Documents that describe removed code | 3+ | investigation, defect D8 | e050a2d239 |
 | Documented refdata function count vs actual | 47 vs 57 | `grep -c` | e050a2d239 |
+| Artefact-table create files carrying the generated marker | 186 of 186 | `ls projects/ores.sql/create/*/*_artefact_create.sql` | ee6bc1f8c3 |
+| Publish functions in the eight publish-from-dq SQL files | 72: refdata 56, reporting 5, marketdata 3, analytics, iam and synthetic 2, assets and trading 1 | `grep -c "_from_dq_fn"` | ee6bc1f8c3 |
+| CREATE FUNCTION statements in those files | 75, of which 72 are publish functions and 3 are helpers | `grep -c "^CREATE"` | ee6bc1f8c3 |
+| FpML populate files naming a retired template | 42 of 48 | `grep -l "Template:" projects/ores.sql/populate/fpml/*.sql` | ee6bc1f8c3 |
+| Files that named removed code | 8 | `grep -rn` over `doc/knowledge` `doc/manual` `doc/recipes` `projects/*/modeling` | ee6bc1f8c3 |
 
 * Notes
 
 Defects D8 and D9, plus the legacy catalogue. Runs last because it documents what the others settle.
+
+The agile sprint pages that name the Librarian are left as written. They record
+what a sprint built at the time, and the Librarian existed then. The live pages
+are `doc/knowledge`, `doc/manual`, `doc/recipes` and `projects/*/modeling`, and
+none of them names it now.
 
 See [[id:16920F25-F0EF-4031-9C2D-DF57B5865072][Investigation: publishing pipeline]] for the evidence behind every claim here.
 
@@ -84,3 +94,21 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Done in two commits.
+
+- `e516fe7583` — the artefact guide states the one way, with the legacy pattern
+  and its table recorded as history.
+- `ee6bc1f8c3` — the publication pipeline rewritten against the live model, the
+  counts measured, the removed code dropped from the database lifecycle page, the
+  two component overviews, the codegen diagram and the initial-setup chapter, and
+  the DQ publish pattern plan marked superseded.
+
+The gates pass on the tree: 13 of 14 checks, with `ctest` failing three suites
+that connect to the pooler port, which the gate had not brought up. All three
+pass when re-run against the live pooler.
+
+The pipeline page survives rather than being retired, recorded in the story's
+`* Decisions`: the model lives on one page and the pipeline page records what a
+generator owns at each stage, which is the argument for the remaining
+publish-function gap.

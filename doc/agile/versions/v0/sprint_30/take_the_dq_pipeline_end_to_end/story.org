@@ -106,6 +106,11 @@ levels, so it can only be designed once 1 and 2 have an answer.
 - The DQ UI belongs in this story rather than beside it. A publishing model with
   no way to see publish state is the reason the gap went unnoticed: a recreate
   looked successful while the catalogues were empty.
+- The stage-by-stage pipeline page survives rather than being retired. The model
+  lives on one page — the classification by publication level — and the pipeline
+  page records what a generator owns at each stage of it. That inventory is the
+  argument for the remaining gap, the 72 hand-written publish functions, so
+  folding the page into the model page would lose the case for closing it.
 
 
 * Related backlog

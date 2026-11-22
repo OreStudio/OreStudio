@@ -239,9 +239,12 @@ private:
     std::string refuse(std::string reason);
 
     /// Where this surface's three inputs are on the run's values, resolved when it is built.
-    std::optional<ores::analytics::quant::domain::market_board::member_id> base_curve_id_;
-    std::optional<ores::analytics::quant::domain::market_board::member_id> quote_curve_id_;
-    std::optional<ores::analytics::quant::domain::market_board::member_id> spot_id_;
+    struct board_members final {
+        ores::analytics::quant::domain::market_board::member_id base_curve = 0;
+        ores::analytics::quant::domain::market_board::member_id quote_curve = 0;
+        ores::analytics::quant::domain::market_board::member_id spot = 0;
+    };
+    board_members board_;
     /// One period per expiry, in the emitter's own expiry order.
     std::vector<ores::analytics::quant::domain::date_period> expiry_periods_;
     /// The pair's rule for dating those expiries, read once when the feed was built.

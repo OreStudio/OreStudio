@@ -253,13 +253,13 @@ fx_vol_surface_feed::fx_vol_surface_feed(
     // by the one function its feed publishes it under, so the two agree by construction.
     {
         auto& values = market_.values();
-        base_curve_id_ = values.member_of(ores::analytics::quant::domain::market_member_kind::curve,
-                                          curve_member_code(input.config.config_id, base));
-        quote_curve_id_ =
-            values.member_of(ores::analytics::quant::domain::market_member_kind::curve,
-                             curve_member_code(input.config.config_id, quote));
-        spot_id_ = values.member_of(ores::analytics::quant::domain::market_member_kind::spot,
-                                    fx_pair_member_code(base, quote));
+        using ores::analytics::quant::domain::market_member_kind;
+        board_ = {.base_curve = values.member_of(market_member_kind::curve,
+                                                 curve_member_code(input.config.config_id, base)),
+                  .quote_curve = values.member_of(market_member_kind::curve,
+                                                  curve_member_code(input.config.config_id, quote)),
+                  .spot =
+                      values.member_of(market_member_kind::spot, fx_pair_member_code(base, quote))};
     }
     // The expiry each market is solved at, in the order the emitter quotes them: the emitter
     // sorted the expiries, so the periods are taken from its order rather than sorted again,
@@ -328,7 +328,7 @@ std::string fx_vol_surface_feed::tick(const tick_context& context) {
     // and its two currencies' curves. A curve moves when its feed ticks, so a strike moves
     // with it and no restart is needed.
     const auto inputs =
-        fx_vol_board_inputs(market_.values(), *base_curve_id_, *quote_curve_id_, *spot_id_);
+        fx_vol_board_inputs(market_.values(), board_.base_curve, board_.quote_curve, board_.spot);
     if (!inputs)
         return refuse(inputs.error());
     if (const auto built = fx_vol_expiry_markets(*inputs, expiry_periods_, expiry_rule_, markets_);

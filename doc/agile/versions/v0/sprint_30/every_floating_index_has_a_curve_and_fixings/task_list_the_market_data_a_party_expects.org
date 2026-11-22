@@ -26,11 +26,11 @@ The planner must know what a party is configured to receive, not what has arrive
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:0F936789-FEBE-4330-97B9-DFE0837E4466][Every index a generated trade floats on has a curve and fixings]] |
-| Now          | The four steps are written; the build and the tests run. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Prove the expected set on a provision of acme_demo. |
+| Next         | Nothing. |
 | Last touched | 2026-11-22                               |
 
 * Acceptance
@@ -96,7 +96,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Interest rate fixing addresses the trades name, fresh provision | 18 | =fixing_gap_by_trade.sql=; =evidence/expected_market_data_fixing_gap.txt= | c20cca31e9 |
+| Of those, addresses with no fixing, fresh provision, no restart | 0 | =fixing_gap_by_trade.sql=; =evidence/expected_market_data_fixing_gap.txt= | c20cca31e9 |
+| Trades booked by the provision | 1235 | =fixing_gap_by_trade.sql=; =evidence/expected_market_data_fixing_gap.txt= | c20cca31e9 |
 
 * Notes
 
@@ -131,3 +133,28 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Each generator kind names its outputs as the quote addresses a demand names
+(=generator_outputs=), and a curve adds its index's fixing address from
+=curve_fixing_uri=, the same function that hands the feed's fixings to the
+writer. The market data service answers =get_party_demand= from the catalogue
+alone. The writer builds the party's expected set from that demand and the
+generator configs, and the planner draws a floating leg only on a fixing
+address in the set. =served_fixing_uris= is removed.
+
+Acceptance:
+- One function per kind lists its outputs; the surface feed names its points
+  with the same =fx_vol_point_uri=, and the curve's fixing address comes from
+  =curve_fixing_uri= for both the outputs and the fixing writer. Met.
+- =get_party_demand= returns a party's demand computed from the catalogue,
+  with no adapter involved. Met.
+- =trade_generation_scope::expected_market_data= holds the party's set, and
+  =served_fixing_uris= is removed. Met.
+- The test
+  =a_party_routed_to_one_provider_does_not_expect_another_providers_outputs=
+  shows the provider rule. Met.
+
+On a fresh acme_demo provision with no restart, the trades name 18 interest
+rate fixing addresses and none is empty
+(=evidence/expected_market_data_fixing_gap.txt=). The ACCOUK and ACCOUS rates
+configs, which the provision on c0f6ed8c38 refused, now book 154 trades each.

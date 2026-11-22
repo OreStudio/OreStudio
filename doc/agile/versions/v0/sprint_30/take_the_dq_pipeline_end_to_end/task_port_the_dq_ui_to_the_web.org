@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :take_the_dq_pipeline_end_to_end:sprint_30:v0:
 #+owner: marco
-#+branch: feature/take-the-dq-pipeline-end-to-end
+#+branch: feature/build-the-dq-screens-from-the-journeys
 #+pr: 4712
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-14
-#+updated: 2026-11-14
-#+environment:
+#+updated: 2026-11-22
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7D2BBBBC-36A3-4BFB-9673-0F9005991D94][Take the DQ pipeline end to end, from a seeded artefact table to a published system]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -24,11 +24,13 @@ Give DQ a better experience in ores.web than the Qt client had, designed from th
 journeys a person actually runs rather than from the screens Qt happened to
 ship.
 
-The Qt area is input, not a specification: =ores.qt/dq= holds 88 translation
+The Qt area was input, not a specification: =ores.qt/dq= held 88 translation
 units, 27 screens (18 entity detail dialogs, 9 history dialogs) and a publishing
-surface (Librarian window, bundle wizard, publish dialog). None of that is a
-requirement in itself. A screen may answer one journey or several, and a journey
-may need a screen that has no Qt ancestor at all.
+surface (Librarian window, bundle wizard, publish dialog). None of that was a
+requirement in itself, and the tree is no longer in the checkout: it went in
+=af67db3062=, so the evidence is read from =af67db3062^=. A screen may answer
+one journey or several, and a journey may need a screen that has no Qt ancestor
+at all.
 
 The refdata work already shows the method: 63 Qt reference-data entities became
 three web shapes — 12 record screens, 24 rows of one classification screen and 9
@@ -41,12 +43,12 @@ that precedent and its field tables.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:7D2BBBBC-36A3-4BFB-9673-0F9005991D94][Take the DQ pipeline end to end]] |
-| Now          | Nothing. |
-| Waiting on   | The publish model the review settles.  |
-| Next         | Port the record screens first.         |
-| Last touched | 2026-11-14                               |
+| Now          | The Qt DQ surface is being read as evidence, from the commit before the tree was removed. |
+| Waiting on   | Nothing. The publish model is settled. |
+| Next         | Write the five journeys, judge them, then prototype them. |
+| Last touched | 2026-11-22                              |
 
 * Acceptance
 

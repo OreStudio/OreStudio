@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: 039005AD-8319-416C-9F70-6A5477FEE89D
+:END:
+#+title: The ores.agent prototype: findings for the target design
+#+description: What the ores.agent prototype taught about agents in ORE, and what the target design keeps, changes and drops.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:agents:prototype:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+
+This page states the target design. It does not describe what is built.
+
+* Summary
+
+The ores.agent prototype (=projects/ores.agent=, pull requests 4498, 4534 and
+4752) was a local, read-only assistant: one Node process that served a chat and
+an MCP endpoint through one tool executor, called ORE's services over NATS
+with its own credentials, and asked a separate llama.cpp process for the
+model. The claim of this page is that its central idea survives, the model
+proposes and code checks, while its placement does not: the target design
+moves every check into =ores.http= and the services, where a person's own
+calls are checked, rather than beside them.
+
+* Detail
+
+** What it established
+
+Its documentation (=docs/agent.md=, =docs/validation.md=, =docs/evaluation.md=,
+=docs/query-tasks.md= and =docs/deployment.md= in the prototype) records five
+findings that the target design keeps.
+
+- *The model proposes; code checks.* Explicit identifiers, measures, dates and
+  providers given by the person are not replaced by the model's guesses, and a
+  partial consent must come from the person.
+- *One executor for every surface.* The chat and MCP called the same tools.
+  The target design keeps one catalogue for every client.
+- *Bounds on every turn.* Message size, rounds and calls per response, calls
+  per minute, output size and an overall deadline all had limits.
+- *Evaluation by profile.* Replay, model and live profiles separate program
+  behaviour from model quality; deterministic paths inflate a score, and small
+  corpora establish no general accuracy.
+- *An MCP session id is not a credential.*
+- *Failed sign-ins are limited*, ten a minute for each principal, so a
+  guessed credential costs time.
+
+** What the target design changes
+
+| In the prototype | In the target design | Why |
+|------------------+----------------------+-----|
+| Its own process with its own NATS credentials and a hand-kept allowlist of 37 subjects, checked against the backend's codecs | One door, =/mcp= on =ores.http=, and a catalogue generated from the route registry | an allowlist beside the services drifts from them, and its broker access was not limited by the broker ([[id:3B1D40EA-121F-4F53-A612-FF13DCE1A0BB][Routing of LLM agent calls through ores.http]]) |
+| Sign-in with a principal and a password, to a token it kept itself | A grant the person creates, redeemed by a key, exchanged for the person's token naming the agent | the agent never holds the person's password, and the person can revoke it ([[id:A7E2942C-66AD-449C-B80B-CA789EBC34FA][Agent grants: delegated consent for LLM agents]]) |
+| Booking as a draft the person confirms in the agent's own page | Booking held for the person's approval and then authorised by Operations, in ORE's own queue | a confirmation in the client is the same person at the same keyboard and leaves no record in ORE ([[id:381D87BB-4E2D-47BA-8853-6132CF900305][Six-eyes approval of LLM agent writes]]) |
+| No record in ORE of what the agent did | The agent on every row and every call in a log the person reads | ([[id:2D36D474-2CF9-4498-AF49-818CEF080B98][Auditing of LLM agent actions]]) |
+| Discovery through a fixed set of tools written for each query | Five tools over the whole catalogue | the catalogue grows without changing the tools ([[id:4C382E8F-9449-4012-A09F-76291373E6F7][Progressive disclosure of the operation catalogue to LLM agents]]) |
+
+** What it left open
+
+Its own known gaps were hosted authentication, broker subjects restricted to
+what it used, and proof under low permissions and across tenants. Each is
+answered by placing the agent on a person's path: hosted authentication by the
+grant and its key, restriction by the person's own permissions, and isolation
+by the row-level security every call already passes.
+
+* See also
+
+- [[id:47B179BF-C982-4BB1-AF4F-35E00B9D2750][Delegated Access for LLM Agents]] — the structure note that orders this cluster.
+- [[id:BBEDFA8E-D43D-4F48-8FD7-1A3CC9F47E3E][Bring the assistant into ores.web on the target architecture]] — the story that commissioned the move onto the target architecture.
+- [[id:3B1D40EA-121F-4F53-A612-FF13DCE1A0BB][Routing of LLM agent calls through ores.http]] — answers: where the prototype's checks now sit.
+- [[id:381D87BB-4E2D-47BA-8853-6132CF900305][Six-eyes approval of LLM agent writes]] — contradicts the prototype's confirmation step.
+
+* Sources
+
+(The prototype's own documentation, in the repository, as listed above.)

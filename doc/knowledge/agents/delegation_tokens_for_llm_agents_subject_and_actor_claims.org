@@ -1,0 +1,85 @@
+:PROPERTIES:
+:ID: 1162906F-BB72-486E-9A11-30D567C65F3E
+:END:
+#+title: Delegation tokens for LLM agents: subject and actor claims
+#+description: An agent's token names the person as subject and the agent as actor, so every call is the person's, made by that agent.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:agents:security:jwt:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+
+This page states the target design. It does not describe what is built.
+
+* Summary
+
+The token an agent's call carries names the person as its subject and the
+agent as its actor, using the =act= claim of OAuth 2.0 Token Exchange (Jones
+et al., 2020). The claim of this page is that the pair is what makes an
+agent's call both the person's and distinguishable from the person's: every
+permission is decided on the subject, and every record and every hold is
+decided on the actor. ORE already reads the =act= claim, which run tokens set
+to the step service that acts ([[id:78B82824-0BBB-4442-A9FA-E1F265DF57BD][Run grants and run tokens]]).
+
+* Detail
+
+** The exchange
+
+An agent presents its key as a bearer token (Jones and Hardt, 2012). =ores.http=
+asks IAM to exchange it. IAM finds the grant by the key's prefix, compares the
+hash, checks that the grant is active and that its person is still active, and
+issues a JSON Web Token (Jones, Bradley and Sakimura, 2015) that lasts five
+minutes. =ores.http= keeps the token for that key until thirty seconds before
+it expires and never past its expiry, so most calls need no exchange.
+
+#+caption: A person makes a key in ores.web; on each call ores.http uses a cached token or exchanges the key with IAM for a five-minute token naming the person and the agent.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/agents/agent_key_exchange.png]]
+
+Source: [[./agent_key_exchange.puml][=agent_key_exchange.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/agents/agent_key_exchange.puml=.
+
+** The claims
+
+| Claim | Holds | Decides |
+|-------+-------+---------|
+| =sub= | the person's account | every permission, and row-level security |
+| =act= | the agent: the grant id and the agent's name | the record of the call, and whether a write is held |
+| =tenant_id=, =party_id= | the grant's tenant and party | where the call acts |
+| scope | read only or read and write | whether a write may be attempted at all |
+
+The roles in the token are the person's, as they stand at the exchange.
+
+** How soon a change reaches the agent
+
+Everything the exchange checks takes effect at the next exchange: a revoked
+or expired grant, a person disabled or removed, and a role the person loses.
+Because a token lasts five minutes and the cache never keeps one past its
+expiry, an agent keeps at most five minutes of the access it had. This is the
+one bound; the pages that need it link here.
+
+** What it is not
+
+It is not impersonation: [[id:AAC60D20-8696-4455-9292-E8FAE1389CBC][Internal actor impersonation]] mints a token as a user with no actor, so
+the call is indistinguishable from the user's own, which is right for an
+orchestrator replaying users' acts and wrong for an agent. It is not a service
+identity either ([[id:3E20C1A0-7BA1-4F31-8C34-1E5F13558890][Service-to-Service Auth]]): the agent acts for a person and holds nothing
+the person does not.
+
+* Patterns used
+
+- [[id:96460BBE-D7BF-4538-B620-AC5FD9F0C9FE][Token Exchange]] — the key is exchanged for a token that carries the person as
+  subject and the agent as actor.
+
+* See also
+
+- [[id:47B179BF-C982-4BB1-AF4F-35E00B9D2750][Delegated Access for LLM Agents]] — the structure note that orders this cluster.
+- [[id:A7E2942C-66AD-449C-B80B-CA789EBC34FA][Agent grants: delegated consent for LLM agents]] — answers: what the exchange checks.
+- [[id:AAC60D20-8696-4455-9292-E8FAE1389CBC][Internal actor impersonation]] — contradicts: impersonation hides the actor that this token exists to show.
+- [[id:2D36D474-2CF9-4498-AF49-818CEF080B98][Auditing of LLM agent actions]] — completes: where the actor is written down.
+
+* Sources
+
+- Jones, M., Nadalin, A., Campbell, B., Bradley, J. and Mortimore, C. (2020). /OAuth 2.0 Token Exchange/. RFC 8693, IETF. https://www.rfc-editor.org/rfc/rfc8693
+- Jones, M. and Hardt, D. (2012). /The OAuth 2.0 Authorization Framework: Bearer Token Usage/. RFC 6750, IETF. https://www.rfc-editor.org/rfc/rfc6750
+- Jones, M., Bradley, J. and Sakimura, N. (2015). /JSON Web Token (JWT)/. RFC 7519, IETF. https://www.rfc-editor.org/rfc/rfc7519

@@ -8,7 +8,7 @@
 #+filetags: :search_the_knowledge_base:sprint_30:v0:
 #+owner: marco
 #+branch: feature/load-the-knowledge-pages
-#+pr:
+#+pr: 4998
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-21
@@ -124,7 +124,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4998][#4998]] | [orgmode] Load the knowledge pages into PostgreSQL and serve them |
 
 * Review
 

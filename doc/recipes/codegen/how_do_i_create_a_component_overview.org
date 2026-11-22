@@ -58,7 +58,7 @@ Finally, remove the component's =MISSING_OVERVIEW= entry from
 [[proj:projects/ores.codegen/docs_exceptions.txt][=projects/ores.codegen/docs_exceptions.txt=]] and run the validation:
 
 #+begin_src sh :results verbatim
-./projects/ores.codegen/validate_docs.sh
+compass-ng check --codec component_docs
 #+end_src
 
 * Script
@@ -69,7 +69,7 @@ Mustache-based document generator. Full CLI reference at
 
 * Tested by
 
-Manual: run =validate_docs.sh= after creation and confirm no
+Manual: run =compass-ng check --codec component_docs= after creation and confirm no
 =MISSING_OVERVIEW= errors remain for the target component.
 
 * See also

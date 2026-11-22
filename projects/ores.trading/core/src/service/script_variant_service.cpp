@@ -146,6 +146,7 @@ domain::script_variant script_variant_to_domain(const messaging::script_variant_
     v.purpose = write.purpose;
     v.code = write.code;
     v.npv_variable = write.npv_variable;
+    v.script_version = write.script_version;
     return v;
 }
 

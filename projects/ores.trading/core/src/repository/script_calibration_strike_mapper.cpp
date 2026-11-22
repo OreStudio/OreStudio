@@ -47,6 +47,7 @@ script_calibration_strike_mapper::map(const script_calibration_strike_entity& v)
     r.calibration_number = v.calibration_number;
     r.sequence_number = v.sequence_number;
     r.strike_variable = v.strike_variable;
+    r.script_version = v.script_version;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -69,6 +70,7 @@ script_calibration_strike_mapper::map(const domain::script_calibration_strike& v
     r.tenant_id = v.tenant_id;
     r.version = v.version;
     r.strike_variable = v.strike_variable;
+    r.script_version = v.script_version;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

@@ -112,6 +112,15 @@ A version of a script arises in one of two ways.
   a name a tenant already uses leaves that tenant's script in force; no
   constraint forbids the pair, since the two rows lie in different tenants.
 
+A version of a script is the version of its script row together with the rows
+beneath it that carry the same number. A change writes the script row first, as
+a new version, then every row of the script, each stamped in =script_version=
+with the version the script row was given, and closes the rows no longer part of
+it. A version therefore names a whole script exactly, current or closed, and
+reading it back needs no time window: the rows of one version are written by
+separate statements whose timestamps differ, so a reading by time could mix two
+versions where a reading by number cannot.
+
 ** Delivery to the engine
 
 A scripted trade records its script by its name, the tenant that holds it and

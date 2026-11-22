@@ -42,7 +42,7 @@ table.
 
 ** Targets
 
-# BEGIN generated targets (build/scripts/generate_skill_type_tables.py)
+# BEGIN generated targets (compass generate: skill_type_tables)
 
 One row per read-only command. Each shows state and changes nothing, so any of them is safe to run while deciding what to do next.
 

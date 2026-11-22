@@ -37,6 +37,7 @@ export interface ScriptCoarsening {
     purpose: string;
     sequence_number: number;
     eligible_schedule: string;
+    script_version: number;
     modified_by: string;
     performed_by: string;
     change_reason_code: string;

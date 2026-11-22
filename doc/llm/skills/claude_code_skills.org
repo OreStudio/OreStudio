@@ -30,7 +30,7 @@ remove stale directories from [[proj:.claude/skills][=.claude/skills/=]], so aft
 skill delete the old deployed directory by hand.
 #+end_note
 
-# BEGIN generated catalogue (build/scripts/generate_skills_catalogue.py)
+# BEGIN generated catalogue (compass generate: skill_catalogue)
 
 * Agile (=compass-agile-=)
 

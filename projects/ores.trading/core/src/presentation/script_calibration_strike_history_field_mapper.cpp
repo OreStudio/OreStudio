@@ -27,6 +27,7 @@
 #include "ores.history.api/domain/provenance_fields.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/script_calibration_strike.hpp"
+#include <string>
 #include <vector>
 
 namespace ores::trading::presentation {
@@ -38,6 +39,7 @@ render_script_calibration_strike_fields(const domain::script_calibration_strike&
 
     fields.push_back({.name = "Script Name", .value = v.script_name});
     fields.push_back({.name = "Strike Variable", .value = v.strike_variable});
+    fields.push_back({.name = "Script Version", .value = std::to_string(v.script_version)});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

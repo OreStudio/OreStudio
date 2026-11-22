@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
+' Regenerate with: ./compass.sh generate
 '
 @startuml
 
@@ -5081,6 +5081,7 @@ package "trading" #E8F5E9 {
         --
         * version : integer
         * strike_variable : text
+        * script_version : integer
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -5106,6 +5107,7 @@ package "trading" #E8F5E9 {
         --
         * version : integer
         * index_variable : text
+        * script_version : integer
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -5131,6 +5133,7 @@ package "trading" #E8F5E9 {
         --
         * version : integer
         * eligible_schedule : text
+        * script_version : integer
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -5159,6 +5162,7 @@ package "trading" #E8F5E9 {
         * is_array : boolean
           value_rule : text
           description : text
+        * script_version : integer
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -5189,6 +5193,7 @@ package "trading" #E8F5E9 {
         * version : integer
         * variable : text
           rename : text
+        * script_version : integer
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -5250,6 +5255,7 @@ package "trading" #E8F5E9 {
         * version : integer
         * code : text
         * npv_variable : text
+        * script_version : integer
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>

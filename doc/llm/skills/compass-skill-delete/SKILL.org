@@ -50,7 +50,7 @@ subsumes an old one.
 4. /Regenerate the catalogue/:
 
    #+begin_src sh :results verbatim
-   python3 build/scripts/generate_skills_catalogue.py
+   ./compass.sh generate
    #+end_src
 
 5. /Rebuild the bundle and purge the deployed copy/ — deployment

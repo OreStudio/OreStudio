@@ -37,6 +37,7 @@ create table if not exists "ores_trading_script_results_tbl" (
     "version" integer not null,
     "variable" text not null,
     "rename" text null,
+    "script_version" integer not null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,

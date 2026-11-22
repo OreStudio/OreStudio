@@ -50,6 +50,7 @@ generate_synthetic_script_calibration(utility::generation::generation_context& c
     r.purpose = std::string("default");
     r.sequence_number = 1;
     r.index_variable = std::string("Underlying");
+    r.script_version = 1;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

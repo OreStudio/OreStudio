@@ -152,6 +152,7 @@ script_calibration_to_domain(const messaging::script_calibration_write& write) {
     v.purpose = write.purpose;
     v.sequence_number = write.sequence_number;
     v.index_variable = write.index_variable;
+    v.script_version = write.script_version;
     return v;
 }
 

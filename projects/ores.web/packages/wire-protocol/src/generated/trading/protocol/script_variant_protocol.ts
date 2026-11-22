@@ -38,6 +38,7 @@ export interface ScriptVariantWrite {
     purpose: string;
     code: string;
     npv_variable: string;
+    script_version: number;
 }
 
 export interface ScriptVariantChange {

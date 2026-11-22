@@ -317,6 +317,7 @@ set(files
     "product_type_asset_class_protocol_codec_roundtrip_tests.cpp"
     "product_type_codec_roundtrip_tests.cpp"
     "product_type_protocol_codec_roundtrip_tests.cpp"
+    "publish_operation_protocol_codec_roundtrip_tests.cpp"
     "range_bound_codec_roundtrip_tests.cpp"
     "range_bound_protocol_codec_roundtrip_tests.cpp"
     "rate_digital_option_instrument_codec_roundtrip_tests.cpp"

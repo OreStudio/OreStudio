@@ -56,6 +56,7 @@ namespace ores::trading::domain {
         utility::codec::field{"is_array", &script_input::is_array},
         utility::codec::field{"value_rule", &script_input::value_rule},
         utility::codec::field{"description", &script_input::description},
+        utility::codec::field{"script_version", &script_input::script_version},
         utility::codec::field{"modified_by", &script_input::modified_by},
         utility::codec::field{"performed_by", &script_input::performed_by},
         utility::codec::field{"change_reason_code", &script_input::change_reason_code},

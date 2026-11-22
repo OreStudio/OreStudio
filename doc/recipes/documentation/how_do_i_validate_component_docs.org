@@ -2,7 +2,7 @@
 :ID: 6AC06A04-EB95-4925-8488-C7A47C6A451F
 :END:
 #+title: How do I validate component documentation before committing?
-#+description: Run validate_docs.sh to check every ores.* component has a well-formed component_overview.org before pushing.
+#+description: Run compass-ng check --codec component_docs to check every ores.* component has a well-formed component_overview.org before pushing.
 #+type: recipe
 #+level: cross
 #+filetags: :documentation:validation:component:recipe:
@@ -22,7 +22,7 @@ How do I validate component documentation before committing?
 From the project root:
 
 #+begin_src sh :results verbatim
-./projects/ores.codegen/validate_docs.sh
+compass-ng check --codec component_docs
 #+end_src
 
 One check runs: /Component structure/ — every =projects/ores.*/= has a
@@ -35,7 +35,7 @@ Fix any reported errors, then re-run until the script exits =0=.
 
 * Script
 
-[[proj:projects/ores.codegen/validate_docs.sh][=projects/ores.codegen/validate_docs.sh=]] — runs the component-structure checker.
+=compass-ng check --codec component_docs= — runs the component-structure checker.
 
 * Tested by
 

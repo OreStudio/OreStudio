@@ -1,0 +1,289 @@
+What the generated ACCOUK population needs from the market, and what no series answers
+=====================================================================================
+
+Measured on the provisioned acme_demo tenant at commit 7bb52278f6, on the single
+trade set a run gathers: every ACCOUK trade visible at 2026-11-21T23:59:59Z.
+
+Commands
+--------
+compass sql -- -f doc/agile/versions/v0/sprint_30/run_a_report_with_market_data/evidence/generated_population_gap_class.sql
+compass sql -- -f doc/agile/versions/v0/sprint_30/run_a_report_with_market_data/evidence/generated_population_gap.sql
+
+
+1. By asset class
+-----------------
+   class   | required | party_series | system_fixing | unanswered | held_by_another_party | absent_entirely
+-----------+----------+--------------+---------------+------------+-----------------------+-----------------
+ credit    |       61 |            0 |             0 |         61 |                     0 |              61
+ fx        |       24 |            0 |             0 |         24 |                     0 |              24
+ ir        |       25 |            3 |             6 |         16 |                     1 |              21
+ equity    |       11 |            0 |             0 |         11 |                     0 |              11
+ commodity |        6 |            0 |             0 |          6 |                     0 |               6
+ inflation |        3 |            0 |             0 |          3 |                     0 |               3
+ security  |        3 |            0 |             0 |          3 |                     0 |               3
+
+124 of 133 addresses are unanswered. 123 of the 124 hold no series anywhere in
+the tenant; one interest rate address is held by another party.
+
+
+2. What the market publishes at all
+-----------------------------------
+The acme tenant (code =acme_corporation=, five parties) holds 1,147 series, and
+every one of them is a price or a curve. It holds no fixing series of any class.
+
+    compass sql -- -c "select split_part(oresmd_uri,'/',3) as class, case when
+      oresmd_uri like '%type=fixing%' then 'fixing' else 'series' end as form,
+      count(*) from ores_marketdata_market_series_tbl where valid_to > now()
+      and tenant_id = '<acme tenant>' group by 1, 2"
+
+   class | form   | series
+---------+--------+--------
+ fx      | series |    612
+ ir      | series |    535
+
+The system tenant answers the fixing half of the requirement rule, and it holds
+
+   class | form   | series
+---------+--------+--------
+ fx      | series |    138
+ fx      | fixing |    132
+ ir      | series |    109
+ ir      | fixing |     51
+
+So the tenant publishes market data for two asset classes and no more. The
+shared database does hold 364 credit, 97 commodity, 77 equity, 62 security and
+34 inflation series, but every one of them belongs to another tenant — the
+=marketdata_corpus_*= and =marketdata_export_*= tenants the tests make. A
+tenant-blind count of the table answers a question about the machine, not about
+this tenant, and is the one mistake this measurement is easy to make.
+
+In this tenant the equity, commodity, credit, inflation and security classes have
+no series at all. Those 84 addresses cannot be priced for want of any market data
+of their class, not for want of a name match.
+
+
+3. FX: a source the market does not publish, and pairs it does not publish
+--------------------------------------------------------------------------
+A trade's FX index names a pair and a source: =FX-TR20H-EUR-USD= is the EUR-USD
+fixing of source TR20H. The generator states that source in one constant,
+=trade_population_planner.cpp:1939= (=fx_fixing_source = "TR20H"=), and the
+system tenant holds a TR20H fixing for two pairs only. Of the 24 pairs the
+population names, nine already have a fixing series in the system tenant under
+a publisher's own source:
+
+    compass sql -- -c "with need(b, q) as (values ...) select n.b, n.q,
+      (select string_agg(distinct substring(s.oresmd_uri from 'source=([A-Za-z0-9]+)'), ', ')
+       from ores_marketdata_market_series_tbl s where s.valid_to > now()
+       and s.tenant_id = 'ffffffff-ffff-ffff-ffff-ffffffffffff'
+       and s.oresmd_uri like 'oresmd://fx/' || n.b || '?type=fixing&index=fx&source=%&ccy=' || n.q)"
+
+   pair     | source published in the system tenant
+------------+--------------------------------------
+ CAD/JPY  | BOC
+ EUR/AUD  | ECB
+ EUR/CAD  | ECB
+ EUR/GBP  | ECB
+ EUR/USD  | ECB
+ USD/BRL  | IMF
+ USD/CAD  | IMF
+ USD/INR  | IMF
+ USD/JPY  | IMF
+ USD/MXN  | IMF
+ USD/SGD  | IMF
+
+ The other thirteen — every AUD cross, GBP/AUD, GBP/CAD, GBP/CHF, GBP/JPY,
+ GBP/NZD, GBP/USD, NZD/USD, USD/HKD — have no fixing under any source: the
+ provision publishes fixings for EUR, USD and CAD bases, and for no other.
+
+The eleven pairs the party prices are a different set again:
+
+    compass sql -- -c "with p as (...ACCOUK...), need(b, q) as (values
+      ('AUD','CAD'), ... ('USD','SGD')) select n.b, n.q, exists (select 1 from
+      ores_marketdata_market_series_tbl s, p where s.tenant_id = p.tenant_id
+      and s.party_id = p.id and s.valid_to > now() and s.oresmd_uri =
+      'oresmd://fx/' || n.b || '?type=series&instrument=fx_spot&quote=rate&ccy='
+      || n.q) as spot_held from need n"
+
+    priced: AUD/USD  EUR/USD  GBP/USD  NZD/USD  USD/BRL  USD/CAD  USD/HKD
+            USD/INR  USD/JPY  USD/MXN  USD/SGD
+    none:   AUD/CAD  AUD/CHF  AUD/JPY  AUD/NZD  CAD/JPY  EUR/AUD  EUR/CAD
+            EUR/GBP  GBP/AUD  GBP/CAD  GBP/CHF  GBP/JPY  GBP/NZD
+
+The two sets overlap by eight pairs, so no single rule — "name a source the
+market publishes" or "publish what the party prices" — closes the gap alone.
+
+
+4. By generated trade type
+--------------------------
+             trade_type              |   class   | missing_addresses | trades_naming_them
+-------------------------------------+-----------+-------------------+--------------------
+ Ascot                               | ir        |                 3 |                  2
+ Autocallable_01                     | equity    |                 6 |                  6
+ BalanceGuaranteedSwap               | ir        |                 3 |                 14
+ Bond                                | ir        |                 1 |                  1
+ BondFuture                          | ir        |                 1 |                  1
+ BondFutureOption                    | ir        |                 1 |                  1
+ BondOption                          | ir        |                 1 |                  1
+ BondPosition                        | security  |                 3 |                  3
+ BondPosition                        | ir        |                 1 |                  1
+ BondRepo                            | ir        |                 1 |                  1
+ BondTRS                             | ir        |                 1 |                  1
+ CallableBond                        | credit    |                 3 |                  3
+ CallableBond                        | ir        |                 1 |                  1
+ CallableSwap                        | ir        |                 3 |                 14
+ CapFloor                            | ir        |                 3 |                 14
+ CommodityAccumulator                | commodity |                 1 |                  2
+ CommodityAsianOption                | commodity |                 1 |                  3
+ CommodityAveragePriceOption         | commodity |                 1 |                  2
+ CommodityBasketOption               | commodity |                 3 |                  2
+ CommodityBasketVarianceSwap         | commodity |                 3 |                  2
+ CommodityBestEntryOption            | commodity |                 1 |                  2
+ CommodityDigitalAveragePriceOption  | commodity |                 1 |                  2
+ CommodityDigitalOption              | commodity |                 1 |                  3
+ CommodityForward                    | commodity |                 1 |                  3
+ CommodityForwardVolatilityAgreement | commodity |                 1 |                  3
+ CommodityGenericBarrierOption       | commodity |                 1 |                  2
+ CommodityOption                     | commodity |                 1 |                  3
+ CommodityOptionStrip               | commodity |                 1 |                  2
+ CommodityPosition                   | commodity |                 1 |                  2
+ CommodityRainbowOption              | commodity |                 3 |                  2
+ CommoditySpreadOption               | commodity |                 2 |                  2
+ CommodityStrikeResettableOption     | commodity |                 1 |                  3
+ CommoditySwap                       | commodity |                 1 |                  2
+ CommoditySwaption                   | commodity |                 1 |                  2
+ CommodityTaRF                       | commodity |                 1 |                  2
+ CommodityVarianceSwap               | commodity |                 1 |                  2
+ CommodityWindowBarrierOption        | commodity |                 1 |                  2
+ CommodityWorstOfBasketSwap          | commodity |                 3 |                  2
+ ConvertibleBond                     | ir        |                 1 |                  1
+ CreditDefaultSwap                   | credit    |                 9 |                  9
+ CreditDefaultSwapOption             | credit    |                 8 |                  8
+ CreditLinkedSwap                    | credit    |                 8 |                  8
+ CrossCurrencySwap                   | ir        |                11 |                 11
+ DoubleDigitalOption                 | equity    |                 9 |                  7
+ EquityAccumulator                   | equity    |                 1 |                  4
+ EquityAsianOption                   | equity    |                 1 |                  4
+ EquityAutoDeltaHedgedOption         | equity    |                 1 |                  4
+ EquityBarrierOption                 | equity    |                 1 |                  4
+ EquityBasketOption                  | equity    |                 4 |                  4
+ EquityBasketVarianceSwap            | equity    |                 6 |                  4
+ EquityBestEntryOption               | equity    |                 1 |                  4
+ EquityCliquetOption                 | equity    |                 1 |                  4
+ EquityDigitalOption                 | equity    |                 1 |                  4
+ EquityDoubleBarrierOption           | equity    |                 1 |                  4
+ EquityDoubleTouchOption             | equity    |                 1 |                  4
+ EquityEuropeanBarrierOption         | equity    |                 1 |                  4
+ EquityForward                       | equity    |                 1 |                  4
+ EquityForwardVolatilityAgreement    | equity    |                 1 |                  4
+ EquityFutureOption                  | equity    |                 1 |                  4
+ EquityGenericBarrierOption          | equity    |                 1 |                  4
+ EquityOption                        | equity    |                 2 |                 12
+ EquityOutperformanceOption          | equity    |                 5 |                  4
+ EquityPosition                      | equity    |                 2 |                 12
+ EquityRainbowOption                 | equity    |                 5 |                  4
+ EquityStrikeResettableOption        | equity    |                 1 |                  4
+ EquitySwap                          | equity    |                 1 |                  4
+ EquityTaRF                          | equity    |                 1 |                  4
+ EquityTouchOption                   | equity    |                 1 |                  4
+ EquityVarianceSwap                 | equity    |                 1 |                  4
+ EquityWindowBarrierOption           | equity    |                 1 |                  4
+ EuropeanOptionBarrier               | equity    |                 8 |                  6
+ FlexiSwap                           | ir        |                 3 |                 14
+ ForwardBond                         | ir        |                 1 |                  1
+ ForwardRateAgreement                | ir        |                 3 |                 14
+ FxAccumulator                       | fx        |                 8 |                  9
+ FxAsianOption                       | fx        |                 6 |                  6
+ FxBasketOption                      | fx        |                12 |                  8
+ FxBasketVarianceSwap                | fx        |                 8 |                  6
+ FxBestEntryOption                   | fx        |                 6 |                  6
+ FxForwardVolatilityAgreement        | fx        |                 6 |                  6
+ FxGenericBarrierOption              | fx        |                 8 |                  9
+ FxRainbowOption                     | fx        |                 9 |                  6
+ FxStrikeResettableOption            | fx        |                 6 |                  6
+ FxTaRF                              | fx        |                 8 |                  9
+ FxVarianceSwap                      | fx        |                 8 |                  9
+ FxWindowBarrierOption               | fx        |                 5 |                  6
+ FxWorstOfBasketSwap                 | fx        |                12 |                  6
+ IndexCreditDefaultSwap              | credit    |                 9 |                  9
+ IndexCreditDefaultSwapOption        | credit    |                 8 |                  8
+ InflationSwap                       | inflation |                 3 |                 33
+ IntradayPowerForward                | commodity |                 1 |                  3
+ KnockOutSwap                        | ir        |                 3 |                 14
+ PerformanceOption_01                | equity    |                 9 |                  7
+ RiskParticipationAgreement          | credit    |                 8 |                  8
+ ScriptedTrade                       | fx        |                18 |                 32
+ ScriptedTrade                       | equity    |                 9 |                 23
+ Swap                                | ir        |                 3 |                 14
+ Swaption                            | ir        |                 3 |                 14
+ SwaptionStraddle                    | ir        |                 3 |                 14
+ SyntheticCDO                         | credit    |                 8 |                  8
+
+100 rows: every generated type that names a missing object, except those whose
+addresses all answer (FxForward, FxOption, FxSwap, Deposit and the other IR
+types among them).
+
+
+5. The shape of each gap
+------------------------
+asset class | addresses | form of the missing address
+------------+-----------+--------------------------------------------------------------
+credit      |        61 | series, instrument=cds, quote=credit_spread,
+            |           | seniority=SNRFOR, one per reference entity (EUR/GBP/HKD/USD)
+fx          |        24 | fixing, index=fx, source=TR20H, one per pair
+ir          |        16 | 15 fixing, index=ibor, per currency/name/tenor;
+            |           | 1 series, instrument=zero, quote=rate, curve_id=HKD1D
+equity      |        11 | fixing, index=equity, one per index
+commodity   |         6 | fixing, index=commodity, one per underlying
+inflation   |         3 | fixing, index=inflation, one per index
+security    |         3 | fixing, index=bond, one per bond code
+
+The eleven equity indices are named in two spellings for the same object: the
+population names both `.SPX` and `RIC:.SPX`, and both `.STOXX50E` and
+`RIC:.STOXX50E`.
+
+
+6. IR: indices no generated curve covers
+----------------------------------------
+The system tenant publishes 51 IBOR fixing series. Of the 15 IBOR addresses that
+fail, every one names an index and tenor that list does not carry:
+
+    compass sql -- -c "select substring(oresmd_uri from 'oresmd://ir/([A-Z]+)') as ccy,
+      substring(oresmd_uri from 'name=([A-Za-z0-9]+)') as name,
+      substring(oresmd_uri from 'tenor=([0-9A-Z]+)') as tenor
+      from ores_marketdata_market_series_tbl where valid_to > now()
+      and tenant_id = 'ffffffff-ffff-ffff-ffff-ffffffffffff'
+      and oresmd_uri like 'oresmd://ir/%type=fixing%index=ibor%'"
+
+    failed address                          | what the system tenant publishes
+    ----------------------------------------+-------------------------------------
+    ir/AOA fixing ibor name=GENERIC tenor=3M | nothing for AOA
+    ir/BWP ... GENERIC 3M                   | nothing for BWP
+    ir/IDR ... GENERIC 3M                   | nothing for IDR
+    ir/KRW ... GENERIC 3M                   | KRW KOFR only, an overnight
+    ir/MYR ... GENERIC 3M                   | nothing for MYR
+    ir/OMR ... GENERIC 3M                   | nothing for OMR
+    ir/COP fixing ibor name=IBR tenor=3M    | COP IBR, with no tenor stated
+    ir/PLN fixing ibor name=WIBOR tenor=6M  | PLN POLONIA only, an overnight
+    ir/SAR fixing ibor name=SAIBOR tenor=3M | nothing for SAR
+    ir/THB fixing ibor name=BIBOR tenor=3M  | nothing for THB
+    ir/JPY fixing ibor name=EYTIBOR tenor=3M| JPY LIBOR, TONA and TONAR
+    ir/HKD fixing ibor name=HIBOR tenor=1M  | HKD HONIA only
+    ir/HKD fixing ibor name=HIBOR tenor=2W  | HKD HONIA only
+    ir/HKD fixing ibor name=HIBOR tenor=3M  | HKD HONIA only
+    ir/USD fixing ibor name=SOFR tenor=1M   | USD SOFR, with no tenor stated
+
+=GENERIC= is not the generator's invention: the reference data holds 92 =GENERIC=
+IBOR conventions, one for each currency with no named Ibor, and their own
+addresses state no tenor:
+
+    oresmd://ir/AOA?type=fixing&index=ibor&name=GENERIC
+
+The trade's requirement states a tenor because its leg has one, so even where the
+catalogue holds the convention the fixing address the trade names is not the
+address the convention states. The other two addresses of this shape are =COP
+IBR= and =USD SOFR=, whose curves state no tenor where the trades book 3M and 1M.
+
+So the IR half of the gap is a curve-coverage gap and not a fixing gap, which is
+what [[id:06886D23-1A52-4BBC-B305-4609D606EEA7][Generate the historical fixings the generated trades need]] recorded
+when it built the feed: an index with no generated curve has no fixing to derive
+from, and inventing one would price a leg on a rate no curve produces.

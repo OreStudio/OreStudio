@@ -55,6 +55,7 @@ struct script_coarsening_write {
     std::string purpose;
     int sequence_number{};
     std::string eligible_schedule;
+    int script_version{};
 
     friend bool operator==(const script_coarsening_write&,
                            const script_coarsening_write&) = default;
@@ -383,6 +384,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.script_coarsening
         utility::codec::field{"purpose", &script_coarsening_write::purpose},
         utility::codec::field{"sequence_number", &script_coarsening_write::sequence_number},
         utility::codec::field{"eligible_schedule", &script_coarsening_write::eligible_schedule},
+        utility::codec::field{"script_version", &script_coarsening_write::script_version},
     };
 }
 

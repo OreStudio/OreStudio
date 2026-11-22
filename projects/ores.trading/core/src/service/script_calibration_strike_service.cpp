@@ -168,6 +168,7 @@ script_calibration_strike_to_domain(const messaging::script_calibration_strike_w
     v.calibration_number = write.calibration_number;
     v.sequence_number = write.sequence_number;
     v.strike_variable = write.strike_variable;
+    v.script_version = write.script_version;
     return v;
 }
 

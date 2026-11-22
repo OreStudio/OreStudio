@@ -54,6 +54,7 @@ struct script_variant_write {
     std::string purpose;
     std::string code;
     std::string npv_variable;
+    int script_version{};
 
     friend bool operator==(const script_variant_write&, const script_variant_write&) = default;
 };
@@ -376,6 +377,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.script_variants.d
         utility::codec::field{"purpose", &script_variant_write::purpose},
         utility::codec::field{"code", &script_variant_write::code},
         utility::codec::field{"npv_variable", &script_variant_write::npv_variable},
+        utility::codec::field{"script_version", &script_variant_write::script_version},
     };
 }
 

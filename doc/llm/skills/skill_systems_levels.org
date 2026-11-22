@@ -155,7 +155,7 @@ that ends in a structural flag outlives a finding that ends in a deletion.
 
 ** Inventory
 
-# BEGIN generated inventory (build/scripts/apply_skill_levels.py)
+# BEGIN generated inventory (compass generate: skill_levels)
 
 What each System sees by default, counted from the levels the skills carry. Attenuation is advisory everywhere except the audit channel, where it is binding and enforced by what is deployed.
 

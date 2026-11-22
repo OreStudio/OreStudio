@@ -53,6 +53,7 @@ namespace ores::trading::domain {
         utility::codec::field{"purpose", &script_coarsening::purpose},
         utility::codec::field{"sequence_number", &script_coarsening::sequence_number},
         utility::codec::field{"eligible_schedule", &script_coarsening::eligible_schedule},
+        utility::codec::field{"script_version", &script_coarsening::script_version},
         utility::codec::field{"modified_by", &script_coarsening::modified_by},
         utility::codec::field{"performed_by", &script_coarsening::performed_by},
         utility::codec::field{"change_reason_code", &script_coarsening::change_reason_code},

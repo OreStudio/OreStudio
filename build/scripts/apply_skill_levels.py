@@ -16,6 +16,9 @@ audit channel, which sees read-only actions only. Read-only is derived from
 the verb register rather than tagged, which is one of the reasons that
 register exists: show- and find- promise to change nothing.
 
+compass-ng's skill_levels codec writes the inventory of what each System
+sees; this script stamps the levels it reads.
+
 Usage: python3 build/scripts/apply_skill_levels.py [--check] [--slice LEVEL]
   --check        exit non-zero if any skill's level differs from the table.
   --slice LEVEL  print the slice a session at LEVEL sees, and stop.
@@ -37,9 +40,6 @@ import sys
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 SKILLS = ROOT / "doc" / "llm" / "skills"
 DEPLOYED = ROOT / ".claude" / "skills"
-LEVELS_DOC = SKILLS / "skill_systems_levels.org"
-BEGIN = "# BEGIN generated inventory (build/scripts/apply_skill_levels.py)"
-END = "# END generated inventory"
 
 READ_ONLY_VERBS = ("show", "find")
 ORDER = ["s1", "s2", "s3", "s3star", "s4", "s5", "cross"]
@@ -201,57 +201,6 @@ def set_level(path, level):
     return True
 
 
-SYSTEMS = {
-    "s1": ("Agent", "Hours"),
-    "s2": ("Orchestrator", "Days"),
-    "s3": ("Sprint Planner", "Weeks"),
-    "s3star": ("Auditor", "Continuous"),
-    "s4": ("Version Planner", "Months"),
-    "s5": ("Identity Steward", "Indefinite"),
-}
-
-
-def inventory(names):
-    """The slice each System actually sees, counted from the same table the
-    skills are tagged from, so the document cannot drift from the catalogue."""
-    lines = [BEGIN, "",
-             "What each System sees by default, counted from the levels the "
-             "skills carry. Attenuation is advisory everywhere except the "
-             "audit channel, where it is binding and enforced by what is "
-             "deployed.", "",
-             "#+ATTR_HTML: :class hug-leading",
-             "| Level | System | Horizon | Sees | Attenuation |",
-             "|-------+--------+---------+------+-------------|"]
-    for level, (system, horizon) in SYSTEMS.items():
-        n = sum(1 for name in names if in_scope(name, level))
-        strength = "binding" if level == "s3star" else "advisory"
-        lines.append(f"| ={level}= | {system} | {horizon} | {n} skills | {strength} |")
-    cross = sum(1 for name in names if LEVELS.get(name) == "cross")
-    lines += ["",
-              f"{cross} skills are tagged =cross= and appear in every "
-              "advisory slice: the documents and the skills themselves, and "
-              "the orientation any System starts from.", "",
-              END]
-    return "\n".join(lines)
-
-
-def write_inventory(names):
-    import re as _re
-    text = LEVELS_DOC.read_text(encoding="utf-8")
-    pattern = _re.escape(BEGIN) + r".*?" + _re.escape(END)
-    old_pattern = (r"# BEGIN generated inventory \(build/scripts/"
-                   r"generate_skills_catalogue\.py\).*?# END generated inventory")
-    block = inventory(names)
-    if _re.search(pattern, text, _re.S):
-        updated = _re.sub(pattern, lambda _m: block, text, flags=_re.S)
-    elif _re.search(old_pattern, text, _re.S):
-        updated = _re.sub(old_pattern, lambda _m: block, text, flags=_re.S)
-    else:
-        print(f"❌ inventory markers not found in {LEVELS_DOC}", file=sys.stderr)
-        return None
-    return updated
-
-
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--check", action="store_true",
@@ -318,12 +267,6 @@ def main():
         changed.append(d.name)
 
     if args.check:
-        updated = write_inventory(names)
-        if updated is None:
-            return 1
-        if updated != LEVELS_DOC.read_text(encoding="utf-8"):
-            print(f"❌ stale inventory in {LEVELS_DOC.name}", file=sys.stderr)
-            changed.append(LEVELS_DOC.name)
         if changed:
             print("   run: python3 build/scripts/apply_skill_levels.py",
                   file=sys.stderr)
@@ -331,12 +274,6 @@ def main():
         print(f"✅ all {len(names)} skills carry their table level.")
         return 0
 
-    updated = write_inventory(names)
-    if updated is None:
-        return 1
-    if updated != LEVELS_DOC.read_text(encoding="utf-8"):
-        LEVELS_DOC.write_text(updated, encoding="utf-8")
-        print(f"✅ regenerated the inventory in {LEVELS_DOC.name}")
 
     print(f"✅ set the level on {len(changed)} skill(s); {len(names)} total.")
     for level in ORDER:

@@ -53,6 +53,7 @@ namespace ores::trading::domain {
         utility::codec::field{"purpose", &script_calibration::purpose},
         utility::codec::field{"sequence_number", &script_calibration::sequence_number},
         utility::codec::field{"index_variable", &script_calibration::index_variable},
+        utility::codec::field{"script_version", &script_calibration::script_version},
         utility::codec::field{"modified_by", &script_calibration::modified_by},
         utility::codec::field{"performed_by", &script_calibration::performed_by},
         utility::codec::field{"change_reason_code", &script_calibration::change_reason_code},

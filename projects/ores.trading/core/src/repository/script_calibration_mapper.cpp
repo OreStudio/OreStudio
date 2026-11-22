@@ -45,6 +45,7 @@ domain::script_calibration script_calibration_mapper::map(const script_calibrati
     r.purpose = v.purpose;
     r.sequence_number = v.sequence_number;
     r.index_variable = v.index_variable;
+    r.script_version = v.script_version;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -65,6 +66,7 @@ script_calibration_entity script_calibration_mapper::map(const domain::script_ca
     r.tenant_id = v.tenant_id;
     r.version = v.version;
     r.index_variable = v.index_variable;
+    r.script_version = v.script_version;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

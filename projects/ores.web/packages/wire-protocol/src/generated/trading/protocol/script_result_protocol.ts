@@ -40,6 +40,7 @@ export interface ScriptResultWrite {
     sequence_number: number;
     variable: string;
     rename: string | null;
+    script_version: number;
 }
 
 export interface ScriptResultChange {

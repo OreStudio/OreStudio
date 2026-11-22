@@ -41,6 +41,7 @@ export interface ScriptInputWrite {
     is_array: boolean;
     value_rule: string | null;
     description: string | null;
+    script_version: number;
 }
 
 export interface ScriptInputChange {

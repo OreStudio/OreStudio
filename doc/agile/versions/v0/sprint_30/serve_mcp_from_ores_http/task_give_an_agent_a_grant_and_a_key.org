@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :serve_mcp_from_ores_http:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/give-an-agent-a-grant-and-a-key
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,10 +26,10 @@ A person signed in to ores.web creates a grant for one agent: its name, read onl
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:008127D7-B897-4CF7-854B-6DDFB89AC7F4][Serve ORE's API to LLM agents over MCP]] |
 | Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
+| Waiting on   | The product owner's decisions on the security review. |
 | Next         | Begin implementation.                  |
 | Last touched | 2026-11-22                               |
 
@@ -46,6 +46,58 @@ A person signed in to ores.web creates a grant for one agent: its name, read onl
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
+The design is [[id:A7E2942C-66AD-449C-B80B-CA789EBC34FA][Agent grants: delegated consent for LLM agents]] and
+[[id:1162906F-BB72-486E-9A11-30D567C65F3E][Delegation tokens for LLM agents: subject and actor claims]]. It follows
+the run grant ([[id:78B82824-0BBB-4442-A9FA-E1F265DF57BD][Run grants and run tokens]]) wherever the two agree.
+
+** The data
+
+| Entity | Columns | Notes |
+|--------+---------+-------|
+| =ores.iam.agent_grant= | id, party_id, grantor_account_id, agent_name, scope (=read_only= or =read_write=), not_after, revoked_at, revoked_by, revoke_reason | tenant and party isolation; readable over the wire, written only by IAM's operations, as the run grant |
+| =ores.iam.agent_key= | id, grant_id, secret_hash, revoked_at | the id is the key's lookup prefix; the secret is never stored |
+| =ores_iam_agent_token_issue_log_tbl= | when, tenant, party, grant, key, account, outcome, reason | hand-written, as the run token's issue log; it gives each key's last use without versioning the key on every call |
+
+A key is =ores_ak_<tenant id>_<key id>_<secret>=: the tenant tells IAM where to
+read, the key id finds the key, and the secret is 256 random bits, base64url,
+compared by its SHA-256 hash.
+
+** The operations
+
+=ores.iam.agent_grant_messages=: create a grant, which returns its first key
+once; create another key; revoke a grant; revoke a key; and exchange a key for
+a token. Creating and revoking take the person's own session and refuse a token
+that already names an agent, so an agent never makes a grant. The exchange is
+called by ores.http with its own token and needs =iam::agent_keys:exchange=.
+
+The exchange checks the key, the grant (active, not past =not_after=) and the
+person (active), reads the person's effective permissions in the grant's
+tenant, keeps for a read-only grant only the codes ending in =:read= or
+=:lookup= that the person's codes cover, and mints a five-minute token: =sub=
+the person, =username=, =tenant_id=, =party_id= and =visible_party_ids= the
+grant's party, =roles= the permissions, =grant_id= the grant and =act= the
+agent's name. Every exchange appends a row to the issue log, refusals included,
+and failed exchanges are limited per tenant and per key.
+
+** ores.http
+
+In =http_session='s bearer branch, a token that begins with =ores_ak_= is an
+agent key: an exchanger, injected as the session store is, returns a cached
+token until thirty seconds before its expiry, or exchanges the key with IAM.
+The route then serves the request with that token, as it serves any other.
+
+** Order
+
+1. The models, generated: domain, SQL, repository, protocols, wire types and
+   shell commands; the permissions seeded.
+2. IAM: the key utility, the read-only filter, the operations service, its
+   handler and the issue log, with unit tests for the pure parts.
+3. ores.http: the exchanger and its cache, wired into the bearer branch.
+4. ores.web: the grants page, over HTTP routes for create, list and revoke.
+5. Proof: a grant made in ores.web, a key that reads through ores.http, a
+   read-only key refused a write, a revoked key refused, and the issue log.
+
+
 * Measurements
 
 Every number this task claims about a tree, with the command that produced it
@@ -61,6 +113,9 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+Paused before any code was generated: the design is first reviewed against the
+security architecture in [[id:6B455B15-0FDB-4E1E-A2A8-CEFC4C1D155C][Security review of delegated access for LLM agents]]. The plan above changes with its decisions.
 
 * Test Scenarios
 

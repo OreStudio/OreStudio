@@ -8,7 +8,7 @@
 #+filetags: :every_floating_index_has_a_curve_and_fixings:sprint_30:v0:
 #+owner: marco
 #+branch: feature/fixings-and-expiries-knowledge
-#+pr:
+#+pr: 5014
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-22
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5014][#5014]] | [doc] Add the fixings and expiries knowledge and the house style |
 
 * Review
 

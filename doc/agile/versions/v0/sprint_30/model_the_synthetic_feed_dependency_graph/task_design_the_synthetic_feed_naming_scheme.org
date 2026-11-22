@@ -26,11 +26,11 @@ Every synthetic feed gets a source name that says who produces it, what asset cl
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:8DE041AE-95E6-40CE-9B62-2CE3BA77838A][Model the synthetic feeds as a dependency graph: upstreams, latent surfaces and vendor views]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-22                               |
 
 * Acceptance
@@ -72,6 +72,8 @@ task and name that file in the Command column.
 
 * Notes
 
+- *Sign-off.* The owner signed the scheme off on 2026-11-22: "1. ok 2. ok 3. ok. proposal signed off."
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -96,3 +98,13 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The scheme is written in [[id:90D85E90-E7EA-48D8-9245-313ECA3F9392][Synthetic feed naming scheme]] and adopted:
+=synthetic.<source>.<asset_class>.<instrument>.<subject>=, spelled from oresmd,
+with =latent= as the source of a vendor-neutral market. The owner signed it off
+on 2026-11-22 with its three open points as recommended: =yield_curve= as the
+instrument of a whole curve, used in names only; the index tenor last, in the
+market's spelling, with screens sorting by the tenor field; and names derived
+one way from the config, tested for uniqueness, never parsed. The page lists
+today's name beside the adopted name for all 188 nodes of the seeded
+datasets. No feed is renamed by this task.

@@ -36,11 +36,13 @@ Three kinds of node, each named for what it is:
 | Node | Entity | Name, for AUD/USD | What it is |
 |------+--------+-------------------+------------|
 | Upstream | =fx_spot_generation_config=, =ir_curve_generation_config= | =synthetic.bloomberg.fx.fx_spot.audusd=, =synthetic.bloomberg.ir.yield_curve.sofr.usd= | One vendor's own path for a spot or a curve, in that vendor's collection. |
-| Latent surface | =fx_vol_surface_feed= | =synthetic.latent.fx.fx_option.audusd= | The one hidden vol market of the pair. Vendor-neutral: the =latent= source in place of a vendor, and not in a vendor's collection. Publishes nothing itself. |
+| Latent surface | =fx_vol_surface_feed= | =synthetic.latent.fx.fx_vol_surface.audusd= | The one hidden vol market of the pair. Vendor-neutral: the =latent= source in place of a vendor, and not in a vendor's collection. Publishes nothing itself. |
 | Vendor view | =fx_vol_surface_feed_contributor= | =synthetic.bloomberg.fx.fx_option.audusd= | One vendor's noisy quotes of the latent surface, published through that vendor's source, in that vendor's namespace beside its spots and curves. |
 
-The names are illustrative: they follow the naming scheme below, which is
-designed and signed off before any feed is renamed.
+The names follow [[id:90D85E90-E7EA-48D8-9245-313ECA3F9392][Synthetic feed naming scheme]], which the owner
+signed off on 2026-11-22. The latent surface takes =fx_vol_surface=, oresmd's
+instrument for a whole surface, and each vendor view =fx_option=, the
+instrument it quotes.
 
 ** The naming scheme
 
@@ -132,9 +134,9 @@ the order, the states and the screens read one structure.
 |---------------+----------------------------------------|
 | State         | BACKLOG                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
-| Now           | Not yet started.                       |
+| Now           | The naming scheme is signed off and documented. |
 | Waiting on    | Nothing.                               |
-| Next          | Design the naming scheme and get it signed off. |
+| Next          | Write the graph design note (task 1). |
 | Last touched  | 2026-11-22                               |
 
 * Acceptance
@@ -164,7 +166,7 @@ the order, the states and the screens read one structure.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:642ED805-A23C-404F-B494-8A74BB8AEB12][Design the synthetic feed naming scheme, based on oresmd, for sign-off]] | STARTED | 2026-11-22 | | A scheme for the source names of synthetic feeds, built from the oresmd identity of what each feed observes and who produces it, settled with the owner and written into the documentation before any feed is renamed. |
+| [[id:642ED805-A23C-404F-B494-8A74BB8AEB12][Design the synthetic feed naming scheme, based on oresmd, for sign-off]] | DONE | 2026-11-22 | 2026-11-22 | A scheme for the source names of synthetic feeds, built from the oresmd identity of what each feed observes and who produces it, settled with the owner and written into the documentation before any feed is renamed. |
 
 * Decisions
 

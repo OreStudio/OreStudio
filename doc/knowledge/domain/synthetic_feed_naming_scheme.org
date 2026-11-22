@@ -17,9 +17,10 @@ rule. This page proposes that rule: a name states who produces the feed and,
 in the vocabulary of [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd]], what it
 observes, as =synthetic.<source>.<asset_class>.<instrument>.<subject>=. The
 scheme replaces names built ad hoc in the publish step, which say nothing of
-a feed's kind and file a vendor-neutral vol surface under one vendor. It is a
-proposal: no feed is renamed until the owner signs it off, and the sign-off is
-recorded on [[id:642ED805-A23C-404F-B494-8A74BB8AEB12][the task]] that designs it.
+a feed's kind and file a vendor-neutral vol surface under one vendor. The owner
+signed the scheme and its three open points off on 2026-11-22, as recorded on
+[[id:642ED805-A23C-404F-B494-8A74BB8AEB12][the task]] that designed it; the feeds are renamed to it by the story's
+later tasks.
 
 * Detail
 
@@ -77,12 +78,12 @@ surface is the former and each vendor's view the latter, so the latent market
 sits under the =latent= source and each vendor's quotes sit in that vendor's
 namespace, beside its spots and curves.
 
-** Open points, each with a recommendation
+** Decisions on the open points, signed off
 
 1. *The instrument of a whole curve.* A curve feed publishes quotes of several
    =oresmd= instruments (=mm=, =fra=, =ir_swap=), and =oresmd= has no instrument
    for a curve.
-   - /Recommended:/ =yield_curve=, as the name of the whole, the way
+   - /Adopted:/ =yield_curve=, as the name of the whole, the way
      =fx_vol_surface= names a whole surface. It is used in names only; it joins
      the =oresmd= instruments if a whole curve is ever published as a series.
    - /Rejected:/ =discount=, ORE's instrument for a discount factor. The latent
@@ -91,7 +92,7 @@ namespace, beside its spots and curves.
 2. *The place of an index tenor.* The tenor goes last, after the currency, in
    ORE's period spelling (=1w=, =2w=, =1m=, =3m=, =6m=, =12m=), and =fomc= takes
    that place for the FOMC curve. A plain text sort puts =12m= before =1m=.
-   - /Recommended:/ keep the market's spelling, and let a screen sort by the
+   - /Adopted:/ keep the market's spelling, and let a screen sort by the
      tenor field, which it reads from the config, not by the name.
    - /Rejected:/ zero-padded or day-counted tenors (=012m=, =365d=), which sort
      but read badly and differ from every other place a tenor is written.
@@ -99,7 +100,7 @@ namespace, beside its spots and curves.
    config derives the name, and the feed lists the series it publishes. A
    spot's name corresponds to one series; a curve's and a vendor view's names
    correspond to many.
-   - /Recommended:/ one derivation function per kind, tested so that no two
+   - /Adopted:/ one derivation function per kind, tested so that no two
      feeds of the seeded datasets derive one name, and no parser.
 
 ** Today's names and their proposed names

@@ -180,8 +180,10 @@ begin
 
         -- Best-effort role assignment by exact role name; a role that
         -- doesn't exist in this tenant's RBAC set is silently skipped
-        -- rather than blocking account creation.
-        if r.role is not null then
+        -- rather than blocking account creation. An account may hold more
+        -- than one role, so the column carries a comma separated list and
+        -- each name it holds is granted.
+        if r.roles is not null and btrim(r.roles) <> '' then
             -- A version of 0 states no earlier version to match: the trigger numbers the row.
             insert into ores_iam_account_roles_tbl (
                 tenant_id, account_id, role_id, version, modified_by, performed_by,
@@ -192,8 +194,11 @@ begin
                    current_timestamp, ores_utility_infinity_timestamp_fn()
             from ores_iam_roles_tbl rl
             where rl.tenant_id = p_target_tenant_id
-              and rl.name = r.role
-              and rl.valid_to = ores_utility_infinity_timestamp_fn();
+              and rl.valid_to = ores_utility_infinity_timestamp_fn()
+              and rl.name in (
+                  select btrim(v_name)
+                  from unnest(string_to_array(r.roles, ',')) as v_name
+                  where btrim(v_name) <> '');
         end if;
 
         v_inserted := v_inserted + 1;

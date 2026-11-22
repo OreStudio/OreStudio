@@ -238,6 +238,11 @@ Description=ORE Studio {def_row['service_name']} (environment {env_name})
 After={after_line}
 Requires={after_line}
 PartOf={target_name}
+# A cold fleet start on a loaded machine outlasts systemd's 90 second default: a
+# service killed at that mark fails its own start job and, through Requires=, every
+# dependent's first job too, which is how the official rates adapter kept ending up
+# inactive while the service it needs came up on its own restart a minute later.
+TimeoutStartSec=300
 StartLimitIntervalSec=60
 StartLimitBurst=5
 
@@ -302,6 +307,11 @@ Description=ORE Studio {def_row['service_name']} (environment {env_name})
 After={after_line}
 Requires={after_line}
 PartOf={target_name}
+# A cold fleet start on a loaded machine outlasts systemd's 90 second default: a
+# service killed at that mark fails its own start job and, through Requires=, every
+# dependent's first job too, which is how the official rates adapter kept ending up
+# inactive while the service it needs came up on its own restart a minute later.
+TimeoutStartSec=300
 StartLimitIntervalSec=60
 StartLimitBurst=5
 
@@ -359,6 +369,11 @@ Description=ORE Studio {def_row['service_name']} hot replica {replica} (environm
 After={after_line}
 Requires={after_line}
 PartOf={target_name}
+# A cold fleet start on a loaded machine outlasts systemd's 90 second default: a
+# service killed at that mark fails its own start job and, through Requires=, every
+# dependent's first job too, which is how the official rates adapter kept ending up
+# inactive while the service it needs came up on its own restart a minute later.
+TimeoutStartSec=300
 StartLimitIntervalSec=60
 StartLimitBurst=5
 
@@ -421,6 +436,11 @@ def render_nats_unit(checkout_root, env_name, target_name, nats_port):
 [Unit]
 Description=NATS server (environment {env_name})
 PartOf={target_name}
+# A cold fleet start on a loaded machine outlasts systemd's 90 second default: a
+# service killed at that mark fails its own start job and, through Requires=, every
+# dependent's first job too, which is how the official rates adapter kept ending up
+# inactive while the service it needs came up on its own restart a minute later.
+TimeoutStartSec=300
 StartLimitIntervalSec=60
 StartLimitBurst=5
 
@@ -465,6 +485,11 @@ def render_pooler_unit(checkout_root, env_name, target_name, pooler_port):
 [Unit]
 Description=PostgreSQL transaction pooler (environment {env_name})
 PartOf={target_name}
+# A cold fleet start on a loaded machine outlasts systemd's 90 second default: a
+# service killed at that mark fails its own start job and, through Requires=, every
+# dependent's first job too, which is how the official rates adapter kept ending up
+# inactive while the service it needs came up on its own restart a minute later.
+TimeoutStartSec=300
 StartLimitIntervalSec=60
 StartLimitBurst=5
 

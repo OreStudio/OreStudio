@@ -852,6 +852,28 @@ private:
      */
     static constexpr std::chrono::seconds step_publish_timeout{7200};
 
+    /**
+     * @brief How long a step keeps asking a service to take its request.
+     *
+     * The request that starts a publication leaves this service for another,
+     * and that service may be gone when it arrives: a restart reaches nobody at
+     * all, and a process that dies holding the request never answers. Both are
+     * transient, and a run that a database rebuild preceded must not fail on
+     * one, so the request is asked again inside this window. The window bounds
+     * the asking only; the wait for the run it starts is @c
+     * step_publish_timeout.
+     */
+    static constexpr std::chrono::seconds step_dispatch_window{120};
+
+    /**
+     * @brief The most times one dispatch asks, the first ask included.
+     *
+     * A service that restarts answers on the next ask, so a handful of asks
+     * covers it. A service that stays down is reported rather than asked for
+     * the whole window, because its absence is a fault and not a delay.
+     */
+    static constexpr int step_dispatch_attempts{6};
+
     /// The image codes of the default administrator pictures. The
     /// assets.system_avatars dataset publishes rows under these codes, and
     /// the attach_photos step binds each picture by code.
@@ -1026,19 +1048,25 @@ private:
         const auto params_json = dq::messaging::build_params_json(params);
         const auto bundle_code = std::string(ores::iam::workflow::system_core_bundle_code);
 
+        // Each phase is reported before it starts, not after it ends, so a run
+        // that stalls says which phase it stalled in rather than which one it
+        // last finished.
+        wf.record("Looking for the system tenant's administrator");
         const auto super_actor = system_administrator();
         if (!super_actor) {
             wf.fail("The system tenant holds no administrator to publish '" + bundle_code +
                     "' as.");
             return;
         }
+        wf.record("Found the administrator " + super_actor->username + "; publishing " +
+                  bundle_code);
         auto admin_client = make_step_client(tenant_context::system_tenant_id,
                                              super_actor->account_id,
                                              super_actor->party_id,
                                              super_actor->username);
         publish_bundle_or_throw(
             admin_client, bundle_code, super_actor->username, params_json, command.kind);
-        wf.record("Published the bundle " + bundle_code);
+        wf.record("Published the bundle " + bundle_code + "; marking the onboarding complete");
         complete_system_onboarding(admin_client);
         wf.record("Marked the system's onboarding complete");
         wf.complete(ores::utility::codec::json::write(
@@ -1905,6 +1933,11 @@ private:
     // human-readable step progress via add_step/on_progress rather than raw
     // internal step/action codes. Returns false (already recorded via
     // add_step) on a dispatch failure or an incomplete/failed workflow.
+    //
+    // The dispatch is asked again while the service that takes it is absent.
+    // A repeat publishes a set the first attempt may already have published,
+    // and the upsert mode it names makes the second write converge on the
+    // first, so the repeat costs work rather than correctness.
     static bool
     publish_bundle(internal_request_client& client,
                    const std::string& bundle_code,
@@ -1918,7 +1951,19 @@ private:
         req.published_by = username;
         req.params_json = params_json;
 
-        auto pub = client.request(req);
+        dq::messaging::publish_bundle_response pub;
+        try {
+            pub = ores::service::messaging::request_with_retry(
+                client,
+                req,
+                {.deadline = std::chrono::steady_clock::now() + step_dispatch_window,
+                 .what = "Publishing the bundle '" + bundle_code + "'",
+                 .policy = {.max_attempts = step_dispatch_attempts},
+                 .note = on_progress});
+        } catch (const std::exception& failure) {
+            add_step(bundle_code + ".failed", failure.what(), 0);
+            return false;
+        }
         if (!pub.success) {
             add_step(bundle_code + ".failed", pub.error_message, 0);
             return false;

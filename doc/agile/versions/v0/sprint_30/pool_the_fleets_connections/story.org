@@ -27,11 +27,11 @@ them.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
-| Now           | Everything the story set out to do has shipped: the elastic pool, the pooler beside a shared fleet and on pauli, the settled statement question, CI on the pooled path, and the tests no longer reading a developer's .env. One thing keeps it open: the four-lanes scenario has never been run. The credential file is private as of #5014. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Run [[id:36FDD33A-6406-4CF6-9687-807BF36A172E][Four lanes of a provisioning step meet no acquisition failure]] against the shipped pooler, and the credential file is private as of #5014. |
+| Next          | Nothing. |
 | Last touched  | 2026-11-21                               |
 
 * Acceptance
@@ -63,6 +63,7 @@ them.
 | [[id:83C4FD4E-888C-4C3F-BE3D-50136487B458][Prove the pooled path in CI]] | DONE | 2026-11-21 | 2026-11-21 | Developers keep a direct connection, so the pooled path is only proven if something runs it. One CI job runs the marketdata suite through a transaction pooler on every change. |
 | [[id:04CD1C47-0893-4D5F-B812-2DD1E907F921][Pass the environment to the option parser]] | DONE | 2026-11-22 | 2026-11-22 | Every defaults test hand-clears the environment variables the parser reads, one name at a time, so each new environment-read option breaks every defaults suite at gate time. Make the environment an explicit input to parse, so a defaults test passes nothing and an env-wins test states the value it expects. |
 | [[id:3470D321-8708-4819-8AD2-681FA2230A9F][Make the pooler's credential file private]] | DONE | 2026-11-22 | 2026-11-22 | The pooler's user list is written 0644 inside a directory whose mode the deploy never sets, so every local user on the host can read every database password. The fix needs the uid the container drops to, read from the image. |
+| [[id:4F1178FD-3615-4C25-A8B7-45ABDB57EFBB][Diagnose the stall that blocked the four-lanes scenario]] | DONE | | 2026-11-22 | The provisioning the four-lanes scenario names failed twice on a recreated database, and neither failure named the pool the story is about. Find what actually stops a step, and make the step say so. |
 
 * Decisions
 
@@ -165,3 +166,17 @@ them.
   job runs them through a pooler.
 - The abandoned =cap server connections across environments= task, whose goal
   this story meets by other means; it stays abandoned rather than revived.
+
+* Result
+
+The fleet's connection behaviour is one documented approach with two settings.
+A service's pool states what it keeps and what a burst may reach; the fleet runs
+with the pooler in front of a shared PostgreSQL, and pauli runs it as a
+container beside the services. The nine tasks that compose the story are DONE,
+and the evidence for the last of them is a provisioning run on a recreated
+database whose journal holds no acquisition failure.
+
+What the story leaves open is recorded rather than carried: a staff photo the
+account insert cannot see, the 72 party curves that wait behind funding curves
+with no quotes, and the four surfaces no party holds a blueprint for. None of
+them is about connections.

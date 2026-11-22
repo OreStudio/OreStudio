@@ -8,7 +8,7 @@
 #+filetags: :every_floating_index_has_a_curve_and_fixings:sprint_30:v0:
 #+owner: marco
 #+branch: feature/draw-only-the-indices-the-market-can-serve
-#+pr:
+#+pr: 4996
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-21
@@ -95,7 +95,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4996][#4996]] | [synthetic] Draw only the indices a curve serves |
 
 * Review
 

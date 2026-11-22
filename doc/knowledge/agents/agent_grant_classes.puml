@@ -1,0 +1,67 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title An agent grant belongs to one person and is redeemed by keys
+
+hide circle
+skinparam classAttributeIconSize 0
+
+class account <<ores.iam>> {
+  id
+  tenant_id
+}
+
+class agent_grant {
+  id
+  tenant_id
+  account_id
+  party_id
+  agent_name
+  scope : read_only | read_write
+  created_at
+  expires_at
+  revoked_at
+  created_through : key | oauth
+}
+
+class agent_key {
+  id
+  grant_id
+  prefix
+  hash
+  created_at
+  last_used_at
+}
+
+class oauth_client <<later>> {
+  client_id
+  grant_id
+  redirect_uri
+}
+
+account "1" -- "0..*" agent_grant : consents >
+agent_grant "1" -- "0..*" agent_key : redeemed by >
+agent_grant "1" -- "0..1" oauth_client : redeemed by >
+
+note bottom of agent_key
+  The key is shown once, when it is made.
+  Only its prefix and its hash are kept.
+end note
+
+@enduml

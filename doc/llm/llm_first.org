@@ -71,3 +71,4 @@ contributing model (=Co-Authored-By:= with the model name and
 - [[id:9AE40093-3BBF-44F7-818D-C8CA7C8D7F83][Claude Code]] — the primary development tool.
 - [[id:94F9949A-1580-4D47-9331-AA0597543C99][LLM Configuration and Artefacts]] — the full LLM support stack.
 - [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][Compass]] — orientation and navigation tool for LLM sessions.
+- [[id:47B179BF-C982-4BB1-AF4F-35E00B9D2750][Delegated Access for LLM Agents]] — contradicts any confusion of the two uses: that cluster is the production use of LLMs, agents acting for a person in the running system; this page is the development use.

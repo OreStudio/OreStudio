@@ -1,0 +1,78 @@
+:PROPERTIES:
+:ID: 47B179BF-C982-4BB1-AF4F-35E00B9D2750
+:END:
+#+title: Delegated Access for LLM Agents
+#+description: Structure note for LLM agents acting for a person through ores.http: grants, MCP, record and six eyes.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:agents:llm:mcp:structure_note:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+
+* Summary
+
+This structure note orders the pages on LLM agents: programs a large language
+model drives, through the loop of tool calls that [[id:0D919421-2B73-4322-9F79-9FDA38A67EA1][Large language models]] describes,
+such as Claude Code or a small local model's agent, that act for a person
+through =ores.http=. The cluster answers one
+question in order: how an agent can do what a person may do without becoming a
+second way in. Read it as: the path an agent's call takes, the consent it acts
+under, how it is named on each call, how it reaches ORE and finds what to
+call, and what happens to what it does.
+
+* Reading order
+
+** The path
+
+[[id:3B1D40EA-121F-4F53-A612-FF13DCE1A0BB][Routing of LLM agent calls through ores.http]] — start here. It argues that an agent has one door and borrows a
+person's access, and it draws every part that the pages below describe.
+
+** The consent and the name
+
+[[id:A7E2942C-66AD-449C-B80B-CA789EBC34FA][Agent grants: delegated consent for LLM agents]] — the person's consent, which an agent cannot act without. Read
+it before the token, because the token is what the grant becomes on a call.
+
+[[id:1162906F-BB72-486E-9A11-30D567C65F3E][Delegation tokens for LLM agents: subject and actor claims]] — the person as subject and the agent as actor. Everything that
+follows decides on one or the other.
+
+** The way in
+
+[[id:5E479832-A0B2-4BC6-B008-BAD505F4E145][Serving the Model Context Protocol from ores.http]] — the MCP endpoint, written in =ores.http=.
+
+[[id:4C382E8F-9449-4012-A09F-76291373E6F7][Progressive disclosure of the operation catalogue to LLM agents]] — how an agent finds an operation among more than a thousand,
+in five tools.
+
+** What happens to what it does
+
+[[id:2D36D474-2CF9-4498-AF49-818CEF080B98][Auditing of LLM agent actions]] — every call recorded as the agent's, for its person.
+
+[[id:381D87BB-4E2D-47BA-8853-6132CF900305][Six-eyes approval of LLM agent writes]] — every write held for its person and then a second approver. Read
+it after the record, because a held write is shown to the person through it.
+
+** Where it came from
+# aside
+
+[[id:039005AD-8319-416C-9F70-6A5477FEE89D][The ores.agent prototype: findings for the target design]] — what the prototype taught, and what the design keeps,
+changes and drops. Read it when the question is why the design is so, rather
+than what it is.
+
+* What this cluster excludes
+
+How a person signs in and what their roles grant belongs to [[id:AF46793A-FF6C-4066-A059-279CE9936420][Identity and Access]]; this
+cluster begins where a person consents to an agent. The approval framework
+itself belongs to the [[id:E21DFC83-9F3F-45BE-AD3F-48262126DFAC][Four-eyes framework]] and its pages; this cluster adds one condition
+to it. The knowledge an agent answers from belongs to compass, not to ORE.
+Two uses of LLMs meet in this project and must not be confused. LLMs that
+build and maintain ORE Studio, through Claude Code, skills and compass, are a
+development practice, described in [[id:3B7C30A5-A421-4EEF-ADA8-C20D4AB54BB6][ORE Studio as an LLM-first system]]. The agents of this cluster are a
+production feature: they use the running ORE Studio for a person, with no more
+access than that person, and nothing here applies to how ORE Studio is
+developed.
+
+* See also
+
+- [[id:008127D7-B897-4CF7-854B-6DDFB89AC7F4][Serve ORE's API to LLM agents over MCP]] — the story this cluster sets out.
+- [[id:AF46793A-FF6C-4066-A059-279CE9936420][Identity and Access]] — completes: the identity cluster an agent's identity extends.
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][the knowledge index]] — where this structure note is listed.
+- [[id:0D919421-2B73-4322-9F79-9FDA38A67EA1][Large language models]] — completes: the definition of the technology both uses share.
+- [[id:3B7C30A5-A421-4EEF-ADA8-C20D4AB54BB6][ORE Studio as an LLM-first system]] — contradicts any reading of this cluster as development practice: that page is the development use of LLMs, this cluster the production use.

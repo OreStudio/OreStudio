@@ -55,6 +55,7 @@ One scripted trade subsystem serves every way a scripted trade enters ORE Studio
 | [[id:873E2FA1-F1AE-4B77-8DF0-7BBB4F330B18][Generate the script-only rates and inflation payoffs]] | ABANDONED |  | 2026-11-21 | The library's rates and inflation scripts (AsianIrCapFloor, CMSCapFloorBarrier, ForwardStartingSwaption, LPISwap, FlooredAverageCPIZCIIS, IrregularYYIIS, MovingMaxYYIIS, LapseHedgeSwap and their kin) read IR and inflation indices, which the scripted generator never draws. None is generated. |
 | [[id:688649E4-FBB3-4E21-A58E-B0281DD75676][Manage the script library on its own screen]] | BACKLOG | | | The script library is reference data only the database and the shell can read: no ores.http route and no BFF route serves a script, its versions or a tenant's publish, so no screen can show or change it. |
 | [[id:0FD7D2A8-7A4A-4052-A4D5-6C8A01CAAA41][Move the ORE metamodel into ores.ore]] | BACKLOG | | | The description of ORE itself, its files, their versions, the leaves of its schemas and the values they accept, is held by ores.reporting, which was its first consumer, while ores.ore owns no tables; a product's schema needs it, and it is not reporting's. |
+| [[id:68EA32A5-733C-43C2-A757-30C6EEBECEEE][Read other services' data through event-fed caches]] | BACKLOG | | | Services read other services' tables and functions directly in SQL and in hand-written queries, which couples each to another's schema; the standard way to hold another service's data is an entity-mirror cache fed by its events. |
 
 * Decisions
 

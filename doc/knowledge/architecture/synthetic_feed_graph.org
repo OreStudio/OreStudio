@@ -1,0 +1,152 @@
+:PROPERTIES:
+:ID: 2376A086-4C3C-4D61-92E5-29B122DB6A41
+:END:
+#+title: Synthetic feed graph
+#+description: The synthetic feeds as a graph of named nodes and stored edges: how each node's state and reason are kept and passed down the edges, how a node is stopped, and where its messages live.
+#+type: knowledge
+#+level: cross
+#+filetags: :synthetic:architecture:graph:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+
+* Summary
+
+The synthetic market is a graph: a vol surface depends on a spot and two
+curves, and each vendor's quotes depend on that surface and on the vendor's
+simulated source. Today those dependencies are real but unstated, reached
+through the run's market board, so no screen can show them and a stop says
+nothing to what depends on it. This page designs the graph as data: named
+nodes, stored edges, a state with a reason for every node that flows down the
+edges, a stop for every node, and a message log for every node. Its names
+follow [[id:90D85E90-E7EA-48D8-9245-313ECA3F9392][Synthetic feed naming scheme]]. It is a proposal: the five
+choices below are signed off before any of it is built, as recorded on
+[[id:46546EEB-580D-4C37-9398-422D3A18D692][the task]] that designs it.
+
+* Detail
+
+** The nodes
+
+A node is anything that runs and can be stopped. Every node is named by the
+naming scheme, and the name is its identity in the graph, in its message log
+and on the screens.
+
+| Kind | What it is | Stored as | Example name |
+|------+------------+-----------+--------------|
+| upstream | one vendor's own path for a spot or a curve | an FX spot or IR curve feed row | =synthetic.bloomberg.fx.fx_spot.audusd= |
+| latent | the one hidden vol market of a pair, published by no vendor | a vol surface feed row, under the =latent= source | =synthetic.latent.fx.fx_vol_surface.audusd= |
+| view | one vendor's noisy quotes of a latent surface | a contributor link row | =synthetic.bloomberg.fx.fx_option.audusd= |
+| source | a vendor's simulated source, the adapter every one of its feeds publishes through | a source of the market data catalogue | =bloomberg-a= |
+
+The source is a node because a view publishes through it: a stopped source
+stops its views, as it already stops its own spots and curves.
+
+** The edges
+
+| From | To | Role | Today |
+|------+----+------+-------|
+| latent | upstream spot | =spot= | stored: =spot_oresmd_uri= and =spot_provider_code= |
+| latent | upstream curve | =base_curve=, =quote_curve= | found by a rule: the collection's curve of the currency that is not a projection and has no tenor |
+| view | latent | =surface= | stored: the link's =feed_id= |
+| view | source | =source= | found by the contributor's provider |
+| upstream | source | =source= | found by the collection's provider |
+
+** The states, and how they pass down the edges
+
+| State | Means | Reason it carries |
+|-------+-------+-------------------|
+| running | publishing, or for a latent surface, stepping | |
+| stopped | an operator stopped this node | who, when and why |
+| starved | an input is not running | the input node, and that node's own reason |
+| failing | the node runs but cannot produce | the diagnostic, such as =no market: curve:USD= |
+
+The rule: a node runs when it is not stopped and every input runs. Otherwise
+it is stopped if an operator stopped it, starved if an input does not run,
+and failing if it runs but its last attempt produced nothing. A starved node
+names the input that starved it, so the chain reads back to the first cause.
+Starting a node clears its own stop; the nodes below it recover when all their
+inputs run again, with no action of their own.
+
+** The choices to sign off
+
+*** How the edges are stored
+
+- /Option A, typed columns on the dependent node./ A latent surface carries
+  its spot, its base curve and its quote curve as columns; a view carries its
+  surface. Every edge a kind must have is a column the insert can refuse when
+  it is missing.
+- /Option B, one edge table./ Rows of (node, input, role) for every edge,
+  maintained by the publish and by every edit.
+- /Recommended: A./ A surface without a spot or a curve is not a surface, and a
+  column states that where a row in a side table cannot. The spot pair is
+  already stored this way. The curves become two columns that name the curve
+  node by its name under the scheme, so no edge is found by a rule any more.
+  The graph read builds the edges from the columns in one place.
+
+*** How a stop is stored
+
+- /Option A, one table of stopped nodes./ The source stop built for sources
+  becomes a stop for any node, keyed by its name, with who, when and why, and
+  its history.
+- /Option B, a stop flag on each kind's own row./
+- /Recommended: A./ One rule, one history and one pair of verbs, stop and start a
+  node by name, whatever its kind. The stopped simulated source table becomes
+  this table.
+
+*** How a node's state is kept
+
+- /Option A, derived in the service./ The service holds the graph in memory,
+  built from the database at start and rebuilt when a feed's config changes.
+  A state is computed from the stops, the runs and the last diagnostic, and a
+  change is walked down the edges.
+- /Option B, stored in a table./
+- /Recommended: A./ A state is a consequence of other facts, and a stored copy of
+  a consequence goes stale the moment one of its facts moves. What must last,
+  the stops, is stored by choice 2.
+
+*** Where a node's messages live
+
+- /Option A, telemetry log entries./ Each message is a log entry of the
+  telemetry service, tagged with the node's name and, for a starve, the name of
+  the node that caused it. Telemetry already stores, ages out and queries log
+  entries, with trace correlation
+  ([[id:F9757D88-A92E-474E-9E8E-C703D604A0B2][ores.telemetry]]).
+- /Option B, a JetStream stream with a subject per node./ The names are valid
+  subject tokens, so this is possible, but perishable observations are not what
+  the bus's streams are kept for
+  ([[id:45D4751E-5089-4C82-9B37-63EFBD4A0B18][JetStream streams and consumers]]).
+- /Option C, a table of the synthetic service's own./
+- /Recommended: A./ No new store: a node's page reads its log from telemetry by
+  the node's name. The messages are the state changes with their reasons, the
+  operator's stops and starts, and the diagnostics a node raises, such as a
+  latent surface's refused expiry or missing convention. This needs a check
+  that a log entry carries the attribute a query can filter on.
+
+*** How the screens read the graph
+
+- /Option A, one read of the whole graph./ A verb that answers every node with
+  its state, reason and cause, and every edge with its role.
+- /Option B, a read per node of its neighbours./
+- /Recommended: A, with a filter by node./ The graph is a few hundred nodes, so
+  the whole read is cheap; the filter answers one node's upstreams and
+  downstreams for its page. Both the BFF and ores.http serve it.
+
+** What the screens show
+
+- Every feed page shows its state with its reason and, for a starved node, a
+  link to the node that caused it.
+- Every feed page lists its upstreams and its downstreams, each a link with its
+  state; the vol feed's upstream links are the first of these.
+- Every node has a Stop and a Start, with the confirmation the source stop has:
+  what stops with it, and why.
+- Every feed page has a Messages tab: its log from telemetry.
+
+* See also
+
+- [[id:8DE041AE-95E6-40CE-9B62-2CE3BA77838A][Model the synthetic feeds as a dependency graph]] -- the story this design serves.
+- [[id:90D85E90-E7EA-48D8-9245-313ECA3F9392][Synthetic feed naming scheme]] -- the names every node carries.
+- [[id:1F404EE8-215D-4E62-AB09-B2D34BE9C12F][The components of the market data generator]] -- the board this design makes visible.
+- [[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]] -- the dependency order the graph states.
+
+* Sources
+
+- None outside this repository.

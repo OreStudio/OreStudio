@@ -61,7 +61,7 @@ task and name that file in the Command column.
 
 * Notes
 
-- Target state: [[id:729F746E-36DD-40A2-A592-6972239E31F0][A service holds a few long-lived connections and never connects per query]].
+- Target state: [[id:729F746E-36DD-40A2-A592-6972239E31F0][Long-lived database connections in services]].
 
 * Test Scenarios
 

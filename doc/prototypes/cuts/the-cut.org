@@ -543,7 +543,7 @@ readable for a kind that carries no mark.
 - [[id:E840111E-AA2F-4746-8D49-A1D73742925E][Take a cut]] — the journey the list, the take flow and the record draw.
 - [[id:9123193E-352D-4F46-8174-7763FA0A44CD][Give a report its cut]] — the journey the report surfaces and the run draw.
 - [[id:8BD41683-EFA1-467A-B170-BE7041A745D7][Rerun and audit a cut]] — the journey the record's *Runs* tab and the comparison draw.
-- [[id:F6362451-D569-4609-97A3-F1C785AAAF02][The cut is the body a run prices from]] — the decision the screens serve.
+- [[id:F6362451-D569-4609-97A3-F1C785AAAF02][The cut model: recorded facts, derived states and authorisation]] — the decision the screens serve.
 - [[id:3E207A59-C1F8-429C-BA23-99DBAEB6EA5E][Market bindings prototype]] — the picker, the card and the fixtures this page continues.
 - [[id:654E4DFD-FD96-4A65-A350-AC8DD3F87BE0][Published curves prototype]] — the published sets the market data half fixes.
 - [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] — the list, the record, the picker, the states and the refusals.

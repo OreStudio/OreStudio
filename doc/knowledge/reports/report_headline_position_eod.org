@@ -270,7 +270,7 @@ The machinery that proves a run without gathering anything is the
 - [[file:./reports.org][Reports]], the inventory this page is listed in.
 - [[id:500AC7E3-E87C-4EC8-88A2-B46FB310F865][Headline Position]], the intraday sibling, on the live cut.
 - [[file:../domain/risk_reporting.org][Risk reporting]], the classification taxonomy and the measures catalogue.
-- [[file:../architecture/the_cut_is_the_body_a_run_prices_from.org][The cut is the body a run prices from]], what a cut holds and what it does not.
+- [[file:../architecture/the_cut_model_recorded_facts_derived_states_and_authorisation.org][The cut model: recorded facts, derived states and authorisation]], what a cut holds and what it does not.
 - [[file:../architecture/report_execution_pipeline.org][Report execution pipeline]], the phases every run goes through.
 - [[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]], the structure note for the cut this report reads.
 - [[id:EA59C7E0-CFDF-4BBE-815C-8AF53BFC16E1][Light the intraday reports on the LIVE cut]], the task that seeded the cut selections.

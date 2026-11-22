@@ -22,7 +22,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 Every synthetic volatility surface is struck against the forward of the run's own latent curves. A surface's quotes are then the pair's surface at the moneyness its own rate quotes imply, a curve tick moves the surface's quotes without a restart, and a party's calibration reads them at the strikes its bootstrap recovers.
 
-The design is [[id:675E89FC-B5AA-4250-8B86-78062F0F22BC][The forward a synthetic surface is struck against]]; the shared market resolution and the per-expiry markets landed under [[id:CFFA13BE-A386-4E72-B06C-60976FA34DF3][Resolve a pair's market once, shared by the calibration and the surface]]. The vendor publishes raw quotes and never a curve.
+The design is [[id:675E89FC-B5AA-4250-8B86-78062F0F22BC][Forwards for synthetic volatility surfaces]]; the shared market resolution and the per-expiry markets landed under [[id:CFFA13BE-A386-4E72-B06C-60976FA34DF3][Resolve a pair's market once, shared by the calibration and the surface]]. The vendor publishes raw quotes and never a curve.
 
 * Status
 

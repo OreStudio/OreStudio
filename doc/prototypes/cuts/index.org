@@ -97,5 +97,5 @@ is a static page, never a route in =ores.web=, and it carries a design note at
 
 - [[file:../index.org][Prototypes]] — every prototype, grouped by journey.
 - [[file:../../knowledge/journeys/cuts/cuts.org][Cuts journeys]] — the journeys these answer to.
-- [[id:F6362451-D569-4609-97A3-F1C785AAAF02][The cut is the body a run prices from]] — the decision the prototype draws.
+- [[id:F6362451-D569-4609-97A3-F1C785AAAF02][The cut model: recorded facts, derived states and authorisation]] — the decision the prototype draws.
 - [[id:3E207A59-C1F8-429C-BA23-99DBAEB6EA5E][Market bindings prototype]] — the picker and the card this prototype continues.

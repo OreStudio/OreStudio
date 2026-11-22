@@ -316,7 +316,7 @@ the full-pipeline proof and not by a run that writes rows.
 - [[file:./report_gamma_ladder.org][Bump and Reprice Gamma ladder]], the second order column on a market factor.
 - [[file:./report_rho_ladder.org][Bump and Reprice Rho ladder]], the rates ladder this page is not.
 - [[file:./report_cross_gamma_ladder.org][Bump and Reprice Cross-gamma ladder]], the rows that pair two factors of one risk class.
-- [[file:../architecture/the_cut_is_the_body_a_run_prices_from.org][The cut is the body a run prices from]], what the end of day cut holds.
+- [[file:../architecture/the_cut_model_recorded_facts_derived_states_and_authorisation.org][The cut model: recorded facts, derived states and authorisation]], what the end of day cut holds.
 - [[file:../architecture/report_execution_pipeline.org][Report execution pipeline]], the phases every run goes through.
 - [[file:../architecture/report_definition_and_schedule.org][Report definition and schedule]], the definition that states the cycle and the cut.
 

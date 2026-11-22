@@ -205,7 +205,7 @@ sequences and the names must not be read as one number.
   deal built from its parts.
 - [[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Trade Versioning]] — the precedent for two version numbers on one
   thing.
-- [[id:5724BDE2-7FA4-4667-9129-2D9DD7783AB2][Entity-table writes go through the repositories]] — the write path an
+- [[id:5724BDE2-7FA4-4667-9129-2D9DD7783AB2][Repository-mediated writes to entity tables]] — the write path an
   entity table expects.
 - [[id:F1BC2C10-B23B-4979-9692-8FA7C29319CB][Data storage]] — the structure note that orders this cluster, and
   where to read this page in it.

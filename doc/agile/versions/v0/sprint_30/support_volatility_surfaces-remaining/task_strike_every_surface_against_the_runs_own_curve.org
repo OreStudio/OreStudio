@@ -26,7 +26,7 @@ A pair's market at a value date is one rule in one place. The calibration reads 
 Landed on this task's branch: =math::pair_market_at= in =ores.analytics.quant=, the calibration's adoption of it, one market per expiry in the surface feed's build input, and the proof that a surface's quoted volatilities are invariant to the level of its spot at =1e-12= even when its two discounts differ.
 
 Where the forward comes from at run time is
-[[id:675E89FC-B5AA-4250-8B86-78062F0F22BC][The forward a synthetic surface is struck against]], decided through
+[[id:675E89FC-B5AA-4250-8B86-78062F0F22BC][Forwards for synthetic volatility surfaces]], decided through
 [[id:4825DEE0-D3E4-4E38-B46F-0C5EA838F1E0][the investigation]]. The build is
 [[id:DDF8585F-75EE-4190-B20B-8A913DC1F883][Build the run's market board and strike every surface against it]].
 

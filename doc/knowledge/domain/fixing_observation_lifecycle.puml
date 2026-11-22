@@ -1,0 +1,54 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title The lifecycle of one party fixing
+
+hide empty description
+
+state "Required" as required
+state "Dormant" as dormant
+state "Unofficial" as unofficial
+state "Official" as official
+
+[*] --> required : a trade of the party subscribes\nto the source for this date
+
+required --> dormant : the party keys a value\nin advance of the fixing date
+dormant --> unofficial : every earlier fixing of the source\nis official for the party
+
+required --> unofficial : the source's observation arrives,\nor the party keys a value
+
+unofficial --> unofficial : overkeyed by the party\n(the observation is kept)
+
+unofficial --> official : authorised by the party's operations\n(raises a fix event)
+official --> unofficial : unauthorised or undone\n(raises an undo event)
+
+official --> [*] : no live trade of the party\nrequires it any more
+
+note right of unofficial
+    front office may key or overkey;
+    only the party's operations may authorise,
+    and only after the publication time
+end note
+
+note right of official
+    the observation itself has no status:
+    another party may hold it as unofficial
+end note
+
+@enduml

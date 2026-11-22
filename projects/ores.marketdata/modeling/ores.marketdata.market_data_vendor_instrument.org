@@ -224,4 +224,4 @@ Why the id differs from the vendor's own, when =minted= is true. Empty otherwise
 
 * See also
 
-- [[id:5297997A-5175-43E9-861B-2A11D003CD35][A vendor instrument is an id scheme, an id and a field]] -- the knowledge page.
+- [[id:5297997A-5175-43E9-861B-2A11D003CD35][Identification of vendor instruments]] -- the knowledge page.

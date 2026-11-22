@@ -28,7 +28,7 @@ authoring tools. The first three are the same for live and simulated sources.
 ** Rules for the screens
 
 - A source's kind is a badge and a filter, and it changes no other behaviour. See
-  [[id:F64DB34E-084D-4437-B536-392AA26D8B77][No code path may behave differently because a source is simulated]].
+  [[id:F64DB34E-084D-4437-B536-392AA26D8B77][Simulated sources as data rather than code paths]].
 - A source screen shows the adapter state, the demand set and the rejected ids.
   See [[id:B4729C76-4D88-4F3C-B3D3-5FC7BD62D158][The adapter lifecycle]].
 - A route change goes through a dialog that asks for a reason.
@@ -42,5 +42,5 @@ simulator screens are described in [[id:5779B40E-1C82-478D-951E-C81C13F7DFEA][Th
 * See also
 
 - [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
-- [[id:31BCA3F8-31AD-49C2-9B6B-F2312EE7DECB][A party takes a provider's feeds through a subscription]] — completes: the data behind the second area.
-- [[id:3E51B0BD-D22B-4790-821F-E2FED44D152C][Usage is recorded as events and priced later]] — completes: the data behind the third area.
+- [[id:31BCA3F8-31AD-49C2-9B6B-F2312EE7DECB][Market data subscriptions]] — completes: the data behind the second area.
+- [[id:3E51B0BD-D22B-4790-821F-E2FED44D152C][Event-based metering of market data usage]] — completes: the data behind the third area.

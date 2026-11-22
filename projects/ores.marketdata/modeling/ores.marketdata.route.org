@@ -281,5 +281,5 @@ route_repository::read_latest_all_tenants(const context& ctx) {
 * See also
 
 - [[id:37B27CA8-9F44-4A61-9B02-3EAABD8C3818][A party routes to exactly one feed for each publisher and class]] -- the rule this table records.
-- [[id:31BCA3F8-31AD-49C2-9B6B-F2312EE7DECB][A party takes a provider's feeds through a subscription]] -- the subscription a route serves.
+- [[id:31BCA3F8-31AD-49C2-9B6B-F2312EE7DECB][Market data subscriptions]] -- the subscription a route serves.
 

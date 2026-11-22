@@ -1,0 +1,93 @@
+:PROPERTIES:
+:ID: 2400E0FE-AEF0-4F9A-8392-F7D2E0E2A1E2
+:END:
+#+title: A data model for fixings
+#+description: The entities fixings imply, their invariants, and how far the ORE Studio market data store already holds them.
+#+type: knowledge
+#+audience: user
+#+level: cross
+#+filetags: :domain:fixing:data_model:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+
+* Summary
+
+The practice of fixings implies a small set of entities: a /source/, with its
+administrator, method, calendar and status; a /definition/, which is one
+source's series for one asset, such as the WM/Reuters 4pm fix of AUD/CAD; an
+/observation/ of a definition on a fixing date, at system level; a /party
+fixing/, one party's adoption of an observation, with its status and any
+override; a trade's /schedule/ of fixing dates; and the /event/ that authorises
+or undoes a party fixing. ORE Studio already holds definitions, as ORE indices,
+and observations, as versioned fixing series. It does not yet hold the source
+as an entity, the status of a source, or the party fixing.
+
+* Detail
+
+** The entities
+
+| Entity | Holds | Discussed in |
+|--------+-------+--------------|
+| Source | Identity code, name, kind (published, keyed, derived), administrator, method, publication time and zone, holiday calendar, quote convention, rounding, screen reference, parents if derived, status (active or ceased) and the version of its definition | [[id:6E566C97-F2A4-4AE8-B509-BDE23568A0B8][Identity and lifecycle of fixing sources]], [[id:6A625509-CD9A-4D13-8E16-37B75A4AED83][Derived and composite fixing sources]] |
+| Definition | A source applied to one asset and tenor, which is what a trade names: an ORE index such as =FX-TR20H-AUD-CAD= or =EUR-EURIBOR-6M= | [[id:86DA6985-C92E-40F6-AE43-71C4BBF126CB][Fixings: definition and distinction from quotes]] |
+| Observation | System level: definition, fixing date and time, value, publisher and version | [[id:C6A619F3-B2B6-42D5-9C41-5269A84BC96C][Storage of fixing observations apart from trades]] |
+| Party fixing | Party level: the party, the observation, the value used, its origin, its status, the trades an override applies to, the reason, the author and the version | [[id:FA5C96A3-1F8E-4F9B-8973-40D92055D7DD][System-level fixing observations and party-level fixings]] |
+| Override | A party fixing whose value differs from the observation, with its reason and sign-off | [[id:CA61B445-B6DC-41D3-ACF9-D3FB32D0D342][The fixing process: observation, authorisation, application and reversal]] |
+| Schedule | Per trade and leg: the fixing dates and the definition of each | [[id:53DB3AF1-6FA4-4B53-9D8E-A65F739F6F4D][Fixing dates and holiday calendars]] |
+| Event | The authorisation or undo of a party fixing; it labels every action it caused | [[id:CA61B445-B6DC-41D3-ACF9-D3FB32D0D342][The fixing process: observation, authorisation, application and reversal]] |
+
+The three invariants of [[id:C6A619F3-B2B6-42D5-9C41-5269A84BC96C][observation storage]] apply: an
+observation is never stamped on a trade, its history is append-only, and the
+official fixings of a party for a definition form an unbroken prefix in time.
+
+** A source reaches the store through its publisher
+
+Every source has a publisher, and every publisher reaches the store through an
+adapter. The model holds the publisher and not the adapter, so nothing in it
+depends on which adapter serves a publisher. A derived source is the one source
+without a publisher of its own: its observations are computed from its
+parents'.
+
+A ceased source, such as a LIBOR setting, keeps its definitions and its past
+observations. ORE Studio also keeps the LIBOR settings as legacy sources for
+teaching; their status records that they have ceased.
+
+** What ORE Studio holds today
+
+| Entity | Held | Where |
+|--------+------+-------|
+| Definition | Yes | The oresmd fixing URI and its =market_index= model, one per ORE index. See [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio Market Data URI]]. |
+| Observation | Yes | A versioned row of the fixing series of the definition, under the system party. See [[id:F4BBEF34-D84C-4AE6-A3AA-DC47C3EE06EE][Public publishers publish daily fixings through a supplier session]]. |
+| Source | In part | The FX publisher is a field of the FX index (=source=ECB=); the public publishers are a catalogue with terms. No source holds a method, a calendar, a status or a version, and an interest rate index names no source at all. |
+| Publisher | Yes, for the central banks | The public publishers are a catalogue with terms, reached through adapters. The administrators of the other sources are not yet publishers in the catalogue. |
+| Party fixing, override, event, schedule | No | |
+
+The gap that matters most is the missing source. Without it the system cannot
+answer which definitions the market fixes and who fixes each. Trade generation
+and fixing checks both need that answer: a generated trade should name only a
+definition whose source has a publisher.
+
+The supported sources are listed in
+[[id:5AF9CEEF-A878-443A-8C32-C6E9F6C26FC9][Fixing sources for option cuts and non-deliverable currencies]].
+
+** Open questions
+
+- How a derived observation is timed when its parents fix at different times:
+  whether it waits for the later parent, and what it shows until then.
+- How a definition records the version of its source in force on a trade date,
+  so that a trade reads the terms it was agreed under.
+- Whether a keyed future observation is an observation with a status, or a
+  separate record that becomes an observation when it takes effect.
+
+* See also
+
+- [[id:F24FA489-790A-4065-B8E1-DCC141595356][Synthetic generation of fixings]] — completes: how the synthetic data generation produces observations.
+- [[id:784D9D97-721A-42EC-BA91-A85764979CD0][Fixings]] — the structure note.
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — completes: the market data components this model would extend.
+
+* Sources
+
+- ISDA and EMTA (2019). /Annex A to the 1998 FX and Currency Option Definitions/, amended and restated 19 November 2017, amended 3 January 2019. [[https://www.isda.org/book/annex-a-to-the-1998-fx-and-currency-option-definitions/][isda.org]]
+- IOSCO (2013). /Principles for Financial Benchmarks: Final Report/, July 2013. [[https://www.iosco.org/library/pubdocs/pdf/IOSCOPD415.pdf][iosco.org]]
+- Financial Conduct Authority (2021). /Announcement on the future cessation and loss of representativeness of the LIBOR benchmarks/, 5 March 2021. [[https://www.fca.org.uk/publication/documents/future-cessation-loss-representativeness-libor-benchmarks.pdf][fca.org.uk]]
+- Fowler, M. (2005). Event Sourcing. [[https://martinfowler.com/eaaDev/EventSourcing.html][martinfowler.com]]

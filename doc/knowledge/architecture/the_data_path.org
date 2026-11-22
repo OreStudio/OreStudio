@@ -36,30 +36,30 @@ The order follows dependency: each page needs the one before it.
 1. [[id:662D0C1B-319C-4F85-A118-42D830661B40][The data path serves a control plane and a data plane]] — the workload. It sets the numbers every later page is sized
    for, and it splits the path in two, which is why the control plane and the
    data plane read differently from here on.
-2. [[id:729F746E-36DD-40A2-A592-6972239E31F0][A service holds a few long-lived connections and never connects per query]] — the connections exist before any query does, and their count is
+2. [[id:729F746E-36DD-40A2-A592-6972239E31F0][Long-lived database connections in services]] — the connections exist before any query does, and their count is
    the first budget.
 3. [[id:3C334C3B-2760-4278-95B8-B71268E8FD18][A transaction sets its own tenant context, so any connection serves any tenant]] — what makes those connections interchangeable, so a pool and a
    pooler can share them.
-4. [[id:37D08E01-F99C-4D2D-8ACA-E19E252BBE3D][A repository works inside an open transaction and never holds credentials]] — the only way code reaches a connection, built on the two pages
+4. [[id:37D08E01-F99C-4D2D-8ACA-E19E252BBE3D][Repositories within the unit of work]] — the only way code reaches a connection, built on the two pages
    before it.
-5. [[id:31F9FEF5-4693-4C63-AE93-E74BA88DE175][A context bound to a transaction cannot change its tenant or party]] — why a context bound to that transaction cannot be
+5. [[id:31F9FEF5-4693-4C63-AE93-E74BA88DE175][Fixed tenant and party in transaction-bound contexts]] — why a context bound to that transaction cannot be
    narrowed or widened, and why a read for another tenant or party is made before the
    unit of work opens and never beside it.
-6. [[id:E8369409-2A7B-4258-9D3C-6D37A46F4603][A hand-written statement is declared once, typed both ways and prepared once]] — what runs inside that transaction when no generated repository
+6. [[id:E8369409-2A7B-4258-9D3C-6D37A46F4603][Declaration, typing and preparation of hand-written SQL statements]] — what runs inside that transaction when no generated repository
    fits.
-7. [[id:E11DB09A-328A-476A-A71B-8E303A68D07D][A store error says whether a retry can succeed]] — what comes back out of it, and what the caller does about it.
-8. [[id:4DA654B3-7CE6-4637-B4D8-E8E2B4D092B3][Delivery threads enqueue and a bounded pool runs the handlers]] — who runs the handlers, and why their number equals the
+7. [[id:E11DB09A-328A-476A-A71B-8E303A68D07D][Classification of store errors by retryability]] — what comes back out of it, and what the caller does about it.
+8. [[id:4DA654B3-7CE6-4637-B4D8-E8E2B4D092B3][Bounded handler execution behind NATS delivery threads]] — who runs the handlers, and why their number equals the
    connections' of page 2. It follows page 7 only because it closes the control plane.
-9. [[id:D71F9446-C62E-48A6-A87B-136EF598A59E][A source tick is stored once and entitled when it is read]] — the data plane begins: what the store holds, and why a party's
+9. [[id:D71F9446-C62E-48A6-A87B-136EF598A59E][Storage and entitlement of stored ticks]] — the data plane begins: what the store holds, and why a party's
    entitlement moves to the read. Its live half is
-   [[id:4DB1ED0C-4BEA-4164-9129-5731AE559AE9][A source tick is published once and entitled when it is watched]], the target state of the
+   [[id:4DB1ED0C-4BEA-4164-9129-5731AE559AE9][Publication and entitlement of live ticks]], the target state of the
    live path: one publish for each tick, and the entitlement checked where a watch starts.
 10. [[id:BCD7D253-8B1E-4887-B476-EDD3EDE01BE6][Ticks reach the store through sharded binary COPY in bounded batches]] — how the points get there, given that they hold no tenant.
-11. [[id:A79C25FA-9F70-453B-A52E-780B4402ABAA][The tick store is bounded]] — how much of them is kept, given that they carry no row-level
+11. [[id:A79C25FA-9F70-453B-A52E-780B4402ABAA][Bounded retention in the tick store]] — how much of them is kept, given that they carry no row-level
     security and so compress.
 12. [[id:42930B6A-544A-4F7E-ACF4-9ABC60F2B408][The environments share the database through a transaction pooler]] — how ten environments share the instance, which needs the
     stateless connections of page 3 and the prepared statements of page 6.
-13. [[id:2EEE37F6-0570-43B8-979F-079153A3DECA][Work is pushed to the grid, and an idle grid costs one claim per wrapper per timeout]] — the compute grid, which applies the same rule to its claims: no
+13. [[id:2EEE37F6-0570-43B8-979F-079153A3DECA][Push-based work distribution to the compute grid]] — the compute grid, which applies the same rule to its claims: no
     query runs until there is work.
 14. [[id:7425094C-C5A0-4AF7-8EF4-B8062979A7BD][Every queue and every session reports its own numbers]] — how every page above reports what it costs, so a change shows as
     a number.

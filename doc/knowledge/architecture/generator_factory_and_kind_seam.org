@@ -39,7 +39,7 @@ signature serve every kind and puts the input check inside =make=.
 =generator_build_context= holds the raw NATS client and the service client. The
 client reads the fixings a feed starts from in the market data service, as the
 system. See
-[[id:A7D1927B-CB42-49A9-94EF-DBB40225274C][The identity an adapter runs as]].
+[[id:A7D1927B-CB42-49A9-94EF-DBB40225274C][Adapter identity]].
 
 ** The registry beside the factory
 

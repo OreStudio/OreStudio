@@ -35,12 +35,12 @@ The design is settled; build it as the notes state it:
 - [[id:25C467BE-07A3-432C-8CB8-6B194E748570][Shared Brownian factors give every synthetic series a signed correlation]]
   -- the driver, the requirements R1 to R8, the block rule, determinism and its
   two bounds, the zero-loading identity, the cost, and the measures.
-- [[id:14C79EA2-4E36-4EF2-A0DB-0EB932655029][A keyed Brownian path is a pure function of seed and time]]
+- [[id:14C79EA2-4E36-4EF2-A0DB-0EB932655029][Keyed Brownian paths from counter-based draws]]
   -- the cell grid, the dyadic bridge, the node addressing and the resolution
   bound.
 - [[id:9B577C48-A237-445B-A331-AD0CB42FAAE1][Counter-based random number generators]]
   -- the Philox stream the nodes are drawn from.
-- [[id:92644AAC-BE5F-43B6-96E4-084226CDA094][Tick-to-tick returns understate a correlation that holds exactly]]
+- [[id:92644AAC-BE5F-43B6-96E4-084226CDA094][Non-synchronous trading and the Epps effect]]
   -- how the tests measure the correlation.
 
 The comparison of options that chose this design is

@@ -180,7 +180,7 @@ The story closes on the tasks it finished:
   by a change of route. See
   [[id:099697A6-8526-48E0-A63D-DB3932C06468][Derivation of FX volatility quotes from historical fixings]]
   and "How a volatility surface starts" in
-  [[id:3F9D6EAE-9FB8-4A0D-9BAF-1EA3EA93AB4F][Synthetic prices are calibrated from free public sources]].
+  [[id:3F9D6EAE-9FB8-4A0D-9BAF-1EA3EA93AB4F][Free public sources for synthetic price calibration]].
 - *Derived values carry their own identity* (2026-11-03). Context: the derived
   source and the cross rates compute from fixings whose terms, the ECB's among
   them, allow reuse of unmodified statistics with a credit. Decision: a public

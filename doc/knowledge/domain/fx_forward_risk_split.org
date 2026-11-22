@@ -24,7 +24,7 @@ IFRS 9 recognises the same split. Each forward has a spot element and a forward 
 
 - [[id:9FB155A4-54FD-57D5-93A1-1FECB3A05F95][FX forwards]] — the structure note.
 - [[id:E9A214DE-AD39-4128-9EDB-106C4A606B90][FX Swap]] — completes: the instrument that holds the forward risk.
-- [[id:D7D5F73A-CBFC-58DD-B37C-43C358BAD79F][A forward carries net fair value on balance sheet and its notional off it]] — completes: the accounting of the two elements.
+- [[id:D7D5F73A-CBFC-58DD-B37C-43C358BAD79F][Ledger treatment of FX forwards]] — completes: the accounting of the two elements.
 
 * Sources
 

@@ -38,7 +38,7 @@ runs whatever work the installation gives it.
 A tick point is the same kind of row: an observation of a source, not a
 tenant's data. It carries no tenant and no row-level security, only the
 marketdata service's roles reach it, and a party reads it through its own
-series and entitlement. See [[id:D71F9446-C62E-48A6-A87B-136EF598A59E][A source tick is stored once and entitled when it is read]].
+series and entitlement. See [[id:D71F9446-C62E-48A6-A87B-136EF598A59E][Storage and entitlement of stored ticks]].
 
 ** What the schema does today
 

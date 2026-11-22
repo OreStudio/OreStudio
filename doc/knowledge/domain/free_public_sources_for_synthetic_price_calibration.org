@@ -1,0 +1,206 @@
+:PROPERTIES:
+:ID: 3F9D6EAE-9FB8-4A0D-9BAF-1EA3EA93AB4F
+:END:
+#+title: Free public sources for synthetic price calibration
+#+description: Which free public sources set the initial values and the volatility of the synthetic ticks, what each source's terms say, and what is still unchecked.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:synthetic:calibration:
+#+created: 2026-10-23
+#+updated: 2026-11-10
+
+* Summary
+
+A synthetic tick needs an initial value and a volatility. The values come from free public sources, never from a vendor, and each generator config names its source. For FX the sources are the daily rates of the central banks and public bodies that the Frankfurter API reaches, the ECB and the Federal Reserve H.10 among them, and for curves the US Treasury par yield curve with the central banks' overnight rates. Each publisher is a market data provider, and an adapter publishes what it published every day as a fixing tick, so a feed that starts takes the newest value. The screen shows the time of the value. The table in "What was read, and when" says which terms were read from an official page and which were not. A volatility surface has no free public source, so its starting quotes are inferred from the spot fixings of its pair by a derived source of our own, as "How a volatility surface starts" describes.
+
+* Detail
+
+** Why a calibration source and not a vendor
+
+The synthetic ticks are native to the vendor: a Bloomberg generator sends Bloomberg ids. The level of the price has no link to the vendor. The level comes from the world, so it comes from a public source that anyone can check. The calibration source is a property of the generator config, and it does not depend on the provider.
+
+** The sources
+
+| Source | Gives | Access | Terms |
+|--------+-------+--------+-------|
+| [[https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/index.en.html][ECB euro foreign exchange reference rates]] | About 30 currencies against the euro, daily since 1999. A USD pair comes from the EUR cross. | CSV, XML and HTML, updated about 16:00 CET. | [[https://www.ecb.europa.eu/stats/ecb_statistics/governance_and_quality_framework/html/usage_policy.en.html][Free for any use]] if the source is quoted ("Source: ECB statistics") and the statistics are not modified. Third-party data needs the originator's permission. The rates are for information only. |
+| [[https://www.federalreserve.gov/releases/h10/][Federal Reserve H.10]], read through the [[https://fred.stlouisfed.org/docs/api/terms_of_use.html][FRED API]] | USD against the main currencies, daily. | A FRED API key. | The Board's own content is [[https://www.federalreserve.gov/disclaimer.htm][in the public domain]], and the Board asks for a credit. The FRED terms add: a series whose notes say "Copyright" needs the owner's permission, an application must show the non-endorsement notice, and the terms do not say whether storing series is allowed. |
+| [[https://home.treasury.gov/treasury-daily-interest-rate-xml-feed][US Treasury daily par yield curve]] | The USD curve from 1 month to 30 years, since 1990. | GET on =/resource-center/data-chart-center/interest-rates/pages/xml= with =data=daily_treasury_yield_curve= and a year or a month. The first 300 rows come by default. | The feed page states no terms. An archived copy of the old Treasury policy says that work of federal employees carries no copyright and may be copied freely, with a credit requested. The current policy page was not found. |
+| [[https://www.newyorkfed.org/privacy/termsofuse][New York Fed SOFR]] | The overnight USD rate. | The New York Fed markets data. | A licence to use, copy, distribute and modify for business purposes. A reference rate needs the stated notice and disclaimer, a label on any modified data, and no claim of endorsement. SOFR is calculated from data that DTCC Solutions licenses. |
+| [[https://www.bankofengland.co.uk/markets/sonia-benchmark][Bank of England SONIA]] | The overnight GBP rate. | The statistical database, by 10:00 on the next business day. | The Bank's [[https://www.bankofengland.co.uk/legal][legal page]] puts the database under the Open Government Licence. Its exact credit line is stated for SONIA only: "SONIA and/or SONIA Compounded Index data licensed under the Open Government Licence v3.0 and copyright the Governor and Company of the Bank of England". |
+| ECB €STR | The overnight EUR rate. | The ECB statistics. | The ECB usage policy above. |
+
+** What was read, and when
+
+On 2026-10-23 the pages below were read from the official site. The rows of the table that rest on any other page say so.
+
+| Terms | Read from | State |
+|-------+-----------+-------|
+| ECB statistics usage policy | the ECB usage policy page | read |
+| Federal Reserve Board content | the Board disclaimer page | read |
+| FRED API | the FRED terms page | read |
+| New York Fed content and reference rates | the New York Fed terms page | read |
+| Bank of England | a search summary of the Bank's legal page, not the page | not read |
+| US Treasury | the feed page and an archived copy of the old policy | not read |
+| Frankfurter | the =LICENSE= file of the repository and the documentation, on 2026-10-28 | read |
+| The ECB as a Frankfurter provider | the ECB disclaimer page that =/v2/providers= names, on 2026-10-28 | read |
+| Each other Frankfurter provider | the list of terms pages in =/v2/providers= | not read; 65 of 106 have none |
+| Bank of England SONIA licensing | the SONIA key features and policies page, on 2026-11-06 | read |
+| Bank of Japan | the copyright page, on 2026-11-06 | read |
+| SIX SARON | the SARON licensing FAQ, on 2026-11-06 | read |
+| Reserve Bank of Australia | the copyright and disclaimer notice, on 2026-11-06 | read |
+| Bank of Canada | the terms page, on 2026-11-06 | read |
+| Reserve Bank of New Zealand | the terms page refused the request with 403; a search summary only | not read |
+| The twenty other IR publishers | no page | not read |
+
+A source whose row says not read blocks the storing of its values until its terms page is read and the result is written here.
+
+** Frankfurter as the access route for FX
+
+[[https://github.com/lineofflight/frankfurter][Frankfurter]] is an open source (MIT) exchange rate API. It reads the daily rates of about 105 central banks and official sources, among them the ECB, the Federal Reserve through FRED, the BIS and the central banks of Taiwan, Chile and Brazil. Its [[https://frankfurter.dev][documentation]], which also describes the per-provider path =/v2/providers/<key>/rates=, says the rates go back to 1948, that there are no quotas but requests are rate-limited, and that storing daily data locally is encouraged. A call to =/v2/rates= returns the latest, a past date or a time series, as JSON, CSV or NDJSON. The hosted API is =api.frankfurter.dev=, and a Docker image runs it on our own host with a SQLite file. Some providers need a free key of their own, such as FRED.
+
+It answers the coverage gap, because one client reads the pairs that neither the ECB nor the H.10 carries. A call to =/v2/providers= lists a terms page for most providers, and some providers have none.
+
+Three rules keep the provenance honest:
+- The adapter asks for one provider at a time and never takes the blended rate. The blended rate is Frankfurter's own calculation, and it hides which bank the number comes from. Each stored value keeps the provider key, so the credit and the terms of that provider apply.
+- The hosted service is a convenience. The adapter reads the address from a setting, so a team can point it at its own Frankfurter in Docker without a change of code.
+- Frankfurter is the route for FX only. The Treasury curve and the overnight rates are read from their own sources.
+
+What the terms say, read on 2026-10-28:
+
+- Frankfurter is under the MIT licence, "Copyright (c) Hakan Ensari". Its documentation says that storing daily observations locally "is encouraged to keep API traffic light", that there are no quotas but requests are rate-limited, and that "direct queries to individual provider endpoints remain subject to each provider's terms".
+- For the ECB, =/v2/providers= names the ECB disclaimer page. It allows free use of the information when it "must appear accurately and the ECB must be cited as the source", and a change to the information "must be stated explicitly". This agrees with the statistics usage policy above. A cross rate computed from ECB rates is such a change, so it is marked derived and names its inputs.
+- Of the 106 providers that =/v2/providers= lists, 65 give no terms page. A provider without one is not loaded until its own site is read.
+
+** What this page does not settle
+
+- Whether the Bank of Japan allows this project's use of the call rate, which turns on whether the use is commercial.
+- Whether a SIX Data License for SARON is worth having, or CHF keeps a fixed level.
+- How to read the RBA and RBNZ tables, whose servers refused a script, and what the RBNZ terms page says.
+- The route and terms of the twenty IR currencies outside the derived FX pairs, and the overnight index of PLN and TWD.
+- Whether the Treasury feed carries a current licence. The next step is to read the current site policy of the Treasury.
+- Which series of the Bank of England database other than SONIA fall under the Open Government Licence.
+- Whether the FRED terms allow a copy of a series in a stored snapshot. The H.10 notes of each series say whether the word "Copyright" appears. The other route is the Board's own H.10 download, which the Board's public domain notice covers.
+- Which of the 26 FX pairs of [[id:3D0E46BD-02A4-4A2F-863A-B948B7E44FCD][the mapping inventory]] the ECB and the H.10 do not cover. The pairs that no source covers keep a fixed level, and the config says so.
+
+** The overnight rate of each IR currency
+
+The synthetic IR feeds of the system tenant cover 28 currencies, each on the overnight index of its config. The table names, for each, the public overnight rate, its publisher, the route by which it can be read, and what its terms allow. The eight currencies of the derived FX pairs come first, and their terms and routes were read and probed on 2026-11-06. The other twenty were read and probed on 2026-11-10; a cell that says "not found" or "not read" names what is still open.
+
+A source is usable when its terms allow storing its history and computing from it a synthetic level and a curve, and when a route reads it without a person.
+
+| Currency | Feed index | Public overnight rate | Publisher | Route | Terms | Usable |
+|----------+------------+-----------------------+-----------+-------+-------+--------|
+| USD | SOFR | SOFR | New York Fed | =markets.newyorkfed.org/api/rates/secured/sofr=, JSON; probed, it answered | read 2026-10-23: a licence to use, copy, distribute and modify for business purposes, with the stated notice and disclaimer and a label on modified data | yes |
+| EUR | ESTR | €STR | ECB | =data-api.ecb.europa.eu/service/data/EST/B.EU000A2X2A25.WT=, CSV; probed, it answered | read 2026-10-23: free use with the source cited, and a change stated explicitly | yes |
+| GBP | SONIA | SONIA | Bank of England | the statistical database, series =IUDSOIA=, CSV; probed, it answered | read 2026-11-06 on the SONIA key features page: the database is reproduced under the Open Government Licence; a direct licence is needed to redistribute SONIA to clients or to value clients' portfolios | yes, for our own calibration and curves |
+| JPY | TONA | uncollateralised overnight call rate | Bank of Japan | the time-series API, =stat-search.boj.or.jp/api/v1=, database =FM01=, series =STRDCLUCON=, JSON; probed 2026-11-10, it answered 7,069 rates from 1998-01-05 | read 2026-11-06: copying allowed with the Bank credited; copying for commercial purposes needs the Bank's permission in advance. On 2026-11-09 the system's owner judged this use not commercial; the Bank was not asked | yes, on the owner's judgement that the use is not commercial |
+| CHF | SARON | SARON | SIX | the Swiss reference rates page links a download; probed, it answered | read 2026-11-06 in the SIX SARON licensing FAQ: historical SARON may be downloaded and redistributed after one business day with no licence, but derived data, which names yield-curve building, needs a SIX Data License even for internal use | the history yes; a curve from it, no |
+| AUD | AONIA | interbank overnight cash rate | Reserve Bank of Australia | statistical table F1 as CSV, series =FIRMMCRID=; it refuses the agents =ORE Studio= and =OREStudio= with a 403 and accepts =OREStudio (+https://github.com/OreStudio/OreStudio)=, the agent of our HTTP client; 4,014 days from 2011-01-04 (earlier years are in =f1-hist=) | read 2026-11-06 and 2026-11-10: financial data may be used for personal or commercial use with "Source: RBA [year]", no implied endorsement, and no fee charged for access without saying the RBA publishes it free; the copyright notice says nothing on automated access | yes |
+| CAD | CORRA | CORRA | Bank of Canada | the Valet API, series =AVG.INTWO=; probed, it answered | read 2026-11-06: free use, copy and distribution with the Bank credited and any change indicated | yes |
+| NZD | NZONIA | overnight interbank cash rate | Reserve Bank of New Zealand | table B2; probed 2026-11-10, the server still refused a script with 403 | not read: the copyright page also refused a script with 403 | open: the route and the terms |
+| BRL | CDI | CDI | B3 | the SGS API, =api.bcb.gov.br/dados/serie/bcdata.sgs.4389/dados= for the annualised CDI (=sgs.12= is the daily rate), JSON, at most ten years a request; probed 2026-11-11, it answered 10,178 rates from 1986-03-06 | read 2026-11-10: the BCB open data portal lists the BCB's own SGS series, such as the Selic (=11=, =1178=), under the Open Database License. On 2026-11-10 its catalogue listed neither CDI series, =12= nor =4389=, of its 4,261 datasets | yes, on the owner's judgement of 2026-11-10 that the use is academic and not commercial; B3 was not asked |
+| CLP | CAMARA | Índice Cámara Promedio, built on the average overnight interbank rate | Banco Central de Chile | the BDE web service, =si3.bcentral.cl/SieteRestWS=, series =F022.TIB.TIP.D001.NO.Z.D=, JSON in Latin-1, with the user and password of an account whose API access is active, in =ORES_MARKETDATA_BCCH_USER= and =ORES_MARKETDATA_BCCH_PASSWORD=; probed 2026-11-11, it answered 5,817 rates from 2001-08-09 in one read | read 2026-11-11: information may be reproduced, published or adapted with the Bank named as owner; at most five queries a second | yes |
+| CNH | HIBOR | CNH HIBOR, a term rate, not an overnight average | Treasury Markets Association | not read: the feed quotes CNH HIBOR, a term rate | not read | no: the feed is misnamed, passed to the task that replaces ceased or misnamed feeds |
+| CNY | SHIBOR | SHIBOR overnight | National Interbank Funding Center | =chinamoney.com.cn/ags/ms/cm-u-bk-shibor/ShiborHis=, JSON; probed 2026-11-10, it answered | read 2026-11-10: CFETS reserves its market data and benchmarks; reprinting needs its written authorisation, and data services are licensed by agreement | no, without a CFETS licence |
+| COP | IBR | IBR overnight | Banco de la República | the Banco de la Republica publishes an overnight history from 2008-01-02, but no documented API was found | not found | open: the route and the terms |
+| CZK | CZEONIA | CZEONIA | Czech National Bank | one text file a calendar year, =www.cnb.cz/en/financial-markets/money-market/czeonia-reference-interest-rate/yearly.txt?calendarYear=YYYY=, lines =dd Mon yyyy\vert{}volume\vert{}rate=, no key; CZEONIA is not in the ARAD API; probed 2026-11-12, the 2002 file starts on 2002-01-02 | read 2026-11-10: users may store, distribute and reproduce the CNB's internet information; the ESCB statistics are free for commercial and non-commercial reuse | yes |
+| DKK | DESTR | DESTR | Danmarks Nationalbank | Nationalbanken's statistics bank holds the history; no API endpoint was found | read 2026-11-10: DESTR is free and not licensed; a publication must make clear that Danmarks Nationalbank is its administrator | the terms yes; the route is open |
+| HKD | HONIA | HONIA | Treasury Markets Association | the HKMA API's daily figures carry HIBOR overnight, not HONIA; HONIA is the TMA's | read 2026-11-10: the HKMA allows non-commercial use of its information in its original format, without modification; the TMA licenses its benchmarks for internal use and for redistribution | no, without a TMA licence |
+| HUF | BUBORON | HUFONIA is the overnight average; BUBOR overnight is a quote | Magyar Nemzeti Bank | not read: the feed quotes the BUBOR overnight quote, not HUFONIA | not read | no: the feed is misnamed, passed to the task that replaces ceased or misnamed feeds |
+| ILS | TELBORON | SHIR; TELBOR ceased after 30 June 2025 | Bank of Israel | not read: TELBOR ceased after 30 June 2025; SHIR is the Bank of Israel's | not read | no: the feed quotes a ceased index, passed to the task that replaces ceased or misnamed feeds |
+| INR | MIBOR | MIBOR overnight | FBIL | not read | not found: FBIL administers MIBOR, and its licence terms were not found | open: the terms |
+| KRW | KOFR | KOFR | Korea Securities Depository | the Bank of Korea's ECOS API, with a free key; table =817Y002= answered with the sample key, but the series of KOFR is not yet found | not read: only a vendor's account of the ECOS terms was found, and nothing on the KSD's terms for KOFR | open: the terms and the series |
+| MXN | TIIE | TIIE de Fondeo, the item of =MXN-FTIIE= | Banco de México | the SIE API, series =SF331451= (TIIE de Fondeo), JSON, with a free token in =ORES_MARKETDATA_BANXICO_API_KEY=; probed 2026-11-11, it answered 5,244 rates from 2006-01-02 in one read | read 2026-11-10: Banco de Mexico authorises the public to use and reproduce its information, with the source stated and a reference to its URL | yes |
+| NOK | NOWA | NOWA | Norges Bank | the SDMX API, =data.norges-bank.no/api/data/SHORT_RATES/B.NOWA.ON.R=, CSV; probed 2026-11-10, it answered 3,801 rates from 2011-09-30 | read 2026-11-10: NOWA is free and needs no licence | yes |
+| PLN | POLONIA | unresolved: sources conflict on POLONIA, WIRON and POLSTR | NBP or GPW Benchmark | not read | not read | no: the index is unresolved, passed to the task that replaces ceased or misnamed feeds |
+| SEK | SWESTR | SWESTR | Sveriges Riksbank | the SWESTR API, =api.riksbank.se/swestr/v1=, JSON; probed 2026-11-10, it answered 1,305 rates from 2021-09-01; a free key in =ORES_MARKETDATA_RIKSBANK_API_KEY= raises its quota | read 2026-11-10: SWESTR is free of charge for use and re-publication, with the Riksbank stated as the source | yes |
+| SGD | SORA | SORA | Monetary Authority of Singapore | the domestic interest rates page, =eservices.mas.gov.sg/statistics/dir/DomesticInterestRates.aspx=: a GET of the page for its ASP.NET hidden fields, then a POST of its Download form with a range of months and the SORA column, which answers CSV; no key and no cookie; the MAS API needs a Singapore Corppass login; probed 2026-11-12, SORA starts on 2005-07-01 | read 2026-11-10: the MAS Open Data Licence allows commercial use and modification, with a conspicuous notice naming the dataset and its source | yes |
+| TRY | TLREF | TLREF | Borsa Istanbul | Borsa Istanbul's datastore holds the history; no API was probed | not found: Borsa Istanbul owns the rights in TLREF, and no usage terms were found | open: the terms |
+| TWD | TAIBOR | unresolved: TAIBOR is a term rate, and the overnight benchmark was not found | not found | not read | not read | no: the index is unresolved, passed to the task that replaces ceased or misnamed feeds |
+| ZAR | ZARONIA | ZARONIA | South African Reserve Bank | no SARB API was found; =custom.resbank.co.za/SarbWebApi= gave an empty answer for ZARONIA | not found | open: the route and the terms |
+
+Thirteen currencies are usable. USD, EUR, GBP, CAD, JPY, NOK, SEK, AUD, BRL, MXN and CLP are stored, JPY and BRL only on the owner's judgement that the use is not commercial. CZK is read from the bank's yearly files, which need no key. SGD's API needs a Singapore Corppass login, so its adapter posts the download form of MAS's domestic interest rates page. The Riksbank's SWESTR API limits calls without a key, and on 2026-11-10 it refused this host for five days; with the key the owner registered on 2026-11-11 it serves the adapter again. JPY, NOK, SEK, BRL and each of these five have their own adapter task in [[id:6E93FD89-3443-4BED-8E2F-9295E773BFB7][Read the public interest rate sources]]. CNY and HKD need a licence of their administrators, CFETS and the TMA. DKK has usable terms but no route found. CHF gives its history but not a curve without a SIX Data License, so it is not counted as usable. NZD, COP, INR, KRW, TRY and ZAR are open. CNH, HUF, ILS, PLN and TWD wait on [[id:4B5701D6-16C6-445B-BDD4-C60050FED95C][Replace the synthetic feeds of ceased or misnamed indices]].
+
+JPY was held until the Bank of Japan's view of commercial use was known. On 2026-11-09 the system's owner judged that this use is not commercial, so the call rate is copied with the Bank credited, as its terms allow. The Bank's Public Relations Department was not asked. If the use becomes commercial, the Bank's permission is needed in advance.
+
+BRL was held on the terms of the CDI. B3 computes the CDI, and the Banco Central do Brasil republishes it through its SGS API. The BCB's open data portal licenses the BCB's own series under the Open Database License, but its catalogue does not list the CDI, and B3's public market data policy covers its real-time and delayed exchange data, not this series. On 2026-11-10 the system's owner judged that this use, a system driven for academic purposes, is not commercial, so the CDI is read with B3 and the BCB credited. B3 was not asked. If the use becomes commercial, B3's terms for the CDI must be read first.
+
+Four feeds quote the wrong index, and one is unresolved. The ILS feed quotes TELBOR, which ceased; the CNH feed quotes HIBOR, a term rate; the HUF feed quotes the BUBOR overnight quote rather than HUFONIA, the overnight average; and the TWD feed quotes TAIBOR, a term rate. The PLN feed is the unresolved one, because the sources conflict on its index.
+
+** How the overnight rates are stored
+
+Each overnight rate is stored as a decimal, because the rates of the system are decimals and ORE reads a fixing as one. The publishers state their rates in percent, so the adapter moves the decimal point two places in the published text: a SOFR of 3.97 percent is stored as =0.0397=. No digit changes and no binary rounding enters. This is a change of unit. The New York Fed asks for a label on modified data and the ECB asks that a change be stated, so this page states it, and the vendor field of each series, such as =percentRate=, names the published unit. The provider of each fixing keeps its credit.
+
+Each publisher's adapter reads one series through its own feed. A first demand stores the last =backfill_days= of history, 400 by default, and each later read fetches only the days after the latest stored fixing.
+
+| Series | Publisher | History the route serves | Measured |
+|--------+-----------+--------------------------+----------|
+| SOFR | New York Fed | 2,149 rates, from 2018-04-02 to 2026-11-06, in one response of =search.json= | 2026-11-10 |
+| €STR | ECB | 1,820 rates, from 2019-10-01 to 2026-11-06, in one CSV answer of the Data Portal | 2026-11-10 |
+| SONIA | Bank of England | 7,542 rates, from 1997-01-02 to 2026-11-05, in one CSV answer of the statistical database | 2026-11-10 |
+| CORRA | Bank of Canada | 7,305 rates, from 1997-08-12 to 2026-11-06, in one JSON answer of the Valet API | 2026-11-10 |
+| TONA | Bank of Japan | 7,069 rates, from 1998-01-05 to 2026-11-06, in one JSON answer of the time-series API | 2026-11-10 |
+| NOWA | Norges Bank | 3,801 rates, from 2011-09-30 to 2026-11-06, in one CSV answer of the SDMX API | 2026-11-10 |
+| SWESTR | Sveriges Riksbank | 1,305 rates, from 2021-09-01 to 2026-11-06, in one JSON answer of the SWESTR API | 2026-11-10 |
+| CAMARA | Banco Central de Chile | 5,817 rates, from 2001-08-09, in one read of the BDE web service | 2026-11-11 |
+| CZEONIA | Czech National Bank | from 2002-01-02, one file a year; 252 rates in 2002 | 2026-11-12 |
+| SORA | Monetary Authority of Singapore | from 2005-07-01, any range of months in one download | 2026-11-12 |
+
+The ECB Data Portal answers a query it has not cached with a 504 after thirty seconds, and the same query again from its cache in under a second. The adapter asks up to three times before it reports the read as failed. A window with no observation is a 200 with an empty body.
+
+The Bank of Japan's time-series API takes its window in months, such as =startDate=202611=, and gives a value or a null for each calendar day of those months. A null is a day with no publication. The adapter asks for the months that hold its window and keeps the days inside it. The API calls the series the uncollateralised overnight call rate; it is TONA, which the built-in convention =JPY-TONAR= names.
+
+Norges Bank's SDMX API answers both a window with no observation and an unknown series with a 404. After a 404, the adapter asks for the series' latest observation: a 200 means that the window is empty, and a 404 means that the series is unknown, which is an error. The API answers in the locale it is asked for, so the adapter asks for =locale=en=, which gives a decimal point. The Riksbank's SWESTR API answers in the same way, and its =latest= path tells the two apart.
+
+A curve names its overnight index by the convention that the synthetic feed's seed data uses, and three of those are aliases of a built-in convention: =EUR-ESTR= of =EUR-ESTER=, =JPY-TONA= of =JPY-TONAR=, and =SEK-SWESTR=, which has no built-in twin. Each of the three states the fixing item of its index, so the calibration finds the stored fixings through the convention that the curve names. The other aliases state no item until their fixings are stored.
+
+** How a generator uses a source
+
+Each generator config names the fixing items it may start from, with a rank, a policy and a window for the volatility. The initial value is the latest fixing on or before the date of the market clock, and the volatility is the spread of the log returns over the window. The config does not fetch anything. A feed whose daily variance follows a GJR-GARCH reads the same item over the policy's longer variance window, and that history is fitted, stored and reviewed before the feed runs it; see [[id:5B561453-D754-466E-9234-5360AC611F02][Calibrating a synthetic feed: from fixings to a reviewed run]]. The public sources adapter publishes the fixings as durable ticks, and a reader returns the value with its provider and its time. See [[id:F4BBEF34-D84C-4AE6-A3AA-DC47C3EE06EE][Public sources publish daily fixings through an adapter]].
+
+A copy of a source's statistics keeps the credit and the notice that its terms ask for. The ECB rule is the strictest, because it allows reuse when the statistics are not modified. So each ECB value is stored exactly as the ECB published it, with the credit "Source: ECB statistics". A pair that one publisher does not quote is usually quoted by another, so a feed takes it directly where it can. Where none does, a cross rate, such as USD/JPY from EUR/JPY and EUR/USD, is computed when the generator starts, from two fixings of one publisher. It is an input to a synthetic price and is not published as an ECB statistic. That is our reading of the policy, and the owner of the ECB policy has not confirmed it. If it proves too strict, the pairs that need a cross take their level from a source that quotes the pair directly.
+
+** The history every environment holds
+
+The GARCH fit of a spot and the derived quotes of a surface need years of fixings, where the level of a spot needs only the latest. Every environment holds five years of daily fixings for each catalogued provider and pair from a static DQ snapshot, taken on a stated date and refreshed by hand. The public sources adapter fetches, for each item, only the days from its latest stored fixing to today, so an environment loaded from an old snapshot catches up in one request per item. The snapshot is published with the repository, which is public, so a provider is in it only if its terms allow its statistics to be redistributed; a provider whose terms allow storage and not redistribution stays adapter-only.
+
+** How a volatility surface starts
+
+A synthetic volatility surface needs starting quotes, and no free public source publishes FX implied volatilities: DBnomics has no such dataset, the BIS and the ECB publish none, the free volatility indices on FRED are equity and rates indices whose storage terms are unread, and the ICE indices there may not be reproduced. The daily FX surfaces on offer are commercial. The starting quotes therefore come from a *derived source*, a publisher of our own whose quotes are inferred from the spot fixings of the pair; [[id:099697A6-8526-48E0-A63D-DB3932C06468][Derivation of FX volatility quotes from historical fixings]] describes how it sits in the system. A real vol source of the same items, where one is available, ranks above it in the generator's calibration policy and replaces it.
+
+The inference reads the Gram-Charlier smile of [[id:DCB34BC0-8125-43A1-B99F-074BC280975D][Backus, Foresi, Li and Wu]] at the market's delta pillars. With $\sigma$ the volatility of the log spot over the expiry, $\gamma_1$ its skewness and $\gamma_2$ its excess kurtosis, the 25-delta risk reversal is about $0.225\,\sigma\gamma_1$, the 25-delta smile butterfly about $0.019\,\sigma\gamma_2$, and the ATM volatility $\sigma(1 - \gamma_2/24)$; the paper summary gives the 10-delta points and the derivation. Each input is estimated as follows.
+
+- *The level.* $\sigma$ for an expiry is the realised volatility over a window of the same length, annualised, and never shorter than one month. Option markets price volatility above what is later realised; Della Corte, Ramadorai and Sarno (2016) measure this volatility risk premium in currencies. No free source publishes it, so the ATM level is the realised volatility times an authored multiplier per pair, which defaults to one.
+- *The shape.* Skewness and kurtosis are measured on daily returns over the whole history held, because a pair's shape changes more slowly than its level, and shrunk toward authored priors, $\tilde{\gamma} = w\hat{\gamma} + (1 - w)\gamma^{prior}$ with $w = n/(n + n_0)$. The shrinkage answers the noise: for normal data the standard errors of the two moments are about $\sqrt{6/n}$ and $\sqrt{24/n}$, 0.15 and 0.31 on a year of daily returns, and fat tails make them larger. The shrunk pair, scaled to each expiry as below, is held inside the region where the Gram-Charlier expansion is a density (Jondeau and Rockinger, 2001): the excess kurtosis in $[0, 4]$, and the skewness scaled toward zero as little as keeps the expansion non-negative.
+- *The term structure.* For independent days the skewness and excess kurtosis of an $n$-day return are $\gamma_1/\sqrt{n}$ and $\gamma_2/n$, so the risk reversal falls as $1/\sqrt{t}$, as the skew of the SSVI surface the generator fits does, and the butterfly as $1/t$.
+- *The convention.* The quotes follow the pair's =fx_option_convention=. Where its butterfly style is the broker strangle, the market strangle is solved against a smile fitted to the inferred volatilities.
+
+The computation is native to =ores.analytics.quant=. =math/return_moments.hpp= holds the moments, the shrinkage, the region and the term scaling; =math/fx_delta.hpp= the deltas and strikes of the four delta conventions and the ATM strike; =math/fx_smile_quotes.hpp= the smile and its quotes in a convention, the broker butterfly solved so that the broker strangle prices on the smile as it does at the single volatility; and =math/fx_vol_derivation.hpp= the one entry point from a pair's daily returns and its expiries to its quotes.
+
+The quotes are plausible and not observed. A spot path carries no view of the events an option market prices, no risk premium beyond the authored multiplier, and, with clustered returns, more kurtosis at long horizons than the independent-day scaling gives. Why the curvature still comes from the spot model, the routes weighed against it and its limits are in the option vol surfaces section of [[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]].
+
+** How derived values relate to their sources
+
+A derived quote, and a cross rate computed from two fixings, are the output of our own computation, and they are never presented as the statistics of the publisher whose fixings fed them. The inputs are stored exactly as published, with their credit, such as "Source: ECB statistics". The outputs carry the identity of the derived publisher alone: no publisher's credit, no publisher's name in their provenance as their source, and no claim that they are a publisher's figures. A person who follows a derived quote's provenance finds the derived publisher and the computation; the fixings it read are an internal input of that computation.
+
+** What this replaces
+
+The 2016 ORE sample vintage no longer calibrates any generator. The datasets that depend on it are replaced when the sources are in place. The uniform demo is not calibrated from any source: its exaggerated volatility is the point, and it keeps fixed levels.
+
+* See also
+
+
+- [[id:FDD02CA9-1DAD-4162-95AC-C7C5C611DDDC][The market data path: a public fixing, a curve, a report]] — the structure note that orders this cluster, and where to read this page in it.
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
+- [[id:3EF67CE4-6AF2-45FC-AA9B-D543550EF8C2][Generators belong to the system tenant and the system party]] — completes: who owns the configs that carry the calibration entry.
+- [[id:3D0E46BD-02A4-4A2F-863A-B948B7E44FCD][The vendor instrument mapping inventory]] — completes: the vendor ids the calibrated generators publish.
+- [[id:DCB34BC0-8125-43A1-B99F-074BC280975D][Paper summary: accounting for biases in Black-Scholes]] — the smile the starting surface is read from.
+- [[id:099697A6-8526-48E0-A63D-DB3932C06468][Derivation of FX volatility quotes from historical fixings]] — completes: where the derived source sits behind the adapter seam.
+- [[id:351CB816-28F5-428A-A289-414B6F4B9F36][Volatility clustering and GARCH models]] — completes: the GARCH fit the five-year history feeds.
+
+** Further reading
+
+- Della Corte, P., Ramadorai, T. and Sarno, L. (2016). "Volatility risk premia and exchange rate predictability." /Journal of Financial Economics/, 120(1), 21-40. [[https://doi.org/10.1016/j.jfineco.2016.02.015][doi:10.1016/j.jfineco.2016.02.015]].
+- Jondeau, E. and Rockinger, M. (2001). "Gram-Charlier densities." /Journal of Economic Dynamics and Control/, 25(10), 1457-1483. [[https://serval.unil.ch/notice/serval:BIB_2F2004420977][Serval record]].
+- [[https://real-statistics.com/tests-normality-and-symmetry/analysis-skewness-kurtosis/][Real Statistics: analysis of skewness and kurtosis]]. The large-sample standard errors and their limits.

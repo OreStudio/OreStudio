@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: 6E48185B-9F1C-473D-818E-0CF9222D96FB
+:END:
+#+title: Task: List the market data a party expects
+#+description: Each generator kind lists the addresses it publishes, and the party's expected market data is the outputs of the generators it demands an item of, plus what it derives, read from configuration before any tick arrives.
+#+type: task
+#+level: s1
+#+filetags: :every_floating_index_has_a_curve_and_fixings:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0F936789-FEBE-4330-97B9-DFE0837E4466][Every index a generated trade floats on has a curve and fixings]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The planner must know what a party is configured to receive, not what has arrived: a vol quote or a bootstrapped curve can take a while to appear. Give each generator kind one function that lists its outputs: an IR curve its pillar quotes and its index fixing, an FX spot its quotes and its pair fixing, a vol surface its quotes. Add a market data request that computes one party's demand from the catalogue, with compute_party_demand, without ticks or adapters. The expected set is the outputs of each generator that publishes an item the party demands, plus the curves of its bootstrap configs whose pillars it expects. It replaces served_fixing_uris, which is global and IR only.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:0F936789-FEBE-4330-97B9-DFE0837E4466][Every index a generated trade floats on has a curve and fixings]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-22                               |
+
+* Acceptance
+
+- One function per generator kind lists its outputs, and the curve feed and the fixing writer use the same function.
+- A market data request returns a party's demand computed from the catalogue, and it answers before any adapter is ready.
+- The trade generation scope holds the party's expected set; served_fixing_uris is removed.
+- A unit test shows that a party routed to one provider does not expect another provider's outputs.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

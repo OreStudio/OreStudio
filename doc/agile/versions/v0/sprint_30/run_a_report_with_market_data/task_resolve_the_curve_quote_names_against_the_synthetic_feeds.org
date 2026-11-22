@@ -49,7 +49,7 @@ The ACME curve configurations name their quotes with ORE keys that are based on 
 What was done, in that order:
 
 1. The rule the refactor left is the one
-   [[id:7AE57098-08D4-4D4A-83D6-918FE520B68E][A pillar names the market series it reads]] states: an oresmd URI is the
+   [[id:7AE57098-08D4-4D4A-83D6-918FE520B68E][Market series identity in curve pillars]] states: an oresmd URI is the
    identity and an ORE key is a boundary spelling. The pair that turns one into
    the other was never written down for a curve configuration's quotes, so it is
    now a section of that page.
@@ -97,7 +97,7 @@ how this task was written: the key ends with a term and the series does not. The
 term is the datum's coordinate, so a series never carries it, and the two are
 one datum. What settles the question is the schema's statement of which fields
 are identity, which is where
-[[id:7AE57098-08D4-4D4A-83D6-918FE520B68E][A pillar names the market series it reads]] already points.
+[[id:7AE57098-08D4-4D4A-83D6-918FE520B68E][Market series identity in curve pillars]] already points.
 
 The check reads the interest rate swap rate form only, because it is the only
 form a provision stores: all 420 quotes are one. A quote of another form is
@@ -162,7 +162,7 @@ What the branch adds is the statement of the pair and a way to read the gap:
   asserts the codec's own answer against the same address, so the SQL spelling
   and the codec cannot drift apart unseen.
 - The pair written into
-  [[id:7AE57098-08D4-4D4A-83D6-918FE520B68E][A pillar names the market series it reads]], which is where the naming rule
+  [[id:7AE57098-08D4-4D4A-83D6-918FE520B68E][Market series identity in curve pillars]], which is where the naming rule
   already lived.
 
 The review of PR #4959 changed the shape of the answer without changing the

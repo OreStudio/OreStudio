@@ -15,7 +15,7 @@
 #+begin_export markdown
 ---
 name: compass-doc-review-academic
-description: Layered review of argumentative documentation: claim, spine, paragraph, sentence, term, evidence, honesty.
+description: Write or review knowledge documentation (Zettelkasten pages) in academic style, in layers: title, claim, spine, paragraph, sentence, term, evidence, honesty. Titles read like academic paper titles; academic papers are the preferred citations.
 license: Complete terms in LICENSE.txt
 ---
 #+end_export
@@ -38,12 +38,24 @@ written for agents to execute.
 
 * How to use this skill
 
+The house style this skill enforces — how a knowledge document is created,
+how it is titled, and what it cites — is stated in /The house style/ of
+[[id:E3B70401-5142-4ACC-A61F-1BBF19F8470F][Zettelkasten]]. This skill is the review; that page is the rule.
+
 Review in the order below and stop at the first layer that fails.
 Structure governs sentences and sentences govern words, so repairing a
 clause inside a paragraph that has no point is wasted work.
 
 Report findings per layer. Do not rewrite the document unless asked;
 the author keeps the judgement.
+
+** Title
+
+The title reads like the title of an academic paper: a noun phrase naming the
+subject and its scope, with no finite verb. /Layered Validation of Scripted
+Trades/ passes; /A scripted trade is validated in three layers/ fails, because
+it is a sentence. The claim belongs in the summary's first sentence. The file
+name is the title in snake case. See /Titles/ in [[id:E3B70401-5142-4ACC-A61F-1BBF19F8470F][Zettelkasten]].
 
 ** Claim
 
@@ -113,6 +125,9 @@ its one referent.
 Every claim is derived from something stated, cited to a source, or
 labelled as unsupported. There is no fourth option.
 
+- Prefer peer-reviewed academic papers, then standards and official
+  documents, then vendor documentation. Never cite private notes or
+  unpublished material. See /Citations/ in [[id:E3B70401-5142-4ACC-A61F-1BBF19F8470F][Zettelkasten]].
 - Verify each citation against the source before it lands. Author, year,
   venue and page.
 - Attribute the argument to whoever made it, not to whoever is more

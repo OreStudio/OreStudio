@@ -43,9 +43,9 @@ the person leaves the screen.
 Three facts shape the screens.
 
 - A subscription names a provider and never a source. A route picks the source.
-  See [[id:31BCA3F8-31AD-49C2-9B6B-F2312EE7DECB][A party takes a provider's feeds through a subscription]] and [[id:37B27CA8-9F44-4A61-9B02-3EAABD8C3818][A party routes to exactly one source for each provider]].
+  See [[id:31BCA3F8-31AD-49C2-9B6B-F2312EE7DECB][Market data subscriptions]] and [[id:37B27CA8-9F44-4A61-9B02-3EAABD8C3818][A party routes to exactly one source for each provider]].
 - A source has a kind: live, replay, test, simulated or derived. The screens show
-  it as a badge and a filter and change nothing else. See [[id:F64DB34E-084D-4437-B536-392AA26D8B77][No code path may behave differently because a source is simulated]].
+  it as a badge and a filter and change nothing else. See [[id:F64DB34E-084D-4437-B536-392AA26D8B77][Simulated sources as data rather than code paths]].
 - The party does not own any feed. Every provider's data is system data. The
   party takes it by subscription.
 
@@ -73,7 +73,7 @@ journey adds no layout of its own.
 6. *Change the source.* The person chooses *Change source* on the route. The
    dialog lists the provider's sources with kind badge and state, asks for an
    effective date and a reason, and says that the series and the consumers stay
-   as they are. See [[id:FA280E9B-7E00-4747-8D29-42B3D4258873][A source switch changes one route and nothing else]]. A source that is not ready is not offered.
+   as they are. See [[id:FA280E9B-7E00-4747-8D29-42B3D4258873][Switching the source of a market data provider]]. A source that is not ready is not offered.
 7. *Read the usage.* The person opens the *Usage* tab. The system shows demand,
    deliveries and the bill by period. For a simulated source the bill is a shadow
    bill, and the tab says so. See [[id:1B8A3DB7-006A-4E14-AC11-57FA3741222D][A rate card on the source turns usage into a bill the platform shares]].
@@ -123,9 +123,9 @@ change source. The wireframe and the prototype are still to be drawn.
 
 * Related knowledge
 
-- [[id:31BCA3F8-31AD-49C2-9B6B-F2312EE7DECB][A party takes a provider's feeds through a subscription]]
+- [[id:31BCA3F8-31AD-49C2-9B6B-F2312EE7DECB][Market data subscriptions]]
 - [[id:37B27CA8-9F44-4A61-9B02-3EAABD8C3818][A party routes to exactly one source for each provider]]
-- [[id:B746D4F2-F1B5-4563-A6E4-D36BDF8E6BBE][Display, non-display and derived rights are modelled on the subscription]]
-- [[id:3E51B0BD-D22B-4790-821F-E2FED44D152C][Usage is recorded as events and priced later]]
+- [[id:B746D4F2-F1B5-4563-A6E4-D36BDF8E6BBE][Display, non-display and derived market data rights]]
+- [[id:3E51B0BD-D22B-4790-821F-E2FED44D152C][Event-based metering of market data usage]]
 - [[id:1FC08F40-A345-4F8A-821C-008ED4030AF9][Four areas of the Market data menu cover the service]]
 - [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]]

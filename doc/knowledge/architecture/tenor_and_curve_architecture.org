@@ -172,7 +172,7 @@ The domain concepts are in [[id:D5FAFA10-333D-44BC-B993-4B5C4C4D803F][Pillar]] a
    A pillar names the market series its quote comes from; the currency
    and the index tenor remain properties of the blueprint that locate the
    quote in the catalogue, not segments the bootstrap composes. See
-   [[id:7AE57098-08D4-4D4A-83D6-918FE520B68E][A pillar names the market series it reads]] and
+   [[id:7AE57098-08D4-4D4A-83D6-918FE520B68E][Market series identity in curve pillars]] and
    [[id:446F28DF-155A-47EC-8D66-FDB90A8FBFA7][Bootstrapping a curve: from quotes to a published set]].
 3. *Resolve + quote.* =curve_republish_resolver.cpp= sorts pillars by
    =sequence_index= and, per pillar: resolves both tenor codes to

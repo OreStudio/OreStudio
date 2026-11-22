@@ -240,6 +240,6 @@ subscription_repository::read_latest_all_tenants(const context& ctx) {
 
 * See also
 
-- [[id:31BCA3F8-31AD-49C2-9B6B-F2312EE7DECB][A party takes a provider's feeds through a subscription]] -- the entitlement this table records.
+- [[id:31BCA3F8-31AD-49C2-9B6B-F2312EE7DECB][Market data subscriptions]] -- the entitlement this table records.
 - [[id:B746D4F2-F1B5-4563-A6E4-D36BDF8E6BBE][The rights on a subscription]] -- the three rights this table holds.
 

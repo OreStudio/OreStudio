@@ -205,7 +205,7 @@ superseded cut with the runs that still rest on it. Every value is a fixture.
 #+ATTR_HTML: :class hug-leading
 | Entity | What it contributes | Model |
 |--------+---------------------+-------|
-| the cut | The label, the parts, the gaps and the two acts | [[id:F6362451-D569-4609-97A3-F1C785AAAF02][The cut is the body a run prices from]] |
+| the cut | The label, the parts, the gaps and the two acts | [[id:F6362451-D569-4609-97A3-F1C785AAAF02][The cut model: recorded facts, derived states and authorisation]] |
 | =report_instance= | The run, its instant, its state, its result's location and the cut it priced from | [[id:9FCCF6C8-9C10-403B-BDA4-C3E28706BD67][ores.reporting.report_instance]] |
 | =report_definition= | The definition whose report the runs price | [[id:FB4A11C5-07EA-4923-B8AC-65F46EBA517C][ores.reporting.report_definition]] |
 | =report_error_event= | The errors a run reported, which is why a run that completed carrying errors is not a clean reproduction | [[id:080B3871-8BAA-4AAA-A98F-3E79F4B83BAA][ores.reporting.report_error_event]] |
@@ -280,7 +280,7 @@ are its cut, its engine version and its state.
 
 * Related knowledge
 
-- [[id:F6362451-D569-4609-97A3-F1C785AAAF02][The cut is the body a run prices from]] — the decision this journey draws.
+- [[id:F6362451-D569-4609-97A3-F1C785AAAF02][The cut model: recorded facts, derived states and authorisation]] — the decision this journey draws.
 - [[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]] — the purpose of reproduction, and the quoted definition this journey tests against.
 - [[id:33E879B7-496A-406D-B3F2-72637379AD02][Kinds of cut]] — why a flash cut's result is indicative, and so is compared with care.
 - [[id:19630B5D-A163-42B5-B9C4-61A87BAE8F5F][Trade cut]] — the population a rerun replays rather than re-queries.

@@ -39,7 +39,7 @@ run, which only the system tenant may make, writes what it finds.
 
 For each feed the run resolves the fixing item the feed starts from, ordered by the
 policy's provider order and allowed to be read inverted when the policy says so;
-see [[id:3F9D6EAE-9FB8-4A0D-9BAF-1EA3EA93AB4F][Synthetic prices are calibrated from free public sources]].
+see [[id:3F9D6EAE-9FB8-4A0D-9BAF-1EA3EA93AB4F][Free public sources for synthetic price calibration]].
 It measures the level and the spread of the mixture over the policy's window, and
 an applied run writes them as a new version of the feed.
 
@@ -171,5 +171,5 @@ of its own pair.
 * See also
 
 - [[id:351CB816-28F5-428A-A289-414B6F4B9F36][Volatility clustering and GARCH models]] -- the model, the fit and the stored stages.
-- [[id:3F9D6EAE-9FB8-4A0D-9BAF-1EA3EA93AB4F][Synthetic prices are calibrated from free public sources]] -- where the fixings come from.
+- [[id:3F9D6EAE-9FB8-4A0D-9BAF-1EA3EA93AB4F][Free public sources for synthetic price calibration]] -- where the fixings come from.
 - [[id:97E3E3C7-98D2-4DDC-B062-8F04CA2850E5][Variance Calibration Input]], [[id:BEEFE7C7-3B6A-4204-A110-A0DE54345194][Variance Calibration Input Point]] and [[id:84902B7E-58F4-4127-86CB-129EBEDABE95][Variance Calibration]] -- the records.

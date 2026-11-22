@@ -113,8 +113,8 @@ via its "Verifies task" field.
 The pages were corrected rather than added to, because the cluster already
 described most of this approach as though it were deployed.
 
-- *New:* [[id:929A4722-8F06-4DEF-B759-D0800D4AC6D5][A pooler stands where the database is shared]] — the address a service opens its connections to, which deployments put something at it, what must hold in both, and what a pooler costs and buys.
-- *Rewritten:* [[id:729F746E-36DD-40A2-A592-6972239E31F0][A service holds a few long-lived connections and never connects per query]] — the pool now states a floor it keeps and a ceiling a burst may reach, sized by the service's workers and lanes, with what happens at the ceiling.
+- *New:* [[id:929A4722-8F06-4DEF-B759-D0800D4AC6D5][Connection pooling for shared database instances]] — the address a service opens its connections to, which deployments put something at it, what must hold in both, and what a pooler costs and buys.
+- *Rewritten:* [[id:729F746E-36DD-40A2-A592-6972239E31F0][Long-lived database connections in services]] — the pool now states a floor it keeps and a ceiling a burst may reach, sized by the service's workers and lanes, with what happens at the ceiling.
 - *Corrected:* [[id:42930B6A-544A-4F7E-ACF4-9ABC60F2B408][The environments share the database through a transaction pooler]] — it stated the pooler as a fact of every environment; it now says where one stands, adds the idle timeout and the administrative paths to what goes around it, and states the prepared-statement condition instead of assuming it.
 - *Corrected:* the =ores.database= component overview and the multi-tenancy page, which both asserted a pooler in front of PostgreSQL for every service.
 - *Wired:* the new page into the knowledge index beside the data path.

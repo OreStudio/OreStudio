@@ -46,11 +46,11 @@ reason.
   ids with a reason.
 - A stop is asynchronous. The generator finishes its current tick.
 - Restarting the adapter loses no stored state. The service sends the demand set
-  again. See [[id:A7D1927B-CB42-49A9-94EF-DBB40225274C][The identity an adapter runs as]].
+  again. See [[id:A7D1927B-CB42-49A9-94EF-DBB40225274C][Adapter identity]].
 
 * See also
 
 - [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
 - [[id:D67C930B-261F-480B-B5EF-020C6D617333][The generator factory and the kind seam]] — completes: how the runner builds a generator.
 - [[id:083D4B54-549B-4D56-AE89-430A8A4277FF][Demand drives what an adapter publishes]] — completes: what starts the generators.
-- [[id:54C9E31E-26FF-4530-A868-0850FCE1FE30][The simulator is one adapter plus the tools that author its generators]] — completes: the component the runner belongs to.
+- [[id:54C9E31E-26FF-4530-A868-0850FCE1FE30][The synthetic market data simulator: adapter and authoring tools]] — completes: the component the runner belongs to.

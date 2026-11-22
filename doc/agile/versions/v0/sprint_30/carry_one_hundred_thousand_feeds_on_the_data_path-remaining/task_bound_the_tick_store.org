@@ -61,7 +61,7 @@ task and name that file in the Command column.
 
 * Notes
 
-- Target state: [[id:A79C25FA-9F70-453B-A52E-780B4402ABAA][The tick store is bounded]].
+- Target state: [[id:A79C25FA-9F70-453B-A52E-780B4402ABAA][Bounded retention in the tick store]].
 
 * Test Scenarios
 

@@ -65,9 +65,9 @@ Raised by the generator task's runtime PR: the surface must move with spot by a 
 The owner answered with a technical report that formalises Path F. Its content
 went into the knowledge base as atomic notes, not as a copy of the report:
 [[id:25C467BE-07A3-432C-8CB8-6B194E748570][Shared Brownian factors give every synthetic series a signed correlation]],
-[[id:14C79EA2-4E36-4EF2-A0DB-0EB932655029][A keyed Brownian path is a pure function of seed and time]],
+[[id:14C79EA2-4E36-4EF2-A0DB-0EB932655029][Keyed Brownian paths from counter-based draws]],
 [[id:9B577C48-A237-445B-A331-AD0CB42FAAE1][Counter-based random number generators]] and
-[[id:92644AAC-BE5F-43B6-96E4-084226CDA094][Tick-to-tick returns understate a correlation that holds exactly]].
+[[id:92644AAC-BE5F-43B6-96E4-084226CDA094][Non-synchronous trading and the Epps effect]].
 Reading the report against the code corrected nine statements before they
 reached the notes: the bridge resolution at depth 16 (about 55 ms, not
 microseconds), the driver as a stochastic integral when loadings change with

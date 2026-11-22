@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: C6A619F3-B2B6-42D5-9C41-5269A84BC96C
+:END:
+#+title: Storage of fixing observations apart from trades
+#+description: Observations live with their source; a trade expands its own schedule into observed and projected fixings on load.
+#+type: knowledge
+#+audience: user
+#+level: cross
+#+filetags: :domain:fixing:architecture:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+
+* Summary
+
+An observation belongs to its source and its fixing date, and it is stored
+once there. It is not written onto each trade it fixes: a popular source fixes
+thousands of trades, and stamping the value on each would multiply the writes
+and the corrections. Each trade keeps only its own schedule of fixing dates and
+the source of each. When the trade is loaded, its schedule is expanded into
+observed fixings, read from the store, and projected fixings, computed from the
+market.
+
+* Detail
+
+** Why not on the trade
+
+A fixing changes the state of every trade that depends on it, but the change is
+derived: given the trade's schedule and the source's observations, the state
+follows. Storing the value on each trade duplicates a fact that has one owner,
+so a correction to the observation would have to find and rewrite every copy.
+Keeping the observation with its source means a correction is one write, and
+the trades pick it up when they are next read.
+
+** Three invariants
+
+1. *Observations are never stamped onto trades.* A trade holds its schedule,
+   not its fixings.
+2. *Both levels are append-only.* A publisher's correction is a new version of
+   the observation. A party's override is a new value of the party fixing,
+   which keeps its reference to the observation, so the record shows both what
+   the source said and what the party used.
+3. *A party's official fixings of a source form an unbroken prefix in time.* This
+   is what lets a future fixing keyed in advance stay dormant until the
+   fixings before it are official. See
+   [[id:CA61B445-B6DC-41D3-ACF9-D3FB32D0D342][The fixing process: observation, authorisation, application and reversal]].
+
+** Projected fixings are not observations
+
+A projected fixing is a value computed for valuation, such as a forward rate
+for a future coupon. It is not saved as an observation, or, if saved, it is
+marked as a projection, so that it can never be mistaken for a published value.
+See [[id:D4CA27E5-8194-470B-A422-B77C53545560][Effects of fixings on valuation, risk and P&L]].
+
+** In ORE Studio
+
+The two levels are set out in [[id:FA5C96A3-1F8E-4F9B-8973-40D92055D7DD][System-level fixing observations and party-level fixings]].
+The market data store already follows the first invariant and the
+observation half of the second. An observation is stored once in the fixing series of its index, under the system party, and a
+correction is a new version of the row; trades name the index's address and
+read the values at valuation. See
+[[id:F4BBEF34-D84C-4AE6-A3AA-DC47C3EE06EE][Public publishers publish daily fixings through a supplier session]]
+and [[id:78B65BF0-C003-48F6-84E3-615A36D39266][Lineage and provenance]]. The party fixing, with its status, its overrides and the official prefix, is not
+held yet; see
+[[id:2400E0FE-AEF0-4F9A-8392-F7D2E0E2A1E2][A data model for fixings]].
+
+* See also
+
+- [[id:784D9D97-721A-42EC-BA91-A85764979CD0][Fixings]] — the structure note.
+- [[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][Market series and observations]] — contrasts: how a quote is stored.
+
+* Sources
+
+- Fowler, M. (2005). Event Sourcing. [[https://martinfowler.com/eaaDev/EventSourcing.html][martinfowler.com]]

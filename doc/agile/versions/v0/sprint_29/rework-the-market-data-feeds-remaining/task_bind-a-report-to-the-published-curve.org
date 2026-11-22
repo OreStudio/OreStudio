@@ -87,7 +87,7 @@ via its "Verifies task" field.
 
 The binding is designed, and the cut it depends on is defined.
 
-- The decision: doc/knowledge/architecture/a_report_binds_to_a_published_curve.org.
+- The decision: doc/knowledge/architecture/binding_reports_to_published_curves.org.
   The binding names the publish record and the as-of under its market role; the
   export refuses a set that is not published; the ORE XML is built from the set;
   the market configuration name is derived.

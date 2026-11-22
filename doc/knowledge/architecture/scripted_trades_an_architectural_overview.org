@@ -75,7 +75,7 @@ The persistent representation of a scripted trade is described by the entity
 documents [[id:B3FBDD1A-8FC6-4702-9600-B75581FC6494][ores.trading.scripted_instrument]] and [[id:8D12E0ED-B6D9-4FDC-A98C-35AE84B8045F][ores.trading.scripted_parameter]], and that of
 the library by [[id:833F8F79-7FF0-42B0-8C52-E3ED6596843E][ores.trading.script]], [[id:A2BE6361-0489-4A63-A1B7-6B07BB3F6000][ores.trading.script_variant]] and [[id:F08D458F-B694-4B2F-A945-E22544A9222F][ores.trading.script_input]].
 [[id:AB71AFF8-0B08-4610-9F12-C5A84D8AB892][Trade Modeling]] situates a scripted trade among the four entities of a
-trade, and [[id:CC7CC29C-9413-4DF3-BC32-D1C8A978D295][Which trade types ORE carries and ORE Studio holds]] records, for each trade type, the form in which ORE
+trade, and [[id:CC7CC29C-9413-4DF3-BC32-D1C8A978D295][Coverage of ORE trade types in ORE Studio]] records, for each trade type, the form in which ORE
 reads it.
 
 * See also

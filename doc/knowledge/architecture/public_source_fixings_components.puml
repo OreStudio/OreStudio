@@ -1,0 +1,53 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title Public fixings: from a publisher to the fixing store
+
+skinparam componentStyle rectangle
+
+package "Publishers (catalogue, kind reference)" {
+    component "ECB, Bank of England, Bank of Canada,\nFRED, IMF and the other publishers" as publishers
+}
+
+package "Suppliers" {
+    component "Frankfurter, ECB Data Portal,\nFRED, BoE, Treasury" as suppliers
+    component "Session\none configured adapter each,\ne.g. frankfurter-eu" as session
+}
+
+component "Public sources adapter\nbackfill on start, then daily" as adapter
+
+package "ores.marketdata" {
+    interface "announce, demand,\ntick, heartbeat" as contract
+    component "Mapping\nsupplier id to oresmd item" as mapping
+    component "Fixing ingest\ndurable path, no age check,\nretried, never shed" as ingest
+    database "market_fixing\nfixing series of each index,\nkept with no retention" as store
+}
+
+component "Readers of fixings\nlatest on or before a date,\nor a window" as readers
+
+publishers --> suppliers : a feed binds a publisher\nto a supplier session
+suppliers --> session
+session --> adapter : fetch in the\nsupplier's notation
+adapter --> contract
+contract --> mapping
+mapping --> ingest : an item that is\nan index is a fixing
+ingest --> store
+readers --> store : read
+
+@enduml

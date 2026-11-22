@@ -288,7 +288,7 @@ not by a smoke test. The machinery that proves a bundle without gathering one is
 - [[file:./report_cross_gamma_ladder.org][Bump and Reprice Cross-gamma ladder]], which reads the rows that name two factors.
 - [[file:./report_volga_ladder.org][Bump and Reprice Volga ladder]], which reads gamma on a volatility factor.
 - [[file:../architecture/report_execution_pipeline.org][Report execution pipeline]], which states the phases every run goes through.
-- [[file:../architecture/the_cut_is_the_body_a_run_prices_from.org][The cut is the body a run prices from]], which states what an end of day cut holds.
+- [[file:../architecture/the_cut_model_recorded_facts_derived_states_and_authorisation.org][The cut model: recorded facts, derived states and authorisation]], which states what an end of day cut holds.
 - [[id:EA59C7E0-CFDF-4BBE-815C-8AF53BFC16E1][Light the intraday reports on the LIVE cut]], the task that lit the sibling reports.
 
 * See also

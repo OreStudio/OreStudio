@@ -1,0 +1,158 @@
+:PROPERTIES:
+:ID: 5E3514FB-4237-4DCF-9380-C197A4931F57
+:END:
+#+title: Intraday valuation of options expiring today
+#+description: Pricing same-day options up to their cut with an intraday ORE build, and the open questions for its reports.
+#+type: knowledge
+#+audience: user
+#+level: cross
+#+filetags: :architecture:ore:expiry:reporting:intraday:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+
+* Summary
+
+An option that expires today carries most of its gamma, vega and theta in the
+last hours before its cut, and ORE values at day resolution: on the expiry date
+an option is either fully alive or already expired. ORE Studio's response is a
+second build of ORE in which QuantLib dates carry a time of day, so that
+options expiring today price and produce sensitivities up to their cut. The
+engine side exists: it is proposed to ORE as a draft pull request and packaged
+in ORE Studio. The reports that would use it do not exist, and the work on them
+has not started. Many questions about how those reports will work remain open,
+beginning with how a book's headline position is stitched together from two
+engine builds.
+
+* Detail
+
+** Status
+
+This note records a design in progress. The engine work is done and under
+review; the report work is not started. The open questions below are genuine:
+they are not settled by this note, and the answers may change the approach.
+
+** The problem
+
+Near the cut, the gamma of a vanilla option grows as the inverse square root of
+the time left, and a digital's delta and gamma near the strike are larger
+still. A desk that runs a same-day options book needs its position and
+sensitivities through the day, which is where the decision of
+[[id:970D334D-2576-41BF-8664-1AA4CB76D31B][Pin risk in the expiry of near-the-money options]] is made. At day
+resolution these figures do not exist: the engine sees no hours left to expiry.
+Volatility within a day is also not uniform; Andersen and Bollerslev (1997,
+1998) document its intraday periodicity, and Wright (2020) the pricing of
+options around scheduled events, which is why the remaining hours must be
+weighted rather than counted.
+
+** The engine
+
+QuantLib has long had a build option, =QL_HIGH_RESOLUTION_DATE=, under which a
+date carries a time of day (Spanderen, 2015). The pull request proposes to make
+ORE usable in that build:
+
+- dates accept ISO 8601 datetimes, converted to UTC;
+- a trade states its expiry cut in =Envelope/AdditionalFields/ExpiryCutTime=,
+  which the regular build ignores, so one trade XML serves both builds;
+- FX option quotes may carry an expiry date as well as a tenor, so a volatility
+  surface can have a pillar at today's cut;
+- a new optional FX volatility curve setting, =EnforceMonotoneVariance=, makes
+  a decreasing ATM total variance an error rather than a warning.
+
+The design, its examples and its limitations are set out in the accompanying
+paper (Craveiro, 2026). ORE Studio packages the intraday build beside the
+regular one, as =ore-1.8.17.0-intraday= in
+[[proj:external/ore/packages/manifest.json][the engine package manifest]], built
+from the branch =feature/intraday-dates= of the ORE Studio fork. The pull
+request is a draft and asks the ORE maintainers whether a second build is an
+acceptable route, whether the envelope is the right place for the cut, and
+whether the FX market data changes fit ORE.
+
+** Scope
+
+The intraday build values only the options that expire on the valuation date:
+European vanilla, digital, barrier and touch, and American options, on equity,
+FX and commodity underlyings. Every other trade is valued by the regular build.
+Linear and rates products have no exposure to the remaining hours; variance and
+volatility swaps maturing today have one return left; an option past its cut
+carries no volatility risk and awaits only its settlement fixing.
+
+** The two builds
+
+#+caption: A book's options expiring today are valued by the intraday build and its other trades by the regular build; how the two results become one headline position, and whether both runs read one snapshot, are open.
+[[proj:doc/knowledge/architecture/intraday_valuation_two_builds.png]]
+
+Source: [[./intraday_valuation_two_builds.puml][=intraday_valuation_two_builds.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/architecture/intraday_valuation_two_builds.puml=.
+
+** The reports
+
+None of the same-day reports exists. The paper assesses each report of
+[[id:ACB0A386-18D6-4045-B387-AED43C1C8B06][the report catalogue]] for a same-day version, run over the
+options expiring today at an intraday asof:
+
+| Report | Same-day version | What it needs |
+|--------+------------------+---------------|
+| [[id:500AC7E3-E87C-4EC8-88A2-B46FB310F865][Headline position]] | yes | NPV and spot sensitivities work; vega needs a volatility shift at a cut |
+| Delta and gamma ladders | yes | Spot shifts sized for hours to expiry |
+| Spot greeks | yes | A grid of spot levels is a stress run, untested at an intraday asof |
+| [[id:0C87306E-9668-428B-93FD-D65FD9946DA9][Theta ladder]] | yes | A theta period of hours or minutes; a day steps past the cut |
+| Vega ladders | ATM and triple vol only | Volatility shifts at a cut, which the sensitivity analysis cannot yet make |
+| [[id:0744CB78-6EBF-4340-8885-837D0EEE6A95][Intraday risk monitor]] | partly | PV and delta carry over; VaR needs full revaluation |
+| [[id:289D0246-660B-46E9-A403-9D4BAF591E89][Intraday change]] | yes | Attribution separates time weighting from market moves |
+| [[id:2A5A5552-F1A4-46CD-AF3A-ADB2BD0ACA5D][Spike map]], strike map and [[id:A952CB92-98B8-4F5A-B4AB-ECBBB9248521][option map]] | yes | Buckets by cut rather than by expiry date |
+| Close twins | no | Today's options have expired by the close |
+
+** Open questions
+
+The report work raises questions that no part of the design answers yet.
+
+- *Stitching the headline position.* A desk reads one headline for a book, but
+  the book's options expiring today are valued by the intraday build at a time
+  of day and everything else by the regular build at day resolution. How the
+  two results become one total is undecided: whether both runs read one
+  snapshot at one valuation time, how the regular run is kept from valuing
+  today's expiries as alive for the whole day, and which run owns an option
+  past its cut that awaits settlement. The same question returns for every
+  report that totals a book.
+- *Which runs, when.* Whether a report run selects the engine build by its
+  asof, by its trades or by configuration, and how the compute grid carries
+  two engine packages for one report; see [[id:98B9FE2A-57FB-464F-A4E5-198461FE6987][Compute Engine]].
+- *Several cuts in one day.* A day can hold the Tokyo, ECB and New York cuts.
+  Whether a same-day report runs once per cut, once per snapshot, or once with
+  every cut, and how it groups the results.
+- *The cut on the trade.* FpML names a cut through its cut name coding
+  scheme, but ORE Studio's trades carry no expiry cut today, so
+  =ExpiryCutTime= has no source in the trade data; see
+  [[id:3B39B2E2-6E05-4DF8-B68B-6ACA12F2FCE9][The option-expiry cut code]].
+- *Settlement fixings at a cut.* An option past its cut settles on the fixing
+  of its cut's source, which the catalogue of
+  [[id:5AF9CEEF-A878-443A-8C32-C6E9F6C26FC9][Fixing sources for option cuts and non-deliverable currencies]]
+  must hold before such an option can be valued.
+- *Time-weighted volatility.* The weights for the remaining hours come from a
+  process outside ORE (Clark, 2011, gives sample day and intraday weights);
+  where that process lives in ORE Studio is undecided.
+- *Vega and theta within a day.* With the surface not simulated, the
+  sensitivity analysis reports no vega to today's pillar, and a theta period
+  of one day steps past the cut.
+- *Value at risk.* Parametric VaR on deltas and gammas does not suit options
+  minutes from expiry; full revaluation over scenarios is untested at an
+  intraday asof.
+- *Times in the output.* ORE's reports print dates without the time of day, and
+  serialization drops it.
+
+* See also
+
+- [[id:C9887852-42C9-48BE-8E8C-BB66FCC48E83][Expiries]] — the structure note that orders this cluster, and where to read this page in it.
+- [[id:970D334D-2576-41BF-8664-1AA4CB76D31B][Pin risk in the expiry of near-the-money options]] — answers: how the expiry-day risk is to be measured.
+- [[id:500AC7E3-E87C-4EC8-88A2-B46FB310F865][Headline position]] — completes: the report whose same-day version must be stitched together.
+
+* Sources
+
+- OreStudio (2026). /Intraday option expiries with QL_HIGH_RESOLUTION_DATE/. Open Source Risk Engine pull request 379, draft, opened 11 November 2026. [[https://github.com/OpenSourceRisk/Engine/pull/379][github.com]]
+- Craveiro, M. (2026). /ORE Intraday Option Valuation/, 11 November 2026. [[https://github.com/OreStudio/Engine/blob/80528d3ca728d9ec79b9c76851b94b8af16c81a3/Docs/intradayoptions.pdf][github.com]]
+- Spanderen, K. (2015). Preprocessor directive to toggle between the existing date class and a high resolution datetime class. QuantLib commit f5b2d8f, 12 August 2015. [[https://github.com/lballabio/QuantLib/commit/f5b2d8f7efe65d39007f126cc982529c531f7ba1][github.com]]
+- Andersen, T. G. and Bollerslev, T. (1997). Intraday Periodicity and Volatility Persistence in Financial Markets. /Journal of Empirical Finance/, 4, 115--158.
+- Andersen, T. G. and Bollerslev, T. (1998). Deutsche Mark--Dollar Volatility: Intraday Activity Patterns, Macroeconomic Announcements, and Longer Run Dependencies. /Journal of Finance/, 53, 219--265. [[https://www.nber.org/papers/w5752][nber.org]]
+- Wright, J. H. (2020). Event-Day Options. NBER Working Paper 28306. [[https://www.nber.org/papers/w28306][nber.org]]
+- Clark, I. J. (2011). /Foreign Exchange Option Pricing: A Practitioner's Guide/. Wiley.
+- FpML. /Cut name coding scheme/, version 1-0. [[https://www.fpml.org/coding-scheme/cut-name][fpml.org]]

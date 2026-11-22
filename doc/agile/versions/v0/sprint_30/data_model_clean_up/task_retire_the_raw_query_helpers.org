@@ -38,8 +38,8 @@ Every statement a service runs goes through the pool and a transaction, as [[id:
 - =query_builder= offers every shape a caller needs, on =transact=: rows, a string column, a command, with parameters or without.
 - Every caller of a raw helper calls the =query_builder= API instead. The move is a scripted codemod, kept with the task, so it reruns.
 - The raw helpers, and =execute_raw_grouped_query=, which has no caller, are deleted.
-- No statement connects per call ([[id:729F746E-36DD-40A2-A592-6972239E31F0][A service holds a few long-lived connections and never connects per query]]), and none sets a session-level setting: the tenant, party and actor are transaction-local ([[id:3C334C3B-2760-4278-95B8-B71268E8FD18][A transaction sets its own tenant context, so any connection serves any tenant]]).
-- A statement made with a context bound to a unit of work runs on its transaction ([[id:37D08E01-F99C-4D2D-8ACA-E19E252BBE3D][A repository works inside an open transaction and never holds credentials]]); the stopgap that routes the raw helpers onto a bound transaction goes with them.
+- No statement connects per call ([[id:729F746E-36DD-40A2-A592-6972239E31F0][Long-lived database connections in services]]), and none sets a session-level setting: the tenant, party and actor are transaction-local ([[id:3C334C3B-2760-4278-95B8-B71268E8FD18][A transaction sets its own tenant context, so any connection serves any tenant]]).
+- A statement made with a context bound to a unit of work runs on its transaction ([[id:37D08E01-F99C-4D2D-8ACA-E19E252BBE3D][Repositories within the unit of work]]); the stopgap that routes the raw helpers onto a bound transaction goes with them.
 - Every test suite passes.
 
 * Plan

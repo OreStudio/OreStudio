@@ -279,7 +279,7 @@ Decisions for the owner before the work is raised:
 
 The analysis was carried into the design rather than left here. The durable
 statements now live on
-[[id:675E89FC-B5AA-4250-8B86-78062F0F22BC][The forward a synthetic surface is struck against]], and the pages that own
+[[id:675E89FC-B5AA-4250-8B86-78062F0F22BC][Forwards for synthetic volatility surfaces]], and the pages that own
 their subjects were corrected where they were ambiguous:
 
 - [[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]] -- the curve is named as the

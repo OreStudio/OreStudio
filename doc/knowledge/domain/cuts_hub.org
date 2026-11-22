@@ -289,14 +289,14 @@ the page that owns it.
 
 - [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the index this structure note hangs from.
 - [[id:EDAE3C87-7733-4D0C-881F-5AA65DD832AC][Pricing Configuration]] — states the reproducibility contract from the settings side, which this cluster holds in the body and leaves the meaning of to that page.
-- [[id:FB8F701C-E56A-49A9-AA90-1B6BD0B02092][A report binds to a published curve, not to a name]] — the binding that names a published set and leaves the deal population unbound, which is the dependency this cluster answers.
+- [[id:FB8F701C-E56A-49A9-AA90-1B6BD0B02092][Binding reports to published curves]] — the binding that names a published set and leaves the deal population unbound, which is the dependency this cluster answers.
 - [[id:4B4ED152-1670-4E81-895A-24D747382D4C][Model market data cuts as proper ORE Studio reference data]] — the story that designs the cut time as reference data.
 - [[id:130A3261-E788-4222-9BD7-371AD92982FB][Book]] — the entity a cut would be assigned to.
 - [[id:D18DF500-2C6C-42FF-BBAE-D5A46D410910][Book groups and rates centres]] — why every book that revalues together shares one centre's market data.
 - [[id:DD828FB9-5901-4B9A-A767-71FD88472F0A][Business Centre]] — the coded trading location a book carries in place of a cut.
 - [[id:E3B70401-5142-4ACC-A61F-1BBF19F8470F][Zettelkasten]] — what a structure note is and why this order is authored rather than computed.
 - [[id:6810B313-1BE8-4889-A3C0-30174ADCBEDD][Naming the cut]] — why the general concept keeps the word cut, what each component is called, and what a change of term would cost.
-- [[id:F6362451-D569-4609-97A3-F1C785AAAF02][The cut is the body a run prices from]] — the facts a cut records, the states those facts derive, the permissions and the authorisation, the derived label, and the second binding that lets a run name a body.
+- [[id:F6362451-D569-4609-97A3-F1C785AAAF02][The cut model: recorded facts, derived states and authorisation]] — the facts a cut records, the states those facts derive, the permissions and the authorisation, the derived label, and the second binding that lets a run name a body.
 - [[id:E9A7D292-593C-4E72-8C1B-109F3DE38241][Cuts journeys]] — taking a cut, pricing a report from one, and rerunning and auditing one, as the person works them.
 - [[id:F549E23F-74A5-4A96-BC50-4845B1ABD460][The cut prototype]] — the list, the record, the take flow, the picker, the run and the named cut times, drawn before they are built.
 

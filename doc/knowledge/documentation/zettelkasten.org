@@ -70,24 +70,146 @@ weakly — the document types (knowledge, recipe, component overview, task,
 story) are each scoped to a single subject — but within each type the author
 must resist the temptation to include tangential detail.
 
+** Creating a knowledge document
+
+Every knowledge document is created by the same procedure. A document that
+skips a step is either a duplicate, unreachable, or unreviewed, and each of
+those costs a later reader more than the step would have cost the author.
+
+1. *Search before writing.* Find the pages that already cover the subject,
+   with =compass doc find= and a search of the titles under =doc/knowledge=.
+   A subject already covered is extended or linked to, never written a second
+   time; overlapping material is reached by an =id= link to the page that owns
+   it.
+2. *Choose the title.* The title follows the rules in /The house style/ below,
+   and the file name is the title in snake case.
+3. *Scaffold the page* with
+   =compass add knowledge --slug <file name> --parent-dir <dir> --title "<title>" --description "<one sentence of at most 120 characters>" --tags "<tags>"=.
+   Compass writes the frontmatter and the =:ID:=; neither is written by hand.
+4. *Write the sections.* =* Summary= states what the subject is and the claim
+   the page argues, in its first sentence. =* Detail= carries the argument and
+   its evidence. =* See also= links the related pages, each with its relation
+   (see /Choosing the connection is the work/). =* Sources= lists every work
+   cited, in full.
+5. *Draw what the prose describes as a process or a structure.* A lifecycle,
+   an interaction between components or a structure of parts is drawn as a UML
+   diagram, as /Diagrams/ in /The house style/ states.
+6. *Link and wire.* The page links to the pages it relies on, the structure
+   note of its cluster lists it, and the page links back to that structure note
+   from its =* See also=. A page with no way in is not part of the graph.
+7. *Check.* Run =compass-ng check= for the links and the back-links, review the
+   prose against [[id:180D0EB5-C08A-4C96-B266-3DF593E8F5E3][Review and write academic prose]], and build the page with
+   =compass site page <file>= to read it as a reader will.
+8. *Commit* with the component bracket =[doc]=, the diagrams' sources and
+   images included.
+
+** The house style
+
+*** Prose
+
+Every knowledge document is written in academic prose. The register is that of
+a paper in the field: third person, present tense, the subject stated before
+the argument, the argument before its limits, and the limits stated rather than
+left to inference. The layered standard of
+[[id:180D0EB5-C08A-4C96-B266-3DF593E8F5E3][Review and write academic prose]] applies to every page: claim, spine,
+paragraph, sentence, term, evidence and honesty. A page describes the current or
+the target state; it never narrates its own writing or its earlier drafts.
+Working notes, the private language of an author, and the idioms of a source are
+not copied; the page states the idea in the field's own terms.
+
+*** The data source
+
+ORE Studio's market data is synthetic, and the simulation is built so that no
+process differs between live and synthetic data. A general knowledge page
+therefore states its point independently of where the data comes from: it does
+not describe sources as observed or simulated, and it does not explain how a
+value is generated. Synthetic data generation is a subject of its own, owned by
+the pages of the synthetic generation section of
+[[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]]. A general page refers to it by a link
+alone, such as a =* See also= entry, and the synthetic page owns every detail.
+A page mentions synthetic data in its text only when its point depends on a
+property of the synthetic data itself.
+
+*** Citations
+
+Every claim is derived from what the page states, cited to a source, or
+labelled as unsupported. Sources are preferred in this order:
+
+1. peer-reviewed academic papers and scholarly books;
+2. standards and official documents: ISDA definitions, FpML, regulators,
+   central banks and benchmark administrators;
+3. vendor documentation;
+4. reputable secondary sources, where nothing better exists.
+
+Private notes and unpublished material are never cited. A citation names the
+author, the year and the work in the text, and appears in full in =* Sources=,
+with a link where a stable public address exists. Each citation is checked
+against the source before the page is committed: author, year, venue and page.
+
+*** Diagrams
+
+A page draws a UML diagram wherever a picture states a point more clearly than
+prose: a lifecycle, an interaction between components, or a structure of parts.
+The diagram supports the argument and does not replace it; the prose still
+states what the diagram shows.
+
+| What the page describes | Diagram |
+|-------------------------+---------|
+| The states an object passes through and what moves it | State diagram |
+| Messages between components, actors or services over time | Sequence diagram |
+| Components and the interfaces between them | Component diagram |
+| Types and their relations | Class diagram |
+| Tables and their keys | Entity-relationship diagram |
+
+Each diagram is written in PlantUML. Its source sits beside the page, with a
+file name that names the diagram's subject, and opens with the licence header
+the other diagrams carry. The image is rendered with
+=plantuml -tpng <file>.puml=, and both the source and the image are committed.
+The page embeds the image with a =proj:= link, under a =#+caption:= that states
+in one sentence what the diagram shows, followed by a line naming the source
+and the command that regenerates it. A diagram draws one point; two points are
+two diagrams. A rendered diagram is read before it is committed, so that a
+label that overlaps or a layout that misleads is caught. The process is
+exemplified in [[id:CA61B445-B6DC-41D3-ACF9-D3FB32D0D342][The fixing process: observation, authorisation, application and reversal]].
+
+*** Titles
+
+A title reads like the title of an academic paper. It is a noun phrase naming
+the page's subject and its scope; it is not a sentence, and it holds no finite
+verb. The claim the page argues belongs in the first sentence of its summary,
+where it can be refined without renaming the page, and not in its title.
+
+| Reads like a paper title | Reads like a sentence or a test name |
+|--------------------------+--------------------------------------|
+| Layered Validation of Scripted Trades | A scripted trade is validated in three layers |
+| Derivation of FX volatility quotes from historical fixings | A derived source publishes what it infers from stored fixings |
+| Data classification by owner count | The bundle and package catalogue lists who writes each set |
+| Twin Recipes: Mapping Native Terms to Script Inputs | A twin recipe maps a native product's terms onto its script |
+
+The forms that serve:
+
+- a nominalisation of the act the page studies: /Derivation of .../,
+  /Classification of .../, /Validation of .../;
+- a gerund phrase: /Tracking market data identity from fixing to report/;
+- a subject and its qualifier: /Pin risk in the expiry of near-the-money options/;
+- a short subject, then a colon and a subtitle stating the approach or the scope:
+  /Interest Rate Benchmark Types: IBOR vs. RFR/.
+
+A structure note takes the name of its cluster, such as /Fixings/. The file
+name is the title in snake case; a structure note's file name ends in =_hub=.
+
+The rule replaces an earlier one that asked argumentative pages for
+contestable claims as titles. Luhmann's cards were indeed claims, and a page
+here still argues one, but a claim used as a title reads as the name of a unit
+test, grows long, and changes whenever the claim is refined. The capture
+[[id:8398F1D5-6980-44E2-A72A-7B376F9BE7F0][Retitle the knowledge pages written as assertions]] records the pages that still carry
+such titles.
+
 ** Writing a note
 
-The atomic rule says how much a page holds. Three more rules, taken from
+The atomic rule says how much a page holds. Two more rules, taken from
 Luhmann's practice rather than from the plain-text community's retelling
-of it, say what the page does with what it holds.
-
-*** A page asserts, or it is a reference
-
-An atomic page that only names its subject is inert: nothing can be said
-against it, so nothing grows from it. Luhmann's cards were claims, short
-and contestable, and their value was that another card could disagree.
-The test for a title is whether a reader can reject it.
-
-Most pages here are reference pages by design — definitions, catalogues
-and explanations, where a topic title is the right title. The discipline
-binds the pages that argue: structure notes, research-paper summaries,
-captures, and anything that draws a conclusion. What separates them is
-whether the page can be wrong.
+of it, say how the page joins the collection.
 
 *** Choosing the connection is the work
 
@@ -136,6 +258,10 @@ than computed.
   and the contradiction is the one that pays.
 - *A page holding several claims.* Split it; a page with two theses
   cannot be contradicted cleanly by either.
+- *A sentence as a title.* A title states the subject as a paper's title
+  does; the claim goes in the summary.
+- *An uncited claim.* A claim that is neither derived nor cited is labelled
+  as unsupported, or removed.
 - *A hub that restates its cluster.* The structure note gists and links;
   a second copy of the content drifts.
 - *A page with no way in.* A page nothing links to is not in the graph,

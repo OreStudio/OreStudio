@@ -44,7 +44,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
   - =connection_options= and =open_policy= move to a small header without =libpq-fe.h=.
 - The analysis of [[id:2E186CC8-BA83-4271-8EF0-DE2465994A8D][Find the headers that couple the build]] decides whether the context splits in two: the service-lifetime part (connection options, open policy, pool) and the per-request part (tenant, party, visible parties, actor, service account, roles, transaction). If it splits, this task does the split and records why.
 - The repository and service codegen templates emit the new signatures and includes. Generated code is regenerated, not edited. Hand-written code moves by a codemod script, kept with the task, so it reruns.
-- The rules of [[id:31F9FEF5-4693-4C63-AE93-E74BA88DE175][A context bound to a transaction cannot change its tenant or party]] hold unchanged, and their tests pass.
+- The rules of [[id:31F9FEF5-4693-4C63-AE93-E74BA88DE175][Fixed tenant and party in transaction-bound contexts]] hold unchanged, and their tests pass.
 - Measured before and after, at named commits: the objects that depend on =context.hpp= and on =libpq-fe.h=, and the rebuild time after =context.hpp= is touched.
 - Every test suite passes.
 

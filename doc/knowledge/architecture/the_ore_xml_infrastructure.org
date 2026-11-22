@@ -27,7 +27,7 @@ makes possible for the page after it.
 
 ** The document's shape has one owner
 
-[[id:9697F09E-441A-4B51-869E-FC59433EEA1E][One component reads every ORE document, and none of them stores XML]]
+[[id:9697F09E-441A-4B51-869E-FC59433EEA1E][Parsing of ORE documents and the ownership of their rows]]
 
 =ores.ore= holds the code for each of the five documents a run names, and no
 other component parses ORE XML. A store receives typed rows. Read this first
@@ -36,7 +36,7 @@ the XML stops cannot tell which page owns a change.
 
 ** A value changes form at two boundaries
 
-[[id:948DAC44-404D-4B70-A8FC-3E9D4C05F72D][A stored value reaches the row in the form the value set names]]
+[[id:948DAC44-404D-4B70-A8FC-3E9D4C05F72D][Conversion of ORE document values into stored rows]]
 
 A rendering becomes the stored form at the codec, for the document families the
 codec reads, and at the database guard, for every other writer. It follows from
@@ -46,7 +46,7 @@ means for everything below it.
 
 ** The way out is not the way in
 
-[[id:FB734007-5AB3-41D0-8F94-4A37584FE049][The export writes the stored form, so a round trip is not byte-identical]]
+[[id:FB734007-5AB3-41D0-8F94-4A37584FE049][Export of stored ORE inputs and the limits of round-trip fidelity]]
 
 The export builds the documents from rows by reversing each projection. Because
 of the conversion, the rendering the imported file used does not survive the
@@ -55,7 +55,7 @@ assert instead.
 
 ** Which element a row is
 
-[[id:8E71C928-6618-455F-AECA-102AACB07883][One map answers which ORE element a row is]]
+[[id:8E71C928-6618-455F-AECA-102AACB07883][Mapping stored rows to ORE elements]]
 
 Identity, now that the value is settled: eight tables touch the document, and the
 leaf question has one answer that both guards join. Knowing which of the eight a
@@ -63,7 +63,7 @@ write passes through is what makes the next page's rule checkable.
 
 ** What makes the value legal
 
-[[id:D5FFD498-A6E9-45AA-B80D-E16E3A432BD0][A value set is the only place an ORE parameter's rule is written]]
+[[id:D5FFD498-A6E9-45AA-B80D-E16E3A432BD0][Value sets as the single statement of ORE parameter rules]]
 
 A parameter or a leaf element resolves to one value set, and the set states the
 kind, the bounds, the pattern, the catalogue and the values. Nothing else in the
@@ -72,7 +72,7 @@ lands on.
 
 ** Who refuses an illegal value
 
-[[id:E693B10B-7C28-4F21-95EC-ED9579E23D1A][The database refuses a value that no value set states]]
+[[id:E693B10B-7C28-4F21-95EC-ED9579E23D1A][Database enforcement of value sets]]
 
 Enforcement comes last because it depends on the set being reachable from every
 writer. Four trigger functions and one verdict function refuse the value, and why

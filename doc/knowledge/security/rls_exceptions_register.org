@@ -124,4 +124,4 @@ Open points for the review:
 * See also
 
 - [[id:0EAAEDFD-7954-4649-A463-9EE377B023F7][Data read across tenants]]: the rule that an exception needs a reason, a review and a sign-off.
-- [[id:7D4D8598-555D-4E86-8006-3BC79E926382][How the compute grid queues and claims work]]: the work ledger and the claim.
+- [[id:7D4D8598-555D-4E86-8006-3BC79E926382][Queueing and claiming in the compute grid]]: the work ledger and the claim.

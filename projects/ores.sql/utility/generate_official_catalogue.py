@@ -21,7 +21,7 @@
 
 Each provider below is a publisher whose terms were read and allow its rates to
 be stored; the page that records what each says is
-doc/knowledge/domain/synthetic_calibration_sources.org. Their currencies are
+doc/knowledge/domain/free_public_sources_for_synthetic_price_calibration.org. Their currencies are
 read from Frankfurter's provider list, so the seed names exactly what each
 publisher quotes against its pivot. Each currency is a vendor instrument of the
 provider, in the publisher's notation (iso4217, the currency, the rate), mapped

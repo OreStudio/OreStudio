@@ -22,7 +22,7 @@ That one difference led to a wider question. Curves, FX forward sets and FX vola
 * Methodology
 
 - Read the three publish paths at origin/main 6a00a12470: =curve_publish_gate.cpp=, =approval_gated_curve_publish_handler.hpp=, =curve_republish_service.cpp= and =curve_withdrawal.cpp= for curves; =fx_forward_publish_service.cpp= for forwards; =fx_vol_surface_calibration_service.cpp= and =fx_vol_surface_publish_service.cpp= for surfaces (all in =ores.marketdata.service=); =approval_lifecycle.cpp= in =ores.inbox=; =context.hpp= in =ores.database=.
-- Read the architecture: [[id:446F28DF-155A-47EC-8D66-FDB90A8FBFA7][Bootstrapping a curve: from quotes to a published set]], [[id:53D14F31-EE32-493E-BBEB-140AA4906BE4][Constructing a volatility surface: from quotes to a published set]], [[id:AB7A0BE5-7EB8-5B44-B98D-05E0CD58E51D][ORE Studio publishes FX forwards derived from published curves]], [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]], [[id:E21DFC83-9F3F-45BE-AD3F-48262126DFAC][Four-eyes framework]], [[id:3C334C3B-2760-4278-95B8-B71268E8FD18][A transaction sets its own tenant context]] and [[id:37D08E01-F99C-4D2D-8ACA-E19E252BBE3D][A repository works inside an open transaction]], and the journeys [[id:239E4C3C-12E7-4A87-9DE3-16B9F093BC14][Ask for a publish to be approved]], [[id:A85B6C4E-0F93-4410-BF2E-7167722849ED][Decide a publish]], [[id:53F31919-86FA-4E35-8594-9E72197C4A3B][Publish the approved set]] and [[id:B05A31CC-FA22-4534-848E-601A30822992][Withdraw or replace a published curve]].
+- Read the architecture: [[id:446F28DF-155A-47EC-8D66-FDB90A8FBFA7][Bootstrapping a curve: from quotes to a published set]], [[id:53D14F31-EE32-493E-BBEB-140AA4906BE4][Constructing a volatility surface: from quotes to a published set]], [[id:AB7A0BE5-7EB8-5B44-B98D-05E0CD58E51D][Derivation of FX forwards from published curves]], [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]], [[id:E21DFC83-9F3F-45BE-AD3F-48262126DFAC][Four-eyes framework]], [[id:3C334C3B-2760-4278-95B8-B71268E8FD18][A transaction sets its own tenant context]] and [[id:37D08E01-F99C-4D2D-8ACA-E19E252BBE3D][A repository works inside an open transaction]], and the journeys [[id:239E4C3C-12E7-4A87-9DE3-16B9F093BC14][Ask for a publish to be approved]], [[id:A85B6C4E-0F93-4410-BF2E-7167722849ED][Decide a publish]], [[id:53F31919-86FA-4E35-8594-9E72197C4A3B][Publish the approved set]] and [[id:B05A31CC-FA22-4534-848E-601A30822992][Withdraw or replace a published curve]].
 - Observed the live Acme tenant on a recreated, provisioned database: the two requests (=ores_inbox_approval_requests_tbl=, rule =tenant= against none), the mode's history (=ores_variability_system_settings_tbl=: =auto_approved= since 08:53, owned by party =acme_corporation_system=) and the session that raised the surface (party ACCOUS).
 
 * Paths taken
@@ -111,13 +111,13 @@ One implementation in =ores.marketdata=, parameterised by the kind of object: cu
 
 ** Follow-up
 
-The target is the [[id:B74CEF18-B533-45A1-B65E-F7DF836988D6][Publishing derived market data]] cluster, and the auto-approval rule is [[id:71146F3F-B884-4E61-BA8B-A8A0731703C6][A request closes without a person only under a stated rule]]. [[id:A171C0C0-634A-4ADF-8772-6EBBBDF94166][Publish every derived market object through one lifecycle]] brings the system to it.
+The target is the [[id:B74CEF18-B533-45A1-B65E-F7DF836988D6][Publishing derived market data]] cluster, and the auto-approval rule is [[id:71146F3F-B884-4E61-BA8B-A8A0731703C6][Rules for the automatic approval of requests]]. [[id:A171C0C0-634A-4ADF-8772-6EBBBDF94166][Publish every derived market object through one lifecycle]] brings the system to it.
 
 * See also
 
 - [[id:446F28DF-155A-47EC-8D66-FDB90A8FBFA7][Bootstrapping a curve: from quotes to a published set]]
 - [[id:53D14F31-EE32-493E-BBEB-140AA4906BE4][Constructing a volatility surface: from quotes to a published set]]
-- [[id:AB7A0BE5-7EB8-5B44-B98D-05E0CD58E51D][ORE Studio publishes FX forwards derived from published curves]]
+- [[id:AB7A0BE5-7EB8-5B44-B98D-05E0CD58E51D][Derivation of FX forwards from published curves]]
 - [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]]
 - [[id:E21DFC83-9F3F-45BE-AD3F-48262126DFAC][Four-eyes framework]]
 - [[id:3C334C3B-2760-4278-95B8-B71268E8FD18][A transaction sets its own tenant context]]

@@ -48,6 +48,6 @@ ticks. The service delivers them according to subscriptions and routes. See
 * See also
 
 - [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
-- [[id:54C9E31E-26FF-4530-A868-0850FCE1FE30][The simulator is one adapter plus the tools that author its generators]] — completes: the component that runs the generators.
+- [[id:54C9E31E-26FF-4530-A868-0850FCE1FE30][The synthetic market data simulator: adapter and authoring tools]] — completes: the component that runs the generators.
 - [[id:922C155B-6733-4D2B-A675-A7361A5BDC63][A system bundle installs the catalogue and the simulator installs its own universe]] — completes: how the generators arrive.
 - [[id:37B27CA8-9F44-4A61-9B02-3EAABD8C3818][A party routes to exactly one source for each provider]] — answers: how a party gets simulated data without owning it.

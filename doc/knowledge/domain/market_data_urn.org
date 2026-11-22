@@ -429,6 +429,7 @@ models, the key shape table and =series_key_registry=.
 * See also
 
 
+- [[id:784D9D97-721A-42EC-BA91-A85764979CD0][Fixings]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:FD427B5B-BDC5-4803-AFCD-97A59E31FE25][Market Data Requirements and Resolution]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]] — the story whose decisions this record states.

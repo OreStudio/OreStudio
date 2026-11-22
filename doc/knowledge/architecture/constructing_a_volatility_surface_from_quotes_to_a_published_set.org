@@ -75,7 +75,7 @@ In the target state a pillar names the market series its quote comes from. The
 series is an observed quote series, an oresmd URI such as
 =oresmd://fx/EUR?type=quote&instrument=fx_option&quote=rate_lnvol&ccy=USD&expiry=1Y&strike_label=25RR=,
 and the pillar holds a soft reference to one such series per contributor, as
-[[id:7AE57098-08D4-4D4A-83D6-918FE520B68E][A pillar names the market series it reads]]
+[[id:7AE57098-08D4-4D4A-83D6-918FE520B68E][Market series identity in curve pillars]]
 requires. The identity of the input is deliberately not the identity of the
 output: the quote is observed and the surface point is inferred, and the two
 must remain distinguishable.
@@ -89,7 +89,7 @@ conventions and the forward to the expiry, which the compute reads from the
 party's *own* published curves of the two currencies -- not from the curves of
 whoever published the quotes. This is the party side of the forward question;
 the vendor's side, which is where the quotes' own strikes came from, is
-[[id:675E89FC-B5AA-4250-8B86-78062F0F22BC][The forward a synthetic surface is struck against]]. Because the vendor strikes
+[[id:675E89FC-B5AA-4250-8B86-78062F0F22BC][Forwards for synthetic volatility surfaces]]. Because the vendor strikes
 its quotes against one forward and the party re-reads them against a bootstrap of
 them, the two agree to the fit of the party's bootstrap and not exactly, which is
 the tolerance that side's round trip states.
@@ -170,10 +170,10 @@ and the next section is that act.
 * The hand-off to publication
 
 The candidate becomes authoritative through the lifecycle every derived market
-object shares ([[id:186B44DD-51EA-45AA-971E-0C2D4D21A6DD][A derived market object is published through one lifecycle]]). The maker raises a publish naming the subject, the as-of and
+object shares ([[id:186B44DD-51EA-45AA-971E-0C2D4D21A6DD][The publication lifecycle of derived market objects]]). The maker raises a publish naming the subject, the as-of and
 the candidate's version; a second person decides under the kind's maker and
 checker permissions and the record's four-eyes rule, or a stated rule closes the
-request ([[id:71146F3F-B884-4E61-BA8B-A8A0731703C6][A request closes without a person only under a stated rule]]); the trader applies the approved request once, which stamps the
+request ([[id:71146F3F-B884-4E61-BA8B-A8A0731703C6][Rules for the automatic approval of requests]]); the trader applies the approved request once, which stamps the
 publisher and the instant, ends the set it replaces and sends the notice ([[id:86D8986F-5247-4138-85C7-F8899C029F24][The trader applies an approved publish, which supersedes the live set and tells its readers]]).
 
 The published set is what the rest of the system consumes. The report references
@@ -196,7 +196,7 @@ with the publish journeys the curve shares.
 Four changes remain, and each is a change to a named part of the system.
 
 The first is the publish. A surface is published through the one lifecycle of
-every derived market object ([[id:186B44DD-51EA-45AA-971E-0C2D4D21A6DD][A derived market object is published through one lifecycle]]), with the curve and the forward set.
+every derived market object ([[id:186B44DD-51EA-45AA-971E-0C2D4D21A6DD][The publication lifecycle of derived market objects]]), with the curve and the forward set.
 
 The second is the validation operation. Both kinds of check run in the service,
 the first held against the blueprint's version and the second against the
@@ -237,7 +237,7 @@ two ways a surface differs from a curve.
 - [[id:5910304A-FA45-461E-B2A2-8F24FA798769][SVI Volatility Parameterisation]]
 - [[id:3F7A2C91-84BE-4E12-B5D0-1D6E5F08A432][Vol Surface No-Arbitrage Conditions]]
 - [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio Market Data URI]]
-- [[id:7AE57098-08D4-4D4A-83D6-918FE520B68E][A pillar names the market series it reads]]
+- [[id:7AE57098-08D4-4D4A-83D6-918FE520B68E][Market series identity in curve pillars]]
 - [[id:D4C7C4A7-CD2D-4307-AB06-DA9BE3C3A334][A synthetic contributor publishes noisy observations of a latent surface]]
 - [[id:F439271D-F8CD-4A6E-A9FE-E523A4419846][Author a surface's framework]]
 - [[id:89537A61-5C48-4A8D-AE3A-8DD4069433DF][Calibrate or refresh a surface]]

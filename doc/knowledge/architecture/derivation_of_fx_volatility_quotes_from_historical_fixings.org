@@ -55,7 +55,7 @@ convention. A quote series is keyed by item, provider and party, so a vendor's
 quotes of an item sit beside the derived ones, and the generator's calibration
 policy chooses between them by rank. A vendor ranked first replaces the derived
 source; nothing downstream changes, as
-[[id:FA280E9B-7E00-4747-8D29-42B3D4258873][A source switch changes one route and nothing else]]
+[[id:FA280E9B-7E00-4747-8D29-42B3D4258873][Switching the source of a market data provider]]
 describes for a live source.
 
 ** Kept as observations, not as fixings
@@ -84,7 +84,7 @@ publishers whose fixings fed it and no claim to be their figures; those fixings
 are stored exactly as published, with their own credit, and appear in the
 derived source only as internal inputs. The rule is stated with the terms of
 each source in
-[[id:3F9D6EAE-9FB8-4A0D-9BAF-1EA3EA93AB4F][Synthetic prices are calibrated from free public sources]],
+[[id:3F9D6EAE-9FB8-4A0D-9BAF-1EA3EA93AB4F][Free public sources for synthetic price calibration]],
 and how the values are computed is described there too.
 
 ** In the code
@@ -109,6 +109,6 @@ read against a forward that ignores the rate differential, which grows with the 
 
 - [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
 - [[id:F4BBEF34-D84C-4AE6-A3AA-DC47C3EE06EE][Public sources publish daily fixings through an adapter]] — completes: an adapter that reads the fixings that adapter stores.
-- [[id:FA280E9B-7E00-4747-8D29-42B3D4258873][A source switch changes one route and nothing else]] — exemplifies: a vendor replaces the derived source by rank.
+- [[id:FA280E9B-7E00-4747-8D29-42B3D4258873][Switching the source of a market data provider]] — exemplifies: a vendor replaces the derived source by rank.
 - [[id:78B65BF0-C003-48F6-84E3-615A36D39266][Lineage and provenance]] — completes: a provider whose provenance says its values were inferred, not observed.
-- [[id:3F9D6EAE-9FB8-4A0D-9BAF-1EA3EA93AB4F][Synthetic prices are calibrated from free public sources]] — completes: the values it computes and the terms that govern their inputs.
+- [[id:3F9D6EAE-9FB8-4A0D-9BAF-1EA3EA93AB4F][Free public sources for synthetic price calibration]] — completes: the values it computes and the terms that govern their inputs.

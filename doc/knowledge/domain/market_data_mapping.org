@@ -50,6 +50,6 @@ readable.
 * See also
 
 - [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
-- [[id:5297997A-5175-43E9-861B-2A11D003CD35][A vendor instrument is an id scheme, an id and a field]] — completes: the left side of the mapping.
+- [[id:5297997A-5175-43E9-861B-2A11D003CD35][Identification of vendor instruments]] — completes: the left side of the mapping.
 - [[id:CE99CD2A-B31F-4306-865F-CBC519FBC1B8][The oresmd datum identity]] — completes: the right side of the mapping.
-- [[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][A quote series is keyed by item, provider and party]] — completes: the key that the mapping feeds.
+- [[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][Market series and observations]] — completes: the key that the mapping feeds.

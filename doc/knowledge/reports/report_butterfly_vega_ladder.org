@@ -338,7 +338,7 @@ intraday reports,
 - [[file:../architecture/report_execution_pipeline.org][Report execution pipeline]], the phases every run goes through.
 - [[file:../architecture/report_post_processing.org][Report post-processing]], the result store that is not built.
 - [[file:../architecture/report_definition_and_schedule.org][Report definition and schedule]], the definition that binds the configuration.
-- [[file:../architecture/the_cut_is_the_body_a_run_prices_from.org][The cut is the body a run prices from]], what an end of day cut holds.
+- [[file:../architecture/the_cut_model_recorded_facts_derived_states_and_authorisation.org][The cut model: recorded facts, derived states and authorisation]], what an end of day cut holds.
 - [[proj:external/ore/examples/MarketRisk/Input/sensitivity.xml][sensitivity.xml]], the shipped worked document.
 - [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters, the remaining work]], the work that would seed volatility market data.
 

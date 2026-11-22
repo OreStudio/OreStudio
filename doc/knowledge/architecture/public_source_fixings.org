@@ -2,10 +2,10 @@
 :ID: F4BBEF34-D84C-4AE6-A3AA-DC47C3EE06EE
 :END:
 #+title: Public publishers publish daily fixings through a supplier session
-#+description: The architecture of the public data: a publisher owns the fixing, a supplier session fetches it, a feed binds the publisher to the session and the end-of-day service, the ingest stores durable fixing ticks, and a synthetic feed starts from the latest one.
+#+description: Public fixings: a publisher owns each fixing, a supplier session fetches it, and the ingest stores it durably.
 #+type: knowledge
 #+level: cross
-#+filetags: :marketdata:adapter:fixing:calibration:
+#+filetags: :marketdata:adapter:fixing:
 #+created: 2026-10-23
 #+updated: 2026-11-09
 
@@ -20,11 +20,10 @@ one publisher to one session and one service — here the =end_of_day= service.
 One process, =ores.marketdata.official=, hosts one specialised adapter for each
 access route: Frankfurter is the first, and each publisher with its own API, such
 as the New York Fed, gets an adapter of its own. Each fetches what its publisher
-publishes and sends it as ticks over the adapter contract, as the simulator does. The values
-are official fixings, so they are durable: the ingest keeps them in a tick class
-of their own, with no age gate and no expiry. When a synthetic feed starts, it
-reads the latest fixing on or before the date of the market clock, so a feed
-that stops and starts again takes the most recent published value. The catalogue
+publishes and sends it as ticks over the adapter contract. The values are
+official fixings, so they are durable: the ingest keeps them in the fixing table,
+with no age gate and no expiry. A reader takes the latest fixing of an item on or
+before a date, or its fixings over a window. The catalogue
 starts wide, with many publishers that publish the same pairs, so the case of one
 pair from several publishers is exercised from the first day.
 
@@ -32,30 +31,16 @@ pair from several publishers is exercised from the first day.
 
 ** The shape
 
-#+begin_example
- publishers (ECB, Bank of England, Bank of Canada, FRED, IMF, ...)
-        |  one feed each, on a supplier session and the end-of-day service
-        v
- suppliers (Frankfurter, ECB Data Portal, FRED, BoE, Treasury)
-        |
- sessions (one configured adapter each, e.g. frankfurter-eu)
-        |
- the public sources adapter  -- announce, demand, tick, heartbeat -->  ores.marketdata
-        (backfill on start, then daily)                              | map supplier id -> item
-                                                                     | durable class: no age gate
-                                                                     v
-                                                     durable tick table (kept for good)
-                                                                     ^
-                                                                     |  latest on or before, window
-                                                     synthetic feed at start (calibration)
-#+end_example
+#+caption: The components a public fixing passes through, from its publisher, through a supplier session and the public sources adapter, to the mapping, the durable fixing ingest and the fixing table that readers query.
+[[proj:doc/knowledge/architecture/public_source_fixings_components.png]]
 
-- The adapter knows nothing of stochastic processes. It publishes what it
-  fetched, in the supplier's own notation.
+Source: [[./public_source_fixings_components.puml][=public_source_fixings_components.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/architecture/public_source_fixings_components.puml=.
+
+- The adapter publishes what it fetched, in the supplier's own notation.
 - The service knows nothing of HTTP. It maps, checks, stores and delivers, as
   for any adapter.
-- A feed never fetches. It reads the store. When no fixing is stored, the feed
-  keeps its fixed level and the screen says so.
+- A reader never fetches. It reads the store.
 
 ** Each publisher is a publisher, delivered by a supplier
 
@@ -90,8 +75,8 @@ oresmd://fx/EUR?type=fixing&index=fx&source=BOE&ccy=USD     (FX-BOE-EUR-USD)
 The publisher is part of the identity, because two banks' fixings of one pair
 are two numbers taken at two times. So EUR/USD from the ECB, the Bank of England,
 the Bank of Canada and the IMF are four items. Each is a series of its own
-publisher. A pair covered by several publishers is the duplicate case: the
-calibration has several fixings for one pair and chooses by a rank, and the
+publisher. A pair covered by several publishers is the duplicate case: a reader
+has several fixings for one pair and chooses among them by publisher, and the
 screens and the demand show several providers for one underlying.
 
 The item being a fixing also keeps the durable rule apart from live FX spot.
@@ -158,8 +143,9 @@ when their API and format are the same, as the Frankfurter providers are.
   digits are Frankfurter's division back to the pivot, which may differ from the
   publisher's in the last place. The blended
   rate is Frankfurter's own sum and hides which bank the number came from.
-- *Backfill, then daily.* On start the adapter fetches the window that the
-  calibration needs for each demanded item, oldest first. After that it polls
+- *Backfill, then daily.* On start the adapter fetches a configured window of
+  history, =backfill_days=, 400 days by default, for each demanded item, oldest
+  first. After that it polls
   each publisher once a day, after its publication time, from the last day it
   sent. It does not remember what it sent across a restart; the store does, and
   skips what it already holds.
@@ -192,8 +178,8 @@ deletes that provider's fixings from the durable table, which records who did it
 ** Demand
 
 The adapter answers a demand set like any adapter. The system party subscribes
-to each public provider and routes to its source, so the items it calibrates
-from are in the demand. A tenant may subscribe too, and reads the fixings
+to each public provider and routes to its source, so every public fixing item
+is in the demand and is stored under the system party. A tenant may subscribe too, and reads the fixings
 through its own series and its entitlement, as for any source.
 
 ** The reader
@@ -204,9 +190,6 @@ vendor id, the vendor time and the time it was received. It follows the snapshot
 reader that already returns the latest tick at or before an instant, on the
 durable table.
 
-The calibration is its own task: a feed's config names the fixing items it may
-start from, with a rank, and a policy (=latest_on_or_before_clock= or
-=exact:<date>=). See [[id:A4165C70-0EAB-483D-8055-C1D8BF543113][Calibrate the synthetic ticks from free public sources]].
 
 ** Coverage at the start
 
@@ -246,32 +229,12 @@ The steps for a key:
 6. The gate check =no-committed-credentials= fails when a file that git would
    commit holds the value of a key or password of =.env=.
 
-** How this design changed
-
-- *2026-10-23: a table of its own.* The first design loaded the public values
-  into a new table, =published_quote=, with a publisher catalogue, a series
-  mapping and a fetch and load provenance: five new entities beside the market
-  data service.
-- *2026-10-28: the existing tables.* Before any of it was built, the question
-  was asked whether the existing tables carry it. The catalogue, the vendor
-  mapping and the DQ pipeline held four of the five. An H.10 dataset already
-  travels the DQ path into =market_observation= and the feeds read it as a
-  vintage.
-- *2026-10-28: an adapter.* DQ is for canned data, a snapshot that stays fixed.
-  A public source publishes every day, and a feed that starts again should take
-  the newest value. So a public source is an adapter that publishes ticks, the
-  publisher is a provider, and the values are durable fixings. The new parts
-  are the durable class, the adapter, the provider terms and the reader. DQ
-  keeps the canned vintages.
-- *2026-11-09: one adapter for each route.* The overnight rates come from
-  publishers with APIs of their own, so the adapter split into a shared half
-  and one fetcher for each route, all hosted in the one process.
-
 * See also
 
 
+- [[id:784D9D97-721A-42EC-BA91-A85764979CD0][Fixings]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:FDD02CA9-1DAD-4162-95AC-C7C5C611DDDC][The market data path: a public fixing, a curve, a report]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
-- [[id:3F9D6EAE-9FB8-4A0D-9BAF-1EA3EA93AB4F][Synthetic prices are calibrated from free public sources]] — the publishers and their terms.
+- [[id:3F9D6EAE-9FB8-4A0D-9BAF-1EA3EA93AB4F][Free public sources for synthetic price calibration]] — the publishers and their terms.
 - [[id:6F3F1A80-5B4C-4F33-ADF0-F42CDE8FF8C2][The tick ingest pipeline]] — the durable tier the fixings use.
-- [[id:D71F9446-C62E-48A6-A87B-136EF598A59E][A source tick is stored once and entitled when it is read]] — how a tenant reads a source's ticks.
+- [[id:D71F9446-C62E-48A6-A87B-136EF598A59E][Storage and entitlement of stored ticks]] — how a tenant reads a source's ticks.

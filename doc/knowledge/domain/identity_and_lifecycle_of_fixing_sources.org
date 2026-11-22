@@ -1,0 +1,108 @@
+:PROPERTIES:
+:ID: 6E566C97-F2A4-4AE8-B509-BDE23568A0B8
+:END:
+#+title: Identity and lifecycle of fixing sources
+#+description: A fixing source names an administrator, a method, a time and a calendar; ISDA codes identify it, screens are attributes.
+#+type: knowledge
+#+audience: user
+#+level: cross
+#+filetags: :domain:fixing:reference_data:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+
+* Summary
+
+A *fixing source* names who produces an observation and how: the
+administrator, the method, the time and time zone of publication, the holiday
+calendar, the quote convention and the rounding. Market practice identifies a
+source by its rate source definition, such as an ISDA settlement rate option
+code, and treats the vendor screen that displays it as a mutable attribute.
+A source definition can change over time, so the version in force on the
+trade date matters. A source can also cease, as LIBOR did; a ceased source stays in
+the record, and ORE Studio keeps some as legacy sources for teaching.
+
+* Detail
+
+** What a source holds
+
+| Attribute | Meaning |
+|-----------+---------|
+| Kind | Published by a feed, keyed by a person, or derived from other sources. See [[id:6A625509-CD9A-4D13-8E16-37B75A4AED83][Derived and composite fixing sources]]. |
+| Asset | A currency for an interest rate source, a currency pair for an FX source. |
+| Tenor | The tenor of a rate source, such as 3M; none for an FX source. |
+| Quote convention | Mid, bid or offer, and whether the publisher quotes the pair inverted. |
+| Publication time and time zone | For example 16:00 London for the WM/Reuters fix. |
+| Holiday calendar | The days on which the source publishes. See [[id:53DB3AF1-6FA4-4B53-9D8E-A65F739F6F4D][Fixing dates and holiday calendars]]. |
+| Rounding | The number of decimal places of the result. |
+| Screen reference | The vendor page that displays it, such as a Reuters instrument code. |
+
+A trade's fixing terms repeat what it needs of these: an FX confirmation states
+the pair, the quote type, any inversion, the fixing time and zone and the
+rounding; a floating swap leg states the source, the time and the zone, and an
+FX source as well when a payment is in a non-deliverable currency.
+
+** Identity: the rate source definition, not the screen
+
+Annex A to the 1998 FX and Currency Option Definitions, published by ISDA and
+EMTA, lists the /settlement rate options/: each has a name and a code, such as
+=KRW KFTC18= or =KRW02= for the Korean won rate reported by Seoul Money
+Brokerage Services by about 4pm Seoul time. The 2017 restatement defines each
+option by the entity that quotes the rate rather than by the page that
+publishes it, to remove the risk of a vendor changing a screen; the screen
+references survive only as practitioners' notes. The definitions are deemed to
+be incorporated as amended through the trade date unless the parties agree
+otherwise. FpML carries the code in =settlementRateOption=. For interest rates
+the 2006 ISDA Definitions play the same role through floating rate options.
+
+Two consequences follow for a system. The code is the identity of the source,
+and the screen reference is an attribute that may change. And the definition
+is versioned, so a trade reads the definition that was in force when it was
+done.
+
+** Benchmarks and their administrators
+
+A widely used fixing source is a /financial benchmark/, and its administrator
+is subject to the IOSCO Principles for Financial Benchmarks, which require a
+transparent methodology, controls on submissions and a record of how each
+value was determined. The principles followed the LIBOR and FX benchmark
+investigations; Duffie and Stein (2015) analyse why benchmarks based on
+submissions invite manipulation and how transaction-based designs reduce it.
+
+** A source can cease
+
+A source has a lifecycle. Its administrator can stop publishing it, or declare
+it no longer representative of its market. LIBOR is the leading case: following
+the FCA's announcement of 5 March 2021, most LIBOR settings ceased after
+31 December 2021 and the remaining US dollar settings after 30 June 2023.
+Trades that referenced a ceased setting moved to fallback rates, under the ISDA
+IBOR fallbacks for derivatives.
+
+A ceased source remains part of the record. Its past observations still settle
+the trades that fixed on them, and a historical valuation still reads them.
+ORE Studio also keeps ceased sources such as LIBOR as /legacy/ sources for
+teaching. A legacy source is a source whose status says it has ceased, not a
+source that has been removed. See
+[[id:2400E0FE-AEF0-4F9A-8392-F7D2E0E2A1E2][A data model for fixings]].
+
+** In ORE Studio
+
+ORE Studio names an FX fixing by its ORE index, =FX-SOURCE-CCY1-CCY2=, so the
+source is part of the identity of the fixing series, as
+[[id:F4BBEF34-D84C-4AE6-A3AA-DC47C3EE06EE][Public publishers publish daily fixings through a supplier session]]
+explains. It does not yet hold the source's other attributes as data; see
+[[id:2400E0FE-AEF0-4F9A-8392-F7D2E0E2A1E2][A data model for fixings]].
+
+* See also
+
+- [[id:784D9D97-721A-42EC-BA91-A85764979CD0][Fixings]] — the structure note.
+- [[id:7B09CA1B-606D-493F-A784-676BAE701FC8][The WM/Reuters 4pm fix as the dominant FX benchmark]] — exemplifies: one administrator and its method.
+- [[id:5DD9A309-91E0-4CAB-BD9D-6ECB3B5EB58E][Currency pairs]] — completes: the quote and inversion conventions of a pair.
+
+* Sources
+
+- ISDA and EMTA (2019). /Annex A to the 1998 FX and Currency Option Definitions/, amended and restated 19 November 2017, amended 3 January 2019. [[https://www.isda.org/book/annex-a-to-the-1998-fx-and-currency-option-definitions/][isda.org]]
+- FpML. /Settlement rate option scheme/ and the =settlementRateOption= element. [[https://www.fpml.org/][fpml.org]]
+- Financial Conduct Authority (2021). /Announcement on the future cessation and loss of representativeness of the LIBOR benchmarks/, 5 March 2021. [[https://www.fca.org.uk/publication/documents/future-cessation-loss-representativeness-libor-benchmarks.pdf][fca.org.uk]]
+- ISDA (2006). /2006 ISDA Definitions/. International Swaps and Derivatives Association. [[https://www.isda.org/book/2006-isda-definitions/][isda.org]]
+- IOSCO (2013). /Principles for Financial Benchmarks: Final Report/, July 2013. [[https://www.iosco.org/library/pubdocs/pdf/IOSCOPD415.pdf][iosco.org]]
+- Duffie, D. and Stein, J. C. (2015). Reforming LIBOR and Other Financial Market Benchmarks. /Journal of Economic Perspectives/, 29(2), 191--212. [[https://ideas.repec.org/a/aea/jecper/v29y2015i2p191-212.html][RePEc]]

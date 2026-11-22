@@ -102,6 +102,13 @@ The field list that states what the pair should carry, and why an override of th
 default deserves a flag, is on
 [[id:CC6D86D8-33FC-41D6-AC27-F35FA942F436][Currency pair and currency entity fields]].
 
+* Each cut needs a fixing source
+
+A cut can be offered only if a fixing source records the market at its instant:
+a cash-settled option settles on that observation, and a holder who decides late
+needs the spot at the cut on record. The cuts ORE Studio offers, and the source
+paired with each, are in [[id:5AF9CEEF-A878-443A-8C32-C6E9F6C26FC9][Fixing sources for option cuts and non-deliverable currencies]].
+
 * What the sources establish
 
 No claim on this page rests on an external source. The times themselves are
@@ -111,6 +118,7 @@ them.
 
 * See also
 
+- [[id:C9887852-42C9-48BE-8E8C-BB66FCC48E83][Expiries]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:33E879B7-496A-406D-B3F2-72637379AD02][Kinds of cut]] — the classification by occasion, against which this page states an instant rather than an occasion.
 - [[id:5DD9A309-91E0-4CAB-BD9D-6ECB3B5EB58E][Currency Pairs]] — the hub for the pair the code is a property of.

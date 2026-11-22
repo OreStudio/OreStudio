@@ -144,6 +144,25 @@ against the store, and a name no library holds is recorded with no version, so
 that the run, which needs the script, is what fails. Such a trade has no version
 to keep, so a later amendment that states none takes the version current then.
 
+The packaging step of a run writes the library. It collects the versions its
+scripted trades name, reads them from the trading service with the run's token,
+and writes =scriptlibrary.xml= where the run document's =scriptLibrary=
+parameter names it, stating that parameter when the document does not; a copy of
+the library that the run's configuration carries is replaced. A version is read
+as the script's row at that version and every row beneath the script that
+carries it as its script version. ORE finds a script by its name alone, so one
+run holds one script for each name. Where the trades of a run name one script at
+more than one version, each version is written under a name of its own, the
+script's name followed by its tenant and version, and each trade that states its
+variables in the generic =ScriptedTradeData= form is given that name. A trade
+that states them on the product's own element cannot be renamed, as ORE takes
+the script's name from the element, so it keeps the script's name, and trades of
+that kind that name two versions of one script refuse the run. A trade with its
+script inline is written with no script name, as ORE reads a script name before
+an inline script. The run is refused, naming each trade or version, when a trade
+names a script no library held when it was booked, or the store does not hold a
+version a trade names.
+
 * See also
 
 - [[id:CF5A2387-58E8-45A3-8B5B-24FF1F1464B9][Scripted Trades: An Architectural Overview]] — the structure note for the subsystem.

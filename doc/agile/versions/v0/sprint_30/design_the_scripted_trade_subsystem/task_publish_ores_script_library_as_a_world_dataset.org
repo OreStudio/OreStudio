@@ -109,7 +109,32 @@ task and name that file in the Command column.
 
 * Notes
 
-** What the fifth PR found
+** What the sixth PR found
+
+ORE finds a script by its name alone, and a run's trades can name one script at
+two versions as soon as the library moves on: a trade booked before keeps its
+version, and a trade booked after takes the new one. A generic
+=ScriptedTradeData= trade names its script with =ScriptName=, so the run writes
+each version under a name of its own and gives each such trade that name. A
+trade that states its terms on the product's element, =Accumulator01Data= for
+one, takes the script's name from the element (=scriptedtrade.cpp=, where the
+name is the element less =Data=), so it cannot be renamed; those trades must
+agree on one version, and the run is refused when they do not.
+
+ORE reads =ScriptName= before an inline =Script=, while the store treats a trade
+with a body as inline and records no version for it. The run therefore writes an
+inline trade with no script name, so ORE runs the text the trade states.
+
+ORE's native types that wrap a script, the accumulators, TaRF and the
+autocallable among them, carry their scripts inside the engine and read no
+library, so only =ScriptedTrade= trades need it.
+
+No business role holds =trading::scripts:read=, and none holds the read of
+scripted instruments either: a scripted trade is read under
+=trading::trades:read=. The read of the versions a run's trades name is checked
+against that permission too, since a trade's script is part of the trade, and no
+role changes.
+
 
 The pin is set by a trigger on the scripted instruments table rather than by
 the booking service, because three paths write the table: booking, the import

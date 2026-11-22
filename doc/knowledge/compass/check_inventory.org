@@ -466,7 +466,7 @@ Reports each malformed filetag, generated marker and id link of the org pages, a
 |------+-----------|
 | =bad_filetag= | Every tag of a page's first #+filetags: is lowercase: a letter, then letters, digits, _, . or -. |
 | =unclosed_marker= | Every '# BEGIN generated X' comment has a matching '# END generated X' comment. |
-| =marker_without_writer= | A '# BEGIN generated X (script)' marker names a script that exists and writes the page. |
+| =marker_without_writer= | A '# BEGIN generated X (writer)' marker names a script that exists and writes the page, or 'compass generate: codec' for a codec compass.docs ships. |
 | =malformed_link= | An id link whose target has a hyphen is a UUID. |
 | =dangling_link= | Every id link names the :ID: of some page. |
 | =durable_link= | A page under doc/llm, doc/meta, doc/knowledge or doc/recipes links no agile page. |

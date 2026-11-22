@@ -61,7 +61,7 @@ This verb creates the artefact and nothing else. Picking up a unit of work is
 
 ** Types
 
-# BEGIN generated types (build/scripts/generate_skill_type_tables.py)
+# BEGIN generated types (compass generate: skill_type_tables)
 
 One row per document type. The scaffold command, where it lands, and the sections the template leaves for you to fill.
 

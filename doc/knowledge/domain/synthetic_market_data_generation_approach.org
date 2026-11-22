@@ -1214,7 +1214,7 @@ parameters come from.
 
 
 
-- [[id:2376A086-4C3C-4D61-92E5-29B122DB6A41][Synthetic feed graph]] -- the feeds as a graph of named nodes and stored edges, with states, stops and messages (proposed).
+- [[id:2376A086-4C3C-4D61-92E5-29B122DB6A41][Synthetic feed graph]] -- the feeds as a graph of named nodes and stored edges, with states, stops and messages.
 - [[id:90D85E90-E7EA-48D8-9245-313ECA3F9392][Synthetic feed naming scheme]] -- how a feed's source name states who produces it and what it observes, in oresmd's terms.
 - [[id:576D0E28-E783-44D4-9C0F-C7ADD307539E][Volatility]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:FDD02CA9-1DAD-4162-95AC-C7C5C611DDDC][The market data path: a public fixing, a curve, a report]] — the structure note that orders this cluster, and where to read this page in it.

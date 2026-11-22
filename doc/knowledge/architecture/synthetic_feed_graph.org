@@ -18,9 +18,9 @@ through the run's market board, so no screen can show them and a stop says
 nothing to what depends on it. This page designs the graph as data: named
 nodes, stored edges, a state with a reason for every node that flows down the
 edges, a stop for every node, and a message log for every node. Its names
-follow [[id:90D85E90-E7EA-48D8-9245-313ECA3F9392][Synthetic feed naming scheme]]. It is a proposal: the five
-choices below are signed off before any of it is built, as recorded on
-[[id:46546EEB-580D-4C37-9398-422D3A18D692][the task]] that designs it.
+follow [[id:90D85E90-E7EA-48D8-9245-313ECA3F9392][Synthetic feed naming scheme]]. The owner signed the five
+choices below off on 2026-11-22, each as recommended, as recorded on
+[[id:46546EEB-580D-4C37-9398-422D3A18D692][the task]] that designed it.
 
 * Detail
 
@@ -66,7 +66,7 @@ names the input that starved it, so the chain reads back to the first cause.
 Starting a node clears its own stop; the nodes below it recover when all their
 inputs run again, with no action of their own.
 
-** The choices to sign off
+** The choices, signed off
 
 *** How the edges are stored
 
@@ -76,7 +76,7 @@ inputs run again, with no action of their own.
   it is missing.
 - /Option B, one edge table./ Rows of (node, input, role) for every edge,
   maintained by the publish and by every edit.
-- /Recommended: A./ A surface without a spot or a curve is not a surface, and a
+- /Adopted: A./ A surface without a spot or a curve is not a surface, and a
   column states that where a row in a side table cannot. The spot pair is
   already stored this way. The curves become two columns that name the curve
   node by its name under the scheme, so no edge is found by a rule any more.
@@ -88,7 +88,7 @@ inputs run again, with no action of their own.
   becomes a stop for any node, keyed by its name, with who, when and why, and
   its history.
 - /Option B, a stop flag on each kind's own row./
-- /Recommended: A./ One rule, one history and one pair of verbs, stop and start a
+- /Adopted: A./ One rule, one history and one pair of verbs, stop and start a
   node by name, whatever its kind. The stopped simulated source table becomes
   this table.
 
@@ -99,7 +99,7 @@ inputs run again, with no action of their own.
   A state is computed from the stops, the runs and the last diagnostic, and a
   change is walked down the edges.
 - /Option B, stored in a table./
-- /Recommended: A./ A state is a consequence of other facts, and a stored copy of
+- /Adopted: A./ A state is a consequence of other facts, and a stored copy of
   a consequence goes stale the moment one of its facts moves. What must last,
   the stops, is stored by choice 2.
 
@@ -115,7 +115,7 @@ inputs run again, with no action of their own.
   the bus's streams are kept for
   ([[id:45D4751E-5089-4C82-9B37-63EFBD4A0B18][JetStream streams and consumers]]).
 - /Option C, a table of the synthetic service's own./
-- /Recommended: A./ No new store: a node's page reads its log from telemetry by
+- /Adopted: A./ No new store: a node's page reads its log from telemetry by
   the node's name. The messages are the state changes with their reasons, the
   operator's stops and starts, and the diagnostics a node raises, such as a
   latent surface's refused expiry or missing convention. This needs a check
@@ -126,7 +126,7 @@ inputs run again, with no action of their own.
 - /Option A, one read of the whole graph./ A verb that answers every node with
   its state, reason and cause, and every edge with its role.
 - /Option B, a read per node of its neighbours./
-- /Recommended: A, with a filter by node./ The graph is a few hundred nodes, so
+- /Adopted: A, with a filter by node./ The graph is a few hundred nodes, so
   the whole read is cheap; the filter answers one node's upstreams and
   downstreams for its page. Both the BFF and ores.http serve it.
 

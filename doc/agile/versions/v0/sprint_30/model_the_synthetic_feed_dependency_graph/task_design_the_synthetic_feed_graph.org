@@ -26,11 +26,11 @@ The feed graph the story describes gets one design, signed off before it is buil
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:8DE041AE-95E6-40CE-9B62-2CE3BA77838A][Model the synthetic feeds as a dependency graph: upstreams, latent surfaces and vendor views]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-22                               |
 
 * Acceptance
@@ -71,6 +71,9 @@ task and name that file in the Command column.
 
 * Notes
 
+- *Sign-off.* The owner signed the design off on 2026-11-22: "signed off, go with recommendations".
+- *To check when building the log.* That a telemetry log entry carries an attribute a query can filter on, so a node's page reads its log by name.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -95,3 +98,14 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The design is written in [[id:2376A086-4C3C-4D61-92E5-29B122DB6A41][Synthetic feed graph]] and adopted. The graph
+has four node kinds (upstream, latent, view, source), named by the signed-off
+scheme, and four states (running, stopped, starved, failing), each with its
+reason; a node runs when it is not stopped and every input runs. The owner
+signed off the five choices on 2026-11-22, each as recommended: edges as typed
+columns on the dependent node, the two curves among them; one stop table for
+any node, keyed by name, which the stopped source table becomes; state derived
+in the service, never stored; each node's messages as telemetry log entries
+tagged with its name; and one read of the whole graph, with a filter by node,
+served by the BFF and ores.http.

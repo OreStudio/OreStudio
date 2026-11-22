@@ -381,7 +381,7 @@ tick, so a curve's move does not yet reach the surface's quotes
 
 * See also
 
-- [[id:2376A086-4C3C-4D61-92E5-29B122DB6A41][Synthetic feed graph]] -- the feeds as a graph of named nodes and stored edges, with states, stops and messages (proposed).
+- [[id:2376A086-4C3C-4D61-92E5-29B122DB6A41][Synthetic feed graph]] -- the feeds as a graph of named nodes and stored edges, with states, stops and messages.
 - [[id:90D85E90-E7EA-48D8-9245-313ECA3F9392][Synthetic feed naming scheme]] -- how a feed's source name states who produces it and what it observes, in oresmd's terms.
 - [[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]] -- the method per asset class, the
   cross-asset constraints and the measure split this page implements.

@@ -20,7 +20,13 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { baseForScreen } from './servers.js';
+import { baseForScreen, otherOf, peerOf, servingDeployment, type page } from './servers.js';
+
+const PORTS = { cpp: '20401', bff: '20402' };
+
+function at(port: string, path = '/', search = '', hash = ''): page {
+    return { protocol: 'http:', hostname: 'localhost', port, pathname: path, search, hash };
+}
 
 describe('the server a screen asks', () => {
     it('asks the BFF for a screen that has not moved', () => {
@@ -33,5 +39,44 @@ describe('the server a screen asks', () => {
 
     it('moves only the screens the flag names', () => {
         expect(baseForScreen('currencies', ['tenors'])).toBe('');
+    });
+});
+
+describe('the server the page is on', () => {
+    it('is the C++ server on its port', () => {
+        expect(servingDeployment(PORTS, at('20401'))).toBe('cpp');
+    });
+
+    it('is the BFF on its port', () => {
+        expect(servingDeployment(PORTS, at('20402'))).toBe('bff');
+    });
+
+    it('is neither on a port that serves no deployment', () => {
+        expect(servingDeployment(PORTS, at('5173'))).toBeUndefined();
+    });
+
+    it('offers the other one, whichever it is', () => {
+        expect(otherOf('cpp')).toBe('bff');
+        expect(otherOf('bff')).toBe('cpp');
+    });
+});
+
+describe('the way to the other server', () => {
+    it('carries the screen the person is looking at', () => {
+        expect(peerOf(PORTS, at('20402', '/market-data/quotes', '?after=7'))).toEqual({
+            deployment: 'cpp',
+            url: 'http://localhost:20401/market-data/quotes?after=7',
+        });
+    });
+
+    it('goes back the way it came', () => {
+        expect(peerOf(PORTS, at('20401', '/login'))).toEqual({
+            deployment: 'bff',
+            url: 'http://localhost:20402/login',
+        });
+    });
+
+    it('offers nothing from a page no deployment serves', () => {
+        expect(peerOf(PORTS, at('5173'))).toBeUndefined();
     });
 });

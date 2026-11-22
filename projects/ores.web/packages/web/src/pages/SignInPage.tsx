@@ -24,11 +24,45 @@ import { Link } from 'react-router';
 import { useTranslation } from '../i18n/Provider.js';
 import { Button, Field, Input, Notice } from '../ui/Primitives.js';
 import { ApiFailure } from '../api/transport.js';
+import { peerOf, servingDeployment, type deployment, type page } from '../api/servers.js';
 import { PartyChoice, type PartyOption } from '../ui/PartyChoice.js';
 import { PasswordInput } from '../ui/PasswordField.js';
 import { JourneySplash } from '../journeys/parts.js';
 import type { SignInOutcome } from '../session/SessionProvider.js';
 import type { PartySummary } from '@ores/wire-protocol/browser';
+
+/** The name a person reads for a deployment. */
+function serverKey(one: deployment): string {
+    return one === 'cpp' ? 'signIn.serverCpp' : 'signIn.serverBff';
+}
+
+/**
+ * The way to the other server of the port, on the screen where a person decides which
+ * one they are using.
+ *
+ * The app is the same bundle on both, so the switch is a link to the same screen on the
+ * other origin and the page moves rather than a prefix. A page on neither port, such as
+ * one the dev server answers, has no peer and states nothing.
+ */
+export function ServerSwitch({ at }: { readonly at?: page }): ReactNode {
+    const { t } = useTranslation();
+    const where = at ?? window.location;
+    const here = servingDeployment(__ORE_SERVER_PORTS__, where);
+    const peer = peerOf(__ORE_SERVER_PORTS__, where);
+    if (here === undefined || peer === undefined) return null;
+    return (
+        <p className="mt-4 border-t border-line pt-4 text-xs text-ink-muted">
+            {t('signIn.servedBy', { server: t(serverKey(here)) })}{' '}
+            <a
+                className="font-medium text-accent-bright hover:underline"
+                href={peer.url}
+                data-server={peer.deployment}
+            >
+                {t('signIn.switchTo', { server: t(serverKey(peer.deployment)) })}
+            </a>
+        </p>
+    );
+}
 
 /**
  * Signing in.
@@ -217,6 +251,7 @@ export function SignInPage({
                 <JourneySplash />
             </div>
             {parties !== undefined ? picker : form}
+            <ServerSwitch />
         </div>
     );
 }

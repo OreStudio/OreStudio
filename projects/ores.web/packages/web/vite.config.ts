@@ -100,6 +100,9 @@ export default defineConfig(({ mode }) => {
     // The C++ server of the port. A screen moved to it asks under /cpp, and the
     // proxy is what makes the browser see one origin either way.
     const CPP_PORT = env['ORES_HTTP_SERVER_PORT'] ?? '21601';
+    // The port each deployment serves the app on, so the sign-in screen can offer the
+    // other one. The host is the browser's own, taken at run time.
+    const HTTP_PORT = env['ORES_HTTP_PORT'] ?? CPP_PORT;
     const WEB_PORT = Number(env['ORES_WEB_DEV_PORT'] ?? '5173');
     const stamp = buildStamp(checkout);
 
@@ -110,6 +113,7 @@ export default defineConfig(({ mode }) => {
             __BUILD_RELEASE__: JSON.stringify(stamp.release),
             __BUILD_COMMIT__: JSON.stringify(stamp.commit),
             __BUILD_DIRTY__: JSON.stringify(stamp.dirty),
+            __ORE_SERVER_PORTS__: JSON.stringify({ cpp: HTTP_PORT, bff: BFF_PORT }),
         },
         server: {
             port: WEB_PORT,

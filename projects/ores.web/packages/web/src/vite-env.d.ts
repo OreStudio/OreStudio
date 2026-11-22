@@ -44,3 +44,11 @@ declare const __BUILD_VERSION__: string;
 declare const __BUILD_RELEASE__: string;
 declare const __BUILD_COMMIT__: string;
 declare const __BUILD_DIRTY__: boolean;
+
+/**
+ * The port each deployment of the port serves the app on: the C++ server and the BFF.
+ *
+ * The sign-in screen offers the other one, so a person compares the two servers on the
+ * same screen. The host is the browser's own, taken when the page runs.
+ */
+declare const __ORE_SERVER_PORTS__: { readonly cpp: string; readonly bff: string };

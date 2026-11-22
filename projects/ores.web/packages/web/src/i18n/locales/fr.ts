@@ -6964,8 +6964,8 @@ const fr: SourceCatalogue = {
                 interest_rates: "Taux d'intérêt",
             },
             runs: {
-                start: 'Démarrer',
-                stop: 'Arrêter',
+                start: 'Démarrer les flux',
+                stop: 'Arrêter les flux',
                 startTitle: 'Démarrer {name} ?',
                 stopTitle: 'Arrêter {name} ?',
                 startBody:
@@ -6975,6 +6975,20 @@ const fr: SourceCatalogue = {
                 startReport:
                     '{started} démarrés pour {name}. {already} tournaient déjà, {skipped} ignorés.',
                 stopReport: '{stopped} arrêtés pour {name}.',
+            },
+            source: {
+                title: 'Source simulée',
+                start: 'Démarrer la source',
+                stop: 'Arrêter la source',
+                holds: '{feeds} flux servis · {surfaces} surfaces de volatilité tenues',
+                stopTitle: 'Arrêter {source} ?',
+                effect: {
+                    feeds: "Les {count} flux qu'elle sert pour le magasin s'arrêtent.",
+                    surfaces:
+                        "Elle libère les {count} surfaces de volatilité qu'elle tient : {stop} s'arrêtent avec elle, et {runOn} continuent pour d'autres sources.",
+                    byHand: 'Les flux démarrés à la main continuent.',
+                    stays: "Elle reste arrêtée, même après un redémarrage du service, jusqu'à ce que quelqu'un la démarre.",
+                },
             },
             provider: {
                 provider: 'Fournisseur',

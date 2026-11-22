@@ -6910,8 +6910,8 @@ const pt: SourceCatalogue = {
                 interest_rates: 'Taxa de juro',
             },
             runs: {
-                start: 'Iniciar',
-                stop: 'Parar',
+                start: 'Iniciar feeds',
+                stop: 'Parar feeds',
                 startTitle: 'Iniciar {name}?',
                 stopTitle: 'Parar {name}?',
                 startBody:
@@ -6921,6 +6921,20 @@ const pt: SourceCatalogue = {
                 startReport:
                     '{started} iniciados em {name}. {already} já corriam, {skipped} ignorados.',
                 stopReport: '{stopped} parados em {name}.',
+            },
+            source: {
+                title: 'Fonte simulada',
+                start: 'Iniciar fonte',
+                stop: 'Parar fonte',
+                holds: '{feeds} feeds servidos · {surfaces} superfícies de volatilidade mantidas',
+                stopTitle: 'Parar {source}?',
+                effect: {
+                    feeds: 'Os {count} feeds que serve para o armazém param.',
+                    surfaces:
+                        'Liberta as {count} superfícies de volatilidade que mantém: {stop} param com ela, e {runOn} continuam para outras fontes.',
+                    byHand: 'Os feeds iniciados à mão continuam a correr.',
+                    stays: 'Fica parada, mesmo depois de reiniciar o serviço, até alguém a iniciar.',
+                },
             },
             provider: {
                 provider: 'Fornecedor',

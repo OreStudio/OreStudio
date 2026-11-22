@@ -35,6 +35,7 @@
 #include <set>
 #include <stdexcept>
 #include <string>
+#include <string_view>
 #include <thread>
 #include <tuple>
 #include <utility>
@@ -314,6 +315,14 @@ public:
     [[nodiscard]] std::size_t running_count() const {
         std::lock_guard lock(mu_);
         return running_.size();
+    }
+
+    /** How many of the generators this runner runs now are of @p kind. */
+    [[nodiscard]] std::size_t running_count_of(std::string_view kind) const {
+        std::lock_guard lock(mu_);
+        return static_cast<std::size_t>(std::ranges::count_if(running_, [kind](const auto& entry) {
+            return entry.second.feed && entry.second.feed->kind() == kind;
+        }));
     }
 
     /**

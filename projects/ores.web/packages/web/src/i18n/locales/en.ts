@@ -6864,8 +6864,8 @@ export const en: SourceCatalogue = {
                 interest_rates: 'Interest rate',
             },
             runs: {
-                start: 'Start',
-                stop: 'Stop',
+                start: 'Start feeds',
+                stop: 'Stop feeds',
                 startTitle: 'Start {name}?',
                 stopTitle: 'Stop {name}?',
                 startBody:
@@ -6875,6 +6875,20 @@ export const en: SourceCatalogue = {
                 startReport:
                     'Started {started} of {name}. {already} already running, {skipped} skipped.',
                 stopReport: 'Stopped {stopped} of {name}.',
+            },
+            source: {
+                title: 'Simulated source',
+                start: 'Start source',
+                stop: 'Stop source',
+                holds: '{feeds} feeds served · {surfaces} vol surfaces held',
+                stopTitle: 'Stop {source}?',
+                effect: {
+                    feeds: 'The {count} feeds it serves for the store stop.',
+                    surfaces:
+                        'It releases the {count} vol surfaces it holds: {stop} stop with it, and {runOn} run on for other sources.',
+                    byHand: 'Feeds started by hand keep running.',
+                    stays: 'It stays stopped, a restart of the service included, until someone starts it.',
+                },
             },
             provider: {
                 provider: 'Provider',

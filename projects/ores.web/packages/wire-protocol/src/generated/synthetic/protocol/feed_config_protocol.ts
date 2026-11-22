@@ -193,6 +193,78 @@ export interface ListFeedsResponse {
 }
 
 /**
+ * @brief One simulated source of the catalogue as the synthetic service serves it.
+ */
+export interface SimulatedSource {
+    /** @brief The catalogue name of the source, which its adapter announces under. */
+    source_name: string;
+    /** @brief The provider whose notation its ticks use. */
+    provider_code: string;
+    /** @brief An operator stopped it, and it stays stopped until someone starts it. */
+    stopped: boolean;
+    /** @brief How many feeds its adapter runs now for the store, its surface holds aside. */
+    served_feeds: number;
+    /** @brief How many vol surfaces its adapter holds now. */
+    held_surfaces: number;
+    /** @brief How many of those no other source holds, so they would stop with it. */
+    surfaces_only_held_here: number;
+}
+
+/**
+ * @brief Request the simulated sources the service serves, each with its state.
+ */
+export interface ListSimulatedSourcesRequest {}
+
+/**
+ * @brief The simulated sources, in name order, and whether the read succeeded.
+ */
+export interface ListSimulatedSourcesResponse {
+    success: boolean;
+    message: string;
+    /** @brief The sources, in name order. */
+    sources: SimulatedSource[];
+}
+
+/**
+ * @brief Request to stop one simulated source, and keep it stopped until it is started.
+ *
+ * Its adapter stops: the feeds it runs for the store stop, and it releases the vol surfaces
+ * it holds, each of which runs on while another source holds it. Feeds started by hand run on.
+ */
+export interface StopSimulatedSourceRequest {
+    /** @brief The catalogue name of the source. */
+    source_name: string;
+    /** @brief Why it is stopped, as a change reason code. */
+    reason_code: string;
+    /** @brief What the person said about why. */
+    commentary: string;
+}
+
+/**
+ * @brief Whether the source stopped, and why not when it did not.
+ */
+export interface StopSimulatedSourceResponse {
+    success: boolean;
+    message: string;
+}
+
+/**
+ * @brief Request to start a stopped simulated source again.
+ */
+export interface StartSimulatedSourceRequest {
+    /** @brief The catalogue name of the source. */
+    source_name: string;
+}
+
+/**
+ * @brief Whether the source started, and why not when it did not.
+ */
+export interface StartSimulatedSourceResponse {
+    success: boolean;
+    message: string;
+}
+
+/**
  * @brief The policy a class calibrates under: its own row, or the defaults when it has none.
  */
 export interface CalibrationPolicySummary {
@@ -390,6 +462,9 @@ export const subjects = {
     start_feed_request: 'synthetic.v1.ops.start_feed',
     stop_feed_request: 'synthetic.v1.ops.stop_feed',
     list_feeds_request: 'synthetic.v1.feed_configs.list',
+    list_simulated_sources_request: 'synthetic.v1.simulated_sources.list',
+    stop_simulated_source_request: 'synthetic.v1.simulated_sources.stop',
+    start_simulated_source_request: 'synthetic.v1.simulated_sources.start',
     calibrate_request: 'synthetic.v1.ops.calibrate_feeds',
     review_variance_calibration_request: 'synthetic.v1.ops.review_variance_calibration',
 } as const;
@@ -402,6 +477,9 @@ export const requiresSession = {
     start_feed_request: true,
     stop_feed_request: true,
     list_feeds_request: true,
+    list_simulated_sources_request: true,
+    stop_simulated_source_request: true,
+    start_simulated_source_request: true,
     calibrate_request: true,
     review_variance_calibration_request: true,
 } as const;

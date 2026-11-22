@@ -1889,6 +1889,84 @@ describe('synthetic operations', () => {
         expect(calls[0]?.body).toEqual({ config_id: ID, source_name: '' });
     });
 
+    it('lists the simulated sources with what each runs and holds', async () => {
+        const { server, sessionId } = buildTestServer({
+            'synthetic.v1.simulated_sources.list': {
+                success: true,
+                message: '',
+                sources: [
+                    {
+                        source_name: 'bloomberg-a',
+                        provider_code: 'bloomberg',
+                        stopped: false,
+                        served_feeds: 26,
+                        held_surfaces: 14,
+                        surfaces_only_held_here: 3,
+                    },
+                ],
+            },
+        });
+        const response = await send(server, sessionId, 'GET', '/api/synthetic/simulated-sources');
+        expect(response.statusCode).toBe(200);
+        expect(response.json().sources[0]).toMatchObject({
+            source_name: 'bloomberg-a',
+            held_surfaces: 14,
+            surfaces_only_held_here: 3,
+        });
+    });
+
+    it('stops a simulated source with the reason the person gave', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'synthetic.v1.simulated_sources.stop': {
+                success: true,
+                message: 'Stopped bloomberg-a',
+            },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'POST',
+            '/api/synthetic/simulated-sources/bloomberg-a/stop',
+            { reason_code: 'common.other', commentary: 'Quiet the vendor for a demo.' },
+        );
+        expect(response.statusCode).toBe(200);
+        expect(calls[0]?.body).toEqual({
+            source_name: 'bloomberg-a',
+            reason_code: 'common.other',
+            commentary: 'Quiet the vendor for a demo.',
+        });
+    });
+
+    it('refuses a stop that gives no reason, before it reaches the service', async () => {
+        const { server, sessionId, calls } = buildTestServer({});
+        const response = await send(
+            server,
+            sessionId,
+            'POST',
+            '/api/synthetic/simulated-sources/bloomberg-a/stop',
+            {},
+        );
+        expect(response.statusCode).toBe(400);
+        expect(calls).toHaveLength(0);
+    });
+
+    it('starts a stopped simulated source', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'synthetic.v1.simulated_sources.start': {
+                success: true,
+                message: 'Started bloomberg-a',
+            },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'POST',
+            '/api/synthetic/simulated-sources/bloomberg-a/start',
+        );
+        expect(response.statusCode).toBe(200);
+        expect(calls[0]?.body).toEqual({ source_name: 'bloomberg-a' });
+    });
+
     it('starts a folder and reports the counts by kind', async () => {
         const { server, sessionId } = buildTestServer({
             'marketdata.v1.ops.start_feeds_under_folder': {

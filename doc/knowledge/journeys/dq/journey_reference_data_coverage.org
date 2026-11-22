@@ -101,9 +101,12 @@ rendered with =plantuml -tpng wireframe_reference_data_coverage.puml=.
 
 The prototype is at
 [[proj:doc/prototypes/dq/reference-data-coverage/][=doc/prototypes/dq/reference-data-coverage/=]]:
-the roster by level, the member table with its four reasons, and the preview, run
-and history panels behind their buttons. It draws mock data and every place where
-the server does not yet answer is marked on the page. Its design note is
+the bundles grouped by level, the chosen bundle's members with the reason each is
+not ready, and the four reasons with their owners. It draws mock data and every
+place where the server does not yet answer is marked on the page. Steps 4 and 5 —
+the preview and the run — are drawn by the publish prototype below, and step 6 returns
+here.
+Its design note is
 [[id:CB98437A-6293-4AC0-B68A-06D606FC9225][Reference data coverage prototype]],
 and the publish it hands to is drawn by
 [[id:495EFAFA-A5B3-4DE4-93DB-FDFA577E3790][Publish a bundle prototype]]. A
@@ -160,8 +163,8 @@ no one.
   subject both exist, and nothing on the publish path writes a row, so the
   history is empty however the screen is built. This is captured as
   [[id:5C20BEF9-13CA-48B5-8221-E83C1D6345DD][The publication run log has no
-  writer, so the history screen is always empty]] and it is a precondition for
-  the history panel, not for this journey's first four steps.
+  writer, so the history screen is always empty]]. It is a precondition for any
+  history screen, not for this journey's first five steps.
 - *A read of an artefact table over the bus.* No subject reads
   =ores_dq_<plural>_artefact_tbl=, so the staged count and the preview are only
   reachable through the coverage operation above. DQ publishes artefact types and

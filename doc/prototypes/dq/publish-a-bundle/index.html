@@ -3,41 +3,31 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Publish a bundle journey prototype — ORE Studio</title>
-<link rel="stylesheet" href="prototype.css">
+<title>Publish a bundle — ORE Studio prototype</title>
+<link rel="stylesheet" href="management.css">
 </head>
 <body>
 
 <!--
   PROTOTYPE. Throwaway. Mock data, no backend, no build step.
 
-  Publish a bundle: the contents in the order they will run, the optional
-  members that publish only when someone asks for them, the mode, the preview
-  of what the run would write, the run itself, and the receipt.
+  Publish a bundle: its contents in dependency order, the optional members and
+  the mode, the preview of what the run would write, the run itself, and the
+  receipt.
 
     ?step=1|2|3|4|5    contents, options, preview, run, receipt
     ?optional=1        the optional members opted in
     ?mode=upsert|insert_only|replace_all
-    ?fail=1            the run halts on a step, and the receipt says why
-    ?gaps=0            hide the note on what the server does not serve
-
-  One bundle carries mock members, party_essentials. The other bundles list
-  their names and are not drawn.
+    ?fail=1            the run halts on a step, and the run says why
+    ?actor=<person>    who publishes
+    ?gaps=0            hide the notes on what the server does not serve
 -->
 
 <div class="proto-note">Prototype · mock data · reads no server</div>
-
-<header class="top">
-  <h1>Publish a bundle</h1>
-  <span class="where">party_essentials · Tenant level · writes into the tenant that asked</span>
-  <span class="spacer"></span>
-  <span class="where" id="instance"></span>
-</header>
-
-<main class="detail" id="detail"></main>
-
+<div id="app"></div>
 <div class="proto-bar" id="proto-bar"></div>
 
+<script src="management.js"></script>
 <script src="prototype.js"></script>
 </body>
 </html>

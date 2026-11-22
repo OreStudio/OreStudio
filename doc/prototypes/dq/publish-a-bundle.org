@@ -67,12 +67,15 @@ computes and does not serve — is marked on every step.
 ** States, by query string
 
 =?step=1|2|3|4|5=, =?optional=1=, =?mode=upsert|insert_only|replace_all=,
-=?fail=1=, =?gaps=0=.
+=?fail=1=, =?actor=<person>=, =?gaps=0=. The bar at the foot switches the mode
+and hides the server-gap notes; the rail only walks forward, as a run does.
 
 ** What is fake
 
 The bundle and its four members, their counts, the workflow instance identifier,
-and the failure message of the halted step. The root-LEI parameter page is named —
+the failure message of the halted step, and the demo clock the run's times would
+read against. The two optional members toggle together, from one query parameter,
+where a real screen would let the person choose one of them. The root-LEI parameter page is named —
 =lei.parties= carries the note that it needs one — and not drawn, because it is
 the one place a per-type parameter page still exists and it deserves its own
 question rather than a sixth step here. The four counts in the receipt are the
@@ -81,9 +84,10 @@ shape the publish functions return; they are not read.
 ** Where the code lives
 
 [[proj:doc/prototypes/dq/publish-a-bundle/][=doc/prototypes/dq/publish-a-bundle/=]]:
-=index.html=, =prototype.css=, =prototype.js=. It shares its stylesheet's tokens
-with the coverage prototype by copy, because a prototype is a page that stands
-alone.
+=index.html=, =prototype.js=, and =management.css= and =management.js= copied
+verbatim from the conventions prototypes, as their own folders carry the same
+copy. The shell supplies the rail, the table, the timeline, the badges and the
+server-gap note; =prototype.js= holds the flow and the mock bundle.
 
 ** Verdict
 

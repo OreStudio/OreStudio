@@ -18,11 +18,12 @@
 * Summary
 
 This prototype argues that the question "is my reference data complete?" is one
-screen, and that the screen is a roster by level beside a member table. The
-level is not decoration: it decides which tenant holds the rows and whether a
-tenant owes a copy, so grouping by it is what makes the answer readable. The
-table then says, for one bundle, how much is staged, how much is published, and
-which of four reasons keeps a member from being ready. It answers to
+list screen, grouped by the level a bundle publishes at, with the chosen
+bundle's members underneath. The level is not decoration: it decides which
+tenant holds the rows and whether a tenant owes a copy, so grouping by it is
+what makes the answer readable. The member table then says how much is staged,
+how much is published, and which of four reasons keeps a member from being
+ready. It answers to
 [[id:5344ADC1-E729-4846-BE07-C6BC2169C4C9][Is my reference data complete?]].
 
 It is throwaway. It reads no server, opens with no build and no session, and
@@ -49,25 +50,28 @@ notes.
 - *A fresh database looks like a screen, not like an error.* The state that
   started this work was a recreate that reported success while the catalogues were
   empty; the prototype draws that state with a sentence.
-- *The history is drawn as absent, on purpose.* The run log exists and nothing
-  writes it, so the history panel says so. An empty table would be read as
-  "nothing was ever published", which is a different claim.
+- *The history is left out, on purpose.* The run log exists and nothing writes
+  it, so a history here would be an empty table, which reads as "nothing was ever
+  published" — a different claim. The absence is stated instead, in a server-gap
+  note.
 
-** The screens
+** The screen
 
-One screen, with the roster on the left and the detail on the right. The detail
-carries the member table and the four reasons, and three panels that open on
-demand: the preview of a publish, the run, and the history. The wireframe in the
-journey draws the same layout without the states.
+One list screen in three cards: the bundles grouped by level, the chosen
+bundle's members, and the four reasons with the owner of each. The screen
+publishes nothing. The publish itself is the journey's next step and is drawn by
+[[file:../publish-a-bundle.org][Publish a bundle]], so this page stays a read.
 
 ** States, by query string
 
 =?bundle=system_core|world|crypto|tenant_defaults|party_essentials|risk_management=,
-=?empty=1=, =?preview=1=, =?publish=1=, =?history=1=, =?gaps=0=.
+=?empty=1=, =?actor=<person>=, =?gaps=0=. The bar at the foot switches between
+the tenant as it is and a fresh database, and hides the server-gap notes.
 
 ** What is fake
 
-The bundles, their counts, and every staged and published figure.
+The bundles, their counts, and every staged and published figure, and the demo
+clock every relative time reads against.
 =party_essentials= and =risk_management= carry mock members because they are the
 two shapes the prototype argues: a bundle with a member that cannot publish, and
 a bundle with a member that publishes nothing. The other four bundles list their
@@ -78,19 +82,21 @@ all.
 ** Where the code lives
 
 [[proj:doc/prototypes/dq/reference-data-coverage/][=doc/prototypes/dq/reference-data-coverage/=]]:
-=index.html=, =prototype.css=, =prototype.js=. Plain HTML, CSS and JavaScript,
-with the design tokens copied from
-=projects/ores.web/packages/web/src/styles.css=. Nothing is built, imported or
-served.
+=index.html=, =prototype.js=, and =management.css= and =management.js=, which are
+the conventions prototypes' shell copied verbatim: the shell head, the
+breadcrumb, the page header, the refresh, the table, the badges and the server-gap
+note. The conventions mock data the script carries is inert here. Nothing is
+built, imported or served.
 
 ** Verdict
 
-The layout holds. The roster is the smallest thing that shows the level
-mattering, and the member table is the smallest thing that shows why a member is
-not ready. Two questions are left open and are recorded rather than settled:
-whether the published count belongs in the member table or behind the preview
-panel, because it costs one read per dataset; and whether the history panel
-belongs on this screen at all before the run log has a writer.
+The layout holds. Grouping the bundles by level is the smallest thing that shows
+the level mattering, and the member table is the smallest thing that shows why a
+member is not ready. One question is left open: the published count costs one read
+per dataset, so it may belong behind the bundle rather than on every row of the
+list, which is where the idleness is most visible today. The history is not drawn
+here at all, because the run log has no writer; when it gets one, it belongs to
+the publish journey and not to this screen.
 
 * See also
 

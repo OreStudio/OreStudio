@@ -1,407 +1,229 @@
-/*
- * PROTOTYPE. Throwaway. Mock data, no backend, no build step.
+/* Reference data coverage.
  *
- * The page answers one question: does this installation hold the reference
- * data it needs? The roster groups the bundles by the level they publish at,
- * because the level decides the tenant the rows land in and whether the
- * tenant owes a copy of its own. The member table then says, for one bundle,
- * how much of it is staged, how much is published, and — where it is not
- * ready — which of four reasons applies, because each reason has a different
- * person to fix it.
- */
+ * One list screen: the bundles the installation knows, grouped by the level
+ * they publish at, and the members of the chosen one underneath. The level
+ * decides the tenant the rows land in, so it is the grouping and not a column.
+ * A member that cannot publish states which of four reasons applies, because
+ * each reason has a different person to fix it. */
 
-const params = new URLSearchParams(location.search);
+(function () {
+    'use strict';
 
-const LEVELS = ["Platform", "World", "Tenant"];
+    var M = window.Mgmt;
+    var Q = M.params();
 
-const BUNDLES = [
-  {
-    level: "Platform",
-    code: "system_core",
-    name: "System core",
-    datasets: 12,
-    note: "published at bring-up",
-    members: [],
-  },
-  {
-    level: "World",
-    code: "world",
-    name: "World",
-    datasets: 41,
-    note: "published at bring-up",
-    members: [
-      { dataset: "refdata.countries", type: "countries", subject: "refdata.v1.ops.publish_countries_from_dq", staged: 249, published: 249 },
-      { dataset: "refdata.currencies", type: "currencies", subject: "refdata.v1.ops.publish_currencies_from_dq", staged: 179, published: 179 },
-      { dataset: "refdata.calendars", type: "calendars", subject: "refdata.v1.ops.publish_calendars_from_dq", staged: 35, published: 33, optional: true },
-    ],
-  },
-  {
-    level: "World",
-    code: "crypto",
-    name: "Crypto",
-    datasets: 9,
-    note: "not published here",
-    members: [],
-  },
-  {
-    level: "Tenant",
-    code: "tenant_defaults",
-    name: "Tenant defaults",
-    datasets: 3,
-    note: "published when the tenant was created",
-    members: [],
-  },
-  {
-    level: "Tenant",
-    code: "party_essentials",
-    name: "Party essentials",
-    datasets: 2,
-    note: "1 of 2 ready",
-    members: [
-      { dataset: "refdata.conventions", type: "conventions", subject: "refdata.v1.ops.publish_conventions_from_dq", staged: 10991, published: 10991 },
-      { dataset: "refdata.currency_pair_convention_calendars", type: "currency_pair_convention_calendars", subject: "refdata.v1.ops.publish_currency_pair_convention_calendars_from_dq", staged: 0, published: 0, reason: "no staged rows" },
-    ],
-  },
-  {
-    level: "Tenant",
-    code: "risk_management",
-    name: "Risk management",
-    datasets: 4,
-    note: "1 member names no subject",
-    members: [
-      { dataset: "testdata.business_units", type: "business_units", subject: "refdata.v1.ops.publish_business_units_from_dq", staged: 12, published: 12 },
-      { dataset: "testdata.portfolios", type: "portfolios", subject: "refdata.v1.ops.publish_portfolios_from_dq", staged: 4, published: 0 },
-      { dataset: "testdata.books", type: "books", subject: null, staged: 88, published: 0, reason: "no target subject" },
-      { dataset: "ore.report_definitions", type: "report_definitions", subject: "reporting.v1.ops.publish_report_definitions_from_dq", staged: 28, published: 28 },
-    ],
-  },
-];
+    /* The demo clock, so every relative time reads against this page's data. */
+    M.NOW = Date.parse('2026-11-22T12:00:00Z');
+    M.LOADED = '2026-11-22T11:58:00+00:00';
 
-const REASONS = [
-  ["no dataset", "The bundle lists a member that no dataset row names.", "DQ"],
-  ["no artefact type", "The dataset names an artefact type that does not exist.", "DQ"],
-  ["no target subject", "The artefact type names no target subject, so no publish can be dispatched.", "DQ"],
-  ["no staged rows", "The artefact table holds nothing, so there is nothing to publish.", "the importer"],
-];
+    var PERSON = M.PEOPLE[Q.get('actor')] || M.PEOPLE['m.okafor'];
 
-const empty = params.get("empty") === "1";
-const showGaps = params.get("gaps") !== "0";
-const selected = params.get("bundle") || (empty ? "world" : "party_essentials");
+    var LEVELS = [
+        ['Platform', 'One copy, in the system tenant, published at bring-up.'],
+        ['World', 'One copy, in the system tenant, published at bring-up.'],
+        ['Tenant', 'Written into the tenant that asked, when it asks.']
+    ];
 
-function el(tag, attrs, children) {
-  const node = document.createElement(tag);
-  Object.entries(attrs || {}).forEach(([key, value]) => {
-    if (value === null || value === undefined || value === false) return;
-    if (key === "class") node.className = value;
-    else if (key === "text") node.textContent = value;
-    else node.setAttribute(key, value);
-  });
-  (children || []).forEach((child) => node.append(child));
-  return node;
-}
+    var BUNDLES = [
+        { level: 'Platform', code: 'system_core', name: 'System core', datasets: 12, checked: '2026-11-22T09:40:00Z', members: [] },
+        { level: 'World', code: 'world', name: 'World', datasets: 41, checked: '2026-11-22T09:40:00Z', members: [
+            { dataset: 'refdata.countries', type: 'countries', subject: 'refdata.v1.ops.publish_countries_from_dq', staged: 249, published: 249 },
+            { dataset: 'refdata.currencies', type: 'currencies', subject: 'refdata.v1.ops.publish_currencies_from_dq', staged: 179, published: 179 },
+            { dataset: 'refdata.calendars', type: 'calendars', subject: 'refdata.v1.ops.publish_calendars_from_dq', staged: 35, published: 35, optional: true }
+        ] },
+        { level: 'World', code: 'crypto', name: 'Crypto', datasets: 9, checked: null, members: [] },
+        { level: 'Tenant', code: 'tenant_defaults', name: 'Tenant defaults', datasets: 3, checked: '2026-11-22T10:02:00Z', members: [] },
+        { level: 'Tenant', code: 'party_essentials', name: 'Party essentials', datasets: 2, checked: '2026-11-22T10:14:00Z', members: [
+            { dataset: 'refdata.conventions', type: 'conventions', subject: 'refdata.v1.ops.publish_conventions_from_dq', staged: 10991, published: 10991 },
+            { dataset: 'refdata.currency_pair_convention_calendars', type: 'currency_pair_convention_calendars', subject: 'refdata.v1.ops.publish_currency_pair_convention_calendars_from_dq', staged: 0, published: 0, reason: 'no staged rows' }
+        ] },
+        { level: 'Tenant', code: 'risk_management', name: 'Risk management', datasets: 4, checked: '2026-11-22T10:14:00Z', members: [
+            { dataset: 'testdata.business_units', type: 'business_units', subject: 'refdata.v1.ops.publish_business_units_from_dq', staged: 12, published: 12 },
+            { dataset: 'testdata.portfolios', type: 'portfolios', subject: 'refdata.v1.ops.publish_portfolios_from_dq', staged: 4, published: 0 },
+            { dataset: 'testdata.books', type: 'books', subject: null, staged: 88, published: 0, reason: 'no target subject' },
+            { dataset: 'ore.report_definitions', type: 'report_definitions', subject: 'reporting.v1.ops.publish_report_definitions_from_dq', staged: 28, published: 28 }
+        ] }
+    ];
 
-function bundleState(bundle) {
-  if (empty) return "none";
-  if (bundle.members.some((member) => member.reason)) return "error";
-  if (bundle.note.includes("not published")) return "none";
-  if (bundle.members.length === 0) return "ok";
-  const ready = bundle.members.filter((member) => !member.reason).length;
-  return ready === bundle.members.length ? "ok" : "part";
-}
+    var REASONS = [
+        ['no dataset', 'The bundle lists a member that no dataset row names.', 'DQ'],
+        ['no artefact type', 'The dataset names an artefact type that does not exist.', 'DQ'],
+        ['no target subject', 'The artefact type names no target subject, so nothing can be dispatched.', 'DQ'],
+        ['no staged rows', 'The artefact table holds nothing, so there is nothing to publish.', 'the importer']
+    ];
 
-const STATE_TEXT = {
-  ok: "published",
-  part: "part published",
-  none: "not published",
-  error: "not ready",
-};
+    var EMPTY = Q.get('empty') === '1';
+    var SELECTED = Q.get('bundle') || (EMPTY ? 'world' : 'party_essentials');
+    if (Q.get('gaps') === '0') { document.body.classList.add('nogaps'); }
 
-const STATE_DOT = { ok: "●", part: "◐", none: "○", error: "●" };
+    function bundleState(b) {
+        if (EMPTY) { return 'none'; }
+        if (b.members.some(function (m) { return m.reason; })) { return 'bad'; }
+        if (b.members.length === 0) { return b.checked ? 'ok' : 'none'; }
+        var ready = b.members.filter(function (m) { return !m.reason; }).length;
+        return ready === b.members.length ? 'ok' : 'bad';
+    }
 
-function publishedCount(member) {
-  return empty ? 0 : member.published;
-}
+    var STATE = {
+        ok:   { kind: 'ok',       text: 'Published' },
+        part: { kind: 'caution',  text: 'Part published' },
+        none: { kind: 'inactive', text: 'Not published' },
+        bad:  { kind: 'bad',      text: 'Not ready' }
+    };
 
-function memberState(member) {
-  if (member.reason) return ["error", member.reason];
-  const published = publishedCount(member);
-  if (published === 0 && member.staged > 0) return ["none", "nothing published"];
-  if (published < member.staged) return ["warn", `${member.staged - published} skipped`];
-  return ["ok", "ok"];
-}
+    function published(m) { return EMPTY ? 0 : m.published; }
 
-function renderHeader() {
-  document.getElementById("tenant").textContent = "ACME · tenant acme";
-  document.getElementById("asof").textContent = empty
-    ? "fresh database · nothing published"
-    : "read 2026-11-22 20:10";
-}
+    function memberBadge(m) {
+        if (m.reason) { return M.badge('bad', m.reason); }
+        var p = published(m);
+        if (p === 0 && m.staged > 0) { return M.badge('caution', 'nothing published'); }
+        if (p < m.staged) { return M.badge('caution', (m.staged - p) + ' skipped'); }
+        return M.badge('ok', 'published');
+    }
 
-function renderRoster() {
-  const roster = document.getElementById("roster");
-  roster.replaceChildren();
-  LEVELS.forEach((level) => {
-    roster.append(el("h2", { text: level }));
-    BUNDLES.filter((bundle) => bundle.level === level).forEach((bundle) => {
-      const state = bundleState(bundle);
-      const row = el(
-        "div",
-        {
-          class: "bundle",
-          role: "link",
-          tabindex: "0",
-          "aria-selected": bundle.code === selected ? "true" : "false",
-          "data-code": bundle.code,
-        },
-        [
-          el("span", { class: `dot ${state}`, text: STATE_DOT[state] }),
-          el("span", {}, [
-            el("div", { class: "name", text: bundle.code }),
-            el("div", { class: "meta", text: `${bundle.datasets} datasets · ${empty ? "nothing published" : bundle.note}` }),
-          ]),
-          el("span", { class: `badge ${state === "ok" ? "ok" : state === "error" ? "error" : state === "part" ? "warn" : "quiet"}`, text: STATE_TEXT[state] }),
-        ]
-      );
-      row.addEventListener("click", () => {
-        const next = new URLSearchParams(location.search);
-        next.set("bundle", bundle.code);
-        next.delete("preview");
-        next.delete("publish");
-        next.delete("history");
-        location.search = next.toString();
-      });
-      roster.append(row);
-    });
-  });
-}
+    function bundleRows() {
+        var out = [];
+        LEVELS.forEach(function (lvl) {
+            var inLevel = BUNDLES.filter(function (b) { return b.level === lvl[0]; });
+            out.push({ group: lvl[0], note: lvl[1], count: inLevel.length });
+            inLevel.forEach(function (b) {
+                out.push({ bundle: b, state: bundleState(b) });
+            });
+        });
+        return out;
+    }
 
-function memberRow(member) {
-  const [state, text] = memberState(member);
-  const badgeClass = state === "ok" ? "ok" : state === "error" ? "error" : state === "warn" ? "warn" : "quiet";
-  return el("tr", { class: member.reason ? "notready" : null }, [
-    el("td", { class: "mono", text: member.dataset }),
-    el("td", { class: "mono", text: member.type }),
-    el("td", { class: "mono", text: member.subject || "—" }),
-    el("td", { class: "num", text: String(member.staged) }),
-    el("td", { class: "num", text: String(publishedCount(member)) }),
-    el("td", {}, [el("span", { class: `badge ${badgeClass}`, text })]),
-  ]);
-}
+    function bundlesTable() {
+        var html = '<table class="rows grouped"><thead><tr>' +
+            '<th>Bundle</th><th>Datasets</th><th>Checked</th><th>State</th>' +
+            '</tr></thead><tbody>';
+        bundleRows().forEach(function (r) {
+            if (r.group) {
+                html += '<tr class="grp"><th colspan="4">' + M.esc(r.group) +
+                    ' <span class="dim">· ' + M.esc(r.note) + '</span></th></tr>';
+                return;
+            }
+            var b = r.bundle;
+            var st = STATE[r.state];
+            html += '<tr class="pick' + (b.code === SELECTED ? ' on' : '') + '" tabindex="0" data-bundle="' + M.esc(b.code) + '">' +
+                '<td><span class="key">' + M.esc(b.code) + '</span><span class="sub">' + M.esc(b.name) + '</span></td>' +
+                '<td class="num">' + b.datasets + '</td>' +
+                '<td>' + (b.checked ? M.relTime(b.checked) : M.dash('')) + '</td>' +
+                '<td>' + M.badge(st.kind, st.text) + '</td></tr>';
+        });
+        return html + '</tbody></table>';
+    }
 
-function membersPanel(bundle) {
-  const rows = bundle.members.map(memberRow);
-  const panel = el("div", {}, [
-    el("table", {}, [
-      el("thead", {}, [
-        el("tr", {}, [
-          el("th", { text: "Dataset" }),
-          el("th", { text: "Artefact type" }),
-          el("th", { text: "Target subject" }),
-          el("th", { text: "Staged" }),
-          el("th", { text: "Published" }),
-          el("th", { text: "State" }),
-        ]),
-      ]),
-      el("tbody", {}, rows),
-    ]),
-    el("p", {
-      class: "sub",
-      text:
-        "Staged counts the artefact table. Published counts the rows whose provenance names this dataset, which is the only record a run leaves.",
-    }),
-  ]);
-  if (bundle.members.length === 0) {
-    panel.replaceChildren(
-      el("p", { class: "sub", text: "Mock members are not drawn for this bundle. The roster row still states its count." })
-    );
-  }
-  return panel;
-}
+    function membersTable(b) {
+        if (!b) { return '<p class="tblstate">No bundle is chosen.</p>'; }
+        if (b.members.length === 0) {
+            return '<p class="tblstate">The mock members of ' + M.esc(b.code) +
+                ' are not drawn. Its count is still stated above.</p>';
+        }
+        var cols = [
+            { id: 'dataset', h: 'Dataset', cell: function (m) {
+                return '<span class="key">' + M.esc(m.dataset) + '</span><span class="sub">' + M.esc(m.type) + '</span>'; } },
+            { id: 'subject', h: 'Target subject', cell: function (m) { return M.dash(m.subject); } },
+            { id: 'staged', h: 'Staged', cls: 'num', cell: function (m) { return String(m.staged); } },
+            { id: 'published', h: 'Published', cls: 'num', cell: function (m) { return String(published(m)); } },
+            { id: 'state', h: 'State', cell: function (m) { return memberBadge(m); } }
+        ];
+        return M.table(cols, b.members, { plain: true });
+    }
 
-function reasonsPanel() {
-  const items = REASONS.map(([reason, meaning, owner]) =>
-    el("tr", {}, [
-      el("td", { class: "mono", text: reason }),
-      el("td", { text: meaning }),
-      el("td", { text: owner }),
-    ])
-  );
-  return el("section", { class: "panel" }, [
-    el("h3", { text: "Why a member is not ready" }),
-    el("div", { class: "body" }, [
-      el("p", { text: "One reason per member, because each one has a different person to fix it." }),
-      el("table", {}, [
-        el("thead", {}, [el("tr", {}, [el("th", { text: "Reason" }), el("th", { text: "What it means" }), el("th", { text: "Whose to fix" })])]),
-        el("tbody", {}, items),
-      ]),
-    ]),
-  ]);
-}
+    function reasonsTable() {
+        return '<table class="rows"><thead><tr><th>Reason</th><th>What it means</th><th>Whose to fix</th></tr></thead><tbody>' +
+            REASONS.map(function (r) {
+                return '<tr><td class="key">' + M.esc(r[0]) + '</td><td>' + M.esc(r[1]) + '</td><td>' + M.esc(r[2]) + '</td></tr>';
+            }).join('') + '</tbody></table>';
+    }
 
-function previewPanel(bundle) {
-  const rows = bundle.members.map((member) => {
-    const published = publishedCount(member);
-    const insert = member.reason ? 0 : Math.max(0, member.staged - published);
-    const update = member.reason ? 0 : Math.min(published, 0);
-    const skip = member.reason ? 0 : published;
-    return el("tr", {}, [
-      el("td", { class: "mono", text: member.dataset }),
-      el("td", { class: "num", text: String(member.staged) }),
-      el("td", { class: "num", text: String(insert) }),
-      el("td", { class: "num", text: String(update) }),
-      el("td", { class: "num", text: String(skip) }),
-    ]);
-  });
-  return el("section", { class: "panel" }, [
-    el("h3", { text: "Preview: what a publish would write" }),
-    el("div", { class: "body" }, [
-      el("p", { text: "Read before the run, not after it. A member that cannot be published is listed with zero counts rather than left out." }),
-      el("table", {}, [
-        el("thead", {}, [
-          el("tr", {}, [
-            el("th", { text: "Dataset" }),
-            el("th", { text: "Staged" }),
-            el("th", { text: "Insert" }),
-            el("th", { text: "Update" }),
-            el("th", { text: "Skip" }),
-          ]),
-        ]),
-        el("tbody", {}, rows),
-      ]),
-    ]),
-  ]);
-}
+    function gaps() {
+        if (document.body.classList.contains('nogaps')) { return ''; }
+        return M.gap('The coverage is computed by <b>ores_dq_bundles_list_fn</b>, ' +
+            '<b>ores_dq_bundle_datasets_list_fn</b> and <b>ores_dq_bundle_preview_fn</b>. ' +
+            'The publish path already calls two of them; no subject serves any of them.') +
+            M.gap('The published count has no operation. Every published row names its dataset and no ' +
+            'service counts by it, so the column here is mock data.');
+    }
 
-function receiptPanel(bundle) {
-  const ready = bundle.members.filter((member) => !member.reason);
-  return el("section", { class: "panel" }, [
-    el("h3", { text: "Run: the steps as they complete" }),
-    el("div", { class: "body" }, [
-      el("p", { text: `Workflow instance 7f3c…a91 · bundle ${bundle.code} · mode upsert` }),
-      el("table", {}, [
-        el("thead", {}, [el("tr", {}, [el("th", { text: "#" }), el("th", { text: "Dataset" }), el("th", { text: "Result" })])]),
-        el("tbody", {}, ready.map((member, index) =>
-          el("tr", {}, [
-            el("td", { text: String(index + 1) }),
-            el("td", { class: "mono", text: member.dataset }),
-            el("td", {}, [el("span", { class: "badge ok", text: "done · 4 counts returned" })]),
-          ])
-        )),
-      ]),
-      el("p", { class: "sub", text: "A run leaves no audit row. The counts above are the function's answer, and the provenance on each row is the record." }),
-    ]),
-  ]);
-}
+    function render() {
+        var b = BUNDLES.filter(function (x) { return x.code === SELECTED; })[0];
+        var areas = M.shell('Reference data', PERSON);
+        var crumbs = M.crumbs([
+            { t: 'Home', href: '#' },
+            { t: 'Reference data', href: '#' },
+            { t: 'Reference data coverage' }
+        ]);
+        var head = M.pagehead('Reference data coverage',
+            'What this installation holds, by level, and why a member of a bundle is not ready.',
+            M.refresh(false) + M.workflowMenu([
+                { t: 'Publish a bundle', d: 'Read the run before it happens.', href: '../publish-a-bundle/index.html' },
+                { t: 'Publish datasets', d: 'One member instead of a whole bundle.', href: '../publish-a-bundle/index.html?step=1' }
+            ]));
 
-function historyPanel() {
-  return el("section", { class: "panel" }, [
-    el("h3", { text: "History" }),
-    el("div", { class: "body" }, [
-      el("div", { class: "note gap" }, [
-        el("strong", { text: "This panel is empty by design today. " }),
-        document.createTextNode(
-          "The run-log table exists and nothing on the publish path writes it, so a history screen would show nothing however well it was built. What a run leaves is the workflow instance and the provenance on each row."
-        ),
-      ]),
-    ]),
-  ]);
-}
+        var notice = EMPTY
+            ? M.notice('warn', '<b>A fresh database looks like this.</b> Nothing has been published into ' +
+                'the installation yet, and a recreate that fails to publish leaves exactly this screen. ' +
+                'The Qt client could not show it.')
+            : '';
 
-function gapsPanel() {
-  return el("section", { class: "panel" }, [
-    el("h3", { text: "What this screen needs and the server does not serve" }),
-    el("div", { class: "body" }, [
-      el("div", { class: "note gap" }, [
-        el("strong", { text: "Three answers are computed and served to no one. " }),
-        document.createTextNode(
-          "ores_dq_bundles_list_fn, ores_dq_bundle_datasets_list_fn and ores_dq_bundle_preview_fn exist in the database, and the publish path calls the second and third for its own purposes. The screen needs one coverage operation that answers all three."
-        ),
-      ]),
-      el("div", { class: "note gap", style: "margin-top:10px" }, [
-        el("strong", { text: "The published count has no operation. " }),
-        document.createTextNode(
-          "Every published row names its dataset, and no service counts by it, so the middle column is drawn from mock data in this prototype."
-        ),
-      ]),
-    ]),
-  ]);
-}
+        var html = areas +
+            '<main class="page">' + crumbs + head + notice +
+            '<div class="card cardgap"><div class="cardhead"><h2>Bundles</h2>' +
+            '<span class="dim">One copy of each shared row, where it lies</span></div>' +
+            bundlesTable() + '</div>' +
+            '<div class="card cardgap"><div class="cardhead"><h2>' +
+            (b ? M.esc(b.name) + ' <span class="dim">· ' + M.esc(b.code) + '</span>' : 'Members') +
+            '</h2><span class="dim">' + (b ? M.esc(b.level) + ' level' : '') + '</span></div>' +
+            membersTable(b) +
+            '<p class="hint">Staged counts the artefact table. Published counts the rows whose provenance ' +
+            'names this dataset, which is the only record a run leaves.</p></div>' +
+            '<div class="card cardgap"><div class="cardhead"><h2>Why a member is not ready</h2>' +
+            '<span class="dim">One reason each, because each has a different owner</span></div>' +
+            reasonsTable() + '</div>' +
+            gaps() +
+            '</main>';
 
-function renderDetail() {
-  const bundle = BUNDLES.find((item) => item.code === selected) || BUNDLES[4];
-  const detail = document.getElementById("detail");
-  const state = bundleState(bundle);
-  const target = bundle.level === "Tenant" ? "the tenant that asked" : "the system tenant";
+        document.getElementById('app').innerHTML = html;
 
-  const actions = el("div", { class: "actions" }, [
-    el("button", { class: "primary", text: "Preview what it would write" }),
-    el("button", { text: "Publish this bundle…" }),
-    el("button", { class: "ghost", text: "History" }),
-  ]);
-  const buttons = actions.querySelectorAll("button");
-  buttons[0].addEventListener("click", () => toggle("preview"));
-  buttons[1].addEventListener("click", () => toggle("publish"));
-  buttons[2].addEventListener("click", () => toggle("history"));
+        document.querySelectorAll('tr[data-bundle]').forEach(function (tr) {
+            tr.addEventListener('click', function () { pick(tr.getAttribute('data-bundle')); });
+            tr.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter' || e.key === ' ') { pick(tr.getAttribute('data-bundle')); }
+            });
+        });
 
-  detail.replaceChildren(
-    el("h2", { text: bundle.name }),
-    el("p", {
-      class: "sub",
-      text: `${bundle.level} level · writes into ${target} · ${bundle.datasets} datasets · ${empty ? "nothing published" : bundle.note}`,
-    }),
-    actions
-  );
+        document.getElementById('proto-bar').innerHTML = M.bar([
+            { v: 'tenant', t: 'This tenant' },
+            { v: 'fresh', t: 'Fresh database' }
+        ], EMPTY ? 'fresh' : 'tenant');
+        wire();
+    }
 
-  if (empty) {
-    detail.append(
-      el("div", { class: "note", style: "margin-bottom:16px" }, [
-        el("strong", { text: "A fresh database looks like this. " }),
-        document.createTextNode(
-          "Nothing has been published into the installation yet, and a recreate that fails to publish leaves exactly this screen — which the Qt client could not show."
-        ),
-      ])
-    );
-  }
+    function pick(code) {
+        var q = new URLSearchParams(window.location.search);
+        q.set('bundle', code);
+        window.location.search = q.toString();
+    }
 
-  detail.append(membersPanel(bundle));
-  detail.append(reasonsPanel());
-  if (params.get("preview") === "1") detail.append(previewPanel(bundle));
-  if (params.get("publish") === "1") detail.append(receiptPanel(bundle));
-  if (params.get("history") === "1") detail.append(historyPanel());
-  if (showGaps) detail.append(gapsPanel());
-}
+    function wire() {
+        var bar = document.getElementById('proto-bar');
+        bar.querySelectorAll('[data-act="bar"]').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var q = new URLSearchParams(window.location.search);
+                if (btn.getAttribute('data-arg') === 'fresh') { q.set('empty', '1'); }
+                else { q.delete('empty'); }
+                window.location.search = q.toString();
+            });
+        });
+        bar.querySelector('[data-act="gaps"]').addEventListener('click', function () {
+            var q = new URLSearchParams(window.location.search);
+            if (document.body.classList.contains('nogaps')) { q.delete('gaps'); }
+            else { q.set('gaps', '0'); }
+            window.location.search = q.toString();
+        });
+    }
 
-function toggle(name) {
-  const next = new URLSearchParams(location.search);
-  if (next.get(name) === "1") next.delete(name);
-  else next.set(name, "1");
-  location.search = next.toString();
-}
-
-function renderBar() {
-  const bar = document.getElementById("proto-bar");
-  bar.replaceChildren(el("span", { class: "label", text: "Bundles" }));
-  BUNDLES.forEach((bundle) => {
-    const current = bundle.code === selected;
-    bar.append(
-      el("a", {
-        href: `?bundle=${bundle.code}`,
-        text: bundle.code,
-        "aria-current": current ? "true" : "false",
-      })
-    );
-  });
-  bar.append(el("span", { class: "label", text: "States" }));
-  [
-    ["fresh database", "?bundle=world&empty=1"],
-    ["preview", `?bundle=${selected}&preview=1`],
-    ["run", `?bundle=${selected}&publish=1`],
-    ["history", `?bundle=${selected}&history=1`],
-    ["no gap notes", `?bundle=${selected}&gaps=0`],
-  ].forEach(([label, href]) => bar.append(el("a", { href, text: label })));
-}
-
-renderHeader();
-renderRoster();
-renderDetail();
-renderBar();
+    render();
+})();

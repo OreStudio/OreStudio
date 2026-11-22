@@ -34,11 +34,14 @@ argues. Neither carries a review yet, so the review column says =none= for both.
 
 * Adding a prototype
 
-Create =doc/prototypes/dq/<name>/= with an =index.html=, and a =prototype.css=
-and =prototype.js= when it needs them. Open the page with the links table every
-prototype carries, and leave its review row at =none=. Add a row to the table
-above, with the design note beside the prototype. Stop there: the site build
-finds every prototype under this tree, so no build file names it.
+Create =doc/prototypes/dq/<name>/= with an =index.html= and a =prototype.js=, and
+copy =management.css= and =management.js= beside them from the conventions
+prototypes: that pair is the shell every prototype in the project draws on — the
+header, the breadcrumb, the rail, the table, the badges and the server-gap note —
+and each folder carries an identical copy of it. Open the page with the links
+table every prototype carries, and leave its review row at =none=. Add a row to
+the table above, with the design note beside the prototype. Stop there: the site
+build finds every prototype under this tree, so no build file names it.
 
 A review goes at =doc/prototypes/dq/<name>/review/=, with an =index.html= that
 lists its screens. The row names it.

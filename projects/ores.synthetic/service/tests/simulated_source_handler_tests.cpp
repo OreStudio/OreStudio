@@ -116,7 +116,9 @@ struct source_fixture {
                   .pool_max = 1,
                   .pool_idle_seconds = 30,
                   .num_attempts = 1,
-                  .wait_time_in_seconds = 1})) {
+                  .wait_time_in_seconds = 1,
+                  .service_account =
+                      ores::testing::test_database_manager::make_database_options().user})) {
         verifier = ores::security::jwt::jwt_authenticator::create_hs256(
             source_test_secret, test_issuer, test_audience);
     }

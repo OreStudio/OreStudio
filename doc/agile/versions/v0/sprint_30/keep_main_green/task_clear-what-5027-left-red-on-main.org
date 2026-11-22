@@ -8,7 +8,7 @@
 #+filetags: :ci:hotfix:keep_main_green:sprint_30:v0:
 #+owner: marco
 #+branch: hotfix/clear-the-ci-breakage-on-main
-#+pr:
+#+pr: 5031
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-22
@@ -131,7 +131,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5031][#5031]] | [compass,web] Clear what the server switch left red on main |
 
 * Review
 

@@ -135,6 +135,8 @@ import {
     resultSchema,
     row,
 } from './refdata-calls.js';
+import { TICK_CAPACITY, type FeedTickBuffers } from './feed-ticks.js';
+import type { LiveSession } from './sessions.js';
 
 /**
  * A synthetic row's id, in whatever nibbles the store wrote it: a row the DQ publish
@@ -145,8 +147,6 @@ const idSchema = storeUuidSchema;
 function paramId(request: FastifyRequest): string {
     return input(idSchema, (request.params as { id: string }).id);
 }
-import { TICK_CAPACITY, type FeedTickBuffers } from './feed-ticks.js';
-import type { LiveSession } from './sessions.js';
 
 const code = z.string().trim().min(1).max(100);
 const label = z.string().trim().min(1).max(200);

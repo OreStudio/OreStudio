@@ -44,7 +44,7 @@ Reads the one row its key addresses. A key states every identifying column, so a
 The command is shaped like this:
 
 #+begin_example
-agent_keys get <grant_id>
+agent_keys get <id>
 #+end_example
 
 It is addressed at =iam.v1.agent_keys.get=.
@@ -65,7 +65,7 @@ Reads several rows in one request, one key group per row.
 The command is shaped like this:
 
 #+begin_example
-agent_keys get-many <grant_id>
+agent_keys get-many <id>
 #+end_example
 
 It is addressed at =iam.v1.agent_keys.get_many=.
@@ -107,7 +107,7 @@ Reads the row's recorded history, newest first.
 The command is shaped like this:
 
 #+begin_example
-agent_keys versions <grant_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+agent_keys versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
 #+end_example
 
 It is addressed at =iam.v1.agent_keys_versions.list=.
@@ -128,7 +128,7 @@ Reads one recorded version of the row.
 The command is shaped like this:
 
 #+begin_example
-agent_keys version <grant_id> --version <n>
+agent_keys version <id> --version <n>
 #+end_example
 
 It is addressed at =iam.v1.agent_keys_versions.get=.

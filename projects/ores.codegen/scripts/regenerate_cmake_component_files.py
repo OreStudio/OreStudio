@@ -111,6 +111,22 @@ def main(argv=None) -> int:
                     help="Exit non-zero if any file is stale; write nothing.")
     args = ap.parse_args(argv)
 
+    # Writing goes through compass-ng, whose component_files codec writes the
+    # same lists and only when their content differs; this script would
+    # rewrite every list it renders. --check stays, as the gate's fallback.
+    if not args.check:
+        import shutil
+        import subprocess
+        exe = shutil.which("compass-ng")
+        if exe is None:
+            print("compass-ng is not on the PATH; it writes the component "
+                  "file lists. Install it, then run ./compass.sh generate.",
+                  file=sys.stderr)
+            return 2
+        print("Writing through compass-ng generate, which rewrites only the "
+              "files whose content differs.")
+        return subprocess.run([exe, "-C", str(REPO_ROOT), "generate"]).returncode
+
     models = discover_models()
     if args.component:
         if args.component not in models:

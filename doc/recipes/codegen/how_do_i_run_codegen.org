@@ -30,69 +30,37 @@ diff, which writes nothing, then write with generate:
 ./compass.sh generate
 #+end_src
 
-The Python codegen below stays for scaffolding new entities and for rendering
-one address of one model. Its output is byte-identical to compass-ng's, so a
-=./compass.sh diff= after it shows nothing.
+A new model file needs no step of its own: =generate= finds it and writes its
+outputs.
 
-** The Python codegen
+** The older entry points
 
-There are three Python entry points depending on scope:
+=./compass.sh codegen generate=, =codegen regenerate=, =codegen entity
+generate= and =projects/ores.codegen/codegen.sh generate|regenerate= all run
+=compass-ng generate= now, and with =--dry-run= or =--diff= they run
+=compass-ng diff=. Their =--model=, =--address=, =--component= and =--entity=
+arguments no longer narrow the run. The Python generator rewrote every file it
+rendered, so a regenerate of one template touched thousands of files; these
+entry points no longer reach it.
 
-*** By entity name
-
-Resolve by name — no need to know the model file path or component:
-
-#+begin_src sh
-./compass.sh codegen entity generate <entity> --address <address>
-#+end_src
-
-Examples:
+The read-only entity reports stay:
 
 #+begin_src sh
-./compass.sh codegen entity generate country --address ores.cpp.repository
-./compass.sh codegen entity generate country --address ores.sql.schema
-./compass.sh codegen entity generate country --address ores
+./compass.sh codegen entity list
+./compass.sh codegen entity show country
+./compass.sh codegen entity archetypes --entity country
 #+end_src
-
-Omit =--address= to generate the entity's full supported set — =ores=
-is the graph root, so =--address ores= is equivalent.
-
-Preview what would change without writing:
-
-#+begin_src sh
-./compass.sh codegen entity generate country --address ores.cpp.repository --diff
-./compass.sh codegen entity generate country --address ores.cpp.repository --dry-run
-#+end_src
-
-See [[id:8010834F-9179-4ECD-999D-5D017D393D36][How do I generate a codegen entity?]] for the full workflow.
-
-*** By model file
-
-Generate from a specific org model file:
-
-#+begin_src sh
-./compass.sh codegen generate --model projects/path/to/model.org --address <address>
-#+end_src
-
-*** Across a whole component
-
-Use =./compass.sh generate=: it regenerates every component whose inputs
-changed, so there is no per-component run to make.
 
 * Script
 
 =./compass.sh generate= and =diff= forward to compass-ng through =cmd_compass_ng=
-in [[proj:projects/ores.compass/src/compass.py][=compass.py=]].
-
-The three Python entry points are implemented in
-[[proj:projects/ores.compass/src/compass_codegen_entity.py][=projects/ores.compass/src/compass_codegen_entity.py=]] (entity-name
-workflow) and =cmd_codegen= in
-[[proj:projects/ores.compass/src/compass.py][=compass.py=]] (model-file and component-wide workflows).
+in [[proj:projects/ores.compass/src/compass.py][=compass.py=]]. =cmd_codegen= in the same file forwards the older verbs,
+and [[proj:projects/ores.compass/src/compass_codegen_entity.py][=compass_codegen_entity.py=]] holds the entity reports.
 
 * Tested by
 
-Run =./compass.sh codegen entity generate country --address ores.cpp.repository
---dry-run= and verify six repository file paths are printed without errors.
+Run =./compass.sh codegen regenerate --component refdata --address ores.cpp
+--dry-run= and verify it runs =compass-ng diff=.
 
 * See also
 

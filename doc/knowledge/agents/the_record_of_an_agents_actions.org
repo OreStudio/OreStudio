@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: 2D36D474-2CF9-4498-AF49-818CEF080B98
+:END:
+#+title: The record of an agent's actions
+#+description: Every write records the agent beside the person, so a person sees what their agents did and a record's history shows it.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:agents:audit:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+
+This page states the target design. It does not describe what is built.
+
+* Summary
+
+Every call an agent makes is recorded as the agent's, made for its person, so
+that a person can see everything an agent did and a record's history shows
+which of its changes an agent made. The claim of this page is that the actor
+of the token ([[id:1162906F-BB72-486E-9A11-30D567C65F3E][The agent in a token: subject and actor]]) must reach two places: every row an agent writes,
+and one log of every call, reads included, because a person who wants to know
+what an agent did wants to know what it looked at as well as what it changed.
+
+* Detail
+
+** On every row
+
+A temporal row carries =modified_by=, the person, and =performed_by=, the
+service account that wrote it. A third field, the acting agent, holds the
+grant id and the agent's name, and is empty for a person's own write. It is
+stamped by the same server-side code that stamps the other two from the
+request context, never from the request body, and it is added by the codegen
+to every entity, as the others are. =performed_by= keeps its meaning; reusing
+it for the agent would erase which service wrote the row.
+
+** In one log of calls
+
+=ores.http= writes one row per tool call: the grant, the person, the tool, the
+operation, its arguments with secrets removed, the outcome, the duration, and
+for a write the approval request it raised. Reads are logged as writes are. The
+log is the person's view, not an audit of the system: it answers "what did my
+agent do today" without searching every entity's history.
+
+** What a person sees
+
+ores.web shows a person their agents' activity, by agent and by time, from the
+log, each entry linked to the record it changed or the request it raised. A
+record's history marks the changes an agent made, from the field on the row.
+From the activity a person reaches the grant, and revokes it
+([[id:A7E2942C-66AD-449C-B80B-CA789EBC34FA][Agent grants]]).
+
+* See also
+
+- [[id:47B179BF-C982-4BB1-AF4F-35E00B9D2750][Agents]] — the structure note that orders this cluster.
+- [[id:1162906F-BB72-486E-9A11-30D567C65F3E][The agent in a token: subject and actor]] — answers: where the actor comes from.
+- [[id:381D87BB-4E2D-47BA-8853-6132CF900305][Six-eyes approval of an agent's writes]] — completes: a held write appears in the log with its request.
+- [[id:3E20C1A0-7BA1-4F31-8C34-1E5F13558890][Service-to-Service Auth]] — contradicts the shortcut of a service identity: a service acting as itself would leave the person out of the record.
+
+* Sources
+
+(None beyond the pages linked above.)

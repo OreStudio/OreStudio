@@ -104,6 +104,12 @@ rules. Read it before building any work that a schedule starts in a tenant.
 first component to use run grants: the role, the audience and the moments
 reporting grants and revokes.
 
+[[id:47B179BF-C982-4BB1-AF4F-35E00B9D2750][Agents]] — the cluster on agents that act for a person through ores.http.
+An agent grant is Grant Management again, for an agent rather than a schedule,
+and its token carries the person as subject and the agent as actor. Read it
+after run grants, because it is the same consent with a person, not a schedule,
+behind each call.
+
 ** What the database enforces regardless
 
 [[id:B28747DF-A735-1C84-4E43-11ADFA8B05E3][PostgreSQL Row-Level Security]] —

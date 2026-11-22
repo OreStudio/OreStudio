@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :serve_mcp_from_ores_http:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/set-out-the-architecture-of-agents-acting-through-ores-http
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,11 +26,11 @@ Before any of the story is built, the architecture is written as knowledge: how 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:008127D7-B897-4CF7-854B-6DDFB89AC7F4][Serve ORE's API to LLM agents over MCP]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | Notes drafted, waiting for the product owner's review. |
+| Waiting on   | The product owner's approval of the architecture. |
+| Next         | Revise after review, then close. |
 | Last touched | 2026-11-22                               |
 
 * Acceptance
@@ -46,6 +46,29 @@ Before any of the story is built, the architecture is written as knowledge: how 
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+The architecture is a new cluster, =doc/knowledge/agents/=, written by the
+procedure of [[id:E3B70401-5142-4ACC-A61F-1BBF19F8470F][Zettelkasten]]:
+one structure note, [[id:47B179BF-C982-4BB1-AF4F-35E00B9D2750][Agents]], and eight notes, each one idea,
+with seven PlantUML diagrams beside them. It builds on the run grant (Grant
+Management and Token Exchange are reused, not reinvented), the four-eyes
+framework, operational authorisation, the published area map of the route
+inventory, the two MCP investigations, and the prototype's own documentation.
+
+Choices the review should settle, each stated on its note:
+
+1. *Trades use operational authorisation as the hold.* An agent's booking goes
+   live and unauthorised, as every booking does, and its operational
+   authorisation request gains the agent's person as a first part before
+   Operations, rather than being held in a second queue first.
+2. *The record has two parts*: an acting-agent field on every entity row,
+   added by the codegen, and one log of every tool call in =ores.http=, reads
+   included, which is the person's activity view.
+3. *No automatic approval rule closes the first part* of an agent's request;
+   the later parts follow the rules as the person's own write would.
+4. *The catalogue's areas are the sixteen published areas* of the route
+   inventory, not path segments.
+
 
 * Measurements
 

@@ -335,3 +335,4 @@ The work splits so each piece is usable and reviewable alone:
 - [[id:C5846977-529F-4E36-A9DB-EA48A7476E6F][Book types and the controls on each]] — the acts, the deciders and the policy rows.
 - [[id:DF0FBED2-59C1-43DE-945F-D8839884C38D][Ask for more access]] — the first kind, which this generalises beyond.
 - [[id:7FAF3C0D-1131-4C32-9C29-3D1EF6D1005D][Notification requirements]] — how a decider is told a request waits.
+- [[id:47B179BF-C982-4BB1-AF4F-35E00B9D2750][Agents]] — completes: an agent's write adds the condition /made by an agent/ to the policy and a first part for the agent's person; see [[id:381D87BB-4E2D-47BA-8853-6132CF900305][Six-eyes approval of an agent's writes]].

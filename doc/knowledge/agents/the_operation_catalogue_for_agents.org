@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: 4C382E8F-9449-4012-A09F-76291373E6F7
+:END:
+#+title: The operation catalogue for agents
+#+description: Every operation ores.http serves, shown to an agent in small steps of areas, entities and operations, with search beside.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:agents:mcp:catalogue:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+
+This page states the target design. It does not describe what is built.
+
+* Summary
+
+The operation catalogue is every operation =ores.http= serves, described so
+that an agent can find the one it needs. It is about 107,000 tokens listed in
+full, several times the context of a small model ([[id:6DFC4BF5-65AC-4E75-90EA-FBDC1272E01C][How the model sees ORE's operations]]), so it is
+never listed: an agent walks it in short steps, areas, then entities, then
+operations, or searches it by words. The claim of this page is that five fixed
+tools, whose cost does not grow with the catalogue, serve it to the smallest
+model ORE intends to run, provided each route declares where it belongs and
+whether it writes.
+
+* Detail
+
+** The five tools
+
+=tools/list= answers the same five tools whatever the catalogue holds.
+
+| Tool | In | Out |
+|------+----+-----|
+| =list_areas= | nothing | the areas the person can reach, each with a one-line purpose |
+| =list_entities= | an area | its entities, each with a one-line purpose |
+| =list_operations= | an entity | its operations, each with its name, summary and whether it writes |
+| =find_operations= | a few words | the five best operations, ranked by BM25 over names, areas, entities, summaries and descriptions (Robertson and Zaragoza, 2009) |
+| =call_operation= | an operation's name and its arguments | its result; with no arguments or wrong ones, its input schema and an example |
+
+Every list holds tens of lines at most and shows only what the person may call
+([[id:3CAA394F-E84C-3434-331B-6E664F7E84D2][Role-Based Access Control]]), and only reads when the grant is read only ([[id:A7E2942C-66AD-449C-B80B-CA789EBC34FA][Agent grants]]). For a
+write, =call_operation= answers the approval request it raised, because the
+write is held ([[id:381D87BB-4E2D-47BA-8853-6132CF900305][Six-eyes approval of an agent's writes]]). A client that searches tools itself may ask for the
+full catalogue through MCP's paginated =tools/list=, as an option.
+
+** The hierarchy is declared
+
+Grouping operations by the first segments of their paths gave 71 areas, too
+wide a first step ([[id:6DFC4BF5-65AC-4E75-90EA-FBDC1272E01C][How the model sees ORE's operations]]). The routes already belong to published
+areas: [[proj:doc/knowledge/architecture/http_route_inventory.org][The HTTP route inventory]] maps them to sixteen, from =access= to =workflow=, as design
+section 11.2 publishes them. Those are the catalogue's areas. The entity below
+an area, and the operation's name, are declared on the route; where the
+codegen generates a route, its model supplies both.
+
+** What each route declares
+
+| Declaration | Why |
+|-------------+-----|
+| A stable tool name | no route has an =operationId=, and a name made from a path changes with the path |
+| Its area and entity | the hierarchy is designed, not read from paths |
+| Whether it writes | the method is not enough: some =POST= routes only read |
+| Its body schema, through the typed body declaration | a tool's =inputSchema=; the route registry already generates it from the wire type |
+
+A gate refuses a route that lacks any of them, so the catalogue is complete by
+construction, and the OpenAPI document gains the same metadata.
+
+* See also
+
+- [[id:47B179BF-C982-4BB1-AF4F-35E00B9D2750][Agents]] — the structure note that orders this cluster.
+- [[id:6DFC4BF5-65AC-4E75-90EA-FBDC1272E01C][How the model sees ORE's operations]] — the investigation behind the five tools and its measurements.
+- [[proj:doc/knowledge/architecture/http_route_inventory.org][The HTTP route inventory]] — answers the investigation's open question: the sixteen published areas are the catalogue's first step.
+- [[id:5E479832-A0B2-4BC6-B008-BAD505F4E145][The MCP transport in ores.http]] — the methods that carry these tools.
+
+* Sources
+
+- Robertson, S. and Zaragoza, H. (2009). The probabilistic relevance framework: BM25 and beyond. /Foundations and Trends in Information Retrieval/, 3(4), 333–389.

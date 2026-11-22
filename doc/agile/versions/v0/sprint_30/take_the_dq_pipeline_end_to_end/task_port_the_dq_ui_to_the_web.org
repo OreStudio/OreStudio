@@ -45,9 +45,9 @@ that precedent and its field tables.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:7D2BBBBC-36A3-4BFB-9673-0F9005991D94][Take the DQ pipeline end to end]] |
-| Now          | The Qt DQ surface is being read as evidence, from the commit before the tree was removed. |
+| Now          | The Qt DQ area is inventoried on a page a reviewer reruns. |
 | Waiting on   | Nothing. The publish model is settled. |
-| Next         | Write the five journeys, judge them, then prototype them. |
+| Next         | Write the five journeys under =doc/knowledge/journeys/dq/=, and judge them before designing. |
 | Last touched | 2026-11-22                              |
 
 * Acceptance
@@ -95,8 +95,16 @@ that precedent and its field tables.
 | Entities with a detail dialog | 18 | listing *=DetailDialog.ui= | n/a |
 | Entities with a history dialog | 9 | listing *=HistoryDialog.ui= | n/a |
 | DQ screens in ores.web today | 0 | listing =packages/web/src/**/*Page.tsx= | e050a2d239 |
+| Qt DQ list windows, detail dialogs, history dialogs | 17, 17, 10 | =evidence/qt_dq_inventory.py --ref 'af67db3062^'= | 264f0702f4 |
+| Qt DQ tree | removed; read from the commit before =af67db3062= | =git log --diff-filter=D -1 -- projects/ores.qt= | 264f0702f4 |
 
 * Notes
+
+The Qt area is inventoried in
+[[id:D53501D6-5FF5-44BF-B389-AAA727ACAE6F][Qt DQ surface inventory]], which
+records the 17 entity areas, the fields their dialogs asked for and the five
+classes of the publishing surface. The tree it reads is gone from the checkout,
+so the page names the commit and the script that reproduce it.
 
 Publish state is the point of the screens. The Qt client showed it because the
 Librarian was where publishing happened; ores.web has neither the screens nor the

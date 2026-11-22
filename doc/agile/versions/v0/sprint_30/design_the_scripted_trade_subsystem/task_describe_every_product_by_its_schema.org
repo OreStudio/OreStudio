@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :design_the_scripted_trade_subsystem:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/describe-every-product-by-its-schema
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,12 +26,12 @@ describe_product serves every product's schema: its fields, with type, list or s
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:E6359881-7919-4BBC-9B9C-03A8EEDB8A03][Design the scripted trade subsystem]] |
-| Now          | Not yet started.                       |
+| Now          | Planned; PR 1, the native schema dataset, next. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-21                               |
+| Next         | PR 1. |
+| Last touched | 2026-11-22                               |
 
 * Acceptance
 
@@ -44,9 +44,52 @@ describe_product serves every product's schema: its fields, with type, list or s
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Agreed with the user on 2026-11-22:
+
+- A product's schema is static data for an ORE release. It is extracted at
+  build time from the XSD bindings of =ores.ore.core=, which are the one reading
+  of ORE's schemas, and stored in Postgres in the shape trading reads, as a DQ
+  dataset of the Open Source Risk Engine catalogue published into the system
+  tenant, as the script library is. Nothing asks for a schema at request time.
+- Every row is keyed by the ORE release it was extracted from, =engine_version=,
+  as =reporting_ore_file_versions= is, so that the store can hold the schemas of
+  more than one release.
+- Trading owns the schema and validates against it: it merges the native
+  element's fields with a script's inputs, the annotations and the forms, which
+  are trading's data.
+- Each form states its product tag (scripted) or ORE pricing engine type
+  (native). =describe_product= takes an optional pricing configuration and, when
+  given one, states the model and engine it assigns, read from analytics over
+  the bus. The cost of a form is left to a later task.
+
+The shape is a type graph, as the XSD is: a product names its element's root
+type, and a type lists its fields, each a scalar with its kind, multiplicity,
+whether it is required and the values it accepts, or a nested type. A type
+shared by many products, such as a leg, is stored once per release.
+
+The catalogue states each trade type's element. ORE's example portfolios show
+115 of the 121 types under the element named after the type with =Data=, and six
+otherwise (=CommoditySwap= under =SwapData=, =SyntheticCDO= under =CdoData=,
+=PerformanceOption_01= under =PerformanceOption01Data=, and =InflationSwap= and
+=EquitySwap= under both their own and =SwapData=); 43 types appear in no
+example, so their element is read from ORE's source.
+
+Four PRs, each ending in a check:
+
+1. The native schema dataset: the catalogue's element column; the schema
+   entities keyed by =engine_version=, with their staging tables; the extractor
+   over the bindings, which writes the dataset's populate files; the publish
+   function and the =world= bundle membership; and the build job's check that
+   the extractor reproduces the committed files. A test fails when a native
+   product of the catalogue has no schema.
+2. The scripted schemas and the annotations: a script-only product's fields are
+   its script's inputs; labels, coded values, defaults and descriptions are an
+   annotations dataset keyed by =engine_version=.
+3. =describe_product= and =list_products= in the trading service: the fields and
+   the forms, each form with its script or engine type, and the model and engine
+   of a stated pricing configuration.
+4. The ores.http routes and the BFF routes under =/api/trading/products=, with a
+   test of each.
 
 * Measurements
 

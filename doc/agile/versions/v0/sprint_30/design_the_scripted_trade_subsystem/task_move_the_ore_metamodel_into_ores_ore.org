@@ -90,9 +90,34 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| rows after the move | 14 ORE file categories, 148 ORE files, 24 file versions at 1.8.17.0, 164 file types; no ores_reporting_ore_file table left | compass db recreate -y -k, then a count of the current rows | PR 1 head |
+| seeds | identical to the seeds they replace; 164 file types and 148 ORE files match the guide and the 416 ORE samples | generate_file_types_populate.py --check, and a diff of each seed with its predecessor | PR 1 head |
+| reads through the service | ore_file_categories, ore_files and ore_file_versions list answer on ore.v1 with totals 14, 148 and 24 | compass shell -f, after a recreate and a services start | PR 1 head |
+| pgTAP | ore_ore_files_test 16 of 16, reporting_file_types_test 25 of 25 | pg_prove as the test user | PR 1 head |
+| suites | ores.ore.api 516 assertions in 138 cases, ores.ore.core 521133 in 585, ores.ore.service 54 in 10, ores.shell.ore 168 in 59, ores.reporting.api 5429 in 1401, ores.reporting.core 1778 in 298, ores.shell.application 237 in 65; the BFF 1332 tests in 95 files; all pass | the test binaries; npx vitest run | PR 1 head |
+
 
 * Notes
+
+** What the first PR found
+
+- Moving a model regenerates the whole stack in the new component and removes
+  the old one's generated files (157 written, 132 removed for the three files
+  entities); what codegen does not own is the wiring: the SQL entry files, the
+  registrars, the hand-authored shell application build file, and the shell
+  group's =#+parts:= list, without which the generated top-level build file
+  drops the new part on the next generate.
+- A service's database role is granted its tables by prefix in
+  =iam_service_db_grants_create.sql=, so the ore service had no right to
+  =ores_ore_*= until the prefix was granted. Every unit and pgTAP test passed
+  without it, because they connect as the test user; only reading the files
+  through the running ore service showed it.
+- The cross-component checks stay correct: reporting's file type trigger and the
+  ORE file trigger, which read each other's tables, are security definer, so
+  neither service needs a grant on the other's table.
+- An ORE file names a reporting configuration type and a reporting file type
+  names an ORE file, so the ORE file seeds keep their place inside reporting's
+  populate order, included from there.
 
 ** Inventory, 2026-11-22
 

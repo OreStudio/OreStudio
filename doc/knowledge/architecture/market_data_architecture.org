@@ -203,8 +203,8 @@ section depends on it.
    How a curve reaches a surface: the run's own latent curve, the market board it publishes to, the pair's market at each expiry, and the strike solve. Read after the IR curve because it is the step between the two.
 5. [[id:D4C7C4A7-CD2D-4307-AB06-DA9BE3C3A334][A synthetic contributor publishes noisy observations of a latent surface]].
    The third asset class, the FX volatility surface, read after the IR curve because its generator follows the curve's, with the one step a curve does not need: contributors between the state and the quotes.
-6. [[id:F24FA489-790A-4065-B8E1-DCC141595356][Simulated fixing sources in the market data pipeline]].
-   The fixings the simulator produces: a simulated fixing source is a publisher, and a fixing generator fixes it from the run's market. Read after the asset classes, because it observes them.
+6. [[id:F24FA489-790A-4065-B8E1-DCC141595356][Synthetic generation of fixings]].
+   The owner of the synthetic details for fixings: a fixing publisher the simulator serves, the fixing generator that fixes it from the run's market, and its backfill. Read after the asset classes, because it observes them.
 7. [[id:E1C64302-FA31-4C25-8E92-38265013F644][The generator library]]. The process interface and the seeding rule.
 8. [[id:A8C46639-0639-4587-B07D-B8B006C46618][Stochastic Processes]]. The mathematics.
 9. [[id:94471941-E1D7-4796-9BB0-44C96667FE57][Preview and simulate]]. The dry-run operations.

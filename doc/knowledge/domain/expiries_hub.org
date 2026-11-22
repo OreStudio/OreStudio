@@ -13,7 +13,10 @@
 * Summary
 
 An option /expires/ at its expiry date and cut, and at that moment it is
-exercised, expires worthless, or settles from a fixing. Expiry is where an
+exercised, expires worthless, or settles from a fixing. The cut is the instant
+on the expiry date, named by the
+[[id:3B39B2E2-6E05-4DF8-B68B-6ACA12F2FCE9][option-expiry cut code]]; the senses of the word
+are ordered in [[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]]. Expiry is where an
 option stops being a risk and becomes a trade, cash or nothing, so errors are
 costly and visible to clients. This structure note gathers the notes on
 expiries. Fixings are their automated counterpart and have a structure note of

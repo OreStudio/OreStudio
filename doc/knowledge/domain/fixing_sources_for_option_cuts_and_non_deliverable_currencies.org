@@ -2,7 +2,7 @@
 :ID: 5AF9CEEF-A878-443A-8C32-C6E9F6C26FC9
 :END:
 #+title: Fixing sources for option cuts and non-deliverable currencies
-#+description: The standard FX, NDF and interest rate fixing sources, the option cut each serves, and whether its values are observed or simulated.
+#+description: The standard FX, NDF and interest rate fixing sources ORE Studio supports, and the option cut each one serves.
 #+type: knowledge
 #+audience: user
 #+level: cross
@@ -18,9 +18,7 @@ expiry instant, and an option whose holder decides needs the spot at the cut on
 record. ORE Studio therefore supports one fixing source for each cut it offers,
 plus the sources its other products name: the FX reference rates of central
 banks, the settlement rate options of non-deliverable currencies, and the
-interest rate indices its curves project. Each source is either /observed/,
-fetched from a public publisher, or /simulated/, fixed by the simulator from its
-own market because no free publication exists.
+interest rate indices its curves project.
 
 * Detail
 
@@ -44,24 +42,23 @@ London, the dominant FX benchmark, and intraday spot rates on the hour, with
 half-hourly rates for some currencies, so a WM/R rate exists at the instant of
 every cut on the hour. ORE Studio uses WM/R as the family of its cut sources.
 
-| Cut | Instant | Source | Administrator | Label | Producer |
-|-----+---------+--------+---------------+-------+----------|
-| New York 10:00 | 10:00 America/New_York | WM/R intraday spot | LSEG | =WMR1000NYC= | simulated |
-| Tokyo 15:00 | 15:00 Asia/Tokyo | WM/R intraday spot | LSEG | =WMR1500TKY= | simulated |
-| London 16:00 | 16:00 Europe/London | WM/R closing spot | LSEG | =WMR1600LON= | simulated |
-| London 12:00 | 12:00 Europe/London | WM/R intraday spot | LSEG | =WMR1200LON= | simulated |
-| Warsaw 11:00 | 11:00 Europe/Warsaw | WM/R intraday spot | LSEG | =WMR1100WAR= | simulated |
-| Budapest 12:00 | 12:00 Europe/Budapest | WM/R intraday spot | LSEG | =WMR1200BUD= | simulated |
-| New York 12:30 | 12:30 America/New_York | WM/R half-hourly spot | LSEG | =WMR1230NYC= | simulated |
+| Cut | Instant | Source | Administrator | Label |
+|-----+---------+--------+---------------+-------|
+| New York 10:00 | 10:00 America/New_York | WM/R intraday spot | LSEG | =WMR1000NYC= |
+| Tokyo 15:00 | 15:00 Asia/Tokyo | WM/R intraday spot | LSEG | =WMR1500TKY= |
+| London 16:00 | 16:00 Europe/London | WM/R closing spot | LSEG | =WMR1600LON= |
+| London 12:00 | 12:00 Europe/London | WM/R intraday spot | LSEG | =WMR1200LON= |
+| Warsaw 11:00 | 11:00 Europe/Warsaw | WM/R intraday spot | LSEG | =WMR1100WAR= |
+| Budapest 12:00 | 12:00 Europe/Budapest | WM/R intraday spot | LSEG | =WMR1200BUD= |
+| New York 12:30 | 12:30 America/New_York | WM/R half-hourly spot | LSEG | =WMR1230NYC= |
 
 The label is the =SOURCE= of the ORE index =FX-SOURCE-CCY1-CCY2=, so the FX
-fixing of EUR/USD at the New York cut is =FX-WMR1000NYC-EUR-USD=. WM/R is
-licensed, so its rates are simulated. A pair the cut source does not fix
+fixing of EUR/USD at the New York cut is =FX-WMR1000NYC-EUR-USD=. A pair the cut source does not fix
 directly is derived through USD; see
 [[id:6A625509-CD9A-4D13-8E16-37B75A4AED83][Derived and composite fixing sources]].
 
-Four central-bank reference rates are observed, and serve FX trades that name
-them rather than an option cut: the ECB euro reference rates at about 14:15
+Four central-bank reference rates serve FX trades that name them rather than
+an option cut: the ECB euro reference rates at about 14:15
 CET, and the reference rates of the Bank of Canada, the IMF and the Central Bank
 of the Republic of Türkiye. Their labels are =ECB=, =BOC=, =IMF= and =TCMB=. See
 [[id:F4BBEF34-D84C-4AE6-A3AA-DC47C3EE06EE][Public publishers publish daily fixings through a supplier session]].
@@ -77,49 +74,41 @@ option, as defined in Annex A to the 1998 FX and Currency Option Definitions.
 The source's own publication time is the cut of a non-deliverable option on the
 currency.
 
-| Currency | Settlement rate option | Producer |
-|----------+------------------------+----------|
-| KRW | =KFTC18= | simulated |
-| TWD | =TAIFX1= | simulated |
-| CNY | =SAEC= | simulated |
-| INR | the FBIL reference rate, formerly =RBIB= | simulated |
-| PHP | =PDSPESO= | simulated |
-| IDR | =ABSIRFIX01=, now the JISDOR rate | simulated |
-| BRL | =PTAX= (=BRL09=) | simulated |
+| Currency | Settlement rate option |
+|----------+------------------------|
+| KRW | =KFTC18= |
+| TWD | =TAIFX1= |
+| CNY | =SAEC= |
+| INR | the FBIL reference rate, formerly =RBIB= |
+| PHP | =PDSPESO= |
+| IDR | =ABSIRFIX01=, now the JISDOR rate |
+| BRL | =PTAX= (=BRL09=) |
 
 The publication times are those Annex A states; they are recorded on each
 source, not restated here.
 
 ** Interest rate indices
 
-| Family | Examples | Administrator | Producer |
-|--------+----------+---------------+----------|
-| Overnight rates with a public adapter | SOFR, SONIA, €STR, TONA, CORRA, AONIA, SORA, SWESTR, NOWA, CZEONIA, CDI, CAMARA, TIIE | the central bank | observed |
-| Overnight rates with no public adapter | SARON, HONIA, NZONIA, POLONIA, ZARONIA and the others a synthetic curve projects | the central bank or its agent | simulated |
-| Term rates | EURIBOR, HIBOR, TIBOR, SHIBOR and the other term indices a synthetic curve projects | EMMI, the Treasury Markets Association and the others | simulated |
-| Legacy term rates | USD, GBP, CHF and JPY LIBOR | ICE Benchmark Administration; ceased | simulated, for teaching |
+| Family | Examples | Administrator |
+|--------+----------+---------------|
+| Overnight rates | SOFR, SONIA, €STR, TONA, CORRA, AONIA, SORA, SWESTR, NOWA, SARON, HONIA and the others a curve projects | the central bank or its agent |
+| Term rates | EURIBOR, HIBOR, TIBOR, SHIBOR and the other term indices a curve projects | EMMI, the Treasury Markets Association and the others |
+| Legacy term rates | USD, GBP, CHF and JPY LIBOR, kept for teaching | ICE Benchmark Administration; ceased |
 
 The two families, term and overnight, are described in
 [[id:5170B17B-188B-45CA-A1B6-1F27A97E1CF8][Interest Rate Benchmark Types: IBOR vs. RFR]]; legacy sources in
-[[id:6E566C97-F2A4-4AE8-B509-BDE23568A0B8][A fixing source is identified by its rate source definition]].
+[[id:6E566C97-F2A4-4AE8-B509-BDE23568A0B8][Identity and lifecycle of fixing sources]].
 
 ** One name per index
 
 Each index has one name. Three indices are currently written under two: the
-simulated writer names the EUR, JPY and MXN overnight rates =ESTR=, =TONA= and
-=TIIE=, while the public publishers map them as =ESTER=, =TONAR= and =FTIIE=.
-The two halves land in different series, so a public value cannot stand over a
-simulated one. The catalogue of sources must fix one name per index.
-
-** How the values are produced
-
-An observed source is fetched by the public sources adapters and is never
-simulated. A simulated source is fixed by the simulator, through the same
-adapter contract; see
-[[id:F24FA489-790A-4065-B8E1-DCC141595356][Simulated fixing sources in the market data pipeline]].
+EUR, JPY and MXN overnight rates appear as =ESTR= and =ESTER=, =TONA= and
+=TONAR=, and =TIIE= and =FTIIE=. The two halves land in different series, so
+one index has two histories. The catalogue of sources must fix one name per index.
 
 * See also
 
+- [[id:F24FA489-790A-4065-B8E1-DCC141595356][Synthetic generation of fixings]] — completes: how the synthetic data generation produces these fixings.
 - [[id:784D9D97-721A-42EC-BA91-A85764979CD0][Fixings]] — the structure note.
 - [[id:C9887852-42C9-48BE-8E8C-BB66FCC48E83][Expiries]] — completes: the cuts at which options expire.
 - [[id:2400E0FE-AEF0-4F9A-8392-F7D2E0E2A1E2][A data model for fixings]] — completes: the source as an entity.

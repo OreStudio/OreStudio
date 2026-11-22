@@ -27,7 +27,7 @@ fixing date.
 
 | Term | Meaning |
 |------+---------|
-| Fixing source | The source of the observation, agreed between the counterparties when the trade is done. See [[id:6E566C97-F2A4-4AE8-B509-BDE23568A0B8][A fixing source is identified by its rate source definition]]. |
+| Fixing source | The source of the observation, agreed between the counterparties when the trade is done. See [[id:6E566C97-F2A4-4AE8-B509-BDE23568A0B8][Identity and lifecycle of fixing sources]]. |
 | Fixing rate | The value the source gives: an interest rate, an FX rate or another observable. |
 | Fixing date | The date and time at which the observation is made. |
 | Fixing schedule | The set of fixing dates of a trade or a leg. |
@@ -53,10 +53,12 @@ Three kinds of observable are fixed in practice:
 
 ** Official and unofficial
 
-A fixing is /official/ when operations have authorised it and it has been
-applied to the trades that need it; until then it is /unofficial/. The
-distinction belongs to the [[id:CA61B445-B6DC-41D3-ACF9-D3FB32D0D342][fixing process]], not to the
-observation itself.
+Official and unofficial are states of a party's fixing, not of the
+observation. The observation is the value the source publishes, the same for
+every party. A party's fixing is /official/ when that party's operations have
+authorised it and it has been applied to the party's trades; until then it is
+/unofficial/, and another party may hold the same observation as official. The
+two levels are set out in [[id:FA5C96A3-1F8E-4F9B-8973-40D92055D7DD][System-level fixing observations and party-level fixings]].
 
 ** A fixing is not a quote
 

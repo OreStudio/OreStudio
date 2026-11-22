@@ -492,24 +492,22 @@ it resolves OD-1.
 
 * Fixings
 
-The generated market includes fixings, not only quotes. A fixing is the value
-of an index on a fixing date, set by the index's administrator at its time; it
-is a different kind of datum from a quote and is stored durably. The decisions:
+The generated market includes fixings as well as quotes. [[id:F24FA489-790A-4065-B8E1-DCC141595356][Synthetic generation of fixings]] owns
+the synthetic details: the fixing generator, its backfill, and how a simulated
+fixing reaches the store through the adapter. This document records the
+decisions it rests on.
 
-- *Observed before simulated.* A fixing source with a free public publisher is
-  observed and never simulated. The others, such as the WM/R rates, EURIBOR,
-  the settlement rate options of non-deliverable currencies and the legacy
-  LIBOR settings, are simulated. The list, and the cut each source serves, is
-  in [[id:5AF9CEEF-A878-443A-8C32-C6E9F6C26FC9][Fixing sources for option cuts and non-deliverable currencies]].
-- *A cut needs a source.* An option can expire at a cut only if a source fixes
-  the market at that cut, so each supported cut has one.
-- *Fixed from the run's own market.* A simulated source is fixed from the run's
-  market board at the source's time: an FX fixing is the run's spot at that
-  instant, an interest rate fixing the curve's index rate. A generated trade
-  therefore settles on the market it was valued on.
-- *Through the adapter.* A simulated fixing source is a publisher the
-  simulator serves, with a fixing generator per item, a backfilled history on
-  start, and durable fixing ticks; see [[id:F24FA489-790A-4065-B8E1-DCC141595356][Simulated fixing sources in the market data pipeline]].
+- *Live where a free publisher exists.* The system party routes a fixing
+  publisher with a free public source to that source, and the simulator serves
+  the rest, such as the WM/R rates, EURIBOR, the settlement rate options of
+  non-deliverable currencies and the legacy LIBOR settings. The sources
+  themselves, and the cut each serves, are in
+  [[id:5AF9CEEF-A878-443A-8C32-C6E9F6C26FC9][Fixing sources for option cuts and non-deliverable currencies]].
+- *Fixed from the run's own market.* A simulated fixing is read from the run's
+  market board at the source's time, so a generated trade settles on the market
+  it was valued on.
+- *No difference in process.* A simulated fixing takes the path a live one
+  takes; nothing downstream of the adapter can tell them apart.
 
 * Cross-asset consistency constraints
 :PROPERTIES:

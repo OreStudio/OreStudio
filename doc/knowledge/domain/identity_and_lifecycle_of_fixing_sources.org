@@ -19,7 +19,7 @@ source by its rate source definition, such as an ISDA settlement rate option
 code, and treats the vendor screen that displays it as a mutable attribute.
 A source definition can change over time, so the version in force on the
 trade date matters. A source can also cease, as LIBOR did; a ceased source stays in
-the record, and ORE Studio keeps some as simulated legacy sources for teaching.
+the record, and ORE Studio keeps some as legacy sources for teaching.
 
 * Detail
 
@@ -80,9 +80,8 @@ IBOR fallbacks for derivatives.
 A ceased source remains part of the record. Its past observations still settle
 the trades that fixed on them, and a historical valuation still reads them.
 ORE Studio also keeps ceased sources such as LIBOR as /legacy/ sources for
-teaching: their fixings are simulated, because no administrator publishes them
-any more. A legacy source is therefore a source whose producer is simulated and
-whose status says it has ceased, not a source that has been removed. See
+teaching. A legacy source is a source whose status says it has ceased, not a
+source that has been removed. See
 [[id:2400E0FE-AEF0-4F9A-8392-F7D2E0E2A1E2][A data model for fixings]].
 
 ** In ORE Studio

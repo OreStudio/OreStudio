@@ -1,0 +1,92 @@
+:PROPERTIES:
+:ID: FA5C96A3-1F8E-4F9B-8973-40D92055D7DD
+:END:
+#+title: System-level fixing observations and party-level fixings
+#+description: A fixing observation is a system fact a source publishes; a party fixing is one party's adoption of it for its own trades.
+#+type: knowledge
+#+audience: user
+#+level: cross
+#+filetags: :domain:fixing:tenancy:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+
+* Summary
+
+A fixing exists at two levels, and the two must not be conflated. A /fixing
+observation/ is a system-level fact: the value a source publishes for one index
+on one fixing date, stored once for the whole installation and visible to the
+super administrator across every source. A /party fixing/ is one party's
+adoption of that observation for its own trades: the party's fixings manager
+records that its trades require it, its operations authorise or override it,
+and its product services apply it to the trades and reverse it on undo. Only a
+party that holds trades with fixings has party fixings, and authorisation,
+overrides, status and application exist only at that level.
+
+* Detail
+
+** The two levels
+
+#+caption: Fixing observations are published and stored once at system level and read by the super administrator; each party that holds trades adopts the observations its trades require in its own fixings manager, where its operations authorise them and its product services apply them.
+[[proj:doc/knowledge/domain/fixing_observations_and_party_fixings.png]]
+
+Source: [[./fixing_observations_and_party_fixings.puml][=fixing_observations_and_party_fixings.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/domain/fixing_observations_and_party_fixings.puml=.
+
+| | Fixing observation | Party fixing |
+|-+--------------------+--------------|
+| What it is | The value a source publishes for an index on a date | A party's adoption of an observation for its trades |
+| Scope | The installation: one per definition and fixing date | One per party and observation |
+| Produced by | The source's publisher, through its adapter | The party's fixings manager |
+| Changed by | A correction from the publisher, as a new version | The party's operations: authorise, override, unauthorise, undo |
+| Status | None; it is the source's value | Required, dormant, unofficial, official |
+| Seen by | The super administrator, across every source; any party, read only | The party that holds the trades |
+| Exists when | The source publishes, whether or not any trade needs it | A trade of the party names the source and date |
+
+** Why the levels are separate
+
+An observation is a public fact about a source. Two parties that trade on the
+same index read the same value, and neither may change it for the other; a
+correction is the publisher's act and reaches every party alike. This is why
+ORE Studio stores fixings once under the system party; see
+[[id:F4BBEF34-D84C-4AE6-A3AA-DC47C3EE06EE][Public publishers publish daily fixings through a supplier session]]
+and [[id:3EF67CE4-6AF2-45FC-AA9B-D543550EF8C2][Generators belong to the system tenant and the system party]].
+
+Authorisation is a control over a party's books. Each party's operations
+decide, on their own schedule, that a value is fit to settle their trades; a
+party may override a value it has agreed differently with a client, and that
+override applies to its own trades only. Two parties can therefore hold one
+observation as official and unofficial at the same moment. If authorisation
+were a property of the observation, one party's control would decide another
+party's settlements.
+
+** What each level offers
+
+The super administrator has a system view of the observations: every source, every
+definition and every date, with each value's
+publisher and versions. It is a view of facts and holds no authorisation; see
+[[id:DC6F4D69-5E3E-4562-9503-88C74329FF1E][Show the FX and IR fixings on a fixings screen]].
+
+A party with trades has a fixings manager: the fixings its live trades require,
+their status, the published value beside the value the party uses, and the
+actions of the fixing process; see
+[[id:B5CA0D8F-D9C5-4F09-ABD7-7ED6F0FEF1A5][Fixing management and its controls]] and
+[[id:CA61B445-B6DC-41D3-ACF9-D3FB32D0D342][The fixing process: observation, authorisation, application and reversal]].
+A party with no trades that fix has nothing to manage, and its fixings manager
+is empty rather than a view of the system's observations.
+
+** Storage
+
+The observation lives in the fixing series of its index under the system
+party. The party fixing lives with the party: the observation it refers to,
+its status, the value used, its origin and its history. Neither is written on
+the trades; see
+[[id:C6A619F3-B2B6-42D5-9C41-5269A84BC96C][Storage of fixing observations apart from trades]].
+
+* See also
+
+- [[id:784D9D97-721A-42EC-BA91-A85764979CD0][Fixings]] — the structure note that orders this cluster, and where to read this page in it.
+- [[id:86DA6985-C92E-40F6-AE43-71C4BBF126CB][Fixings: definition and distinction from quotes]] — completes: the definition this note splits in two.
+
+* Sources
+
+- IOSCO (2013). /Principles for Financial Benchmarks: Final Report/, July 2013. [[https://www.iosco.org/library/pubdocs/pdf/IOSCOPD415.pdf][iosco.org]]

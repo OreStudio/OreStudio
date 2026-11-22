@@ -35,10 +35,11 @@ the trades pick it up when they are next read.
 
 1. *Observations are never stamped onto trades.* A trade holds its schedule,
    not its fixings.
-2. *An observation's history is append-only.* An override records a new value
-   and keeps the published one, so the record shows both what the source said
-   and what was used.
-3. *Official observations of a source form an unbroken prefix in time.* This
+2. *Both levels are append-only.* A publisher's correction is a new version of
+   the observation. A party's override is a new value of the party fixing,
+   which keeps its reference to the observation, so the record shows both what
+   the source said and what the party used.
+3. *A party's official fixings of a source form an unbroken prefix in time.* This
    is what lets a future fixing keyed in advance stay dormant until the
    fixings before it are official. See
    [[id:CA61B445-B6DC-41D3-ACF9-D3FB32D0D342][The fixing process: observation, authorisation, application and reversal]].
@@ -52,13 +53,14 @@ See [[id:D4CA27E5-8194-470B-A422-B77C53545560][Effects of fixings on valuation, 
 
 ** In ORE Studio
 
-The market data store already follows the first two invariants. A fixing is
-stored once in the fixing series of its index, under the system party, and a
+The two levels are set out in [[id:FA5C96A3-1F8E-4F9B-8973-40D92055D7DD][System-level fixing observations and party-level fixings]].
+The market data store already follows the first invariant and the
+observation half of the second. An observation is stored once in the fixing series of its index, under the system party, and a
 correction is a new version of the row; trades name the index's address and
 read the values at valuation. See
 [[id:F4BBEF34-D84C-4AE6-A3AA-DC47C3EE06EE][Public publishers publish daily fixings through a supplier session]]
-and [[id:78B65BF0-C003-48F6-84E3-615A36D39266][Lineage and provenance]]. The third, the official prefix,
-needs an authorisation status the store does not hold yet; see
+and [[id:78B65BF0-C003-48F6-84E3-615A36D39266][Lineage and provenance]]. The party fixing, with its status, its overrides and the official prefix, is not
+held yet; see
 [[id:2400E0FE-AEF0-4F9A-8392-F7D2E0E2A1E2][A data model for fixings]].
 
 * See also

@@ -17,7 +17,7 @@
 '
 @startuml
 
-title The lifecycle of one fixing observation
+title The lifecycle of one party fixing
 
 hide empty description
 
@@ -26,29 +26,29 @@ state "Dormant" as dormant
 state "Unofficial" as unofficial
 state "Official" as official
 
-[*] --> required : a booked trade subscribes\nto the source for this date
+[*] --> required : a trade of the party subscribes\nto the source for this date
 
-required --> dormant : keyed in advance\nof its fixing date
-dormant --> unofficial : every earlier fixing\nof the source is official
+required --> dormant : the party keys a value\nin advance of the fixing date
+dormant --> unofficial : every earlier fixing of the source\nis official for the party
 
-required --> unofficial : published by the source,\nor keyed after its publication time
+required --> unofficial : the source's observation arrives,\nor the party keys a value
 
-unofficial --> unofficial : overkeyed\n(the published value is kept)
+unofficial --> unofficial : overkeyed by the party\n(the observation is kept)
 
-unofficial --> official : authorised by operations\n(raises a fix event)
+unofficial --> official : authorised by the party's operations\n(raises a fix event)
 official --> unofficial : unauthorised or undone\n(raises an undo event)
 
-official --> [*] : no live trade\nrequires it any more
+official --> [*] : no live trade of the party\nrequires it any more
 
 note right of unofficial
     front office may key or overkey;
-    only operations may authorise,
+    only the party's operations may authorise,
     and only after the publication time
 end note
 
 note right of official
-    the official observations of a source
-    form an unbroken prefix in time
+    the observation itself has no status:
+    another party may hold it as unofficial
 end note
 
 @enduml

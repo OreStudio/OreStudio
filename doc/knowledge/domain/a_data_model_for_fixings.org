@@ -15,12 +15,12 @@
 The practice of fixings implies a small set of entities: a /source/, with its
 administrator, method, calendar and status; a /definition/, which is one
 source's series for one asset, such as the WM/Reuters 4pm fix of AUD/CAD; an
-/observation/ of a definition on a fixing date; an /override/ of an
-observation; a trade's /schedule/ of fixing dates; and the /event/ that
-authorises or undoes an observation. ORE Studio already holds definitions, as
-ORE indices, and observations, as versioned fixing series. It does not yet hold
-the source as an entity, the producer of each definition, the status of a
-source, or the authorisation of an observation.
+/observation/ of a definition on a fixing date, at system level; a /party
+fixing/, one party's adoption of an observation, with its status and any
+override; a trade's /schedule/ of fixing dates; and the /event/ that authorises
+or undoes a party fixing. ORE Studio already holds definitions, as ORE indices,
+and observations, as versioned fixing series. It does not yet hold the source
+as an entity, the status of a source, or the party fixing.
 
 * Detail
 
@@ -28,61 +28,47 @@ source, or the authorisation of an observation.
 
 | Entity | Holds | Discussed in |
 |--------+-------+--------------|
-| Source | Identity code, name, kind (published, keyed, derived), administrator, method, publication time and zone, holiday calendar, quote convention, rounding, screen reference, parents if derived, status (active or ceased) and the version of its definition | [[id:6E566C97-F2A4-4AE8-B509-BDE23568A0B8][A fixing source is identified by its rate source definition]], [[id:6A625509-CD9A-4D13-8E16-37B75A4AED83][Derived and composite fixing sources]] |
+| Source | Identity code, name, kind (published, keyed, derived), administrator, method, publication time and zone, holiday calendar, quote convention, rounding, screen reference, parents if derived, status (active or ceased) and the version of its definition | [[id:6E566C97-F2A4-4AE8-B509-BDE23568A0B8][Identity and lifecycle of fixing sources]], [[id:6A625509-CD9A-4D13-8E16-37B75A4AED83][Derived and composite fixing sources]] |
 | Definition | A source applied to one asset and tenor, which is what a trade names: an ORE index such as =FX-TR20H-AUD-CAD= or =EUR-EURIBOR-6M= | [[id:86DA6985-C92E-40F6-AE43-71C4BBF126CB][Fixings: definition and distinction from quotes]] |
-| Producer | What fills a definition with observations: an observed publisher through an adapter, a simulated administrator, a derivation from parent definitions, or a person keying values | this note |
-| Observation | Definition, fixing date and time, value, published value, origin, status, version and author | [[id:C6A619F3-B2B6-42D5-9C41-5269A84BC96C][Storage of fixing observations apart from trades]] |
-| Override | The observation, the value used, the trades it applies to, the reason and the sign-off | [[id:CA61B445-B6DC-41D3-ACF9-D3FB32D0D342][The fixing process: observation, authorisation, application and reversal]] |
+| Observation | System level: definition, fixing date and time, value, publisher and version | [[id:C6A619F3-B2B6-42D5-9C41-5269A84BC96C][Storage of fixing observations apart from trades]] |
+| Party fixing | Party level: the party, the observation, the value used, its origin, its status, the trades an override applies to, the reason, the author and the version | [[id:FA5C96A3-1F8E-4F9B-8973-40D92055D7DD][System-level fixing observations and party-level fixings]] |
+| Override | A party fixing whose value differs from the observation, with its reason and sign-off | [[id:CA61B445-B6DC-41D3-ACF9-D3FB32D0D342][The fixing process: observation, authorisation, application and reversal]] |
 | Schedule | Per trade and leg: the fixing dates and the definition of each | [[id:53DB3AF1-6FA4-4B53-9D8E-A65F739F6F4D][Fixing dates and holiday calendars]] |
-| Event | The authorisation or undo of an observation; it labels every action it caused | [[id:CA61B445-B6DC-41D3-ACF9-D3FB32D0D342][The fixing process: observation, authorisation, application and reversal]] |
+| Event | The authorisation or undo of a party fixing; it labels every action it caused | [[id:CA61B445-B6DC-41D3-ACF9-D3FB32D0D342][The fixing process: observation, authorisation, application and reversal]] |
 
 The three invariants of [[id:C6A619F3-B2B6-42D5-9C41-5269A84BC96C][observation storage]] apply: an
 observation is never stamped on a trade, its history is append-only, and the
-official observations of a definition form an unbroken prefix in time.
+official fixings of a party for a definition form an unbroken prefix in time.
 
-** The producer is separate from the source
+** A source reaches the store through its publisher
 
-A source says who is responsible for a value and how it is made. A producer
-says how values reach the store. The two coincide for a live public source,
-whose producer is an adapter that observes the publisher. They come apart in
-three cases that matter here:
+Every source has a publisher, and every publisher reaches the store through an
+adapter. The model holds the publisher and not the adapter, so nothing in it
+depends on which adapter serves a publisher. A derived source is the one source
+without a publisher of its own: its observations are computed from its
+parents'.
 
-- *No free publication.* EURIBOR is published under licence, so a
-  demonstration has no observed values for it. A simulated administrator
-  produces them instead.
-- *A ceased source.* LIBOR is no longer published. ORE Studio keeps it as a
-  legacy source for teaching, with a simulated producer and a status that says
-  it has ceased.
-- *A derived source.* A cross fixing is produced from its parent definitions,
-  not from a publisher of its own.
-
-A simulated administrator fixes its definition once per fixing date from the
-simulated market, as a real one fixes from the real market: an interest rate
-index from the curve of its tenor, an FX index from the pair's spot at the
-source's fixing time. It is not a quote feed, because a quote and a fixing are
-different kinds of datum; see
-[[id:86DA6985-C92E-40F6-AE43-71C4BBF126CB][Fixings: definition and distinction from quotes]].
+A ceased source, such as a LIBOR setting, keeps its definitions and its past
+observations. ORE Studio also keeps the LIBOR settings as legacy sources for
+teaching; their status records that they have ceased.
 
 ** What ORE Studio holds today
 
 | Entity | Held | Where |
 |--------+------+-------|
 | Definition | Yes | The oresmd fixing URI and its =market_index= model, one per ORE index. See [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio Market Data URI]]. |
-| Observation | Yes, without origin or status | A versioned row of the fixing series of the definition, under the system party. See [[id:F4BBEF34-D84C-4AE6-A3AA-DC47C3EE06EE][Public publishers publish daily fixings through a supplier session]]. |
+| Observation | Yes | A versioned row of the fixing series of the definition, under the system party. See [[id:F4BBEF34-D84C-4AE6-A3AA-DC47C3EE06EE][Public publishers publish daily fixings through a supplier session]]. |
 | Source | In part | The FX publisher is a field of the FX index (=source=ECB=); the public publishers are a catalogue with terms. No source holds a method, a calendar, a status or a version, and an interest rate index names no source at all. |
-| Producer | Implicitly | The public adapters observe the public publishers. Each synthetic interest rate curve writes a simulated history of its own index. Nothing writes FX fixings for a source without a publisher. |
-| Override, event, schedule | No | |
+| Publisher | Yes, for the central banks | The public publishers are a catalogue with terms, reached through adapters. The administrators of the other sources are not yet publishers in the catalogue. |
+| Party fixing, override, event, schedule | No | |
 
-The gap that matters most is the missing source and producer. Without them the
-system cannot answer which definitions the market fixes, who fixes each, and
-whether the values are observed or simulated. Trade generation and fixing
-checks both need that answer: a generated trade should name only a definition
-that has a producer.
+The gap that matters most is the missing source. Without it the system cannot
+answer which definitions the market fixes and who fixes each. Trade generation
+and fixing checks both need that answer: a generated trade should name only a
+definition whose source has a publisher.
 
-The supported sources and their producers are listed in
-[[id:5AF9CEEF-A878-443A-8C32-C6E9F6C26FC9][Fixing sources for option cuts and non-deliverable currencies]], and the
-path by which the simulator fills a simulated source is in
-[[id:F24FA489-790A-4065-B8E1-DCC141595356][Simulated fixing sources in the market data pipeline]].
+The supported sources are listed in
+[[id:5AF9CEEF-A878-443A-8C32-C6E9F6C26FC9][Fixing sources for option cuts and non-deliverable currencies]].
 
 ** Open questions
 
@@ -95,6 +81,7 @@ path by which the simulator fills a simulated source is in
 
 * See also
 
+- [[id:F24FA489-790A-4065-B8E1-DCC141595356][Synthetic generation of fixings]] — completes: how the synthetic data generation produces observations.
 - [[id:784D9D97-721A-42EC-BA91-A85764979CD0][Fixings]] — the structure note.
 - [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — completes: the market data components this model would extend.
 

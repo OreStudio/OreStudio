@@ -13,36 +13,43 @@
 * Summary
 
 The fixing process takes an observation from its source to the trades that
-need it, in four stages. The system collects the observation, or a person keys
-it. Operations authorise it after the publication time, against the prevailing
-front-office rate. Authorisation raises an event, and every trade that depends
-on the observation is fixed: coupons, settlements and state changes are
-generated and labelled with that event. Because the source is agreed, an error
-lies in the observation, so the whole set of fixes it produced can be undone
-and redone.
+need it, across two levels. At system level, the source publishes the
+observation and it is stored once for every party. At party level, each party
+that holds trades on the source runs the process in its own fixings manager:
+its operations authorise the observation after the publication time, against
+the prevailing front-office rate; authorisation raises an event, and every
+trade of that party that depends on the observation is fixed, with coupons,
+settlements and state changes labelled with the event. Because the source is
+agreed, an error lies in the observation or in its adoption, so the fixes an
+authorisation produced can be undone and redone. The two levels are set out in
+[[id:FA5C96A3-1F8E-4F9B-8973-40D92055D7DD][System-level fixing observations and party-level fixings]].
 
 * Detail
 
 ** The process in outline
 
-An observation passes through four states. It is required once a booked trade
-names its source and date, dormant if it is keyed before that date, unofficial
-once the source publishes it or a person keys it, and official once operations
+An observation has no status of its own: it is the source's value, corrected
+only by a new version from the publisher. The status belongs to the party
+fixing, a party's adoption of the observation, which passes through four
+states. It is required once a trade of the party names the source and date,
+dormant if the party keys a value before that date, unofficial once the source
+publishes or the party keys a value, and official once the party's operations
 authorise it. Authorisation and undo move it between the last two states, and
-each move raises the event that fixes or unfixes the trades.
+each move raises the event that fixes or unfixes the party's trades.
 
-#+caption: The lifecycle of one fixing observation, from the subscription that requires it to its authorisation, with overkeying, the dormant state of a value keyed in advance, and the undo that returns it to unofficial.
+#+caption: The lifecycle of one party fixing, from the subscription of a party's trade that requires it to its authorisation by the party, with overkeying, the dormant state of a value keyed in advance, and the undo that returns it to unofficial.
 [[proj:doc/knowledge/domain/fixing_observation_lifecycle.png]]
 
 Source: [[./fixing_observation_lifecycle.puml][=fixing_observation_lifecycle.puml=]]. Regenerate with
 =plantuml -tpng doc/knowledge/domain/fixing_observation_lifecycle.puml=.
 
-The interaction runs through fixing management, which owns the observation,
-and the product services, which own the trades. Fixing management never writes
-a trade; it raises the event, and each product service books or reverses the
-actions its trades need.
+The interaction crosses the two levels. The market data store holds the
+observation for every party; the party's fixings manager holds the party
+fixing; the party's product services hold its trades. The fixings manager never
+writes a trade; it raises the event, and each product service books or
+reverses the actions its trades need.
 
-#+caption: The interaction between a fixing source, operations, fixing management and the product services when a fixing is observed, authorised, applied to the trades whose schedules name it, and undone.
+#+caption: A fixing source publishes an observation into the system-level store; one party's fixings manager adopts it, the party's operations authorise it, and the party's product services apply it to the party's trades whose schedules name it, and reverse it on undo.
 [[proj:doc/knowledge/domain/fixing_process_sequence.png]]
 
 Source: [[./fixing_process_sequence.puml][=fixing_process_sequence.puml=]]. Regenerate with
@@ -50,15 +57,17 @@ Source: [[./fixing_process_sequence.puml][=fixing_process_sequence.puml=]]. Rege
 
 ** Subscribe and observe
 
-Booking a trade that needs fixings subscribes it to its sources. The process
-then concerns only the sources some live trade needs. Observations of sources
-that are set up are collected automatically; the others are keyed. A trader may
-also key an observation agreed with a client as part of a sale.
+Booking a trade that needs fixings subscribes the trade's party to its
+sources, so a party's process concerns only the sources its live trades need.
+Observations of sources with a producer arrive at system level whether or not
+any party needs them, and the super administrator can view them across every
+source. A party keys a value only for its own fixing: where its source has no
+producer, or where a trader has agreed a value with a client as part of a sale.
 
 ** Authorise
 
-Operations authorise every observation, and only after the source's
-publication time. The system compares each observation with the current
+A party's operations authorise each of the party's fixings, and only after the
+source's publication time. The system compares each observation with the current
 front-office rate and highlights large differences. An override keeps both the
 published and the overridden values, and may apply to only some of the trades
 subscribed to the observation. Front office may key a value but may not
@@ -75,12 +84,12 @@ visible, some books or trades can be excluded, and ideally all affected trades
 go live together after the P&L impact has been seen.
 
 Generated trades cover the period from the last generation to now. Real
-events run in settlement mode; simulated events, such as a time ladder that
+events run in settlement mode; hypothetical events, such as a time ladder that
 rolls a portfolio forward, run in valuation mode and generate nothing durable.
 A trade remembers the start of its settled generation, which is its first
 unkeyed fixing.
 
-Official observations of a source form an unbroken prefix in time: there
+A party's official fixings of a source form an unbroken prefix in time: there
 cannot be an official fixing, then an unofficial one, then an official one. A
 future fixing keyed in advance therefore stays dormant until every fixing
 between now and its date is official.
@@ -104,9 +113,10 @@ have its fixing trade in the right state.
 
 ** A bounded context of its own
 
-Fixing management is a bounded context in the sense of domain-driven design:
-it owns sources, observations and their authorisation, and the products link to
-it rather than embedding it. An event-sourced design, in which every fix and
+Fixing management is a bounded context in the sense of domain-driven design,
+at party level: it owns a party's fixings and their authorisation, reads the
+observations from the system-level store, and the products link to it rather
+than embedding it. An event-sourced design, in which every fix and
 unfix is an event, gives the undo and the audit for free.
 
 * See also

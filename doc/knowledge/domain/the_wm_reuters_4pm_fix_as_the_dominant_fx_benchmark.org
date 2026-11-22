@@ -18,7 +18,7 @@ London time and publishes it shortly after. The Financial Stability Board
 described it in 2014 as "by far the dominant benchmark" in FX, used also as an
 input to multi-currency equity, bond and credit indices, alongside the
 European Central Bank's euro reference rates, published at about 14:15 CET.
-ORE Studio fixes its simulated FX cut sources on the WM/R family; see
+ORE Studio's FX cut sources are of the WM/R family; see
 [[id:5AF9CEEF-A878-443A-8C32-C6E9F6C26FC9][Fixing sources for option cuts and non-deliverable currencies]].
 
 * Detail
@@ -46,7 +46,7 @@ larger tracking error for users of the benchmark.
 
 WM was a subsidiary of State Street; the fix was later administered by
 Refinitiv and then by LSEG. The benchmark is subject to the IOSCO principles
-described in [[id:6E566C97-F2A4-4AE8-B509-BDE23568A0B8][A fixing source is identified by its rate source definition]].
+described in [[id:6E566C97-F2A4-4AE8-B509-BDE23568A0B8][Identity and lifecycle of fixing sources]].
 
 ** The ECB reference rates are a different index
 

@@ -12,18 +12,22 @@
 
 * Summary
 
-Fixing management is the operational view of the fixing process. One view
-lists every historic and future fixing that live trades require, with the
+Fixing management is a party's operational view of the fixing process. A
+party that holds trades has a fixings manager, which lists every historic and
+future fixing that the party's live trades require, with the
 observed value, its origin and its status, and lets operations authorise,
 override or reverse it. A set of control reports finds what the process
 missed: trades that should have fixed and did not, trades with no source, and
-generated trades whose dates or amounts do not agree with their fixing.
+generated trades whose dates or amounts do not agree with their fixing. The
+super administrator's view of the observations across every source is a
+different, system-level view with no authorisation; see
+[[id:FA5C96A3-1F8E-4F9B-8973-40D92055D7DD][System-level fixing observations and party-level fixings]].
 
 * Detail
 
 ** Roles
 
-Front office may key a value until it is authorised, and may not change it
+The roles are the party's own. Front office may key a value until it is authorised, and may not change it
 afterwards. Only operations authorise, and only after the source's publication
 time. Operations can authorise a published value or a keyed one, key over a
 published value and authorise their own, and withdraw an authorisation and
@@ -76,9 +80,11 @@ is converted, the original stays visible and is marked as replaced.
 
 ** In ORE Studio
 
-ORE Studio has no fixings view or controls yet. The task
+ORE Studio has neither view yet. The task
 [[id:DC6F4D69-5E3E-4562-9503-88C74329FF1E][Show the FX and IR fixings on a fixings screen]]
-starts with a read-only list of the stored fixing series.
+builds the system-level view: a read-only list of the stored observations for
+the super administrator. The party's fixings manager, with authorisation and
+the control reports, comes after the party fixing exists.
 
 * See also
 

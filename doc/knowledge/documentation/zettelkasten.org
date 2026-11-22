@@ -117,6 +117,19 @@ the target state; it never narrates its own writing or its earlier drafts.
 Working notes, the private language of an author, and the idioms of a source are
 not copied; the page states the idea in the field's own terms.
 
+*** The data source
+
+ORE Studio's market data is synthetic, and the simulation is built so that no
+process differs between live and synthetic data. A general knowledge page
+therefore states its point independently of where the data comes from: it does
+not describe sources as observed or simulated, and it does not explain how a
+value is generated. Synthetic data generation is a subject of its own, owned by
+the pages of the synthetic generation section of
+[[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]]. A general page refers to it by a link
+alone, such as a =* See also= entry, and the synthetic page owns every detail.
+A page mentions synthetic data in its text only when its point depends on a
+property of the synthetic data itself.
+
 *** Citations
 
 Every claim is derived from what the page states, cited to a source, or

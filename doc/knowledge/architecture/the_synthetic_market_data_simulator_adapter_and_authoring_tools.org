@@ -34,7 +34,7 @@ shared library can hold them if the duplication grows.
   turns the demand set into running generators. See [[id:39057B64-8F85-4882-9B66-D2D4FC7468E4][The synthetic runner]].
 - *Generators.* FX spot and IR curve processes, with a factory for new asset
   classes. A fixing generator fixes each simulated fixing source from the run's
-  market; see [[id:F24FA489-790A-4065-B8E1-DCC141595356][Simulated fixing sources in the market data pipeline]]. See [[id:D67C930B-261F-480B-B5EF-020C6D617333][The generator factory and the kind seam]] and [[id:B7A03C80-6566-4E97-9D45-14A69726C381][Adding an asset class]].
+  market; see [[id:F24FA489-790A-4065-B8E1-DCC141595356][Synthetic generation of fixings]]. See [[id:D67C930B-261F-480B-B5EF-020C6D617333][The generator factory and the kind seam]] and [[id:B7A03C80-6566-4E97-9D45-14A69726C381][Adding an asset class]].
 - *Authoring part.* Collections, folders, configs and the preview operations. See
   [[id:94471941-E1D7-4796-9BB0-44C96667FE57][Preview and simulate]].
 - *Fault injection.* See [[id:69287DA4-3558-4EAE-972B-82BC7F9296E9][The simulator stops at the adapter seam]].

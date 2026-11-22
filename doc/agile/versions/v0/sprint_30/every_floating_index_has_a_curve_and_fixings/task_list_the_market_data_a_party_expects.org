@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :every_floating_index_has_a_curve_and_fixings:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/list-the-market-data-a-party-expects
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,11 +26,11 @@ The planner must know what a party is configured to receive, not what has arrive
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:0F936789-FEBE-4330-97B9-DFE0837E4466][Every index a generated trade floats on has a curve and fixings]] |
-| Now          | Not yet started.                       |
+| Now          | Plan written: outputs per kind, a party demand request, the expected set, the planner. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Step 1: the outputs of each generator kind. |
 | Last touched | 2026-11-22                               |
 
 * Acceptance
@@ -42,9 +42,41 @@ The planner must know what a party is configured to receive, not what has arrive
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+A demanded item is a series address with no dates, such as
+=oresmd://ir/AUD?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D&term=10Y=.
+So a generator's outputs are series addresses, and they match a demanded item
+directly.
+
+1. *Outputs of each generator kind.* A new header
+   =ores.synthetic.api/feeds/generator_outputs.hpp= holds one pure function per
+   kind, from the config and its rows:
+   - IR curve: the series of each template entry's pillar quote, and the
+     fixing address of =curve_fixing_uri=.
+   - FX spot: the series of the quote, and the pair's fixing items.
+   - FX vol surface: the series of each expiry at each strike label.
+   =ir_curve_feed=, =fx_spot_feed= and =fx_vol_surface_feed= take their
+   =series_uris()= from these functions, and the fixing writer takes the
+   index address from the same function.
+2. *A party's demand from the catalogue.* A market data request
+   =get_party_demand_request= carries a party id. Its handler reads the
+   catalogue and calls =compute_party_demand=, and it answers with each
+   route's adapter id, entitlement and demanded series. It needs no tick and
+   no adapter.
+3. *The expected set.* A pure function in =ores.synthetic.api= takes the
+   party's demand and the generators, as pairs of source name and outputs. A
+   generator counts when its source name is the adapter id of an entitled
+   route of the party and one of its outputs is a demanded item of that
+   route. The expected set is the union of the outputs of the generators that
+   count, plus the curves of the party's bootstrap configs whose pillars are
+   all in the set.
+4. *The planner.* =trade_generation_scope::expected_market_data= replaces
+   =served_fixing_uris=. The writer fills it from the request and the
+   generator configs, and =drawable= asks it for the swap's fixing address.
+   =served_fixing_uris= and its tests are removed.
+
+Each step ends in a unit test. Step 3 has the test of the acceptance: a party
+routed to one provider does not expect the outputs of a generator of another
+provider.
 
 * Measurements
 

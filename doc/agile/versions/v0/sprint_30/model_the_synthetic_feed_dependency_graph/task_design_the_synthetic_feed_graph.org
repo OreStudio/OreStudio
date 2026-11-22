@@ -8,7 +8,7 @@
 #+filetags: :synthetic:architecture:design:model_the_synthetic_feed_dependency_graph:sprint_30:v0:
 #+owner: marco
 #+branch: feature/design-the-synthetic-feed-graph
-#+pr:
+#+pr: 5036
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-22
@@ -89,7 +89,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5036][#5036]] | [doc] Adopt the synthetic feed graph design |
 
 * Review
 

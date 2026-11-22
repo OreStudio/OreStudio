@@ -1,0 +1,118 @@
+:PROPERTIES:
+:ID: 2B91A1BF-F657-4737-B108-B9ABCF24E9AC
+:END:
+#+title: Task: Install the pinned compass in CI so the nightlies build
+#+description: The nightly and continuous builds stop at Init environment because compass env configure needs compass-ng on PATH, and neither workflow installs the release the pin names. Nothing reaches the build, so nothing submits to CDash.
+#+type: task
+#+level: s1
+#+filetags: :ci:cdash:hotfix:keep_main_green:sprint_30:v0:
+#+owner: marco
+#+branch: hotfix/install-the-pinned-compass-in-ci
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4FCC628C-551E-4F7C-B1D7-69546174A9CD][Keep main green]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+No build has reached CDash since 2026-11-18. The nightlies and the continuous
+runs stop in =Init environment=: =compass env configure= writes =.env= with
+=compass-ng=, and neither workflow puts the release the pin names on PATH, so
+the step dies before the build and nothing is ever submitted.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:4FCC628C-551E-4F7C-B1D7-69546174A9CD][Keep main green]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-22                               |
+
+* Acceptance
+
+- The nightly and the continuous workflow both install the pinned compass before
+  they configure an environment, and their YAML parses.
+- A run reaches the build, and =ctest --script CTest.cmake,build_group=Nightly=
+  submits to my.cdash.org.
+
+* Plan
+
+The pin already exists and =compass-check.yml= already installs it, so the fix
+is to do the same in the jobs that build: a step that reads
+=build/scripts/compass_ng.pin=, downloads that release for Linux, checks its
+sha256, unpacks it and puts its =bin= on =PATH=, placed before =Init environment=
+in =nightly-linux.yml= and =continuous-linux.yml=.
+
+The macOS and Windows nightlies take the same step with the asset of their own
+platform; they are left for their own change because the asset names differ and
+this task can only be checked against the Linux runners.
+
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Nightly runs that reached a build | 0 since 2026-11-18; every run failed in =Init environment= with "compass-ng is not on the PATH" | =gh run list --workflow nightly-linux.yml=, then =gh run view <id> --log-failed= | main at 9aa322a774 |
+| Continuous runs, same window | every run failed at the same step | =gh run list --workflow continuous-linux.yml= | main at 9aa322a774 |
+| Workflows the change touches | 2, and both YAML files parse after it | a YAML load of each file | working tree on 2026-11-22 |
+| CDash builds | none submitted since 2026-11-18, which is what the failure explains | https://my.cdash.org/index.php?project=OreStudio | — |
+
+* Notes
+
+The step is copied from =compass-check.yml=, which has installed this release
+since the CI gate was added; the workflows that build were never given it. That
+is why the gate stayed green while the nightlies stopped: the two paths grew
+apart, one of them keeping the knowledge of how to install the tool.
+
+The macOS and Windows nightlies configure their environments the same way and
+will fail the same way. Their assets are named for their own platforms, and this
+change cannot check those names from here.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+=nightly-linux.yml= and =continuous-linux.yml= install the release
+=build/scripts/compass_ng.pin= names, on the same lines =compass-check.yml= uses,
+before they configure an environment. Both files parse. The next scheduled run
+is the proof: it either reaches the build and submits to CDash, or the log says
+at which step it stopped.
+
+The macOS and Windows nightlies still need the same step with their own assets.

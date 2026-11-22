@@ -25,7 +25,7 @@ hide circle
 skinparam linetype ortho
 
 note as IndexNote
-814 tables in 22 groups.
+815 tables in 22 groups.
 Each group is drawn in its own file, named under its heading.
 Table naming: <component>_<entity>_tbl
 end note
@@ -959,6 +959,7 @@ entity "synthetic" as synthetic {
   ores_synthetic_market_data_generation_configs_tbl
   ores_synthetic_market_data_providers_tbl
   ores_synthetic_process_parameter_definitions_tbl
+  ores_synthetic_stopped_simulated_sources_tbl
   ores_synthetic_trade_generation_books_tbl
   ores_synthetic_trade_generation_configs_tbl
   ores_synthetic_trade_generation_counterparties_tbl
@@ -970,7 +971,7 @@ entity "synthetic" as synthetic {
 }
 note bottom of synthetic
 Synthetic Data Generation
-26 tables — ores_schema.synthetic.puml
+27 tables — ores_schema.synthetic.puml
 end note
 
 entity "inbox" as inbox {

@@ -28,6 +28,7 @@
 #include <map>
 #include <memory>
 #include <mutex>
+#include <set>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -44,6 +45,14 @@ namespace ores::synthetic::service {
  * quote different markets. So a surface is held here, by its feed, started when the first adapter
  * attaches to it and stopped when the last one detaches.
  */
+/// What releasing every hold of one adapter would do to the surfaces it holds.
+struct hold_effect final {
+    /// How many surfaces the adapter holds.
+    std::size_t held = 0;
+    /// How many of them no other adapter holds, so they would stop.
+    std::size_t only_here = 0;
+};
+
 template <typename Surface>
 class basic_shared_surfaces final {
 public:
@@ -65,6 +74,7 @@ public:
         const std::lock_guard lock(mu_);
         if (const auto found = surfaces_.find(feed_id); found != surfaces_.end()) {
             found->second->attach(adapter_id, contributor, std::move(targets));
+            holders_[feed_id].insert(adapter_id);
             return found->second;
         }
         auto surface = make();
@@ -73,6 +83,7 @@ public:
         surface->attach(adapter_id, contributor, std::move(targets));
         surface->start();
         surfaces_.emplace(feed_id, surface);
+        holders_[feed_id].insert(adapter_id);
         return surface;
     }
 
@@ -82,9 +93,11 @@ public:
         const auto found = surfaces_.find(feed_id);
         if (found == surfaces_.end())
             return;
+        holders_[feed_id].erase(adapter_id);
         if (found->second->detach(adapter_id) == 0) {
             found->second->stop();
             surfaces_.erase(found);
+            holders_.erase(feed_id);
         }
     }
 
@@ -98,6 +111,21 @@ public:
         return out;
     }
 
+    /// What releasing every hold of @p adapter_id would do: a surface another adapter holds runs
+    /// on.
+    [[nodiscard]] hold_effect effect_of_releasing(const std::string& adapter_id) const {
+        const std::lock_guard lock(mu_);
+        hold_effect out;
+        for (const auto& [_, holders] : holders_) {
+            if (!holders.contains(adapter_id))
+                continue;
+            ++out.held;
+            if (holders.size() == 1)
+                ++out.only_here;
+        }
+        return out;
+    }
+
     /// How many surfaces run.
     [[nodiscard]] std::size_t running_count() const {
         const std::lock_guard lock(mu_);
@@ -107,6 +135,7 @@ public:
 private:
     mutable std::mutex mu_;
     std::map<std::string, surface_ptr> surfaces_;
+    std::map<std::string, std::set<std::string>> holders_;
 };
 
 using shared_surfaces = basic_shared_surfaces<feed::fx_vol_surface_feed>;

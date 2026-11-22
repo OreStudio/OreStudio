@@ -100,7 +100,6 @@ TEST_CASE("fx_vol_surface_feed_web_routes_registers_the_screen_addresses", "[rou
     CHECK(has(http_method::get, "/api/synthetic/fx-vol-surface-feeds"));
     CHECK(has(http_method::put, "/api/synthetic/fx-vol-surface-feeds"));
     CHECK(has(http_method::delete_, "/api/synthetic/fx-vol-surface-feeds"));
-    CHECK(has(http_method::get, "/api/synthetic/fx-vol-surface-feeds/key/{key}"));
     ORES_LOG_SEV(lg, debug) << "Registered " << routes.size() << " route(s).";
 }
 
@@ -173,14 +172,4 @@ TEST_CASE("fx_vol_surface_feed_web_routes_refuses_a_write_that_states_no_reason"
     const auto removal = fx_vol_surface_feed_web_run(fx_vol_surface_feed_web_routes::handle_delete(
         fx_vol_surface_feed_web_request({}, "{}"), session));
     CHECK(removal.status == http_status::forbidden);
-}
-
-TEST_CASE("fx_vol_surface_feed_web_routes_refuses_a_key_that_names_nothing", "[routes][web]") {
-    nats_client session;
-    auto req = fx_vol_surface_feed_web_request({});
-    req.path_params["key"] = "   ";
-    const auto response =
-        fx_vol_surface_feed_web_run(fx_vol_surface_feed_web_routes::handle_key(req, session));
-    CHECK(response.status == http_status::bad_request);
-    CHECK(fx_vol_surface_feed_web_says(response, "invalid-request"));
 }

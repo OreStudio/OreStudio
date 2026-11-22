@@ -67,6 +67,46 @@ TEST_CASE("ores::synthetic::messaging::list_feeds_response", "[codec][roundtrip]
     ores::testing::check_wire_roundtrip<ores::synthetic::messaging::list_feeds_response>();
 }
 
+TEST_CASE("ores::synthetic::messaging::simulated_source", "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::synthetic::messaging::simulated_source>();
+}
+
+TEST_CASE("ores::synthetic::messaging::list_simulated_sources_request",
+          "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<
+        ores::synthetic::messaging::list_simulated_sources_request>();
+}
+
+TEST_CASE("ores::synthetic::messaging::list_simulated_sources_response",
+          "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<
+        ores::synthetic::messaging::list_simulated_sources_response>();
+}
+
+TEST_CASE("ores::synthetic::messaging::stop_simulated_source_request",
+          "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<
+        ores::synthetic::messaging::stop_simulated_source_request>();
+}
+
+TEST_CASE("ores::synthetic::messaging::stop_simulated_source_response",
+          "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<
+        ores::synthetic::messaging::stop_simulated_source_response>();
+}
+
+TEST_CASE("ores::synthetic::messaging::start_simulated_source_request",
+          "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<
+        ores::synthetic::messaging::start_simulated_source_request>();
+}
+
+TEST_CASE("ores::synthetic::messaging::start_simulated_source_response",
+          "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<
+        ores::synthetic::messaging::start_simulated_source_response>();
+}
+
 TEST_CASE("ores::synthetic::messaging::calibration_policy_summary",
           "[codec][roundtrip][protocol]") {
     ores::testing::check_wire_roundtrip<ores::synthetic::messaging::calibration_policy_summary>();

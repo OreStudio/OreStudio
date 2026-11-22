@@ -1,0 +1,135 @@
+:PROPERTIES:
+:ID: 440F7FCB-DBD4-4E71-8AE6-2243762AFC43
+:ores.cpp.wire-codec.enabled: true
+:END:
+#+title: ores.synthetic.stopped_simulated_source
+#+description: A simulated source an operator stopped: present while it stays stopped, so a service restart keeps it stopped.
+#+type: ores.codegen.entity
+#+component: synthetic
+#+filetags: :model:entity:synthetic:
+#+entity_singular: stopped_simulated_source
+#+entity_plural: stopped_simulated_sources
+#+entity_title: Stopped Simulated Source
+#+brief: A simulated source an operator stopped, kept until someone starts it.
+#+created: 2026-11-22
+#+updated: 2026-11-22
+
+A simulated source of the market data catalogue that an operator stopped. The
+synthetic service serves each simulated source with an adapter, which runs the
+feeds the store demands of it and holds the vol surfaces its provider quotes. A
+row here keeps that adapter stopped, a restart of the service included, until
+someone starts the source again and the row is removed. The row's history is
+the record of who stopped and started the source, when, and why.
+
+The catalogue owns the sources and has no flag for this, and a collection's own
+enabled flag gates the hand starts of its feeds too, so the stop is held here.
+
+An operator stops and starts a source through the simulated source verbs, which
+take the feeds run permission, write this row and stop or start the adapter
+together. The generated write and delete of this entity take their own
+permissions, in the system tenant only, and change the row alone: the adapter
+follows the row at the next start of the service. They are for the record, not
+for operating a source.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: synthetic
+:profile:   simple-lookup
+:system_tenant_validation: true
+:END:
+
+* Columns
+
+** source_name
+:PROPERTIES:
+:type:      text
+:cpp_type:  std::string
+:primary_key: true
+:END:
+
+The catalogue name of the source, such as =bloomberg-a=: the id its adapter
+announces under.
+
+#+begin_src cpp :name generator
+std::string("bloomberg-a")
+#+end_src
+
+** provider_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:no_generator_suffix: true
+:END:
+
+The provider whose notation the source's ticks use, so a screen of the provider
+finds its stopped sources without reading the catalogue.
+
+#+begin_src cpp :name generator
+std::string("bloomberg")
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_synthetic_stopped_simulated_sources_tbl
+:rls_tenant_isolation: true
+:rls_own_or_system_tenant_rows: true
+:END:
+
+* Insert trigger
+** Validations
+
+| column             | validation_function                  |
+|--------------------+--------------------------------------|
+| provider_code      | ores_marketdata_validate_provider_fn |
+| change_reason_code | ores_dq_validate_change_reason_fn    |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:       api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: stopped_source
+:entity_plural_short:   stopped_sources
+:entity_singular_words: stopped simulated source
+:entity_plural_words:   stopped simulated sources
+:system_tenant_visible: true
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: ss
+:END:
+
+** Table display
+
+| column        | header   |
+|---------------+----------|
+| source_name   | Source   |
+| provider_code | Provider |
+| modified_by   | Stopped By |
+| version       | Version  |
+
+* See also
+
+- [[id:BC75AE1F-BD6B-46E0-BA50-794DBD35576E][Mop up the synthetic generator: a provider's source control and a vol surface's upstreams]] -- the task that adds it.

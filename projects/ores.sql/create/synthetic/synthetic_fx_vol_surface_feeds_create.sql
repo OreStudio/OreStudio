@@ -65,6 +65,8 @@ create table if not exists "ores_synthetic_fx_vol_surface_feeds_tbl" (
     "segment_correlation" double precision not null,
     "start_skew" double precision not null,
     "start_curvature" double precision not null,
+    "spot_oresmd_uri" text not null,
+    "spot_provider_code" text not null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -94,7 +96,8 @@ create table if not exists "ores_synthetic_fx_vol_surface_feeds_tbl" (
     check ("spot_skew_correlation" > -1 and "spot_skew_correlation" < 1),
     check ("segment_correlation" >= 0 and "segment_correlation" < 1),
     check ("start_skew" > -1 and "start_skew" < 1),
-    check ("start_curvature" > 0 and "start_curvature" < 1.4142135623730951)
+    check ("start_curvature" > 0 and "start_curvature" < 1.4142135623730951),
+    check ("spot_oresmd_uri" like 'oresmd://fx/%')
 );
 
 -- Composite natural key: unique combination for active records
@@ -155,6 +158,9 @@ begin
 
     -- Validate asset_class_code
     NEW.asset_class_code := ores_refdata_validate_asset_class_code_fn(NEW.tenant_id, NEW.asset_class_code);
+
+    -- Validate spot_provider_code
+    NEW.spot_provider_code := ores_marketdata_validate_provider_fn(NEW.tenant_id, NEW.spot_provider_code);
 
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);

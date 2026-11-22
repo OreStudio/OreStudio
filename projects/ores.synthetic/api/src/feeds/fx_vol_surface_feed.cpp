@@ -174,8 +174,8 @@ make_fx_vol_surface_emitter(const fx_vol_surface_feed_build_input& input, std::u
                                         std::move(contributors));
 }
 
-std::string fx_pair_member_code(std::string_view base, std::string_view quote) {
-    return std::string(base) + "/" + std::string(quote);
+std::string spot_member_code(std::string_view spot_source_name) {
+    return std::string(spot_source_name);
 }
 
 std::string curve_member_code(const boost::uuids::uuid& collection, std::string_view currency) {
@@ -249,8 +249,8 @@ fx_vol_surface_feed::fx_vol_surface_feed(
 
     const auto& base = input.config.base_currency_code;
     const auto& quote = input.config.quote_currency_code;
-    // The three values this surface reads, resolved once, off the loop. The pair's spot is named
-    // by the one function its feed publishes it under, so the two agree by construction.
+    // The three values this surface reads, resolved once, off the loop. The spot is the feed the
+    // config names, under the one function that feed publishes it by, so the two agree.
     {
         auto& values = market_.values();
         using ores::analytics::quant::domain::market_member_kind;
@@ -258,8 +258,8 @@ fx_vol_surface_feed::fx_vol_surface_feed(
                                                  curve_member_code(input.config.config_id, base)),
                   .quote_curve = values.member_of(market_member_kind::curve,
                                                   curve_member_code(input.config.config_id, quote)),
-                  .spot =
-                      values.member_of(market_member_kind::spot, fx_pair_member_code(base, quote))};
+                  .spot = values.member_of(market_member_kind::spot,
+                                           spot_member_code(input.spot_source_name))};
     }
     // The expiry each market is solved at, in the order the emitter quotes them: the emitter
     // sorted the expiries, so the periods are taken from its order rather than sorted again,

@@ -369,3 +369,31 @@ TEST_CASE("a held surface runs under its feed's own source name", "[shared_surfa
     ice.stop();
     CHECK(names().empty());
 }
+
+TEST_CASE("a source's stop names the surfaces it holds and those only it holds",
+          "[shared_surfaces]") {
+    recording_surfaces surfaces;
+    const auto make = [] {
+        return std::make_shared<recording_surface>();
+    };
+    recording_hold bloomberg_eur(
+        surfaces, "eur", "bloomberg-a", "c-bbg", "eur.bloomberg", {}, make);
+    recording_hold ice_eur(surfaces, "eur", "ice-a", "c-ice", "eur.ice", {}, make);
+    recording_hold bloomberg_gbp(
+        surfaces, "gbp", "bloomberg-a", "c-bbg", "gbp.bloomberg", {}, make);
+    bloomberg_eur.start();
+    ice_eur.start();
+    bloomberg_gbp.start();
+
+    // EUR keeps running for ICE when Bloomberg goes; GBP has no one else.
+    const auto bloomberg = surfaces.effect_of_releasing("bloomberg-a");
+    CHECK(bloomberg.held == 2);
+    CHECK(bloomberg.only_here == 1);
+    const auto ice = surfaces.effect_of_releasing("ice-a");
+    CHECK(ice.held == 1);
+    CHECK(ice.only_here == 0);
+
+    bloomberg_gbp.stop();
+    CHECK(surfaces.effect_of_releasing("bloomberg-a").held == 1);
+    CHECK(surfaces.effect_of_releasing("tradeweb-a").held == 0);
+}

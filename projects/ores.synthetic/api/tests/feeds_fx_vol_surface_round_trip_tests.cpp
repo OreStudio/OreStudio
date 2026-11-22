@@ -169,7 +169,8 @@ struct round_trip_board final {
     round_trip_board() {
         eur = values.member_of(market_member_kind::curve, curve_member_code({}, "EUR"));
         usd = values.member_of(market_member_kind::curve, curve_member_code({}, "USD"));
-        spot = values.member_of(market_member_kind::spot, fx_pair_member_code("EUR", "USD"));
+        spot = values.member_of(market_member_kind::spot,
+                                spot_member_code("synthetic.test.spot.eurusd"));
     }
 
     market_board values{4};

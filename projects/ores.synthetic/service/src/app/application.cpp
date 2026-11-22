@@ -24,10 +24,13 @@
 #include "../generator_fleet.hpp"
 #include "../generator_runner.hpp"
 #include "../registrar.hpp"
+#include "../simulated_source_handler.hpp"
 #include "../simulator_adapter.hpp"
 #include "../simulator_offers.hpp"
+#include "../source_control.hpp"
 #include "ores.analytics.quant/math/rng_stream.hpp"
 #include "ores.database/service/context_factory.hpp"
+#include "ores.database/service/tenant_context.hpp"
 #include "ores.eventing.api/service/event_bus.hpp"
 #include "ores.eventing.core/service/postgres_event_source.hpp"
 #include "ores.iam.client/client/service_token_provider.hpp"
@@ -41,7 +44,10 @@
 #include "ores.service/service/heartbeat_publisher.hpp"
 #include "ores.synthetic.api/domain/step_subjects.hpp"
 #include "ores.synthetic.api/feeds/feed_factory.hpp"
+#include "ores.synthetic.api/feeds/fx_spot_feed.hpp"
+#include "ores.synthetic.api/feeds/fx_vol_surface_feed.hpp"
 #include "ores.synthetic.core/messaging/registrar.hpp"
+#include "ores.synthetic.core/repository/stopped_simulated_source_repository.hpp"
 #include "ores.synthetic.service/app/application_exception.hpp"
 #include "ores.synthetic.service/messaging/event_registrar.hpp"
 #include "ores.utility/version/version.hpp"
@@ -49,10 +55,12 @@
 #include <boost/asio/detached.hpp>
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <chrono>
 #include <functional>
 #include <map>
 #include <memory>
+#include <mutex>
 #include <optional>
 #include <set>
 #include <span>
@@ -79,8 +87,12 @@ namespace detail {
 // An adapter serves one source of the catalogue. Its id is the name of the source, and the provider
 // of the source is the one whose notation its ticks use.
 struct simulated_adapter final {
+    std::string name;
+    std::string provider_code;
     std::unique_ptr<generator_runner> runner;
     std::unique_ptr<simulator_adapter> adapter;
+    /// An operator stopped it, so it is built but not running.
+    bool stopped = false;
 };
 
 // The simulator serves each source of the catalogue whose kind is simulated, one adapter for each.
@@ -100,6 +112,8 @@ make_adapters(const std::vector<ores::marketdata::domain::feed>& sources,
         if (source.session_code != "synthetic-local")
             continue;
         simulated_adapter one;
+        one.name = source.name;
+        one.provider_code = source.publisher_code;
         one.runner = std::make_unique<generator_runner>(
             [&registry,
              &build,
@@ -125,8 +139,10 @@ make_adapters(const std::vector<ores::marketdata::domain::feed>& sources,
 }
 
 // The adapters of the simulator, started once marketdata answers. The services of an installation
-// start in no fixed order, so the simulator asks again until the catalogue is readable.
-class adapter_fleet final {
+// start in no fixed order, so the simulator asks again until the catalogue is readable. An
+// operator stops and starts one through the source control; a source stopped before the service
+// started is built but left stopped.
+class adapter_fleet final : public ores::synthetic::service::source_control {
 private:
     static auto& lg() {
         static auto instance =
@@ -152,7 +168,7 @@ public:
         , fixings_(db_ctx, svc_nats)
         , worker_([this](ores::platform::concurrency::stop_token stop) { run(stop); }) {}
 
-    ~adapter_fleet() {
+    ~adapter_fleet() override {
         worker_.request_stop();
         if (worker_.joinable())
             worker_.join();
@@ -165,8 +181,75 @@ public:
         }
     }
 
+    adapter_fleet(const adapter_fleet&) = delete;
+    adapter_fleet& operator=(const adapter_fleet&) = delete;
+
+    [[nodiscard]] std::vector<ores::synthetic::messaging::simulated_source>
+    sources() const override {
+        const std::lock_guard lock(mu_);
+        std::vector<ores::synthetic::messaging::simulated_source> out;
+        out.reserve(adapters_.size());
+        for (const auto& one : adapters_) {
+            const auto holds =
+                one.runner->running_count_of(ores::synthetic::feed::fx_vol_surface_feed_kind);
+            const auto effect = generators_.surfaces().effect_of_releasing(one.name);
+            out.push_back({.source_name = one.name,
+                           .provider_code = one.provider_code,
+                           .stopped = one.stopped,
+                           .served_feeds = static_cast<int>(one.runner->running_count() - holds),
+                           .held_surfaces = static_cast<int>(effect.held),
+                           .surfaces_only_held_here = static_cast<int>(effect.only_here)});
+        }
+        std::ranges::sort(out, {}, &ores::synthetic::messaging::simulated_source::source_name);
+        return out;
+    }
+
+    bool stop(const std::string& source_name) override {
+        const std::lock_guard lock(mu_);
+        auto* one = find(source_name);
+        if (one == nullptr)
+            return false;
+        if (!one->stopped) {
+            one->adapter->stop();
+            one->runner->stop_all();
+            one->stopped = true;
+            ORES_LOG_SEV(lg(), info) << "Simulated source " << source_name << " stopped";
+        }
+        return true;
+    }
+
+    bool start(const std::string& source_name) override {
+        const std::lock_guard lock(mu_);
+        auto* one = find(source_name);
+        if (one == nullptr)
+            return false;
+        if (one->stopped) {
+            one->adapter->start();
+            one->stopped = false;
+            ORES_LOG_SEV(lg(), info) << "Simulated source " << source_name << " started";
+        }
+        return true;
+    }
+
 private:
+    simulated_adapter* find(const std::string& source_name) {
+        const auto found = std::ranges::find(adapters_, source_name, &simulated_adapter::name);
+        return found == adapters_.end() ? nullptr : &*found;
+    }
+
+    // The sources an operator stopped, which stay stopped across a restart of the service.
+    std::set<std::string> stopped_sources() const {
+        std::set<std::string> out;
+        const auto sys_ctx = ores::database::service::tenant_context::with_system_tenant(db_ctx_);
+        for (const auto& row :
+             ores::synthetic::repository::stopped_simulated_source_repository().read_latest(
+                 sys_ctx))
+            out.insert(row.source_name);
+        return out;
+    }
+
     // Builds and starts every adapter before any is kept, so a failed start leaves none running.
+    // A source an operator stopped is built and kept, but not started.
     void start_all(const std::vector<ores::marketdata::domain::feed>& sources) {
         // A curve that states the fixings of its own index hands them to the writer, which keeps
         // them in the market beside whatever a publisher fixes for the same index.
@@ -179,10 +262,17 @@ private:
         };
         auto built = make_adapters(
             sources, db_ctx_, nats_, generators_, registry_, build_, faults_, started);
+        const auto stopped = stopped_sources();
         std::size_t attempted = 0;
         try {
             for (auto& one : built) {
                 ++attempted;
+                if (stopped.contains(one.name)) {
+                    one.stopped = true;
+                    ORES_LOG_SEV(lg(), info) << "Simulated source " << one.name
+                                             << " stays stopped, as an operator left it";
+                    continue;
+                }
                 one.adapter->start();
             }
         } catch (...) {
@@ -197,7 +287,10 @@ private:
             }
             throw;
         }
-        adapters_ = std::move(built);
+        {
+            const std::lock_guard lock(mu_);
+            adapters_ = std::move(built);
+        }
         for (auto& one : adapters_)
             generators_.attach(*one.runner);
         // A derived source serves what the store already holds, so it runs beside the
@@ -255,6 +348,8 @@ private:
     std::shared_ptr<ores::synthetic::feed::fault_state> faults_;
     /// The fixings the curves state, written beside whatever a publisher fixes for the index.
     fixing_history_writer fixings_;
+    // Guards the adapters against an operator's stop or start while the worker builds them.
+    mutable std::mutex mu_;
     std::vector<simulated_adapter> adapters_;
     ores::platform::concurrency::jthread worker_;
 };
@@ -391,28 +486,29 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
      * loop reads its driver source without a lock, so the source must be in place before the
      * loop runs.
      *
-     * A surface hangs off the spot feed of its own pair: the block's anchor is that feed's
+     * A surface hangs off the spot feed its config names: the block's anchor is that feed's
      * series, so the surface's forward variances, skew and curvature load on the very series
-     * the spot publishes. A pair with no spot feed has no anchor, and its surface is left out
-     * with a warning rather than started to move on its own.
+     * the spot publishes, the same feed whose level the surface reads. A surface that names no
+     * spot feed has no anchor, and it is left out with a warning rather than started to move on
+     * its own.
      */
     {
         const auto rows = registry.rows(db_ctx);
-        std::map<std::pair<std::string, std::string>, std::uint64_t> spot_series;
+        std::map<std::string, std::uint64_t> spot_series;
         for (const auto& row : rows)
-            if (row.candidate.fx_pair && !row.candidate.block)
-                spot_series[*row.candidate.fx_pair] =
+            if (row.kind->kind == feed::fx_spot_feed_kind)
+                spot_series[row.candidate.source_name] =
                     ores::analytics::quant::math::series_key(row.candidate.source_name);
 
         for (const auto& row : rows) {
             if (!row.candidate.block)
                 continue;
-            const auto anchor = spot_series.find(*row.candidate.fx_pair);
+            const auto anchor = spot_series.find(row.candidate.spot_source_name);
             if (anchor == spot_series.end()) {
                 ORES_LOG_SEV(lg(), warn)
-                    << "Synthetic surface '" << row.candidate.source_name << "' has no spot feed "
-                    << "for " << row.candidate.fx_pair->first << "/"
-                    << row.candidate.fx_pair->second << ", so it is not in the run's market";
+                    << "Synthetic surface '" << row.candidate.source_name
+                    << "' names no spot feed by its URI and provider, so it is not in the run's "
+                    << "market";
                 continue;
             }
             try {
@@ -463,7 +559,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         nats,
         db_ctx,
         "ores.synthetic.service",
-        [&generators, faults, &svc_nats, service_token, &registry, &run_market_of_the_run](
+        [&generators, faults, &svc_nats, service_token, &registry, &run_market_of_the_run, &fleet](
             auto& n, auto c, auto v) {
             auto subs = ores::synthetic::messaging::registrar::register_handlers(n, c, v);
             auto market_subs =
@@ -479,6 +575,29 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
             subs.insert(subs.end(),
                         std::make_move_iterator(market_subs.begin()),
                         std::make_move_iterator(market_subs.end()));
+            // The simulated sources are the fleet's, which lives here rather than in the
+            // registrar, so their verbs are subscribed here.
+            using ores::synthetic::service::simulated_source_handler;
+            namespace msgs = ores::synthetic::messaging;
+            constexpr auto queue = "ores.synthetic.service";
+            subs.push_back(
+                n.queue_subscribe(std::string(msgs::list_simulated_sources_request::nats_subject),
+                                  queue,
+                                  [&n, c, v, &fleet](ores::nats::message msg) {
+                                      simulated_source_handler(n, c, v, fleet).list(std::move(msg));
+                                  }));
+            subs.push_back(
+                n.queue_subscribe(std::string(msgs::stop_simulated_source_request::nats_subject),
+                                  queue,
+                                  [&n, c, v, &fleet](ores::nats::message msg) {
+                                      simulated_source_handler(n, c, v, fleet).stop(std::move(msg));
+                                  }));
+            subs.push_back(n.queue_subscribe(
+                std::string(msgs::start_simulated_source_request::nats_subject),
+                queue,
+                [&n, c, v, &fleet](ores::nats::message msg) {
+                    simulated_source_handler(n, c, v, fleet).start(std::move(msg));
+                }));
             return subs;
         },
         [&nats](boost::asio::io_context& ioc) {

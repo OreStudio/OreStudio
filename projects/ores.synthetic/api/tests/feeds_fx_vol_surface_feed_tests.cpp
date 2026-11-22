@@ -100,6 +100,7 @@ fx_expiry_date_rule feed_rule() {
 fx_vol_surface_feed_build_input feed_input() {
     fx_vol_surface_feed_build_input in;
     in.config = feed_row();
+    in.spot_source_name = "synthetic.test.spot.eurusd";
     // Given out of order, so the maker's own ordering is what the test sees.
     in.expiries = {feed_expiry("6M", 0.075), feed_expiry("1M", 0.070), feed_expiry("3M", 0.0725)};
     in.contributors = {"reference"};
@@ -289,13 +290,13 @@ TEST_CASE("a tick whose run has not published what the surface reads says which 
     const auto usd_id = market.values().member_of(
         ores::analytics::quant::domain::market_member_kind::curve, curve_member_code({}, "USD"));
     market.values().publish_curve(usd_id, std::chrono::year_month_day{}, flat(0.99), at);
-    CHECK(tick() == "no market: spot:EUR/USD");
+    CHECK(tick() == "no market: spot:synthetic.test.spot.eurusd");
     CHECK(feed.publish_count() == 0);
 
     // With all three published the gate stops refusing, so the next thing a tick would do is
     // send; the board read is what a test can follow without a broker, and the round trip does.
     const auto spot = market.values().member_of(
-        ores::analytics::quant::domain::market_member_kind::spot, "EUR/USD");
+        ores::analytics::quant::domain::market_member_kind::spot, "synthetic.test.spot.eurusd");
     market.values().publish_spot(spot, 1.0842, at);
     const auto inputs = fx_vol_board_inputs(market.values(), eur, usd_id, spot);
     REQUIRE(inputs);
@@ -359,7 +360,8 @@ TEST_CASE("a contributor no adapter serves records its points while the vendors 
         market.values().member_of(market_member_kind::curve, curve_member_code({}, "EUR"));
     const auto usd =
         market.values().member_of(market_member_kind::curve, curve_member_code({}, "USD"));
-    const auto spot = market.values().member_of(market_member_kind::spot, "EUR/USD");
+    const auto spot =
+        market.values().member_of(market_member_kind::spot, "synthetic.test.spot.eurusd");
     market.values().publish_curve(eur, spot_date, flat(0.03), at);
     market.values().publish_curve(usd, spot_date, flat(0.01), at);
     market.values().publish_spot(spot, 1.0842, at);

@@ -1,14 +1,14 @@
 :PROPERTIES:
 :ID: BC75AE1F-BD6B-46E0-BA50-794DBD35576E
 :END:
-#+title: Task: Start and stop a provider's simulated source from the Provider tab
-#+description: A control on the Provider tab that starts and stops a provider's simulated source, which the vol surface feeds run under.
+#+title: Task: Mop up the synthetic generator: a provider's source control and a vol surface's upstreams
+#+description: A control on the Provider tab that starts and stops a provider's simulated source, and a vol surface config that names the spot it reads as an oresmd URI and a provider, shown with its upstreams on the feed's Calibration tab.
 #+type: task
 #+level: s1
 #+filetags: :synthetic:web:vendor_quotes_of_a_latent_surface:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/start-and-stop-a-provider-simulated-source
+#+pr: 5025
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-22
@@ -22,15 +22,17 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 An operator starts and stops a provider's simulated source from the Provider tab of the synthetic screen. Today a simulated source runs whenever the catalogue serves its provider, and no screen controls it. A vol surface feed runs only while a source holds it, so its feed page shows the state and offers no Start or Stop. This control is the one place to start and stop it.
 
+A vol surface reads three upstream values on every tick: its pair's spot and the two currencies' discounting curves. Nothing in its config names them, so its page cannot show them, and the spot is picked by the pair code alone in two places that can disagree. The config names the spot it reads as the pair the market series is keyed by, an =oresmd= URI and a provider, and the feed's Calibration tab links each upstream.
+
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:8EC92006-17BB-4575-BA13-2BE5ED5327C3][Build each party's volatility surfaces from vendor quotes of a latent surface]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-22                               |
 
 * Acceptance
@@ -39,12 +41,57 @@ An operator starts and stops a provider's simulated source from the Provider tab
 - A person who holds the feeds run permission starts and stops a source from the tab.
 - A stopped source detaches from its shared surfaces; a surface no source holds stops, and its vol feed reads as stopped.
 - A start or stop goes through the BFF, with a test of the route and of the refusal without the permission.
+- A vol surface config holds =spot_oresmd_uri= and =spot_provider_code=; the seed sets them from the surface's own collection, and a write that names no spot feed is refused.
+- The board read and the latent block's anchor both resolve the spot from that pair, so a surface reads and correlates with one spot feed.
+- A running vol feed is never called not running on its Calibration tab.
+- The Calibration tab of a vol feed links its spot feed and its two discounting curves, each with its run state, rather than copying their cards.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Two parts, each in slices that end in a check.
+
+*Part A: the vol surface names its spot.*
+
+1. *Schema.* =spot_oresmd_uri= and =spot_provider_code= on the vol surface
+   feed entity, through its model and codegen. The data that seeds the vol
+   feeds sets them from the surface's own collection: its pair's spot URI
+   and the collection's provider. The insert refuses a pair that names no
+   current spot feed of that provider.
+2. *Service.* The spot feed writes its board member under its provider and
+   pair, and the surface reads the member its config names. The latent
+   block's anchor resolves the spot feed by the same pair, so the read and
+   the correlation name one feed.
+3. *Screens.* The BFF writes the two fields. The Surface tab shows the spot
+   as its URI and provider. The Calibration tab of a vol feed links the spot
+   feed and the two discounting curves, each with its run state.
+
+*Part B: a provider's source control.* The UX was agreed with the owner on
+2026-11-22:
+
+- A *source strip* above the feed table: the source's name, its state, how
+  many feeds it serves and how many vol surfaces it holds, and one button,
+  Stop source or Start source. The header's buttons become Start feeds and
+  Stop feeds, so the two levers never share a word.
+- *Stored stop.* A stopped source stays stopped until someone starts it, a
+  service restart included. The catalogue has no enabled flag, so the
+  synthetic service stores the stopped sources itself.
+- *Confirm with the effect.* Stop source opens a dialog that names what
+  stops: the source's served feeds and the vol surfaces it holds, where a
+  surface another source still holds keeps running. Feeds started by hand
+  keep running. Start needs no confirmation.
+
+4. *Storage.* A synthetic entity for a stopped source, by its catalogue
+   name, with who stopped it and when.
+5. *Service.* Stop and start verbs for one source. A stop stops the source's
+   adapter and records it; a start removes the record and starts the
+   adapter. The adapter fleet skips a stopped source at start up. A status
+   read answers each source's state, its served feed count and its held
+   surfaces.
+6. *BFF.* Routes for the read and the two verbs, under the feeds run
+   permission, for a system session only, with route tests and the
+   refusals.
+7. *Web.* The strip, the renamed buttons and the dialog, in English, French
+   and Portuguese, with tests.
 
 * Measurements
 
@@ -58,9 +105,23 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Vol feeds naming exactly one spot feed and one discounting curve per currency | 14 of 14, on the BFF and on ores.http | =check_upstreams.py= (scratchpad) as =super_admin= | eb2f68203b |
+| Source stop stored, kept across a synthetic service restart, cleared by a start | lseg-a: stored with reason, "stays stopped" after restart, closed row after start, 14 feeds served again | =check_sources.py= (scratchpad), BFF and ores.http | 6c5df4b7f9 |
+| Surfaces held per vendor source, and held by that source alone | bloomberg-a, ice-a, tradeweb-a: 14 held, 0 alone | =check_sources.py list= | 6c5df4b7f9 |
+| Source handler tests | 5 cases pass | =ores.synthetic.service.tests "[simulated_source_handler]"= | ab5a97fecc |
 
 * Notes
+
+- *Wide type ceilings raised, by the owner's decision (2026-11-22).* The spot pair adds two fields to =fx_vol_surface_feed= (31 to 33), =fx_vol_surface_feed_write= (23 to 25) and =fx_vol_surface_feed_entity= (32 to 34). The wide types check says a ceiling may not grow, and the codegen cannot group database columns into a type of their own, so the owner chose to raise the three rows in =compass/checks/wide_types.org=.
+
+** Why the spot was never named (analysis, 2026-11-22)
+
+- *Deferred on evidence.* [[id:4825DEE0-D3E4-4E38-B46F-0C5EA838F1E0][The investigation of the forward a surface is struck against]] measured the quoted vols unchanged, to 1e-12 at all 15 points, when the spot moves from 1.0 to 1.30 with the discounts held. It recorded "The spot, later": not on the critical path. The board then carried the spot as one member per pair, =spot:<PAIR>=, with nothing in any config.
+- *The hidden dependency was seen and accepted.* [[id:DDF8585F-75EE-4190-B20B-8A913DC1F883][The board task]] calls visibility "the load-bearing one": a feed that reads through the board has a dependency nothing states, which hides the graph.
+- *The curves were fixed when they failed loudly.* Curves from another collection sharing a member made the surface refuse every tick, so curves were scoped by collection. A spot from the wrong feed fails silently, because the vols ignore its level.
+- *Two pickers can disagree.* Every pair now has two spot feeds, in the Bloomberg and the Uniform Volatility Demo collections. The board read (=fx_vol_surface_feed.cpp=) takes whichever ticked last; the block anchor (=application.cpp=) takes the last row of the pair. The block's spot correlations can therefore tie a Bloomberg surface to the demo spot.
+- *A URI alone does not name a provider's spot, by design.* Both EUR/USD spot feeds publish =oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD=. The grammar names what is observed ([[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd]]); a market series is keyed by the URI, the provider and the party (=market_series.hpp=), so two providers that quote one item keep two series. The pair of URI and provider is the existing address of one provider's spot, and putting the provider in the URI would break one datum, one URI.
+- *The Calibration tab said "not running" for a running vol feed.* It took the run state from the presence of a start, and a surface starts from no published value. Fixed in =b56208ccb9=.
 
 - The task comes from [[id:D9A61A85-F8E6-446C-B5D4-D5A1855DAAA5][Configure a vol surface feed on the synthetic screen]]. That task refuses a hand Start of a vol feed, because a run of its own is a second market beside the one the vendors quote.
 - No control of a simulated source exists today. The BFF has only =GET /api/marketdata/adapters=, and the Serving tag on the Provider tab only reads it.
@@ -81,12 +142,39 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5025][#5025]] | [synthetic] Name a vol surface's upstreams and control a provider's simulated source |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The stored stop and the adapter can disagree when the adapter call throws. | =simulated_source_handler.hpp= | Accept | A failed adapter stop removes the row; a start starts the adapter before removing the row and stops it again if the removal fails. Two tests. |
+| 2 | The handler does not check the stop reason. | =simulated_source_handler.hpp= | Accept | A blank reason is refused before anything is written. One test. |
+| 3 | Start records no reason. | =simulated_source_handler.hpp= | Decline | Start needs no confirmation by the agreed UX; the closed row's history keeps who and when. |
+| 4 | The generated CRUD can change the row without the adapter. | =ores.synthetic.stopped_simulated_source.org= | Accept | Documented in the model; the generated write and delete are system tenant only. |
+| 5 | Existing rows need a migration for the spot columns. | =fx_vol_surface_feed= | Decline | No migrations: the database is recreated and the publish sets both columns; checked live on 14 feeds. |
 
 * Result
+
+A vol surface's config names the spot it reads as the pair a market series
+is keyed by, =spot_oresmd_uri= and =spot_provider_code=, which the publish sets
+from the spot feed of the surface's own collection. A spot feed publishes under
+its own source name, and the surface's board read and its latent block's
+anchor resolve the one feed the pair names; a pair naming none is refused with
+the reason. The vol feed's Calibration tab links its spot and its two
+discounting curves with their run state, and no longer calls a running surface
+stopped. Its Surface tab draws three cards side by side with gamma at 0.5 and
+a disabled gamma field in the start dialog, and its Contributors tab is a list
+whose rows open each contributor's own page. ores.http serves the vol feed's
+composed key read, as the BFF does.
+
+An operator stops and starts a provider's simulated source from a strip on the
+Provider tab. The stop is stored in =stopped_simulated_source=, with who and
+why, kept across a restart of the service, and the dialog says first what it
+stops. Only the system tenant stops a source, with the run permission and a
+reason; the stored stop and the adapter stay in step if either step fails.
+
+The review turned up a larger gap: the feeds form a dependency graph that
+nothing models, and the latent surface carries a vendor's name. That is the
+story [[id:8DE041AE-95E6-40CE-9B62-2CE3BA77838A][Model the synthetic feeds as a dependency graph]], which starts with a
+signed-off oresmd naming scheme.

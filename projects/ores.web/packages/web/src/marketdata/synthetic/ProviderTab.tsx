@@ -30,6 +30,7 @@ import { Button, Notice, Select, Tag, cx } from '../../ui/Primitives.js';
 import { AddFeed, useMayAddFeed } from './AddFeed.js';
 import { useSources } from './adapterStatus.js';
 import { ServingTag, useProviderFacts } from './DashboardTab.js';
+import { SourceStrip } from './sourceStrip.js';
 
 /** The asset classes the synthetic feeds are authored in. */
 const ASSET_CLASSES = ['fx', 'interest_rates'] as const;
@@ -173,6 +174,7 @@ export function ProviderTab(): ReactNode {
                             )}
                         </span>
                     </div>
+                    <SourceStrip provider={entry.code} />
                     <div className="flex flex-wrap items-center gap-2 text-sm">
                         <span className="text-ink-muted">
                             {t('marketdata.synthetic.provider.assetClass')}

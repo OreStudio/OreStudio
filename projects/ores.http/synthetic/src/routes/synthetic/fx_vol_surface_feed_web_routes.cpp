@@ -240,32 +240,6 @@ fx_vol_surface_feed_web_routes::handle_list(const http_request& req, nats_client
 }
 
 boost::asio::awaitable<http_response>
-fx_vol_surface_feed_web_routes::handle_key(const http_request& req, nats_client& session) {
-    try {
-        const auto key = rr::code(req.get_path_param("key"),
-                                  "A record is named by a code of 1 to 100 characters.");
-        auto msg = fx_vol_surface_feed_web_page(0, 1);
-        msg.filter = messaging::fx_vol_surface_feeds_filter{};
-        msg.filter->id_one_of =
-            std::vector<boost::uuids::uuid>{rr::read<boost::uuids::uuid>(key, "key")};
-        const auto reply = ores::http::forwarding::forward(req, session, msg);
-        rr::require_ok(reply.result);
-        if (reply.fx_vol_surface_feeds.empty())
-            rr::refuse(http_status::not_found,
-                       "not-found",
-                       "There is no fx-vol-surface-feeds row " + key + ".");
-        co_return http_response::json(
-            "{\"row\":" + fx_vol_surface_feed_web_row(reply.fx_vol_surface_feeds.front()) + "}");
-    } catch (const rr::refusal& refusal) {
-        co_return rr::answer(refusal);
-    } catch (const std::exception& e) {
-        ORES_LOG_SEV(lg(), error) << e.what();
-        co_return http_response::api_error(
-            http_status::bad_gateway, "internal", std::string(rr::unanswered));
-    }
-}
-
-boost::asio::awaitable<http_response>
 fx_vol_surface_feed_web_routes::handle_put(const http_request& req, nats_client& session) {
     try {
         fx_vol_surface_feed_web_require_writable(req);
@@ -371,17 +345,6 @@ void fx_vol_surface_feed_web_routes::register_routes(
     const auto list_built = list_route.build();
     router->add_route(list_built);
     registry->register_route(list_built);
-
-    auto key_route =
-        router->get("/api/synthetic/fx-vol-surface-feeds/key/{key}")
-            .summary("Read one fx-vol-surface-feeds record for a screen")
-            .description("One row, named by its key.")
-            .tags({"synthetic"})
-            .auth_required()
-            .handler([&session](const http_request& req) { return handle_key(req, session); });
-    const auto key_built = key_route.build();
-    router->add_route(key_built);
-    registry->register_route(key_built);
 
     auto put_route =
         router->put("/api/synthetic/fx-vol-surface-feeds")

@@ -91,8 +91,8 @@ public:
      * <ticks_per_hour> <enabled> <auto_start> <folder_id> <asset_class_code> <arrival_mode>
      * <branching_ratio> <decay> <sensitivity> <skew_reversion> <skew_volatility>
      * <curvature_reversion> <curvature_volatility> <spot_variance_correlation>
-     * <spot_skew_correlation> <segment_correlation> <start_skew> <start_curvature> <reason>
-     * <commentary>
+     * <spot_skew_correlation> <segment_correlation> <start_skew> <start_curvature>
+     * <spot_oresmd_uri> <spot_provider_code> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -103,8 +103,8 @@ public:
      * <ticks_per_hour> <enabled> <auto_start> <folder_id> <asset_class_code> <arrival_mode>
      * <branching_ratio> <decay> <sensitivity> <skew_reversion> <skew_volatility>
      * <curvature_reversion> <curvature_volatility> <spot_variance_correlation>
-     * <spot_skew_correlation> <segment_correlation> <start_skew> <start_curvature> <reason>
-     * <commentary> [--version <n>]
+     * <spot_skew_correlation> <segment_correlation> <start_skew> <start_curvature>
+     * <spot_oresmd_uri> <spot_provider_code> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -115,8 +115,8 @@ public:
      * <source_name> <ticks_per_hour> <enabled> <auto_start> <folder_id> <asset_class_code>
      * <arrival_mode> <branching_ratio> <decay> <sensitivity> <skew_reversion> <skew_volatility>
      * <curvature_reversion> <curvature_volatility> <spot_variance_correlation>
-     * <spot_skew_correlation> <segment_correlation> <start_skew> <start_curvature> <reason>
-     * <commentary>
+     * <spot_skew_correlation> <segment_correlation> <start_skew> <start_curvature>
+     * <spot_oresmd_uri> <spot_provider_code> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

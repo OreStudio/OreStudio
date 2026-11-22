@@ -313,8 +313,8 @@ describe('the Synthetic dashboard', () => {
             );
         });
         expect(html).toContain('Bloomberg');
-        expect(html).not.toContain('>Start<');
-        expect(html).not.toContain('>Stop<');
+        expect(html).not.toContain('>Start feeds<');
+        expect(html).not.toContain('>Stop feeds<');
     });
 
     it('offers start and stop, in their words, to a person who holds the run permission', () => {
@@ -324,8 +324,8 @@ describe('the Synthetic dashboard', () => {
                 access(['synthetic::fx_spot_generation_configs:read', 'synthetic::feeds:run']),
             );
         });
-        expect(html).toContain('>Start<');
-        expect(html).toContain('>Stop<');
+        expect(html).toContain('>Start feeds<');
+        expect(html).toContain('>Stop feeds<');
     });
 });
 
@@ -442,8 +442,30 @@ describe('the Synthetic Provider screen', () => {
         const html = render('/market-data/synthetic?tab=provider', (client) =>
             seeded(client, ['synthetic::*']),
         );
-        expect(html).toContain('>Start<');
-        expect(html).toContain('>Stop<');
+        expect(html).toContain('>Start feeds<');
+        expect(html).toContain('>Stop feeds<');
+    });
+
+    it('shows the provider simulated source above its feeds, with a Stop for an operator', () => {
+        const html = render('/market-data/synthetic?tab=provider', (client) => {
+            seeded(client, ['synthetic::*']);
+            client.setQueryData(
+                ['simulated-sources'],
+                [
+                    {
+                        source_name: 'bloomberg-a',
+                        provider_code: 'bloomberg',
+                        stopped: false,
+                        served_feeds: 54,
+                        held_surfaces: 14,
+                        surfaces_only_held_here: 0,
+                    },
+                ],
+            );
+        });
+        expect(html).toContain('data-source-strip');
+        expect(html).toContain('bloomberg-a');
+        expect(html).toContain('>Stop source<');
     });
 
     it('offers a reader the rows and no start or stop', () => {
@@ -451,7 +473,7 @@ describe('the Synthetic Provider screen', () => {
             seeded(client, ['synthetic::fx_spot_generation_configs:read']),
         );
         expect(html).toContain('EUR/USD');
-        expect(html).not.toContain('>Start<');
+        expect(html).not.toContain('>Start feeds<');
         expect(html).not.toContain('Add feed');
     });
 

@@ -8,7 +8,7 @@
 #+filetags: :marketdata:synthetic:volatility:vendor_quotes_of_a_latent_surface:sprint_30:v0:
 #+owner: marco
 #+branch: feature/show-vol-quotes-on-the-quotes-board
-#+pr:
+#+pr: 5004
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-22
@@ -104,7 +104,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5004][#5004]] | [synthetic] Publish every vendor volatility surface on the quotes board |
 
 * Review
 

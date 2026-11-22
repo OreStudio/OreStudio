@@ -338,6 +338,29 @@ TEST_CASE("the index tenor of a curve is 1D for an overnight index and for the F
     CHECK(ores::synthetic::feed::ir_curve_index_tenor(cfg) == "6M");
 }
 
+TEST_CASE("only the discounting curve on the overnight index discounts its currency",
+          "[ir_curve_template_resolver]") {
+    using ores::synthetic::feed::ir_curve_discounts_its_currency;
+    ores::synthetic::domain::ir_curve_generation_config cfg;
+    cfg.currency_code = "USD";
+    cfg.index_family = "sofr";
+
+    cfg.role = "self_discounting";
+    CHECK(ir_curve_discounts_its_currency(cfg));
+    cfg.role = "discount";
+    CHECK(ir_curve_discounts_its_currency(cfg));
+
+    // The meeting-dated short end shares the overnight index and stops after a year.
+    cfg.role = "self_discounting";
+    cfg.tenor = "FOMC";
+    CHECK_FALSE(ir_curve_discounts_its_currency(cfg));
+
+    cfg.index_family = "libor";
+    cfg.role = "projection";
+    cfg.tenor = "6M";
+    CHECK_FALSE(ir_curve_discounts_its_currency(cfg));
+}
+
 TEST_CASE("only the FOMC variant resolves its tenors under the meeting-dated convention",
           "[ir_curve_template_resolver]") {
     ores::synthetic::domain::ir_curve_generation_config cfg;

@@ -32,6 +32,7 @@
 #include "ores.synthetic.api/export.hpp"
 #include "ores.synthetic.api/feeds/adapter_target.hpp"
 #include "ores.synthetic.api/feeds/fx_vol_surface_emitter.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <atomic>
 #include <cstddef>
 #include <cstdint>
@@ -134,6 +135,17 @@ fx_vol_expiry_markets(const fx_vol_market_inputs& inputs,
                                                                         std::string_view quote);
 
 /**
+ * @brief The member code a currency's discounting curve is published under: the collection
+ * the curve belongs to, then the currency.
+ *
+ * Each collection is a vendor with latent curves of its own, and a surface is struck against
+ * its own vendor's curves. A currency code alone would let another collection's curve, such as
+ * a demo curve that stops at two years, replace them.
+ */
+[[nodiscard]] ORES_SYNTHETIC_API_EXPORT std::string
+curve_member_code(const boost::uuids::uuid& collection, std::string_view currency);
+
+/**
  * @brief The emitter a row describes, at its start.
  *
  * The start surface is the level the feed states: its skew and curvature, and one ATM
@@ -197,7 +209,8 @@ public:
      * A surface whose drivers the run's market does not know -- one started after the market
      * was built, or a run with no market at all -- publishes nothing and says so. Stepping it
      * on zeros would move it on noise nobody chose, and throwing would fill the log with one
-     * failure a tick.
+     * failure a tick. The log names the reason once, when it changes, and again when the
+     * surface publishes after it.
      */
     std::string tick(const ores::analytics::quant::service::tick_context& context);
     void stop() override;
@@ -222,10 +235,16 @@ public:
     std::size_t detach(const std::string& adapter_id);
 
 private:
+    /// The status of a tick that publishes nothing for @p reason, logged when the reason changes.
+    std::string refuse(std::string reason);
+
     /// Where this surface's three inputs are on the run's values, resolved when it is built.
-    std::optional<ores::analytics::quant::domain::market_board::member_id> base_curve_id_;
-    std::optional<ores::analytics::quant::domain::market_board::member_id> quote_curve_id_;
-    std::optional<ores::analytics::quant::domain::market_board::member_id> spot_id_;
+    struct board_members final {
+        ores::analytics::quant::domain::market_board::member_id base_curve = 0;
+        ores::analytics::quant::domain::market_board::member_id quote_curve = 0;
+        ores::analytics::quant::domain::market_board::member_id spot = 0;
+    };
+    board_members board_;
     /// One period per expiry, in the emitter's own expiry order.
     std::vector<ores::analytics::quant::domain::date_period> expiry_periods_;
     /// The pair's rule for dating those expiries, read once when the feed was built.
@@ -245,6 +264,8 @@ private:
     double sensitivity_ = 1.0;
     std::optional<std::size_t> handle_;
     std::atomic<std::uint64_t> published_{0};
+    /// Why the last tick published nothing, or empty when it published. Only the tick reads it.
+    std::string refusal_;
     /// The adapters attached, each with the contributor it serves and that contributor's targets.
     struct sink final {
         std::string contributor;

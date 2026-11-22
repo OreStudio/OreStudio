@@ -132,6 +132,11 @@ ir_curve_tenor_convention_code(const ores::synthetic::domain::ir_curve_generatio
     return cfg.tenor == "FOMC" ? std::string("RATES_SPOT_FOMC") : std::string("RATES_SPOT_FORWARD");
 }
 
+bool ir_curve_discounts_its_currency(
+    const ores::synthetic::domain::ir_curve_generation_config& cfg) {
+    return cfg.role != "projection" && cfg.tenor.empty();
+}
+
 std::vector<ir_curve_resolved_entry>
 resolve(const std::vector<ores::synthetic::domain::ir_curve_template_entry>& entries,
         const ir_curve_refdata_context& ctx,

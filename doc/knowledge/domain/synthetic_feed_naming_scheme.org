@@ -1,0 +1,312 @@
+:PROPERTIES:
+:ID: 90D85E90-E7EA-48D8-9245-313ECA3F9392
+:END:
+#+title: Synthetic feed naming scheme
+#+description: How a synthetic feed's source name is built from who produces it and the oresmd identity of what it observes.
+#+type: knowledge
+#+level: cross
+#+filetags: :synthetic:naming:oresmd:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+
+* Summary
+
+A synthetic feed's source name is its key, part of the subject its ticks
+travel on, and the seed of its random streams, so it is chosen once and by a
+rule. This page proposes that rule: a name states who produces the feed and,
+in the vocabulary of [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd]], what it
+observes, as =synthetic.<source>.<asset_class>.<instrument>.<subject>=. The
+scheme replaces names built ad hoc in the publish step, which say nothing of
+a feed's kind and file a vendor-neutral vol surface under one vendor. It is a
+proposal: no feed is renamed until the owner signs it off, and the sign-off is
+recorded on [[id:642ED805-A23C-404F-B494-8A74BB8AEB12][the task]] that designs it.
+
+* Detail
+
+** What a source name does
+
+- *The feed's key.* A feed config row is unique by its source name in its
+  tenant, and the screens show it as the feed's title.
+- *Its tick subject.* A feed publishes on =synthetic.v1.ops.tick.<source name>=.
+- *A board key.* A spot feed publishes its level to the run's market board
+  under its source name, which a vol surface reads.
+- *A seed.* A feed's random streams are seeded from the run seed and its source
+  name (=price_stream_for=), so a renamed feed draws different paths.
+
+Because of the last point a rename is a change to the generated market, and
+it should happen once, for every feed, by one rule.
+
+** The scheme
+
+: synthetic.<source>.<asset_class>.<instrument>.<subject>
+
+| Part | Meaning | Spelled as | Examples |
+|------+---------+------------+----------|
+| =synthetic= | the simulator's namespace | fixed | =synthetic= |
+| source | who produces the feed | the provider code of the catalogue, or =latent= for a vendor-neutral market no vendor publishes | =bloomberg=, =lseg=, =latent= |
+| asset_class | the asset class observed | the =oresmd= asset class, the URI's authority | =fx=, =ir= |
+| instrument | what is observed | the =oresmd= instrument spelling | =fx_spot=, =fx_option=, =fx_vol_surface=, =yield_curve= |
+| subject | which one | the identifying fields, ordered so names sort usefully | =audusd=, =sofr.usd=, =libor.gbp.3m= |
+
+The rules:
+
+- Every part is lower case, from =[a-z0-9_]=, and the parts are separated by
+  dots, so a name is a valid sequence of NATS subject tokens.
+- A name is derived from the feed's config by one function and never typed.
+  Two feeds that would derive one name are refused.
+- A name is not parsed back into its parts. The series a feed publishes are
+  the feed's own list (=i_feed::series_uris=), not a reading of its name.
+- An FX pair is written as the market writes it, base then quote, joined:
+  =audusd=. A curve's subject is its index family, then its currency, then its
+  index tenor when it has one: =sofr.usd=, =libor.gbp.3m=, =sofr.usd.fomc=. The
+  index comes first so the curves of one index sort together.
+
+** One name for each kind of feed
+
+| Node | What it publishes | Name |
+|------+-------------------+------|
+| A vendor's FX spot | =oresmd://fx/AUD?type=quote&instrument=fx_spot&quote=rate&ccy=USD= | =synthetic.bloomberg.fx.fx_spot.audusd= |
+| A vendor's yield curve | its pillar quotes: =mm=, =fra=, =ir_swap= under =oresmd://ir/USD= | =synthetic.bloomberg.ir.yield_curve.sofr.usd= |
+| A vendor's index curve with a tenor | its pillar quotes | =synthetic.ice.ir.yield_curve.libor.gbp.3m= |
+| A latent vol surface | nothing; the vendors quote it | =synthetic.latent.fx.fx_vol_surface.audusd= |
+| A vendor's quotes of that surface | =fx_option= quotes of the pair | =synthetic.bloomberg.fx.fx_option.audusd= |
+
+The two vol nodes follow a precedent =oresmd= already sets: it spells a whole
+calibrated surface =fx_vol_surface= and a quote of it =fx_option=. The latent
+surface is the former and each vendor's view the latter, so the latent market
+sits under the =latent= source and each vendor's quotes sit in that vendor's
+namespace, beside its spots and curves.
+
+** Open points, each with a recommendation
+
+1. *The instrument of a whole curve.* A curve feed publishes quotes of several
+   =oresmd= instruments (=mm=, =fra=, =ir_swap=), and =oresmd= has no instrument
+   for a curve.
+   - /Recommended:/ =yield_curve=, as the name of the whole, the way
+     =fx_vol_surface= names a whole surface. It is used in names only; it joins
+     the =oresmd= instruments if a whole curve is ever published as a series.
+   - /Rejected:/ =discount=, ORE's instrument for a discount factor. The latent
+     curve is a set of discount factors, but the feed publishes rates, so the
+     name would mislead.
+2. *The place of an index tenor.* The tenor goes last, after the currency, in
+   ORE's period spelling (=1w=, =2w=, =1m=, =3m=, =6m=, =12m=), and =fomc= takes
+   that place for the FOMC curve. A plain text sort puts =12m= before =1m=.
+   - /Recommended:/ keep the market's spelling, and let a screen sort by the
+     tenor field, which it reads from the config, not by the name.
+   - /Rejected:/ zero-padded or day-counted tenors (=012m=, =365d=), which sort
+     but read badly and differ from every other place a tenor is written.
+3. *How a name maps back to what a feed publishes.* The map runs one way: the
+   config derives the name, and the feed lists the series it publishes. A
+   spot's name corresponds to one series; a curve's and a vendor view's names
+   correspond to many.
+   - /Recommended:/ one derivation function per kind, tested so that no two
+     feeds of the seeded datasets derive one name, and no parser.
+
+** Today's names and their proposed names
+
+The seeded datasets publish 188 synthetic nodes in the system tenant:
+51 FX spots, 67 curves, 14 latent vol surfaces and 56 vendor views of those
+surfaces, one for each surface and contributor. Every proposed name is unique.
+A vendor view has no source name of its own today; the left column gives the
+name its adapter's hold runs under.
+
+| Kind | Today | Proposed |
+|------+-------+----------|
+| FX spot | =synthetic.bloomberg.audusd= | =synthetic.bloomberg.fx.fx_spot.audusd= |
+| FX spot | =synthetic.bloomberg.eurusd= | =synthetic.bloomberg.fx.fx_spot.eurusd= |
+| FX spot | =synthetic.bloomberg.gbpusd= | =synthetic.bloomberg.fx.fx_spot.gbpusd= |
+| FX spot | =synthetic.bloomberg.nzdusd= | =synthetic.bloomberg.fx.fx_spot.nzdusd= |
+| FX spot | =synthetic.bloomberg.usdbrl= | =synthetic.bloomberg.fx.fx_spot.usdbrl= |
+| FX spot | =synthetic.bloomberg.usdcad= | =synthetic.bloomberg.fx.fx_spot.usdcad= |
+| FX spot | =synthetic.bloomberg.usdchf= | =synthetic.bloomberg.fx.fx_spot.usdchf= |
+| FX spot | =synthetic.bloomberg.usdclp= | =synthetic.bloomberg.fx.fx_spot.usdclp= |
+| FX spot | =synthetic.bloomberg.usdcnh= | =synthetic.bloomberg.fx.fx_spot.usdcnh= |
+| FX spot | =synthetic.bloomberg.usdcop= | =synthetic.bloomberg.fx.fx_spot.usdcop= |
+| FX spot | =synthetic.bloomberg.usdczk= | =synthetic.bloomberg.fx.fx_spot.usdczk= |
+| FX spot | =synthetic.bloomberg.usddkk= | =synthetic.bloomberg.fx.fx_spot.usddkk= |
+| FX spot | =synthetic.bloomberg.usdhkd= | =synthetic.bloomberg.fx.fx_spot.usdhkd= |
+| FX spot | =synthetic.bloomberg.usdhuf= | =synthetic.bloomberg.fx.fx_spot.usdhuf= |
+| FX spot | =synthetic.bloomberg.usdils= | =synthetic.bloomberg.fx.fx_spot.usdils= |
+| FX spot | =synthetic.bloomberg.usdinr= | =synthetic.bloomberg.fx.fx_spot.usdinr= |
+| FX spot | =synthetic.bloomberg.usdjpy= | =synthetic.bloomberg.fx.fx_spot.usdjpy= |
+| FX spot | =synthetic.bloomberg.usdkrw= | =synthetic.bloomberg.fx.fx_spot.usdkrw= |
+| FX spot | =synthetic.bloomberg.usdmxn= | =synthetic.bloomberg.fx.fx_spot.usdmxn= |
+| FX spot | =synthetic.bloomberg.usdnok= | =synthetic.bloomberg.fx.fx_spot.usdnok= |
+| FX spot | =synthetic.bloomberg.usdpln= | =synthetic.bloomberg.fx.fx_spot.usdpln= |
+| FX spot | =synthetic.bloomberg.usdsek= | =synthetic.bloomberg.fx.fx_spot.usdsek= |
+| FX spot | =synthetic.bloomberg.usdsgd= | =synthetic.bloomberg.fx.fx_spot.usdsgd= |
+| FX spot | =synthetic.bloomberg.usdtry= | =synthetic.bloomberg.fx.fx_spot.usdtry= |
+| FX spot | =synthetic.bloomberg.usdtwd= | =synthetic.bloomberg.fx.fx_spot.usdtwd= |
+| FX spot | =synthetic.bloomberg.usdzar= | =synthetic.bloomberg.fx.fx_spot.usdzar= |
+| FX spot | =synthetic.demo.audusd= | =synthetic.demo.fx.fx_spot.audusd= |
+| FX spot | =synthetic.demo.eurusd= | =synthetic.demo.fx.fx_spot.eurusd= |
+| FX spot | =synthetic.demo.gbpusd= | =synthetic.demo.fx.fx_spot.gbpusd= |
+| FX spot | =synthetic.demo.nzdusd= | =synthetic.demo.fx.fx_spot.nzdusd= |
+| FX spot | =synthetic.demo.usdcad= | =synthetic.demo.fx.fx_spot.usdcad= |
+| FX spot | =synthetic.demo.usdchf= | =synthetic.demo.fx.fx_spot.usdchf= |
+| FX spot | =synthetic.demo.usdinr= | =synthetic.demo.fx.fx_spot.usdinr= |
+| FX spot | =synthetic.demo.usdjpy= | =synthetic.demo.fx.fx_spot.usdjpy= |
+| FX spot | =synthetic.demo.usdmxn= | =synthetic.demo.fx.fx_spot.usdmxn= |
+| FX spot | =synthetic.demo.usdsek= | =synthetic.demo.fx.fx_spot.usdsek= |
+| FX spot | =synthetic.demo.usdzar= | =synthetic.demo.fx.fx_spot.usdzar= |
+| FX spot | =synthetic.lseg.audjpy= | =synthetic.lseg.fx.fx_spot.audjpy= |
+| FX spot | =synthetic.lseg.audnzd= | =synthetic.lseg.fx.fx_spot.audnzd= |
+| FX spot | =synthetic.lseg.cadjpy= | =synthetic.lseg.fx.fx_spot.cadjpy= |
+| FX spot | =synthetic.lseg.chfjpy= | =synthetic.lseg.fx.fx_spot.chfjpy= |
+| FX spot | =synthetic.lseg.euraud= | =synthetic.lseg.fx.fx_spot.euraud= |
+| FX spot | =synthetic.lseg.eurcad= | =synthetic.lseg.fx.fx_spot.eurcad= |
+| FX spot | =synthetic.lseg.eurchf= | =synthetic.lseg.fx.fx_spot.eurchf= |
+| FX spot | =synthetic.lseg.eurgbp= | =synthetic.lseg.fx.fx_spot.eurgbp= |
+| FX spot | =synthetic.lseg.eurjpy= | =synthetic.lseg.fx.fx_spot.eurjpy= |
+| FX spot | =synthetic.lseg.eurnok= | =synthetic.lseg.fx.fx_spot.eurnok= |
+| FX spot | =synthetic.lseg.eursek= | =synthetic.lseg.fx.fx_spot.eursek= |
+| FX spot | =synthetic.lseg.gbpchf= | =synthetic.lseg.fx.fx_spot.gbpchf= |
+| FX spot | =synthetic.lseg.gbpjpy= | =synthetic.lseg.fx.fx_spot.gbpjpy= |
+| FX spot | =synthetic.lseg.nzdjpy= | =synthetic.lseg.fx.fx_spot.nzdjpy= |
+| IR curve | =synthetic.bloomberg.audaonia= | =synthetic.bloomberg.ir.yield_curve.aonia.aud= |
+| IR curve | =synthetic.bloomberg.clpcamara= | =synthetic.bloomberg.ir.yield_curve.camara.clp= |
+| IR curve | =synthetic.bloomberg.brlcdi= | =synthetic.bloomberg.ir.yield_curve.cdi.brl= |
+| IR curve | =synthetic.bloomberg.cadcorra= | =synthetic.bloomberg.ir.yield_curve.corra.cad= |
+| IR curve | =synthetic.bloomberg.czkczeonia= | =synthetic.bloomberg.ir.yield_curve.czeonia.czk= |
+| IR curve | =synthetic.bloomberg.dkkdestr= | =synthetic.bloomberg.ir.yield_curve.destr.dkk= |
+| IR curve | =synthetic.bloomberg.eurestr= | =synthetic.bloomberg.ir.yield_curve.estr.eur= |
+| IR curve | =synthetic.bloomberg.cnhhibor= | =synthetic.bloomberg.ir.yield_curve.hibor.cnh= |
+| IR curve | =synthetic.bloomberg.hkdhonia= | =synthetic.bloomberg.ir.yield_curve.honia.hkd= |
+| IR curve | =synthetic.bloomberg.hufhufonia= | =synthetic.bloomberg.ir.yield_curve.hufonia.huf= |
+| IR curve | =synthetic.bloomberg.copibr= | =synthetic.bloomberg.ir.yield_curve.ibr.cop= |
+| IR curve | =synthetic.bloomberg.krwkofr= | =synthetic.bloomberg.ir.yield_curve.kofr.krw= |
+| IR curve | =synthetic.bloomberg.inrmibor= | =synthetic.bloomberg.ir.yield_curve.mibor.inr= |
+| IR curve | =synthetic.bloomberg.noknowa= | =synthetic.bloomberg.ir.yield_curve.nowa.nok= |
+| IR curve | =synthetic.bloomberg.nzdnzonia= | =synthetic.bloomberg.ir.yield_curve.nzonia.nzd= |
+| IR curve | =synthetic.bloomberg.plnpolonia= | =synthetic.bloomberg.ir.yield_curve.polonia.pln= |
+| IR curve | =synthetic.bloomberg.chfsaron= | =synthetic.bloomberg.ir.yield_curve.saron.chf= |
+| IR curve | =synthetic.bloomberg.cnyshibor= | =synthetic.bloomberg.ir.yield_curve.shibor.cny= |
+| IR curve | =synthetic.bloomberg.ilsshir= | =synthetic.bloomberg.ir.yield_curve.shir.ils= |
+| IR curve | =synthetic.bloomberg.usdsofr= | =synthetic.bloomberg.ir.yield_curve.sofr.usd= |
+| IR curve | =synthetic.bloomberg.usdsofrfomc= | =synthetic.bloomberg.ir.yield_curve.sofr.usd.fomc= |
+| IR curve | =synthetic.bloomberg.gbpsonia= | =synthetic.bloomberg.ir.yield_curve.sonia.gbp= |
+| IR curve | =synthetic.bloomberg.sgdsora= | =synthetic.bloomberg.ir.yield_curve.sora.sgd= |
+| IR curve | =synthetic.bloomberg.sekswestr= | =synthetic.bloomberg.ir.yield_curve.swestr.sek= |
+| IR curve | =synthetic.bloomberg.twdtaibor= | =synthetic.bloomberg.ir.yield_curve.taibor.twd= |
+| IR curve | =synthetic.bloomberg.mxntiie= | =synthetic.bloomberg.ir.yield_curve.tiie.mxn= |
+| IR curve | =synthetic.bloomberg.trytlref= | =synthetic.bloomberg.ir.yield_curve.tlref.try= |
+| IR curve | =synthetic.bloomberg.jpytona= | =synthetic.bloomberg.ir.yield_curve.tona.jpy= |
+| IR curve | =synthetic.bloomberg.zarzaronia= | =synthetic.bloomberg.ir.yield_curve.zaronia.zar= |
+| IR curve | =synthetic.demo.audaonia= | =synthetic.demo.ir.yield_curve.aonia.aud= |
+| IR curve | =synthetic.demo.cadcorra= | =synthetic.demo.ir.yield_curve.corra.cad= |
+| IR curve | =synthetic.demo.dkkdestr= | =synthetic.demo.ir.yield_curve.destr.dkk= |
+| IR curve | =synthetic.demo.eurestr= | =synthetic.demo.ir.yield_curve.estr.eur= |
+| IR curve | =synthetic.demo.hkdhonia= | =synthetic.demo.ir.yield_curve.honia.hkd= |
+| IR curve | =synthetic.demo.krwkofr= | =synthetic.demo.ir.yield_curve.kofr.krw= |
+| IR curve | =synthetic.demo.inrmibor= | =synthetic.demo.ir.yield_curve.mibor.inr= |
+| IR curve | =synthetic.demo.noknowa= | =synthetic.demo.ir.yield_curve.nowa.nok= |
+| IR curve | =synthetic.demo.nzdnzonia= | =synthetic.demo.ir.yield_curve.nzonia.nzd= |
+| IR curve | =synthetic.demo.plnpolonia= | =synthetic.demo.ir.yield_curve.polonia.pln= |
+| IR curve | =synthetic.demo.chfsaron= | =synthetic.demo.ir.yield_curve.saron.chf= |
+| IR curve | =synthetic.demo.cnyshibor= | =synthetic.demo.ir.yield_curve.shibor.cny= |
+| IR curve | =synthetic.demo.usdsofr= | =synthetic.demo.ir.yield_curve.sofr.usd= |
+| IR curve | =synthetic.demo.gbpsonia= | =synthetic.demo.ir.yield_curve.sonia.gbp= |
+| IR curve | =synthetic.demo.sgdsora= | =synthetic.demo.ir.yield_curve.sora.sgd= |
+| IR curve | =synthetic.demo.sekswestr= | =synthetic.demo.ir.yield_curve.swestr.sek= |
+| IR curve | =synthetic.demo.twdtaibor= | =synthetic.demo.ir.yield_curve.taibor.twd= |
+| IR curve | =synthetic.demo.mxntiie= | =synthetic.demo.ir.yield_curve.tiie.mxn= |
+| IR curve | =synthetic.demo.jpytona= | =synthetic.demo.ir.yield_curve.tona.jpy= |
+| IR curve | =synthetic.demo.zarzaronia= | =synthetic.demo.ir.yield_curve.zaronia.zar= |
+| IR curve | =synthetic.ice.chflibor3m= | =synthetic.ice.ir.yield_curve.libor.chf.3m= |
+| IR curve | =synthetic.ice.gbplibor12m= | =synthetic.ice.ir.yield_curve.libor.gbp.12m= |
+| IR curve | =synthetic.ice.gbplibor1w= | =synthetic.ice.ir.yield_curve.libor.gbp.1w= |
+| IR curve | =synthetic.ice.gbplibor3m= | =synthetic.ice.ir.yield_curve.libor.gbp.3m= |
+| IR curve | =synthetic.ice.gbplibor6m= | =synthetic.ice.ir.yield_curve.libor.gbp.6m= |
+| IR curve | =synthetic.ice.jpylibor3m= | =synthetic.ice.ir.yield_curve.libor.jpy.3m= |
+| IR curve | =synthetic.ice.usdlibor1m= | =synthetic.ice.ir.yield_curve.libor.usd.1m= |
+| IR curve | =synthetic.ice.usdlibor6m= | =synthetic.ice.ir.yield_curve.libor.usd.6m= |
+| IR curve | =synthetic.tradeweb.eureuribor12m= | =synthetic.tradeweb.ir.yield_curve.euribor.eur.12m= |
+| IR curve | =synthetic.tradeweb.eureuribor1m= | =synthetic.tradeweb.ir.yield_curve.euribor.eur.1m= |
+| IR curve | =synthetic.tradeweb.eureuribor1w= | =synthetic.tradeweb.ir.yield_curve.euribor.eur.1w= |
+| IR curve | =synthetic.tradeweb.eureuribor6m= | =synthetic.tradeweb.ir.yield_curve.euribor.eur.6m= |
+| IR curve | =synthetic.tradeweb.hkdhibor1m= | =synthetic.tradeweb.ir.yield_curve.hibor.hkd.1m= |
+| IR curve | =synthetic.tradeweb.hkdhibor2w= | =synthetic.tradeweb.ir.yield_curve.hibor.hkd.2w= |
+| IR curve | =synthetic.tradeweb.hkdhibor3m= | =synthetic.tradeweb.ir.yield_curve.hibor.hkd.3m= |
+| IR curve | =synthetic.tradeweb.chflibor6m= | =synthetic.tradeweb.ir.yield_curve.libor.chf.6m= |
+| IR curve | =synthetic.tradeweb.gbplibor1m= | =synthetic.tradeweb.ir.yield_curve.libor.gbp.1m= |
+| IR curve | =synthetic.tradeweb.jpylibor1m= | =synthetic.tradeweb.ir.yield_curve.libor.jpy.1m= |
+| Latent vol surface | =synthetic.bloomberg.vol.audusd= | =synthetic.latent.fx.fx_vol_surface.audusd= |
+| Latent vol surface | =synthetic.bloomberg.vol.eurusd= | =synthetic.latent.fx.fx_vol_surface.eurusd= |
+| Latent vol surface | =synthetic.bloomberg.vol.gbpusd= | =synthetic.latent.fx.fx_vol_surface.gbpusd= |
+| Latent vol surface | =synthetic.bloomberg.vol.nzdusd= | =synthetic.latent.fx.fx_vol_surface.nzdusd= |
+| Latent vol surface | =synthetic.bloomberg.vol.usdcad= | =synthetic.latent.fx.fx_vol_surface.usdcad= |
+| Latent vol surface | =synthetic.bloomberg.vol.usdchf= | =synthetic.latent.fx.fx_vol_surface.usdchf= |
+| Latent vol surface | =synthetic.bloomberg.vol.usdczk= | =synthetic.latent.fx.fx_vol_surface.usdczk= |
+| Latent vol surface | =synthetic.bloomberg.vol.usdhkd= | =synthetic.latent.fx.fx_vol_surface.usdhkd= |
+| Latent vol surface | =synthetic.bloomberg.vol.usdinr= | =synthetic.latent.fx.fx_vol_surface.usdinr= |
+| Latent vol surface | =synthetic.bloomberg.vol.usdjpy= | =synthetic.latent.fx.fx_vol_surface.usdjpy= |
+| Latent vol surface | =synthetic.bloomberg.vol.usdkrw= | =synthetic.latent.fx.fx_vol_surface.usdkrw= |
+| Latent vol surface | =synthetic.bloomberg.vol.usdmxn= | =synthetic.latent.fx.fx_vol_surface.usdmxn= |
+| Latent vol surface | =synthetic.bloomberg.vol.usdsgd= | =synthetic.latent.fx.fx_vol_surface.usdsgd= |
+| Latent vol surface | =synthetic.bloomberg.vol.usdzar= | =synthetic.latent.fx.fx_vol_surface.usdzar= |
+| Vendor vol view | =synthetic.bloomberg.vol.audusd.bloomberg= | =synthetic.bloomberg.fx.fx_option.audusd= |
+| Vendor vol view | =synthetic.bloomberg.vol.eurusd.bloomberg= | =synthetic.bloomberg.fx.fx_option.eurusd= |
+| Vendor vol view | =synthetic.bloomberg.vol.gbpusd.bloomberg= | =synthetic.bloomberg.fx.fx_option.gbpusd= |
+| Vendor vol view | =synthetic.bloomberg.vol.nzdusd.bloomberg= | =synthetic.bloomberg.fx.fx_option.nzdusd= |
+| Vendor vol view | =synthetic.bloomberg.vol.usdcad.bloomberg= | =synthetic.bloomberg.fx.fx_option.usdcad= |
+| Vendor vol view | =synthetic.bloomberg.vol.usdchf.bloomberg= | =synthetic.bloomberg.fx.fx_option.usdchf= |
+| Vendor vol view | =synthetic.bloomberg.vol.usdczk.bloomberg= | =synthetic.bloomberg.fx.fx_option.usdczk= |
+| Vendor vol view | =synthetic.bloomberg.vol.usdhkd.bloomberg= | =synthetic.bloomberg.fx.fx_option.usdhkd= |
+| Vendor vol view | =synthetic.bloomberg.vol.usdinr.bloomberg= | =synthetic.bloomberg.fx.fx_option.usdinr= |
+| Vendor vol view | =synthetic.bloomberg.vol.usdjpy.bloomberg= | =synthetic.bloomberg.fx.fx_option.usdjpy= |
+| Vendor vol view | =synthetic.bloomberg.vol.usdkrw.bloomberg= | =synthetic.bloomberg.fx.fx_option.usdkrw= |
+| Vendor vol view | =synthetic.bloomberg.vol.usdmxn.bloomberg= | =synthetic.bloomberg.fx.fx_option.usdmxn= |
+| Vendor vol view | =synthetic.bloomberg.vol.usdsgd.bloomberg= | =synthetic.bloomberg.fx.fx_option.usdsgd= |
+| Vendor vol view | =synthetic.bloomberg.vol.usdzar.bloomberg= | =synthetic.bloomberg.fx.fx_option.usdzar= |
+| Vendor vol view | =synthetic.bloomberg.vol.audusd.demo= | =synthetic.demo.fx.fx_option.audusd= |
+| Vendor vol view | =synthetic.bloomberg.vol.eurusd.demo= | =synthetic.demo.fx.fx_option.eurusd= |
+| Vendor vol view | =synthetic.bloomberg.vol.gbpusd.demo= | =synthetic.demo.fx.fx_option.gbpusd= |
+| Vendor vol view | =synthetic.bloomberg.vol.nzdusd.demo= | =synthetic.demo.fx.fx_option.nzdusd= |
+| Vendor vol view | =synthetic.bloomberg.vol.usdcad.demo= | =synthetic.demo.fx.fx_option.usdcad= |
+| Vendor vol view | =synthetic.bloomberg.vol.usdchf.demo= | =synthetic.demo.fx.fx_option.usdchf= |
+| Vendor vol view | =synthetic.bloomberg.vol.usdczk.demo= | =synthetic.demo.fx.fx_option.usdczk= |
+| Vendor vol view | =synthetic.bloomberg.vol.usdhkd.demo= | =synthetic.demo.fx.fx_option.usdhkd= |
+| Vendor vol view | =synthetic.bloomberg.vol.usdinr.demo= | =synthetic.demo.fx.fx_option.usdinr= |
+| Vendor vol view | =synthetic.bloomberg.vol.usdjpy.demo= | =synthetic.demo.fx.fx_option.usdjpy= |
+| Vendor vol view | =synthetic.bloomberg.vol.usdkrw.demo= | =synthetic.demo.fx.fx_option.usdkrw= |
+| Vendor vol view | =synthetic.bloomberg.vol.usdmxn.demo= | =synthetic.demo.fx.fx_option.usdmxn= |
+| Vendor vol view | =synthetic.bloomberg.vol.usdsgd.demo= | =synthetic.demo.fx.fx_option.usdsgd= |
+| Vendor vol view | =synthetic.bloomberg.vol.usdzar.demo= | =synthetic.demo.fx.fx_option.usdzar= |
+| Vendor vol view | =synthetic.bloomberg.vol.audusd.ice= | =synthetic.ice.fx.fx_option.audusd= |
+| Vendor vol view | =synthetic.bloomberg.vol.eurusd.ice= | =synthetic.ice.fx.fx_option.eurusd= |
+| Vendor vol view | =synthetic.bloomberg.vol.gbpusd.ice= | =synthetic.ice.fx.fx_option.gbpusd= |
+| Vendor vol view | =synthetic.bloomberg.vol.nzdusd.ice= | =synthetic.ice.fx.fx_option.nzdusd= |
+| Vendor vol view | =synthetic.bloomberg.vol.usdcad.ice= | =synthetic.ice.fx.fx_option.usdcad= |
+| Vendor vol view | =synthetic.bloomberg.vol.usdchf.ice= | =synthetic.ice.fx.fx_option.usdchf= |
+| Vendor vol view | =synthetic.bloomberg.vol.usdczk.ice= | =synthetic.ice.fx.fx_option.usdczk= |
+| Vendor vol view | =synthetic.bloomberg.vol.usdhkd.ice= | =synthetic.ice.fx.fx_option.usdhkd= |
+| Vendor vol view | =synthetic.bloomberg.vol.usdinr.ice= | =synthetic.ice.fx.fx_option.usdinr= |
+| Vendor vol view | =synthetic.bloomberg.vol.usdjpy.ice= | =synthetic.ice.fx.fx_option.usdjpy= |
+| Vendor vol view | =synthetic.bloomberg.vol.usdkrw.ice= | =synthetic.ice.fx.fx_option.usdkrw= |
+| Vendor vol view | =synthetic.bloomberg.vol.usdmxn.ice= | =synthetic.ice.fx.fx_option.usdmxn= |
+| Vendor vol view | =synthetic.bloomberg.vol.usdsgd.ice= | =synthetic.ice.fx.fx_option.usdsgd= |
+| Vendor vol view | =synthetic.bloomberg.vol.usdzar.ice= | =synthetic.ice.fx.fx_option.usdzar= |
+| Vendor vol view | =synthetic.bloomberg.vol.audusd.tradeweb= | =synthetic.tradeweb.fx.fx_option.audusd= |
+| Vendor vol view | =synthetic.bloomberg.vol.eurusd.tradeweb= | =synthetic.tradeweb.fx.fx_option.eurusd= |
+| Vendor vol view | =synthetic.bloomberg.vol.gbpusd.tradeweb= | =synthetic.tradeweb.fx.fx_option.gbpusd= |
+| Vendor vol view | =synthetic.bloomberg.vol.nzdusd.tradeweb= | =synthetic.tradeweb.fx.fx_option.nzdusd= |
+| Vendor vol view | =synthetic.bloomberg.vol.usdcad.tradeweb= | =synthetic.tradeweb.fx.fx_option.usdcad= |
+| Vendor vol view | =synthetic.bloomberg.vol.usdchf.tradeweb= | =synthetic.tradeweb.fx.fx_option.usdchf= |
+| Vendor vol view | =synthetic.bloomberg.vol.usdczk.tradeweb= | =synthetic.tradeweb.fx.fx_option.usdczk= |
+| Vendor vol view | =synthetic.bloomberg.vol.usdhkd.tradeweb= | =synthetic.tradeweb.fx.fx_option.usdhkd= |
+| Vendor vol view | =synthetic.bloomberg.vol.usdinr.tradeweb= | =synthetic.tradeweb.fx.fx_option.usdinr= |
+| Vendor vol view | =synthetic.bloomberg.vol.usdjpy.tradeweb= | =synthetic.tradeweb.fx.fx_option.usdjpy= |
+| Vendor vol view | =synthetic.bloomberg.vol.usdkrw.tradeweb= | =synthetic.tradeweb.fx.fx_option.usdkrw= |
+| Vendor vol view | =synthetic.bloomberg.vol.usdmxn.tradeweb= | =synthetic.tradeweb.fx.fx_option.usdmxn= |
+| Vendor vol view | =synthetic.bloomberg.vol.usdsgd.tradeweb= | =synthetic.tradeweb.fx.fx_option.usdsgd= |
+| Vendor vol view | =synthetic.bloomberg.vol.usdzar.tradeweb= | =synthetic.tradeweb.fx.fx_option.usdzar= |
+
+* See also
+
+- [[id:8DE041AE-95E6-40CE-9B62-2CE3BA77838A][Model the synthetic feeds as a dependency graph]] -- the story this scheme opens; its nodes are named by it.
+- [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio Market Data URI]] -- the grammar the scheme borrows its asset classes and instruments from.
+- [[id:CE99CD2A-B31F-4306-865F-CBC519FBC1B8][The oresmd datum identity]] -- why a URI names what is observed and not who observes it, which is the half a feed name adds.
+
+* Sources
+
+- None outside this repository: the scheme is built from the =oresmd= grammar and the seeded synthetic datasets.

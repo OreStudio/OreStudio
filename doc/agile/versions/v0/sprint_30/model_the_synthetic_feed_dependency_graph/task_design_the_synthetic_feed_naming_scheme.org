@@ -1,0 +1,98 @@
+:PROPERTIES:
+:ID: 642ED805-A23C-404F-B494-8A74BB8AEB12
+:END:
+#+title: Task: Design the synthetic feed naming scheme, based on oresmd, for sign-off
+#+description: A scheme for the source names of synthetic feeds, built from the oresmd identity of what each feed observes and who produces it, settled with the owner and written into the documentation before any feed is renamed.
+#+type: task
+#+level: s1
+#+filetags: :synthetic:naming:oresmd:model_the_synthetic_feed_dependency_graph:sprint_30:v0:
+#+owner: marco
+#+branch: feature/design-the-synthetic-feed-naming-scheme
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8DE041AE-95E6-40CE-9B62-2CE3BA77838A][Model the synthetic feeds as a dependency graph: upstreams, latent surfaces and vendor views]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every synthetic feed gets a source name that says who produces it, what asset class and instrument it is, and which subject it quotes, spelled the way oresmd spells them, so the names sort usefully and map back to the series they publish. The scheme is designed here, signed off by the owner, and written into the documentation; no feed is renamed by this task.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:8DE041AE-95E6-40CE-9B62-2CE3BA77838A][Model the synthetic feeds as a dependency graph: upstreams, latent surfaces and vendor views]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-22                               |
+
+* Acceptance
+
+- A knowledge page states the scheme: its parts, their spelling from oresmd, the sort order of subjects, and one name for every kind of synthetic feed the generator runs.
+- The open points are settled: the instrument of a whole curve, the place of an index tenor, and how a name maps back to the oresmd series it publishes.
+- The page lists today's names beside their new names, for every feed the seeded datasets publish.
+- The owner signs the scheme off, recorded on the task.
+
+* Plan
+
+1. List every synthetic feed the seeded datasets publish, by kind and
+   provider, from the system tenant: 51 FX spots, 67 curves, 14 latent vol
+   surfaces and 56 vendor views.
+2. Read how =oresmd= spells asset classes and instruments
+   (=ores.marketdata.api/datum/schema.cpp=), and take its precedent of
+   =fx_vol_surface= for a whole surface beside =fx_option= for its quotes.
+3. Write the scheme as a knowledge page,
+   [[id:90D85E90-E7EA-48D8-9245-313ECA3F9392][Synthetic feed naming scheme]]: what a name does, its parts and
+   rules, one name for each kind, the open points with a recommendation each,
+   and today's name beside the proposed name for all 188 nodes, generated from
+   the database.
+4. Get the owner's sign-off on the scheme and each open point, and record it
+   here; then mark the page as adopted.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

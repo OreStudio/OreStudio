@@ -85,7 +85,7 @@ The edges, each stored as data on the dependent node:
 
 Each node is in one of four states, and the state always carries its reason:
 
-| State | Means | Reason it carries |
+| State | STARTED | Reason it carries |
 |-------+-------+-------------------|
 | running | publishing, or for the latent surface, stepping | |
 | stopped | an operator stopped this node | who, when, and why, stored like a source stop |
@@ -164,7 +164,7 @@ the order, the states and the screens read one structure.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-|      |       |       |     |             |
+| [[id:642ED805-A23C-404F-B494-8A74BB8AEB12][Design the synthetic feed naming scheme, based on oresmd, for sign-off]] | STARTED | 2026-11-22 | | A scheme for the source names of synthetic feeds, built from the oresmd identity of what each feed observes and who produces it, settled with the owner and written into the documentation before any feed is renamed. |
 
 * Decisions
 

@@ -28,6 +28,7 @@
 #include "ores.iam.service/config/options.hpp"
 #include "ores.iam.service/export.hpp"
 #include <iosfwd>
+#include <map>
 #include <optional>
 #include <string>
 #include <vector>
@@ -44,6 +45,19 @@ class ORES_IAM_SERVICE_EXPORT parser final {
 public:
     std::optional<options>
     parse(const std::vector<std::string>& arguments, std::ostream& info, std::ostream& error) const;
+
+    /**
+     * @brief Parses against a stated environment rather than this process's.
+     *
+     * A test that asserts a compiled default states an empty environment, so
+     * nothing a developer exported can reach the assertion. A test that asserts
+     * an environment value states the value it means, so the answer does not
+     * depend on the machine that runs it.
+     */
+    std::optional<options> parse(const std::vector<std::string>& arguments,
+                                 std::ostream& info,
+                                 std::ostream& error,
+                                 const std::map<std::string, std::string>& environment) const;
 };
 
 }

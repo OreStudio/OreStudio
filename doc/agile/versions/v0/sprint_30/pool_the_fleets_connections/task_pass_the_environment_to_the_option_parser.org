@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :pool_the_fleets_connections:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/pass-the-environment-to-the-option-parser
+#+pr: 5002
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-21
@@ -29,11 +29,11 @@ option the parser reads from the environment then changes no test.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:A75C3063-896F-4DD5-A9BC-893A59EDFF7E][Pool the fleet's connections]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-21                               |
 
 * Acceptance
@@ -136,7 +136,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5002][#5002]] | [service] Parse against a stated environment |
 
 * Review
 
@@ -145,3 +145,40 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The environment is an input to the option parser, and no test clears a
+variable by name.
+
+- `standard_service_options::parse` takes a `std::map<std::string,
+  std::string>`; the per-service parsers gain the matching overload and keep
+  the three-argument form, which still means this process's environment, so
+  the call sites and the generated parsers' shape are unchanged.
+- The mapper decides which names in the map name an option this description
+  holds; a name it does not recognise contributes nothing.
+- Thirteen config parser suites lost their `scoped_environment_override`
+  allowlists and now state the least a parser needs — a database user and a
+  database name, which carry no compiled default, because the parser refuses
+  to run without them. A test that asserts a compiled default therefore
+  states only what validation demands, and nothing a developer exported can
+  reach the assertion.
+- Each suite gained the case nothing covered: an environment value wins over
+  the compiled default. The suites covered a command-line override before.
+
+*Evidence.* The fourteen affected suites pass with the developer's `.env`
+exported, which is the condition that failed before: assets, compute, dq,
+iam, marketdata, refdata, reporting, scheduler, synthetic, telemetry,
+trading, variability, workflow and `ores.service`. `format` and
+`codegen-tests` pass.
+
+*Note on the plan.* The plan says a defaults test passes an empty
+environment. It cannot: `db-user` and `db-database` have no compiled default
+and the parser refuses to run without them, so the suites state the least
+environment instead. The intent — nothing exported reaches the assertion —
+is unchanged.
+
+*Churn observed while doing it.* One template pair produces thirteen parser
+pairs, and the CLI's unit is a component, so this needed thirteen
+`codegen regenerate --component` passes. Each pass rewrites every generated
+file in its component: `ores.iam` rewrote 842 files to change 2, and
+`ores.marketdata` rewrote 1221 to change 2. Nothing spurious landed in the
+diff, but the cost and the risk of absorbing pre-existing drift are real.

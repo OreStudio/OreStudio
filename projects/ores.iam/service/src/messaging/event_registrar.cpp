@@ -26,6 +26,8 @@
 #include "ores.iam.service/messaging/account_party_event_registrar.hpp"
 #include "ores.iam.service/messaging/account_role_event_registrar.hpp"
 #include "ores.iam.service/messaging/account_type_event_registrar.hpp"
+#include "ores.iam.service/messaging/agent_grant_event_registrar.hpp"
+#include "ores.iam.service/messaging/agent_key_event_registrar.hpp"
 #include "ores.iam.service/messaging/login_info_event_registrar.hpp"
 #include "ores.iam.service/messaging/permission_event_registrar.hpp"
 #include "ores.iam.service/messaging/role_event_registrar.hpp"
@@ -66,6 +68,9 @@ std::vector<ores::eventing::service::subscription> event_registrar::register_eve
     subs.push_back(register_role_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_role_permission_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_run_grant_event_mapping(event_source, event_bus, nats));
+    // ores.http clears its agent token cache on these, so a revocation stops the agent at once.
+    subs.push_back(register_agent_grant_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_agent_key_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_seed_profile_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_seed_profile_parameter_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_seed_profile_step_event_mapping(event_source, event_bus, nats));

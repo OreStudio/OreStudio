@@ -8,7 +8,7 @@
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/record-what-the-ported-server-still-needs
-#+pr:
+#+pr: 5034
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-22
@@ -84,7 +84,7 @@ gateway for its document. The document's count is larger because an operation
 answers over more than one method, so the two numbers measure different things
 and only the pair census answers "is any BFF path unserved".
 
-The eleven rows the removed captures left in =inbox.org= were deleted by hand.
+The ten rows the removed captures left in =inbox.org= were deleted by hand.
 =compass-ng generate= does not remove a row for a file that is gone, and
 =compass-ng diff= reports no difference against the table afterwards, so the
 table is not one the codec compares. Regenerate before editing it; if the rows
@@ -104,7 +104,7 @@ longer belong to this port.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5034][#5034]] | [compass,agile] Give a unit time to start, and record the port's remaining work |
 
 * Review
 
@@ -129,11 +129,18 @@ authentication, the hand-written operation handlers, the public rates coverage,
 the bundle rebuilt under a running gateway, the upload over the message bus
 cap, and the generated recipes that send no body.
 
-Three captures were removed because the code already answers them, and the
+Two captures were removed because the code already answers them, and the
 probe transcript states the answer for each: the empty query parameter (the
-message bus read now answers its own sentence), the calendar year read (365
-days of 2026, 1 January to 31 December), and the session door's missing
+message bus read now answers its own sentence) and the session door's missing
 verifier (sign-in answers an active session).
+
+A third, the calendar year read, looked spent in the probe and was put back.
+The probe answers 365 days of 2026 for HongKong, and that calendar is built
+from 2024, so the read is cheap there. The capture's subject is a calendar
+built from 1900 to 2200, where the same read pages from the first day and
+takes about 100 round trips, and a review deferred it to the refdata service
+because the dates filter carries no range. It stays in the backlog, and the
+task that names it still resolves.
 
 The switch task carried two =* Result= headings; it carries one.
 

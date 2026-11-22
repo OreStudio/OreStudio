@@ -29,7 +29,14 @@ import { TranslationProvider } from '../../i18n/Provider.js';
 import { invalidFields } from '../../refdata/records.js';
 import { feedPageOf } from './feedTree.js';
 import { processName, processTab } from './processSummary.js';
-import { SURFACE_FIELDS, VolFeedPage, completeVolFeed, tenorDays, volSource } from './volFeeds.js';
+import {
+    SURFACE_FIELDS,
+    VolFeedPage,
+    completeVolFeed,
+    tenorDays,
+    upstreamsOf,
+    volSource,
+} from './volFeeds.js';
 
 const FEED_ID = '77777777-7777-4777-8777-777777777777';
 const BLOOMBERG = 'c3f0d994-efcd-88d6-456e-ad7f8837aa51';
@@ -100,8 +107,56 @@ const feed: RecordRow = {
     segment_correlation: 0.9,
     start_skew: -0.1,
     start_curvature: 0.8,
+    spot_oresmd_uri: 'oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD',
+    spot_provider_code: 'bloomberg',
     provider_code: 'bloomberg',
 };
+
+const COLLECTION = '88888888-8888-4888-8888-888888888888';
+const DEMO = '99999999-9999-4999-8999-999999999999';
+const SPOT_URI = 'oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD';
+
+const collections: RecordRow[] = [
+    { id: COLLECTION, name: 'Bloomberg', provider_code: 'bloomberg' },
+    { id: DEMO, name: 'Uniform Volatility Demo', provider_code: 'demo' },
+];
+
+const spots: RecordRow[] = [
+    {
+        id: 'spot-demo',
+        config_id: DEMO,
+        oresmd_uri: SPOT_URI,
+        source_name: 'synthetic.demo.eurusd',
+    },
+    {
+        id: 'spot-bbg',
+        config_id: COLLECTION,
+        oresmd_uri: SPOT_URI,
+        source_name: 'synthetic.bloomberg.eurusd',
+    },
+];
+
+const curve = (
+    id: string,
+    config: string,
+    currency: string,
+    role: string,
+    tenor: string,
+): RecordRow => ({
+    id,
+    config_id: config,
+    currency_code: currency,
+    role,
+    tenor,
+    source_name: `synthetic.${id}`,
+});
+
+const curves: RecordRow[] = [
+    curve('eur-projection', COLLECTION, 'EUR', 'projection', '6M'),
+    curve('eur-discount', COLLECTION, 'EUR', 'discount', ''),
+    curve('usd-demo', DEMO, 'USD', 'self_discounting', ''),
+    curve('usd-discount', COLLECTION, 'USD', 'self_discounting', ''),
+];
 
 const expiry = (id: string, tenor: string): RecordRow => ({
     id,
@@ -193,12 +248,20 @@ describe('the vol surface feed screens', () => {
         expect(html.match(/>Edit</g)?.length).toBeGreaterThanOrEqual(3);
     });
 
-    it('states gamma as fixed at one half, with why, and offers no field for it', () => {
+    it('draws the three cards side by side, gamma at 0.5 with why, and no last change', () => {
         const html = render(`/market-data/synthetic/vol/${FEED_ID}?tab=surface`, writer);
+        expect(html).toContain('lg:grid-cols-3');
         expect(html).toContain('Gamma (γ)');
-        expect(html).toContain('0.5, fixed');
+        expect(html).toMatch(/>0\.5</);
+        expect(html).not.toContain('fixed');
         expect(html).toContain('butterfly arbitrage');
+        expect(html).not.toContain('Last changed');
         expect(html).not.toContain('name="gamma"');
+    });
+
+    it('never writes the gamma that the start card edit dialog shows', () => {
+        const write = completeVolFeed({ ...feed, gamma: '0.5' });
+        expect(write).not.toHaveProperty('gamma');
     });
 
     it('offers a reader no change to the surface', () => {
@@ -224,7 +287,7 @@ describe('the vol surface feed screens', () => {
         expect(html).toContain('8.50%');
     });
 
-    it('names the vendors that quote the surface and draws each noise profile', () => {
+    it('lists the vendors that quote the surface, each opening its own page', () => {
         const html = render(`/market-data/synthetic/vol/${FEED_ID}?tab=contributors`, (client) => {
             writer(client);
             client.setQueryData(
@@ -243,12 +306,64 @@ describe('the vol surface feed screens', () => {
                 ],
             );
         });
-        expect(html).toContain('Noise profile: bloomberg');
-        expect(html).toContain('Noise profile: ice');
-        expect(html).not.toContain('Noise profile: tradeweb');
-        expect(html.indexOf('Noise profile: bloomberg')).toBeLessThan(
-            html.indexOf('Noise profile: ice'),
+        expect(html).toContain('>bloomberg<');
+        expect(html).toContain('>ice<');
+        expect(html).not.toContain('>tradeweb<');
+        expect(html.indexOf('>bloomberg<')).toBeLessThan(html.indexOf('>ice<'));
+        expect(html).toContain('>0.0025<');
+        expect(html).toContain('cursor-pointer');
+        expect(html).not.toContain('Noise profile');
+    });
+});
+
+describe('what a vol surface reads', () => {
+    it('names the spot feed its config names by URI and provider, not the pair alone', () => {
+        const [spot] = upstreamsOf(feed, spots, collections, curves);
+        expect(spot?.role).toBe('spot');
+        expect(spot?.row?.['id']).toBe('spot-bbg');
+    });
+
+    it("names each currency's discounting curve in the surface's own collection", () => {
+        const [, base, quote] = upstreamsOf(feed, spots, collections, curves);
+        expect(base?.row?.['id']).toBe('eur-discount');
+        expect(quote?.row?.['id']).toBe('usd-discount');
+    });
+
+    it('fills the spot URI from the pair when the person leaves it blank', () => {
+        const write = completeVolFeed({ base_currency_code: 'EUR', quote_currency_code: 'USD' });
+        expect(write['spot_oresmd_uri']).toBe(SPOT_URI);
+        const kept = completeVolFeed({ ...feed, spot_oresmd_uri: 'oresmd://fx/X' });
+        expect(kept['spot_oresmd_uri']).toBe('oresmd://fx/X');
+    });
+
+    it('says what it looked for when no feed matches', () => {
+        const [spot] = upstreamsOf(
+            { ...feed, spot_provider_code: 'lseg' },
+            spots,
+            collections,
+            curves,
         );
+        expect(spot?.row).toBeUndefined();
+        expect(spot?.wants).toBe(`${SPOT_URI} from lseg`);
+    });
+
+    it('links the upstreams on the Calibration tab and does not call a running surface stopped', () => {
+        const html = render(`/market-data/synthetic/vol/${FEED_ID}?tab=calibration`, (client) => {
+            writer(client);
+            client.setQueryData(['records', 'fx-vol-surface-feeds', 'key', FEED_ID], {
+                ...feed,
+                running: true,
+            });
+            client.setQueryData(['records', 'collections'], collections);
+            client.setQueryData(['records', 'fx-feeds'], spots);
+            client.setQueryData(['records', 'ir-curve-feeds'], curves);
+        });
+        expect(html).not.toContain('is not running');
+        expect(html).toContain('href="/market-data/synthetic/fx/spot-bbg"');
+        expect(html).toContain('href="/market-data/synthetic/ir/eur-discount"');
+        expect(html).toContain('href="/market-data/synthetic/ir/usd-discount"');
+        expect(html).toContain('EUR discounting curve');
+        expect(html).not.toContain('GJR-GARCH');
     });
 });
 

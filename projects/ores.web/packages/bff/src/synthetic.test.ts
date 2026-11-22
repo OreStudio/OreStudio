@@ -1530,6 +1530,8 @@ describe('synthetic writes', () => {
         segment_correlation: 0.9,
         start_skew: -0.1,
         start_curvature: 0.8,
+        spot_oresmd_uri: 'oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD',
+        spot_provider_code: 'bloomberg',
     };
 
     it('saves a vol surface feed from a system session', async () => {
@@ -1556,7 +1558,13 @@ describe('synthetic writes', () => {
         expect(calls[0]?.body).toMatchObject({
             changes: [
                 {
-                    write: { start_skew: -0.2, start_curvature: 0.8 },
+                    write: {
+                        start_skew: -0.2,
+                        start_curvature: 0.8,
+                        spot_oresmd_uri:
+                            'oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD',
+                        spot_provider_code: 'bloomberg',
+                    },
                     precondition: { kind: 'must_match_version', version: 3 },
                 },
             ],
@@ -1573,6 +1581,27 @@ describe('synthetic writes', () => {
             {
                 intent: INTENT,
                 changes: [{ write: { ...VOL_FEED, start_curvature: 1.5 }, version: 3 }],
+            },
+        );
+        expect(response.statusCode).toBe(400);
+        expect(calls).toHaveLength(0);
+    });
+
+    it('refuses a vol surface whose spot is not an FX spot URI', async () => {
+        const { server, sessionId, calls } = buildTestServer({}, SYSTEM_TENANT);
+        const response = await send(
+            server,
+            sessionId,
+            'PUT',
+            '/api/synthetic/fx-vol-surface-feeds',
+            {
+                intent: INTENT,
+                changes: [
+                    {
+                        write: { ...VOL_FEED, spot_oresmd_uri: 'synthetic.bloomberg.eurusd' },
+                        version: 3,
+                    },
+                ],
             },
         );
         expect(response.statusCode).toBe(400);

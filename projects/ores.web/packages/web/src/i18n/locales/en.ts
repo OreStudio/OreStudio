@@ -4486,6 +4486,7 @@ export const en: SourceCatalogue = {
                 surface: 'Surface',
                 expiries: 'Expiries',
                 contributors: 'Contributors',
+                surfaces: 'Surfaces',
             },
         },
         fields: {
@@ -4602,6 +4603,8 @@ export const en: SourceCatalogue = {
             curve_role_code: 'Curve role',
             start_skew: 'Start skew (ρ)',
             start_curvature: 'Start curvature (η)',
+            spot_oresmd_uri: 'Spot URI',
+            spot_provider_code: 'Spot provider',
             skew_reversion: 'Skew reversion',
             skew_volatility: 'Skew volatility',
             curvature_reversion: 'Curvature reversion',
@@ -7092,10 +7095,24 @@ export const en: SourceCatalogue = {
             addTitle: 'New vol surface',
             engine: 'SSVI',
             held: 'Runs while a simulated source of a provider holds it.',
+            upstreams: {
+                title: 'What the surface reads',
+                intro: "On every tick the surface reads its spot and its two currencies' discounting curves. Each feed's own page shows how it starts and what it was calibrated as.",
+                notRunning:
+                    "The surface is not running. It reads these values while a provider's source holds it.",
+                spot: 'Spot',
+                baseCurve: '{currency} discounting curve',
+                quoteCurve: '{currency} discounting curve',
+                missing: 'No feed matches: {wants}',
+            },
             samePair: 'The base and quote currencies must differ.',
             removeWarning:
                 'The feed stops if it runs. Its expiries and contributor links are deleted first, then the feed. The history of each stays.',
             help: {
+                spot_provider_code:
+                    'The provider whose spot this surface reads and correlates with. A URI names what is observed, not who observes it, so the provider picks one spot feed.',
+                spot_oresmd_uri:
+                    "The oresmd URI of the spot this surface reads. Left blank, it is the pair's spot rate.",
                 ticks_per_hour:
                     'How many surfaces the feed makes in an hour. 12 is one every five minutes.',
                 arrival_mode:
@@ -7129,7 +7146,6 @@ export const en: SourceCatalogue = {
                 correlations: 'Correlations',
                 editTitle: '{part}: {pair}',
                 gamma: 'Gamma (γ)',
-                fixed: 'fixed',
                 gammaWhy:
                     'The generator holds gamma at one half. At that value the surface is free of butterfly arbitrage while the curvature stays below the square root of 2, and the generator keeps it there. Another gamma makes the no-arbitrage conditions depend on each expiry and on the skew, so you cannot change it here.',
             },
@@ -7140,6 +7156,10 @@ export const en: SourceCatalogue = {
                 remove: 'Delete the expiry',
             },
             contributors: {
+                title: 'Vol contributors',
+                surfacesLead:
+                    'The surfaces this contributor quotes. Its noise profile applies to every one of them.',
+                noSurfaces: 'It quotes no surface.',
                 lead: 'The vendors that quote the surface. Each vendor adds its own noise to the quotes, and every surface it quotes shares that noise profile.',
                 add: 'Add a contributor',
                 one: 'Contributor',

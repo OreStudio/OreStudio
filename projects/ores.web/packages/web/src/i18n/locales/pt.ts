@@ -4515,6 +4515,7 @@ const pt: SourceCatalogue = {
                 surface: 'Superfície',
                 expiries: 'Vencimentos',
                 contributors: 'Contribuidores',
+                surfaces: 'Superfícies',
             },
         },
         fields: {
@@ -4631,6 +4632,8 @@ const pt: SourceCatalogue = {
             curve_role_code: 'Papel da curva',
             start_skew: 'Assimetria inicial (ρ)',
             start_curvature: 'Curvatura inicial (η)',
+            spot_oresmd_uri: 'URI do spot',
+            spot_provider_code: 'Fornecedor do spot',
             skew_reversion: 'Reversão da assimetria',
             skew_volatility: 'Volatilidade da assimetria',
             curvature_reversion: 'Reversão da curvatura',
@@ -7144,10 +7147,24 @@ const pt: SourceCatalogue = {
             addTitle: 'Nova superfície de volatilidade',
             engine: 'SSVI',
             held: 'Corre enquanto uma fonte simulada de um fornecedor a mantém.',
+            upstreams: {
+                title: 'O que a superfície lê',
+                intro: 'Em cada tick, a superfície lê o seu spot e as curvas de desconto das suas duas moedas. A página de cada feed mostra como começa e como foi calibrado.',
+                notRunning:
+                    'A superfície não está a correr. Lê estes valores enquanto a fonte de um fornecedor a mantém.',
+                spot: 'Spot',
+                baseCurve: 'Curva de desconto {currency}',
+                quoteCurve: 'Curva de desconto {currency}',
+                missing: 'Nenhum feed corresponde: {wants}',
+            },
             samePair: 'As moedas base e de cotação têm de ser diferentes.',
             removeWarning:
                 'O feed para se estiver a correr. Os seus vencimentos e ligações a contribuidores são apagados primeiro, depois o feed. O histórico de cada um fica.',
             help: {
+                spot_provider_code:
+                    'O fornecedor cujo spot esta superfície lê e com o qual se correlaciona. Um URI nomeia o que é observado, não quem o observa, por isso o fornecedor escolhe um único feed spot.',
+                spot_oresmd_uri:
+                    'O URI oresmd do spot que esta superfície lê. Em branco, é a taxa spot do par.',
                 ticks_per_hour:
                     'Quantas superfícies o feed produz numa hora. 12 é uma a cada cinco minutos.',
                 arrival_mode: 'Como chegam os ticks: a intervalo fixo, ao acaso ou em grupos.',
@@ -7180,7 +7197,6 @@ const pt: SourceCatalogue = {
                 correlations: 'Correlações',
                 editTitle: '{part}: {pair}',
                 gamma: 'Gama (γ)',
-                fixed: 'fixo',
                 gammaWhy:
                     'O gerador mantém gama em meio. Com esse valor, a superfície está livre de arbitragem borboleta enquanto a curvatura ficar abaixo da raiz quadrada de 2, e o gerador mantém-na aí. Outro gama faz as condições de não arbitragem dependerem de cada vencimento e da assimetria, por isso não o pode alterar aqui.',
             },
@@ -7191,6 +7207,10 @@ const pt: SourceCatalogue = {
                 remove: 'Apagar o vencimento',
             },
             contributors: {
+                title: 'Contribuidores de volatilidade',
+                surfacesLead:
+                    'As superfícies que este contribuidor cota. O seu perfil de ruído aplica-se a cada uma delas.',
+                noSurfaces: 'Não cota nenhuma superfície.',
                 lead: 'Os fornecedores que cotam a superfície. Cada fornecedor acrescenta o seu próprio ruído às cotações, e todas as superfícies que cota partilham esse perfil de ruído.',
                 add: 'Adicionar um contribuidor',
                 one: 'Contribuidor',

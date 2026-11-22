@@ -189,9 +189,17 @@ function FeedBody({
                 </Notice>
             )}
             {bar}
-            {tab === 'calibration' && (
-                <FeedRunTab feed={feed} start={feed.start} running={running} />
-            )}
+            {tab === 'calibration' &&
+                (kind.calibration === undefined ? (
+                    <FeedRunTab feed={feed} start={feed.start} running={running} />
+                ) : (
+                    kind.calibration({
+                        feed,
+                        running,
+                        mayWrite: may.write,
+                        parts: parts.map((part) => part.rows),
+                    })
+                ))}
             {tab === 'details' && (
                 <RecordDetails specs={kind.fields} row={feed} extra={kind.extraDetails(feed, t)} />
             )}

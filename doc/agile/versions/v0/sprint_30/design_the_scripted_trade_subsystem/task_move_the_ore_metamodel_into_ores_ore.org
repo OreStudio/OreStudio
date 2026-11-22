@@ -44,9 +44,27 @@ ores.ore owns the description of ORE: its files and their versions, the leaves o
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Draft, from the inventory below. The move is two families, because one of them
+is written by compass.
+
+1. The ORE files: =ore_file_category=, =ore_file= and =ore_file_version=, with
+   their datasets, publish functions, operations, shell commands, HTTP and BFF
+   routes, and the Python generators that write them. Nothing in compass names
+   these tables.
+2. The parameters: =ore_parameter=, its value domain, value set, value set
+   value, value set catalogue, vocabulary, setting value set and element map
+   column. Compass's =ore_value_sets= codec writes four of their seeds and the
+   convention validator SQL with the reporting table names and paths built in,
+   so this family waits for a compass release that takes them as settings or
+   reads them from the models.
+3. Reporting's own C++ reads of =ore_parameter= (=run_document_service.cpp:74,261=)
+   become an entity-mirror cache, =cached_by= reporting, in the same PR as the
+   parameters move, so no release has reporting's C++ reading =ores.ore='s tables.
+
+=ores.ore.core= gains the database and the generated repositories, services and
+handlers of these entities; =ores.ore.api= their domain types and protocols. The
+dependencies allow it: =ores.ore.api= links no reporting library, and
+=ores.reporting.core= already links =ores.ore.core=.
 
 * Measurements
 
@@ -63,6 +81,28 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+** Inventory, 2026-11-22
+
+793 files name the metamodel's tables, entities or subjects: 347 of them
+reporting's generated api and core, 95 shell scripts, 38 shell reporting
+commands, 41 SQL create and 24 drop scripts, 12 populate scripts, 15 pgTAP tests,
+31 files of =ores.web=, 10 generators under =projects/ores.sql/utility=, the HTTP
+routes of reporting, refdata and core, 3 compass check documents, and the docs.
+
+Hand-written C++ that reads the metamodel: reporting's =run_document_service.cpp=,
+through =ore_parameter_repository=, to map a parameter's id to its name. SQL that
+reads it from another component, which the rule allows because it is a trigger
+or a function: refdata's convention term validation, analytics' parameter value
+trigger, and reporting's configuration parameter and file type checks.
+
+Compass 0.0.12 builds in the names =ores_reporting_ore_parameter_vocabularies_tbl=,
+=ores_reporting_ore_element_map_columns_tbl=, the value set tables and the paths
+=projects/ores.sql/populate/reporting/reporting_ore_*_populate.sql= for its
+=ore_value_sets= codec, which writes the value sets, the vocabularies, the
+element map columns and the convention validator; only
+=curve_parameter_paths.artefact= is a setting. The compass source is not in this
+repository.
 
 * Test Scenarios
 

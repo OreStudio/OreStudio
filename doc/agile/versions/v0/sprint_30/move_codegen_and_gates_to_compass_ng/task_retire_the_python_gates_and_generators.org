@@ -8,7 +8,7 @@
 #+filetags: :move_codegen_and_gates_to_compass_ng:sprint_30:v0:
 #+owner: marco
 #+branch: feature/delete-the-python-gates-compass-ng-replaced
-#+pr: 5003
+#+pr: 5005
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-17
@@ -180,6 +180,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5005][#5005]] | [codegen] Decommission the Python code generator |
 | [[https://github.com/OreStudio/OreStudio/pull/5003][#5003]] | [compass] Adopt compass-ng v0.0.12 and own the levels and areas |
 | [[https://github.com/OreStudio/OreStudio/pull/5000][#5000]] | [compass] Route the Python generator's entry points to compass-ng |
 | [[https://github.com/OreStudio/OreStudio/pull/4999][#4999]] | [compass] Record the series identity's width and fix the orgmode diagram |

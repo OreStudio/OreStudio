@@ -174,6 +174,7 @@ def _substitute_args(args_template, def_row, keys_dir, log_level="info",
     tmpl = tmpl.replace("{log_dir}", "../log")
     tmpl = tmpl.replace("{replica_index}", str(replica_index))
     tmpl = tmpl.replace("{http_port}", "${ORES_HTTP_PORT}")
+    tmpl = tmpl.replace("{web_port}", "${ORES_WEB_PORT}")
     if host_id is not None:
         tmpl = tmpl.replace("{host_id}", str(host_id))
     if work_dir is not None:

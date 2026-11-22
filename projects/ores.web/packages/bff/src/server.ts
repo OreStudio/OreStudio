@@ -613,18 +613,24 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
      * `sameSite: 'lax'`, so a genuinely cross-site caller would pass this hook
      * and then arrive at the route without a cookie. Widen `sameSite` before
      * adding an origin that is not a subdomain of the one serving the cookie.
+     *
+     * A call from another origin states its intent in a header (`x-ores-request`)
+     * and sends a JSON body, so the preflight must allow both, and the answer must
+     * let the browser read the request id and a served file's name. The C++ server
+     * states the same three things, so a screen reads its answers alike either way.
      */
     server.addHook('onRequest', async (request, reply) => {
         const origin = request.headers.origin;
         if (origin !== undefined && config.allowedOrigins.includes(origin)) {
             reply.header('Access-Control-Allow-Origin', origin);
             reply.header('Access-Control-Allow-Credentials', 'true');
+            reply.header('Access-Control-Expose-Headers', 'X-Request-Id, Content-Disposition');
             reply.header('Vary', 'Origin');
         }
         if (request.method === 'OPTIONS') {
             reply
-                .header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS')
-                .header('Access-Control-Allow-Headers', 'Content-Type');
+                .header('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS')
+                .header('Access-Control-Allow-Headers', 'Content-Type,Authorization,X-Ores-Request');
             await reply.status(204).send();
         }
     });

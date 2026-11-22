@@ -144,7 +144,14 @@ struct http_server_options final {
      */
     bool enable_cors{true};
     /**
-     * @brief Allowed origins for CORS (empty = all).
+     * @brief The origins a browser may call from, comma separated.
+     *
+     * `*`, which is also what an empty value reads as, answers every origin without
+     * credentials: enough for an anonymous caller, and never enough for a session,
+     * because a browser refuses to send a cookie to a wildcard answer. Naming the
+     * origins answers only those, and allows credentials to those, so a person's
+     * session rides a call only to an origin named here. A named origin is also the
+     * one place a write may come from, besides this deployment's own.
      */
     std::string cors_allowed_origins{"*"};
     /**

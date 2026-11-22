@@ -8,7 +8,7 @@
 #+filetags: :design_the_scripted_trade_subsystem:sprint_30:v0:
 #+owner: marco
 #+branch: feature/move-the-ore-metamodel-into-ores-ore
-#+pr:
+#+pr: 5028
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-22
@@ -156,7 +156,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5028][#5028]] | [ore] Move the ORE files from ores.reporting into ores.ore |
 
 * Review
 

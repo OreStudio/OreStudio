@@ -39,9 +39,12 @@ emits progress events on NATS (e.g. =ores.dq.publication_progress= keyed by
 =publication_id=). The wizard subscribes until it sees =completed= or
 =failed=.
 
-The existing =ores_dq_bundle_publications_tbl= audit table is the natural
-place to persist progress, so reconnecting clients can pick up where they
-left off and admins can see history.
+The run needs a table to hold progress, so reconnecting clients can pick up
+where they left off. No table holds a publication history today and none should
+hold one of finished runs: a bundle is a run and not a transaction, and the
+provenance on each published row is the record of what it wrote. The row this
+part introduces is the state of a run in flight, and it is deleted or closed
+when the run ends.
 
 Note: "background" here does not mean "hidden from the user" — wizard flows
 like =PartyProvisioningWizard= should keep the user on-screen until the saga
@@ -75,8 +78,8 @@ populate functions can call back into.
   re-opening reconnects to the in-flight saga.
 - Long-running publishes survive client network blips (re-subscribe to the
   progress channel on reconnect).
-- =ores_dq_bundle_publications_tbl= has intermediate progress rows visible
-  during the publish, not just start/end.
+- A progress row is visible during the publish, not just at start and end, and
+  it is gone or closed once the run reaches a terminal state.
 
 **** Notes
 

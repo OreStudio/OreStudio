@@ -64,10 +64,6 @@ struct publish_bundle_request {
      */
     std::string published_by;
     /**
-     * @brief Whether the whole bundle must succeed or none of it.
-     */
-    bool atomic = false;
-    /**
      * @brief Per-dataset parameters, as JSON.
      */
     std::string params_json;
@@ -113,7 +109,6 @@ struct publish_bundle_response {
         ::ores::utility::codec::field{"bundle_code", &publish_bundle_request::bundle_code},
         ::ores::utility::codec::field{"mode", &publish_bundle_request::mode},
         ::ores::utility::codec::field{"published_by", &publish_bundle_request::published_by},
-        ::ores::utility::codec::field{"atomic", &publish_bundle_request::atomic},
         ::ores::utility::codec::field{"params_json", &publish_bundle_request::params_json},
     };
 }

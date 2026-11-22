@@ -80,18 +80,6 @@ bundle-publish workflow and reads the publishable datasets.
  */
 #+end_src
 
-*** atomic
-:PROPERTIES:
-:cpp_type: bool
-:default:  false
-:END:
-
-#+begin_src cpp :name comment
-/**
- * @brief Whether the whole bundle must succeed or none of it.
- */
-#+end_src
-
 *** params_json
 :PROPERTIES:
 :cpp_type: std::string

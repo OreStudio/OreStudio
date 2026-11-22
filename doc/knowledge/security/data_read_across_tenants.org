@@ -30,6 +30,13 @@ Do not share a row to avoid a token exchange. A service that needs the data of o
 3. *Read.* The model states =:system_tenant_visible: true= on its repository. The generated read then asks for the rows of the current tenant or of the system tenant. The policy decides which system rows return. A table whose rows are all shared states =:tenant_read_scope: shared= and the read has no tenant predicate. Writes stay in the own tenant.
 4. *Guard.* The read has a =:read= code, or an allow-list row with a reason, as the [[id:804C7048-DBBF-4B39-8737-BFB4949884C4][authorised reads]] rules require.
 5. *Existence check.* A record that names a shared row, or a row the party rule hides, checks that it exists through a security definer function. The function returns yes or no and names no column. It takes the id and nothing else, and it takes the tenant from the session, so a caller cannot probe another tenant. It sets a fixed =search_path=. The grant is revoked from public and given to the service roles by name. The codegen map =EXISTENCE_FUNCTIONS= in =org_loader.py= names the function for each table, and the generated soft foreign key trigger calls it.
+
+   A check that resolves a code rather than an id states the same rule itself,
+   because no policy binds a security definer function: the code must name a row
+   of the caller's tenant or a shared row of the system tenant, and no other
+   tenant's row. The trading basket constituent check is of this kind
+   (=ores_trading_basket_constituent_resolves_fn=), and it reads the equity, FX
+   and commodity catalogues that way.
 6. *Page.* This page. The model of the table links to it.
 
 ** The accounts table

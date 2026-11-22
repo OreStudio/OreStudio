@@ -149,8 +149,11 @@ something the model does not contain.
 
 ** The bundle map
 
-A bundle carries one level and one scope, and the two determine its target
-tenant and the parameters the publication passes. The bundles that carry one
+A bundle carries one level and one scope. The level is a column of
+=ores_dq_dataset_bundles_tbl=, because it decides the target tenant; the scope
+is not a column, because it decides the publication's parameters rather than its
+target. The two together determine the tenant the publication writes into and
+the parameters it passes. The bundles that carry one
 dataset therefore share its level and its scope: =party_essentials= and
 =risk_management= both publish into the tenant that holds the party, so the two
 may both list the report definitions and the reader cannot tell which bundle
@@ -183,7 +186,11 @@ The level also determines the mechanism, and the choice is not free.
   published row, although every tenant reads it. The system party is of this
   kind, and so is the =WRLD= business centre: the platform defines it, the
   foundation layer's system party names it before any dataset can publish, and
-  the world dataset publishes the other business centres beside it.
+  the world dataset publishes the other business centres beside it. The payment
+  frequencies are the same, and they state the consequence: a fixed vocabulary
+  that a populate script writes has no dataset and no artefact type, because a
+  dataset would publish a second copy into a tenant where every tenant already
+  reads the platform's row.
 
 Three practices are excluded by the rule. A populate script may not write a row
 that a publish function also writes, in the same tenant. A platform or world row
@@ -261,8 +268,9 @@ Three properties are not reproduced by a recreate. The dataset identifier is
 minted by =ores_dq_datasets_upsert_fn= with =gen_random_uuid()= against a
 natural key of name, subject area and domain, so the same datasets return with
 different identifiers. The publication history is held by no table, and
-therefore cannot be reproduced. The row versions return to one, because a
-recreate writes every row once.
+therefore cannot be reproduced: what a publication wrote is read from the
+provenance on each row, which names the dataset, and never from a record of the
+run. The row versions return to one, because a recreate writes every row once.
 
 An operator establishes the state of a catalogue with two checks. The functions
 =ores_dq_bundle_datasets_list_fn= and =ores_dq_bundle_preview_fn= report whether

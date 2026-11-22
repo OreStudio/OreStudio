@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: 5C20BEF9-13CA-48B5-8221-E83C1D6345DD
+:END:
+#+title: The publication run log has no writer, so the history screen is always empty
+#+description: ores_dq_dataset_publications_tbl is written only by the retired in-process publish path, which no caller reaches.
+#+type: capture
+#+level: cross
+#+filetags: :code:dq:publishing:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=ores_dq_dataset_publications_tbl= holds one row per dataset published, and the
+dq service serves it on the standard generated stack, so a screen and a client
+can list a publication run log. Nothing in the live path writes a row.
+=record_publication= in
+=projects/ores.dq/core/src/service/publish_service.cpp= is the only writer, and
+its caller, =publish_service::publish()=, has no caller of its own: the bundle
+and dataset verbs both dispatch the workflow, which calls each target service's
+publish function and records nothing.
+
+The log therefore reads empty however many publications ran.
+
+* Why
+
+A screen that always shows nothing is worse than no screen: an operator reads
+it as evidence that nothing published. Two answers are coherent, and the task
+picks one:
+
+- Delete the table, its generated stack and the retired in-process path that
+  writes it. This matches the knowledge page's statement that no live path
+  records a publication history, and it removes the dead path as well.
+- Give the log a writer. The workflow engine already records one step per
+  dataset, so the natural shape is a subscription on step completion that
+  appends the counts a publish function returns, and then a screen shows real
+  runs. This is the larger answer, and it needs the level and the target tenant
+  on the row to be worth reading.
+
+The per-dataset table is the one at issue. The bundle-level audit table is
+already gone:
+[[id:16127025-230A-4723-A04E-02906ED26CCC][Make the publish guarantees real]] removed it
+and left this one in place because the defects are separate.
+
+* References
+
+- =projects/ores.dq/core/src/service/publish_service.cpp= — =publish()= and
+  =record_publication()=, the retired path and its only writer.
+- =projects/ores.dq/core/src/messaging/registrar.cpp= — serves the publication
+  rows on the generated stack.
+- The bundle-level removal, and the reasoning it followed: the publication
+  history is held by no table, because a bundle is a run and not a transaction.
+
+* See also
+
+- [[id:16920F25-F0EF-4031-9C2D-DF57B5865072][Investigation: publishing pipeline]] — D7
+  and D11 in its defect list.

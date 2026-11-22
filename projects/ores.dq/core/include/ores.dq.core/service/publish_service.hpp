@@ -33,6 +33,7 @@
 #include "ores.logging/logger.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <map>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -69,7 +70,9 @@ publication_order(const std::vector<std::string>& requested,
  * 1. Resolves dataset dependencies using a directed graph
  * 2. Determines publication order (dependencies first)
  * 3. Calls appropriate population functions for each dataset
- * 4. Records publication history for auditing
+ *
+ * It records no publication history: a published row names the dataset that
+ * wrote it, and that provenance is the record.
  *
  * The service can be used from both the binary protocol handler
  * and HTTP endpoints.
@@ -101,7 +104,6 @@ public:
      * 1. Validates that all dataset IDs exist
      * 2. Resolves dependencies and determines publication order
      * 3. Publishes each dataset in dependency order
-     * 4. Records publication history for auditing
      *
      * @param dataset_ids The IDs of the datasets to publish.
      * @param mode How to handle conflicts with existing data.
@@ -129,7 +131,13 @@ public:
      * resolves against) silently omitted them unless a bundle's own membership
      * happened to be hand-ordered to include them too.
      *
-     * @param bundle_code The bundle to query (e.g., 'base', 'crypto').
+     * The publish verbs are its only callers: nothing previews a bundle through it, so a member
+     * that names no dataset is refused here rather than listed leniently. A preview that must
+     * tolerate a missing member asks the store instead, through
+     * ores_dq_bundle_datasets_list_fn and ores_dq_bundle_preview_fn, which report the gap as a
+     * metric and do not raise.
+     *
+     * @param bundle_code The bundle to query (e.g., 'world', 'crypto').
      * @param resolve_dependencies If true (the default), transitive dependencies of bundle
      * members are included and ordered before their dependents. Kept as a caller-visible option,
      * matching list_publishable_datasets(), rather than silently hardcoded, for the (currently
@@ -139,6 +147,18 @@ public:
     std::vector<bundle_publishable_dataset>
     list_bundle_publishable_datasets(const std::string& bundle_code,
                                      bool resolve_dependencies = true);
+
+    /**
+     * @brief Reads the publication level a bundle states.
+     *
+     * The level decides the tenant the publication writes into and the callers
+     * it admits. A platform or world bundle publishes into the system tenant;
+     * a tenant bundle publishes into the tenant that asked.
+     *
+     * @param bundle_code The bundle to read (e.g., 'world').
+     * @return The level the bundle states, or nothing when no such bundle exists.
+     */
+    std::optional<std::string> bundle_level(const std::string& bundle_code);
 
     /**
      * @brief Resolves a list of dataset IDs into ordered, publishable entries.
@@ -197,7 +217,11 @@ private:
                     const std::map<std::string, domain::artefact_type>& artefact_type_cache);
 
     /**
-     * @brief Records a publication in the audit table.
+     * @brief Records a publication in the per-dataset run log.
+     *
+     * The workflow path does not call this: it logs no run of its own, and the
+     * provenance on each published row is the record. Only the retired
+     * in-process publish path still reaches it.
      *
      * @param result The publication result to record.
      * @param mode The publication mode used.

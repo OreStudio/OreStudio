@@ -38,6 +38,7 @@ BEGIN
     PERFORM ores_dq_dataset_bundles_upsert_fn(ores_utility_system_tenant_id_fn(),
         'northwind_lei_import',
         'Northwind Traders LEI Import',
+        'tenant',
         'The Northwind Traders legal entity. Published tenant-wide with the {"root_lei": "9695NORTHWIND0000065"} param, before the party exists.'
     );
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'northwind_lei_import', 'northwind.lei_parties', 10);
@@ -61,6 +62,7 @@ BEGIN
     PERFORM ores_dq_dataset_bundles_upsert_fn(ores_utility_system_tenant_id_fn(),
         'northwind_uk',
         'Northwind Traders',
+        'tenant',
         'Northwind Traders Ltd''s business units, portfolios, books, staff accounts, contact details, tradeable counterparties and report documents. Publish with a {"party_id": "..."} param scoping every member to the party.'
     );
 END $$;

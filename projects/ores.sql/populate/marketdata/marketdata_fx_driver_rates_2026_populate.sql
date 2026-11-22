@@ -113,6 +113,7 @@ BEGIN
     PERFORM ores_dq_dataset_bundles_upsert_fn(ores_utility_system_tenant_id_fn(),
         'marketdata.reference_vintage_2026_05_05',
         'Market Data Reference Vintage: 2026-05-05',
+        'tenant',
         'Every curated, real market-data dataset for the 2026-05-05 reference vintage - FX spot today, more asset classes over time.'
     );
 

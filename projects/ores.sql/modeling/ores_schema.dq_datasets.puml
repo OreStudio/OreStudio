@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: dq_datasets
-Tables: 6
+Tables: 5
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -41,31 +41,6 @@ end note
 ' ==================== dq_datasets (Dataset Management) ====================
 '
 package "dq_datasets" #E3F2FD {
-    entity ores_dq_bundle_publications_tbl  #F7E5FF {
-        * id : uuid <<PK>>
-        --
-        * tenant_id : uuid <<FK>>
-        * bundle_code : text
-        * bundle_name : text
-        * mode : text
-        * atomic : boolean
-        * datasets_processed : integer
-        * datasets_succeeded : integer
-        * datasets_failed : integer
-        * datasets_skipped : integer
-        * total_records_inserted : bigint
-        * total_records_updated : bigint
-        * total_records_skipped : bigint
-        * total_records_deleted : bigint
-        * published_by : text
-        * published_at : timestamptz
-          completed_at : timestamptz
-    }
-
-    note right of ores_dq_bundle_publications_tbl
-    Bundle Publication Audit Table
-    end note
-
     entity ores_dq_dataset_bundle_members_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * bundle_code : text <<PK>>
@@ -103,6 +78,7 @@ package "dq_datasets" #E3F2FD {
         * version : integer
         * code : text
         * name : text
+        * level : text
         * description : text
         * modified_by : text
         * performed_by : text
@@ -120,12 +96,20 @@ package "dq_datasets" #E3F2FD {
     Installing a bundle gets the system into a ready state with a coherent set
     of reference data. Bundles provide a way to group related datasets that
     should be installed together.
-    A bundle belongs to one level and one scope, and the two decide the tenant it
-    writes into: a platform or world bundle publishes into the system tenant once,
-    a tenant-wide bundle into a tenant, and a party bundle into the tenant that
-    holds the party. The table does not carry either as a column yet: the bundle's
-    documentation states them, and the knowledge page "Reference data classification
-    by publication level" holds the rule that assigns them.
+    A bundle belongs to one level and one scope. The level is a column, and it
+    decides the tenant the publication writes into: a platform or world bundle
+    publishes into the system tenant once, and a tenant bundle into the tenant that
+    asked. The scope is not a column, because it decides the publication's
+    parameters rather than its target: a tenant-wide bundle writes the tenant's own
+    rows, and a party bundle writes one party's and takes the party as a parameter.
+    The knowledge page "Reference data classification by publication level" holds
+    the rule that assigns both, and the handler refuses a caller whose tenant the
+    level does not admit.
+    The column has no default and no migration carries it to an existing database.
+    That is deliberate: the tree recreates the schema from scratch, so there is
+    nothing for a migration to protect, and a database that predates the column is
+    recreated from the tree rather than altered in place. The component standard
+    states the same rule where it governs every component.
     Examples:
     - "system_core": the platform's own vocabulary, published at bring-up
     - "world": reference data adopted from an outside standard, published at bring-up

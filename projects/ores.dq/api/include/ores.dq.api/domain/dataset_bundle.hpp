@@ -40,12 +40,21 @@ namespace ores::dq::domain {
  * of reference data. Bundles provide a way to group related datasets that
  * should be installed together.
  *
- * A bundle belongs to one level and one scope, and the two decide the tenant it
- * writes into: a platform or world bundle publishes into the system tenant once,
- * a tenant-wide bundle into a tenant, and a party bundle into the tenant that
- * holds the party. The table does not carry either as a column yet: the bundle's
- * documentation states them, and the knowledge page "Reference data classification
- * by publication level" holds the rule that assigns them.
+ * A bundle belongs to one level and one scope. The level is a column, and it
+ * decides the tenant the publication writes into: a platform or world bundle
+ * publishes into the system tenant once, and a tenant bundle into the tenant that
+ * asked. The scope is not a column, because it decides the publication's
+ * parameters rather than its target: a tenant-wide bundle writes the tenant's own
+ * rows, and a party bundle writes one party's and takes the party as a parameter.
+ * The knowledge page "Reference data classification by publication level" holds
+ * the rule that assigns both, and the handler refuses a caller whose tenant the
+ * level does not admit.
+ *
+ * The column has no default and no migration carries it to an existing database.
+ * That is deliberate: the tree recreates the schema from scratch, so there is
+ * nothing for a migration to protect, and a database that predates the column is
+ * recreated from the tree rather than altered in place. The component standard
+ * states the same rule where it governs every component.
  *
  * Examples:
  * - "system_core": the platform's own vocabulary, published at bring-up
@@ -82,6 +91,15 @@ struct dataset_bundle final {
      * @brief Human-readable name for the bundle.
      */
     std::string name;
+
+    /**
+     * @brief The publication level this bundle belongs to: platform, world or tenant.
+     *
+     * The level decides the tenant the publication writes into and the callers it admits. A
+     * platform or world bundle publishes into the system tenant once, and only the system tenant
+     * may ask for it. A tenant bundle publishes into the tenant that asked.
+     */
+    std::string level;
 
     /**
      * @brief Detailed description of the bundle's contents and purpose.

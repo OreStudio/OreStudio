@@ -39,6 +39,7 @@ BEGIN
     PERFORM ores_dq_dataset_bundles_upsert_fn(ores_utility_system_tenant_id_fn(),
         'system_core',
         'System Core',
+        'platform',
         'The rows the platform defines in order to function: coding schemes, the template images, the provider, adapter and supplier catalogues, the system tenant''s feeds, the ORE parameters and their value domains, and the FX vol surface blueprints.'
     );
 
@@ -49,6 +50,7 @@ BEGIN
     PERFORM ores_dq_dataset_bundles_upsert_fn(ores_utility_system_tenant_id_fn(),
         'world',
         'World',
+        'world',
         'Reference data adopted from an outside standard: ISO countries and currencies, the FpML vocabularies, calendars, currency pairs, commodities and equity underlyings. Held in the system tenant, and read by every tenant where it lies.'
     );
 
@@ -57,18 +59,21 @@ BEGIN
     PERFORM ores_dq_dataset_bundles_upsert_fn(ores_utility_system_tenant_id_fn(),
         'tenant_defaults',
         'Tenant Defaults',
+        'tenant',
         'The configuration a tenant starts with and may change: its badges, its badge mappings and its code domains.'
     );
 
     PERFORM ores_dq_dataset_bundles_upsert_fn(ores_utility_system_tenant_id_fn(),
         'crypto',
         'Crypto',
+        'world',
         'The cryptocurrency slice: the symbols, and the icons a screen draws beside them. Published into the system tenant beside the world catalogue, which carries every other dataset a crypto installation needs.'
     );
 
     PERFORM ores_dq_dataset_bundles_upsert_fn(ores_utility_system_tenant_id_fn(),
         'risk_management',
         'Risk Management',
+        'tenant',
         'Sample organisational and risk-reporting data for development and testing. Includes business units, portfolios, trading books, and the standard set of risk report definitions (NPV, VaR, CVA, XVA, etc.) -- reports reference the book/portfolio tree, so both live in one bundle.'
     );
 
@@ -81,6 +86,7 @@ BEGIN
     PERFORM ores_dq_dataset_bundles_upsert_fn(ores_utility_system_tenant_id_fn(),
         'crm_topology',
         'CRM Cross-Rates Matrix Topology',
+        'tenant',
         'Named CRM topology configs (majors/exotics/scandies tiers) for the Cross-Rates Matrix window. Published per party, independent of which synthetic feeds dataset (if any) is providing live rates -- the CRM shows static/stale prices until a feed starts ticking the underlying driver pairs.'
     );
 
@@ -93,6 +99,7 @@ BEGIN
     PERFORM ores_dq_dataset_bundles_upsert_fn(ores_utility_system_tenant_id_fn(),
         'lei_hierarchy',
         'GLEIF LEI Hierarchy Import',
+        'tenant',
         'Imports the GLEIF legal-entity hierarchy under a root LEI as the tenant''s parties. Published tenant-wide with the {"lei_parties": {"root_lei": "..."}} param, before any party under the root exists. The root LEI is the run''s, so the bundle holds no organisation''s data.'
     );
 
@@ -101,6 +108,7 @@ BEGIN
     PERFORM ores_dq_dataset_bundles_upsert_fn(ores_utility_system_tenant_id_fn(),
         'lei_counterparties',
         'GLEIF Counterparties',
+        'tenant',
         'The GLEIF records a tenant trades against: the counterparties it draws from the GLEIF golden copy, and the aliases that name them. Published tenant-wide on request, with each rung opted into by name. The LEI record is a world fact; the counterparty and the alias are the tenant''s own rows.'
     );
 
@@ -113,6 +121,7 @@ BEGIN
     PERFORM ores_dq_dataset_bundles_upsert_fn(ores_utility_system_tenant_id_fn(),
         'party_essentials',
         'Party Essentials',
+        'tenant',
         'The reference data a single party needs: its instrument conventions and its CRM (Cross-Rates Matrix) topology. Published once per party with a {"party_id": "..."} param. Carries no organisation structure, staff accounts or demonstration data -- those belong to the ACME demo bundles.'
     );
 
@@ -123,6 +132,7 @@ BEGIN
     PERFORM ores_dq_dataset_bundles_upsert_fn(ores_utility_system_tenant_id_fn(),
         'party_reporting',
         'Party Reporting',
+        'tenant',
         'The generic report set for a party: the tiered ORE report definitions and the run settings they resolve. Published once per party with a {"party_id": "..."} param, after party_essentials. A profile that gives each party its own report definitions does not publish it.'
     );
 
@@ -132,6 +142,7 @@ BEGIN
     PERFORM ores_dq_dataset_bundles_upsert_fn(ores_utility_system_tenant_id_fn(),
         'ore_samples',
         'ORE Samples',
+        'tenant',
         'ORE sample data, apart from the official data: what the ORE sample documents import against: master agreements, netting sets, CSAs and netting set aliases for the netting set ids they use, built from the samples'' own netting definitions, and the portfolios their PortfolioIds name, which the publish places in a sample sandbox. Published once per party with a {"party_id": "..."} param, against the GLEIF banks the ORE counterparty aliases map onto.'
     );
 END $$;

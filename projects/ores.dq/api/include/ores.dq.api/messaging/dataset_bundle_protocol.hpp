@@ -52,6 +52,7 @@ struct dataset_bundle_write {
     boost::uuids::uuid id;
     std::string code;
     std::string name;
+    std::string level;
     std::string description;
 
     friend bool operator==(const dataset_bundle_write&, const dataset_bundle_write&) = default;
@@ -380,6 +381,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.dataset_bundles.delete
         utility::codec::field{"id", &dataset_bundle_write::id},
         utility::codec::field{"code", &dataset_bundle_write::code},
         utility::codec::field{"name", &dataset_bundle_write::name},
+        utility::codec::field{"level", &dataset_bundle_write::level},
         utility::codec::field{"description", &dataset_bundle_write::description},
     };
 }

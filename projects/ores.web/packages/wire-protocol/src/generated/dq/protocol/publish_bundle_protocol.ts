@@ -39,10 +39,6 @@ export interface PublishBundleRequest {
      */
     published_by: string;
     /**
-     * @brief Whether the whole bundle must succeed or none of it.
-     */
-    atomic: boolean;
-    /**
      * @brief Per-dataset parameters, as JSON.
      */
     params_json: string;

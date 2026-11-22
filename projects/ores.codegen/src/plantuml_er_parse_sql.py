@@ -1273,7 +1273,7 @@ class SQLParser:
         # Dataset management tables
         dataset_tables = [
             'datasets_tbl', 'dataset_bundles_tbl', 'dataset_bundle_members_tbl',
-            'dataset_dependencies_tbl', 'dataset_publications_tbl', 'bundle_publications_tbl'
+            'dataset_dependencies_tbl', 'dataset_publications_tbl'
         ]
         if any(table_name.endswith(t) for t in dataset_tables):
             return ('dq_datasets', 'Dataset Management', '#E3F2FD', 4.2)

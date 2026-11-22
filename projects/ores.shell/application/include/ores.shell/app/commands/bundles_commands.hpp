@@ -64,10 +64,11 @@ public:
      * [--root-lei <lei>] [--party-id <id>] [--dataset <code>]
      * [--timeout <seconds>].
      *
-     * Publishes atomically in upsert mode as the logged-in user, as
-     * the wizards do. --root-lei, --party-id and --dataset populate
-     * the publication parameters; --wait blocks until the dispatched
-     * workflow reaches a terminal state.
+     * Publishes in upsert mode as the logged-in user, as the wizards
+     * do. The bundle's level decides the target tenant. --root-lei,
+     * --party-id and --dataset populate the publication parameters;
+     * --wait blocks until the dispatched workflow reaches a terminal
+     * state.
      */
     static void process_publish(std::ostream& out,
                                 ores::nats::service::nats_client& session,

@@ -47,6 +47,7 @@ BEGIN
     PERFORM ores_dq_dataset_bundles_upsert_fn(ores_utility_system_tenant_id_fn(),
         'acme_lei_import',
         'Acme Corporation LEI Import',
+        'tenant',
         'The four-party ACME Corporation LEI hierarchy. Published tenant-wide with the {"root_lei": "9695ACMEGROUP0000030"} param, before any operating-company party exists. Depends on fpml.business_center already having been published in the system tenant by the world catalogue.'
     );
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'acme_lei_import', 'acme.lei_parties', 20);
@@ -58,6 +59,7 @@ BEGIN
     PERFORM ores_dq_dataset_bundles_upsert_fn(ores_utility_system_tenant_id_fn(),
         'acme_group',
         'Acme Corporation Group',
+        'tenant',
         'ACME Corporation Plc''s group-level staff accounts and Group Treasury business unit/portfolio/books. Publish with a {"party_id": "..."} param scoping to the holding company''s own party.'
     );
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'acme_group', 'acme.acme_group.business_units', 10);
@@ -86,6 +88,7 @@ BEGIN
     PERFORM ores_dq_dataset_bundles_upsert_fn(ores_utility_system_tenant_id_fn(),
         'acme_uk',
         'Acme Corporation UK',
+        'tenant',
         'ACME Corporation UK plc''s business units, portfolios, books, accounts, and account contact informations. Publish with a {"party_id": "..."} param scoping every member to the UK party.'
     );
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'acme_uk', 'acme.acme_uk.business_units', 10);
@@ -110,6 +113,7 @@ BEGIN
     PERFORM ores_dq_dataset_bundles_upsert_fn(ores_utility_system_tenant_id_fn(),
         'acme_us',
         'Acme Corporation US',
+        'tenant',
         'ACME Corporation US Inc''s business units, portfolios, books, accounts, and account contact informations. Publish with a {"party_id": "..."} param scoping every member to the US party.'
     );
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'acme_us', 'acme.acme_us.business_units', 10);
@@ -134,6 +138,7 @@ BEGIN
     PERFORM ores_dq_dataset_bundles_upsert_fn(ores_utility_system_tenant_id_fn(),
         'acme_hk',
         'Acme Corporation HK',
+        'tenant',
         'ACME Corporation HK Ltd''s business units, portfolios, books, accounts, and account contact informations. Publish with a {"party_id": "..."} param scoping every member to the HK party.'
     );
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'acme_hk', 'acme.acme_hk.business_units', 10);

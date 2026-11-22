@@ -26,11 +26,11 @@ Write the story, its tasks and the sprint row for the DQ pipeline.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:7D2BBBBC-36A3-4BFB-9673-0F9005991D94][Take the DQ pipeline end to end, from a seeded artefact table to a published system]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-14                               |
 
 * Acceptance
@@ -83,3 +83,10 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The story exists, with a scene, a plan, six sequenced tasks and a branch per
+task. Nothing in it is a reader's destination: what it produced is the story
+page and the order its =* Approach= states, and the page itself carries the
+rest.
+
+PR #4709 opened the story.

@@ -21,8 +21,8 @@ its claims are no longer true:
   publish= and tenant provisioning are the callers.
 - =publication_handler= is CRUD over publication rows. The orchestration is in
   =publish_handler= and =publish_service=.
-- No audit row is written to =ores_dq_bundle_publications_tbl=, so the
-  publication history is empty.
+- No table holds a publication history. A run leaves no audit row, and what
+  it wrote is read from the provenance on each row.
 
 * Summary
 
@@ -187,9 +187,10 @@ command payload is a =publish_from_dq_command= (=dataset_id=,
 =tenant_id=, =mode=, =params_json=), and there is no compensation step
 (publish functions are idempotent upserts, so a failed saga simply
 halts and leaves already-published datasets in place). Progress is
-tracked via the standard workflow step-completed events; a final audit
-row is written to =ores_dq_bundle_publications_tbl=
-(=projects/ores.sql/create/dq/dq_bundle_publication_create.sql=).
+tracked via the standard workflow step-completed events. A run writes no
+audit row: a bundle is a run and not a transaction, so a step that fails
+halts the run and the record of what it wrote is the provenance on each
+row.
 
 ** Stage 4 — Publish-from-DQ (target-service, hand-written)
 

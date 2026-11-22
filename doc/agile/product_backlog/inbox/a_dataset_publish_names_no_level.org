@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: B14DE752-043F-4EA0-A72E-ECDEB034C5F4
+:END:
+#+title: A dataset publish names no level, so a tenant can publish a world dataset into itself
+#+description: The bundle verb refuses a caller the level does not admit, but the direct dataset verb names datasets, which carry no level.
+#+type: capture
+#+level: cross
+#+filetags: :code:dq:publishing:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The publish bundle verb refuses a caller the bundle's level does not admit, so
+no tenant can publish a world catalogue into itself through it. The publish
+datasets verb is the second door: it names datasets and publishes them into the
+caller's tenant, and a dataset row carries no level. A tenant administrator
+holding =dq::datasets:write= can therefore publish the calendars, the countries
+or the currencies into its own tenant and recreate the second copy the model
+forbids.
+
+* Why
+
+The level was given to the bundle, which is the unit a person runs. It needs to
+reach the dataset, because the dataset is the unit a dependency closure and a
+direct publication name. The likely home is the dataset's artefact type, which
+already names the target table and the subject, or a level column on
+=ores_dq_datasets_tbl= that agrees with the bundles that carry it.
+
+The rule a fix must keep: a dataset may belong to two bundles only when they
+share a level, so the dataset's own level is well defined. A platform or world
+dataset publishes only into the system tenant; a tenant dataset into the tenant
+that asked.
+
+* References
+
+- The bundle-level rule:
+  [[id:7287B58F-964C-4D42-8EC4-6C5DA53EEE2D][Reference data classification by publication level]]
+  states that the request names a bundle and not a target tenant.
+- =projects/ores.dq/core/include/ores.dq.core/messaging/publish_handler.hpp=
+  holds both verbs in one handler. =publish_bundle= checks the level;
+  =publish_datasets= resolves the datasets and dispatches them.
+- The investigation records the same defect as D10's neighbour:
+  [[id:16920F25-F0EF-4031-9C2D-DF57B5865072][Investigation: publishing pipeline]].
+
+* See also
+
+- [[id:16127025-230A-4723-A04E-02906ED26CCC][Make the publish guarantees real]] gave the
+  bundle its level and is the task that left this door open on purpose.

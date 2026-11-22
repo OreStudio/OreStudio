@@ -32,11 +32,14 @@
  * seed scripts in this directory:
  *
  * - refdata.calendars has no incoming edge there, yet its production
- *   insert validates country_code (ISO 3166-1 alpha-2) and
- *   coding_scheme_code against published iso tables, so on a fresh
- *   database the topological sort can emit it before iso.countries and
- *   abort the whole bundle workflow (the same failure class as the
- *   original currency_pairs bug).
+ *   insert validates country_code (ISO 3166-1 alpha-2) against the
+ *   tenant's own country rows, so on a fresh database the topological
+ *   sort can emit it before iso.countries and abort the whole bundle
+ *   workflow (the same failure class as the original currency_pairs
+ *   bug). Its coding_scheme_code check reads the DQ artefact table
+ *   directly, which the dataset load writes before any publish runs, so
+ *   the calendars declare no edge to iso.coding_schemes; the edge once
+ *   declared here republished the coding schemes into every tenant.
  * - currency_pair_conventions reads iso.currencies for its convention
  *   definitions (seed comment: "depends on refdata.currency_pairs and
  *   iso.currencies").
@@ -54,8 +57,6 @@ BEGIN
         'refdata.calendars', 'refdata.calendar_types', 'calendar_type_reference');
     PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
         'refdata.calendars', 'iso.countries', 'country_reference');
-    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'refdata.calendars', 'iso.coding_schemes', 'coding_scheme_reference');
 
     PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
         'refdata.currency_pair_conventions', 'iso.currencies', 'base_quote_currency');
@@ -75,3 +76,17 @@ BEGIN
     PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
         'refdata.fx_vol_surface_blueprints', 'refdata.conventions', 'fx_option_convention_source');
 END $$;
+
+/**
+ * Retires the calendars' coding-scheme edge.
+ *
+ * A database that predates its removal still holds the row, and the row orders
+ * every calendars publish after a dataset that writes the coding schemes into
+ * the tenant. The row is closed rather than deleted, so a second run finds
+ * nothing to close and the bitemporal history keeps the reason.
+ */
+update ores_dq_dataset_dependencies_tbl
+set valid_to = clock_timestamp()
+where dataset_code = 'refdata.calendars'
+  and dependency_code = 'iso.coding_schemes'
+  and valid_to = ores_utility_infinity_timestamp_fn();

@@ -30,7 +30,7 @@
 
 \echo '--- Payment Frequencies ---'
 
--- compass:except(single_writer/second_writer) expires=2027-05-18 approver=marco reason=no dataset carries it, so the generated publish function is unreachable and the populate script is the platform vocabulary's one writer
+-- compass:except(single_writer/second_writer) expires=2027-05-18 approver=marco reason=the platform's frequency vocabulary is written here and read where it lies: the table states the shared-reference read, and it has no artefact type and no dataset, so nothing can publish a tenant copy
 insert into ores_refdata_payment_frequencies_tbl (
     tenant_id, code, version, name, description, period_unit, period_multiplier, display_order,
     modified_by, performed_by, change_reason_code, change_commentary

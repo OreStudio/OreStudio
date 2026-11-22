@@ -50,6 +50,7 @@ generate_synthetic_dataset_bundle(utility::generation::generation_context& ctx) 
     r.code = std::string(faker::word::noun()) + "_bundle" + "-" + std::to_string(idx);
     r.name = std::string(faker::word::adjective()) + " " + std::string(faker::word::noun()) +
              " Bundle" + "-" + std::to_string(idx);
+    r.level = std::string("tenant");
     r.description = std::string(faker::lorem::sentence());
     r.modified_by = modified_by;
     r.performed_by = modified_by;

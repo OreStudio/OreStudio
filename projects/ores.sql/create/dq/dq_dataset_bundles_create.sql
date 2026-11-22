@@ -28,12 +28,21 @@
  * of reference data. Bundles provide a way to group related datasets that
  * should be installed together.
  *
- * A bundle belongs to one level and one scope, and the two decide the tenant it
- * writes into: a platform or world bundle publishes into the system tenant once,
- * a tenant-wide bundle into a tenant, and a party bundle into the tenant that
- * holds the party. The table does not carry either as a column yet: the bundle's
- * documentation states them, and the knowledge page "Reference data classification
- * by publication level" holds the rule that assigns them.
+ * A bundle belongs to one level and one scope. The level is a column, and it
+ * decides the tenant the publication writes into: a platform or world bundle
+ * publishes into the system tenant once, and a tenant bundle into the tenant that
+ * asked. The scope is not a column, because it decides the publication's
+ * parameters rather than its target: a tenant-wide bundle writes the tenant's own
+ * rows, and a party bundle writes one party's and takes the party as a parameter.
+ * The knowledge page "Reference data classification by publication level" holds
+ * the rule that assigns both, and the handler refuses a caller whose tenant the
+ * level does not admit.
+ *
+ * The column has no default and no migration carries it to an existing database.
+ * That is deliberate: the tree recreates the schema from scratch, so there is
+ * nothing for a migration to protect, and a database that predates the column is
+ * recreated from the tree rather than altered in place. The component standard
+ * states the same rule where it governs every component.
  *
  * Examples:
  * - "system_core": the platform's own vocabulary, published at bring-up
@@ -48,6 +57,7 @@ create table if not exists "ores_dq_dataset_bundles_tbl" (
     "version" integer not null,
     "code" text not null,
     "name" text not null,
+    "level" text not null,
     "description" text not null,
     "modified_by" text not null,
     "performed_by" text not null,
@@ -62,7 +72,8 @@ create table if not exists "ores_dq_dataset_bundles_tbl" (
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("id" <> ores_utility_nil_uuid_fn())
+    check ("id" <> ores_utility_nil_uuid_fn()),
+    check ("level" in ('platform', 'world', 'tenant'))
 );
 
 -- Composite natural key: unique combination for active records

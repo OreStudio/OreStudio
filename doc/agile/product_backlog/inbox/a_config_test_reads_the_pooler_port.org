@@ -1,0 +1,65 @@
+:PROPERTIES:
+:ID: 21DB6371-FA71-4296-A1F1-DB7DC00C0E99
+:END:
+#+title: A service config test reads the pooler port from the environment and fails
+#+description: ctest loads the whole .env into every test process, and env configure now writes each service's DB_PORT as the pooler's, so the defaults test asserts 5432 against 20207.
+#+type: capture
+#+level: cross
+#+filetags: :code:services:config:testing:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Thirteen service suites fail the case =parse_defaults_returns_expected_values= with
+=result->database.port == 5432 for: 20207=. The test is named for the compiled-in
+defaults, but it does not clear every environment variable the parser reads:
+=env configure= writes =ORES_<SERVICE>_SERVICE_DB_PORT= as the pooler's port, and
+=cmake= loads the whole =.env= into every test process, so the parser returns
+20207 where the test expects 5432.
+
+The suites are the =service= suites of iam, refdata, dq, variability, assets,
+scheduler, reporting, telemetry, trading, synthetic, compute, workflow and
+marketdata. Every other case in them passes.
+
+* Why
+
+The failure is an environment contract, not a defect in the parser: with the
+pooler off, or with the variable cleared, the test passes. Proven by
+
+#+begin_example
+env -u ORES_DQ_SERVICE_DB_PORT <test binary> parse_defaults_returns_expected_values
+All tests passed (6 assertions in 1 test case)
+#+end_example
+
+and by the same binary with the variable set, which fails the one assertion.
+
+The pooler landed on 2026-11-21 in =7954155392=, which changed =env_init.py= and
+the unit generator and did not touch the config tests. That commit's message
+records its own fleet run as unfinished, so the suite it leaves red has not been
+noticed yet.
+
+Two fixes are coherent, and the pooler's owner should pick one:
+
+- Each =config_parser_tests.cpp= adds its own =ORES_<SERVICE>_SERVICE_DB_PORT= to
+  the =scoped_environment_override= list it already passes, beside the
+  =ORES_NATS_*= names. Thirteen one-line edits.
+- =cmake= stops loading the whole =.env= into every test process and the tests
+  that need a variable ask for it. The larger change, and the one that keeps this
+  class of failure from returning.
+
+* References
+
+- =projects/ores.compass/src/env_init.py= writes the per-service port as the
+  pooler's when =ORES_DB_POOLER_ENABLED= is on, which it is by default.
+- The pooler commit: =7954155392=, story A75C3063, task 3D23B905.
+- =projects/<component>/service/tests/config_parser_tests.cpp= holds the
+  failing case; each names =ORES_NATS_URL=, =ORES_NATS_SUBJECT_PREFIX= and
+  =ORES_NATS_WIRE_FORMAT= in a =scoped_environment_override= already.
+
+* See also
+
+- [[id:A75C3063-896F-4DD5-A9BC-893A59EDFF7E][Pool the fleet's connections]] is
+  the story that owns the change.

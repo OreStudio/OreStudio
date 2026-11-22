@@ -141,6 +141,7 @@ domain::dataset_bundle dataset_bundle_to_domain(const messaging::dataset_bundle_
     v.id = write.id;
     v.code = write.code;
     v.name = write.name;
+    v.level = write.level;
     v.description = write.description;
     return v;
 }

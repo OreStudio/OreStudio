@@ -8,7 +8,7 @@
 #+filetags: :search_the_knowledge_base:sprint_30:v0:
 #+owner: marco
 #+branch: feature/decommission-ores-orgmode-and-the-knowledge-base
-#+pr: 5019
+#+pr: 5015
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-22
@@ -120,7 +120,7 @@ registry outside the repository. Checked on 2026-11-22.
 | Deployed drop-in folders | =~/.config/systemd/user/ores.orgmode.service-<env>.service.d/= | Nothing: the deploy removes files, not folders | Gap: remove by hand |
 | Environment variables | =ORES_ORGMODE_SERVICE_DB_*= in each =.env= (10 keys) | =compass env status= reports them undeclared; =compass env configure= rewrites the file | Per environment |
 | NATS certificate and key | =build/keys/nats/ores.orgmode.service.{crt,key}= | Nothing: =nats_certs.py= issues for the registry and never removes | Gap: remove by hand |
-| JetStream stream | =ores_dev_<env>_orgmode_steps= on each environment's NATS server | Nothing: =compass db recreate= purges streams (=nats_purge.py=) but never deletes one | Gap: =nats stream rm=, found after the task closed |
+| JetStream stream | =ores_dev_<env>_orgmode_steps= on each environment's NATS server | Nothing: =compass db recreate= purges streams (=nats_purge.py=) but never deletes one | Gap: =nats stream rm=, found on 2026-11-22 while cleaning bright_faraday, after the task closed |
 | Database role | =ores_<env>_orgmode_service= in the shared PostgreSQL cluster; present for bright_faraday, eager_maxwell and swift_curie | Nothing: a recreate drops the database, and roles belong to the cluster | Gap: drop by hand, per environment |
 | Container image and Quadlet unit | derived from the registry by code | Follows the registry | Done |
 
@@ -175,7 +175,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | PR #5019: a private absolute path to the architecture proposal is cited in committed docs | the compass story, its ores.http task, the abandoned story | Accept | All three now say the design is a proposal handed to compass, not yet published there. |
+| 2 | PR #5019: the moved tasks' file names no longer match their titles | the three moved tasks | Accept | Renamed with =git mv=; links use IDs and nothing referred to the old names. |
+| 3 | PR #5019: =#+pr:= moved from 5015 to 5019, though #5015 did the work | this task | Accept | Back to 5015; the PRs table lists both. |
+| 4 | PR #5019: =#+updated:= stale on the moved tasks and this task | the four tasks | Accept | Bumped to 2026-11-22. |
+| 5 | PR #5019: the compass story's description still says "to be defined" | the compass story, =sprint.org= | Accept | Now says the tasks are planned and wait on compass's release. |
+| 6 | PR #5019: date the stream note; the decision's link text is the task, not the PR | this task, the abandoned story | Accept the date; decline the link | The note gives the date and the environment. The decision already names PR #5015 next to the task link, and the task is the record to follow. |
 
 * Result
 

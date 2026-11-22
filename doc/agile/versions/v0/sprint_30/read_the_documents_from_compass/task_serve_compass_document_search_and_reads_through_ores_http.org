@@ -1,8 +1,8 @@
 :PROPERTIES:
-:ID: 2D098FE0-9542-4F21-8223-E9D41B28964E
+:ID: 3EB24EE2-82E5-4F11-AB20-4EEB16167FB3
 :END:
-#+title: Task: Search and read the documents in ores.web
-#+description: A search bar, a list of results and a document view in ores.web over the ores.http document routes, showing the HTML compass renders, with links between documents and anchors on headings.
+#+title: Task: Serve compass's document search and reads through ores.http
+#+description: ores.http routes that forward document search, list and read requests to compass's document service, for a signed-in caller, in the view the caller's role allows.
 #+type: task
 #+level: s1
 #+filetags: :read_the_documents_from_compass:sprint_30:v0:
@@ -12,7 +12,7 @@
 #+blocked_on: compass document service
 #+blocked_since:
 #+created: 2026-11-21
-#+updated: 2026-11-21
+#+updated: 2026-11-22
 #+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -20,12 +20,18 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-A person types a few words into a search bar in ores.web and sees the
-matching documents, best first, each with its title, description and the
-section that matched, filtered to what their role may see. Opening one shows
-the document as compass renders it: a link to another document opens that
-document in ores.web, and each heading has an anchor a result can point at.
-ores.web reads only the ores.http document routes and parses no org.
+ores.http serves ORE's documents by forwarding to compass's document service:
+a search, a few words in and the best documents out with the section that
+matched; a list filtered on metadata, such as a sprint's tasks; and a document
+read by org id, with its metadata and its body as HTML. ORE Studio holds no
+index and no document. The route requires a session, maps the caller's role to
+one of the views ORE declares in its compass configuration, and sets that view
+on the forwarded request, so no caller reaches documents its role may not see.
+The routes are in the route registry and the OpenAPI document. Nothing goes
+through the BFF.
+
+The endpoints, their filters and the views are compass's to define, in a
+proposal handed to compass and not yet published there.
 
 * Status
 
@@ -40,11 +46,16 @@ ores.web reads only the ores.http document routes and parses no org.
 
 * Acceptance
 
-- The search bar answers as the person types, and a result opens its document
-  at the section that matched.
-- A link between documents opens the linked document in ores.web.
-- The document view shows compass's sanitised HTML and nothing else; ores.web
-  parses no org for it.
+- A search for volatility through the route answers the Volatility pages
+  first, each with the section that matched.
+- A search can be restricted by type, tag or keyword, and a search in the
+  knowledge view answers no sprint or task document.
+- A document read by org id answers its metadata and its HTML, and an unknown
+  id is refused by name.
+- A caller without the role for a view never receives a document outside it,
+  shown by a test; a view sent by the client is ignored.
+- The routes are in ores.http's route registry and OpenAPI document, with
+  their schemas.
 
 * Plan
 

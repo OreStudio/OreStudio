@@ -88,8 +88,8 @@ full-text search. The analysis is in [[id:3237D7CF-8EBA-4B9B-9B54-7135A4A7AA4A][
   #4998 and #5010) was removed by [[id:A436C077-AEB1-4010-9587-67269252CC4B][Decommission ores.orgmode and the knowledge base pipeline]] (PR #5015), and the
   ores.orgmode decisions above went with it. The search, the ores.web view and
   the measurement moved, rewritten against compass's endpoints, to
-  [[id:7764434E-173B-4006-8A44-8AC453AAC14B][Read the documents from compass]]. The proposal is
-  =/home/marco/Vault/Development/masd/compass_document_service_architecture.org=.
+  [[id:7764434E-173B-4006-8A44-8AC453AAC14B][Read the documents from compass]]. The design is a proposal handed to
+  compass, not yet published there.
 
 * Out of scope
 

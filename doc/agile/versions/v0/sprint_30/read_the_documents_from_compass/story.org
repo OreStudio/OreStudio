@@ -2,7 +2,7 @@
 :ID: 7764434E-173B-4006-8A44-8AC453AAC14B
 :END:
 #+title: Story: Read the documents from compass
-#+description: Integrate the document service compass will ship: run it in the fleet, gate it in ores.http, and move ores.web's document features onto it. To be defined once compass releases it.
+#+description: Integrate the document service compass will ship: run it in the fleet, gate it in ores.http, and move ores.web's document features onto it. The tasks are planned and wait on compass's release.
 #+type: story
 #+level: s2
 #+filetags: :compass:documents:knowledge:sprint_30:v0:
@@ -21,10 +21,10 @@ provides, and agents answer from the same service. ORE Studio parses, stores
 and indexes no document: it runs compass's service in its fleet, gates it in
 ores.http by the caller's role, and builds the pages that show it.
 
-The service does not exist yet. The proposed design is
-=/home/marco/Vault/Development/masd/compass_document_service_architecture.org=,
-handed to the compass session; this story is defined once compass settles and
-releases it, and its tasks are written then.
+The service does not exist yet. Its design is a proposal handed to compass on
+2026-11-22, not yet published in the compass repository; this story's tasks
+are planned against it and wait for compass to settle and release the
+service.
 
 It takes over what /Search the knowledge base from ores.web/ set out to do,
 which built the pipeline inside ORE Studio and is being removed by

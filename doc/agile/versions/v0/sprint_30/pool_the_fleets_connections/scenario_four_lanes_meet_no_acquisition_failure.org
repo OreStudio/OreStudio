@@ -91,3 +91,27 @@ no step failed" — cannot be established without readying the environment.
 
 Run =compass env configure=, then =compass db recreate -y -k=, then the
 provisioning script this scenario names, then read the journal as Step 3 says.
+
+** 2026-11-22 — attempted on a recreated database, blocked before any lane runs
+
+The environment was readied: =.env= regenerated to version 36, the database
+recreated (schema in sync, `312c42fd39e9be4a`), the fleet started, and the
+pool states =MIN= 2 and =MAX= 16 as the precondition requires.
+
+The provisioning this scenario names failed at its first step, so no publish
+step and no lane was reached:
+
+#+begin_src text
+system_provision: failed — The step's progress stood still for 20m 17s, past
+its budget of 20m (subject iam.v1.ops.provision_tenant_step). The iam service
+was still reporting when the command was published, so the command reached a
+service that did not finish the step.
+#+end_src
+
+The journal shows no acquisition failure in the iam log, so this is not yet
+evidence one way or the other about the pool. It has to be understood before
+the scenario can run: a fresh database and a freshly started fleet cannot
+provision the system inside the step's budget.
+
+Next: start the fleet, wait for every unit to report healthy, then rerun this
+scenario's Step 2 and watch =pg_stat_activity= while it runs.

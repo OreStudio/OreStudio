@@ -110,7 +110,7 @@ All are stated here rather than left for a reader to discover.
   settings guard does the opposite and refuses, because every engine setting a
   group states is required to name a set. The shell's completeness gate,
   =ore_parameter_settings check=
-  (=projects/ores.shell/reporting/src/app/commands/reporting/ore_parameter_settings_commands.cpp:353=),
+  (=projects/ores.shell/ore/src/app/commands/ore/ore_parameter_settings_commands.cpp:353=),
   is what catches the product case: it fails when a parameter in the contract
   has no set or a set has no values, and it refuses to judge at all when the
   contract is not published for the tenant.

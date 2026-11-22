@@ -1,0 +1,147 @@
+:PROPERTIES:
+:ID: A436C077-AEB1-4010-9587-67269252CC4B
+:END:
+#+title: Task: Decommission ores.orgmode and the knowledge base pipeline
+#+description: Remove ORE Studio's own org support: the ores.orgmode parser, api, core and service, the shell commands on them, and the knowledge base pipeline from the generated pages to the index.
+#+type: task
+#+level: s1
+#+filetags: :search_the_knowledge_base:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:05FE6068-3CBD-4B93-B6AE-47A5689F1FCB][Search the knowledge base from ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+ORE Studio removes its own org support. Org documents belong to compass, which
+every project that uses compass shares; how ORE Studio reads them from compass
+is the separate story [[id:7764434E-173B-4006-8A44-8AC453AAC14B][Read the documents from compass]], which waits for compass to release that
+support. This task only removes.
+
+What goes is the =ores.orgmode= stack and the knowledge base pipeline this
+story built on it (PRs #4998 and #5010): the parser, which predates the story,
+the api, core and service parts, the shell commands on them, and everything
+from the generated pages file to the index. =@ores/org= in ores.web stays:
+the agile browser and the scenario runner use it, and they move to compass in
+[[id:7764434E-173B-4006-8A44-8AC453AAC14B][Read the documents from compass]].
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:05FE6068-3CBD-4B93-B6AE-47A5689F1FCB][Search the knowledge base from ores.web]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin with the models and the components. |
+| Last touched | 2026-11-22                               |
+
+* Acceptance
+
+- No C++ in ORE Studio parses org: =ores.orgmode= is gone, group and parts,
+  and no target links an =ores.orgmode= library.
+- The knowledge base pipeline is gone end to end: the generated pages file, the
+  DQ dataset and artefact type, the pages, artefact and index tables, the
+  publish and replace functions, the permissions and role, the service, its
+  account and its place in the fleet, and the shell commands.
+- A database recreate, the fleet start and the full gate pass with none of it.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+** Inventory
+
+Surveyed on =origin/main= at =11e54fc9a3= with =git grep= for =orgmode=,
+=knowledge_page=, =knowledge_index=, =@ores/org= and the targets' names.
+
+*** What goes
+
+| Area | What goes | Where |
+|------+-----------+-------|
+| C++ components | =ores.orgmode= group, =parser=, =api=, =core=, =service=, with their models, tests and diagrams | =projects/ores.orgmode/=, =projects/CMakeLists.txt= |
+| Shell | the =ores.shell.orgmode= part (knowledge page and reindex commands); =doc-show= (=orgmode_commands=), the parser's only other consumer; their REPL registration and links | =projects/ores.shell/orgmode/=, =projects/ores.shell/application/= (=repl.cpp=, =orgmode_commands.*=, =CMakeLists.txt=, =component_files.cmake=, overview, puml), =projects/ores.shell/CMakeLists.txt=, =projects/ores.shell/modeling/component_overview.org= |
+| Shell scripts and recipes | =knowledge_pages-*.ores=, =index_operations-*.ores=; the knowledge page and index operation recipes and their rows | =projects/ores.shell/scripts/library/=, =doc/recipes/shell/knowledge_pages/=, =doc/recipes/shell/index_operations/=, =doc/recipes/shell/shell.org= |
+| Codegen models | =ores.orgmode.knowledge_page=, =ores.orgmode.publish_operations=, =ores.orgmode.index_operations=; the catalogue row | =projects/ores.orgmode/modeling/=, =projects/ores.codegen/library/component_catalogue.org= |
+| Web wire types | the generated orgmode protocols and their list request entries | =projects/ores.web/packages/wire-protocol/src/generated/orgmode/=, =generated/list_requests.ts= |
+| SQL schema | =orgmode_*= create and drop scripts: knowledge pages, notify trigger, publish from DQ, index tables and replace function (with its two =compass:except= lines); the DQ knowledge pages artefact table; their includes | =projects/ores.sql/create/orgmode/=, =drop/orgmode/=, =create/dq/dq_knowledge_pages_artefact_create.sql=, =drop/dq/...=, =create.sql=, =drop.sql=, =dq_create.sql=, =dq_drop.sql= |
+| SQL seeds | the =orgmode.knowledge_pages= dataset and bundle member, the =knowledge_pages= artefact type, =orgmode::*= and =installation::knowledge_index:rebuild= permissions, the =OrgmodeService= role and its grants, the service account and its role, the expected service | =projects/ores.sql/populate/orgmode/=, =populate.sql=, =populate/dq/=, =populate/iam/=, =populate/telemetry/= |
+| SQL access | the service's database user and grants | =create/iam/service_users_create.sql=, =create/iam/iam_service_db_grants_create.sql=, =projects/ores.sql/service_vars.sh= |
+| SQL tests | the replace function's pgTAP test | =projects/ores.sql/test/orgmode_replace_knowledge_index_test.sql= |
+| Page generation | the script that writes the pages file, and =compass db recreate='s =knowledge_pages_populate= variable | =projects/ores.sql/utility/generate_knowledge_pages_dataset.py=, =projects/ores.compass/src/compass_db.py= |
+| Fleet | =ores.orgmode.service= in the service registry, and every count that includes it (22 fleet processes become 21) | =projects/modeling/service_registry.org=, =projects/ores.compass/tests/test_service_registry.py= |
+| ER diagram | the orgmode group, its DQ staging table, the table count, the parser's =ores_orgmode_= group | =projects/ores.sql/modeling/ores_schema*.puml=, =projects/ores.codegen/src/plantuml_er_parse_sql.py= |
+| Docs | =ores.orgmode= in the system model, the component architecture tables, the data-oriented design note and the =service_integrity= check page; the logging doc's =knowledge_indexer= example | =projects/modeling/system_model_foundation.org=, =projects/modeling/component_architecture.org=, =doc/knowledge/architecture/data_oriented_design.org=, =compass/checks/service_integrity.org=, =projects/ores.logging/modeling/how_a_component_declares_its_logger.org= |
+
+Generated files go by regenerating after the models go, not by hand: component
+files, the shell recipe and script libraries, wire types and the ER diagram.
+
+*** Kept
+
+| What | Why |
+|------+-----|
+| =@ores/org= and the ores.web features on it, the agile browser and the scenario runner | They move to compass in [[id:7764434E-173B-4006-8A44-8AC453AAC14B][Read the documents from compass]] |
+| =#+audience: user= on 273 pages | Metadata the compass service's views can filter on |
+| =build/scripts/check_audience.py= | It checks that metadata; it moves to compass with the other document checks, not out of the repository |
+| The class-scoped logger fixes and [[id:B09EFEF3-9DCE-4703-A5E3-9D9ED52FD314][How a component declares its logger]] | General; only the doc's example changes |
+| The config tests that clear =ORES_<SVC>_SERVICE_DB_HOST= and =_DB_PORT= | General to every service |
+
+** Order
+
+1. Remove the models, regenerate, and delete the components and the shell
+   part, so the build and the generated files agree.
+2. Remove the SQL, the seeds, the page generation and the recreate variable;
+   recreate the database.
+3. Remove the service from the registry and the fleet; fix the counts.
+4. Update the docs, the ER diagram and the logging doc's example.
+5. Run the gate.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

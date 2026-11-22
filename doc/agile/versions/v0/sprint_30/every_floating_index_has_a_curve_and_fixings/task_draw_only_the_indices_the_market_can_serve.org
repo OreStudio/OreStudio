@@ -8,12 +8,12 @@
 #+filetags: :every_floating_index_has_a_curve_and_fixings:sprint_30:v0:
 #+owner: marco
 #+branch: feature/draw-only-the-indices-the-market-can-serve
-#+pr: 4996
+#+pr: 5009
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-21
 #+updated: 2026-11-21
-#+environment: clever_dijkstra
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0F936789-FEBE-4330-97B9-DFE0837E4466][Every index a generated trade floats on has a curve and fixings]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -30,11 +30,11 @@ config that can draw an index outside the list, before a provision does.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:0F936789-FEBE-4330-97B9-DFE0837E4466][Every index a generated trade floats on has a curve and fixings]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-21                               |
 
 * Acceptance
@@ -98,6 +98,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5009][#5009]] | [agile] Close the served-index task and move the story on |
 | [[https://github.com/OreStudio/OreStudio/pull/4996][#4996]] | [synthetic] Draw only the indices a curve serves |
 
 * Review
@@ -112,3 +113,31 @@ via its "Verifies task" field.
 | 6 | Post the results before merge | PR | Accept | Posted on the PR. |
 
 * Result
+
+A rate trade is drawn only on an index a curve of the tenant serves, and the
+set of served fixing addresses is read once per run rather than per draw.
+
+- `curve_fixing_uri` is the single source for the FOMC exception, and the
+  curve feed reuses it, so the feed and the planner cannot disagree about
+  which address a curve serves.
+- One `drawable` predicate decides whether a swap convention may be drawn,
+  and every draw of a floating index from the conventions asks it, so a
+  trade never floats on an index with no fixings.
+- The change fails closed: an unserved index is never drawn, and a refusal
+  names the missing served index rather than a missing convention.
+
+*Review.* Six findings, each recorded in the table above. Two accepted and
+fixed: the doc comments sit above their own declarations again, and each
+refusal names what is missing. Three declined with reasons on the page: the
+exact string match on the address is the honest test because a trade stores
+the address as it stands and its fixings are looked up by that text; the
+page cap matches every other read of the writer; and the unknown-family case
+is refused when the curve config is inserted, so it never reaches the set.
+One accepted in part: an equity swap case now puts the unserved conventions
+first, so a draw that ignored the served set fails.
+
+*Evidence.* The trade population cases pass: 83 cases, 2,811 assertions. The
+local gate's format check passes, and the full synthetic suite needs the
+environment's broker and is left to CI.
+
+*Shipped as* PR #4996, merge commit `348017898e`.

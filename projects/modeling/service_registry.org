@@ -561,7 +561,7 @@
 - --storage-dir ../storage
 - --web-dir ../web
 - --site-config ../web/environments.json
-- --cors-origins http://localhost:{http_port},http://localhost:{web_port}
+- --cors-origins http://localhost:{http_port},http://localhost:{bff_port}
 
 * ores.web.service
 :PROPERTIES:

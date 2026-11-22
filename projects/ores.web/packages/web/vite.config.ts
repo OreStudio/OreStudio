@@ -96,13 +96,10 @@ export default defineConfig(({ mode }) => {
      */
     const checkout = resolve(import.meta.dirname, '../../../..');
     const env = loadEnv(mode, checkout, '');
-    const BFF_PORT = env['ORES_WEB_PORT'] ?? '8080';
-    // The C++ server of the port. A screen moved to it asks under /cpp, and the
-    // proxy is what makes the browser see one origin either way.
-    const CPP_PORT = env['ORES_HTTP_SERVER_PORT'] ?? '21601';
-    // The port each deployment serves the app on, so the sign-in screen can offer the
-    // other one. The host is the browser's own, taken at run time.
-    const HTTP_PORT = env['ORES_HTTP_PORT'] ?? CPP_PORT;
+    // The BFF's own port, which is no longer the app's address.
+    const BFF_PORT = env['ORES_BFF_PORT'] ?? env['ORES_WEB_PORT'] ?? '8080';
+    // The C++ server of the port, which is the address a person opens the app at.
+    const HTTP_PORT = env['ORES_HTTP_PORT'] ?? env['ORES_HTTP_SERVER_PORT'] ?? '21601';
     const WEB_PORT = Number(env['ORES_WEB_DEV_PORT'] ?? '5173');
     const stamp = buildStamp(checkout);
 
@@ -121,16 +118,23 @@ export default defineConfig(({ mode }) => {
             // is a dev server whose URL somebody writes down and then cannot reach.
             strictPort: true,
             proxy: {
+                // The app's own address, which is where /api answers in a deployment,
+                // so a dev server asks the same server the deployed bundle asks.
                 '/api': {
-                    target: `http://127.0.0.1:${BFF_PORT}`,
+                    target: `http://127.0.0.1:${HTTP_PORT}`,
                     changeOrigin: false,
                 },
-                // One screen of the port runs on the C++ server, under its own
-                // prefix, so the same bundle can be compared against either server.
-                // The prefix is stripped: the C++ server names its routes as the
-                // published contract does, without a deployment's prefix.
+                // The comparison copy of the same API, so the dev server can offer the
+                // other server where the deployed bundle offers it as its peer.
+                '/bff': {
+                    target: `http://127.0.0.1:${BFF_PORT}`,
+                    changeOrigin: false,
+                    rewrite: (path: string) => path.replace(/^\/bff/, ''),
+                },
+                // A screen pinned to the C++ server by name, which the proxy strips:
+                // the server names its routes as the published contract does.
                 '/cpp': {
-                    target: `http://127.0.0.1:${CPP_PORT}`,
+                    target: `http://127.0.0.1:${HTTP_PORT}`,
                     changeOrigin: false,
                     rewrite: (path: string) => path.replace(/^\/cpp/, ''),
                 },

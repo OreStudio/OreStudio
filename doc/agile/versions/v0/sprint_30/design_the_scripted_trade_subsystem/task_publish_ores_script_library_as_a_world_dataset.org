@@ -245,7 +245,9 @@ via its "Verifies task" field.
 
 * Result
 
-In progress: the first three of five PRs are in. The third gives the trading
+In progress: the first four of seven PRs are in. The fourth makes a script
+version name the whole script: every row beneath a script carries the version
+of its script row, so any version reads back exactly. The third gives the trading
 service a handler for the script library's publish step, so a bundle
 published over the bus publishes the library as the bring-up does. The second publishes ORE's
 script library as the =ore.script_library= world dataset: a generator in

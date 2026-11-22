@@ -36,11 +36,11 @@ the agile browser and the scenario runner use it, and they move to compass in
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:05FE6068-3CBD-4B93-B6AE-47A5689F1FCB][Search the knowledge base from ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin with the models and the components. |
+| Next         | Nothing. |
 | Last touched | 2026-11-22                               |
 
 * Acceptance
@@ -176,3 +176,26 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+ORE Studio parses no org in C++. =ores.orgmode= (parser, api, core and
+service), the shell's orgmode part and =doc-show= are gone, and so is the
+knowledge base pipeline from the generated pages to the index, with its
+tables, functions, DQ dataset, permissions, role and service account.
+=ores.orgmode.service= left the registry, and the files it generates were
+regenerated: the fleet is 21 processes. 222 files changed, about 14,200 lines
+removed.
+
+Evidence: the user's full build succeeded, configured with no =ores.orgmode=
+target; =ctest -N= lists 106 tests and none from orgmode; the 16 shell suites
+pass. =compass-ng check --ratchet= reports 0 new diagnostics; the compass,
+codegen and build-script tests pass (572, 57, 151); ores.web's typecheck,
+format check and suites pass, including the 162 scenario and agile tests.
+
+Not run: a database recreate and a fleet start without the service; the full
+=compass check= gate, skipped at marco's instruction to unbreak main, whose
+=ores.orgmode.service= config tests read the developer's environment.
+
+Left by hand, per environment, because no tool removes them (see the
+checklist): the unit's drop-in folder, the NATS certificate and key, and the
+database role.
+

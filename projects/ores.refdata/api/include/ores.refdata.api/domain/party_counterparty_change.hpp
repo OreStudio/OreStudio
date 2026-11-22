@@ -37,7 +37,7 @@ namespace ores::refdata::domain {
  * @brief One proposed write to a party_counterparty, held for its request.
  *
  * Do not edit. Change ores.refdata.party_counterparty and run
- * derive_pending_models.py.
+ * compass generate.
  */
 struct party_counterparty_change final {
     /**

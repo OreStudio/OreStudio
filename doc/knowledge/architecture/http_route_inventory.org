@@ -134,9 +134,10 @@ change of its own, not part of the port.
 
 * The coverage
 
-How many BFF routes each area pairs with a C++ route, counted from
-=build/scripts/route_pairing.py=. A pair records the mapping and does not
-prove it; the port tasks prove each route against the answer the BFF gives.
+How many BFF routes each area pairs with a C++ route, counted from the
+Pairs and Families tables of the route inventory's check document. A pair
+records the mapping and does not prove it; the port tasks prove each route
+against the answer the BFF gives.
 
 | Area | BFF routes | Paired | Gaps |
 |------+------------+--------+------|

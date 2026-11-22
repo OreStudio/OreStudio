@@ -45,7 +45,7 @@ This page lists every check and generator compass runs on this repository, and t
 | =lint= | yes | check | error | Reports each malformed filetag, generated marker and id link of the org pages, as compass lint does, each pattern and use that do not link each other, and each page a structure note orders that does not link it back. | built into compass |
 | =list_request_table= | yes | generator | error | Writes the wire protocol's table of list requests from the C++ protocol headers. | built into compass |
 | =marketdata_identity_columns= | yes | check | error | Reports each way the series identity projection disagrees with the codec schema and the index grammar. | built into compass |
-| =model_rules= | yes | check | error | Reports each codegen model that breaks a rule ORE Studio's gates state about one model. | built into compass |
+| =model_rules= | yes | check | error | Reports each codegen model that breaks a rule ORE Studio's gates state about one model. | [[id:D33DE3CB-ED6E-571A-8A92-3AE907EDF029][compass/checks/route_inventory.org]] |
 | =no_pr_triggers= | yes | check | error | Reports each workflow line that triggers on a pull request. | built into compass |
 | =open_reads= | yes | check | error | Reports each generated read with no permission check that Authorised reads does not allow-list. | built into compass |
 | =ore_output_catalogue= | yes | generator | error | Writes the ORE output catalogue data and the output formats page from the output samples ORE ships. | [[id:8DCDD35A-90A9-48DA-A880-A2D098FE2838][compass/checks/ore_output_catalogue.org]] |
@@ -75,7 +75,7 @@ This page lists every check and generator compass runs on this repository, and t
 | =shell_recipe_provenance= | yes | check | error | Reports each shell recipe that names no existing document as its source. | built into compass |
 | =single_writer= | yes | check | error | Reports each populate script that writes a table a DQ publish function also writes. | built into compass |
 | =skill_catalogue= | yes | generator | error | Writes the generated catalogue of the skills. | built into compass |
-| =skill_levels= | yes | generator | error | Writes the inventory of what each System sees. | built into compass |
+| =skill_levels= | yes | generator | error | Stamps each skill's level from the project's check document, and writes what each System sees. | [[id:C24A7C09-C9C0-58BA-ADA8-0BA834FA6A29][compass/checks/skill_levels.org]] |
 | =skill_namespace= | yes | check | error | Reports each skill outside the compass- namespace. | built into compass |
 | =skill_type_tables= | yes | generator | error | Writes the document type and read-only command tables of the polymorphic skills. | built into compass |
 | =sql_hygiene= | yes | check | error | Reports unterminated comments, duplicate indexes, comments that split string literals and DDL that cannot run twice. | built into compass |
@@ -512,14 +512,14 @@ Reports each codegen model that breaks a rule ORE Studio's gates state about one
 
 - Kind: check.
 - Severity: error.
-- Defined in: built into compass.
+- Defined in: [[id:D33DE3CB-ED6E-571A-8A92-3AE907EDF029][compass/checks/route_inventory.org]].
 
 | Rule | Statement |
 |------+-----------|
 | =money_not_exact= | A money column is numeric in SQL and a decimal in C++, never a binary float or text. |
 | =continuous_exact= | A continuous quantity is not typed numeric or decimal, an exactness it does not have. |
 | =unpublished_area= | Every #+http_area: a model declares is a published area. |
-| =unreadable_areas= | The route classification module states AREAS and NO_AREA as literals. |
+| =unreadable_areas= | The check document gives the Settings, Rules and Exemptions tables the published areas are read from, and its Settings state the no area setting once. |
 | =contradicted= | A model does not redeclare a feature its profile fixes to another value. |
 | =unset_required= | A model sets every feature its profile requires. |
 | =self_contradicting= | A model states a feature once, or always with one value. |
@@ -945,15 +945,18 @@ Writes the generated catalogue of the skills.
 
 *** skill_levels
 
-Writes the inventory of what each System sees.
+Stamps each skill's level from the project's check document, and writes what each System sees.
 
 - Kind: generator.
 - Severity: error.
-- Defined in: built into compass.
+- Defined in: [[id:C24A7C09-C9C0-58BA-ADA8-0BA834FA6A29][compass/checks/skill_levels.org]].
 
 | Rule | Statement |
 |------+-----------|
 | =refused= | A generator writes its output only from inputs it can read and resolve; otherwise it says why and leaves the file it wrote before. |
+| =skill_without_level= | Every skill has a row in the table "Levels" of the check document: the level is a reviewed judgement, never a default. |
+| =level_without_skill= | Every row of the table "Levels" names a skill that exists. |
+| =unreadable= | The check document gives every table, column and setting the codec reads, and its rows agree with each other. |
 | =drift= | Every file a codec generates holds what the codec generates from its inputs; nobody edits it by hand. |
 | =names_missing_file= | The header of every file a codec generates names only scripts the checkout holds. |
 

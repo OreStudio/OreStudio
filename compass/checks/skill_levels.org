@@ -1,0 +1,205 @@
+:PROPERTIES:
+:ID: C24A7C09-C9C0-58BA-ADA8-0BA834FA6A29
+:END:
+#+title: Check: skill levels
+#+description: The cybernetic level of every skill, the order of the levels and which one binds, which compass-ng's skill_levels codec stamps on each SKILL.org and counts into the levels page.
+#+type: check
+#+level: cross
+#+filetags: :compass:check:skills:levels:generator:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+#+options: prop:t
+
+This page gives the data of compass-ng's =skill_levels= codec, which stamps the
+=#+level:= line of every skill under =doc/llm/skills= and writes the inventory
+and the slices of the levels page. The =* Definition= names the codec; each
+table below is data the codec reads, and the prose says what it is for. The
+tables were =LEVELS=, =ORDER= and =READ_ONLY_VERBS= of
+=build/scripts/apply_skill_levels.py=, read from it with Python's =ast= rather
+than retyped, and the binding and cross levels its =in_scope= named.
+
+* Rule
+
+Every skill has a row in the table =Levels=, and every row names a skill.
+=compass generate= writes each row's level as the skill's =#+level:= line: it
+replaces the line the skill has, or puts it after the scaffold's
+=#+export_exclude_tags: noexport= line. =compass check= reports a skill whose
+level differs from its row as drift, and a skill with no row
+(=skill_levels/skill_without_level=) or a row with no skill
+(=skill_levels/level_without_skill=) as a finding.
+
+* Why
+
+The level turns the cybernetic systems into a variety attenuator: a session
+declares its System, and the level selects the slice of the catalogue in
+scope by default. A regulator swamped by variety it cannot use stops
+regulating, and an agent shown every skill at once is exactly that.
+
+The level is a judgement about which System the skill serves, so it is a
+reviewed table rather than a rule over names. The table =Levels= is that table:
+every skill appears, and the value is defensible from what the skill acts
+on. A skill missing from it is an error, not a default.
+
+Attenuation is advisory at S1, S2, S3, S4 and S5 and binding at S3*, the
+audit channel, which sees read-only actions only. Read-only is derived from
+the verb register rather than tagged, which is one of the reasons that
+register exists: =show= and =find= promise to change nothing.
+
+The table =Systems= states the levels in order. A level whose attenuation is
+=binding= sees the read-only skills and nothing else: those whose verb, the
+third segment of the name, the table =Read-only verbs= lists. A level whose
+attenuation is =advisory= (=s1=, =s2=, =s3=, =s4=, =s5=) sees its own skills and the
+skills of the =cross= level, and may reach outside them on request. The level
+whose attenuation is =cross= is no System: its skills are in every advisory
+slice.
+
+Pruning the deployed tree to a level, which makes the attenuation binding for
+whatever is spawned next, acts on an agent's runtime rather than checking the
+checkout, so it stays ORE Studio's: =build/scripts/prune_deployed_skills.py=
+reads the slices compass writes into the levels page.
+
+* Definition
+:PROPERTIES:
+:CODEC: skill_levels
+:END:
+
+* Levels
+
+The level of each skill, and the reason for it: the skill's target, what it
+acts on, and whose horizon that is. A skill missing from it is an error, not a
+default. This was =LEVELS=, and the reasons its comments.
+
+| skill                                      | level   | reason                                                                                                                                                                                           |
+|--------------------------------------------+---------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| compass-code-add-domain-type               | =s1=    | Execution: code, generated code, environments, documents, pull requests. The agent's own hours-long horizon.                                                                                     |
+| compass-code-add-tests                     | =s1=    | Execution: code, generated code, environments, documents, pull requests. The agent's own hours-long horizon.                                                                                     |
+| compass-code-investigate-test-failure      | =s1=    | Execution: code, generated code, environments, documents, pull requests. The agent's own hours-long horizon.                                                                                     |
+| compass-code-review-comments               | =s1=    | Execution: code, generated code, environments, documents, pull requests. The agent's own hours-long horizon.                                                                                     |
+| compass-code-review-component              | =s1=    | Execution: code, generated code, environments, documents, pull requests. The agent's own hours-long horizon.                                                                                     |
+| compass-code-review-data-model             | =s1=    | Execution: code, generated code, environments, documents, pull requests. The agent's own hours-long horizon.                                                                                     |
+| compass-code-review-pr                     | =s1=    | Execution: code, generated code, environments, documents, pull requests. The agent's own hours-long horizon.                                                                                     |
+| compass-code-run-build                     | =s1=    | Execution: code, generated code, environments, documents, pull requests. The agent's own hours-long horizon.                                                                                     |
+| compass-code-run-feature-test              | =s1=    | Execution: code, generated code, environments, documents, pull requests. The agent's own hours-long horizon.                                                                                     |
+| compass-code-start-branch                  | =s1=    | Execution: code, generated code, environments, documents, pull requests. The agent's own hours-long horizon.                                                                                     |
+| compass-codegen-add-component              | =s1=    | Execution: code, generated code, environments, documents, pull requests. The agent's own hours-long horizon.                                                                                     |
+| compass-codegen-add-entity                 | =s1=    | Execution: code, generated code, environments, documents, pull requests. The agent's own hours-long horizon.                                                                                     |
+| compass-codegen-add-sql-schema             | =s1=    | Execution: code, generated code, environments, documents, pull requests. The agent's own hours-long horizon.                                                                                     |
+| compass-codegen-add-surface-entity         | =s1=    | Execution: code, generated code, environments, documents, pull requests. The agent's own hours-long horizon.                                                                                     |
+| compass-codegen-fix-drift                  | =s1=    | Execution: code, generated code, environments, documents, pull requests. The agent's own hours-long horizon.                                                                                     |
+| compass-codegen-sync-cmake-sources         | =s1=    | Execution: code, generated code, environments, documents, pull requests. The agent's own hours-long horizon.                                                                                     |
+| compass-devops-deploy-manual               | =s1=    | Execution: code, generated code, environments, documents, pull requests. The agent's own hours-long horizon.                                                                                     |
+| compass-devops-deploy-settings             | =s1=    | Execution: code, generated code, environments, documents, pull requests. The agent's own hours-long horizon.                                                                                     |
+| compass-devops-deploy-site                 | =s1=    | Execution: code, generated code, environments, documents, pull requests. The agent's own hours-long horizon.                                                                                     |
+| compass-devops-deploy-skills               | =s1=    | Execution: code, generated code, environments, documents, pull requests. The agent's own hours-long horizon.                                                                                     |
+| compass-devops-recreate-db                 | =s1=    | Execution: code, generated code, environments, documents, pull requests. The agent's own hours-long horizon.                                                                                     |
+| compass-devops-run-environment             | =s1=    | Execution: code, generated code, environments, documents, pull requests. The agent's own hours-long horizon.                                                                                     |
+| compass-devops-run-shell                   | =s1=    | Execution: code, generated code, environments, documents, pull requests. The agent's own hours-long horizon.                                                                                     |
+| compass-devops-run-sql                     | =s1=    | Execution: code, generated code, environments, documents, pull requests. The agent's own hours-long horizon.                                                                                     |
+| compass-devops-setup-environment           | =s1=    | Execution: code, generated code, environments, documents, pull requests. The agent's own hours-long horizon.                                                                                     |
+| compass-devops-start-services              | =s1=    | Execution: code, generated code, environments, documents, pull requests. The agent's own hours-long horizon.                                                                                     |
+| compass-devops-stop-services               | =s1=    | Execution: code, generated code, environments, documents, pull requests. The agent's own hours-long horizon.                                                                                     |
+| compass-devops-update-environment          | =s1=    | Execution: code, generated code, environments, documents, pull requests. The agent's own hours-long horizon.                                                                                     |
+| compass-doc-add-chart                      | =s1=    | Execution: code, generated code, environments, documents, pull requests. The agent's own hours-long horizon.                                                                                     |
+| compass-doc-add-class-diagram              | =s1=    | Execution: code, generated code, environments, documents, pull requests. The agent's own hours-long horizon.                                                                                     |
+| compass-doc-add-component-model            | =s1=    | Execution: code, generated code, environments, documents, pull requests. The agent's own hours-long horizon.                                                                                     |
+| compass-doc-add-entity-chapter             | =s1=    | Execution: code, generated code, environments, documents, pull requests. The agent's own hours-long horizon.                                                                                     |
+| compass-doc-add-er-diagram                 | =s1=    | Execution: code, generated code, environments, documents, pull requests. The agent's own hours-long horizon.                                                                                     |
+| compass-doc-add-recipe                     | =s1=    | Execution: code, generated code, environments, documents, pull requests. The agent's own hours-long horizon.                                                                                     |
+| compass-doc-run-manual-screenshots         | =s1=    | Execution: code, generated code, environments, documents, pull requests. The agent's own hours-long horizon.                                                                                     |
+| compass-doc-sync-recipes                   | =s1=    | Execution: code, generated code, environments, documents, pull requests. The agent's own hours-long horizon.                                                                                     |
+| compass-doc-update-manual                  | =s1=    | Execution: code, generated code, environments, documents, pull requests. The agent's own hours-long horizon.                                                                                     |
+| compass-pr-address-review                  | =s1=    | Execution: code, generated code, environments, documents, pull requests. The agent's own hours-long horizon.                                                                                     |
+| compass-pr-merge                           | =s1=    | Execution: code, generated code, environments, documents, pull requests. The agent's own hours-long horizon.                                                                                     |
+| compass-pr-raise                           | =s1=    | Execution: code, generated code, environments, documents, pull requests. The agent's own hours-long horizon.                                                                                     |
+| compass-pr-sync-branch                     | =s1=    | Execution: code, generated code, environments, documents, pull requests. The agent's own hours-long horizon.                                                                                     |
+| compass-agile-close-task                   | =s1=    | Execution: code, generated code, environments, documents, pull requests. The agent's own hours-long horizon.                                                                                     |
+| compass-agile-start-task                   | =s1=    | Execution: code, generated code, environments, documents, pull requests. The agent's own hours-long horizon.                                                                                     |
+| compass-agile-start-hotfix                 | =s1=    | Execution: code, generated code, environments, documents, pull requests. The agent's own hours-long horizon.                                                                                     |
+| compass-agile-start-story                  | =s2=    | Coordination: the story, and the worktree a story runs in. Days.                                                                                                                                 |
+| compass-devops-provision-environment       | =s2=    | Coordination: the story, and the worktree a story runs in. Days.                                                                                                                                 |
+| compass-devops-deprovision-environment     | =s2=    | Coordination: the story, and the worktree a story runs in. Days.                                                                                                                                 |
+| compass-agile-open-sprint                  | =s3=    | Control: the sprint and the backlog it draws from. Weeks.                                                                                                                                        |
+| compass-agile-plan-sprint                  | =s3=    | Control: the sprint and the backlog it draws from. Weeks.                                                                                                                                        |
+| compass-agile-refine-backlog               | =s3=    | Control: the sprint and the backlog it draws from. Weeks.                                                                                                                                        |
+| compass-agile-review-sprint                | =s3=    | Control: the sprint and the backlog it draws from. Weeks.                                                                                                                                        |
+| compass-agile-add-timeline-snapshot        | =s3=    | Control: the sprint and the backlog it draws from. Weeks.                                                                                                                                        |
+| compass-agile-find-heading                 | =s3=    | Control: the sprint and the backlog it draws from. Weeks.                                                                                                                                        |
+| compass-agile-add-release-notes            | =s4=    | Development: the version and its release. Months.                                                                                                                                                |
+| compass-agile-brainstorm-idea              | =s5=    | Identity: what belongs in the product at all.                                                                                                                                                    |
+| compass-helm                               | =cross= | The mode. It declares the System rather than belonging to one, so every level can enter it.                                                                                                      |
+| compass-method-bug-fix                     | =s1=    | Methods. The level is the level of the work the method sequences: execution for the four that carry a change, cross for one that only reads, s2 for the one that plans work spanning many units. |
+| compass-method-feature                     | =s1=    | Methods. The level is the level of the work the method sequences: execution for the four that carry a change, cross for one that only reads, s2 for the one that plans work spanning many units. |
+| compass-method-refactoring                 | =s1=    | Methods. The level is the level of the work the method sequences: execution for the four that carry a change, cross for one that only reads, s2 for the one that plans work spanning many units. |
+| compass-method-prototype                   | =s1=    | Methods. The level is the level of the work the method sequences: execution for the four that carry a change, cross for one that only reads, s2 for the one that plans work spanning many units. |
+| compass-method-investigation               | =cross= | Methods. The level is the level of the work the method sequences: execution for the four that carry a change, cross for one that only reads, s2 for the one that plans work spanning many units. |
+| compass-method-figure-it-out               | =s2=    | Methods. The level is the level of the work the method sequences: execution for the four that carry a change, cross for one that only reads, s2 for the one that plans work spanning many units. |
+| compass-principle-type-system-discipline   | =s1=    | Bindings on an upstream principle. The level is the level of the judgement the principle is cited at, not of the principle itself.                                                               |
+| compass-principle-never-block-on-the-human | =cross= | Bindings on an upstream principle. The level is the level of the judgement the principle is cited at, not of the principle itself.                                                               |
+| compass-doc-add                            | =cross= | Every level acts on these: the documents and skills themselves, and the orientation any System starts from.                                                                                      |
+| compass-doc-add-memory                     | =cross= | Every level acts on these: the documents and skills themselves, and the orientation any System starts from.                                                                                      |
+| compass-doc-find                           | =cross= | Every level acts on these: the documents and skills themselves, and the orientation any System starts from.                                                                                      |
+| compass-doc-review-academic                | =cross= | Every level acts on these: the documents and skills themselves, and the orientation any System starts from.                                                                                      |
+| compass-doc-review-ste100                  | =cross= | Every level acts on these: the documents and skills themselves, and the orientation any System starts from.                                                                                      |
+| compass-doc-show                           | =cross= | Every level acts on these: the documents and skills themselves, and the orientation any System starts from.                                                                                      |
+| compass-doc-sync-index                     | =cross= | Every level acts on these: the documents and skills themselves, and the orientation any System starts from.                                                                                      |
+| compass-agile-find-bearings                | =cross= | Every level acts on these: the documents and skills themselves, and the orientation any System starts from.                                                                                      |
+| compass-skill-add                          | =cross= | Every level acts on these: the documents and skills themselves, and the orientation any System starts from.                                                                                      |
+| compass-skill-delete                       | =cross= | Every level acts on these: the documents and skills themselves, and the orientation any System starts from.                                                                                      |
+| compass-skill-review                       | =cross= | Every level acts on these: the documents and skills themselves, and the orientation any System starts from.                                                                                      |
+| compass-skill-show-catalogue               | =cross= | Every level acts on these: the documents and skills themselves, and the orientation any System starts from.                                                                                      |
+
+* Systems
+
+The levels in order, the System each serves and its horizon, and what a
+session at the level sees by default. This was =ORDER=; the Systems and
+horizons are those of the levels page.
+
+| level    | system           | horizon    | attenuation |
+|----------+------------------+------------+-------------|
+| =s1=     | Agent            | Hours      | advisory    |
+| =s2=     | Orchestrator     | Days       | advisory    |
+| =s3=     | Sprint Planner   | Weeks      | advisory    |
+| =s3star= | Auditor          | Continuous | binding     |
+| =s4=     | Version Planner  | Months     | advisory    |
+| =s5=     | Identity Steward | Indefinite | advisory    |
+| =cross=  |                  |            | cross       |
+
+* Read-only verbs
+
+The verbs that promise to change nothing; a skill whose verb is one of them is
+in the binding slice. This was =READ_ONLY_VERBS=.
+
+| verb |
+|------|
+| show |
+| find |
+
+* Settings
+
+Where the skills and the levels page are, and the two sentences of the
+inventory the page carries: the one that opens it, and what the cross skills
+are.
+
+| setting           | value                                                                                                                                                                                          |
+|-------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| skills_directory  | doc/llm/skills                                                                                                                                                                                 |
+| levels_page       | doc/llm/skills/skill_systems_levels.org                                                                                                                                                        |
+| inventory_summary | What each System sees by default, counted from the levels the skills carry. Attenuation is advisory everywhere except the audit channel, where it is binding and enforced by what is deployed. |
+| cross_summary     | the documents and the skills themselves, and the orientation any System starts from.                                                                                                           |
+
+* Examples
+
+None here: the codec's cases are its tests, in compass's
+=codecs_skill_levels_tests.cpp=, which stamp the skills of a made-up project
+from a check document of its own.
+
+* Exceptions
+
+| path | line | rule | expires | approver | reason |
+|------+------+------+---------+----------+--------|
+
+* See also
+
+- =compass-ng='s =skill_levels= codec, in the compass repository.
+- [[id:5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9][Systems and levels]]: the levels
+  page, with the inventory and the slices this table generates.

@@ -57,7 +57,6 @@ end $$;
 
 \if :{?knowledge_pages_populate}
 \echo '--- DQ Artefact: Knowledge Pages (' :knowledge_pages_populate ') ---'
--- compass:except(sql_reachability/missing_include) expires=2027-05-18 approver=marco reason=the include is the psql variable compass db recreate sets to the generated pages file, and the \if above runs it only when the variable is set
 \i :knowledge_pages_populate
 \else
 \echo '--- DQ Artefact: Knowledge Pages: no generated pages passed; none staged ---'

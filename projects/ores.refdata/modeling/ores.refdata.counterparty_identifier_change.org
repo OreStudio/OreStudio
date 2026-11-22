@@ -3,7 +3,7 @@
 :ID: EAC1C2C9-66EB-5233-BF67-84A770A5B53F
 :END:
 #+title: ores.refdata.counterparty_identifier_change
-#+description: GENERATED from ores.refdata.counterparty_identifier by derive_pending_models.py. One proposed write to the counterparty_identifier, held until its request is decided.
+#+description: GENERATED from ores.refdata.counterparty_identifier by compass generate: pending_models. One proposed write to the counterparty_identifier, held until its request is decided.
 #+type: ores.codegen.entity
 #+component: refdata
 #+filetags: :model:entity:refdata:pending:
@@ -15,7 +15,7 @@
 #+updated: 2026-10-10
 
 Do not edit. Change ores.refdata.counterparty_identifier and run
-derive_pending_models.py.
+compass generate.
 
 * Flags
 :PROPERTIES:

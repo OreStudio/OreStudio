@@ -125,7 +125,7 @@ deployed catalogue to a level removes every out-of-scope skill from it, so
 an agent spawned afterwards cannot load one:
 
 #+begin_src sh :results verbatim
-python3 build/scripts/apply_skill_levels.py --prune-deployed s3star
+python3 build/scripts/prune_deployed_skills.py s3star
 #+end_src
 
 An auditor spawned into that tree sees five skills, all of them read-only.
@@ -172,6 +172,189 @@ What each System sees by default, counted from the levels the skills carry. Atte
 15 skills are tagged =cross= and appear in every advisory slice: the documents and the skills themselves, and the orientation any System starts from.
 
 # END generated inventory
+
+# BEGIN generated slices (compass generate: skill_levels)
+
+The skills a session at each level sees by default. At a binding level they are the read-only skills and nothing else; at an advisory one, the skills of that level and of the cross level.
+
+=s1=, advisory: 64 of 76 skills.
+
+- compass-agile-close-task
+- compass-agile-find-bearings
+- compass-agile-start-hotfix
+- compass-agile-start-task
+- compass-code-add-domain-type
+- compass-code-add-tests
+- compass-code-investigate-test-failure
+- compass-code-review-comments
+- compass-code-review-component
+- compass-code-review-data-model
+- compass-code-review-pr
+- compass-code-run-build
+- compass-code-run-feature-test
+- compass-code-start-branch
+- compass-codegen-add-component
+- compass-codegen-add-entity
+- compass-codegen-add-sql-schema
+- compass-codegen-add-surface-entity
+- compass-codegen-fix-drift
+- compass-codegen-sync-cmake-sources
+- compass-devops-deploy-manual
+- compass-devops-deploy-settings
+- compass-devops-deploy-site
+- compass-devops-deploy-skills
+- compass-devops-recreate-db
+- compass-devops-run-environment
+- compass-devops-run-shell
+- compass-devops-run-sql
+- compass-devops-setup-environment
+- compass-devops-start-services
+- compass-devops-stop-services
+- compass-devops-update-environment
+- compass-doc-add
+- compass-doc-add-chart
+- compass-doc-add-class-diagram
+- compass-doc-add-component-model
+- compass-doc-add-entity-chapter
+- compass-doc-add-er-diagram
+- compass-doc-add-memory
+- compass-doc-add-recipe
+- compass-doc-find
+- compass-doc-review-academic
+- compass-doc-review-ste100
+- compass-doc-run-manual-screenshots
+- compass-doc-show
+- compass-doc-sync-index
+- compass-doc-sync-recipes
+- compass-doc-update-manual
+- compass-helm
+- compass-method-bug-fix
+- compass-method-feature
+- compass-method-investigation
+- compass-method-prototype
+- compass-method-refactoring
+- compass-pr-address-review
+- compass-pr-merge
+- compass-pr-raise
+- compass-pr-sync-branch
+- compass-principle-never-block-on-the-human
+- compass-principle-type-system-discipline
+- compass-skill-add
+- compass-skill-delete
+- compass-skill-review
+- compass-skill-show-catalogue
+
+=s2=, advisory: 19 of 76 skills.
+
+- compass-agile-find-bearings
+- compass-agile-start-story
+- compass-devops-deprovision-environment
+- compass-devops-provision-environment
+- compass-doc-add
+- compass-doc-add-memory
+- compass-doc-find
+- compass-doc-review-academic
+- compass-doc-review-ste100
+- compass-doc-show
+- compass-doc-sync-index
+- compass-helm
+- compass-method-figure-it-out
+- compass-method-investigation
+- compass-principle-never-block-on-the-human
+- compass-skill-add
+- compass-skill-delete
+- compass-skill-review
+- compass-skill-show-catalogue
+
+=s3=, advisory: 21 of 76 skills.
+
+- compass-agile-add-timeline-snapshot
+- compass-agile-find-bearings
+- compass-agile-find-heading
+- compass-agile-open-sprint
+- compass-agile-plan-sprint
+- compass-agile-refine-backlog
+- compass-agile-review-sprint
+- compass-doc-add
+- compass-doc-add-memory
+- compass-doc-find
+- compass-doc-review-academic
+- compass-doc-review-ste100
+- compass-doc-show
+- compass-doc-sync-index
+- compass-helm
+- compass-method-investigation
+- compass-principle-never-block-on-the-human
+- compass-skill-add
+- compass-skill-delete
+- compass-skill-review
+- compass-skill-show-catalogue
+
+=s3star=, binding: 5 of 76 skills.
+
+- compass-agile-find-bearings
+- compass-agile-find-heading
+- compass-doc-find
+- compass-doc-show
+- compass-skill-show-catalogue
+
+=s4=, advisory: 16 of 76 skills.
+
+- compass-agile-add-release-notes
+- compass-agile-find-bearings
+- compass-doc-add
+- compass-doc-add-memory
+- compass-doc-find
+- compass-doc-review-academic
+- compass-doc-review-ste100
+- compass-doc-show
+- compass-doc-sync-index
+- compass-helm
+- compass-method-investigation
+- compass-principle-never-block-on-the-human
+- compass-skill-add
+- compass-skill-delete
+- compass-skill-review
+- compass-skill-show-catalogue
+
+=s5=, advisory: 16 of 76 skills.
+
+- compass-agile-brainstorm-idea
+- compass-agile-find-bearings
+- compass-doc-add
+- compass-doc-add-memory
+- compass-doc-find
+- compass-doc-review-academic
+- compass-doc-review-ste100
+- compass-doc-show
+- compass-doc-sync-index
+- compass-helm
+- compass-method-investigation
+- compass-principle-never-block-on-the-human
+- compass-skill-add
+- compass-skill-delete
+- compass-skill-review
+- compass-skill-show-catalogue
+
+=cross=, advisory: 15 of 76 skills.
+
+- compass-agile-find-bearings
+- compass-doc-add
+- compass-doc-add-memory
+- compass-doc-find
+- compass-doc-review-academic
+- compass-doc-review-ste100
+- compass-doc-show
+- compass-doc-sync-index
+- compass-helm
+- compass-method-investigation
+- compass-principle-never-block-on-the-human
+- compass-skill-add
+- compass-skill-delete
+- compass-skill-review
+- compass-skill-show-catalogue
+
+# END generated slices
 
 * See also
 

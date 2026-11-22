@@ -2,12 +2,12 @@
 :ID: D33DE3CB-ED6E-571A-8A92-3AE907EDF029
 :END:
 #+title: Check: HTTP route inventory
-#+description: The head, rules, exemptions, composed views, pairs and families compass-ng's route_inventory codec writes ORE Studio's HTTP route inventory from.
+#+description: The head, rules, exemptions, composed views, pairs and families compass-ng's route_inventory codec writes ORE Studio's HTTP route inventory from, and the published areas model_rules reads from them.
 #+type: check
 #+level: cross
 #+filetags: :compass:check:http:route:generator:
 #+created: 2026-11-21
-#+updated: 2026-11-21
+#+updated: 2026-11-22
 #+options: prop:t
 
 This page gives the data of compass-ng's =route_inventory= codec, which writes
@@ -18,6 +18,12 @@ is for. The tables were =HEADER= of =build/scripts/route_inventory.py=, the
 rules, exceptions and views of =build/scripts/route_classification.py= and the
 pairs and families of =build/scripts/route_pairing.py=; the code that finds the
 routes and applies the decisions is compass's.
+
+The same tables publish the HTTP areas, so they are also the data of
+compass-ng's =model_rules= codec, which the =* Definition= names too. An area
+is published when a rule or exemption gives a route it, and every =#+http_area:=
+a model declares must be a published area. They were =AREAS= and =NO_AREA=
+of =build/scripts/route_classification.py=.
 
 * Rule
 
@@ -37,7 +43,7 @@ regeneration.
 
 * Definition
 :PROPERTIES:
-:CODEC: route_inventory
+:CODEC: route_inventory model_rules
 :END:
 
 * Head
@@ -115,7 +121,9 @@ setting has a row.
   decides as it make the composed views section, each owing the obligations of
   the Views table.
 - =no area= :: The area of a route that publishes none, written last in the area
-  map and the coverage; a BFF route nothing decides is counted under it.
+  map and the coverage; a BFF route nothing decides is counted under it. It is
+  the one area of the =area= columns that is not published, so no model may
+  declare it.
 
 * Rules
 
@@ -838,5 +846,7 @@ project from a check document of its own.
 * See also
 
 - =compass-ng='s =route_inventory= codec, in the compass repository.
+- =compass-ng='s =model_rules= codec, whose =unpublished_area= rule reads the
+  published areas from the =area= columns of the Rules and Exemptions tables.
 - =doc/knowledge/architecture/http_route_inventory.org=, the inventory
   this page's tables write.

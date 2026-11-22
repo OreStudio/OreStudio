@@ -3,7 +3,7 @@
 :ID: 719E0E4D-4034-5D1D-A31A-6D97209DDC1B
 :END:
 #+title: ores.refdata.counterparty_change
-#+description: GENERATED from ores.refdata.counterparty by derive_pending_models.py. One proposed write to the counterparty, held until its request is decided.
+#+description: GENERATED from ores.refdata.counterparty by compass generate: pending_models. One proposed write to the counterparty, held until its request is decided.
 #+type: ores.codegen.entity
 #+component: refdata
 #+filetags: :model:entity:refdata:pending:
@@ -15,7 +15,7 @@
 #+updated: 2026-10-10
 
 Do not edit. Change ores.refdata.counterparty and run
-derive_pending_models.py.
+compass generate.
 
 * Flags
 :PROPERTIES:

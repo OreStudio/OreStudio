@@ -408,7 +408,7 @@ package "refdata" #FFF3E0 {
     To modify, update the template and regenerate.
     Book Change Table
     Do not edit. Change ores.refdata.book and run
-    derive_pending_models.py.
+    compass generate.
     end note
 
     entity ores_refdata_book_product_types_tbl <<temporal>> #C6F0D8 {
@@ -2053,7 +2053,7 @@ package "refdata" #FFF3E0 {
     To modify, update the template and regenerate.
     Counterparty Change Table
     Do not edit. Change ores.refdata.counterparty and run
-    derive_pending_models.py.
+    compass generate.
     end note
 
     entity ores_refdata_counterparty_contact_informations_tbl <<temporal>> #C6F0D8 {
@@ -2119,7 +2119,7 @@ package "refdata" #FFF3E0 {
     To modify, update the template and regenerate.
     Counterparty Identifier Change Table
     Do not edit. Change ores.refdata.counterparty_identifier and run
-    derive_pending_models.py.
+    compass generate.
     end note
 
     entity ores_refdata_counterparty_identifiers_tbl <<temporal>> #C6F0D8 {
@@ -6033,7 +6033,7 @@ package "refdata" #FFF3E0 {
     To modify, update the template and regenerate.
     Party Counterparty Change Table
     Do not edit. Change ores.refdata.party_counterparty and run
-    derive_pending_models.py.
+    compass generate.
     end note
 
     entity ores_refdata_party_countries_tbl <<temporal>> #C6F0D8 {

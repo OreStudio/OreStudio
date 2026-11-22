@@ -177,5 +177,3 @@ exist, which is why the journeys state them and the screens do not promise them.
 Evidence: the gate passed 9 of 9 on the changed paths; the Qt tables are the
 script's own output; each prototype was opened at each of its states in a headless
 browser and read back. Merged in PR #5030.
-
-* Result

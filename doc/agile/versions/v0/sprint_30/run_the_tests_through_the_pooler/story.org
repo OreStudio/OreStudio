@@ -2,7 +2,7 @@
 :ID: CF800DC8-A36D-4DBA-B819-C98B409CD9F7
 :END:
 #+title: Story: Run the tests through the pooler
-#+description: With the pooler on, which is the default, the local gate and compass test run give the tests a running pooler, the config parser tests read only the defaults, and pgTAP no longer runs beside ctest.
+#+description: With the pooler on, which is the default, the local gate and compass test run give the tests a running pooler, the parsers read only the environment provider, and pgTAP no longer runs beside ctest.
 #+type: story
 #+level: s2
 #+filetags: :sprint_30:v0:
@@ -33,10 +33,12 @@ An experiment found three causes, none of them in transaction pooling:
    =PartOf= the fleet target, so it stops too, and only the
    =step-consumers= check starts the fleet again, at the end. The as-service
    suites (refdata, inbox, workflow) then connect to a closed port.
-2. The 13 =config_parser_tests= are not sealed from the environment. Each one
-   asserts the default database port 5432, but ctest gives them
-   =ORES_<SVC>_SERVICE_DB_PORT= from =.env=. They strip the NATS variables
-   only. They passed before because the direct port equals the default.
+2. The 13 =config_parser_tests= read the real environment. Each one asserts
+   the default database port 5432 inside a fake environment that holds
+   nothing, but the parser reads =ORES_<SVC>_SERVICE_DB_PORT= from the
+   process: boost's =parse_environment= ignores the fake provider. These
+   tests open no connection. They passed before only because the direct
+   port equals the default.
 3. The =pgtap= check runs beside =ctest=. Both run after =db= on the same
    database. =iam_tenant_purge_test= deadlocks in the gate and passes each
    time it runs alone.
@@ -64,8 +66,8 @@ pooler. The gate and the tests around them do not.
   every ctest suite and the pgtap check, with no step started by hand.
 - =compass test run= refuses to start when the pooler is on and not
   listening, and names the command that starts it.
-- Each config parser test passes with any value of its service's variables in
-  the environment.
+- Each config parser test passes with the pooler's port in =.env=, and no
+  test lists variables to strip.
 - The pgtap check and the ctest check never run at the same time.
 
 * Tasks
@@ -73,7 +75,7 @@ pooler. The gate and the tests around them do not.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:49A91902-32C2-49DB-A761-FC7FD2F2D126][Start the pooler before the tests run]] | BACKLOG | | | The gate's ctest step and compass test run start the pooler and NATS when ORES_DB_POOLER_ENABLED is 1, and the test-run preflight refuses to run without a pooler and names the fix. |
-| [[id:CB04682B-706D-4AEF-BABB-E7F00A0FB63B][Seal the config parser tests from the environment]] | BACKLOG | | | scoped_environment_override strips variables by prefix, and each service's config parser test strips its own service variables, so a default asserts the default whatever the .env holds. |
+| [[id:CB04682B-706D-4AEF-BABB-E7F00A0FB63B][Read the options' environment through the provider]] | BACKLOG | | | The parsers read their environment variables through ores.platform's environment provider instead of boost's parse_environment, so a test's fake environment is the only one the parser sees and no test lists variables to strip. |
 | [[id:9F0DCC25-CE62-41A3-9C5A-7BDED6BE5A30][Run pgTAP before ctest]] | BACKLOG | | | The local gate runs the pgtap check before ctest rather than beside it, so the two no longer write to the same database at the same time and iam_tenant_purge_test stops deadlocking. |
 
 * Decisions
@@ -81,8 +83,9 @@ pooler. The gate and the tests around them do not.
 - The tests go through the pooler when it is on, as the fleet does. The cases
   that cannot be pooled are already tagged =[direct]= in
   =ores.database.tests= and use =ORES_TEST_DB_PORT=, which stays direct.
-- Sealing a test from the environment strips by prefix, not by a list of
-  names, so a variable added later cannot leak in the same way.
+- A test does not strip variables to get a clean parse. The parser reads
+  only the provider, so the fake environment a test sets is the whole
+  environment.
 
 * Out of scope
 

@@ -6,6 +6,26 @@
 
 set -e
 
+# generate and regenerate write through compass-ng, which writes only the
+# files whose content differs; the Python generator rewrites every file it
+# renders. A dry run becomes compass-ng diff. The model, address, component
+# and entity arguments no longer narrow the run.
+case "${1:-}" in
+    generate|gen|regenerate|regen)
+        if ! command -v compass-ng >/dev/null 2>&1; then
+            echo "Error: compass-ng is not on the PATH; it writes generated code." >&2
+            exit 2
+        fi
+        REPO_ROOT=$(git -C "$(dirname "${BASH_SOURCE[0]}")" rev-parse --show-toplevel)
+        verb=generate
+        for arg in "$@"; do
+            [ "$arg" = "--dry-run" ] && verb=diff
+        done
+        echo "codegen.sh $1 writes through compass-ng $verb, over the whole tree."
+        exec compass-ng -C "$REPO_ROOT" "$verb"
+        ;;
+esac
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 VENV_PATH="$SCRIPT_DIR/venv"
 

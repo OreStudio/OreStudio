@@ -151,97 +151,6 @@ def _cmd_list(args, base_dir: Path, project_root: Path) -> int:
     return 0
 
 
-def _diff_entity(model_path: Path, base_dir: Path, project_root: Path,
-                 address=None) -> int:
-    """Generate to a tempdir via the shared resolver and print a unified diff
-    against the on-disk files."""
-    import difflib  # noqa: PLC0415
-    import io  # noqa: PLC0415
-    import logging  # noqa: PLC0415
-    import tempfile  # noqa: PLC0415
-    from contextlib import redirect_stdout  # noqa: PLC0415
-    from codegen.core import generate_from_model  # noqa: PLC0415
-    from codegen.generate import clang_format_files, resolve_targets  # noqa: PLC0415
-
-    units, _, _ = resolve_targets(model_path, base_dir, address=address)
-    data_dir = base_dir / "library" / "data"
-    templates_dir = base_dir / "library" / "templates"
-    has_diff = False
-
-    with tempfile.TemporaryDirectory() as tmpdir:
-        tmp_root = Path(tmpdir)
-        # clang-format only discovers .clang-format by walking up from the
-        # formatted file; a bare tempdir has no such ancestor, so it silently
-        # falls back to LLVM's default style (2-space indent) instead of the
-        # repo's 4-space style. Seed the tempdir root with a copy so the
-        # diff reflects real drift, not this formatting artefact.
-        repo_clang_format = project_root / ".clang-format"
-        if repo_clang_format.exists():
-            (tmp_root / ".clang-format").write_bytes(repo_clang_format.read_bytes())
-        logging.disable(logging.CRITICAL)
-        try:
-            for unit in units:
-                template_name = unit["template"]
-                output_path = project_root / unit["output"]
-                rel = output_path.relative_to(project_root)
-                tmp_path = tmp_root / rel
-                tmp_path.parent.mkdir(parents=True, exist_ok=True)
-                with redirect_stdout(io.StringIO()):
-                    generate_from_model(
-                        str(model_path), data_dir, templates_dir,
-                        tmp_path.parent,
-                        is_processing_batch=False,
-                        target_template=template_name,
-                        target_output=tmp_path.name,
-                    )
-                if not tmp_path.exists():
-                    continue
-                # Match the real generate path: clang-format C++ output so
-                # the diff reflects content, not template whitespace.
-                clang_format_files([tmp_path])
-
-                rel_str = str(rel)
-                if not output_path.exists():
-                    new_lines = tmp_path.read_text(encoding="utf-8", errors="replace").splitlines(keepends=True)
-                    chunk = list(difflib.unified_diff(
-                        [], new_lines, fromfile="/dev/null", tofile=rel_str))
-                else:
-                    orig = output_path.read_text(encoding="utf-8", errors="replace").splitlines(keepends=True)
-                    new = tmp_path.read_text(encoding="utf-8", errors="replace").splitlines(keepends=True)
-                    chunk = list(difflib.unified_diff(
-                        orig, new, fromfile=f"a/{rel_str}", tofile=f"b/{rel_str}"))
-                if chunk:
-                    sys.stdout.writelines(chunk)
-                    has_diff = True
-        finally:
-            logging.disable(logging.NOTSET)
-
-    if not has_diff:
-        print("✅ No differences.")
-    return 1 if has_diff else 0
-
-
-def _cmd_generate(args, base_dir: Path, project_root: Path) -> int:
-    # _generate_single is a private but stable entry point; a public alias is a future ores.codegen task.
-    from codegen.generate import _generate_single  # noqa: PLC0415
-
-    model_path, metatype, comp_name, entity_name = _resolve_entity(
-        args.entity, base_dir, project_root)
-
-    address = getattr(args, "address", None)
-    dry_run = getattr(args, "dry_run", False)
-    diff_mode = getattr(args, "diff", False)
-    scope = address or "supported set"
-
-    if diff_mode:
-        print(f"Diffing {entity_name} ({metatype}, {comp_name}) — {scope}")
-        return _diff_entity(model_path, base_dir, project_root, address=address)
-
-    print(f"{'[dry-run] ' if dry_run else ''}Generating {entity_name} "
-          f"({metatype}, {comp_name}) — {scope}")
-    return _generate_single(model_path, dry_run, base_dir, address=address)
-
-
 def _cmd_show(args, base_dir: Path, project_root: Path) -> int:
     model_path, metatype, comp_name, entity_name = _resolve_entity(
         args.entity, base_dir, project_root)
@@ -452,19 +361,6 @@ def run(argv, base_dir: Path, project_root: Path) -> int:
     lp.add_argument("--type", dest="metatype", metavar="METATYPE",
                     help="Show only entities of this metatype.")
 
-    # generate
-    gp = sub.add_parser("generate", aliases=["gen"],
-                         help="Regenerate an entity's full supported set, or one address.")
-    gp.add_argument("entity", help="Entity name or org-roam ID prefix.")
-    gp.add_argument("--address", metavar="ADDRESS",
-                    help="Physical-space address to generate (e.g. ores.sql.schema, "
-                         "ores.cpp.presentation); omit for the entity's full supported set.")
-    gmode = gp.add_mutually_exclusive_group()
-    gmode.add_argument("--dry-run", action="store_true",
-                       help="Print output paths without writing.")
-    gmode.add_argument("--diff", action="store_true",
-                       help="Generate to a temp dir and show unified diff against on-disk files.")
-
     # show
     sp = sub.add_parser("show", help="Show generated files with staleness.")
     sp.add_argument("entity", help="Entity name or org-roam ID prefix.")
@@ -494,8 +390,6 @@ def run(argv, base_dir: Path, project_root: Path) -> int:
     # so both "generate" and "gen" must appear as distinct keys.
     dispatch = {
         "list":       _cmd_list,
-        "generate":   _cmd_generate,
-        "gen":        _cmd_generate,
         "show":       _cmd_show,
         "diff":       _cmd_diff,
         "archetypes": _cmd_archetypes,

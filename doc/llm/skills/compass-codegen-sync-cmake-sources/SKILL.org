@@ -32,24 +32,13 @@ build until that generated list is refreshed.
 * How to use this skill
 
 1. *Regenerate*. compass-ng's component_files codec writes every
-   =component_files.cmake=, byte-identical to the script below:
+   =component_files.cmake= whose content differs, and no other:
 
    #+begin_src sh :results verbatim
    ./compass.sh generate
    #+end_src
 
-   Without compass-ng, run the script, for every component:
-
-   #+begin_src sh :results verbatim
-   python3 projects/ores.codegen/scripts/regenerate_cmake_component_files.py --all
-   #+end_src
-
-   Or a single component (its model's =#+full_name:=, not its
-   directory path):
-
-   #+begin_src sh :results verbatim
-   python3 projects/ores.codegen/scripts/regenerate_cmake_component_files.py --component ores.assets.core
-   #+end_src
+   Do not run the Python generator: it rewrites every file it renders.
 
 2. *Check what changed* and commit it alongside your other changes:
 
@@ -62,12 +51,6 @@ build until that generated list is refreshed.
 
    #+begin_src sh :results verbatim
    ./compass.sh diff
-   #+end_src
-
-   Or, without compass-ng:
-
-   #+begin_src sh :results verbatim
-   python3 projects/ores.codegen/scripts/regenerate_cmake_component_files.py --all --check
    #+end_src
 
 * Recipes

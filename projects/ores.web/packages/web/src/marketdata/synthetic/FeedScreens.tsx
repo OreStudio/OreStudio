@@ -189,7 +189,9 @@ function FeedBody({
                 </Notice>
             )}
             {bar}
-            {tab === 'calibration' && <FeedRunTab feed={feed} start={feed.start} />}
+            {tab === 'calibration' && (
+                <FeedRunTab feed={feed} start={feed.start} running={running} />
+            )}
             {tab === 'details' && (
                 <RecordDetails specs={kind.fields} row={feed} extra={kind.extraDetails(feed, t)} />
             )}

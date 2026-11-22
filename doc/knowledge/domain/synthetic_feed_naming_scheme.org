@@ -13,7 +13,7 @@
 
 A synthetic feed's source name is its key, part of the subject its ticks
 travel on, and the seed of its random streams, so it is chosen once and by a
-rule. This page proposes that rule: a name states who produces the feed and,
+rule. This page sets out that rule: a name states who produces the feed and,
 in the vocabulary of [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd]], what it
 observes, as =synthetic.<source>.<asset_class>.<instrument>.<subject>=. The
 scheme replaces names built ad hoc in the publish step, which say nothing of
@@ -36,6 +36,13 @@ later tasks.
 
 Because of the last point a rename is a change to the generated market, and
 it should happen once, for every feed, by one rule.
+
+What a rename does not touch: the market data a feed has published is stored
+by its =oresmd= series and the catalogue feed that delivered it, not by the
+synthetic source name, so stored ticks and series stay where they are. A rename
+changes the feed config rows, whose names the publish step derives, and the
+subjects new ticks travel on. The story's task that moves the latent surface
+out of the vendor collection renames every feed to this scheme.
 
 ** The scheme
 
@@ -110,6 +117,10 @@ The seeded datasets publish 188 synthetic nodes in the system tenant:
 surfaces, one for each surface and contributor. Every proposed name is unique.
 A vendor view has no source name of its own today; the left column gives the
 name its adapter's hold runs under.
+
+One subject that may look like a slip is the seed data's own: CNH HIBOR
+(=hibor.cnh=) is the offshore renminbi rate the Hong Kong Treasury Markets
+Association fixes, beside the HKD HIBOR (=hibor.hkd=) a vendor quotes.
 
 | Kind | Today | Proposed |
 |------+-------+----------|

@@ -95,7 +95,10 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The Summary says the page proposes the rule after the sign-off. | =synthetic_feed_naming_scheme.org= | Accept | Now "sets out". |
+| 2 | Nothing says how stored data moves on a rename. | =synthetic_feed_naming_scheme.org= | Accept | Stored ticks are keyed by series and catalogue feed, not by the source name, so they stay; the config rows and new tick subjects change, by the latent surface task. |
+| 3 | =hibor.cnh= beside =hibor.hkd= looks like a typo. | =synthetic_feed_naming_scheme.org= | Accept | A note: CNH HIBOR is a real index, fixed by the Hong Kong TMA. |
+| 4 | The table's order does not show the index-first sort. | =synthetic_feed_naming_scheme.org= | Decline | The table groups by kind for review; the benefit shows in one source's sorted listing. |
 
 * Result
 

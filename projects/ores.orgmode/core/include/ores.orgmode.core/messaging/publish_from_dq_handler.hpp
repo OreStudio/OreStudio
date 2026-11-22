@@ -21,9 +21,11 @@
 #define ORES_ORGMODE_CORE_MESSAGING_PUBLISH_FROM_DQ_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/delivery.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.orgmode.core/export.hpp"
+#include <string_view>
 
 namespace ores::orgmode::messaging {
 
@@ -34,6 +36,15 @@ namespace ores::orgmode::messaging {
  * function that reads the DQ artefact table and writes the knowledge pages.
  */
 class ORES_ORGMODE_CORE_EXPORT publish_from_dq_handler {
+private:
+    inline static std::string_view logger_name = "ores.orgmode.messaging.publish_from_dq_handler";
+
+    [[nodiscard]] static auto& lg() {
+        using namespace ores::logging;
+        static auto instance = make_logger(logger_name);
+        return instance;
+    }
+
 public:
     publish_from_dq_handler(ores::nats::service::client& nats, const ores::database::context& ctx);
 

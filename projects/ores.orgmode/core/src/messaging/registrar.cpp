@@ -32,15 +32,6 @@
 
 namespace ores::orgmode::messaging {
 
-namespace {
-
-auto& lg() {
-    static auto instance = ores::logging::make_logger("ores.orgmode.messaging.registrar");
-    return instance;
-}
-
-}
-
 std::vector<ores::nats::service::subscription>
 registrar::register_handlers(ores::nats::service::client& nats,
                              const ores::database::context& ctx,
@@ -58,10 +49,10 @@ registrar::register_handlers(ores::nats::service::client& nats,
     auto subs = register_knowledge_page_handlers(nats, ctx, verifier);
 
     auto ih = std::make_shared<index_handler>(nats, ctx, std::move(verifier));
-    subs.push_back(nats.queue_subscribe(
-        reindex_knowledge_pages_request::nats_subject,
-        "ores.orgmode.service",
-        [ih](ores::nats::message msg) { ih->reindex(std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(reindex_knowledge_pages_request::nats_subject,
+                             "ores.orgmode.service",
+                             [ih](ores::nats::message msg) { ih->reindex(std::move(msg)); }));
 
     auto pdq = std::make_shared<publish_from_dq_handler>(nats, ctx);
     ores::service::messaging::step_routes routes;

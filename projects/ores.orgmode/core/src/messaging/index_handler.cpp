@@ -34,16 +34,6 @@ using ores::service::messaging::has_permission;
 using ores::service::messaging::log_handler_entry;
 using ores::service::messaging::reply;
 
-namespace {
-
-inline std::string_view logger_name = "ores.orgmode.messaging.index_handler";
-auto& lg() {
-    static auto instance = make_logger(logger_name);
-    return instance;
-}
-
-}
-
 index_handler::index_handler(ores::nats::service::client& nats,
                              const ores::database::context& ctx,
                              std::optional<ores::security::jwt::jwt_authenticator> verifier)

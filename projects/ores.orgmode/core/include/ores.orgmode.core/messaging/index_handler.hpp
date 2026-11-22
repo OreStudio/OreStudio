@@ -21,11 +21,13 @@
 #define ORES_ORGMODE_CORE_MESSAGING_INDEX_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.orgmode.core/export.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include <optional>
+#include <string_view>
 
 namespace ores::orgmode::messaging {
 
@@ -36,6 +38,15 @@ namespace ores::orgmode::messaging {
  * installation permission installation::knowledge_index:rebuild.
  */
 class ORES_ORGMODE_CORE_EXPORT index_handler {
+private:
+    inline static std::string_view logger_name = "ores.orgmode.messaging.index_handler";
+
+    [[nodiscard]] static auto& lg() {
+        using namespace ores::logging;
+        static auto instance = make_logger(logger_name);
+        return instance;
+    }
+
 public:
     index_handler(ores::nats::service::client& nats,
                   const ores::database::context& ctx,

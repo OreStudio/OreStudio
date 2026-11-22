@@ -21,8 +21,10 @@
 #define ORES_ORGMODE_CORE_SERVICE_KNOWLEDGE_INDEXER_HPP
 
 #include "ores.database/domain/context.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.orgmode.core/export.hpp"
 #include <cstdint>
+#include <string_view>
 
 namespace ores::orgmode::service {
 
@@ -43,6 +45,15 @@ struct reindex_result final {
  * index or the new one.
  */
 class ORES_ORGMODE_CORE_EXPORT knowledge_indexer {
+private:
+    inline static std::string_view logger_name = "ores.orgmode.service.knowledge_indexer";
+
+    [[nodiscard]] static auto& lg() {
+        using namespace ores::logging;
+        static auto instance = make_logger(logger_name);
+        return instance;
+    }
+
 public:
     explicit knowledge_indexer(const ores::database::context& ctx);
 

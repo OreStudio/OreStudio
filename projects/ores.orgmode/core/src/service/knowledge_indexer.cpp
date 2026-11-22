@@ -32,16 +32,6 @@ namespace ores::orgmode::service {
 
 using namespace ores::logging;
 
-namespace {
-
-inline std::string_view logger_name = "ores.orgmode.service.knowledge_indexer";
-auto& lg() {
-    static auto instance = make_logger(logger_name);
-    return instance;
-}
-
-}
-
 knowledge_indexer::knowledge_indexer(const ores::database::context& ctx)
     : ctx_(ores::database::service::tenant_context::with_system_tenant(ctx)) {}
 

@@ -37,12 +37,6 @@ using ores::service::messaging::workflow_step_context;
 
 namespace {
 
-inline std::string_view logger_name = "ores.orgmode.messaging.publish_from_dq_handler";
-auto& lg() {
-    static auto instance = make_logger(logger_name);
-    return instance;
-}
-
 constexpr std::string_view fn_name = "ores_orgmode_publish_knowledge_pages_from_dq_fn";
 
 } // namespace

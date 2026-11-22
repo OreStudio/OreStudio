@@ -1462,12 +1462,18 @@ const fr: SourceCatalogue = {
     },
     development: {
         lead: "Le travail d'une équipe sur le produit, à commencer par les tests qu'un testeur peut lancer.",
+        api: {
+            lead: 'Chaque route que le serveur C++ sert, décrite à partir des routes elles-mêmes.',
+            open: 'Ouvrir dans un onglet',
+            frameTitle: "La référence de l'API",
+        },
         tabs: {
             label: 'Zones de développement',
             tests: 'Tests',
             board: 'Tableau',
             backlog: 'Backlog',
             charts: 'Graphiques',
+            api: 'API',
         },
         backlog: {
             buckets: {

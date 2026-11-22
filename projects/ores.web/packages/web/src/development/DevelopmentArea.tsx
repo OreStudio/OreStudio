@@ -27,6 +27,7 @@ import { BacklogTab } from './BacklogTab.js';
 import { ChartsTab } from './ChartsTab.js';
 import { BoardTab } from './BoardTab.js';
 import { TestsQueue } from './TestsQueue.js';
+import { ApiReferenceTab } from './ApiReferenceTab.js';
 
 /**
  * The tabs of the area. Tests holds every scenario, by sprint, with the live
@@ -34,7 +35,7 @@ import { TestsQueue } from './TestsQueue.js';
  * stories by state. Backlog lists the four buckets and opens a doc in the tab. Charts draws the
  * sprint's velocity, burn-up and tasks by day and by state.
  */
-const TABS = ['tests', 'board', 'backlog', 'charts'] as const;
+const TABS = ['tests', 'board', 'backlog', 'charts', 'api'] as const;
 
 /**
  * The development area: the work a team does on the product, starting with the
@@ -61,6 +62,7 @@ export function DevelopmentArea(): ReactNode {
             {tab === 'board' && <BoardTab />}
             {tab === 'backlog' && <BacklogTab />}
             {tab === 'charts' && <ChartsTab />}
+            {tab === 'api' && <ApiReferenceTab />}
         </div>
     );
 }

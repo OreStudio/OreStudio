@@ -27,6 +27,7 @@ import { PATHS } from './paths.js';
 /** One entry of the shell's menu: an area, named for what a person does there. */
 export interface MenuItem {
     readonly nameKey: string;
+    /** The screen of this application the entry opens. */
     readonly to: string;
     /** Drawn only for a person who holds this permission, or any of these. */
     readonly permission?: string | readonly string[];

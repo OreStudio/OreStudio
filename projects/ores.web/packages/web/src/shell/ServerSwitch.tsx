@@ -50,7 +50,12 @@ export function ServerSwitch({
     readonly compact?: boolean;
 }): ReactNode {
     const { t } = useTranslation();
-    const where = at ?? window.location;
+    /*
+     * A screen rendered where no browser exists -- a test that renders the shell to
+     * text -- has no page to place, so the switch states nothing there.
+     */
+    const where = at ?? (typeof window === 'undefined' ? undefined : window.location);
+    if (where === undefined) return null;
     const here = servingDeployment(__ORE_SERVER_PORTS__, where);
     const peer = peerOf(__ORE_SERVER_PORTS__, where);
     if (here === undefined || peer === undefined) return null;

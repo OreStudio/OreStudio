@@ -1448,12 +1448,18 @@ export const en: SourceCatalogue = {
     },
     development: {
         lead: 'The work a team does on the product, starting with the tests a tester can run.',
+        api: {
+            lead: 'Every route the C++ server answers, described from the routes themselves.',
+            open: 'Open in its own tab',
+            frameTitle: 'The API reference',
+        },
         tabs: {
             label: 'Development areas',
             tests: 'Tests',
             board: 'Board',
             backlog: 'Backlog',
             charts: 'Charts',
+            api: 'API',
         },
         backlog: {
             buckets: {

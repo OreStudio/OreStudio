@@ -31,6 +31,11 @@ export interface MenuItem {
     readonly to: string;
     /** Drawn only for a person who holds this permission, or any of these. */
     readonly permission?: string | readonly string[];
+    /**
+     * Whether the entry leaves this application for a page of the server, as the API
+     * reader is. Such an entry is drawn as a link rather than as a route of the shell.
+     */
+    readonly external?: boolean;
 }
 
 /**
@@ -91,7 +96,7 @@ export const MENU: readonly MenuItem[] = [
         ],
     },
     { nameKey: 'shell.menu.development', to: '/development' },
-    { nameKey: 'shell.menu.api', to: '/api-reference' },
+    { nameKey: 'shell.menu.api', to: '/swagger', external: true },
     { nameKey: 'shell.menu.tenants', to: '/tenants', permission: DEPLOYMENT_READ },
 ];
 

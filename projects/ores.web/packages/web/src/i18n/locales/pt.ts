@@ -69,8 +69,6 @@ const pt: SourceCatalogue = {
     shell: {
         api: {
             lead: 'Todas as rotas deste servidor, descritas a partir das próprias rotas.',
-            open: 'Abrir num separador',
-            frameTitle: 'A referência da API',
         },
         theme: {
             toLight: 'Mudar para a paleta clara',

@@ -70,8 +70,6 @@ export const en: SourceCatalogue = {
     shell: {
         api: {
             lead: 'Every route this server answers, described from the routes themselves.',
-            open: 'Open in its own tab',
-            frameTitle: 'The API reference',
         },
         theme: {
             toLight: 'Switch to the light palette',

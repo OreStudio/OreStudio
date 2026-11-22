@@ -83,6 +83,8 @@ struct fx_vol_surface_feed_entity {
     double segment_correlation{};
     double start_skew{};
     double start_curvature{};
+    std::string spot_oresmd_uri;
+    std::string spot_provider_code;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
@@ -122,6 +124,8 @@ struct fx_vol_surface_feed_entity {
                query_builder::bind("segment_correlation", &e::segment_correlation) |
                query_builder::bind("start_skew", &e::start_skew) |
                query_builder::bind("start_curvature", &e::start_curvature) |
+               query_builder::bind("spot_oresmd_uri", &e::spot_oresmd_uri) |
+               query_builder::bind("spot_provider_code", &e::spot_provider_code) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |
                query_builder::bind("change_reason_code", &e::change_reason_code) |

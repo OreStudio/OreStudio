@@ -5409,6 +5409,21 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: [],
         rows: ['feeds'],
     },
+    'synthetic.v1.simulated_sources.list': {
+        asOf: false,
+        filter: [],
+        rows: ['sources'],
+    },
+    'synthetic.v1.stopped_simulated_sources.list': {
+        asOf: true,
+        filter: ['source_name_one_of'],
+        rows: ['stopped_sources'],
+    },
+    'synthetic.v1.stopped_simulated_sources_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
     'synthetic.v1.trade_generation_books.list': {
         asOf: true,
         filter: ['config_id', 'id_one_of', 'config_id_one_of'],

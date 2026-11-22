@@ -111,7 +111,7 @@ export function surfaceLines(
     return [
         { name: 'ρ', value: clean(numberOf(feed, 'start_skew'), 4) },
         { name: 'η', value: clean(numberOf(feed, 'start_curvature'), 4) },
-        { name: 'γ', value: `${String(SSVI_GAMMA)} · ${t('marketdata.volFeeds.surface.fixed')}` },
+        { name: 'γ', value: String(SSVI_GAMMA) },
     ];
 }
 

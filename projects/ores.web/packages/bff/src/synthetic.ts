@@ -554,6 +554,8 @@ const SYNTHETIC_RECORDS: readonly SyntheticResource[] = [
             segment_correlation: z.number().min(0).lt(1),
             start_skew: z.number().gt(-1).lt(1),
             start_curvature: z.number().positive().lt(Math.SQRT2),
+            spot_oresmd_uri: z.string().trim().startsWith('oresmd://fx/').max(500),
+            spot_provider_code: code,
         }) satisfies z.ZodType<FxVolSurfaceFeedWrite>,
     },
     {
@@ -875,6 +877,21 @@ export const feedStartSchema = z.object({
 });
 
 export type FeedStart = z.infer<typeof feedStartSchema>;
+
+/** One simulated source the synthetic service serves, and what it runs and holds. */
+const simulatedSourceSchema = z.object({
+    source_name: z.string(),
+    provider_code: z.string(),
+    stopped: z.boolean().default(false),
+    served_feeds: z.int().default(0),
+    held_surfaces: z.int().default(0),
+    surfaces_only_held_here: z.int().default(0),
+});
+
+/** A simulated source's catalogue name, as the route names it. */
+function sourceName(request: FastifyRequest): string {
+    return input(code, (request.params as { name: string }).name);
+}
 
 /** One feed the service runs now, and where its run started. */
 const runningFeedSchema = z.object({
@@ -1624,6 +1641,51 @@ export function registerSyntheticRoutes(
         const reply = await session.client.callAuthenticated(
             feedSubjects.stop_feed_request,
             { config_id: paramId(request), source_name: '' },
+            operationReplySchema,
+        );
+        refuseUnless(reply, conflict);
+        return { message: reply.message };
+    });
+
+    /**
+     * The simulated sources the synthetic service serves, each with whether an operator stopped
+     * it, how many feeds it runs for the store, and the vol surfaces it holds: how many, and how
+     * many of them no other source holds, so they would stop with it.
+     */
+    server.get('/api/synthetic/simulated-sources', async (request) => {
+        const session = requireSession(request);
+        const reply = await session.client.callAuthenticated(
+            feedSubjects.list_simulated_sources_request,
+            {},
+            operationReplySchema.extend({ sources: z.array(simulatedSourceSchema).default([]) }),
+        );
+        refuseUnless(reply, upstreamFailure);
+        return { sources: reply.sources };
+    });
+
+    /**
+     * Stops a simulated source until someone starts it, a restart of the service included. Its
+     * feeds stop and it releases its vol surfaces; feeds started by hand run on. The system
+     * tenant alone stops a source, with the run permission, and says why.
+     */
+    server.post('/api/synthetic/simulated-sources/:name/stop', async (request) => {
+        const session = requireSession(request);
+        const intent = input(intentSchema, request.body);
+        const reply = await session.client.callAuthenticated(
+            feedSubjects.stop_simulated_source_request,
+            { source_name: sourceName(request), ...intent },
+            operationReplySchema,
+        );
+        refuseUnless(reply, conflict);
+        return { message: reply.message };
+    });
+
+    /** Starts a stopped simulated source again. */
+    server.post('/api/synthetic/simulated-sources/:name/start', async (request) => {
+        const session = requireSession(request);
+        const reply = await session.client.callAuthenticated(
+            feedSubjects.start_simulated_source_request,
+            { source_name: sourceName(request) },
             operationReplySchema,
         );
         refuseUnless(reply, conflict);

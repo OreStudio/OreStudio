@@ -20,13 +20,16 @@
  */
 
 import { useState, type ReactNode } from 'react';
+import { Link } from 'react-router';
 import { api, type RecordRow } from '../../api/client.js';
 import { useTranslation } from '../../i18n/Provider.js';
 import {
     PartsPanel,
     RecordDetails,
     RecordDialog,
+    labelOf,
     show,
+    useRecord,
     useRecordPermissions,
     useRecords,
     type FieldSpec,
@@ -34,10 +37,13 @@ import {
 } from '../../refdata/records.js';
 import { syntheticStore } from '../../refdata/store.js';
 import { PATHS } from '../../shell/paths.js';
-import { Notice } from '../../ui/Primitives.js';
+import { Card } from '../../ui/Card.js';
+import { Button, Notice } from '../../ui/Primitives.js';
+import { ParameterTable } from '../calibration/VarianceCalibration.js';
 import { ArrivalsTab } from './ArrivalsPanel.js';
 import { FeedPage } from './FeedScreens.js';
 import { feedPath, type FeedKind } from './feedKind.js';
+import { FeedStatus } from './feedRuns.js';
 import { SYNTHETIC_MARK } from './fxFeeds.js';
 
 export const VOL_FEEDS = 'fx-vol-surface-feeds';
@@ -72,9 +78,6 @@ const number = (field: string, history: string, bounds: Bounds = {}): FieldSpec 
 
 /** The same, with its help, for the feed's own fields. */
 /** Gamma as a page states it: its value and that it is fixed. */
-export function gammaText(t: (key: string) => string): string {
-    return `${String(SSVI_GAMMA)}, ${t('marketdata.volFeeds.surface.fixed')}`;
-}
 
 const decimal = (field: string, history: string, bounds: Bounds = {}): FieldSpec => ({
     ...number(field, history, bounds),
@@ -150,6 +153,25 @@ const FEED_FIELDS: readonly FieldSpec[] = [
     decimal('sensitivity', 'Sensitivity', { positive: true }),
     ...SURFACE_FIELDS,
     {
+        field: 'spot_provider_code',
+        history: 'Spot Provider Code',
+        kind: {
+            kind: 'record',
+            resource: 'collections',
+            value: 'provider_code',
+            label: 'name',
+            store: syntheticStore,
+        },
+        help: 'marketdata.volFeeds.help.spot_provider_code',
+    },
+    {
+        field: 'spot_oresmd_uri',
+        history: 'Spot Oresmd Uri',
+        kind: { kind: 'text', max: 500 },
+        blank: true,
+        help: 'marketdata.volFeeds.help.spot_oresmd_uri',
+    },
+    {
         field: 'enabled',
         history: 'Enabled',
         kind: { kind: 'bool' },
@@ -201,15 +223,168 @@ export function volSource(given: string, base: string, quote: string): string {
 }
 
 export function completeVolFeed(write: Readonly<Record<string, unknown>>): Record<string, unknown> {
+    const { gamma: _gamma, ...stored } = write;
     return {
-        ...write,
+        ...stored,
         asset_class_code: show(write['asset_class_code']) === '' ? 'fx' : write['asset_class_code'],
         source_name: volSource(
             show(write['source_name']),
             show(write['base_currency_code']),
             show(write['quote_currency_code']),
         ),
+        spot_oresmd_uri:
+            show(write['spot_oresmd_uri']).trim() === ''
+                ? spotUri(show(write['base_currency_code']), show(write['quote_currency_code']))
+                : write['spot_oresmd_uri'],
     };
+}
+
+/** The oresmd URI of a pair's spot rate, as the spot feeds of the pair publish it. */
+function spotUri(base: string, quote: string): string {
+    return `oresmd://fx/${base}?type=quote&instrument=fx_spot&quote=rate&ccy=${quote}`;
+}
+
+/** One value a surface reads on every tick, and the feed that publishes it, if one does. */
+export interface Upstream {
+    readonly role: 'spot' | 'baseCurve' | 'quoteCurve';
+    readonly currency: string;
+    readonly path: string;
+    readonly resource: string;
+    readonly row: RecordRow | undefined;
+    /** What a matching feed would be, said when none matches. */
+    readonly wants: string;
+}
+
+/**
+ * The feeds a surface reads: the spot its config names by URI and provider, and each
+ * currency's discounting curve in the surface's own collection, which is a curve that is not a
+ * projection curve and has no index tenor.
+ */
+export function upstreamsOf(
+    feed: Readonly<Record<string, unknown>>,
+    spots: readonly RecordRow[],
+    collections: readonly RecordRow[],
+    curves: readonly RecordRow[],
+): readonly Upstream[] {
+    const providerOf = new Map(
+        collections.map((row) => [show(row['id']), show(row['provider_code'])] as const),
+    );
+    const uri = show(feed['spot_oresmd_uri']);
+    const provider = show(feed['spot_provider_code']);
+    const collection = show(feed['config_id']);
+    // One URI and provider can name a spot in more than one readable collection; the service
+    // reads the one in the surface's own collection first, and so does the screen.
+    const spot = spots
+        .filter(
+            (row) =>
+                show(row['oresmd_uri']) === uri &&
+                providerOf.get(show(row['config_id'])) === provider,
+        )
+        .sort(
+            (left, right) =>
+                Number(show(right['config_id']) === collection) -
+                Number(show(left['config_id']) === collection),
+        )[0];
+    const curveUpstream = (role: 'baseCurve' | 'quoteCurve', currency: string): Upstream => ({
+        role,
+        currency,
+        path: PATHS.irFeed,
+        resource: 'ir-curve-feeds',
+        row: curves.find(
+            (row) =>
+                show(row['config_id']) === collection &&
+                show(row['currency_code']) === currency &&
+                show(row['role']) !== 'projection' &&
+                show(row['tenor']) === '',
+        ),
+        wants: currency,
+    });
+    return [
+        {
+            role: 'spot',
+            currency: '',
+            path: PATHS.fxFeed,
+            resource: 'fx-feeds',
+            row: spot,
+            wants: `${uri} from ${provider}`,
+        },
+        curveUpstream('baseCurve', show(feed['base_currency_code'])),
+        curveUpstream('quoteCurve', show(feed['quote_currency_code'])),
+    ];
+}
+
+/** Whether one upstream feed runs, as its own record says. */
+function UpstreamState({ upstream }: { readonly upstream: Upstream }): ReactNode {
+    const record = useRecord(upstream.resource, show(upstream.row?.['id']));
+    const running = record.data?.['running'];
+    return <FeedStatus running={typeof running === 'boolean' ? running : undefined} />;
+}
+
+/**
+ * A surface's Calibration tab: the feeds it reads, each linked to its own page, where its
+ * start and its calibration are shown. The surface has no calibration of its own to repeat.
+ */
+function VolUpstreams({
+    feed,
+    running,
+}: {
+    readonly feed: RecordRow;
+    readonly running: boolean | undefined;
+}): ReactNode {
+    const { t } = useTranslation();
+    const spots = useRecords('fx-feeds');
+    const collections = useRecords('collections');
+    const curves = useRecords('ir-curve-feeds');
+    const upstreams = upstreamsOf(
+        feed,
+        spots.data ?? [],
+        collections.data ?? [],
+        curves.data ?? [],
+    );
+    return (
+        <div className="space-y-4">
+            {running !== true && (
+                <Notice tone="info">{t('marketdata.volFeeds.upstreams.notRunning')}</Notice>
+            )}
+            <Card title={t('marketdata.volFeeds.upstreams.title')}>
+                <p className="text-sm text-ink-muted">{t('marketdata.volFeeds.upstreams.intro')}</p>
+                <table className="w-full text-left text-sm">
+                    <tbody>
+                        {upstreams.map((upstream) => (
+                            <tr key={upstream.role} className="border-t border-line">
+                                <td className="py-2 pr-4 text-ink-muted">
+                                    {t(`marketdata.volFeeds.upstreams.${upstream.role}`, {
+                                        currency: upstream.currency,
+                                    })}
+                                </td>
+                                <td className="py-2 pr-4">
+                                    {upstream.row === undefined ? (
+                                        <span className="text-ink-muted">
+                                            {t('marketdata.volFeeds.upstreams.missing', {
+                                                wants: upstream.wants,
+                                            })}
+                                        </span>
+                                    ) : (
+                                        <Link
+                                            to={`${upstream.path}/${encodeURIComponent(show(upstream.row['id']))}`}
+                                            className="text-accent hover:underline"
+                                        >
+                                            {show(upstream.row['source_name'])}
+                                        </Link>
+                                    )}
+                                </td>
+                                <td className="py-2">
+                                    {upstream.row !== undefined && (
+                                        <UpstreamState upstream={upstream} />
+                                    )}
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </Card>
+        </div>
+    );
 }
 
 function useVolFeedCheck(): (values: FieldValues) => readonly string[] {
@@ -241,6 +416,23 @@ const SURFACE_CARDS = [
  * The Surface tab: the SSVI state the feed evolves, as three cards each edited on its
  * own. Gamma is drawn on the start card and no dialog edits it.
  */
+/**
+ * The gamma of the SSVI power law, shown in the start card's edit dialog and never written: the
+ * generator holds it at one half, the only value its arbitrage bounds hold at.
+ */
+const GAMMA_SPEC: FieldSpec = {
+    field: 'gamma',
+    history: 'Gamma',
+    kind: { kind: 'decimal' },
+    fixed: true,
+    labelKey: 'marketdata.volFeeds.surface.gamma',
+    help: 'marketdata.volFeeds.surface.gammaWhy',
+};
+
+/**
+ * The surface's settings as the FX calibration screen draws a run: three cards side by side,
+ * each a table of its numbers, each with its own Edit for those numbers alone.
+ */
 function SurfacePanel({
     feed,
     running,
@@ -253,32 +445,53 @@ function SurfacePanel({
     const { t } = useTranslation();
     const check = useVolFeedCheck();
     const [editing, setEditing] = useState<(typeof SURFACE_CARDS)[number] | undefined>();
+    const starts = editing?.name === 'start';
     return (
         <div className="space-y-4">
             <p className="text-sm text-ink-muted">{t('marketdata.volFeeds.surface.lead')}</p>
             {running && <Notice tone="info">{t('marketdata.volFeeds.surface.running')}</Notice>}
-            {SURFACE_CARDS.map((card) => (
-                <RecordDetails
-                    key={card.name}
-                    specs={card.specs}
-                    row={feed}
-                    heading={{
-                        title: t(`marketdata.volFeeds.surface.${card.name}`),
-                        onEdit: mayWrite ? () => setEditing(card) : undefined,
-                    }}
-                    extra={
-                        card.name === 'start'
-                            ? [
-                                  [
-                                      t('marketdata.volFeeds.surface.gamma'),
-                                      gammaText(t),
-                                      t('marketdata.volFeeds.surface.gammaWhy'),
-                                  ],
-                              ]
-                            : []
-                    }
-                />
-            ))}
+            <div className="grid gap-4 lg:grid-cols-3">
+                {SURFACE_CARDS.map((card) => (
+                    <Card
+                        key={card.name}
+                        title={t(`marketdata.volFeeds.surface.${card.name}`)}
+                        aside={
+                            mayWrite ? (
+                                <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    icon="edit"
+                                    onClick={() => setEditing(card)}
+                                >
+                                    {t('refdata.records.edit')}
+                                </Button>
+                            ) : undefined
+                        }
+                    >
+                        <ParameterTable
+                            rows={[
+                                ...card.specs.map((spec) => ({
+                                    label: labelOf(t, spec),
+                                    value: show(feed[spec.field]),
+                                })),
+                                ...(card.name === 'start'
+                                    ? [
+                                          {
+                                              label: t('marketdata.volFeeds.surface.gamma'),
+                                              value: String(SSVI_GAMMA),
+                                          },
+                                      ]
+                                    : []),
+                            ]}
+                        />
+                        {card.name === 'start' && (
+                            <p className="text-xs text-ink-muted">
+                                {t('marketdata.volFeeds.surface.gammaWhy')}
+                            </p>
+                        )}
+                    </Card>
+                ))}
+            </div>
             {editing !== undefined && (
                 <RecordDialog
                     title={t('marketdata.volFeeds.surface.editTitle', {
@@ -286,8 +499,9 @@ function SurfacePanel({
                         pair: pairOf(feed),
                     })}
                     resource={VOL_FEEDS}
-                    specs={editing.specs}
+                    specs={starts ? [...editing.specs, GAMMA_SPEC] : editing.specs}
                     row={feed}
+                    {...(starts ? { initial: { gamma: String(SSVI_GAMMA) } } : {})}
                     keep={keptBeside(editing.specs)}
                     complete={completeVolFeed}
                     check={check}
@@ -395,7 +609,7 @@ const LINK_FIELDS: readonly FieldSpec[] = [
     },
 ];
 
-const NOISE_FIELDS: readonly FieldSpec[] = [
+export const NOISE_FIELDS: readonly FieldSpec[] = [
     number('noise', 'Noise', { min: 0 }),
     number('wing_widening', 'Wing Widening', { min: 0 }),
     number('expiry_widening', 'Expiry Widening', { min: 0 }),
@@ -411,6 +625,15 @@ const NOISE_FIELDS: readonly FieldSpec[] = [
  * The Contributors tab: which vendors quote the surface, and the noise each one adds.
  * A noise profile is the contributor's own, shared by every surface it quotes.
  */
+/** A contributor's own page, which every surface it quotes links to. */
+export function volContributorPath(id: string): string {
+    return `${PATHS.volContributor}/${encodeURIComponent(id)}`;
+}
+
+/**
+ * The vendors that quote the surface, as a list. A row opens the contributor's own page, where
+ * its noise profile is read and edited; the profile is shared by every surface it quotes.
+ */
 function ContributorsPanel({
     feed,
     links,
@@ -420,69 +643,37 @@ function ContributorsPanel({
 }): ReactNode {
     const { t } = useTranslation();
     const contributors = useRecords(CONTRIBUTORS);
-    const may = useRecordPermissions(CONTRIBUTORS);
-    const [editing, setEditing] = useState<RecordRow | undefined>();
     const byId = new Map((contributors.data ?? []).map((row) => [show(row['id']), row]));
-    const providerOf = (link: RecordRow): string =>
-        show(byId.get(show(link['contributor_id']))?.['provider_code']);
-    const quoting = links
-        .map((link) => byId.get(show(link['contributor_id'])))
-        .filter((row): row is RecordRow => row !== undefined)
-        .sort((left, right) =>
-            show(left['provider_code']).localeCompare(show(right['provider_code'])),
-        );
+    const of = (link: RecordRow): RecordRow | undefined => byId.get(show(link['contributor_id']));
+    const providerOf = (link: RecordRow): string => show(of(link)?.['provider_code']);
     return (
-        <div className="space-y-4">
-            <PartsPanel
-                resource={FEED_CONTRIBUTORS}
-                entityType="ores.synthetic.fx_vol_surface_feed_contributor"
-                specs={LINK_FIELDS}
-                parentField="feed_id"
-                parent={show(feed['id'])}
-                rows={links}
-                error={undefined}
-                columns={[
-                    {
-                        header: t('refdata.fields.provider_code'),
-                        cell: providerOf,
-                        mono: true,
-                    },
-                ]}
-                sort={providerOf}
-                nameOf={providerOf}
-                lead={t('marketdata.volFeeds.contributors.lead')}
-                titles={{
-                    add: t('marketdata.volFeeds.contributors.add'),
-                    one: t('marketdata.volFeeds.contributors.one'),
-                    remove: t('marketdata.volFeeds.contributors.remove'),
-                }}
-            />
-            {quoting.map((contributor) => (
-                <RecordDetails
-                    key={show(contributor['id'])}
-                    specs={NOISE_FIELDS}
-                    row={contributor}
-                    heading={{
-                        title: t('marketdata.volFeeds.contributors.noise', {
-                            provider: show(contributor['provider_code']),
-                        }),
-                        onEdit: may.write ? () => setEditing(contributor) : undefined,
-                    }}
-                />
-            ))}
-            {editing !== undefined && (
-                <RecordDialog
-                    title={t('marketdata.volFeeds.contributors.noise', {
-                        provider: show(editing['provider_code']),
-                    })}
-                    resource={CONTRIBUTORS}
-                    specs={NOISE_FIELDS}
-                    row={editing}
-                    keep={['id', 'provider_code']}
-                    onClose={() => setEditing(undefined)}
-                />
-            )}
-        </div>
+        <PartsPanel
+            resource={FEED_CONTRIBUTORS}
+            entityType="ores.synthetic.fx_vol_surface_feed_contributor"
+            specs={LINK_FIELDS}
+            parentField="feed_id"
+            parent={show(feed['id'])}
+            rows={links}
+            error={undefined}
+            columns={[
+                {
+                    header: t('refdata.fields.provider_code'),
+                    cell: providerOf,
+                    mono: true,
+                },
+                { header: t('refdata.fields.noise'), cell: (link) => show(of(link)?.['noise']) },
+                { header: t('refdata.fields.bias'), cell: (link) => show(of(link)?.['bias']) },
+            ]}
+            sort={providerOf}
+            nameOf={providerOf}
+            pathOf={(link) => volContributorPath(show(link['contributor_id']))}
+            lead={t('marketdata.volFeeds.contributors.lead')}
+            titles={{
+                add: t('marketdata.volFeeds.contributors.add'),
+                one: t('marketdata.volFeeds.contributors.one'),
+                remove: t('marketdata.volFeeds.contributors.remove'),
+            }}
+        />
     );
 }
 
@@ -505,7 +696,7 @@ export const VOL_FEED_KIND: FeedKind = {
     extraDetails: (_feed, t) => [
         [
             t('marketdata.volFeeds.surface.gamma'),
-            gammaText(t),
+            String(SSVI_GAMMA),
             t('marketdata.volFeeds.surface.gammaWhy'),
         ],
     ],
@@ -574,6 +765,7 @@ export const VOL_FEED_KIND: FeedKind = {
     ],
     afterAdd: 'expiries',
     heldByProvider: true,
+    calibration: ({ feed, running }) => <VolUpstreams feed={feed} running={running} />,
 };
 
 export function volFeedPath(id?: string): string {

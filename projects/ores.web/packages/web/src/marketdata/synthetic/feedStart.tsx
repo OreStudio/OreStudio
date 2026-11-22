@@ -52,24 +52,27 @@ type Variance = NonNullable<FeedStart['variance']>;
 /**
  * One feed's run on one tab, as fact cards: the level it started at and where that came
  * from, what the fixing window measured, the daily variance it carries, and the calibration
- * that variance was approved as. A stopped feed shows what its config names.
+ * that variance was approved as. A stopped feed shows what its config names. A run of a kind
+ * that starts from no published value reports no start, so the run state is told apart from it.
  */
 export function FeedRunTab({
     feed,
     start,
+    running,
 }: {
     readonly feed: RecordRow;
     readonly start: FeedStart | null | undefined;
+    readonly running: boolean | undefined;
 }): ReactNode {
     const { t } = useTranslation();
     const model = show(feed['variance_model']);
     const garch = model === 'gjr_garch';
-    const running = start !== null && start !== undefined;
+    const started = start !== null && start !== undefined;
     const calibrations = usePairCalibrations(
         garch ? show(feed['base_currency_code']) : '',
         garch ? show(feed['quote_currency_code']) : '',
     );
-    const used = running ? (start.variance?.calibration_id ?? '') : '';
+    const used = started ? (start.variance?.calibration_id ?? '') : '';
     const fitted = (calibrations.data ?? []).find(
         (c) => c.id === used && c.method === 'gjr_garch_qmle',
     );
@@ -81,20 +84,22 @@ export function FeedRunTab({
                     to={`${calibrationFeedPath(show(feed['asset_class_code']) || 'fx', show(feed['id']))}?tab=variance`}
                 />
             )}
-            {!running && <Notice tone="info">{t('marketdata.fxFeeds.run.notRunning')}</Notice>}
+            {running !== true && (
+                <Notice tone="info">{t('marketdata.fxFeeds.run.notRunning')}</Notice>
+            )}
             <div className="grid gap-4 lg:grid-cols-2">
                 <div className="space-y-4">
-                    {running && (
+                    {started && (
                         <LevelCard start={start} configured={show(feed['gmm_initial_price'])} />
                     )}
-                    {running && start.from_fixing && <WindowCard start={start} />}
+                    {started && start.from_fixing && <WindowCard start={start} />}
                 </div>
                 <div className="space-y-4">
                     {model !== '' && (
-                        <VarianceCard garch={garch} variance={running ? start.variance : null} />
+                        <VarianceCard garch={garch} variance={started ? start.variance : null} />
                     )}
                     {garch && (
-                        <CalibrationCard feed={feed} variance={running ? start.variance : null} />
+                        <CalibrationCard feed={feed} variance={started ? start.variance : null} />
                     )}
                 </div>
             </div>

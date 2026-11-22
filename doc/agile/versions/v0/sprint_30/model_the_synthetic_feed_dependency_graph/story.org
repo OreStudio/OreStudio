@@ -1,0 +1,233 @@
+:PROPERTIES:
+:ID: 8DE041AE-95E6-40CE-9B62-2CE3BA77838A
+:END:
+#+title: Story: Model the synthetic feeds as a dependency graph: upstreams, latent surfaces and vendor views
+#+description: Make the dependencies between synthetic feeds data: a vendor-neutral latent surface with named upstreams and per-vendor downstream views, each node with a state, a reason when it stops, links both ways, and its own diagnostics.
+#+type: story
+#+level: s2
+#+filetags: :synthetic:web:architecture:sprint_30:v0:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+#+environment: eager_maxwell
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A person who runs the synthetic market sees it as what it is: a graph of
+feeds, where each node depends on the nodes upstream of it. They can stop any
+node, and every node below it stops too and says why. They can follow every
+link up and down from any node's page. Each node keeps its own diagnostics,
+so a surface that publishes nothing says on its own page what it is missing.
+
+Today the dependencies are real but hidden. A vol surface reads its spot and
+two discounting curves through the run's market board, and nothing records
+that it depends on them. So a starved surface only writes =no market:
+curve:USD= to a service log, a stop says nothing to the nodes that depend on
+it, and the screens cannot show the links. The shared latent surface is also
+filed under one vendor: =synthetic.bloomberg.vol.audusd= is the market every
+vendor quotes, and ICE's view of it is named =synthetic.bloomberg.vol.audusd.ice=.
+
+** The entities
+
+Three kinds of node, each named for what it is:
+
+| Node | Entity | Name, for AUD/USD | What it is |
+|------+--------+-------------------+------------|
+| Upstream | =fx_spot_generation_config=, =ir_curve_generation_config= | =synthetic.bloomberg.fx.fx_spot.audusd=, =synthetic.bloomberg.ir.yield_curve.sofr.usd= | One vendor's own path for a spot or a curve, in that vendor's collection. |
+| Latent surface | =fx_vol_surface_feed= | =synthetic.latent.fx.fx_vol_surface.audusd= | The one hidden vol market of the pair. Vendor-neutral: the =latent= source in place of a vendor, and not in a vendor's collection. Publishes nothing itself. |
+| Vendor view | =fx_vol_surface_feed_contributor= | =synthetic.bloomberg.fx.fx_option.audusd= | One vendor's noisy quotes of the latent surface, published through that vendor's source, in that vendor's namespace beside its spots and curves. |
+
+The names follow [[id:90D85E90-E7EA-48D8-9245-313ECA3F9392][Synthetic feed naming scheme]], which the owner
+signed off on 2026-11-22. The latent surface takes =fx_vol_surface=, oresmd's
+instrument for a whole surface, and each vendor view =fx_option=, the
+instrument it quotes.
+
+** The naming scheme
+
+Today a feed's source name is built ad hoc in the publish step:
+=synthetic.<provider>.<pair>= for a spot, =synthetic.<provider>.<ccy><index><tenor>=
+for a curve and =synthetic.<provider>.vol.<pair>= for a surface. Nothing says
+what kind of feed it is, and the publish's own comment says the namespace is
+the provider "not by asset class". A source name is also more than a label: it
+is the feed's key, part of its tick subject (=synthetic.v1.ops.tick.<name>=), the
+spot's board key, and the seed of its random streams, so a rename draws new
+paths and should happen once.
+
+The proposed scheme, based on =oresmd=, which names what is observed (asset
+class, subject, instrument); the feed name adds who produces it:
+
+: synthetic.<source>.<asset_class>.<instrument>.<subject>
+
+- =source= is the provider code, or =latent= for a vendor-neutral market.
+- =asset_class= and =instrument= are spelled as =oresmd= spells them.
+- =subject= is ordered so that names sort usefully: for a curve the index
+  comes before the currency, =yield_curve.sofr.usd=, so the curves of one index
+  sort together.
+- Every part is lower case and the parts are dot-separated, so a name is a
+  valid NATS subject token sequence.
+
+To settle in the design: the instrument of a whole curve, which publishes
+pillar quotes of several =oresmd= instruments (=yield_curve= above is the
+working spelling); where an index's tenor goes (=euribor.eur.6m= or
+=euribor.6m.eur=); and how a name maps back to the =oresmd= series it
+publishes.
+
+The edges, each stored as data on the dependent node:
+
+- The latent surface reads a spot: the spot =oresmd= URI and provider pair it
+  already holds.
+- The latent surface reads two discounting curves, one for each currency. These
+  are named the same way, not found through the collection the surface sits in.
+- A vendor view reads its latent surface, and publishes through its vendor's
+  simulated source. That source is an upstream of the view too.
+
+** How a node stops, and what it says
+
+Each node is in one of four states, and the state always carries its reason:
+
+| State | STARTED | Reason it carries |
+|-------+-------+-------------------|
+| running | publishing, or for the latent surface, stepping | |
+| stopped | an operator stopped this node | who, when, and why, stored like a source stop |
+| starved | an upstream is not running | which upstream, and that upstream's own reason |
+| failing | the node runs but cannot produce | the diagnostic, such as =no market: curve:USD= or a missing FX option convention |
+
+- Stopping an upstream starves the latent surfaces that read it, and they
+  starve their vendor views. Each node names the node that stopped it, so the
+  chain reads back to the operator's reason.
+- Stopping a latent surface starves its vendor views only.
+- Stopping a vendor view stops that view only; the surface and the other
+  vendors run on.
+- Starting a node clears its own stop. The nodes below recover when every input
+  of theirs runs again.
+
+** Diagnostics and linkage
+
+- Every node has a message log on its page: its state changes with their
+  reasons, and the diagnostics it raises. The latent surface's calibration and
+  market messages (a refused expiry, a missing convention, an unreadable
+  board member, a refused tick) land in the latent surface's log, not only
+  in the service log.
+- Every message names the node it is about and, for a starved node, the node
+  that caused it, each as a link.
+- Every node's page links its upstreams and its downstreams, each with its
+  state, so the graph can be walked from any node in both directions.
+- The graph is one read that the service answers, nodes and edges with their
+  states, which both the BFF and =ores.http= serve.
+
+** How it fits the documented architecture
+
+The approach document already describes a dependency graph without the word:
+generation follows a *dependency order*, derived quantities "tick exactly when
+their inputs tick" and are re-derived "in dependency order", and the
+constraint table names the generation steps each quantity depends on
+([[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]]). The market board task named
+the gap: "a dependency reached through an unrelated object hides the graph"
+([[id:DDF8585F-75EE-4190-B20B-8A913DC1F883][Build the run's market board]]). This story makes the graph data, so
+the order, the states and the screens read one structure.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
+| Now           | The naming scheme and the graph design are signed off and documented. |
+| Waiting on    | Nothing.                               |
+| Next          | Build the vendor-neutral latent surface and rename the feeds (task 2). |
+| Last touched  | 2026-11-22                               |
+
+* Acceptance
+
+- A naming scheme for synthetic feeds, based on =oresmd=, is designed, signed
+  off by the owner, and written into the documentation before any feed is
+  renamed.
+- Every synthetic feed is named by that scheme; the latent surface of each pair
+  carries the =latent= source and is not in a vendor's collection.
+- Each vendor view is named in its vendor's namespace and is a node a person
+  can stop and start on its own, with the stop stored.
+- The latent surface's spot and both discounting curves are edges stored as
+  data, and the screens show them.
+- Every node's state is running, stopped, starved or failing, and carries its
+  reason: who and why for a stop, the upstream node for a starve, the
+  diagnostic for a failure.
+- Stopping an upstream starves the surfaces and views below it, and each names
+  the node that stopped it; starting it again recovers them.
+- The latent surface's calibration and market diagnostics appear in its own
+  message log on its page.
+- Every node's page links its upstreams and downstreams with their states, and
+  the graph is one read served by both the BFF and =ores.http=.
+- The approach and components documents describe the graph, its node kinds,
+  its states and its names.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:642ED805-A23C-404F-B494-8A74BB8AEB12][Design the synthetic feed naming scheme, based on oresmd, for sign-off]] | DONE | 2026-11-22 | 2026-11-22 | A scheme for the source names of synthetic feeds, built from the oresmd identity of what each feed observes and who produces it, settled with the owner and written into the documentation before any feed is renamed. |
+| [[id:46546EEB-580D-4C37-9398-422D3A18D692][Design the synthetic feed graph: nodes, edges, states and diagnostics]] | DONE | 2026-11-22 | 2026-11-22 | A design note for the feed graph: how its nodes and edges are stored, how a node's state and reason are kept and propagated, and where each node's messages live, settled with the owner before any of it is built. |
+
+* Decisions
+
+- *A naming scheme comes first, and is signed off.* Feed names follow
+  =synthetic.<source>.<asset_class>.<instrument>.<subject>=, based on =oresmd=,
+  with =latent= as the source of a vendor-neutral market and subjects ordered
+  to sort usefully (=yield_curve.sofr.usd=). The scheme is designed, signed off
+  by the owner and documented before any rename, because a name seeds a feed's
+  random streams and keys its ticks.
+- *Three node kinds, named for what they are.* An upstream is a vendor's own
+  path; a latent surface is vendor-neutral, under the =latent= source; a vendor
+  view is in its vendor's namespace, under the instrument it quotes.
+- *Edges are data on the dependent node.* The spot pair is already stored this
+  way; the curves follow. Nothing is found through where a node is filed.
+- *Stopped and starved are different states.* A stop is an operator's and is
+  stored with who and why; a starve is derived from the inputs and names the
+  input. Starting a starved node does nothing until its inputs run.
+- *A diagnostic belongs to the node that raised it.* The latent surface's
+  messages go to the latent surface's log, with links to the node they are
+  about.
+- *Spot and rates stay vendor paths.* Only vol has a latent market today; a
+  vendor-neutral latent spot or curve is not part of this story.
+
+* Out of scope
+
+- A vendor-neutral latent spot or latent curve: spot and rates stay one path
+  per vendor.
+- The spot's covered-interest-parity drift, which the board could later carry.
+- Graph nodes for asset classes the generator does not run yet, such as
+  equity and commodity surfaces; they follow the same pattern when they come.
+
+* Planned tasks
+
+To be scaffolded when the story starts, each ending in a check. The first
+gates the rest: no feed is renamed and no node is built until the scheme is
+signed off.
+
+0. *The naming scheme.* Design the source name scheme from =oresmd=, settle the
+   open points (the instrument of a curve, the place of a tenor, the mapping
+   back to the published series), get the owner's sign-off, and write it into
+   the documentation.
+1. *The design note.* A knowledge page for the graph: node kinds, names,
+   edges, states, the propagation rule and the diagnostics, and the updates to
+   the approach and components pages.
+2. *The vendor-neutral latent surface.* Rename every feed to the signed-off
+   scheme, move the latent surface out of the vendor collection, store the curve edges, and change the
+   dataset and the publish to match.
+3. *Vendor views as nodes.* Name each view in its vendor's namespace, by the
+   scheme, and give it a stored stop and start.
+4. *State and propagation.* The service holds each node's state and reason,
+   propagates starves down the edges, and answers the graph as one read.
+5. *Diagnostics.* A message log per node, fed by state changes and by the
+   latent surface's calibration and market messages, as telemetry log entries.
+   It first checks that a telemetry log entry carries an attribute a query can
+   filter on by node name.
+6. *The screens.* Links both ways on every node page, the states with their
+   reasons, stop and start per node, and the graph read through the BFF and
+   =ores.http=.
+
+* See also
+
+- [[id:BC75AE1F-BD6B-46E0-BA50-794DBD35576E][Mop up the synthetic generator: a provider's source control and a vol surface's upstreams]] -- the task whose review found the gap; it shipped the spot pair, the upstream links and the source control.
+- [[id:675E89FC-B5AA-4250-8B86-78062F0F22BC][Forwards for synthetic volatility surfaces]] -- the board and its members.

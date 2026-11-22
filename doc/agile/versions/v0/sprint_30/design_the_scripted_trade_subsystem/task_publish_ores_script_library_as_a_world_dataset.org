@@ -8,7 +8,7 @@
 #+filetags: :design_the_scripted_trade_subsystem:sprint_30:v0:
 #+owner: marco
 #+branch: feature/publish-ores-script-library-as-a-world-dataset
-#+pr: 4993
+#+pr: 4994
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-21
@@ -54,7 +54,9 @@ ORE's script library arrives as a world dataset whose methodology extracts, corr
 
 * Plan
 
-Five PRs, each ending in a check.
+Seven PRs, each ending in a check. The fourth step of the first plan, a trade
+records its script's version and a run writes the library from those versions,
+is three: a version must first name a whole script, which the rows did not.
 
 1. The shell's =script= menu, which needs no session: =parse=, =check=,
    =inputs= and =print=, a local unit of =ores.shell.trading= linking
@@ -68,10 +70,12 @@ Five PRs, each ending in a check.
    runs after the bring-up publish.
 3. The trading service's publish-from-DQ handler, so the dataset can be
    republished over the bus as well as at bring-up.
-4. A scripted trade records its script's name, holding tenant and version, or
-   its inline text and a hash, and a run writes the library from those
-   versions.
-5. A tenant publishes its own script through the trading service, which parses
+4. A script version names the whole script: every row beneath a script carries
+   the version of its script row, and the state of any version reads back.
+5. A scripted trade records its script's name, holding tenant and version, or
+   its inline text and a hash.
+6. A run writes the library from the versions its trades name.
+7. A tenant publishes its own script through the trading service, which parses
    it and warns on a name the world library holds.
 
 * Measurements
@@ -96,8 +100,27 @@ task and name that file in the Command column.
 | bus publish of the world bundle | 41 of 41 steps completed, ore.script_library among them; the trading service logged inserted=0 updated=0 after the bring-up publish | compass db recreate -y -k, services start, then bundles publish world --wait as super_admin | a2d0beeee1 |
 | bus republish after one staged change | the trading service logged updated=1; Accumulator01's first input at version 2, version 1 kept | the same, after an update of one staged input description | a2d0beeee1 |
 | trading publish tests | 10 assertions in 6 test cases (subject plan); the generated codec round trip within 18920 assertions in 5303 test cases | ores.trading.core.tests [publish], ores.trading.api.tests [codec] | a2d0beeee1 |
+| script versions | 9 of 9 pgTAP assertions: every current row carries its script's version after bring-up; a changed script's earlier version reads back as it was, its current rows as staged, an unchanged script keeps its version | pg_prove -U $ORES_TEST_DB_USER projects/ores.sql/test/trading_script_library_versions_test.sql | 9d0e657bec + PR 4 |
+| suites after the column | ores.trading.api.tests 21118 assertions in 5601 cases; ores.trading.core.tests 1841 in 282; ores.ore.core.tests 521015 in 567; ores.trading.scripting.tests 1200 in 18; all pass | the four test binaries | 9d0e657bec + PR 4 |
 
 * Notes
+
+** What the fourth PR found
+
+A trade could not have recorded a version that meant anything. A change to a
+script wrote its script row and its child rows as new versions, but each row's
+version counts that row's own writes, so the numbers did not line up, and the
+insert triggers stamp =valid_from= with =clock_timestamp()= while the publish
+closed rows at =current_timestamp=, so no instant separated one version from
+the next. Every child row now carries =script_version=, the version the script
+row was given in the same publish, and the published state function reads any
+version by that number.
+
+The column is not staged: the six models declare their staging bodies in
+=* Artefact columns=, listing the columns they had, so the staging tables are
+unchanged. A column option that leaves one column out of the default staging
+projection would be shorter, but the codegen that =compass-ng= runs is its own
+binary, so the option belongs there.
 
 ** What the third PR found
 
@@ -172,6 +195,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4994][#4994]] | [trading] Name the script version on every row of a script |
 | [[https://github.com/OreStudio/OreStudio/pull/4993][#4993]] | [trading] Publish the script library from DQ over the bus |
 | [[https://github.com/OreStudio/OreStudio/pull/4978][#4978]] | [trading] Publish ORE's script library as a world dataset |
 | [[https://github.com/OreStudio/OreStudio/pull/4977][#4977]] | [shell] Parse, check and list a payoff script's inputs offline |
@@ -212,10 +236,18 @@ via its "Verifies task" field.
 | 4993.5 | the empty-operation test fails at the ops lookup, so it tests something else | service_publish_subject_plan_tests.cpp | accept | its subject is trading.v1.ops. |
 | 4993.6 | no test covers the handler itself | none | reject | the handler needs a NATS server and a workflow step; the bus publish ran both its success paths, and the capture's shared handler is the place for one test of all copies |
 | 4993.7 | a missing SQL function fails the step with the database's text | publish_from_dq_handler.cpp | reject | the step's failure goes to the workflow, which only administrators read; every copy reports it the same way |
+| 4994.1 | a database made before the branch lacks the column, and no upgrade script fills it | none | reject | the repository has no upgrade scripts; services refuse a database whose schema fingerprint differs, so a recreate is the path |
+| 4994.2 | the test's fixture rows can vanish and turn the changes into silent no-ops | trading_script_library_versions_test.sql | accept | an assertion that the staged rows and the untouched script exist, before the change |
+| 4994.3 | no test reads a version the script never had | trading_script_library_versions_test.sql | accept | it reads back as no script and empty lists |
+| 4994.4 | a long line in the function comment | trading_publish_from_dq_create.sql | accept | re-wrapped |
+| 4994.5 | long insert column lists | trading_publish_from_dq_create.sql | accept | wrapped |
+| 4994.6 | a regeneration could reorder the column | none | reject | the column order comes from the model; a regeneration of the branch changes no file |
 
 * Result
 
-In progress: the first three of five PRs are in. The third gives the trading
+In progress: the first four of seven PRs are in. The fourth makes a script
+version name the whole script: every row beneath a script carries the version
+of its script row, so any version reads back exactly. The third gives the trading
 service a handler for the script library's publish step, so a bundle
 published over the bus publishes the library as the bring-up does. The second publishes ORE's
 script library as the =ore.script_library= world dataset: a generator in

@@ -152,6 +152,7 @@ script_coarsening_to_domain(const messaging::script_coarsening_write& write) {
     v.purpose = write.purpose;
     v.sequence_number = write.sequence_number;
     v.eligible_schedule = write.eligible_schedule;
+    v.script_version = write.script_version;
     return v;
 }
 

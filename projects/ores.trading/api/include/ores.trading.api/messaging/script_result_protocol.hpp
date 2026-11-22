@@ -56,6 +56,7 @@ struct script_result_write {
     int sequence_number{};
     std::string variable;
     std::optional<std::string> rename;
+    int script_version{};
 
     friend bool operator==(const script_result_write&, const script_result_write&) = default;
 };
@@ -380,6 +381,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.script_results.de
         utility::codec::field{"sequence_number", &script_result_write::sequence_number},
         utility::codec::field{"variable", &script_result_write::variable},
         utility::codec::field{"rename", &script_result_write::rename},
+        utility::codec::field{"script_version", &script_result_write::script_version},
     };
 }
 

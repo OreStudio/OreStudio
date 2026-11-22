@@ -38,6 +38,7 @@ export interface ScriptResult {
     sequence_number: number;
     variable: string;
     rename: string | null;
+    script_version: number;
     modified_by: string;
     performed_by: string;
     change_reason_code: string;

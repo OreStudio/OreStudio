@@ -59,6 +59,7 @@ struct script_input_entity {
     bool is_array = false;
     std::optional<std::string> value_rule;
     std::optional<std::string> description;
+    int script_version = 0;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
@@ -81,6 +82,7 @@ struct script_input_entity {
                query_builder::bind("is_array", &e::is_array) |
                query_builder::bind("value_rule", &e::value_rule) |
                query_builder::bind("description", &e::description) |
+               query_builder::bind("script_version", &e::script_version) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |
                query_builder::bind("change_reason_code", &e::change_reason_code) |

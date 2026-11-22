@@ -57,6 +57,7 @@ struct script_input_write {
     bool is_array{};
     std::optional<std::string> value_rule;
     std::optional<std::string> description;
+    int script_version{};
 
     friend bool operator==(const script_input_write&, const script_input_write&) = default;
 };
@@ -382,6 +383,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.script_inputs.del
         utility::codec::field{"is_array", &script_input_write::is_array},
         utility::codec::field{"value_rule", &script_input_write::value_rule},
         utility::codec::field{"description", &script_input_write::description},
+        utility::codec::field{"script_version", &script_input_write::script_version},
     };
 }
 

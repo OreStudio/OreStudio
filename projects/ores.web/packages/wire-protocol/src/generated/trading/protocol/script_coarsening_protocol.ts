@@ -39,6 +39,7 @@ export interface ScriptCoarseningWrite {
     purpose: string;
     sequence_number: number;
     eligible_schedule: string;
+    script_version: number;
 }
 
 export interface ScriptCoarseningChange {

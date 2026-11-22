@@ -87,6 +87,56 @@ The script variable naming the index calibrated.
 std::string("Underlying")
 #+end_src
 
+** script_version
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:economic: false
+:END:
+
+The version of the script row this row belongs to.
+
+A change to a script writes a new version of the script row and every one of
+its rows, so the rows that carry one script version are the whole script as
+that version states it, and a trade that records the version reads them back
+exactly. The publish function writes it.
+
+#+begin_src cpp :name generator
+1
+#+end_src
+
+* Artefact columns
+
+The staging table holds every column but =script_version=, which the
+publish function writes from the script row it has just written, so a
+dataset has none to stage.
+
+** script_name
+:PROPERTIES:
+:type: text
+:END:
+
+** purpose
+:PROPERTIES:
+:type: text
+:END:
+
+** sequence_number
+:PROPERTIES:
+:type: integer
+:END:
+
+** version
+:PROPERTIES:
+:type: integer
+:END:
+
+** index_variable
+:PROPERTIES:
+:type: text
+:END:
+
 * Foreign keys
 
 ** script_name

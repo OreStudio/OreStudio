@@ -35,6 +35,7 @@ create table if not exists "ores_trading_script_coarsenings_tbl" (
     "tenant_id" uuid not null,
     "version" integer not null,
     "eligible_schedule" text not null,
+    "script_version" integer not null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,

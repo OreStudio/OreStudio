@@ -51,6 +51,7 @@ generate_synthetic_script_calibration_strike(utility::generation::generation_con
     r.calibration_number = 1;
     r.sequence_number = 1;
     r.strike_variable = std::string("Strike");
+    r.script_version = 1;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

@@ -57,6 +57,7 @@ struct script_result_entity {
     int version = 0;
     std::string variable;
     std::optional<std::string> rename;
+    int script_version = 0;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
@@ -77,6 +78,7 @@ struct script_result_entity {
                query_builder::bind("version", &e::version) |
                query_builder::bind("variable", &e::variable) |
                query_builder::bind("rename", &e::rename) |
+               query_builder::bind("script_version", &e::script_version) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |
                query_builder::bind("change_reason_code", &e::change_reason_code) |

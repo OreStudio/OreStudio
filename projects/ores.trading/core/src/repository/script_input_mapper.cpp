@@ -48,6 +48,7 @@ domain::script_input script_input_mapper::map(const script_input_entity& v) {
     r.is_array = v.is_array;
     r.value_rule = v.value_rule;
     r.description = v.description;
+    r.script_version = v.script_version;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -71,6 +72,7 @@ script_input_entity script_input_mapper::map(const domain::script_input& v) {
     r.is_array = v.is_array;
     r.value_rule = v.value_rule;
     r.description = v.description;
+    r.script_version = v.script_version;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

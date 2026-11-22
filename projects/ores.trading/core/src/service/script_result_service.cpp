@@ -152,6 +152,7 @@ domain::script_result script_result_to_domain(const messaging::script_result_wri
     v.sequence_number = write.sequence_number;
     v.variable = write.variable;
     v.rename = write.rename;
+    v.script_version = write.script_version;
     return v;
 }
 

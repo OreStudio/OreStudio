@@ -54,6 +54,7 @@ namespace ores::trading::domain {
         utility::codec::field{"sequence_number", &script_result::sequence_number},
         utility::codec::field{"variable", &script_result::variable},
         utility::codec::field{"rename", &script_result::rename},
+        utility::codec::field{"script_version", &script_result::script_version},
         utility::codec::field{"modified_by", &script_result::modified_by},
         utility::codec::field{"performed_by", &script_result::performed_by},
         utility::codec::field{"change_reason_code", &script_result::change_reason_code},

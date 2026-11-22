@@ -27,6 +27,7 @@
 #include "ores.history.api/domain/provenance_fields.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/script_variant.hpp"
+#include <string>
 #include <vector>
 
 namespace ores::trading::presentation {
@@ -39,6 +40,7 @@ render_script_variant_fields(const domain::script_variant& v) {
     fields.push_back({.name = "Script Name", .value = v.script_name});
     fields.push_back({.name = "Code", .value = v.code});
     fields.push_back({.name = "Npv Variable", .value = v.npv_variable});
+    fields.push_back({.name = "Script Version", .value = std::to_string(v.script_version)});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

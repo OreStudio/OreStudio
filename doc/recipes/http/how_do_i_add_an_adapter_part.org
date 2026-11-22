@@ -70,13 +70,13 @@ contain a CMakeLists.txt file".
    =#+http_area:= to the model's drawer, then
    =compass codegen generate --model <model> --address ores.cpp.http-route= and
    =--address ores.doc.http-recipe=. Add the unit to the aggregate, regenerate
-   the file lists, then
-   =python3 build/scripts/route_inventory.py --write= and
-   =./compass.sh generate=, which rewrites the HTTP recipe inventory.
+   the file lists, then run =./compass.sh generate=, which rewrites the
+   HTTP route inventory and the HTTP recipe inventory.
 
-The area in =#+http_area:= must be one =build/scripts/route_classification.py=
-publishes, and the classification needs a rule for the =/api/v1/<area>/=
-family or the inventory check reports every generated route as unclassified.
+The area in =#+http_area:= must be one of =AREAS= in
+=build/scripts/route_classification.py=, and the Rules table of
+=compass/checks/route_inventory.org= needs a rule for the =/api/v1/<area>/=
+family, or the inventory check reports every generated route as unclassified.
 
 * Tested by
 

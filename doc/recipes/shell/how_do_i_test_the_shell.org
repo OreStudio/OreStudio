@@ -121,7 +121,7 @@ not listed there is invisible to a reader browsing the inventory. Check it
 before you raise a PR:
 
 #+begin_src sh :results verbatim
-python3 projects/ores.codegen/scripts/regenerate_shell_recipe_inventory.py --check
+compass-ng check --codec recipe_inventories
 #+end_src
 
 * Script

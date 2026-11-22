@@ -21,6 +21,7 @@
 #include "ores.iam.client/client/run_token_minter.hpp"
 #include "ores.nats/domain/delivery.hpp"
 #include "ores.ore.api/net/ore_storage.hpp"
+#include "ores.ore.core/domain/pinned_script_library.hpp"
 #include "ores.ore.core/domain/run_document_projection.hpp"
 #include "ores.ore.core/log/engine_log.hpp"
 #include "ores.ore.core/market/market_data_parser.hpp"
@@ -34,6 +35,7 @@
 #include "ores.storage.api/net/object_keys.hpp"
 #include "ores.storage.api/net/storage_paths.hpp"
 #include "ores.storage.core/net/storage_transfer.hpp"
+#include "ores.trading.api/messaging/script_library_operation_protocol.hpp"
 #include "ores.trading.api/messaging/trade_operations_protocol.hpp"
 #include "ores.utility/codec/json_codec.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
@@ -56,6 +58,9 @@ using namespace ores::reporting::messaging;
 namespace {
 
 constexpr std::string_view platform_bucket = ores::storage::api::object_keys::ores_bucket;
+
+/// The file the run's script library is written to when its document names none.
+constexpr std::string_view script_library_file = "scriptlibrary.xml";
 
 /// The trades a package left out, as the canonical log CSV the run reads.
 std::string refusal_log(const std::vector<ores::ore::domain::refused_trade>& refused) {
@@ -275,6 +280,61 @@ void report_package_handler::prepare_package(ores::nats::delivery delivery) {
                 (requested_date.empty() ? std::string("no particular date") : requested_date) +
                 ", the package carries " + std::to_string(rows.items.size()) +
                 " trade(s): " + named);
+            std::move(delivery).commit();
+            return;
+        }
+
+        // The engine reads the scripts of the run's scripted trades from the
+        // library the run document names, so the library is written from the
+        // versions the trades were booked on, read from trading, and never
+        // taken from a copy the run's configuration carries. A trade whose
+        // version the store does not hold cannot be priced as booked, so the
+        // run is refused, naming it, rather than priced on another script.
+        auto plan = ores::ore::domain::pin_script_library(rows.instruments);
+        if (!plan.entries.empty() && plan.refusals.empty()) {
+            ores::trading::messaging::export_script_library_request library_request;
+            library_request.pins = ores::ore::domain::pins_of(plan);
+            std::string library_error;
+            const auto read = nats_call(owners, library_request, library_error);
+            if (!read || !library_error.empty()) {
+                wf->fail("prepare_ore_package: the run's scripts could not be read: " +
+                         (library_error.empty() ? std::string("trading did not answer") :
+                                                  library_error));
+                std::move(delivery).commit();
+                return;
+            }
+            for (const auto& pin : read->missing)
+                plan.refusals.push_back(
+                    std::format("The store holds no version {} of the script {} for tenant {}.",
+                                pin.version,
+                                pin.name,
+                                boost::uuids::to_string(pin.tenant_id)));
+            if (read->missing.empty()) {
+                if (document == run_input.end()) {
+                    wf->fail("prepare_ore_package: the run has no run document to name its "
+                             "script library in, for run " +
+                             req.report_instance_id);
+                    std::move(delivery).commit();
+                    return;
+                }
+                auto library_file = ores::ore::domain::run_document_projection::setup_file(
+                    document->second, "scriptLibrary");
+                if (!library_file) {
+                    library_file = std::string(script_library_file);
+                    document->second = ores::ore::domain::run_document_projection::with_setup_file(
+                        document->second, "scriptLibrary", *library_file);
+                }
+                run_input[*library_file] =
+                    ores::ore::domain::write_pinned_script_library(plan, *read);
+            }
+        }
+        if (!plan.refusals.empty()) {
+            std::string reasons;
+            for (const auto& refusal : plan.refusals)
+                reasons += (reasons.empty() ? "" : " ") + refusal;
+            wf->fail("prepare_ore_package: the run's scripted trades cannot be given the scripts "
+                     "they were booked on. " +
+                     reasons + " Run " + req.report_instance_id);
             std::move(delivery).commit();
             return;
         }

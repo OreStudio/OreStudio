@@ -381,3 +381,29 @@ TEST_CASE("as_of_date_states_nothing_for_a_document_that_prices_at_the_latest_da
     CHECK_FALSE(run_document_projection::as_of_date(text).has_value());
     ORES_LOG_SEV(lg, info) << "no date, as expected";
 }
+
+TEST_CASE("with_setup_file_names_a_file_the_document_did_not_name_and_keeps_one_it_did",
+          "[ore][xml][roundtrip][run_document]") {
+    auto lg(make_logger(test_suite));
+
+    const std::string text = R"(
+<ORE>
+  <Setup>
+    <Parameter name="inputPath">Input</Parameter>
+    <Parameter name="portfolioFile">portfolio.xml</Parameter>
+  </Setup>
+  <Analytics></Analytics>
+</ORE>)";
+
+    CHECK_FALSE(run_document_projection::setup_file(text, "scriptLibrary").has_value());
+
+    const auto named =
+        run_document_projection::with_setup_file(text, "scriptLibrary", "scriptlibrary.xml");
+    CHECK(run_document_projection::setup_file(named, "scriptLibrary") == "scriptlibrary.xml");
+    CHECK(run_document_projection::setup_file(named, "portfolioFile") == "portfolio.xml");
+
+    const auto renamed =
+        run_document_projection::with_setup_file(named, "scriptLibrary", "scripts.xml");
+    CHECK(run_document_projection::setup_file(renamed, "scriptLibrary") == "scripts.xml");
+    ORES_LOG_SEV(lg, info) << "named the script library";
+}

@@ -95,7 +95,13 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Which state wins when a node is both stopped and starved. | =synthetic_feed_graph.org= | Accept | Precedence stated: stopped, then starved, failing, running; a stopped node keeps its own reason and logs the starve. |
+| 2 | Whether a failing input starves the nodes below. | =synthetic_feed_graph.org= | Accept | Stated: a failing node produces nothing, so it starves the nodes below it. |
+| 3 | The graph is not said to be acyclic. | =synthetic_feed_graph.org= | Accept | Stated, with why: every edge points to a kind that comes before it, so a walk ends. |
+| 4 | The source edges stay rule-based although choice 1 stores edges. | =synthetic_feed_graph.org= | Accept | Stated that they stay derived, as a lookup of the stored provider, and what a collection is. |
+| 5 | The telemetry attribute check is left open on a closed task. | =story.org= | Accept | The story's diagnostics task now owns the check. |
+| 6 | "A few hundred nodes" is an estimate. | =synthetic_feed_graph.org= | Accept | Replaced by the count: 188 feed nodes and 8 sources, from the system tenant. |
+| 7 | Blank lines before the See also links of the approach page. | =synthetic_market_data_generation_approach.org= | Decline | The page's existing layout, before either design PR. |
 
 * Result
 

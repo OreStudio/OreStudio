@@ -47,8 +47,15 @@ stops its views, as it already stops its own spots and curves.
 | latent | upstream spot | =spot= | stored: =spot_oresmd_uri= and =spot_provider_code= |
 | latent | upstream curve | =base_curve=, =quote_curve= | found by a rule: the collection's curve of the currency that is not a projection and has no tenor |
 | view | latent | =surface= | stored: the link's =feed_id= |
-| view | source | =source= | found by the contributor's provider |
-| upstream | source | =source= | found by the collection's provider |
+| view | source | =source= | derived: the catalogue source of the contributor's provider |
+| upstream | source | =source= | derived: the catalogue source of the provider of the feed's collection |
+
+A feed's collection is the market data generation config it belongs to, which
+stands for one provider. The two source edges stay derived after this design:
+the provider is stored on the collection and on the contributor, and the
+catalogue maps a provider to its simulated source, one source for each provider
+today. Choice 1 stores the edges that were found by searching the feeds; these
+two are a lookup of a stored key, not a search.
 
 ** The states, and how they pass down the edges
 
@@ -65,6 +72,17 @@ and failing if it runs but its last attempt produced nothing. A starved node
 names the input that starved it, so the chain reads back to the first cause.
 Starting a node clears its own stop; the nodes below it recover when all their
 inputs run again, with no action of their own.
+
+- *Precedence.* A node has one state, the first that holds of stopped,
+  starved, failing and running. A stopped node whose input also stops stays
+  stopped and keeps its own reason; its log records the starve as well.
+- *A failing input starves.* A failing node produces nothing, so for the nodes
+  below it it does not run: they are starved, and name it. A surface that
+  fails on =no market: curve:USD= starves its views.
+- *The graph has no cycles.* Every edge points from a node to a kind that comes
+  before it: a view to a latent surface and a source, a latent surface to its
+  upstreams, an upstream to its source, and a source to nothing. So a change
+  walked down the edges ends.
 
 ** The choices, signed off
 
@@ -118,16 +136,18 @@ inputs run again, with no action of their own.
 - /Adopted: A./ No new store: a node's page reads its log from telemetry by
   the node's name. The messages are the state changes with their reasons, the
   operator's stops and starts, and the diagnostics a node raises, such as a
-  latent surface's refused expiry or missing convention. This needs a check
-  that a log entry carries the attribute a query can filter on.
+  latent surface's refused expiry or missing convention. It needs a check that a
+  log entry carries an attribute a query can filter on; the story's diagnostics
+  task owns that check.
 
 *** How the screens read the graph
 
 - /Option A, one read of the whole graph./ A verb that answers every node with
   its state, reason and cause, and every edge with its role.
 - /Option B, a read per node of its neighbours./
-- /Adopted: A, with a filter by node./ The graph is a few hundred nodes, so
-  the whole read is cheap; the filter answers one node's upstreams and
+- /Adopted: A, with a filter by node./ The graph is small, so the whole read is
+  cheap: 188 feed nodes and 8 sources in the seeded datasets today, counted
+  from the system tenant. The filter answers one node's upstreams and
   downstreams for its page. Both the BFF and ores.http serve it.
 
 ** What the screens show

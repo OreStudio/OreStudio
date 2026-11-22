@@ -34,9 +34,12 @@ holds: a person who may book trades can still give an agent only the right to
 look. This is the principle of least privilege (Saltzer and Schroeder, 1975)
 applied to delegation.
 
-A key redeems the grant. It is generated when the person asks for it, shown
-once, and stored as a prefix, by which it is found, and a hash, against which
-it is compared; the key itself is never stored. A grant may have several keys,
+A key redeems the grant. It is generated when the person asks for it from 256
+random bits, shown once, and stored as a prefix, by which it is found, and a
+SHA-256 hash, against which it is compared; the key itself is never stored. A
+fast hash suffices because the key is a long random secret, not a password a
+person chose. Failed exchanges are limited per source address and per prefix,
+as the prototype limited failed sign-ins ([[id:039005AD-8319-416C-9F70-6A5477FEE89D][The ores.agent prototype: findings for the target design]]). A grant may have several keys,
 so that a key can be replaced before the old one is revoked. Later, an OAuth
 client can redeem the same grant: the consent page of an OAuth sign-in creates
 a grant exactly as the grants page does, and everything after the grant is
@@ -49,7 +52,6 @@ unchanged ([[id:BEF95B2A-42BF-40DA-BC3D-7B703C34ED73][Decide how an outside MCP 
 Source: [[./agent_grant_classes.puml][=agent_grant_classes.puml=]]. Regenerate with
 =plantuml -tpng doc/knowledge/agents/agent_grant_classes.puml=.
 
-
 ** Its lifecycle
 
 A grant is created active by its person. It ends when the person or an
@@ -57,7 +59,8 @@ administrator revokes it, or when its expiry passes, and an ended grant does
 not return. A person who is disabled or removed does not change the grant's
 state; each exchange checks that the person is still active, as each run-grant
 exchange checks its grantor ([[id:78B82824-0BBB-4442-A9FA-E1F265DF57BD][Run grants and run tokens]]). Revocation takes effect at the next
-exchange, so it is bounded by the lifetime of the token an exchange issues.
+exchange, at most five minutes later ([[id:1162906F-BB72-486E-9A11-30D567C65F3E][Delegation tokens for LLM agents: subject and actor claims]],
+/How soon a change reaches the agent/).
 
 #+caption: An agent grant is active until its person or an administrator revokes it or its expiry passes; a lapsed person is refused at each exchange.
 #+attr_html: :width 100%
@@ -65,7 +68,6 @@ exchange, so it is bounded by the lifetime of the token an exchange issues.
 
 Source: [[./agent_grant_states.puml][=agent_grant_states.puml=]]. Regenerate with
 =plantuml -tpng doc/knowledge/agents/agent_grant_states.puml=.
-
 
 ** Where a person governs it
 

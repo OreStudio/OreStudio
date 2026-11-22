@@ -45,7 +45,6 @@ drawn from it is recorded in [[id:039005AD-8319-416C-9F70-6A5477FEE89D][The ores
 Source: [[./agent_call_components.puml][=agent_call_components.puml=]]. Regenerate with
 =plantuml -tpng doc/knowledge/agents/agent_call_components.puml=.
 
-
 ** The steps of a read
 
 A read passes through five steps, drawn below.
@@ -67,7 +66,6 @@ A read passes through five steps, drawn below.
 
 Source: [[./agent_read_sequence.puml][=agent_read_sequence.puml=]]. Regenerate with
 =plantuml -tpng doc/knowledge/agents/agent_read_sequence.puml=.
-
 
 ** What differs from the person's own call
 

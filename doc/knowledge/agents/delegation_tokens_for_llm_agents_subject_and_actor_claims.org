@@ -29,8 +29,8 @@ An agent presents its key as a bearer token (Jones and Hardt, 2012). =ores.http=
 asks IAM to exchange it. IAM finds the grant by the key's prefix, compares the
 hash, checks that the grant is active and that its person is still active, and
 issues a JSON Web Token (Jones, Bradley and Sakimura, 2015) that lasts five
-minutes. =ores.http= keeps the token for that key until it is stale, so most
-calls need no exchange.
+minutes. =ores.http= keeps the token for that key until thirty seconds before
+it expires and never past its expiry, so most calls need no exchange.
 
 #+caption: A person makes a key in ores.web; on each call ores.http uses a cached token or exchanges the key with IAM for a five-minute token naming the person and the agent.
 #+attr_html: :width 100%
@@ -38,7 +38,6 @@ calls need no exchange.
 
 Source: [[./agent_key_exchange.puml][=agent_key_exchange.puml=]]. Regenerate with
 =plantuml -tpng doc/knowledge/agents/agent_key_exchange.puml=.
-
 
 ** The claims
 
@@ -49,8 +48,15 @@ Source: [[./agent_key_exchange.puml][=agent_key_exchange.puml=]]. Regenerate wit
 | =tenant_id=, =party_id= | the grant's tenant and party | where the call acts |
 | scope | read only or read and write | whether a write may be attempted at all |
 
-The roles in the token are the person's, as they stand at the exchange. A
-role the person loses is lost by the agent within one token's lifetime.
+The roles in the token are the person's, as they stand at the exchange.
+
+** How soon a change reaches the agent
+
+Everything the exchange checks takes effect at the next exchange: a revoked
+or expired grant, a person disabled or removed, and a role the person loses.
+Because a token lasts five minutes and the cache never keeps one past its
+expiry, an agent keeps at most five minutes of the access it had. This is the
+one bound; the pages that need it link here.
 
 ** What it is not
 

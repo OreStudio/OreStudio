@@ -41,6 +41,8 @@ findings that the target design keeps.
   behaviour from model quality; deterministic paths inflate a score, and small
   corpora establish no general accuracy.
 - *An MCP session id is not a credential.*
+- *Failed sign-ins are limited*, ten a minute for each principal, so a
+  guessed credential costs time.
 
 ** What the target design changes
 

@@ -39,9 +39,12 @@ part is the agent's person; its later parts are those the policy names for the
 act. The agent can never decide a part: a model checking its own work is a weak
 check, because the check shares the priors that produced the error
 ([[id:0D919421-2B73-4322-9F79-9FDA38A67EA1][Large language models]], /Correlated errors/). The person decides only the first.
-The later parts are decided by someone else; when nobody else holds the right,
-the request stays pending, and the review panel says that it has no eligible
-approver. Over MCP the held write is an answer, not an error: =call_operation=
+The later parts are decided by someone else, or closed by a rule exactly as for
+the person's own write (see /What a rule cannot close/ below). When no rule
+closes a later part and nobody else holds the right to decide it, the request
+stays pending, and the review panel says that it has no eligible approver: such
+a tenant cannot complete that kind of agent write until it has a second person
+or a rule. Over MCP the held write is an answer, not an error: =call_operation=
 returns the request, so the agent can tell its person what waits.
 
 #+caption: An agent's write: refused at ores.http under a read-only grant, otherwise held as an approval request that the agent's person approves and then a second approver approves before the change applies.
@@ -50,7 +53,6 @@ returns the request, so the agent can tell its person what waits.
 
 Source: [[./agent_write_six_eyes.puml][=agent_write_six_eyes.puml=]]. Regenerate with
 =plantuml -tpng doc/knowledge/agents/agent_write_six_eyes.puml=.
-
 
 ** Trades
 
@@ -63,6 +65,15 @@ authorisation is metadata on the trade and moves no version, so the trade's
 lifecycle is unchanged, and an unauthorised trade's contribution to risk and
 P&L follows the same rule whoever booked it.
 
+The difference is accountability. A trader's own booking is the act of a
+person who answers for it; an agent's booking is live before any person has
+looked at it. Three rules bound that. A read-only grant cannot book: the
+booking is refused at =ores.http= like any other write. The trade carries its
+acting agent ([[id:2D36D474-2CF9-4498-AF49-818CEF080B98][Auditing of LLM agent actions]]), so the blotter, the authorisation queue and the
+risk and P&L views can show the trades an agent booked that nobody has yet
+authorised, and filter them out. And the person's part comes first, so
+Operations never authorises a booking its person has not confirmed.
+
 #+caption: An agent's booking goes live and unauthorised, and its operational authorisation waits for the agent's person and then for Operations.
 #+attr_html: :width 100%
 [[proj:doc/knowledge/agents/agent_trade_booking.png]]
@@ -70,15 +81,15 @@ P&L follows the same rule whoever booked it.
 Source: [[./agent_trade_booking.puml][=agent_trade_booking.puml=]]. Regenerate with
 =plantuml -tpng doc/knowledge/agents/agent_trade_booking.puml=.
 
-
 ** What a rule cannot close
 
 The [[id:71146F3F-B884-4E61-BA8B-A8A0731703C6][Rules for the automatic approval of requests]] close a request with no person under five stated rules. A
 request an agent raised is not closed by any of them at its first part: the
 point of that part is that a person looks at what the agent did, and a rule
 that closes it removes the look. The later parts follow the rules exactly as
-the person's own write would, so a demonstration tenant or a one-person
-installation still needs the person and no one else.
+the person's own write would. In a demonstration tenant, or an installation for
+one person, a rule closes the later parts, so the person's approval is all the
+write needs; it still needs that.
 
 * See also
 

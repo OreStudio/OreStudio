@@ -28,11 +28,11 @@ A vol surface reads three upstream values on every tick: its pair's spot and the
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:8EC92006-17BB-4575-BA13-2BE5ED5327C3][Build each party's volatility surfaces from vendor quotes of a latent surface]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-22                               |
 
 * Acceptance
@@ -105,9 +105,14 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Vol feeds naming exactly one spot feed and one discounting curve per currency | 14 of 14, on the BFF and on ores.http | =check_upstreams.py= (scratchpad) as =super_admin= | eb2f68203b |
+| Source stop stored, kept across a synthetic service restart, cleared by a start | lseg-a: stored with reason, "stays stopped" after restart, closed row after start, 14 feeds served again | =check_sources.py= (scratchpad), BFF and ores.http | 6c5df4b7f9 |
+| Surfaces held per vendor source, and held by that source alone | bloomberg-a, ice-a, tradeweb-a: 14 held, 0 alone | =check_sources.py list= | 6c5df4b7f9 |
+| Source handler tests | 5 cases pass | =ores.synthetic.service.tests "[simulated_source_handler]"= | ab5a97fecc |
 
 * Notes
+
+- *Wide type ceilings raised, by the owner's decision (2026-11-22).* The spot pair adds two fields to =fx_vol_surface_feed= (31 to 33), =fx_vol_surface_feed_write= (23 to 25) and =fx_vol_surface_feed_entity= (32 to 34). The wide types check says a ceiling may not grow, and the codegen cannot group database columns into a type of their own, so the owner chose to raise the three rows in =compass/checks/wide_types.org=.
 
 ** Why the spot was never named (analysis, 2026-11-22)
 
@@ -143,6 +148,33 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The stored stop and the adapter can disagree when the adapter call throws. | =simulated_source_handler.hpp= | Accept | A failed adapter stop removes the row; a start starts the adapter before removing the row and stops it again if the removal fails. Two tests. |
+| 2 | The handler does not check the stop reason. | =simulated_source_handler.hpp= | Accept | A blank reason is refused before anything is written. One test. |
+| 3 | Start records no reason. | =simulated_source_handler.hpp= | Decline | Start needs no confirmation by the agreed UX; the closed row's history keeps who and when. |
+| 4 | The generated CRUD can change the row without the adapter. | =ores.synthetic.stopped_simulated_source.org= | Accept | Documented in the model; the generated write and delete are system tenant only. |
+| 5 | Existing rows need a migration for the spot columns. | =fx_vol_surface_feed= | Decline | No migrations: the database is recreated and the publish sets both columns; checked live on 14 feeds. |
 
 * Result
+
+A vol surface's config names the spot it reads as the pair a market series
+is keyed by, =spot_oresmd_uri= and =spot_provider_code=, which the publish sets
+from the spot feed of the surface's own collection. A spot feed publishes under
+its own source name, and the surface's board read and its latent block's
+anchor resolve the one feed the pair names; a pair naming none is refused with
+the reason. The vol feed's Calibration tab links its spot and its two
+discounting curves with their run state, and no longer calls a running surface
+stopped. Its Surface tab draws three cards side by side with gamma at 0.5 and
+a disabled gamma field in the start dialog, and its Contributors tab is a list
+whose rows open each contributor's own page. ores.http serves the vol feed's
+composed key read, as the BFF does.
+
+An operator stops and starts a provider's simulated source from a strip on the
+Provider tab. The stop is stored in =stopped_simulated_source=, with who and
+why, kept across a restart of the service, and the dialog says first what it
+stops. Only the system tenant stops a source, with the run permission and a
+reason; the stored stop and the adapter stay in step if either step fails.
+
+The review turned up a larger gap: the feeds form a dependency graph that
+nothing models, and the latent surface carries a vendor's name. That is the
+story [[id:8DE041AE-95E6-40CE-9B62-2CE3BA77838A][Model the synthetic feeds as a dependency graph]], which starts with a
+signed-off oresmd naming scheme.

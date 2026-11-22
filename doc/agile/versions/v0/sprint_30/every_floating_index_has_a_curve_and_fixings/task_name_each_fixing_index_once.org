@@ -120,7 +120,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | pgTAP test copies the address formula of =index_fixing_uri= | =index_fixings.hpp= | Accepted | The function's comment names the test (e05f7e1959). |
+| 2 | Possible silent skip in the pgTAP test | =synthetic_curve_fixing_addresses_test.sql= | No change | The reviewer found no issue. |
+| 3 | Codec table and index map can drift | =datum_ore_index_codec_tests.cpp= | Declined | The map guard is not long running; it runs with the codec suite and caught the drift on this branch. |
+| 4 | =MXN-TIIE= still unmapped | — | Agreed | Out of scope; capture E018113F. |
+| 5 | Existing databases need the family rename | populate scripts | Declined | Environments are rebuilt from the populate scripts; no seed migrations. |
+| 6 | Diagram PNG and academic review of pages | =ores.marketdata.data_model.png=, knowledge pages | Accepted | PNG re-rendered; synthetic mention removed from a general note; market names cited (e05f7e1959). |
 
 * Result
 

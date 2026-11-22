@@ -33,7 +33,9 @@
  * - the system tenant refuses a code only a tenant holds;
  * - a tenant resolves a code it holds itself;
  * - a tenant resolves a world commodity, which it reads where it lies;
- * - a tenant refuses a code no catalogue holds.
+ * - a tenant refuses a code no catalogue holds;
+ * - a session that states no tenant resolves the system tenant's rows and
+ *   refuses a tenant's.
  *
  * Run as ORES_TEST_DB_USER, never as the owner role, which bypasses row-level
  * security: pg_prove -d <database> test/trading_basket_constituent_tenant_scope_test.sql
@@ -41,7 +43,7 @@
 
 begin;
 
-select plan(5);
+select plan(7);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
 
@@ -105,6 +107,22 @@ select throws_ok(
     '23514',
     null,
     'a tenant refuses a code no catalogue holds');
+
+-- A session that states no tenant at all, as a population writes. The function
+-- must resolve the system tenant's rows and refuse every tenant's, which is the
+-- case its header comment claims.
+select set_config('app.current_tenant_id', '', true);
+
+select is(
+    ores_trading_basket_constituent_resolves_fn('commodity', (select code from t_world_code)),
+    true,
+    'a session that states no tenant resolves a world commodity');
+
+select throws_ok(
+    $$select ores_trading_basket_constituent_resolves_fn('commodity', 'PGTAP.PRIVATE')$$,
+    '23514',
+    null,
+    'a session that states no tenant refuses a code a tenant holds');
 
 select * from finish();
 

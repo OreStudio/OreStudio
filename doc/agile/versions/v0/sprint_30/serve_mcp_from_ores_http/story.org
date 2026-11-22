@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :mcp:llm:agent:http:sprint_30:v0:
 #+created: 2026-11-21
-#+updated: 2026-11-21
+#+updated: 2026-11-22
 #+environment: bright_faraday
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -28,12 +28,12 @@ The analysis is in [[id:FC0847D1-9F09-42EF-A4BD-D5E3C34398EA][How ores.http serv
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
-| Now           | Not yet started.                       |
+| Now           | Sign-in decided; the architecture is next. |
 | Waiting on    | Nothing.                               |
-| Next          | Decide how an outside MCP client authenticates, then break the rest into tasks. |
-| Last touched  | 2026-11-21                               |
+| Next          | Set out the architecture of agents acting through ores.http. |
+| Last touched  | 2026-11-22                               |
 
 * Acceptance
 
@@ -48,12 +48,16 @@ The analysis is in [[id:FC0847D1-9F09-42EF-A4BD-D5E3C34398EA][How ores.http serv
 - Every route declares its tool name, its area and entity, and whether it
   writes, and a gate refuses a route that does not. Every route that takes a
   body declares its schema with =body<T>()=.
-- An operation that writes is marked as writing and does not run until the
-  person confirms it through the client, by MCP elicitation or the client's own
-  confirmation. No argument the model sets counts as a confirmation.
-- An outside MCP client authenticates as a person, by a means this story
-  decides, and a call made over MCP is recorded as made over MCP, for that
-  person, so it is never mistaken for one made in ores.web.
+- An outside MCP client acts for a person through an agent grant the person
+  creates in ores.web, with a key the agent sends; its token names the person
+  as subject and the agent as actor, and the person can revoke it.
+- Every write an agent makes records the agent, and the person sees in ores.web
+  everything their agents did, so a call over MCP is never mistaken for one the
+  person made.
+- Six eyes for agents: an agent's write raises an approval request that its
+  person approves, and then the approval a person's own write would need, by
+  someone who is neither; a trade goes through the existing trade
+  authorisation. No argument the model sets counts as an approval.
 - A set of real requests, each run with a small model through browsing and
   through search, records how often it reaches the right operation and in how
   many steps.
@@ -63,7 +67,16 @@ The analysis is in [[id:FC0847D1-9F09-42EF-A4BD-D5E3C34398EA][How ores.http serv
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:BEF95B2A-42BF-40DA-BC3D-7B703C34ED73][Decide how an outside MCP client authenticates]] | BACKLOG | | | Decide how Claude Code, Claude Desktop or a local agent signs in to ores.http's MCP endpoint as a person, against MCP's OAuth 2.1 authorization and ORE's own sessions, before the session store and the audit trail are designed. |
+| [[id:BEF95B2A-42BF-40DA-BC3D-7B703C34ED73][Decide how an outside MCP client authenticates]] | DONE | 2026-11-22 | 2026-11-22 | Decide how Claude Code, Claude Desktop or a local agent signs in to ores.http's MCP endpoint as a person, against MCP's OAuth 2.1 authorization and ORE's own sessions, before the session store and the audit trail are designed. |
+| [[id:D23A3EC6-DFDD-48F3-A3AB-475513EE6E73][Set out the architecture of agents acting through ores.http]] | BACKLOG | | | Zettelkasten knowledge notes, with UML diagrams, on how an agent acts for a person through ores.http: grants, identity, audit, six eyes, MCP and the catalogue, built on ores.agent's experience. |
+| [[id:02A581CF-D286-4922-AE2F-C44E74C06D05][Give an agent a grant and a key]] | BACKLOG | | | A person creates, lists and revokes agent grants in ores.web, each with a key; ores.http exchanges a key for a session that names the person as subject and the agent as actor. |
+| [[id:D278957D-3FF7-419B-9FB3-E22F2F2C7A0D][Record what an agent did and show it to its person]] | BACKLOG | | | Every write made with an agent's token records the agent in a new audit field, and ores.web shows a person what their agents did. |
+| [[id:49E595F6-9C23-45E0-B74C-A49DAC46AC74][Hold an agent's writes for six eyes]] | BACKLOG | | | An agent's write raises an approval request that its person approves before the write takes the approval a person's own write needs; trades go through trade authorisation. |
+| [[id:23D0536C-1854-4D2A-A287-621F86C2AD6E][Serve the MCP transport on ores.http]] | BACKLOG | | | /mcp on ores.http serves MCP's Streamable HTTP transport with sessions, JSON-RPC through ORE's codec, initialize, ping, tools/list and tools/call. |
+| [[id:CCFD0961-9152-442D-AB7A-27366543CBF9][Declare each route's place in the catalogue]] | BACKLOG | | | Every ores.http route declares its tool name, area, entity and whether it writes, and its body schema; a gate refuses a route that does not. |
+| [[id:24864EC2-233C-4943-B381-3AD69DE2DAB0][Browse, search and call operations through five tools]] | BACKLOG | | | tools/list answers five tools whatever the catalogue holds: list areas, entities and operations, find operations by words, and call one, filtered to what the person may call. |
+| [[id:529DBF0E-9AE6-448A-AD46-AA836FF33572][Measure how a small model reaches ORE's operations]] | BACKLOG | | | Run a set of real requests with a small model through browsing and through search, and record how often it reaches the right operation and in how many steps. |
+| [[id:213D3539-9792-4C49-86A9-62B41A907992][Sign an MCP client in through OAuth]] | BACKLOG | | | ORE becomes an OAuth 2.1 authorization server for MCP clients, its consent page creating the same agent grant a key does, for Claude Desktop and claude.ai. |
 
 * Decisions
 
@@ -73,6 +86,17 @@ The analysis is in [[id:FC0847D1-9F09-42EF-A4BD-D5E3C34398EA][How ores.http serv
   (2026-11-21): a declared hierarchy of areas, entities and operations, each
   step a short list, because the full catalogue is about 107,000 tokens and the
   models may be very small.
+- *An agent acts through a grant, by key first and OAuth later* (2026-11-22,
+  product owner). A person creates a grant for one agent in ores.web, read only
+  or read and write, with an expiry; its token names the person as =sub= and
+  the agent as =act=. OAuth 2.1 comes later as a second way to create the same
+  grant. See [[id:BEF95B2A-42BF-40DA-BC3D-7B703C34ED73][Decide how an outside MCP client authenticates]].
+- *Six eyes for agents* (2026-11-22, product owner). Every agent write is held
+  unless a rule exempts it: its person approves, then the approval a person's
+  own write needs, by someone who is neither. Trades use trade authorisation.
+- *The architecture is written first* (2026-11-22, product owner), as
+  zettelkasten notes with UML that build on ores.agent's experience, and the
+  other tasks start once it is approved.
 
 * Out of scope
 

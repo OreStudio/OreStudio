@@ -1,0 +1,89 @@
+:PROPERTIES:
+:ID: 49E595F6-9C23-45E0-B74C-A49DAC46AC74
+:END:
+#+title: Task: Hold an agent's writes for six eyes
+#+description: An agent's write raises an approval request that its person approves before the write takes the approval a person's own write needs; trades go through trade authorisation.
+#+type: task
+#+level: s1
+#+filetags: :serve_mcp_from_ores_http:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:008127D7-B897-4CF7-854B-6DDFB89AC7F4][Serve ORE's API to LLM agents over MCP]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+An agent's write does not apply. It raises an approval request in the existing four-eyes framework, which its person approves first; the write then needs whatever approval a person's own write would need, by someone who is neither the agent nor its person. Every agent write is held unless an approval policy rule exempts it, so the approval policy gains the condition made by an agent. A trade an agent books is approved by its person and then authorised through the existing trade authorisation, by an authoriser who is neither.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:008127D7-B897-4CF7-854B-6DDFB89AC7F4][Serve ORE's API to LLM agents over MCP]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-22                               |
+
+* Acceptance
+
+- A write made with an agent's token raises an approval request and changes nothing until it is approved.
+- The person the agent acts for approves first; the agent can never approve, and the person cannot give the further approval their own write would need.
+- A trade booked by an agent, once its person approves, enters trade authorisation, and its authoriser is neither the agent's person nor the agent.
+- An approval policy rule can exempt an agent write, and without a rule every agent write is held.
+- The review panel shows that a request was raised by an agent, for whom.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

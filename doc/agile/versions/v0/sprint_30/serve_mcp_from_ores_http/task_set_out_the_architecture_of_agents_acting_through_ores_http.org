@@ -1,0 +1,89 @@
+:PROPERTIES:
+:ID: D23A3EC6-DFDD-48F3-A3AB-475513EE6E73
+:END:
+#+title: Task: Set out the architecture of agents acting through ores.http
+#+description: Zettelkasten knowledge notes, with UML diagrams, on how an agent acts for a person through ores.http: grants, identity, audit, six eyes, MCP and the catalogue, built on ores.agent's experience.
+#+type: task
+#+level: s1
+#+filetags: :serve_mcp_from_ores_http:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:008127D7-B897-4CF7-854B-6DDFB89AC7F4][Serve ORE's API to LLM agents over MCP]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Before any of the story is built, the architecture is written as knowledge: how an agent acts for a person through ores.http, from the grant that lets it, through the token that names it, the MCP transport and catalogue it calls, to the record of what it did and the six eyes on what it changes. The notes build on what the ores.agent prototype taught and on the investigations already done, and link into the existing graph: the four-eyes framework, trade authorisation, IAM sessions and the actor claim. Each note holds one idea, follows the zettelkasten house style, and draws as UML what it describes as a structure or a process.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:008127D7-B897-4CF7-854B-6DDFB89AC7F4][Serve ORE's API to LLM agents over MCP]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-22                               |
+
+* Acceptance
+
+- A structure note for agents acting through ores.http lists atomic knowledge notes, each one idea: the agent grant and its keys, the agent's identity in a token, recording what an agent did, six eyes on an agent's writes, the MCP transport in ores.http, and the catalogue an agent browses.
+- The structure is drawn as UML: a component diagram of the parts, a class diagram of the grant, and sequence diagrams of a read, of a write held for approval, and of a trade booked by an agent through trade authorisation.
+- A note records what ores.agent taught, from its docs and evaluations, and what this design keeps, changes or drops.
+- Every note links by id to the pages it relies on and is linked from its structure note; compass-ng check passes and every page builds.
+- The product owner approves the architecture before the other tasks start.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

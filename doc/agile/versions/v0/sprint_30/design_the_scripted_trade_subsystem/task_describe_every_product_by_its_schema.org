@@ -63,8 +63,10 @@ Revised with the user on 2026-11-22, after the analysis in the notes below.
 - Each form states its product tag (scripted) or ORE pricing engine type
   (native); =describe_product= takes an optional pricing configuration and, when
   given one, states the model and engine it assigns. Cost is left to a later task.
-- =describe_product= is served by trading, which reads the leaves through a read
-  function =ores.ore= owns; see the notes.
+- =describe_product= is served by trading, which holds the leaves and their value
+  sets in an entity-mirror cache: the models declare =cached_by= trading, the
+  cache is filled from =ores.ore='s list operations and kept fresh by their change
+  events. Trading's C++ reads no table or function of =ores.ore=; see the notes.
 
 PRs, each ending in a check, once the move is merged:
 
@@ -163,8 +165,19 @@ The options:
    is the parallel model this task must not make.
 
 Trading owns the product, the script inputs, the forms and the booking that
-validates against them, so it serves =describe_product=, and option 1 gives it
-the leaves without a copy or a run-time hop.
+validates against them, so it serves =describe_product=.
+
+The rule, from the user on 2026-11-22, rules out option 1: a service's C++ reads
+no other service's tables or functions; only SQL triggers and functions may. The
+leaves are static for a release, so asking =ores.ore= on every call would be
+waste. Trading therefore holds them in an entity-mirror cache, the standard
+mechanism ([[id:AA4A5326-FA02-42D7-ACE2-9B27B20B19C7][the story that introduced it]]): =ore_parameter= and the value sets
+it needs declare =cached_by= trading, the cache pages =ores.ore='s list operations
+at start and reloads a tenant's partition on their change events, and
+=describe_product= and the booking's validation read the cache. Until the cache
+is filled, a booking that needs a product's leaves is refused with a reason
+rather than booked on rules it has not read. The C++ reads that break the rule
+today are the task [[id:68EA32A5-733C-43C2-A757-30C6EEBECEEE][Read other services' data through event-fed caches]].
 
 Cut from [[id:290A1069-A1EE-4DD1-8D23-1C60F76F8949][Product Schemas for Native and Scripted Products]], which states the target this task builds to; the components it touches are [[id:4E135FB5-6E0A-45CC-A805-F5B70F29DDB4][Component Architecture of the Scripted Trade Subsystem]].
 

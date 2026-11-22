@@ -24,7 +24,8 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { ApiFailure } from '../api/transport.js';
 import type { page } from '../api/servers.js';
 import { TranslationProvider } from '../i18n/Provider.js';
-import { partyChoiceRefused, ServerSwitch } from './SignInPage.js';
+import { ServerSwitch } from '../shell/ServerSwitch.js';
+import { partyChoiceRefused } from './SignInPage.js';
 
 const failure = (code: 'session-expired' | 'forbidden', message: string): ApiFailure =>
     new ApiFailure(code === 'session-expired' ? 401 : 403, { code, message } as never);

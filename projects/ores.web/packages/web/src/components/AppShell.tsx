@@ -39,6 +39,7 @@ import { SetupReportNotice } from '../shell/SetupReport.js';
 import { MENU, modeKey, offered } from '../shell/areas.js';
 import { LanguageMenu } from '../shell/LanguageMenu.js';
 import { ThemeToggle } from '../shell/ThemeToggle.js';
+import { ServerSwitch } from '../shell/ServerSwitch.js';
 import { SHELL_WIDTHS, type ShellWidth } from '../shell/layout.js';
 import { VersionFooter } from './VersionFooter.js';
 
@@ -194,6 +195,7 @@ export function AppShell({
                      * language behind their own picture.
                      */}
                     <div className="ml-auto flex items-center gap-2">
+                        <ServerSwitch compact />
                         <ThemeToggle />
                         <LanguageMenu />
                         <NotificationBell />

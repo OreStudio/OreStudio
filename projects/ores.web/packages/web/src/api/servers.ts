@@ -111,7 +111,13 @@ export function servingDeployment(ports: serverPorts, at: page): deployment | un
     return deployments.find((one) => ports[one] === at.port);
 }
 
-/** The other deployment's copy of this page, or nothing when this page is on neither. */
+/**
+ * The other deployment's copy of this page, or nothing when this page is on neither.
+ *
+ * A deployment the build names no port for is not served here, so there is nowhere to
+ * go: a port converged onto one server states the other as empty, and the switch states
+ * nothing rather than a dead link.
+ */
 export function peerOf(
     ports: serverPorts,
     at: page,
@@ -119,6 +125,7 @@ export function peerOf(
     const here = servingDeployment(ports, at);
     if (here === undefined) return undefined;
     const there = otherOf(here);
+    if (ports[there].length === 0) return undefined;
     return {
         deployment: there,
         url: `${originOf(there, ports, at)}${at.pathname}${at.search}${at.hash}`,

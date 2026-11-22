@@ -446,6 +446,28 @@ describe('the Synthetic Provider screen', () => {
         expect(html).toContain('>Stop feeds<');
     });
 
+    it('shows the provider simulated source above its feeds, with a Stop for an operator', () => {
+        const html = render('/market-data/synthetic?tab=provider', (client) => {
+            seeded(client, ['synthetic::*']);
+            client.setQueryData(
+                ['simulated-sources'],
+                [
+                    {
+                        source_name: 'bloomberg-a',
+                        provider_code: 'bloomberg',
+                        stopped: false,
+                        served_feeds: 54,
+                        held_surfaces: 14,
+                        surfaces_only_held_here: 0,
+                    },
+                ],
+            );
+        });
+        expect(html).toContain('data-source-strip');
+        expect(html).toContain('bloomberg-a');
+        expect(html).toContain('>Stop source<');
+    });
+
     it('offers a reader the rows and no start or stop', () => {
         const html = render('/market-data/synthetic?tab=provider', (client) =>
             seeded(client, ['synthetic::fx_spot_generation_configs:read']),

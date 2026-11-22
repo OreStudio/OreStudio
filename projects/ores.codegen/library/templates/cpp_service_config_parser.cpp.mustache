@@ -48,7 +48,8 @@ void version(std::ostream& info) {
 }
 
 std::optional<options>
-parse_arguments(const std::vector<std::string>& arguments, std::ostream& info) {
+parse_arguments(const std::vector<std::string>& arguments, std::ostream& info,
+    const std::map<std::string, std::string>* environment) {
     using ores::service::config::standard_service_options;
 
 {{#has_service_options}}
@@ -67,7 +68,10 @@ parse_arguments(const std::vector<std::string>& arguments, std::ostream& info) {
 {{/has_app_config_decl}}
 {{/has_service_options}}
 <<paste:F98CC722-3E53-4B86-90E7-69EC5D25702E>>
-    const auto vm(standard_service_options::parse(od, arguments, "{{name_upper}}"));
+    // No environment means this process's; a stated one is all the caller allows.
+    const auto vm(environment == nullptr
+        ? standard_service_options::parse(od, arguments, "{{name_upper}}")
+        : standard_service_options::parse(od, arguments, "{{name_upper}}", *environment));
 
     if (standard_service_options::wants_help(vm)) {
         print_help(od, info);
@@ -95,16 +99,11 @@ parse_arguments(const std::vector<std::string>& arguments, std::ostream& info) {
     return r;
 }
 
-}
-
-namespace {{namespace}}::config {
-
 std::optional<options>
-parser::parse(const std::vector<std::string>& arguments,
-    std::ostream& info, std::ostream& err) const {
-
+parse_or_report(const std::vector<std::string>& arguments, std::ostream& info,
+    std::ostream& err, const std::map<std::string, std::string>* environment) {
     try {
-        return parse_arguments(arguments, info);
+        return parse_arguments(arguments, info, environment);
     } catch(const parser_exception& e) {
         err << usage_error_msg << e.what() << std::endl
             << more_information << std::endl;
@@ -114,6 +113,23 @@ parser::parse(const std::vector<std::string>& arguments,
             << more_information << std::endl;
         BOOST_THROW_EXCEPTION(parser_exception(e.what()));
     }
+}
+
+}
+
+namespace {{namespace}}::config {
+
+std::optional<options>
+parser::parse(const std::vector<std::string>& arguments,
+    std::ostream& info, std::ostream& err) const {
+    return parse_or_report(arguments, info, err, nullptr);
+}
+
+std::optional<options>
+parser::parse(const std::vector<std::string>& arguments,
+    std::ostream& info, std::ostream& err,
+    const std::map<std::string, std::string>& environment) const {
+    return parse_or_report(arguments, info, err, &environment);
 }
 
 }

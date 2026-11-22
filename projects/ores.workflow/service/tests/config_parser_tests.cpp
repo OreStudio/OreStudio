@@ -18,33 +18,38 @@
  *
  */
 #include "ores.logging/logger.hpp"
-#include "ores.testing/scoped_environment_override.hpp"
 #include "ores.workflow.service/config/parser.hpp"
 #include "ores.workflow.service/config/parser_exception.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
+#include <map>
 #include <sstream>
 #include <string>
 #include <vector>
 
 using namespace ores::workflow::service::config;
 
+namespace {
+
+/// The least a parser needs before it will run: the database user and name
+/// carry no compiled default because a service cannot work without them. A
+/// test that asserts a compiled default states only these, so no value a
+/// developer exported can reach the assertion.
+std::map<std::string, std::string> least_environment() {
+    return {{"ORES_WORKFLOW_SERVICE_DB_USER", "ores_test_user"},
+            {"ORES_WORKFLOW_SERVICE_DB_DATABASE", "ores_test_db"}};
+}
+
+}
+
 TEST_CASE("parse_defaults_returns_expected_values", "[config]") {
     auto lg(ores::logging::make_logger(test_suite));
-    // Local (non-CI) ctest loads the whole .env into the test process,
-    // including the shared ORES_NATS_* vars and the service's database host and
-    // port, which this test must not inherit -- clear
+    // including shared ORES_NATS_* vars this test must not inherit -- clear
     // them so it asserts real compiled-in defaults.
-    const ores::testing::scoped_environment_override env_guard({},
-                                                               {"ORES_NATS_URL",
-                                                                "ORES_NATS_SUBJECT_PREFIX",
-                                                                "ORES_NATS_WIRE_FORMAT",
-                                                                "ORES_WORKFLOW_SERVICE_DB_HOST",
-                                                                "ORES_WORKFLOW_SERVICE_DB_PORT"});
 
     const std::vector<std::string> args;
     std::ostringstream info, err;
-    const auto result = parser{}.parse(args, info, err);
+    const auto result = parser{}.parse(args, info, err, least_environment());
 
     REQUIRE(result.has_value());
     CHECK(result->nats.url == "nats://localhost:4222");
@@ -54,12 +59,25 @@ TEST_CASE("parse_defaults_returns_expected_values", "[config]") {
     CHECK_FALSE(result->logging.has_value());
 }
 
+TEST_CASE("an_environment_value_wins_over_the_compiled_default", "[config]") {
+    auto lg(ores::logging::make_logger(test_suite));
+
+    const std::vector<std::string> args;
+    std::ostringstream info, err;
+    auto environment = least_environment();
+    environment["ORES_WORKFLOW_SERVICE_DB_PORT"] = "20007";
+    const auto result = parser{}.parse(args, info, err, environment);
+
+    REQUIRE(result.has_value());
+    CHECK(result->database.port == 20007);
+}
+
 TEST_CASE("parse_custom_nats_url", "[config]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     const std::vector<std::string> args{"--nats-url", "nats://myserver:5555"};
     std::ostringstream info, err;
-    const auto result = parser{}.parse(args, info, err);
+    const auto result = parser{}.parse(args, info, err, least_environment());
 
     REQUIRE(result.has_value());
     CHECK(result->nats.url == "nats://myserver:5555");
@@ -70,7 +88,7 @@ TEST_CASE("parse_nats_subject_prefix", "[config]") {
 
     const std::vector<std::string> args{"--nats-subject-prefix", "ores.prod.main1"};
     std::ostringstream info, err;
-    const auto result = parser{}.parse(args, info, err);
+    const auto result = parser{}.parse(args, info, err, least_environment());
 
     REQUIRE(result.has_value());
     CHECK(result->nats.subject_prefix == "ores.prod.main1");
@@ -81,7 +99,7 @@ TEST_CASE("parse_custom_database_host_and_port", "[config]") {
 
     const std::vector<std::string> args{"--db-host", "dbserver.internal", "--db-port", "5433"};
     std::ostringstream info, err;
-    const auto result = parser{}.parse(args, info, err);
+    const auto result = parser{}.parse(args, info, err, least_environment());
 
     REQUIRE(result.has_value());
     CHECK(result->database.host == "dbserver.internal");
@@ -93,7 +111,7 @@ TEST_CASE("parse_custom_database_name", "[config]") {
 
     const std::vector<std::string> args{"--db-database", "ores_prod"};
     std::ostringstream info, err;
-    const auto result = parser{}.parse(args, info, err);
+    const auto result = parser{}.parse(args, info, err, least_environment());
 
     REQUIRE(result.has_value());
     CHECK(result->database.database == "ores_prod");
@@ -104,7 +122,7 @@ TEST_CASE("parse_custom_log_level", "[config]") {
 
     const std::vector<std::string> args{"--log-enabled", "--log-level", "debug"};
     std::ostringstream info, err;
-    const auto result = parser{}.parse(args, info, err);
+    const auto result = parser{}.parse(args, info, err, least_environment());
 
     REQUIRE(result.has_value());
     REQUIRE(result->logging.has_value());
@@ -116,7 +134,7 @@ TEST_CASE("parse_custom_log_filename", "[config]") {
 
     const std::vector<std::string> args{"--log-enabled", "--log-filename", "custom.log"};
     std::ostringstream info, err;
-    const auto result = parser{}.parse(args, info, err);
+    const auto result = parser{}.parse(args, info, err, least_environment());
 
     REQUIRE(result.has_value());
     REQUIRE(result->logging.has_value());
@@ -128,7 +146,7 @@ TEST_CASE("parse_help_returns_empty", "[config]") {
 
     const std::vector<std::string> args{"--help"};
     std::ostringstream info, err;
-    const auto result = parser{}.parse(args, info, err);
+    const auto result = parser{}.parse(args, info, err, least_environment());
 
     const std::string output = info.str();
     CHECK_FALSE(result.has_value());
@@ -144,7 +162,7 @@ TEST_CASE("parse_version_returns_empty", "[config]") {
 
     const std::vector<std::string> args{"--version"};
     std::ostringstream info, err;
-    const auto result = parser{}.parse(args, info, err);
+    const auto result = parser{}.parse(args, info, err, least_environment());
 
     const std::string output = info.str();
     CHECK_FALSE(result.has_value());
@@ -159,5 +177,5 @@ TEST_CASE("parse_unknown_option_throws", "[config]") {
 
     const std::vector<std::string> args{"--unknown-option", "value"};
     std::ostringstream info, err;
-    CHECK_THROWS_AS(parser{}.parse(args, info, err), parser_exception);
+    CHECK_THROWS_AS(parser{}.parse(args, info, err, least_environment()), parser_exception);
 }

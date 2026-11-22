@@ -67,6 +67,36 @@ standard_service_options::parse(const boost::program_options::options_descriptio
     return vm;
 }
 
+boost::program_options::variables_map
+standard_service_options::parse(const boost::program_options::options_description& od,
+                                const std::vector<std::string>& arguments,
+                                const std::string& app_name,
+                                const std::map<std::string, std::string>& environment) {
+    using ores::utility::program_options::environment_mapper_factory;
+    const auto name_mapper(environment_mapper_factory::make_mapper(app_name));
+
+    boost::program_options::variables_map vm;
+    boost::program_options::store(
+        boost::program_options::command_line_parser(arguments).options(od).run(), vm);
+
+    // The environment arrives as values rather than as names, so the mapper's
+    // job is to say which of them name an option this description holds.
+    std::vector<boost::program_options::option> parsed_by_name;
+    for (const auto& [name, value] : environment) {
+        const auto option_name = name_mapper(name);
+        if (option_name.empty() || od.find_nothrow(option_name, false) == nullptr)
+            continue;
+        boost::program_options::option o;
+        o.string_key = option_name;
+        o.value = {value};
+        parsed_by_name.push_back(std::move(o));
+    }
+    boost::program_options::parsed_options parsed(&od);
+    parsed.options = std::move(parsed_by_name);
+    boost::program_options::store(parsed, vm);
+    return vm;
+}
+
 standard_options
 standard_service_options::read_options(const boost::program_options::variables_map& vm) {
     using ores::database::database_configuration;

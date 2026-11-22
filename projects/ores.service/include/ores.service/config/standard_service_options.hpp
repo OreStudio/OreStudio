@@ -25,6 +25,7 @@
 #include "ores.nats/config/nats_options.hpp"
 #include "ores.service/export.hpp"
 #include <boost/program_options.hpp>
+#include <map>
 #include <optional>
 #include <string>
 #include <vector>
@@ -89,6 +90,23 @@ public:
     parse(const boost::program_options::options_description& od,
           const std::vector<std::string>& arguments,
           const std::string& app_name);
+
+    /**
+     * @brief Parses against a stated environment rather than this process's.
+     *
+     * A caller that asserts a compiled default states an empty environment, so
+     * nothing a developer exported can reach it. A caller that asserts an
+     * environment value states the value it means, so the assertion does not
+     * depend on the machine it runs on. Only names the mapper recognises and
+     * @p od holds are read; anything else contributes nothing.
+     *
+     * @param environment the variables to read, as name to value.
+     */
+    static boost::program_options::variables_map
+    parse(const boost::program_options::options_description& od,
+          const std::vector<std::string>& arguments,
+          const std::string& app_name,
+          const std::map<std::string, std::string>& environment);
 
     /**
      * @brief Reads the standard logging/nats/database sub-options from a

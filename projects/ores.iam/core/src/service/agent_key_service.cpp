@@ -26,7 +26,6 @@
 #include "ores.iam.api/domain/agent_key.hpp"
 #include "ores.iam.api/messaging/agent_key_protocol.hpp"
 #include "ores.iam.core/repository/agent_key_repository.hpp"
-#include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -78,7 +77,7 @@ namespace {
 std::vector<domain::agent_key> agent_key_read_one(repository::agent_key_repository& repo,
                                                   const ores::database::context& ctx,
                                                   const messaging::agent_key_key& key) {
-    return repo.read_latest_by_grant_id(ctx, boost::uuids::to_string(key.grant_id));
+    return repo.read_latest(ctx, boost::uuids::to_string(key.id));
 }
 
 /**
@@ -101,16 +100,20 @@ agent_key_read_many(repository::agent_key_repository& repo,
                     const ores::database::context& ctx,
                     const std::vector<messaging::agent_key_key>& keys) {
     std::vector<std::vector<domain::agent_key>> found(keys.size());
-    std::vector<std::string> grant_id_keys;
-    grant_id_keys.reserve(keys.size());
-    for (const auto& key : keys)
-        grant_id_keys.push_back(boost::uuids::to_string(key.grant_id));
-    std::map<std::string, std::vector<domain::agent_key>> by_key;
-    for (auto& row : repo.read_latest_by_grant_id(ctx, grant_id_keys))
-        by_key[boost::uuids::to_string(row.grant_id)].push_back(std::move(row));
+    using key_tuple = std::tuple<std::string>;
+    std::vector<std::string> id_keys;
+    id_keys.reserve(keys.size());
+    for (const auto& key : keys) {
+        id_keys.push_back(boost::uuids::to_string(key.id));
+    }
+    std::map<key_tuple, std::vector<domain::agent_key>> by_key;
+    for (auto& row : repo.read_latest(ctx, id_keys)) {
+        key_tuple named(boost::uuids::to_string(row.id));
+        by_key[std::move(named)].push_back(std::move(row));
+    }
     for (std::size_t i = 0; i < keys.size(); ++i) {
         const auto& key = keys[i];
-        const auto rows = by_key.find(boost::uuids::to_string(key.grant_id));
+        const auto rows = by_key.find(key_tuple(boost::uuids::to_string(key.id)));
         if (rows != by_key.end())
             found[i] = rows->second;
     }
@@ -240,15 +243,7 @@ messaging::list_agent_key_versions_response agent_key_service::list_agent_key_ve
         response.result = refuse(outcome_code::filter_not_supported, {.entity = "agent keys"});
         return response;
     }
-    // The versions of the row the caller's key names. The repository reads by
-    // the storage key, so the declared key is resolved once here.
-    const auto named = agent_key_read_one(repo_, ctx_, request.key);
-    if (named.empty()) {
-        response.result = refuse(outcome_code::not_found, {.entity = "agent_key"});
-        return response;
-    }
-    const auto& row = named.front();
-    auto all = repo_.read_all(ctx_, boost::uuids::to_string(row.id));
+    auto all = repo_.read_all(ctx_, boost::uuids::to_string(request.key.id));
     // The store reads versions newest first, and the order a caller gets when
     // it states none is key order, which for a version key is oldest first.
     std::reverse(all.begin(), all.end());
@@ -263,15 +258,8 @@ messaging::list_agent_key_versions_response agent_key_service::list_agent_key_ve
 messaging::get_agent_key_version_response
 agent_key_service::get_agent_key_version(const messaging::get_agent_key_version_request& request) {
     messaging::get_agent_key_version_response response;
-    // The version key nests the entity's own key, which is the declared one.
-    // The repository reads by the storage key, so it is resolved once here.
-    const auto named = agent_key_read_one(repo_, ctx_, request.key.agent_key);
-    if (named.empty()) {
-        response.result = refuse(outcome_code::not_found, {.entity = "agent_key"});
-        return response;
-    }
-    const auto& row = named.front();
-    auto found = repo_.read_at_version(ctx_, boost::uuids::to_string(row.id), request.key.version);
+    auto found = repo_.read_at_version(
+        ctx_, boost::uuids::to_string(request.key.agent_key.id), request.key.version);
     if (!found) {
         response.result = refuse(outcome_code::not_found, {.entity = "agent_key"});
         return response;
@@ -319,17 +307,6 @@ std::optional<domain::agent_key> agent_key_service::get_key(const boost::uuids::
     if (results.empty())
         return std::nullopt;
     return results.front();
-}
-
-std::optional<domain::agent_key>
-agent_key_service::get_key_by_grant_id(const std::string& grant_id) {
-    ORES_LOG_SEV(lg(), debug) << "Getting agent key by grant_id: " << grant_id;
-    messaging::agent_key_key k;
-    k.grant_id = boost::lexical_cast<boost::uuids::uuid>(grant_id);
-    auto found = agent_key_read_one(repo_, ctx_, k);
-    if (found.empty())
-        return std::nullopt;
-    return found.front();
 }
 
 std::optional<domain::agent_key> agent_key_service::find_key(const boost::uuids::uuid& id) {
@@ -383,25 +360,9 @@ void agent_key_service::delete_keys(const std::vector<std::string>& ids) {
     repo_.remove(ctx_, ids);
 }
 
-std::vector<domain::agent_key> agent_key_service::get_key_history(const std::string& key) {
-    ORES_LOG_SEV(lg(), debug) << "Getting history for agent key. key: " << key;
-    // The caller holds the key the model declares and this reads by the
-    // storage key, so the two are joined here exactly as they are for any
-    // other read. Without this step a provider looks the versions up under a
-    // value the storage key never holds, and reports an entity that has a
-    // history as having none.
-    messaging::agent_key_key k;
-    k.grant_id = boost::lexical_cast<boost::uuids::uuid>(key);
-    // A delete here closes the transaction-time window and leaves every version
-    // in place, so resolving through a latest read would lose the history at
-    // exactly the moment it is wanted. This takes the newest row carrying the
-    // declared key whether or not it is still current, which for a record that
-    // still exists is the same row the latest read would have returned.
-    const auto found = repo_.read_any_by_grant_id(ctx_, boost::uuids::to_string(k.grant_id));
-    if (found.empty())
-        return {};
-    const auto& row = found.front();
-    return repo_.read_all(ctx_, boost::uuids::to_string(row.id));
+std::vector<domain::agent_key> agent_key_service::get_key_history(const std::string& id) {
+    ORES_LOG_SEV(lg(), debug) << "Getting history for agent key. " << "id: " << id;
+    return repo_.read_all(ctx_, id);
 }
 
 std::vector<domain::agent_key> agent_key_service::get_key_history(const boost::uuids::uuid& id) {

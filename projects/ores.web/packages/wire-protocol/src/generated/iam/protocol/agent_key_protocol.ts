@@ -28,7 +28,7 @@ import type { Result } from '../../../utility/protocol.js';
 import type { Scope } from '../../../utility/protocol.js';
 
 export interface AgentKeyKey {
-    grant_id: string;
+    id: string;
 }
 
 export interface AgentKeyLookup {

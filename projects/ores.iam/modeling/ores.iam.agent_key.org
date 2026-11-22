@@ -144,6 +144,7 @@ std::chrono::system_clock::time_point{}
 
 | column      | header      |
 |-------------+-------------|
+| id          | Key         |
 | grant_id    | Grant       |
 | modified_by | Modified By |
 | version     | Version     |
@@ -151,19 +152,21 @@ std::chrono::system_clock::time_point{}
 ** Presentation
 :PROPERTIES:
 :collection_name:  keys
-:key_field:        grant_id
+:key_field:        id
 :END:
 
 *** Detail fields
 
 | field    | label | widget      | type      | is_key | is_required | placeholder |
 |----------+-------+-------------+-----------+--------+-------------+-------------|
-| grant_id | Grant | grantIdEdit | line_edit | true   | true        |             |
+| id       | Key   | idEdit      | line_edit | true   | true        |             |
+| grant_id | Grant | grantIdEdit | line_edit | false  | true        |             |
 
 *** Columns
 
 | enum_name  | field       | header      | type      | width |
 |------------+-------------+-------------+-----------+-------|
+| Id         | id          | Key         | string    | 300   |
 | GrantId    | grant_id    | Grant       | string    | 300   |
 | Version    | version     | Version     | int       | 70    |
 | ModifiedBy | modified_by | Modified By | string    | 120   |

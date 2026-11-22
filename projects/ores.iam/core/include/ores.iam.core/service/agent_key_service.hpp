@@ -148,18 +148,6 @@ public:
     std::optional<domain::agent_key> get_key(const boost::uuids::uuid& id);
 
     /**
-     * @brief Retrieves a single agent key by the key the model
-     * declares -- the human-readable key a caller holds.
-     *
-     * This is the counterpart of the uuid overload above: the two keys an
-     * entity holds are different keys, and a call site has to say which one it
-     * means.
-     *
-     * @return The agent key if found, std::nullopt otherwise.
-     */
-    std::optional<domain::agent_key> get_key_by_grant_id(const std::string& grant_id);
-
-    /**
      * @brief Retrieves a single agent key by its uuid primary key.
      *
      * @return The agent key if found, std::nullopt otherwise.
@@ -209,11 +197,9 @@ public:
     /**
      * @brief Retrieves all historical versions of a agent key.
      *
-     * Addressed by the key the model declares, which is the one a caller
-     * holds; the storage key is resolved from it here, the same step every
-     * other read makes.
+     * Addressed by the entity's key, which is its storage key.
      */
-    std::vector<domain::agent_key> get_key_history(const std::string& key);
+    std::vector<domain::agent_key> get_key_history(const std::string& id);
 
     /**
      * @brief Retrieves all historical versions of a agent key

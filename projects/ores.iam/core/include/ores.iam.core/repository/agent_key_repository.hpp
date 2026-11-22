@@ -106,32 +106,6 @@ public:
                                                const std::vector<std::string>& ids);
     /**@}*/
 
-    /**
-     * @brief Reads latest agent keys filtered by grant_id.
-     */
-    std::vector<domain::agent_key> read_latest_by_grant_id(const context& ctx,
-                                                           const std::string& grant_id);
-
-    /**
-     * @brief Reads latest agent keys filtered by a set of grant_id values.
-     *
-     * The batch form of the read above, with the same rules, so a batch
-     * addressed by the declared key costs one read.
-     */
-    std::vector<domain::agent_key>
-    read_latest_by_grant_id(const context& ctx, const std::vector<std::string>& grant_ids);
-
-    /**
-     * @brief Reads the newest agent keys filtered by grant_id, current or not.
-     *
-     * History is addressed by the key the model declares and must stay readable
-     * after a delete, which closes the transaction-time window rather than
-     * removing the row. A latest read cannot resolve a closed row, so this one
-     * ignores the window and takes the newest match.
-     */
-    std::vector<domain::agent_key> read_any_by_grant_id(const context& ctx,
-                                                        const std::string& grant_id);
-
 
     /**
      * @brief Reads all agent keys, possibly filtered by primary key.

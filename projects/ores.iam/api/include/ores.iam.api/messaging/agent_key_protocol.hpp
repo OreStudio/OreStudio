@@ -43,7 +43,7 @@
 namespace ores::iam::messaging {
 
 struct agent_key_key {
-    boost::uuids::uuid grant_id;
+    boost::uuids::uuid id;
 
     friend bool operator==(const agent_key_key&, const agent_key_key&) = default;
 };
@@ -271,7 +271,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.agent_keys.deleted";
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<agent_key_key>) {
     return ::ores::utility::codec::field_list{
-        utility::codec::field{"grant_id", &agent_key_key::grant_id},
+        utility::codec::field{"id", &agent_key_key::id},
     };
 }
 

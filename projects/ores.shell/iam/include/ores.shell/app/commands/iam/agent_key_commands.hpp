@@ -72,14 +72,14 @@ public:
                              const std::vector<std::string>& args);
 
     /**
-     * @brief get <grant_id>
+     * @brief get <id>
      */
     static void process_get(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief get-many <grant_id>
+     * @brief get-many <id>
      */
     static void process_get_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,
@@ -93,14 +93,14 @@ public:
                                     const std::vector<std::string>& args);
 
     /**
-     * @brief versions <grant_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+     * @brief versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
      */
     static void process_versions(std::ostream& out,
                                  ores::nats::service::nats_client& session,
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief version <grant_id> --version <n>
+     * @brief version <id> --version <n>
      */
     static void process_version(std::ostream& out,
                                 ores::nats::service::nats_client& session,

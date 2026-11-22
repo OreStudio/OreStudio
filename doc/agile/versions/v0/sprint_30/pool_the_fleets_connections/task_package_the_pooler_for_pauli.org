@@ -29,11 +29,11 @@ and reports it like any other container.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:A75C3063-896F-4DD5-A9BC-893A59EDFF7E][Pool the fleet's connections]] |
-| Now          | The image is built, proven and published; the pod and the deploy to pauli are next. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Add the pooler to the pod, then deploy to pauli. |
+| Next         | Nothing. |
 | Last touched | 2026-11-21                               |
 
 * Acceptance
@@ -167,3 +167,37 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The pooler ships as an image, runs beside the fleet on the host that shares
+its PostgreSQL, and serves every service that dials it.
+
+- *The image.* `docker/pgbouncer.Dockerfile` builds `ores-pgbouncer` on
+  Alpine with the package's version stated at build time, because named
+  prepared statements in transaction mode need a floor. It is built,
+  published and pulled with the rest of the fleet.
+- *One configuration, two shapes.* `build/scripts/start_ci_pooler.sh`
+  generates the host unit's configuration and the container's from the
+  same file, and the deploy hands the container shape the remote database
+  port rather than this checkout's.
+- *The deploy.* `compass env deploy <host>` starts the pooler before the
+  services, in both the pull and the stream paths, only where the
+  environment runs one, and waits for its port before starting anything
+  that dials it. A host without a pooler receives no configuration and no
+  credential file.
+- *The services.* Each service reads `ORES_<APP>_DB_PORT`, which the
+  environment sets to the pooler's client port; the listener and the
+  administrative paths stay direct.
+
+*Evidence.* On pauli: 25 of 25 containers healthy with the database
+reachable only through the pooler, 40 server connections across 19 service
+users, 0 authentication failures, and a fresh database recreated through
+the deployed stack. Locally, the fleet runs through the pooler at 45 server
+connections against a cap of 100. The layer suite passes 72 of 72 through
+the pooler when the cases that need a direct connection are excluded, and
+the CI job runs the marketdata suite through a transaction pooler.
+
+*Left open.* The test scenario `36FDD33A` (four lanes of a provisioning step
+meet no acquisition failure) has not been run against the final code. A
+review point remains: the credential file is world-readable in a directory
+whose mode the deploy never sets, and the fix needs the uid the container
+drops to, read from the image on a live deploy.

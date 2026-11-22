@@ -27,9 +27,9 @@ driven.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
-| Now           | Five of the seven tasks are done: the levels are settled, the bring-up publishes, the tenant bootstrap is declared, and the publish guarantees are real. The collapse of the double writers is open on one row. |
+| Now           | Five of the seven tasks are done: the levels are settled, the bring-up publishes, the tenant bootstrap is declared, and the publish guarantees are real. The collapse of the double writers is complete in the tree and waits on its PR. |
 | Waiting on    | Nothing.                               |
-| Next          | Close the last double writer, then retire the legacy documentation and build the DQ screens. |
+| Next          | Raise the collapse PR, then retire the legacy documentation and build the DQ screens. |
 | Last touched  | 2026-11-21                               |
 
 * Acceptance

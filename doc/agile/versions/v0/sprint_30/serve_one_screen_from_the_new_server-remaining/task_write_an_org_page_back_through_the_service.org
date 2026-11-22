@@ -7,9 +7,13 @@
 #+level: s1
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
-#+branch: feature/switch-ores-web-to-the-cpp-server
+#+branch:
 #+pr:
 #+blocked_on: 3EB24EE2-82E5-4F11-AB20-4EEB16167FB3
+
+The branch was named before the task was found to be blocked. It owns no work on
+=feature/switch-ores-web-to-the-cpp-server=, and naming it there made that branch
+report a blocked task of its own.
 #+blocked_since: 2026-11-22
 #+created: 2026-11-21
 #+updated: 2026-11-21

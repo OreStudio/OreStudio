@@ -136,7 +136,7 @@ domain::trade_generation_scope bond_scope() {
     scope.seed = 7;
     scope.trades_per_book = scene_trades_per_book;
     scope.conventions = ores::synthetic::tests::ore_example_conventions();
-    scope.served_fixing_uris = ores::synthetic::tests::ore_example_served_fixing_uris();
+    scope.expected_market_data = ores::synthetic::tests::ore_example_expected_market_data();
     /*
      * A convertible bond states the share it may convert into, so every bond
      * scope needs the equity catalogue the writer loads for it.
@@ -322,7 +322,7 @@ domain::trade_generation_scope credit_scope() {
     scope.asset_class_code = "credit";
     scope.trades_per_book = 4;
     scope.conventions = ores::synthetic::tests::ore_example_conventions();
-    scope.served_fixing_uris = ores::synthetic::tests::ore_example_served_fixing_uris();
+    scope.expected_market_data = ores::synthetic::tests::ore_example_expected_market_data();
     return scope;
 }
 
@@ -955,7 +955,7 @@ TEST_CASE("a_rate_population_draws_an_index_its_alias_conventions_name_and_skips
     scope.conventions.swaps.push_back(alias);
     scope.conventions.swaps.push_back(conflict);
     scope.conventions.swaps.push_back(other_terms);
-    scope.served_fixing_uris.insert(*conflict.oresmd_uri);
+    scope.expected_market_data.insert(*conflict.oresmd_uri);
 
     const auto plan = plan_of(scope);
 
@@ -986,12 +986,12 @@ TEST_CASE("a_rate_population_draws_no_index_the_market_does_not_serve", "[trade_
     for (const auto& slot : plan.slots)
         for (const auto& leg : slot.instruments.swap_legs)
             if (leg.leg_type_code == "Floating")
-                CHECK(scope.served_fixing_uris.contains(leg.floating_index_code));
+                CHECK(scope.expected_market_data.contains(leg.floating_index_code));
 }
 
 TEST_CASE("a_rate_population_whose_currency_no_curve_serves_is_refused", "[trade_population]") {
     auto scope = rate_scope();
-    std::erase_if(scope.served_fixing_uris,
+    std::erase_if(scope.expected_market_data,
                   [](const std::string& uri) { return uri.starts_with("oresmd://ir/EUR?"); });
 
     CHECK_THROWS_AS(plan_of(scope), trade_population_error);
@@ -1776,7 +1776,7 @@ TEST_CASE("an_equity_swap_funds_on_an_index_a_curve_serves", "[trade_population]
         for (const auto& leg : slot.instruments.swap_legs)
             if (leg.leg_type_code == "Floating") {
                 ++funded;
-                CHECK(scope.served_fixing_uris.contains(leg.floating_index_code));
+                CHECK(scope.expected_market_data.contains(leg.floating_index_code));
             }
     CHECK(funded > 0u);
 }

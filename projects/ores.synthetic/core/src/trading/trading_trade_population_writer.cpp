@@ -22,6 +22,7 @@
 #include "ores.iam.api/messaging/account_protocol.hpp"
 #include "ores.iam.api/messaging/authorization_protocol.hpp"
 #include "ores.logging/logger.hpp"
+#include "ores.marketdata.api/messaging/party_demand_operations_protocol.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.refdata.api/messaging/book_protocol.hpp"
 #include "ores.refdata.api/messaging/cds_convention_protocol.hpp"
@@ -39,8 +40,15 @@
 #include "ores.refdata.api/messaging/overnight_index_convention_protocol.hpp"
 #include "ores.refdata.api/messaging/swap_convention_protocol.hpp"
 #include "ores.refdata.api/messaging/yield_curve_config_protocol.hpp"
-#include "ores.synthetic.api/feeds/index_fixings.hpp"
+#include "ores.synthetic.api/feeds/expected_market_data.hpp"
+#include "ores.synthetic.api/messaging/fx_spot_generation_config_protocol.hpp"
+#include "ores.synthetic.api/messaging/fx_vol_contributor_protocol.hpp"
+#include "ores.synthetic.api/messaging/fx_vol_surface_feed_contributor_protocol.hpp"
+#include "ores.synthetic.api/messaging/fx_vol_surface_feed_expiry_protocol.hpp"
+#include "ores.synthetic.api/messaging/fx_vol_surface_feed_protocol.hpp"
 #include "ores.synthetic.api/messaging/ir_curve_generation_config_protocol.hpp"
+#include "ores.synthetic.api/messaging/ir_curve_template_entry_protocol.hpp"
+#include "ores.synthetic.api/messaging/market_data_generation_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/trade_generation_book_protocol.hpp"
 #include "ores.synthetic.api/messaging/trade_generation_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/trade_generation_counterparty_protocol.hpp"
@@ -345,14 +353,60 @@ trading_trade_population_writer::resolve_scope(const boost::uuids::uuid& config_
             scope.credit_reference_entities.push_back(entity.lei);
 
     /*
-     * A floating leg is drawn only on an index a curve serves, and the curves
-     * the tenant sees, its own and the system's provider feeds, are the market
-     * there is. So the scope carries the fixing addresses those curves state.
+     * A trade is drawn on the market data the party is configured to receive,
+     * not on what has arrived. The market data service says what each route of
+     * the party demands, and every generator that publishes a demanded item
+     * also states the rest of its outputs, such as its index's fixings.
      */
-    ores::synthetic::messaging::list_ir_curve_generation_configs_request curves_req;
-    curves_req.limit = page;
-    scope.served_fixing_uris =
-        feed::served_fixing_uris(read(curves_req).ir_curve_generation_configs);
+    ores::marketdata::messaging::get_party_demand_request demand_req;
+    demand_req.party_id = boost::uuids::to_string(scope.party_id);
+    const auto demand = read(demand_req);
+    if (demand.result.outcome != ores::utility::domain::outcome::ok)
+        throw trade_population_write_error(
+            std::format("The demand of the party could not be read: {}", demand.result.message));
+    feed::generator_catalogue generators;
+    {
+        synthetic::list_market_data_generation_configs_request req;
+        req.limit = page;
+        generators.collections = read(req).market_data_generation_configs;
+    }
+    {
+        synthetic::list_ir_curve_generation_configs_request req;
+        req.limit = page;
+        generators.curves = read(req).ir_curve_generation_configs;
+    }
+    {
+        synthetic::list_ir_curve_template_entries_request req;
+        req.limit = page;
+        generators.curve_entries = read(req).ir_curve_template_entries;
+    }
+    {
+        synthetic::list_fx_spot_generation_configs_request req;
+        req.limit = page;
+        generators.spots = read(req).fx_spot_generation_configs;
+    }
+    {
+        synthetic::list_fx_vol_surface_feeds_request req;
+        req.limit = page;
+        generators.surfaces = read(req).fx_vol_surface_feeds;
+    }
+    {
+        synthetic::list_fx_vol_surface_feed_expiries_request req;
+        req.limit = page;
+        generators.surface_expiries = read(req).fx_vol_surface_feed_expiries;
+    }
+    {
+        synthetic::list_fx_vol_contributors_request req;
+        req.limit = page;
+        generators.contributors = read(req).fx_vol_contributors;
+    }
+    {
+        synthetic::list_fx_vol_surface_feed_contributors_request req;
+        req.limit = page;
+        generators.surface_contributors = read(req).fx_vol_surface_feed_contributors;
+    }
+    scope.expected_market_data =
+        feed::expected_market_data(demand.routes, feed::generator_publications(generators));
 
     /*
      * A trade builder reads the terms it does not draw from the tenant's

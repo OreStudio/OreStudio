@@ -26,6 +26,7 @@
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.refdata.core/mapping/fx_option_convention_mapping.hpp"
+#include "ores.synthetic.api/feeds/generator_outputs.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <chrono>
@@ -285,13 +286,7 @@ fx_vol_surface_feed::fx_vol_surface_feed(
     // The points repeat for every contributor, so one contributor's block names them all.
     for (std::size_t i = 0; i < emitter_.points_per_contributor(); ++i) {
         const auto& point = emitter_.points()[i];
-        series_uris_.push_back(
-            std::format("oresmd://fx/{}?type=quote&instrument=fx_option&quote=rate_lnvol&"
-                        "ccy={}&expiry={}&strike_label={}",
-                        base,
-                        quote,
-                        point.expiry_id,
-                        point.label));
+        series_uris_.push_back(fx_vol_point_uri(base, quote, point.expiry_id, point.label));
     }
 }
 

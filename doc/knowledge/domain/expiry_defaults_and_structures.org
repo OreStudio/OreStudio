@@ -1,0 +1,78 @@
+:PROPERTIES:
+:ID: 04278F00-8B96-4987-9AF1-61E971B9087C
+:END:
+#+title: An expiry action defaults by product, and a structure expires as one
+#+description: Each product has a default expiry action; a structure is expired and netted as one, by FX or by cash.
+#+type: knowledge
+#+audience: user
+#+level: cross
+#+filetags: :domain:expiry:option:structure:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+
+* Summary
+
+Each product has a default expiry action: a deliverable vanilla or barrier is
+exercised into an FX trade, a non-deliverable forward is cash settled in its
+deliverable currency, a digital is cash settled in its rebate currency. A
+structure is expired as one: if any of its trades needs expiry management, the
+whole structure does, and its results are netted, as one FX trade or as one
+cash flow, before they reach the ledger.
+
+* Detail
+
+** Defaults by product
+
+| Product | Default action at expiry |
+|---------+--------------------------|
+| Non-deliverable forward | Cash settled in the deliverable currency |
+| Deliverable vanilla or barrier, outside a structure | Exercised into an FX trade |
+| Digital and other binary barriers | Cash settled in the rebate currency |
+| Dual currency deposit | Exercised as a digital |
+| Generic structure | Cash settled if it holds digitals that share a rebate currency; otherwise exercised into FX |
+
+The default is a starting point that the holder's decision can override; see
+[[id:970D334D-2576-41BF-8664-1AA4CB76D31B][An option near the money at its cut makes expiry a matter of judgement]].
+
+** Which process handles which product
+
+A product is handled by expiry management, by fixing management, or by barrier
+monitoring, according to whether its outcome waits for the holder or follows
+from a fixing. The table is in
+[[id:0CBDBE85-17DF-4A77-A231-FFB2101FC0CC][A fixing automates the decision an expiry leaves to the holder]].
+Barrier monitoring and expiry management can share their logic, but they serve
+different decisions and show different fields, so traders use them as two
+views.
+
+** Structures expire as one
+
+The trades of a structure should share one determination style, either
+holder-determined or fixing-determined, so that the structure is netted in one
+place. If some trades of a structure could be fixed and others need expiry
+management, the whole structure goes through expiry management.
+
+Netting has three styles: none; /as FX/, where the results become one FX trade,
+for example a rebate netted into the exercise trade at a rate different from
+the strike; and /as cash/, one payment per currency. The ledger receives the
+netted structure. If each component reached the ledger on its own, assets and
+liabilities would both be inflated. When netting leaves no FX at all, no trade
+or confirmation is produced, but the outcome is still reported to the client.
+The composition of structures is in
+[[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]].
+
+** Write-offs
+
+A very short-dated, deep out-of-the-money vanilla can be sold back to back into
+a separate write-off book for a very small premium, to remove its gamma and
+time decay before expiry. Expiry management shows the write-offs done as part
+of an expiry.
+
+* See also
+
+- [[id:C9887852-42C9-48BE-8E8C-BB66FCC48E83][Expiries]] — the structure note.
+- [[id:16A04B6A-AB93-4C50-9273-E18CC0130C5F][An option ends in one of three ways]] — completes: how each action settles.
+
+* Sources
+
+- ISDA, EMTA and The Foreign Exchange Committee (1998). /1998 FX and Currency Option Definitions/.
+- FpML. The =exerciseProcedure= element: =manualExercise= or =automaticExercise=, and the European, American and Bermuda exercise types. [[https://www.fpml.org/][fpml.org]]

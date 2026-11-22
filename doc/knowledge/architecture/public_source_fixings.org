@@ -270,6 +270,7 @@ The steps for a key:
 * See also
 
 
+- [[id:784D9D97-721A-42EC-BA91-A85764979CD0][Fixings]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:FDD02CA9-1DAD-4162-95AC-C7C5C611DDDC][The market data path: a public fixing, a curve, a report]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
 - [[id:3F9D6EAE-9FB8-4A0D-9BAF-1EA3EA93AB4F][Synthetic prices are calibrated from free public sources]] — the publishers and their terms.

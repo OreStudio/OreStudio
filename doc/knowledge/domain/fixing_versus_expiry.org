@@ -1,0 +1,85 @@
+:PROPERTIES:
+:ID: 0CBDBE85-17DF-4A77-A231-FFB2101FC0CC
+:END:
+#+title: A fixing automates the decision an expiry leaves to the holder
+#+description: An agreed fixing source lets the exercise of a cash-settled option follow automatically; an expiry waits for the holder.
+#+type: knowledge
+#+audience: user
+#+level: cross
+#+filetags: :domain:fixing:option:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+
+* Summary
+
+A fixing and an expiry both decide the fate of an option, but they decide it
+differently. An expiry waits for the holder to exercise or to let the option
+lapse, and the decision may be disputed when the option is near the money. A
+fixing decides from an observation of a source that both parties agreed at
+inception, so everything that depends on it can be automated. Fixings are,
+in this sense, the automated counterpart of expiries.
+
+* Detail
+
+** Exercise determination
+
+The agreement at inception sets how an option's exercise is determined:
+
+- *Holder determined.* The holder exercises or lets the option expire. This
+  is the classical expiry.
+- *Fixing determined.* Exercise follows from a fixing agreed at inception.
+  FpML calls this /automatic exercise/. A non-deliverable option needs it,
+  because it can only settle in cash against a fixing; a vanilla option can
+  use it to settle without manual intervention.
+
+The market documentation presumes automatic exercise. The 1998 FX and
+Currency Option Definitions apply automatic exercise to a currency option
+unless the parties state otherwise, and the 2005 Barrier Option Supplement asks
+parties who want manual exercise to say so in the confirmation. FpML records the
+choice in =exerciseProcedure=, as =manualExercise= or =automaticExercise=. A
+system should therefore record, for each trade, whether automatic exercise
+applies, rather than assume it either way.
+
+A cash-settled option is always fixing determined: the fixing both decides
+whether the option is exercised and sets the amount it pays, and the second
+implies the first. A deliverable vanilla can also be fixing determined, which
+is common when it shares an expiry time with a digital in one structure.
+
+** Consequences for a trading system
+
+- A product that settles in cash should carry a fixing source, so that it
+  needs no manual expiry processing. Non-deliverable forwards, non-deliverable
+  options and digitals are the common cases; see
+  [[id:CD3E82C6-AE56-4D06-B949-0B3A5CE7A5FC][Deliverability and non-deliverable instruments]].
+- A trade that is fixing determined but has no fixing source cannot be
+  processed automatically. It belongs on an exceptions report.
+- The options of one structure should share a determination style, so that
+  the structure is netted in one place, either at expiry or at fixing.
+- Because a fixing's source is not in dispute, an error lies in how the
+  observation was entered. The system must therefore undo every fix made from
+  one observation and redo them; the unit of work is the set of trades
+  attached to an observation, not a single trade. See
+  [[id:CA61B445-B6DC-41D3-ACF9-D3FB32D0D342][The fixing process observes, authorises, applies and can undo an observation]].
+
+** Which event handles which product
+
+| Handled at expiry | Handled at fixing |
+|-------------------+-------------------|
+| European vanilla, knock-in, knock-out not triggered | European digital, digital with a knock-out barrier, average rate options, volatility swaps, non-deliverable forwards and options |
+
+An American one-touch is handled by barrier monitoring when it is touched,
+and at maturity otherwise.
+
+* See also
+
+- [[id:784D9D97-721A-42EC-BA91-A85764979CD0][Fixings]] — the structure note.
+- [[id:C9887852-42C9-48BE-8E8C-BB66FCC48E83][Expiries]] — the structure note of the manual counterpart.
+- [[id:86DA6985-C92E-40F6-AE43-71C4BBF126CB][A fixing is an agreed observation that settles a contract]] — completes: the definition.
+- [[id:C880CEB4-4FB7-41AA-8A4A-A650B6FC388C][FX Digital Option]] — exemplifies: a fixing-determined product.
+
+* Sources
+
+- ISDA, EMTA and The Foreign Exchange Committee (1998). /1998 FX and Currency Option Definitions/.
+- ISDA, EMTA and The Foreign Exchange Committee (2005). /2005 Barrier Option Supplement to the 1998 FX and Currency Option Definitions/. [[https://www.newyorkfed.org/medialibrary/microsites/fxc/files/2005/fxc051206a.pdf][newyorkfed.org]]
+- FpML. /Settlement rate option scheme/ and the =settlementRateOption= element. [[https://www.fpml.org/][fpml.org]]
+- ISDA and EMTA (2019). /Annex A to the 1998 FX and Currency Option Definitions/, amended and restated 19 November 2017, amended 3 January 2019. [[https://www.isda.org/book/annex-a-to-the-1998-fx-and-currency-option-definitions/][isda.org]]

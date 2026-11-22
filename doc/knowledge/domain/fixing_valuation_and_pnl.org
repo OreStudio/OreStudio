@@ -1,0 +1,86 @@
+:PROPERTIES:
+:ID: D4CA27E5-8194-470B-A422-B77C53545560
+:END:
+#+title: A fixing replaces a projected rate with an observed one, which moves value, risk and P&L
+#+description: Before its fixing a coupon is projected; after, it is observed. The switch moves value, makes delta jump and has its own P&L.
+#+type: knowledge
+#+audience: user
+#+level: cross
+#+filetags: :domain:fixing:valuation:pnl:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+
+* Summary
+
+Before its fixing date, a floating coupon is valued from a projection of the
+rate; after it, from the observed fixing; once its settlement trade exists, it
+leaves the trade's value altogether. Each switch changes the value, and a
+fixing makes the delta of many trades jump: a non-deliverable forward has FX
+delta until it fixes and none after, and a volatility swap's sensitivity resets
+towards zero as its fixings accumulate. P&L attribution therefore treats
+fixings as an activity of their own, and the replacement of a projected rate by
+the observed one is the /rate reset/ P&L.
+
+* Detail
+
+** Projected and observed
+
+The value of a swap is the sum of the cash delivered, the cash settled and not
+yet delivered, the past coupons whose fixings are not yet authorised, and the
+future coupons. A future coupon uses a projection from the source's curve; a
+past coupon without a settlement trade uses the fixing; a coupon whose
+settlement trade exists has left the swap. Projections are computed by the
+pricing library for valuation and for rolling a portfolio through time; they
+are never stored as observations. See
+[[id:C6A619F3-B2B6-42D5-9C41-5269A84BC96C][An observation is stored once per source and never stamped on the trades it fixes]].
+
+A non-deliverable forward is discounted from its settlement date, and its
+settlement amount stops depending on spot once it has fixed; see
+[[id:B60031AD-CE57-5F9D-885C-1DAF504E6004][An NDF pays a cash difference on its settlement date]].
+
+** Jumps in risk
+
+A fixing removes uncertainty at once, so sensitivities jump:
+
+- a non-deliverable forward has FX delta before it fixes and none after;
+- an in-the-money non-deliverable option behaves the same way;
+- volatility, variance and correlation swaps lose most of their sensitivity as
+  their fixings accumulate;
+- exotic options can jump in either direction.
+
+A report of every trade that will fix soon lets traders anticipate the jumps;
+the delta jump screen of the [[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade Blotter]] is one.
+
+** Rolling through a fixing date
+
+When a portfolio is rolled forward through a fixing date, the trades must be
+fixed. The time component of P&L uses the projection for rates and the forward
+for FX, so that it measures the passage of time and not the fixing; the
+activity component uses the actual fixing. A rolled non-deliverable trade is
+fixed with market data that has already been rolled.
+
+** In P&L attribution
+
+- *Rate reset.* The difference made by the actual fixing replacing the
+  projection. In FX it is simply called a fixing.
+- *The fixings activity.* The trades that fixed during the day. Fixing a swap
+  coupon moves value from the swap to the new cash trade, so the two together
+  should show no P&L; a difference points to a trade fixed at the wrong value.
+- *Order of activities.* Fixings are attributed after exercises and expiries,
+  because a trade that has fixed and then expired no longer depends on the
+  fixing.
+- *Pairs.* Fixing a non-deliverable forward creates a fixing trade and amends
+  the forward. The two net to zero but each looks like a break on its own.
+
+The attribution identity and its activity components are in
+[[id:B50355E0-F016-4CA1-9932-404DAF83EA7A][P&L Attribution]]; this note adds only what fixings contribute.
+
+* See also
+
+- [[id:784D9D97-721A-42EC-BA91-A85764979CD0][Fixings]] — the structure note.
+- [[id:1BA05AA4-1B24-48B4-83F9-366624D0A88E][The products that require fixings]] — completes: which products jump and why.
+
+* Sources
+
+- Lyashenko, A. and Mercurio, F. (2019). Looking Forward to Backward-Looking Rates: A Modeling Framework for Term Rates Replacing LIBOR. SSRN working paper 3330240. [[https://ssrn.com/abstract=3330240][ssrn.com]]
+- Demeterfi, K., Derman, E., Kamal, M. and Zou, J. (1999). /More Than You Ever Wanted to Know About Volatility Swaps/. Goldman Sachs Quantitative Strategies Research Notes.

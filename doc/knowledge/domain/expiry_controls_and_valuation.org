@@ -1,0 +1,68 @@
+:PROPERTIES:
+:ID: 49E61902-364C-4729-A53E-D55873D9A03D
+:END:
+#+title: Expired and exercised options are valued for control, not for P&L
+#+description: After expiry an option leaves P&L, but it is still valued to catch wrong decisions; controls check each cut.
+#+type: knowledge
+#+audience: user
+#+level: cross
+#+filetags: :domain:expiry:option:valuation:pnl:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+
+* Summary
+
+An expired option is not valued and an exercised one is not valued either,
+because its exercise trade carries the value; valuing both would count it twice.
+For control, both are still valued: an expired option to catch one that was in
+the money, an exercised one as a forward at its strike, so that the exercise
+trade can be checked against it. Control reports after each cut check that the
+right action was taken, the right trades were generated and the right spot was
+used.
+
+* Detail
+
+** Valuation after expiry
+
+- *Expired options* are force-valued for control, in case one was expired in
+  error while in the money.
+- *Exercised options* are valued as if they were a forward at the strike, on
+  the fixed date. The value of the exercise trade less the value of the
+  exercised option should be zero; a difference shows a wrong exercise.
+- *Rolling through an expiry.* Rolling the portfolio forward removes expired
+  and exercised options, or values them at zero, and generates their exercise
+  trades on forward dates.
+
+** In P&L attribution
+
+Expiries and exercises are trade activities, attributed after new trades,
+amendments and cancellations and before fixings; an exercise pairs an amended
+option with a new FX or cash trade, which net together but each look like a
+break alone. The activity components are in [[id:B50355E0-F016-4CA1-9932-404DAF83EA7A][P&L Attribution]], and
+the fixings that follow expiries are in
+[[id:D4CA27E5-8194-470B-A422-B77C53545560][A fixing replaces a projected rate with an observed one]].
+
+** Controls
+
+| Report or control | Purpose |
+|-------------------+---------|
+| Post-cut checks | After each cut: the right action, the right settlement and fixing trades, the right spot, every option left aside signed off, and the right non-deliverable fixing dates |
+| Expiries by cut, expected actions | The options of every cut and the action each should take |
+| Expiry report | Options expiring over a horizon, in the money beyond a threshold |
+| Control explains | Exercise trades that do not match the option's value before exercise; options that should have been exercised and were not |
+| Exceptions | Fixing-determined trades without a fixing |
+| Non-deliverable warnings | Holiday conflicts on expiry, delivery and fixing dates |
+
+The fixing controls are in
+[[id:B5CA0D8F-D9C5-4F09-ABD7-7ED6F0FEF1A5][Fixing management shows every required fixing and reports those not applied]].
+The front-office screen marks expired trades and those expiring or maturing
+today; see [[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade Blotter]].
+
+* See also
+
+- [[id:C9887852-42C9-48BE-8E8C-BB66FCC48E83][Expiries]] — the structure note.
+- [[id:0E638BE0-E3DA-4D05-A2FC-0F52FC1D24FC][Every expiry event has an inverse]] — completes: the reversals these controls catch.
+
+* Sources
+
+- ISDA, EMTA and The Foreign Exchange Committee (1998). /1998 FX and Currency Option Definitions/.

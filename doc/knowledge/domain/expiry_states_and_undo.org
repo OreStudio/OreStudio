@@ -1,0 +1,83 @@
+:PROPERTIES:
+:ID: 0E638BE0-E3DA-4D05-A2FC-0F52FC1D24FC
+:END:
+#+title: Every expiry event has an inverse, and an option past its expiry waits for a decision
+#+description: An exercise or an expiry can be reversed; an option past its cut is in a waiting state until the holder decides.
+#+type: knowledge
+#+audience: user
+#+level: cross
+#+filetags: :domain:expiry:option:lifecycle:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+
+* Summary
+
+Every life-cycle event of an option has an inverse. An unexpiry makes an
+expired option live again; an unexercise cancels the exercise trade and makes
+the option live again; each records its reason and is attributed separately. An
+option whose expiry has passed without a decision is in a state of its own,
+waiting for the holder, and is reported until it leaves it. Reversal has limits
+outside the system: once a termination has been reported to a trade repository,
+it is corrected by a further report, not withdrawn.
+
+* Detail
+
+** Undo
+
+Each event has an undo that does the right things: it cancels the trades the
+event booked and makes the option live again, with a reason such as /wrong
+rate/, after which the option is expired again. Undo events are attributed in a
+bucket of their own; see
+[[id:49E61902-364C-4729-A53E-D55873D9A03D][Expired and exercised options are valued for control, not for P&L]].
+
+An unexpiry is constrained by trade reporting. Once a termination has been
+reported, the status cannot simply return to live; a cancellation of the
+termination is sent instead.
+
+** States
+
+The option's state machine needs states between /live/ and /exercised/ or
+/expired/: waiting for a decision, decision pending, delivery pending. Passing
+the expiry date and cut without a decision moves the option to /waiting for a
+decision/. A holder-determined option is not treated as expired for settlement
+until the holder has acted. For valuation it is treated as exercised or expired
+according to its moneyness. An option past expiry that is neither expired nor
+exercised is an invalid state, and is reported.
+
+** Late events
+
+- Booking a trade that has already expired is sometimes needed, for example
+  after a novation, and requires authorisation.
+- An amendment after maturity or expiry is a post-trade amendment, and is a
+  control in its own right.
+
+** Expected behaviour by product
+
+| Product | At expiry |
+|---------+-----------|
+| European vanilla | Exercise before expiry is refused; exercise at expiry books the exercise trade; expiry books nothing; passing the cut without a decision moves it to waiting |
+| European vanilla with a knock-in | Must have knocked in, continuously or at discrete observations, before it can be exercised |
+| European vanilla with a knock-out | Exists at expiry only if it has not knocked out |
+| American digital paying at maturity | Pays cash at expiry, for delivery at spot from expiry |
+| European digital | Pays its rebate from a spot fixing, through fixing management |
+
+Barrier products have expected end states for the triggered and the untriggered
+path, with or without a rebate; see [[id:6CAED5F9-21CB-4300-B1B0-89599CFBFC7C][FX Barrier Option]].
+
+** Exchange-traded options
+
+An exchange-traded FX option exercises into a futures contract. The exchange
+supplies settlement prices and a status extract at the end of the day, and
+exercises options in the money by at least one pip. The system replicates the
+exchange's rule so that risk is seen at once, expires before the end of the day,
+and reconciles against the exchange's files.
+
+* See also
+
+- [[id:C9887852-42C9-48BE-8E8C-BB66FCC48E83][Expiries]] — the structure note.
+- [[id:CA61B445-B6DC-41D3-ACF9-D3FB32D0D342][The fixing process observes, authorises, applies and can undo an observation]] — completes: the same undo for fixings.
+- [[id:24748A22-DB67-4E22-A52F-5D0FBA668D10][Trade]] — completes: the trade life cycle.
+
+* Sources
+
+- FpML. The =exerciseProcedure= element: =manualExercise= or =automaticExercise=, and the European, American and Bermuda exercise types. [[https://www.fpml.org/][fpml.org]]

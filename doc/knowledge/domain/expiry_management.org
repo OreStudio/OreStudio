@@ -1,0 +1,112 @@
+:PROPERTIES:
+:ID: FE1C63AB-A242-4B02-86AA-8035EEC8DF54
+:END:
+#+title: Expiry management works cut by cut, on frozen spots, with a preview before commit
+#+description: Options are expired per cut and pair against spots that do not move under the user, with a preview and undo.
+#+type: knowledge
+#+audience: user
+#+level: cross
+#+filetags: :domain:expiry:option:operations:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+
+* Summary
+
+Expiry management is the operational process that decides every option at a
+cut. The cut is the unit of work: an operator selects a date, a cut and a set of
+pairs, and the system lists the options to decide against spots loaded once and
+held still, so that options do not change state while the operator works. A
+tolerance highlights options near the money, actions are applied in bulk, a
+timeline shows which of the day's cuts are done, and a preview shows the trades
+and the P&L impact before anything is booked. Every action can be undone.
+
+* Detail
+
+** The working set
+
+The operator chooses the expiry date, the cut (or all cuts), the pairs (one, a
+set, or all), and optionally books, portfolios and counterparties. Several pairs
+can be expired in one go, or books separately, but the system must say when
+options in the cut were left out. The cut and its cut code are defined in
+[[id:3B39B2E2-6E05-4DF8-B68B-6ACA12F2FCE9][The option-expiry cut code]]; the cut as a frozen body of data is
+a different sense of the word, in [[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]].
+
+** Spots held still
+
+Spots are loaded at the start or on demand and are not refreshed on their own,
+because a moving spot would move options between actions under the operator.
+Stale spots and stale trades are marked: a trade that was booked, amended or
+cancelled since the last load is flagged, and running on stale data raises a
+warning and a final check. The operator can override a spot, or give a range.
+A tolerance, in pips or in percent, highlights the options whose decision a
+small move would change; see
+[[id:970D334D-2576-41BF-8664-1AA4CB76D31B][An option near the money at its cut makes expiry a matter of judgement]].
+
+** Actions and views
+
+The actions are exercise, expire, fix and leave, applied to one option or many.
+/Fix/ shows the non-deliverable fixings due; /leave/ sets an option aside for a
+later decision, and must be signed off. Two views serve two needs: a grouped
+view, with a pane per action, shows options moving between actions and suits a
+cut with many options near the money; a flat view, with pair, book, party,
+product, amounts, strike, rebate, status and action, shows many options at
+once. Column profiles suit vanilla and exotic cuts. Trades with other banks are
+marked, because they are confirmed with the counterparty, particularly where
+the bank is long. The trades the process generated, and any write-offs, have
+views of their own.
+
+** The cut timeline
+
+A timeline shows the cuts of the day that are done and those still open.
+
+** Non-deliverable options
+
+A non-deliverable option takes two steps: it is exercised into a
+non-deliverable forward, and that forward is then fixed. The forward's fixing
+date is shown beside the option; it is normally the same day, but holidays can
+move it. See [[id:53DB3AF1-6FA4-4B53-9D8E-A65F739F6F4D][A fixing date follows the calendar of the rate it observes]].
+
+** Netting, undo and export
+
+Cash settlements of a structure are netted by default; see
+[[id:04278F00-8B96-4987-9AF1-61E971B9087C][An expiry action defaults by product, and a structure expires as one]].
+The operator can list the actions the process took and undo some or all of
+them, unexpiries and unfixes included; see
+[[id:0E638BE0-E3DA-4D05-A2FC-0F52FC1D24FC][Every expiry event has an inverse]]. The result exports as the
+expiry report, by portfolio.
+
+** Preview before commit
+
+A preview creates every trade the actions would book without booking them, and
+shows the risk and P&L impact. Committing a preview fails, with an explanation,
+if trades or rates have changed since it was made.
+
+** Queues and automation
+
+Expiries can also be worked as queues beside the authorisation queue: a /flow/
+queue for vanillas, barriers, digitals and resettables, and a /non-flow/ queue
+for more complex products, configured by operations. Expiry can be automatic
+under defined conditions, such as a spot that matches the expiry rate from an
+automatic source, but is manual by default. This sits beside the documentation's
+own presumption: the 1998 FX and Currency Option Definitions presume automatic
+exercise unless the parties state otherwise, which the 2005 Barrier Option
+Supplement asks them to do expressly. A system should therefore record, per
+trade, whether automatic exercise applies. An /expiry report/ lists the options
+expiring over a short horizon, highlights those in the money beyond a threshold,
+and can be scheduled.
+
+** In ORE Studio
+
+ORE Studio has no expiry management yet. The front-office screen that hosts it
+is described in [[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade Blotter]].
+
+* See also
+
+- [[id:C9887852-42C9-48BE-8E8C-BB66FCC48E83][Expiries]] — the structure note.
+- [[id:B5CA0D8F-D9C5-4F09-ABD7-7ED6F0FEF1A5][Fixing management shows every required fixing and reports those not applied]] — contrasts: the automated counterpart.
+
+* Sources
+
+- ISDA, EMTA and The Foreign Exchange Committee (2005). /2005 Barrier Option Supplement to the 1998 FX and Currency Option Definitions/. [[https://www.newyorkfed.org/medialibrary/microsites/fxc/files/2005/fxc051206a.pdf][newyorkfed.org]]
+- ISDA, EMTA and The Foreign Exchange Committee (1998). /1998 FX and Currency Option Definitions/.
+- FpML. The =exerciseProcedure= element: =manualExercise= or =automaticExercise=, and the European, American and Bermuda exercise types. [[https://www.fpml.org/][fpml.org]]

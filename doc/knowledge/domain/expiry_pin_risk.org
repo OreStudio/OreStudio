@@ -1,0 +1,66 @@
+:PROPERTIES:
+:ID: 970D334D-2576-41BF-8664-1AA4CB76D31B
+:END:
+#+title: An option near the money at its cut makes expiry a matter of judgement
+#+description: Near the strike, the spot used flips the decision and the position; such options are set aside and decided late.
+#+type: knowledge
+#+audience: user
+#+level: cross
+#+filetags: :domain:expiry:option:risk:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+
+* Summary
+
+An option whose strike is close to spot at its cut is hard to expire. A small
+difference in the spot used, or in the moment it is read, flips the decision
+between exercise and expiry, and with it a position worth the full notional.
+There may be no single undisputed spot, so two options on one pair expiring at
+one cut can be decided on different spots. Practice is to decide the clear
+cases in bulk and to set aside those within a tolerance of the strike, deciding
+them later on the spot recorded at the cut.
+
+* Detail
+
+** Why near the money is hard
+
+Just before expiry a near-the-money option has a small delta, so the desk holds
+a small hedge. At expiry the position becomes either nothing or the full
+notional in the underlying. The decision is therefore large, and it rests on a
+spot that the market may not agree on at the second it is needed. The
+literature calls the related concentration of prices at strikes on expiry days
+/pinning/: Ni, Pearson and Poteshman (2005) document the clustering of stock
+prices at option strikes on expiration dates, and Avellaneda and Lipkin (2003)
+give a mechanism by which the hedging of option positions drives it.
+
+** Tolerance and the deferred decision
+
+A tolerance around the strike defines /close/: an absolute interval for one
+pair, or a percentage or a number of pips for any pair. Options inside the
+tolerance are set aside, the others are exercised or expired in bulk, and the
+set-aside options are decided once the cut has passed, on the spot at the cut.
+A trader may decide them much later, so the spot at every cut must be recorded
+and kept. A set-aside option must also be signed off, so that none is
+forgotten.
+
+The holder keeps the final say. For a European vanilla, moneyness sets the
+default, but a client may exercise an out-of-the-money option, or let an
+in-the-money one lapse to avoid a delta it would then have to hedge. The
+parties may agree the conditions for exercise in advance.
+
+** Working through a cut
+
+Traders expire their own books. They need to see, for each cut, the options
+still to decide; to exclude a book with a recorded reason that reports show;
+and to see which of the day's cuts are complete. See
+[[id:FE1C63AB-A242-4B02-86AA-8035EEC8DF54][Expiry management works cut by cut, on frozen spots, with a preview before commit]].
+
+* See also
+
+- [[id:C9887852-42C9-48BE-8E8C-BB66FCC48E83][Expiries]] — the structure note.
+- [[id:3B39B2E2-6E05-4DF8-B68B-6ACA12F2FCE9][The option-expiry cut code]] — completes: the instant the spot is read at.
+
+* Sources
+
+- Ni, S. X., Pearson, N. D. and Poteshman, A. M. (2005). Stock price clustering on option expiration dates. /Journal of Financial Economics/, 78(1), 49--87.
+- Avellaneda, M. and Lipkin, M. D. (2003). A market-induced mechanism for stock pinning. /Quantitative Finance/, 3(6), 417--425.

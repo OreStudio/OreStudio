@@ -20,6 +20,7 @@ ORE values a cash-settled forward by discounting from its payment date. Before t
 
 * See also
 
+- [[id:784D9D97-721A-42EC-BA91-A85764979CD0][Fixings]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:9FB155A4-54FD-57D5-93A1-1FECB3A05F95][FX forwards]] — the structure note.
 - [[id:CD3E82C6-AE56-4D06-B949-0B3A5CE7A5FC][Deliverability and non-deliverable instruments]] — completes: this adds how an NDF is valued.
 - [[id:2F7AD024-2CDF-4B31-9845-0879179B0D1A][Settlement Currency]] — completes: the currency that replaces delivery.

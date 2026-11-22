@@ -1,0 +1,90 @@
+:PROPERTIES:
+:ID: B5CA0D8F-D9C5-4F09-ABD7-7ED6F0FEF1A5
+:END:
+#+title: Fixing management shows every required fixing and reports those not applied
+#+description: A fixings view lists the observations live trades require for authorisation; control reports find fixings not applied.
+#+type: knowledge
+#+audience: user
+#+level: cross
+#+filetags: :domain:fixing:operations:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+
+* Summary
+
+Fixing management is the operational view of the fixing process. One view
+lists every historic and future fixing that live trades require, with the
+observed value, its origin and its status, and lets operations authorise,
+override or reverse it. A set of control reports finds what the process
+missed: trades that should have fixed and did not, trades with no source, and
+generated trades whose dates or amounts do not agree with their fixing.
+
+* Detail
+
+** Roles
+
+Front office may key a value until it is authorised, and may not change it
+afterwards. Only operations authorise, and only after the source's publication
+time. Operations can authorise a published value or a keyed one, key over a
+published value and authorise their own, and withdraw an authorisation and
+authorise again. Each of these is a recorded act.
+
+** What the view shows
+
+| Field | Meaning |
+|-------+---------|
+| Source | The fixing source, and whether it is published, keyed or derived; a derived source shows its parents |
+| Fixing date and time | In the source's time zone, and in the user's |
+| Asset | A currency for a rate, a pair for FX |
+| Value | The value to authorise |
+| Published value | The source's own value, kept even when a different value is keyed |
+| Previous value | The last fixing of the same source |
+| Reference rate | The projection for a rate, the current spot for FX, the forward for an FX forward source |
+| Origin | Published, keyed by operations, keyed by front office, keyed in a trade, or defaulted from spot or from the valuation |
+| Status | Official or unofficial |
+| Audit | Last change, by whom, and version |
+| Trades | The trades this observation fixes |
+
+The view filters by source, time, date range, origin and status, and by
+whether the fixings have been applied.
+
+** Control reports
+
+| Report | Purpose |
+|--------+---------|
+| Missing fixings | Fixings that were due and were not done |
+| Unfixed trades | Trades that are about to fix, or should have fixed and did not |
+| Fixing audit | What was keyed, authorised and changed, by whom and when |
+| Non-deliverable forward warnings | Holiday conflicts, fixing dates in the past with no fixing, and trades with no source |
+| Non-deliverable forward fixings by pair | The forwards fixed today and their cash balance, which should be flat |
+| Exceptions | Fixing-determined trades without a fixing |
+| Trigger checks | Discrete barrier observations checked against the stored fixings |
+| Post-cut checks | After each cut, the expected settlement and fixing trades exist with the right dates |
+| Control explains | Pairs that should net to zero, such as a forward and its fixing trade, or a projected and an observed coupon |
+
+The cut referred to in the post-cut check is the cut of
+[[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]]. The fixing activities, fix and unfix, are activity codes
+of their own, so a report can tell an automated fix from a manual one.
+
+** A trade's own fixing view
+
+A swap's trade view lists, per leg, the fixing source, time and zone, and an
+FX fixing source and time for a non-deliverable leg. A fixing grid per leg
+shows each period's fixing date, accrual dates, rate, FX date and rate,
+notional, coupon and present value, with totals. When a non-deliverable coupon
+is converted, the original stays visible and is marked as replaced.
+
+** In ORE Studio
+
+ORE Studio has no fixings view or controls yet. The task
+[[id:DC6F4D69-5E3E-4562-9503-88C74329FF1E][Show the FX and IR fixings on a fixings screen]]
+starts with a read-only list of the stored fixing series.
+
+* See also
+
+- [[id:784D9D97-721A-42EC-BA91-A85764979CD0][Fixings]] — the structure note.
+- [[id:CA61B445-B6DC-41D3-ACF9-D3FB32D0D342][The fixing process observes, authorises, applies and can undo an observation]] — completes: the process the view drives.
+
+* Sources
+
+- IOSCO (2013). /Principles for Financial Benchmarks: Final Report/, July 2013. [[https://www.iosco.org/library/pubdocs/pdf/IOSCOPD415.pdf][iosco.org]]

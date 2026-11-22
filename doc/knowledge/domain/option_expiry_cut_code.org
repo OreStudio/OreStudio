@@ -111,6 +111,7 @@ them.
 
 * See also
 
+- [[id:C9887852-42C9-48BE-8E8C-BB66FCC48E83][Expiries]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:33E879B7-496A-406D-B3F2-72637379AD02][Kinds of cut]] — the classification by occasion, against which this page states an instant rather than an occasion.
 - [[id:5DD9A309-91E0-4CAB-BD9D-6ECB3B5EB58E][Currency Pairs]] — the hub for the pair the code is a property of.

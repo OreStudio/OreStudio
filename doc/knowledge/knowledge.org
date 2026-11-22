@@ -77,6 +77,8 @@ Finance concepts the codebase relies on.
 | [[id:A8C46639-0639-4587-B07D-B8B006C46618][Stochastic Processes]] | The processes behind the quant generators: Wiener, Ito, and the mean-reverting family |
 | [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] | How a tick becomes a stored observation, how a config becomes a running synthetic feed, the verbs and screens that drive it, and the vendor and stored data side |
 | [[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]] | The label, the timepoint and the object a cut fixes; the kinds of cut; the data a cut must freeze, reference data included; the market data, deal and expiry components |
+| [[id:784D9D97-721A-42EC-BA91-A85764979CD0][Fixings]] | The agreed observations contracts settle on: sources and their administrators, the products that need them, the fixing process and its controls, storage, valuation and P&L effects, and the data model they imply |
+| [[id:C9887852-42C9-48BE-8E8C-BB66FCC48E83][Expiries]] | How an option ends at its cut: outcomes and exercise styles, pin risk, defaults and structures, the cut-by-cut process, undo and states, controls and valuation |
 
 ** Topics with no hub yet
 

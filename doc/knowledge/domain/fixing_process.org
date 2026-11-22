@@ -1,0 +1,96 @@
+:PROPERTIES:
+:ID: CA61B445-B6DC-41D3-ACF9-D3FB32D0D342
+:END:
+#+title: The fixing process observes, authorises, applies and can undo an observation
+#+description: An observation is collected, authorised by operations, applied to every subscribed trade by an event, and can be undone.
+#+type: knowledge
+#+audience: user
+#+level: cross
+#+filetags: :domain:fixing:lifecycle:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+
+* Summary
+
+The fixing process takes an observation from its source to the trades that
+need it, in four stages. The system collects the observation, or a person keys
+it. Operations authorise it after the publication time, against the prevailing
+front-office rate. Authorisation raises an event, and every trade that depends
+on the observation is fixed: coupons, settlements and state changes are
+generated and labelled with that event. Because the source is agreed, an error
+lies in the observation, so the whole set of fixes it produced can be undone
+and redone.
+
+* Detail
+
+** Subscribe and observe
+
+Booking a trade that needs fixings subscribes it to its sources. The process
+then concerns only the sources some live trade needs. Observations of sources
+that are set up are collected automatically; the others are keyed. A trader may
+also key an observation agreed with a client as part of a sale.
+
+** Authorise
+
+Operations authorise every observation, and only after the source's
+publication time. The system compares each observation with the current
+front-office rate and highlights large differences. An override keeps both the
+published and the overridden values, and may apply to only some of the trades
+subscribed to the observation. Front office may key a value but may not
+authorise one, and may not change a value once it is authorised; this is a
+four-eyes control. A trade that must carry a fixing source and has none is
+reported, not silently skipped.
+
+** Apply
+
+Authorisation sends an event. Services find the affected trades, generate the
+action each kind of trade needs and label every action with the event, so that
+the event can later be reversed. The progress of a large application is
+visible, some books or trades can be excluded, and ideally all affected trades
+go live together after the P&L impact has been seen.
+
+Generated trades cover the period from the last generation to now. Real
+events run in settlement mode; simulated events, such as a time ladder that
+rolls a portfolio forward, run in valuation mode and generate nothing durable.
+A trade remembers the start of its settled generation, which is its first
+unkeyed fixing.
+
+Official observations of a source form an unbroken prefix in time: there
+cannot be an official fixing, then an unofficial one, then an official one. A
+future fixing keyed in advance therefore stays dormant until every fixing
+between now and its date is official.
+
+Observations are stored once and never stamped on the trades; see
+[[id:C6A619F3-B2B6-42D5-9C41-5269A84BC96C][An observation is stored once per source and never stamped on the trades it fixes]].
+
+** Undo
+
+The process can be undone as a whole, or for one time, book, currency or
+trade. Undo sends an undo event and runs the same chain in reverse. A trade may
+be amended freely before its fixing date; after it, it is amended as a fixed
+trade or unfixed first.
+
+** Checks at booking
+
+A trade whose fixings generate trades, such as a swap's coupons, is checked at
+booking: every fixing already applied must have its settlement trade. A fixing
+activity is either a fix or an unfix, and a fixed non-deliverable forward must
+have its fixing trade in the right state.
+
+** A bounded context of its own
+
+Fixing management is a bounded context in the sense of domain-driven design:
+it owns sources, observations and their authorisation, and the products link to
+it rather than embedding it. An event-sourced design, in which every fix and
+unfix is an event, gives the undo and the audit for free.
+
+* See also
+
+- [[id:784D9D97-721A-42EC-BA91-A85764979CD0][Fixings]] — the structure note.
+- [[id:B5CA0D8F-D9C5-4F09-ABD7-7ED6F0FEF1A5][Fixing management shows every required fixing and reports those not applied]] — completes: the views and the controls.
+- [[id:24748A22-DB67-4E22-A52F-5D0FBA668D10][Trade]] — completes: the trade life cycle the fixings drive.
+
+* Sources
+
+- IOSCO (2013). /Principles for Financial Benchmarks: Final Report/, July 2013. [[https://www.iosco.org/library/pubdocs/pdf/IOSCOPD415.pdf][iosco.org]]
+- Fowler, M. (2005). Event Sourcing. [[https://martinfowler.com/eaaDev/EventSourcing.html][martinfowler.com]]

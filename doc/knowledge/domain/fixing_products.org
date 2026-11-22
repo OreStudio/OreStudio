@@ -1,0 +1,90 @@
+:PROPERTIES:
+:ID: 1BA05AA4-1B24-48B4-83F9-366624D0A88E
+:END:
+#+title: The products that require fixings, and what each fixing settles
+#+description: Swaps, NDFs, NDOs, digitals, discrete barriers, averages and volatility swaps each need fixings for a different result.
+#+type: knowledge
+#+audience: user
+#+level: cross
+#+filetags: :domain:fixing:product:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+
+* Summary
+
+Many products cannot be settled or valued without fixings, and each uses its
+fixings for a different result. A floating swap leg turns a rate fixing into a
+coupon; a non-deliverable forward turns an FX fixing into a cash settlement; a
+digital option, a discretely monitored barrier and an average rate option
+decide their payoff from spot fixings; a volatility or variance swap computes
+its payoff from a daily series of them. A continuously monitored barrier has
+no fixing, because no source publishes a continuous fixing.
+
+* Detail
+
+** What each product fixes
+
+| Product | What is fixed | What the fixing produces |
+|---------+---------------+--------------------------|
+| Interest rate swap, floating leg | The floating rate of each period | A coupon, once the observation is authorised |
+| Compounding swap, overnight index swap | Several rate fixings per period | A coupon from the compounded rate at the end of the period |
+| Non-deliverable interest rate swap | A rate fixing, and an FX fixing per non-deliverable leg | A coupon in the non-deliverable currency, converted into the settlement currency at the FX fixing |
+| Non-deliverable forward | The FX rate on the fixing date | A cash settlement of the difference in the settlement currency |
+| Non-deliverable option | The spot rate at expiry | If in the money, a cash settlement |
+| European digital | The spot rate at expiry | A fixed amount if in the money |
+| Discretely monitored barrier | The spot rate at each monitoring time | Whether the barrier is triggered |
+| Average rate option, target redemption forward | Spot fixings over a schedule | The payoff after the last fixing |
+| Volatility, variance and correlation swaps | Daily spot fixings of one or more pairs | The payoff from the realised statistic |
+| Exchange-traded option | The exchange's settlement price | Exercise, reconciled against the exchange's files |
+
+** Notes on the products
+
+- *Overnight rates.* A compounded overnight rate is known only at the end of
+  its period. Lyashenko and Mercurio (2019) extend the forward market model to
+  such backward-looking rates. The difference between term and overnight
+  benchmarks is in [[id:5170B17B-188B-45CA-A1B6-1F27A97E1CF8][Interest Rate Benchmark Types: IBOR vs. RFR]].
+- *Non-deliverable trades.* The mechanics, and the currencies that need them,
+  are in [[id:CD3E82C6-AE56-4D06-B949-0B3A5CE7A5FC][Deliverability and non-deliverable instruments]]; the
+  valuation is in [[id:B60031AD-CE57-5F9D-885C-1DAF504E6004][An NDF pays a cash difference on its settlement date]].
+  A non-deliverable option must be exercised before its settlement can be
+  fixed.
+- *Digitals.* A European digital can be struck without a fixing source, which
+  leaves the outcome to the calculation agent; regulators now expect such
+  trades to name a source. See [[id:C880CEB4-4FB7-41AA-8A4A-A650B6FC388C][FX Digital Option]].
+- *Discrete barriers.* A barrier monitored at fixings is less likely to be
+  triggered than a continuous one. Broadie, Glasserman and Kou (1997) correct a
+  continuous barrier formula for discrete monitoring by shifting the barrier.
+  See [[id:6CAED5F9-21CB-4300-B1B0-89599CFBFC7C][FX Barrier Option]] and [[id:4BAF88FA-7FDF-4B01-9A52-7AAE733A02B5][FX European Barrier Option]].
+- *Average rate options.* The payoff depends on the average of the fixings, so
+  the fixings already observed reduce the uncertainty that remains; Kemna and
+  Vorst (1990) give the classical pricing method for an average.
+- *Volatility and variance swaps.* The realised variance is computed from the
+  log returns of the daily fixings; Demeterfi, Derman, Kamal and Zou (1999)
+  derive the replication of the variance swap. See
+  [[id:7A2186FB-33C3-4916-B62C-A14468EE713F][FX Variance Swap]] and [[id:D69C0964-9F15-43BC-8A13-66ECED718BED][Equity Variance Swap]].
+- *Path-dependent trades priced by Monte Carlo.* Every new fixing changes the
+  state of the trade, so the pricer runs again whenever a fixing is applied.
+
+** Life cycle of a swap with non-deliverable legs
+
+A swap whose legs pay in non-deliverable currencies needs both kinds of
+fixing. Each coupon is fixed in its own currency, then converted at an FX
+fixing taken some days before payment. The two legs may convert into different
+settlement currencies and settle on different dates. The order is fixed:
+authorise the observation, store it, then update every affected trade, generate
+its coupons and net the cash. See
+[[id:CA61B445-B6DC-41D3-ACF9-D3FB32D0D342][The fixing process observes, authorises, applies and can undo an observation]].
+
+* See also
+
+- [[id:784D9D97-721A-42EC-BA91-A85764979CD0][Fixings]] — the structure note.
+- [[id:0CBDBE85-17DF-4A77-A231-FFB2101FC0CC][A fixing automates the decision an expiry leaves to the holder]] — completes: which event handles which product.
+- [[id:D4CA27E5-8194-470B-A422-B77C53545560][A fixing replaces a projected rate with an observed one]] — completes: what the fixing does to value.
+
+* Sources
+
+- Lyashenko, A. and Mercurio, F. (2019). Looking Forward to Backward-Looking Rates: A Modeling Framework for Term Rates Replacing LIBOR. SSRN working paper 3330240. [[https://ssrn.com/abstract=3330240][ssrn.com]]
+- Broadie, M., Glasserman, P. and Kou, S. (1997). A Continuity Correction for Discrete Barrier Options. /Mathematical Finance/, 7(4), 325--349. [[https://ideas.repec.org/a/bla/mathfi/v7y1997i4p325-349.html][RePEc]]
+- Kemna, A. G. Z. and Vorst, A. C. F. (1990). A pricing method for options based on average asset values. /Journal of Banking & Finance/, 14(1), 113--129.
+- Demeterfi, K., Derman, E., Kamal, M. and Zou, J. (1999). /More Than You Ever Wanted to Know About Volatility Swaps/. Goldman Sachs Quantitative Strategies Research Notes.
+- ISDA and EMTA (2019). /Annex A to the 1998 FX and Currency Option Definitions/, amended and restated 19 November 2017, amended 3 January 2019. [[https://www.isda.org/book/annex-a-to-the-1998-fx-and-currency-option-definitions/][isda.org]]

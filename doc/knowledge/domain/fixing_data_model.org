@@ -1,0 +1,101 @@
+:PROPERTIES:
+:ID: 2400E0FE-AEF0-4F9A-8392-F7D2E0E2A1E2
+:END:
+#+title: A data model for fixings: sources, definitions, observations and events
+#+description: The entities fixings imply, their invariants, and how far the ORE Studio market data store already holds them.
+#+type: knowledge
+#+audience: user
+#+level: cross
+#+filetags: :domain:fixing:data_model:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+
+* Summary
+
+The practice of fixings implies a small set of entities: a /source/, with its
+administrator, method, calendar and status; a /definition/, which is one
+source's series for one asset, such as the WM/Reuters 4pm fix of AUD/CAD; an
+/observation/ of a definition on a fixing date; an /override/ of an
+observation; a trade's /schedule/ of fixing dates; and the /event/ that
+authorises or undoes an observation. ORE Studio already holds definitions, as
+ORE indices, and observations, as versioned fixing series. It does not yet hold
+the source as an entity, the producer of each definition, the status of a
+source, or the authorisation of an observation.
+
+* Detail
+
+** The entities
+
+| Entity | Holds | Discussed in |
+|--------+-------+--------------|
+| Source | Identity code, name, kind (published, keyed, derived), administrator, method, publication time and zone, holiday calendar, quote convention, rounding, screen reference, parents if derived, status (active or ceased) and the version of its definition | [[id:6E566C97-F2A4-4AE8-B509-BDE23568A0B8][A fixing source is identified by its rate source definition]], [[id:6A625509-CD9A-4D13-8E16-37B75A4AED83][A derived fixing source composes the fixings of its parent sources]] |
+| Definition | A source applied to one asset and tenor, which is what a trade names: an ORE index such as =FX-TR20H-AUD-CAD= or =EUR-EURIBOR-6M= | [[id:86DA6985-C92E-40F6-AE43-71C4BBF126CB][A fixing is an agreed observation that settles a contract]] |
+| Producer | What fills a definition with observations: an observed publisher through an adapter, a simulated administrator, a derivation from parent definitions, or a person keying values | this note |
+| Observation | Definition, fixing date and time, value, published value, origin, status, version and author | [[id:C6A619F3-B2B6-42D5-9C41-5269A84BC96C][An observation is stored once per source and never stamped on the trades it fixes]] |
+| Override | The observation, the value used, the trades it applies to, the reason and the sign-off | [[id:CA61B445-B6DC-41D3-ACF9-D3FB32D0D342][The fixing process observes, authorises, applies and can undo an observation]] |
+| Schedule | Per trade and leg: the fixing dates and the definition of each | [[id:53DB3AF1-6FA4-4B53-9D8E-A65F739F6F4D][A fixing date follows the calendar of the rate it observes]] |
+| Event | The authorisation or undo of an observation; it labels every action it caused | [[id:CA61B445-B6DC-41D3-ACF9-D3FB32D0D342][The fixing process observes, authorises, applies and can undo an observation]] |
+
+The three invariants of [[id:C6A619F3-B2B6-42D5-9C41-5269A84BC96C][observation storage]] apply: an
+observation is never stamped on a trade, its history is append-only, and the
+official observations of a definition form an unbroken prefix in time.
+
+** The producer is separate from the source
+
+A source says who is responsible for a value and how it is made. A producer
+says how values reach the store. The two coincide for a live public source,
+whose producer is an adapter that observes the publisher. They come apart in
+three cases that matter here:
+
+- *No free publication.* EURIBOR is published under licence, so a
+  demonstration has no observed values for it. A simulated administrator
+  produces them instead.
+- *A ceased source.* LIBOR is no longer published. ORE Studio keeps it as a
+  legacy source for teaching, with a simulated producer and a status that says
+  it has ceased.
+- *A derived source.* A cross fixing is produced from its parent definitions,
+  not from a publisher of its own.
+
+A simulated administrator fixes its definition once per fixing date from the
+simulated market, as a real one fixes from the real market: an interest rate
+index from the curve of its tenor, an FX index from the pair's spot at the
+source's fixing time. It is not a quote feed, because a quote and a fixing are
+different kinds of datum; see
+[[id:86DA6985-C92E-40F6-AE43-71C4BBF126CB][A fixing is an agreed observation that settles a contract]].
+
+** What ORE Studio holds today
+
+| Entity | Held | Where |
+|--------+------+-------|
+| Definition | Yes | The oresmd fixing URI and its =market_index= model, one per ORE index. See [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio Market Data URI]]. |
+| Observation | Yes, without origin or status | A versioned row of the fixing series of the definition, under the system party. See [[id:F4BBEF34-D84C-4AE6-A3AA-DC47C3EE06EE][Public publishers publish daily fixings through a supplier session]]. |
+| Source | In part | The FX publisher is a field of the FX index (=source=ECB=); the public publishers are a catalogue with terms. No source holds a method, a calendar, a status or a version, and an interest rate index names no source at all. |
+| Producer | Implicitly | The public adapters observe the public publishers. Each synthetic interest rate curve writes a simulated history of its own index. Nothing writes FX fixings for a source without a publisher. |
+| Override, event, schedule | No | |
+
+The gap that matters most is the missing source and producer. Without them the
+system cannot answer which definitions the market fixes, who fixes each, and
+whether the values are observed or simulated. Trade generation and fixing
+checks both need that answer: a generated trade should name only a definition
+that has a producer.
+
+** Open questions
+
+- How a derived observation is timed when its parents fix at different times:
+  whether it waits for the later parent, and what it shows until then.
+- How a definition records the version of its source in force on a trade date,
+  so that a trade reads the terms it was agreed under.
+- Whether a keyed future observation is an observation with a status, or a
+  separate record that becomes an observation when it takes effect.
+
+* See also
+
+- [[id:784D9D97-721A-42EC-BA91-A85764979CD0][Fixings]] — the structure note.
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — completes: the market data components this model would extend.
+
+* Sources
+
+- ISDA and EMTA (2019). /Annex A to the 1998 FX and Currency Option Definitions/, amended and restated 19 November 2017, amended 3 January 2019. [[https://www.isda.org/book/annex-a-to-the-1998-fx-and-currency-option-definitions/][isda.org]]
+- IOSCO (2013). /Principles for Financial Benchmarks: Final Report/, July 2013. [[https://www.iosco.org/library/pubdocs/pdf/IOSCOPD415.pdf][iosco.org]]
+- Financial Conduct Authority (2021). /Announcement on the future cessation and loss of representativeness of the LIBOR benchmarks/, 5 March 2021. [[https://www.fca.org.uk/publication/documents/future-cessation-loss-representativeness-libor-benchmarks.pdf][fca.org.uk]]
+- Fowler, M. (2005). Event Sourcing. [[https://martinfowler.com/eaaDev/EventSourcing.html][martinfowler.com]]

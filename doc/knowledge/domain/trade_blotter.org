@@ -422,141 +422,18 @@ simultaneously).
 
 * Expiry Manager
 
-The Expiry Manager handles the expiry of options at each cut. It is the primary
-MO tool at each cut time (typically once or twice per day per cut).
-
-** Purpose
-
-At each option cut time (NY 10:00, Tokyo 15:00, ECB), a set of options reaches
-expiry. For each, one of four actions must be taken: *Exercise* (in the money),
-*Expire* (out of the money), *Fix* (NDF options: the underlying NDF requires
-fixing), or *Leave* (defer).
-
-** Settings and Filters
-
-#+begin_example
-┌───────────────────────────────────────────────────────────────────┐
-│  CUT DETAILS                                                      │
-│  Expiry Date: [ 2026-03-31  ]   Cut: [ NY 10:00  ]                │
-│  Ccy Pair:    [ EUR/USD  ]  (All pairs / specific pair)           │
-│                                                                   │
-│  STRIKE TOLERANCE  (highlight deals within this distance of spot) │
-│  ( ) Percentage    (•) Pips    [ 5 ]                              │
-│                                                                   │
-│  SPOTS  (load on demand — do not auto-refresh)                    │
-│  ┌──────────┬────────────┐                                        │
-│  │ EUR/USD  │  1.0823    │  ← red border when stale               │
-│  └──────────┴────────────┘                                        │
-└───────────────────────────────────────────────────────────────────┘
-#+end_example
-
-Spots are loaded at session start or on user demand and are deliberately *not*
-auto-refreshed so that deals do not change status while the operator is
-mid-process. A last-chance staleness check is performed before final submission.
-
-** Cut Timeline
-
-A visual timeline shows which cuts have been processed and which are outstanding:
-
-#+begin_example
-  ●──────────────●──────────────○──────────────○
-  NY 10:00 ✓     Tokyo 15:00 ✓  ECB ✗          NY Close ✗
-#+end_example
-
-** Flat View
-
-#+begin_example
-┌──────────┬──────┬───────────┬─────────┬────────────┬────────┬────────────────┬─────────┐
-│ Ccy Pair │ Book │ Cpty      │ Product │ Buy/Sell   │ Strike │ Expiry Status  │ Action  │
-├──────────┼──────┼───────────┼─────────┼────────────┼────────┼────────────────┼─────────┤
-│ EUR/USD  │ FX1  │ Barclays  │ VanCall │ Buy 5M EUR │ 1.0900 │ Leave          │ [x]     │
-│ EUR/USD  │ FX1  │ HSBC      │ VanPut  │ Sell 2M EUR│ 1.0750 │                │ Expire  │
-└──────────┴──────┴───────────┴─────────┴────────────┴────────┴────────────────┴─────────┘
-     ↑ blue rows are within strike tolerance
-#+end_example
-
-The Action column is a per-row dropdown: Exercise / Expire / Fix / Leave. Deals
-can be multi-selected for bulk action assignment. Interbank counterparties are
-visually distinguished.
-
-** Grouped View
-
-An alternative to the flat view where deals are grouped into four panes: Leave |
-Exercise | Expire | Fix. The user drags deals between panes or uses the action
-dropdown. Preferred when many deals are near spot; flat view is better for large
-deal counts.
-
-** NDF / NDO Two-Step Flow
-
-Non-Deliverable Options require:
-
-1. Exercise the NDO → system generates an NDF.
-2. User reloads the deal list (the new NDF now appears).
-3. Fix the NDF.
-
-The NDF fixing date is shown alongside the NDO; it is normally today but can
-differ due to holiday calendars (see [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Term Structures and Tenors]]).
-
-** Undo
-
-Every action taken in the session is recorded in an in-session action log.
-Users can view the log and undo any action or all actions (unexpiry, unfixing,
-exercise reversal).
-
-#+begin_example
-│ [ List Actions ]   [ Undo Selected ]   [ Undo All ]          │
-#+end_example
+The Expiry Manager is the screen that decides every option at a cut: the
+working set, the spots held still, the tolerance, the actions and views, the cut
+timeline, the preview and the undo. It is described in
+[[id:FE1C63AB-A242-4B02-86AA-8035EEC8DF54][Expiry management works cut by cut, on frozen spots, with a preview before commit]],
+within the [[id:C9887852-42C9-48BE-8E8C-BB66FCC48E83][Expiries]] cluster.
 
 * Fixing Manager
 
-The Fixing Manager handles authorisation of floating rate fixings: NDF fixings,
-LIBOR/SOFR/EURIBOR fixings for coupon resets, and other published reference
-rates. Used primarily by Operations (MO/BO).
-
-** Authorisation Workflow
-
-Six operations are supported (all require the published fixing time to have passed):
-
-1. *Authorise a published fixing*: Reuters rate has arrived; operator confirms and authorises.
-2. *Authorise an Ops-keyed fixing*: Operator has manually entered a rate and authorises it.
-3. *Authorise an FO-keyed fixing*: FO has keyed a rate; Ops verifies and authorises.
-4. *Overkey an FO fixing and authorise*: Ops disagrees, enters a different value, and authorises that.
-5. *Overkey a published fixing and authorise*: Ops substitutes a manual value for the Reuters rate.
-6. *Unauthorise and re-authorise*: Reverts an authorised fixing for correction.
-
-** Grid
-
-#+begin_example
-┌────────────────┬────────────────┬──────────────────┬────────┬─────┬─────────────┐
-│ Fixing Source  │ NY Fix Date    │ Local Fix Date   │ Asset  │ Src │ Fix Value   │
-├────────────────┼────────────────┼──────────────────┼────────┼─────┼─────────────┤
-│ ECB EUR fix    │ 2026-03-31     │ 2026-03-31 13:00 │ EUR    │ Pub │ 1.0823      │
-│ USD LIBOR 3M   │ 2026-03-31     │ 2026-03-31 11:00 │ USD    │ Key │ 4.8200      │
-└────────────────┴────────────────┴──────────────────┴────────┴─────┴─────────────┘
-│ Reuters Rate │ Fix T-1 │ Spot/Proj Rate │ Status    │ Origin    │ Published │
-│ 1.0823       │ 1.0801  │ 1.0819         │ Official  │ Published │ ✓         │
-│ —            │ 4.7950  │ 4.8150         │ Unofficial│ FO Keyed  │           │
-└──────────────┴─────────┴────────────────┴───────────┴───────────┴───────────┘
-#+end_example
-
-| Column              | Description                                                    |
-|---------------------+----------------------------------------------------------------|
-| Fixing Source       | Name of the fixing (ECB EUR, EURIBOR 3M, USD/JPY NDF, etc.)    |
-| NY / Local Fix Date | NY date and local market date/time side by side                |
-| Asset               | Currency (IR fixings) or currency pair (FX fixings)            |
-| Fix Value           | Rate to be authorised; up to 6 decimal places                  |
-| Reuters Rate        | Officially published rate; always recorded even if overridden  |
-| Fixing T-1          | Yesterday's value; quick sanity check                          |
-| Spot/Proj Rate      | Current spot, forward, or projection rate for comparison       |
-| Status              | Official (authorised) or Unofficial (keyed but not authorised) |
-| Origin              | Published / FO Keyed / Ops Keyed / Default Valuation / etc.    |
-
-** Control Reports
-
-- *Fixings Audit Report*: Every fixing entered, authorised, overkeyed, or
-  unauthorised — by whom, what value, and when.
-- *Missing Fixings Report*: Fixings required by the deal book but not yet
-  authorised by a configurable cutoff time; used as a morning checklist.
+The Fixing Manager is the screen on which operations authorise the observations
+that live trades require. Its roles, fields and control reports are described in
+[[id:B5CA0D8F-D9C5-4F09-ABD7-7ED6F0FEF1A5][Fixing management shows every required fixing and reports those not applied]],
+within the [[id:784D9D97-721A-42EC-BA91-A85764979CD0][Fixings]] cluster.
 
 * Barrier Management
 

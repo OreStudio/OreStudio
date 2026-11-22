@@ -1,0 +1,69 @@
+:PROPERTIES:
+:ID: 53DB3AF1-6FA4-4B53-9D8E-A65F739F6F4D
+:END:
+#+title: A fixing date follows the calendar of the rate it observes
+#+description: Fixing holidays belong to the observed rate, not to the coupon; an NDF derives its fixing date from its delivery.
+#+type: knowledge
+#+audience: user
+#+level: cross
+#+filetags: :domain:fixing:calendar:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+
+* Summary
+
+A fixing date follows the holiday calendar of the rate it observes, not the
+calendar of the coupon it settles. A non-deliverable forward is the clearest
+case: the parties agree its delivery date, and its fixing date is derived from
+it, early enough to book and settle the cash difference, and must respect the
+holidays of both the fixing and the settlement currencies. A fixing on a
+holiday is normally refused, and any exception needs a recorded reason.
+
+* Detail
+
+** Fixing holidays and coupon holidays
+
+A floating leg generates its fixing schedule from its payment periods, its
+fixing period, its day count and its fixing source. Its fixing dates are
+adjusted on the calendar of the observed rate, which is the source's calendar,
+and its payment dates on the calendar of the payment. A system therefore keeps
+both calendars on the leg. The calendar machinery, and how a schedule is
+generated from it, are in [[id:A960FE8E-56FA-4655-AA51-54C14882179B][Calendars, Holidays and Events]] and
+[[id:DF9EFAF9-1340-48F2-BFD9-1F4ED0ADBC76][Date Rolling and Business-Day Calendars]].
+
+** The fixing date of a non-deliverable forward
+
+Traders agree the delivery date first and derive the fixing date from it, by
+going back the spot lag of the settlement currency. Market participants process
+holidays differently, so the convention is ambiguous, and it differs from the
+convention for non-deliverable options. The fixing date must leave time to book
+and settle the cash difference by the delivery date. A forward that reaches its
+fixing date without a fixing date or a settlement currency cannot be fixed and
+is valued as a deliverable forward until it is corrected. See
+[[id:CD3E82C6-AE56-4D06-B949-0B3A5CE7A5FC][Deliverability and non-deliverable instruments]].
+
+** Fixings on holidays
+
+A fixing on a holiday of its source is normally refused, because the source
+publishes nothing that day. Some desks allow it for a half-day market, and
+whether they do may depend on the product. An override needs a recorded reason,
+a sign-off, and an agreement with the counterparty on what value to use, since
+the usual source has none. The administration of calendars is in
+[[id:381A7747-2786-45E1-8C90-B42EC5A81472][Holiday Calendar Administration]].
+
+** Chains of internal trades
+
+When a risk is moved between books by a chain of internal non-deliverable
+forwards, only the trade that faces the market should be fixed. The internal
+links are marked so that they behave as deliverable forwards and generate no
+fixing trades.
+
+* See also
+
+- [[id:784D9D97-721A-42EC-BA91-A85764979CD0][Fixings]] — the structure note.
+- [[id:6E566C97-F2A4-4AE8-B509-BDE23568A0B8][A fixing source is identified by its rate source definition]] — completes: the source owns the calendar.
+
+* Sources
+
+- ISDA (2006). /2006 ISDA Definitions/. International Swaps and Derivatives Association. [[https://www.isda.org/book/2006-isda-definitions/][isda.org]]
+- ISDA and EMTA (2019). /Annex A to the 1998 FX and Currency Option Definitions/, amended and restated 19 November 2017, amended 3 January 2019. [[https://www.isda.org/book/annex-a-to-the-1998-fx-and-currency-option-definitions/][isda.org]]

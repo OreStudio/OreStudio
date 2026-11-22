@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: 7B09CA1B-606D-493F-A784-676BAE701FC8
+:END:
+#+title: The WM/Reuters 4pm fix is the dominant FX benchmark
+#+description: The WM/R 4pm London fix is a median of market rates over a five-minute window; the ECB rate is its main peer.
+#+type: knowledge
+#+audience: user
+#+level: cross
+#+filetags: :domain:fixing:fx:benchmark:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+
+* Summary
+
+The WM/Reuters (WM/R) 4pm London fix is the most widely used FX benchmark. Its
+administrator computes a rate for each currency from market data around 16:00
+London time and publishes it shortly after. The Financial Stability Board
+described it in 2014 as "by far the dominant benchmark" in FX, used also as an
+input to multi-currency equity, bond and credit indices, alongside the
+European Central Bank's euro reference rates, published at about 14:15 CET.
+ORE's examples name the WM/R fix as the source =TR20H=.
+
+* Detail
+
+** Method
+
+Before 2015 the rate for traded currencies was the median of bid, offer and
+trade data sampled every second over a one-minute window centred on the fix.
+The FSB recommended a wider window, and the window was lengthened to five
+minutes in 2015. Rates for currencies with less trading are taken from quotes
+rather than trades.
+
+** Why the fix attracts study
+
+Large orders to trade at the fix concentrate in a few minutes, so the fix is
+both a liquidity event and a target for manipulation. Melvin and Prins (2015)
+show that the rebalancing of equity portfolios drives predictable flows at the
+fix. Evans (2018) finds extraordinary volatility and negative serial
+correlation in prices around the fix across 21 currencies, contrary to a model
+of competitive trading. Evans, O'Neill, Rime and Saakvitne (2018) find that the
+five-minute window improved price efficiency and robustness, at the cost of a
+larger tracking error for users of the benchmark.
+
+** Administration
+
+WM was a subsidiary of State Street; the fix was later administered by
+Refinitiv and then by LSEG. The benchmark is subject to the IOSCO principles
+described in [[id:6E566C97-F2A4-4AE8-B509-BDE23568A0B8][A fixing source is identified by its rate source definition]].
+
+** The ECB reference rates are a different index
+
+The ECB euro reference rates are a separate benchmark with their own time and
+method, published for information. A fixing of EUR/USD by the ECB and one by
+WM/R are two indices with two values; neither may stand in for the other. In
+ORE Studio the ECB rates arrive as observed fixings through
+[[id:F4BBEF34-D84C-4AE6-A3AA-DC47C3EE06EE][the public sources adapters]].
+
+* See also
+
+- [[id:784D9D97-721A-42EC-BA91-A85764979CD0][Fixings]] — the structure note.
+- [[id:936BE1EE-89F0-4F82-9064-9AB53E886299][Why FX spot rates are observable Level 1 inputs]] — completes: why FX rates are observable at all.
+
+* Sources
+
+- Financial Stability Board (2014). /Foreign Exchange Benchmarks: Final Report/, 30 September 2014. [[https://www.fsb.org/uploads/r_140930.pdf][fsb.org]]
+- Refinitiv (2019). /WMR Fixing Update/, presentation to the ECB Foreign Exchange Contact Group, 19 November 2019. [[https://www.ecb.europa.eu/paym/groups/pdf/fxcg/2019/20191119/2_WMR_FX_spot_fixing_Refinitiv.pdf][ecb.europa.eu]]
+- Melvin, M. and Prins, J. (2015). Equity hedging and exchange rates at the London 4 p.m. fix. /Journal of Financial Markets/, 22, 50--72.
+- Evans, M. D. D. (2018). Forex trading and the WMR Fix. /Journal of Banking & Finance/, 87, 233--247. [[https://ideas.repec.org/a/eee/jbfina/v87y2018icp233-247.html][RePEc]]
+- Evans, M. D. D., O'Neill, P., Rime, D. and Saakvitne, J. (2018). /Fixing the Fix? Assessing the Effectiveness of the 4pm Fix Benchmark/. FCA Occasional Paper 46. [[https://www.fca.org.uk/publications/occasional-papers/occasional-paper-no-46-fixing-fix-assessing-effectiveness-4pm-fix][fca.org.uk]]
+- European Central Bank. /Euro foreign exchange reference rates/. [[https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/index.en.html][ecb.europa.eu]]
+- IOSCO (2013). /Principles for Financial Benchmarks: Final Report/, July 2013. [[https://www.iosco.org/library/pubdocs/pdf/IOSCOPD415.pdf][iosco.org]]

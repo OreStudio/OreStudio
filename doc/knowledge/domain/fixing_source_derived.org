@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: 6A625509-CD9A-4D13-8E16-37B75A4AED83
+:END:
+#+title: A derived fixing source composes the fixings of its parent sources
+#+description: A cross or composite fixing is computed from two parent fixings, which may be published at different times.
+#+type: knowledge
+#+audience: user
+#+level: cross
+#+filetags: :domain:fixing:fx:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+
+* Summary
+
+A *derived fixing source* computes its observation from the fixings of other
+sources instead of observing a market directly. The common case is a cross
+rate: an AUD/CAD fixing derived from an AUD/USD and a USD/CAD fixing of the
+same administrator. A non-deliverable trade between two non-deliverable
+currencies needs a *composite* source against a common settleable currency,
+and the parent fixings of a composite may be published at different times.
+
+* Detail
+
+** Crosses
+
+A cross fixing divides or multiplies two parent fixings through a common
+currency, usually USD. The derivation must state the parents, their quote side,
+the order of operations and the rounding, because the result depends on all
+four. A mid cross is normally computed from mid parents. Some confirmations
+name both parent sources; others name only the published, already crossed and
+rounded result. The arithmetic of crosses through a common currency is the
+subject of the [[id:48F6FD8D-56C7-4FF7-A369-CD13D08A6057][Cross-Rates Matrix]].
+
+** Composites for non-deliverable pairs
+
+A non-deliverable forward or option between two non-deliverable currencies,
+such as EUR/KRW settled in USD, needs a composite source that combines a fixing
+of each currency against the settlement currency. The two parents may fix at
+different times and on different calendars, so the composite is available only
+once the later parent is published. See
+[[id:CD3E82C6-AE56-4D06-B949-0B3A5CE7A5FC][Deliverability and non-deliverable instruments]] and
+[[id:2F7AD024-2CDF-4B31-9845-0879179B0D1A][Settlement Currency]].
+
+** Presentation
+
+A view of required fixings should show, for a derived source, the parent
+sources it was computed from, so that an authoriser can check each parent. See
+[[id:B5CA0D8F-D9C5-4F09-ABD7-7ED6F0FEF1A5][Fixing management shows every required fixing and reports those not applied]].
+
+* See also
+
+- [[id:784D9D97-721A-42EC-BA91-A85764979CD0][Fixings]] — the structure note.
+- [[id:6E566C97-F2A4-4AE8-B509-BDE23568A0B8][A fixing source is identified by its rate source definition]] — completes: the source a derivation composes.
+
+* Sources
+
+- ISDA and EMTA (2019). /Annex A to the 1998 FX and Currency Option Definitions/, amended and restated 19 November 2017, amended 3 January 2019. [[https://www.isda.org/book/annex-a-to-the-1998-fx-and-currency-option-definitions/][isda.org]]

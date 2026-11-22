@@ -150,6 +150,7 @@ describes.
 
 * See also
 
+- [[id:784D9D97-721A-42EC-BA91-A85764979CD0][Fixings]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:27863049-4A86-4949-AFAF-8A6F4A8E7BA8][The Diary/Effects Model]] — the architectural split underlying this whole cluster.
 - [[id:381A7747-2786-45E1-8C90-B42EC5A81472][Holiday Calendar Administration]] — Template/Instance recurrence, disable vs. remove, trusted sourcing.
 - [[id:41E0E1FB-1D84-47E0-A417-2633F31F0A2A][Calendar Events]] — events as calendar entries, and sourcing central bank meeting data for DQ.

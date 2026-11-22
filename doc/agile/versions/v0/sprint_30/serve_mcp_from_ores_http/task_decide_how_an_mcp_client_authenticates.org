@@ -31,7 +31,7 @@ MCP's authorization specifies OAuth 2.1, with the server publishing protected re
 | Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing. |
-| Last touched | 2026-11-21                               |
+| Last touched | 2026-11-22                               |
 
 * Acceptance
 
@@ -77,7 +77,6 @@ plan itself stays — it is the historical record of what we did.)
 | MCP specification | Allowed, as authorization is optional | Conforms |
 | Cost | A key store, hashed at rest; a page in ores.web; a key-for-session exchange | Metadata documents, authorize and token endpoints, a consent page, PKCE, refresh rotation, client registration, audience checks |
 | Main risk | A long-lived secret, limited by expiry, scope and revocation | A larger surface to build and keep right |
-
 
 * Measurements
 
@@ -146,7 +145,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | PR #5021: "Last touched" still 2026-11-21 | this task | Accept | Set to 2026-11-22. |
+| 2 | PR #5021: stray blank lines after the options table and at the end | this task | Accept | Removed. |
+| 3 | PR #5021: say what happened to confirming a write by MCP elicitation | story | Accept | Out of scope now says six eyes in ORE's queue replaces it, and why. |
+| 4 | PR #5021: say what happens to reads and to writes under a read-only grant | six-eyes task | Accept | Reads are not held; a read-only grant's write is refused before any request is raised. |
+| 5 | PR #5021: say who gives the further approval, and the case with no one else | six-eyes task | Accept | Someone other than the agent's person; with no eligible approver the request stays pending and the panel says so. |
+| 6 | PR #5021: empty Measurements tables in the new tasks | the new tasks | Decline | They are the template, filled when each task measures something. |
 
 * Result
 
@@ -156,4 +160,3 @@ recommendation on 2026-11-22: agent grants, API keys first and OAuth later,
 tokens naming the person as subject and the agent as actor, a new audit field
 for the agent, and six eyes on every agent write unless a rule exempts it.
 The story's tasks were rewritten to match.
-

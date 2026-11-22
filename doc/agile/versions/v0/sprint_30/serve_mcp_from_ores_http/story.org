@@ -105,3 +105,7 @@ The analysis is in [[id:FC0847D1-9F09-42EF-A4BD-D5E3C34398EA][How ores.http serv
   [[id:BBEDFA8E-D43D-4F48-8FD7-1A3CC9F47E3E][Bring the assistant into ores.web on the target architecture]].
 - MCP resources, prompts, sampling and the other optional capabilities, until a
   client needs them.
+- MCP elicitation, or a confirmation in the client, as the approval of an
+  agent's write: six eyes in ORE's approval queue replaces it, because a
+  confirmation in the client is the same person at the same keyboard and
+  leaves no record in ORE.

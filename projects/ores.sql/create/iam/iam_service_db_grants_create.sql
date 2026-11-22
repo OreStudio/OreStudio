@@ -301,7 +301,7 @@ select _ores_grant_dml_fn('ores_workflow_', :'workflow_service_user');
 select _ores_grant_select_fn('ores_dq_fsm_', :'workflow_service_user');
 
 -- ---------------------------------------------------------------------------
--- ore_service: ORE Import domain service, and the owner of the description of ORE
+-- ore_service: ORE Import domain service
 -- ---------------------------------------------------------------------------
 select _ores_grant_dml_fn('ores_ore_', :'ore_service_user');
 

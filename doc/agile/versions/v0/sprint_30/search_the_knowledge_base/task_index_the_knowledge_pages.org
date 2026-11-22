@@ -8,7 +8,7 @@
 #+filetags: :search_the_knowledge_base:sprint_30:v0:
 #+owner: marco
 #+branch: feature/index-the-knowledge-pages
-#+pr:
+#+pr: 5010
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-21
@@ -115,7 +115,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5010][#5010]] | [orgmode] Index the knowledge pages and rebuild the index on demand |
 
 * Review
 

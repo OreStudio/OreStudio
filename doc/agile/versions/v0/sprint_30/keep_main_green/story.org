@@ -8,7 +8,7 @@
 #+filetags: :ci:branching:sprint_30:v0:
 #+created: 2026-11-11
 #+updated: 2026-11-11
-#+environment: eager_maxwell
+#+environment: festive_dijkstra
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -57,6 +57,7 @@ Developers start work from a commit that CI has proven green, and main only move
 | [[id:47F4437D-DA84-4922-8F39-091FF4BFC81A][Analyse why MSVC cannot compile the trade entity]] | DONE | | 2026-11-19 | The Windows MSVC leg stops with C1202 on trade_entity.hpp. Find out whether the entity's column count causes it, and what a fix should touch. |
 | [[id:3DFF8A89-2283-41F4-B60F-A6BD74C0E941][Raise the Windows clang toolchain the nightly installs]] | DONE | 2026-11-21 | 2026-11-21 | windows-clang-release-ninja fails before compiling our code: MSVC 14.52's yvals_core.h asserts error STL1000: Unexpected compiler version, expected Clang 22 or newer. The workflow pins version 20 in the Install Clang step, so the leg cannot build against the STL the runner image now ships. |
 | [[id:4285D64D-2F98-4758-9F35-CA6E52D853AD][Upload the memcheck logs when the nightly fails]] | DONE | 2026-11-21 | 2026-11-21 | A failing memcheck test reports a defect count and nothing else, so the four defects ores.http.marketdata.tests carries in CI cannot be traced. Upload the per-test valgrind logs on failure. |
+| [[id:ABE30398-FA7A-4721-BA2B-3CD32C15F0D5][Clear what the web server switch left red on main]] | DONE | 2026-11-22 | 2026-11-22 | The merge of the change that served the web app from the C++ server left the Compass check and the TypeScript workflow red: five malformed exception rows, two rows in the wrong table, three wide types over the ceiling and two sign-in tests that read ports the build did not have. |
 
 * Decisions
 

@@ -445,6 +445,8 @@ independent collections woven into one answer are a view.
 | the scenarios | regex | ^GET /api/qa/scenarios | bff | resource | qa | The QA scenarios the store holds, one scenario by id, and the image kept beside one of its steps. |
 | a scenario run | exact | PUT /api/qa/scenarios/:id/run | bff | resource | qa | Runs one scenario and answers its verdict, the write that makes it a run rather than a document. |
 | a QA document | exact | GET /api/qa/docs/:id | bff | resource | qa | One document the scenario store holds, by its identifier. |
+| the four market-data desk reads | regex | ^POST /api/market/(instruments\vert{}rate-ladder\vert{}fx-montage\vert{}curve-analytics)$ | ores.http | resource | market-data | The four reads the desk screens ask, answered by ores.http at the addresses and in the shapes the BFF answered: the session party's instrument catalogue, one currency's rate ladder, one base currency's FX montage and one curve's analytics. The gateway reads each body as the shape its screen sends, forwards one operation and answers the service's payload alone, or its refusal as a 422. |
+| the authorisation queue | exact | GET /api/queue/authorisations | ores.http | composed view | operations | The authorisation queue answered by ores.http at the address and in the shape the BFF answered: the requests this person may decide, chosen by the inbox service, and the deal each names read beside the page from trading and the three catalogues that name it, with the version the deal has now so a row that moved says so. |
 
 * Exemptions
 
@@ -505,8 +507,6 @@ cells in the inventory are empty.
 | the image map | ores.assets | which image every flagged record uses: currencies, countries, calendars and business centres in one code to image map, five reads, with a country fallback and a placeholder | ETag on the whole view, stale after 5 min |
 | the sprint board | no service, X1 decides | one sprint's work items and their states, read from the sprint file and the documents under it | ETag on the whole view, stale after 60 s |
 | the sprint charts | no service, X1 decides | one sprint's scope and the work remaining per day, computed from the sprint file and the state changes under it | ETag on the whole view, stale after 60 s |
-| the four market-data desk reads | regex | ^POST /api/market/(instruments\vert{}rate-ladder\vert{}fx-montage\vert{}curve-analytics)$ | ores.http | resource | market-data | The four reads the desk screens ask, answered by ores.http at the addresses and in the shapes the BFF answered: the session party's instrument catalogue, one currency's rate ladder, one base currency's FX montage and one curve's analytics. The gateway reads each body as the shape its screen sends, forwards one operation and answers the service's payload alone, or its refusal as a 422. |
-| the authorisation queue | exact | GET /api/queue/authorisations | ores.http | composed view | operations | The authorisation queue answered by ores.http at the address and in the shape the BFF answered: the requests this person may decide, chosen by the inbox service, and the deal each names read beside the page from trading and the three catalogues that name it, with the version the deal has now so a row that moved says so. |
 
 * Pairs
 
@@ -819,6 +819,11 @@ pair records the mapping and does not prove it.
 | GET | /api/operations/services | GET | /api/operations/services |
 | GET | /api/operations/logs | GET | /api/operations/logs |
 | GET | /api/operations/bus | GET | /api/operations/bus |
+| POST | /api/market/curve-analytics | POST | /api/market/curve-analytics |
+| POST | /api/market/fx-montage | POST | /api/market/fx-montage |
+| POST | /api/market/instruments | POST | /api/market/instruments |
+| POST | /api/market/rate-ladder | POST | /api/market/rate-ladder |
+| GET | /api/queue/authorisations | GET | /api/queue/authorisations |
 
 * Families
 
@@ -857,11 +862,6 @@ project from a check document of its own.
 * Exceptions
 
 | path | line | rule | expires | approver | reason |
-| POST | /api/market/curve-analytics | POST | /api/market/curve-analytics |
-| POST | /api/market/fx-montage | POST | /api/market/fx-montage |
-| POST | /api/market/instruments | POST | /api/market/instruments |
-| POST | /api/market/rate-ladder | POST | /api/market/rate-ladder |
-| GET | /api/queue/authorisations | GET | /api/queue/authorisations |
 |------+------+------+---------+----------+--------|
 
 * See also

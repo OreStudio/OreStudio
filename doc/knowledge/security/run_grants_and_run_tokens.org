@@ -223,6 +223,27 @@ so a fault in one caller cannot exhaust it.
   =grant_lapsed=.
 
 
+** The agent grant, a second grant
+
+An LLM agent acts for a person through an agent grant, IAM's second form of
+Grant Management ([[id:A7E2942C-66AD-449C-B80B-CA789EBC34FA][Agent grants: delegated consent for LLM agents]]). The two share the shape and differ where their
+actors differ.
+
+#+ATTR_HTML: :class hug-leading
+| | Run grant | Agent grant |
+|-+-----------+-------------|
+| Serves | a process a person scheduled | an agent a person named |
+| Bounded by | a role the owning component defines | a role the person chooses, less the permissions no agent holds ([[id:1679B2CE-05C2-4CFF-9A4B-47EC721CB10A][Withholding of administrative permissions from LLM agents]]) |
+| Redeemed by | a grant id and the step service's own token | a key the agent holds, exchanged by ores.http with its own token |
+| Credential at rest | none | the key, bounded: an expiry of at most ninety days, a hash at rest, never logged |
+| =act= | the step service's role name | =agent:= and the grant's id |
+| Session | none | one per key while the agent calls ([[id:4DCD0684-F6AE-4E84-BB9D-2AE2DAFDB667][Sessions of LLM agents]]) |
+| Exchanged by | a step service in the audience | ores.http, with =iam::agent_keys:exchange= |
+
+Both re-check the grant and the person at every exchange, both issue
+five-minute tokens and log every issue, and both bound a revocation by one
+token's lifetime.
+
 * Patterns used
 
 - [[id:C79B5E4D-71D0-44C2-9D06-444EA2AC1CB7][Scheduled Work Acting as a Tenant]] — this page is IAM's implementation of it.

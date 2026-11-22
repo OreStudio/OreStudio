@@ -280,8 +280,9 @@ def ticks(args, root: Path, env_file: Path | None = None) -> int:
     if args.fresh:
         # A live service holds connections to the database the recreate drops.
         # Stop them first, or the provisioning meets a service that lost its
-        # store halfway through.
-        _run(["./compass.sh", "services", "stop"], root)
+        # store halfway through. The pooler and the bus stay up: the recreate
+        # terminates the pooler's server connections itself.
+        _run(["./compass.sh", "services", "stop", "--keep-infra"], root)
         # A connection can outlive the stop by a moment, so the recreate
         # retries: the drop is refused while one is open.
         for attempt in range(3):
@@ -349,11 +350,11 @@ def ticks(args, root: Path, env_file: Path | None = None) -> int:
               f"{line.rejected} of {line.demanded}")
     print(f"evidence      : {ev.log_file}")
 
-    # The rest of the gate needs NATS up and the services down: the suites
-    # share the bus with a live service. Stop what this check started unless
-    # the caller means to keep it.
+    # The rest of the gate needs NATS and the pooler up and the services down:
+    # the suites share the bus with a live service. Stop the services this
+    # check started unless the caller means to keep them.
     if args.start_services and not args.leave_running:
-        _run(["./compass.sh", "services", "stop"], root)
+        _run(["./compass.sh", "services", "stop", "--keep-infra"], root)
 
     reasons = evaluate(ev)
     if reasons:

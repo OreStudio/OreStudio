@@ -1,43 +1,43 @@
 :PROPERTIES:
-:ID: 2D098FE0-9542-4F21-8223-E9D41B28964E
+:ID: 213D3539-9792-4C49-86A9-62B41A907992
 :END:
-#+title: Task: Search the knowledge base in ores.web
-#+description: A search bar, a list of results and a page view in ores.web that renders the org with @ores/org, with links between pages and anchors on headings.
+#+title: Task: Sign an MCP client in through OAuth
+#+description: ORE becomes an OAuth 2.1 authorization server for MCP clients, its consent page creating the same agent grant a key does, for Claude Desktop and claude.ai.
 #+type: task
 #+level: s1
-#+filetags: :search_the_knowledge_base:sprint_30:v0:
+#+filetags: :serve_mcp_from_ores_http:sprint_30:v0:
 #+owner: marco
 #+branch:
 #+pr:
 #+blocked_on:
 #+blocked_since:
-#+created: 2026-11-21
-#+updated: 2026-11-21
+#+created: 2026-11-22
+#+updated: 2026-11-22
 #+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:05FE6068-3CBD-4B93-B6AE-47A5689F1FCB][Search the knowledge base from ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:008127D7-B897-4CF7-854B-6DDFB89AC7F4][Serve ORE's API to LLM agents over MCP]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-A person types a few words into a search bar in ores.web and sees the matching pages, best first, each with its title, description and the section that matched. Opening one shows the page, rendered from its org text with @ores/org: a link to another knowledge page opens that page, and each heading has an anchor a result can point at.
+A client such as Claude Desktop or claude.ai connects to /mcp, is sent to ORE's own sign-in page, and the person signs in and approves the agent, which creates the same agent grant an API key does. ores.http publishes protected resource metadata, answers 401 with WWW-Authenticate, and serves authorization server metadata, an authorize endpoint with the consent page, and a token endpoint with PKCE S256, rotating refresh tokens and tokens bound to ORE by resource indicator, as MCP's authorization specification asks. Done when a client needs it, after the API keys.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
-| Parent story | [[id:05FE6068-3CBD-4B93-B6AE-47A5689F1FCB][Search the knowledge base from ores.web]] |
+| Parent story | [[id:008127D7-B897-4CF7-854B-6DDFB89AC7F4][Serve ORE's API to LLM agents over MCP]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
-| Last touched | 2026-11-21                               |
+| Last touched | 2026-11-22                               |
 
 * Acceptance
 
-- The search bar answers as the person types, and a result opens its page at the section that matched.
-- A link between knowledge pages opens the linked page in ores.web.
-- The page view renders org through @ores/org's sanitised HTML and nothing else.
+- Claude Desktop connects to /mcp through ORE's sign-in page without a header or a bridge.
+- The consent creates an agent grant the person sees and revokes like any other.
+- The server passes the MCP conformance runner's authorization checks for what it implements.
 
 * Plan
 

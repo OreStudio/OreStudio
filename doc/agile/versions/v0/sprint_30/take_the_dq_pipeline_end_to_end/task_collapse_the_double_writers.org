@@ -8,11 +8,11 @@
 #+filetags: :take_the_dq_pipeline_end_to_end:sprint_30:v0:
 #+owner: marco
 #+branch: feature/collapse-the-double-writers-2
-#+pr: 4911
+#+pr: 5012
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-14
-#+updated: 2026-11-18
+#+updated: 2026-11-22
 #+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,12 +26,12 @@ No table is written by both a direct seed and a DQ publish, and a check proves i
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:7D2BBBBC-36A3-4BFB-9673-0F9005991D94][Take the DQ pipeline end to end, from a seeded artefact table to a published system]] |
-| Now          | Both halves are in the tree. Nine populate scripts no longer write a world table, and the check lists nine tables instead of eighteen, eight of which state why they are not a second copy. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | The one table left is the ACME cut-take role, which needs a second role on the account artefact: [[id:ECFD6B90-5AF1-450D-BFA8-550F430BC38C][An account cannot hold two roles from a dataset]]. |
-| Last touched | 2026-11-18                              |
+| Next         | Nothing. |
+| Last touched | 2026-11-22                              |
 
 * Acceptance
 
@@ -203,6 +203,26 @@ The two SQL suites that failed on the first half's tree were main's and main has
 since fixed them; the recreate and pgTAP above are from the tree this task
 leaves.
 
+** The last row: an account's second role
+
+The account artefact staged one row per account with one =role= column, so an
+account that holds two roles had no published path and the ACME cut-take seed
+wrote the second straight into =ores_iam_account_roles_tbl=. That was the last
+row written by two mechanisms.
+
+The column is now =roles= and carries a comma separated list of names, and the
+publish resolves each name and grants it. The ACME seed gives =henry.jones=,
+who takes the end of day cut, =Trading,Finance=, so the role arrives through the
+dataset like every other role and the cut-take populate script is gone. A name
+the tenant's roles do not carry is skipped, as before.
+
+A list in one column was chosen over a roles artefact because the artefact tables
+are generated and the generator cannot yet stage natural keys for a uuid-keyed
+junction, and because renaming the column costs nothing outside the SQL: no C++
+and no screen reads the staging table. The model states the list and why. A
+pgTAP suite asserts that a two-name account holds both roles and that an unknown
+name is skipped.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -218,6 +238,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5012][#5012]] | [iam,sql] Publish every role an account's dataset names |
 | [[https://github.com/OreStudio/OreStudio/pull/4911][#4911]] | [sql,refdata,codegen] One writer for each world catalogue table |
 | [[https://github.com/OreStudio/OreStudio/pull/4833][#4833]] | [refdata,dq,iam,codegen] Read the world catalogue where it lies |
 
@@ -231,5 +252,5 @@ here, and the two that asked for a change are in the branch.
 | 1 | The generated exceptions seed grows by 26.8k lines, so its header could note the parse cost | =refdata_calendar_exceptions_seed_populate.sql= | Declined, with the number | Measured: the seed parses, clears and re-inserts its 26,780 rows in 1.4 s including the connection, once per recreate. A note in a generated file would state a cost smaller than reading it. |
 | 2 | The =USD= / =US.FOMC= row is hard-coded in the derivation, where a =values= list would scale | =refdata_currency_calendars_seed_populate.sql= | Fixed | The pair is now its own =second_calendars= CTE built from a =values= list, so a second currency adds one row and no new branch. |
 | 3 | The two C++ test files change only comments, and a host build is the real check | two test files | Noted | The diff touches no compiled source, and the build is the host's. |
-| 4 | The ACME cut-take role is still written twice | =check_single_writer.py= | Noted | Recorded as [[id:ECFD6B90-5AF1-450D-BFA8-550F430BC38C][An account cannot hold two roles from a dataset]], and named in the check's list. |
+| 4 | The ACME cut-take role is still written twice | =check_single_writer.py= | Fixed, later | Was recorded as [[id:ECFD6B90-5AF1-450D-BFA8-550F430BC38C][An account cannot hold two roles from a dataset]] and named in the check's list. The accounts dataset now carries the role list, and the seed that wrote the second row is gone. |
 | 5 | =ore-parameters-seed= fails | -- | Noted | It fails on =origin/main= in a clean worktree, so it is not this branch's. |

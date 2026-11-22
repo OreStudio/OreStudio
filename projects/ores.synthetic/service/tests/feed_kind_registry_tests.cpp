@@ -427,6 +427,27 @@ TEST_CASE("registry_make_feed_applies_the_gate_and_builds_through_the_factory",
     CHECK(refused.failure == "Feed config is not enabled: " + stub_id);
 }
 
+TEST_CASE("registry_make_feed_refuses_a_kind_the_adapters_hold", "[feed_kind_registry]") {
+    stub_fixture f;
+    const auto registry = f.registry;
+    const ores::synthetic::feed::feed_build_context bctx{
+        .nats = f.nats, .auth_nats = f.auth_nats, .market = f.run.market_};
+
+    auto held = stub_kind(stub_permission);
+    held.held_by_adapters = true;
+    auto target = registry->targets(f.ctx).front();
+    REQUIRE(target.startable());
+    target.row.kind = &held;
+
+    stub_builds = 0;
+    const auto refused = registry->make_feed(target, bctx);
+    CHECK(refused.feed == nullptr);
+    CHECK(stub_builds == 0);
+    CHECK(refused.failure ==
+          "Feed " + stub_id +
+              " runs while a provider's simulated source holds it, so it is not started by hand.");
+}
+
 TEST_CASE("registry_resolve_and_rows_walk_the_registered_kinds", "[feed_kind_registry]") {
     stub_fixture f;
     const auto registry = f.registry;

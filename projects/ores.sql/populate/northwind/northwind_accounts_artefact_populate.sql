@@ -47,7 +47,7 @@ begin
     where dataset_id = v_dataset_id;
 
     insert into ores_dq_accounts_artefact_tbl (
-        dataset_id, tenant_id, id, version, username, full_name, email, password_hash, account_type, business_unit_code, role, job_title, reports_to_username, photo_key
+        dataset_id, tenant_id, id, version, username, full_name, email, password_hash, account_type, business_unit_code, roles, job_title, reports_to_username, photo_key
     )
     values
         (v_dataset_id, ores_utility_system_tenant_id_fn(), '35e181f9-3251-5a53-991d-65c6e54c0cc3', 0, 'nancy.davolio', 'Nancy Davolio', 'nancy.davolio@northwindtraders.co.uk', '', 'user', 'northwind.trading.seattle', 'Trading', 'Sales Representative', 'andrew.fuller', 'northwind_staff_photo:female_age20_european_02'),

@@ -38,7 +38,7 @@ create table if not exists "ores_dq_accounts_artefact_tbl" (
     "password_hash" text not null,
     "account_type" text not null default 'user',
     "business_unit_code" text null,
-    "role" text null,
+    "roles" text null,
     "job_title" text null,
     "reports_to_username" text null,
     "photo_key" text null

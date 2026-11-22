@@ -1,0 +1,50 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title An agent's write is held until its person and then a second person approve
+
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+autonumber
+
+actor "Agent" as agent
+participant "ores.http" as http
+participant "Domain service" as svc
+participant "ores.inbox" as inbox
+actor "Person" as person
+actor "Second approver" as second
+
+agent -> http : call_operation(write, arguments)
+http -> svc : write, token with act = agent:grant
+alt the token's permissions do not cover the write
+  svc --> http : refused
+  http --> agent : refused: the grant's role does not cover it
+else
+  svc -> inbox : raise request:\npart 1 = the agent's person,\nthen the parts the policy names
+  inbox --> svc : request id
+  svc --> http : held, request id
+  http --> agent : the write waits for approval: request id
+end
+
+person -> inbox : approve part 1
+second -> inbox : approve the policy's parts\n(never the agent's person)
+inbox -> svc : apply the held change
+svc -> svc : write, recording the agent
+
+@enduml

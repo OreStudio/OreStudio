@@ -7,12 +7,12 @@
 #+level: s1
 #+filetags: :serve_mcp_from_ores_http:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/decide-how-an-mcp-client-authenticates
+#+pr: 5021
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-21
-#+updated: 2026-11-21
+#+updated: 2026-11-22
 #+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,12 +26,12 @@ MCP's authorization specifies OAuth 2.1, with the server publishing protected re
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:008127D7-B897-4CF7-854B-6DDFB89AC7F4][Serve ORE's API to LLM agents over MCP]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-21                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-22                               |
 
 * Acceptance
 
@@ -43,6 +43,40 @@ MCP's authorization specifies OAuth 2.1, with the server publishing protected re
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+** What the options are measured against
+
+- *The MCP authorization specification*, revision 2025-11-25. Authorization is
+  optional; an HTTP server that supports it SHOULD follow it: OAuth 2.1, with
+  the server publishing protected resource metadata (RFC 9728) and answering
+  401 with =WWW-Authenticate=, the authorization server offering metadata,
+  PKCE S256 and rotating refresh tokens, clients registering by client ID
+  metadata document or dynamic registration, and tokens bound to the server by
+  resource indicator (RFC 8707). Token passthrough is forbidden.
+- *The clients.* Claude Code and local agents send a fixed
+  =Authorization: Bearer= header. Claude Desktop and claude.ai custom
+  connectors expect OAuth; their request headers are a beta for a limited set
+  of organisations, and =mcp-remote= bridges the rest.
+- *ORE's sessions.* ores.http carries a session as a bearer token or a cookie
+  that maps to one. =jwt_claims::act= is the actor claim of RFC 8693, which
+  run tokens already use to name the service acting. A write stamps
+  =modified_by= with the person and =performed_by= with the service account;
+  nothing records an agent.
+- *The product owner's needs* (2026-11-22): a person can see everything an
+  agent did for them, and some agent actions, booking a deal among them, need
+  further eyes.
+
+** The options
+
+| | API keys | OAuth 2.1, ORE as authorization server |
+|---|---|---|
+| How it follows from signing in | The person signs in to ores.web and creates a key for one agent: its name, what it may do, its expiry | The client opens ORE's sign-in page; the person signs in and approves the agent; the client gets a short-lived token and refreshes it |
+| The agent's identity | One key per agent | One client per agent |
+| Claude Code, local agents | Work now | Work |
+| Claude Desktop, claude.ai | Header beta or a bridge | Work natively |
+| MCP specification | Allowed, as authorization is optional | Conforms |
+| Cost | A key store, hashed at rest; a page in ores.web; a key-for-session exchange | Metadata documents, authorize and token endpoints, a consent page, PKCE, refresh rotation, client registration, audience checks |
+| Main risk | A long-lived secret, limited by expiry, scope and revocation | A larger surface to build and keep right |
 
 * Measurements
 
@@ -60,6 +94,36 @@ task and name that file in the Command column.
 
 * Notes
 
+** Decision
+
+Approved by the product owner on 2026-11-22.
+
+1. *An agent grant is the core.* It names the person, the agent, what the
+   agent may do, read only or read and write, and an expiry, and it can be
+   revoked. A person sees and revokes their grants in ores.web.
+2. *A token made from a grant names the person as =sub= and the agent as
+   =act=*, the RFC 8693 actor claim ORE already uses for run tokens. Every call
+   is the person's, made by that agent.
+3. *API keys first.* A person creates a key for a grant in ores.web after
+   signing in; the agent sends it as a bearer token and ores.http exchanges it
+   for a short session. OAuth 2.1 comes later as a second way to create the
+   same grant, its consent page making the grant and its token endpoint making
+   the same tokens, when Claude Desktop or claude.ai needs it. Nothing after
+   the grant changes.
+4. *Every write records its agent* in a new audit field, so =performed_by=
+   keeps meaning the service account, and a person can list what their agents
+   did.
+5. *Six eyes for agents.* An agent's write does not apply: it raises an
+   approval request. The person the agent acts for approves it, and then the
+   write needs the approval a person's own write would need, so neither the
+   agent nor its person can complete it alone. Every agent write is held
+   unless a rule exempts it. A trade booked by an agent is approved by its
+   person and then authorised through the existing trade authorisation, by an
+   authoriser who is neither.
+6. *Over MCP, a held write is an answer, not an error*: =call_operation=
+   returns the approval request it raised, so the agent can tell the person
+   what waits.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -75,12 +139,24 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5021][#5021]] | [agile] Decide how an MCP client signs in, and plan MCP |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | PR #5021: "Last touched" still 2026-11-21 | this task | Accept | Set to 2026-11-22. |
+| 2 | PR #5021: stray blank lines after the options table and at the end | this task | Accept | Removed. |
+| 3 | PR #5021: say what happened to confirming a write by MCP elicitation | story | Accept | Out of scope now says six eyes in ORE's queue replaces it, and why. |
+| 4 | PR #5021: say what happens to reads and to writes under a read-only grant | six-eyes task | Accept | Reads are not held; a read-only grant's write is refused before any request is raised. |
+| 5 | PR #5021: say who gives the further approval, and the case with no one else | six-eyes task | Accept | Someone other than the agent's person; with no eligible approver the request stays pending and the panel says so. |
+| 6 | PR #5021: empty Measurements tables in the new tasks | the new tasks | Decline | They are the template, filled when each task measures something. |
 
 * Result
+
+The options are written above against the MCP authorization specification,
+the clients and ORE's sessions, and the product owner approved the
+recommendation on 2026-11-22: agent grants, API keys first and OAuth later,
+tokens naming the person as subject and the agent as actor, a new audit field
+for the agent, and six eyes on every agent write unless a rule exempts it.
+The story's tasks were rewritten to match.

@@ -1,0 +1,169 @@
+:PROPERTIES:
+:ID: 02A581CF-D286-4922-AE2F-C44E74C06D05
+:END:
+#+title: Task: Give an agent a grant and a key
+#+description: A person creates, lists and revokes agent grants in ores.web, each with a key; ores.http exchanges a key for a session that names the person as subject and the agent as actor.
+#+type: task
+#+level: s1
+#+filetags: :serve_mcp_from_ores_http:sprint_30:v0:
+#+owner: marco
+#+branch: feature/give-an-agent-a-grant-and-a-key
+#+pr: 5024
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:008127D7-B897-4CF7-854B-6DDFB89AC7F4][Serve ORE's API to LLM agents over MCP]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A person signed in to ores.web creates a grant for one agent: its name, read only or read and write, and an expiry. The grant gives a key, shown once and stored hashed. The agent sends the key as a bearer token, and ores.http exchanges it for a short session whose token names the person as sub and the agent as act. The person lists their grants and revokes one, which ends the agent's access at once.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:008127D7-B897-4CF7-854B-6DDFB89AC7F4][Serve ORE's API to LLM agents over MCP]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing. |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-22                               |
+
+* Acceptance
+
+- A grant is created, listed and revoked in ores.web by a person who holds
+  =iam::agent_grants:create=, seeded on the role =AgentDelegator= and not on
+  Member; administrators list everyone's with =iam::agent_grants:read= and
+  revoke with =iam::agent_grants:revoke=. A grant names a role the person
+  holds, and has an expiry of at most ninety days.
+- Its key is shown once, stored only as the hash of its secret, and never
+  appears in a log, a refusal or a row.
+- A request with a valid key acts as the person, with =act= =agent:<grant id>=
+  in its token and the role's permissions held by the person, less the withheld
+  permissions; an expired or revoked key or grant, a wrong secret, a key for
+  another tenant and a lapsed person are each refused with 401.
+- A role that names a withheld permission cannot be granted, and no agent's
+  token carries one, whatever the person holds.
+- The exchange opens or reuses the key's session, which the sessions window
+  shows apart from the person's, with the agent's name; ending it revokes the
+  key.
+- Every rule above has a test.
+- The code does not merge until the RLS and permission exceptions register's
+  entry E9 records its evidence, its review and its sign-off.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+The design is [[id:A7E2942C-66AD-449C-B80B-CA789EBC34FA][Agent grants: delegated consent for LLM agents]] and
+[[id:1162906F-BB72-486E-9A11-30D567C65F3E][Delegation tokens for LLM agents: subject and actor claims]]. It follows
+the run grant ([[id:78B82824-0BBB-4442-A9FA-E1F265DF57BD][Run grants and run tokens]]) wherever the two agree.
+
+** The data
+
+| Entity | Columns | Notes |
+|--------+---------+-------|
+| =ores.iam.agent_grant= | id, party_id, grantor_account_id, agent_name, scope (=read_only= or =read_write=), not_after, revoked_at, revoked_by, revoke_reason | tenant and party isolation; readable over the wire, written only by IAM's operations, as the run grant |
+| =ores.iam.agent_key= | id, grant_id, secret_hash, revoked_at | the id is the key's lookup prefix; the secret is never stored |
+| =ores_iam_agent_token_issue_log_tbl= | when, tenant, party, grant, key, account, outcome, reason | hand-written, as the run token's issue log; it gives each key's last use without versioning the key on every call |
+
+A key is =ores_ak_<tenant id>_<key id>_<secret>=: the tenant tells IAM where to
+read, the key id finds the key, and the secret is 256 random bits, base64url,
+compared by its SHA-256 hash.
+
+** The operations
+
+=ores.iam.agent_grant_messages=: create a grant, which returns its first key
+once; create another key; revoke a grant; revoke a key; and exchange a key for
+a token. Creating and revoking take the person's own session and refuse a token
+that already names an agent, so an agent never makes a grant. The exchange is
+called by ores.http with its own token and needs =iam::agent_keys:exchange=.
+
+The exchange checks the key, the grant (active, not past =not_after=) and the
+person (active), reads the person's effective permissions in the grant's
+tenant, keeps for a read-only grant only the codes ending in =:read= or
+=:lookup= that the person's codes cover, and mints a five-minute token: =sub=
+the person, =username=, =tenant_id=, =party_id= and =visible_party_ids= the
+grant's party, =roles= the permissions, =grant_id= the grant and =act= the
+agent's name. Every exchange appends a row to the issue log, refusals included,
+and failed exchanges are limited per tenant and per key.
+
+** ores.http
+
+In =http_session='s bearer branch, a token that begins with =ores_ak_= is an
+agent key: an exchanger, injected as the session store is, returns a cached
+token until thirty seconds before its expiry, or exchanges the key with IAM.
+The route then serves the request with that token, as it serves any other.
+
+** Order
+
+1. The models, generated: domain, SQL, repository, protocols, wire types and
+   shell commands; the permissions seeded.
+2. IAM: the key utility, the read-only filter, the operations service, its
+   handler and the issue log, with unit tests for the pure parts.
+3. ores.http: the exchanger and its cache, wired into the bearer branch.
+4. ores.web: the grants page, over HTTP routes for create, list and revoke.
+5. Proof: a grant made in ores.web, a key that reads through ores.http, a
+   read-only key refused a write, a revoked key refused, and the issue log.
+
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+Paused before any code was generated, and the design reviewed against the
+security architecture in [[id:6B455B15-0FDB-4E1E-A2A8-CEFC4C1D155C][Security review of delegated access for LLM agents]]. Its decisions replace the plan's
+=scope= with a role, add the withheld permissions, set =act= to
+=agent:<grant id>=, bound the key and add agent sessions; the plan's data and
+operations are revised to match when the code starts.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5024][#5024]] | [doc] Fit delegated access for LLM agents to security |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | PR #5024: say how long an ended session or a revoked key keeps working, and whether the cache is evicted | token, sessions notes; E9 | Accept | The agent never holds a token; a revocation evicts ores.http's cache at once, and the bound is five minutes if the eviction is missed; the window's warning says both. |
+| 2 | PR #5024: limiting failures per tenant lets anyone lock a tenant's agents out | token, grants notes; E9 | Accept | Failures are limited per source address at ores.http and per existing key at IAM, never per tenant; unknown tenants and keys cost no memory; successful exchanges are limited per tenant as load. |
+| 3 | PR #5024: the withhold rules are not closed for authorisation, and the raise question is deferred | withholding note | Accept | A general rule for approval, authorisation and decision writes in any component; agent roles hold explicit codes only, so nothing is delegated by default, and the test fails on an unclassified new write. The raise is resolved from the code: =approval_lifecycle::may_raise= checks the kind's maker permission, a domain code, so withholding =inbox::= writes leaves raising open. |
+| 4 | PR #5024: which permission ends an owner's agent's session | sessions note | Accept | Own agents' sessions under =iam::agent_grants:create=, others' under =:revoke=; =iam::sessions:end= is not involved. |
+| 5 | PR #5024: can the ninety-day expiry be extended | grants note | Accept | No: counted from creation and never extended; continuing is a new grant and key. |
+| 6 | PR #5024: constant-time comparison and a uniform error | token, grants notes; E9 | Accept | Both stated: =invalid key= for an unknown tenant, an unknown key and a wrong secret. |
+| 7 | PR #5024: E9's sign-off should gate the code | this task | Accept | Added to the acceptance: the code does not merge until E9 records evidence, review and sign-off. |
+| 8 | PR #5024: say the idle clock counts exchanges, not calls | sessions note | Accept | Stated, with the four-minute re-exchange that keeps a busy key's session open. |
+| 9 | PR #5024: say what =AgentDelegator= holds | RBAC | Accept | =iam::agent_grants:create= and nothing else, a permission of people only that no agent holds. |
+
+* Result

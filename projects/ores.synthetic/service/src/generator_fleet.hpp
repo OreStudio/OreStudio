@@ -60,19 +60,32 @@ public:
         return surfaces_;
     }
 
-    /** The source names of the feeds the service runs now. */
+    /**
+     * @brief The source names of the feeds the service runs now.
+     *
+     * A shared surface runs under its feed's own name while any adapter holds it, though each
+     * hold runs under a name of its own, so the screens read the surface feed as running.
+     */
     [[nodiscard]] std::vector<std::string> running_source_names() const {
-        return names_.names();
+        auto out = names_.names();
+        for (const auto& surface : surfaces_.held())
+            out.push_back(surface->source_name());
+        return out;
     }
 
     /**
      * @brief The feeds the service runs now, each with where its run started.
      *
      * The runs of every runner are read once each, and no source name runs in two
-     * runners, so a feed appears once. The answer is in source name order.
+     * runners, so a feed appears once. A held surface appears under its feed's own name,
+     * beside the holds of its adapters. The answer is in source name order.
      */
     [[nodiscard]] std::vector<running_feed_start> running_feeds() const {
         auto out = manual_.running_feeds();
+        for (const auto& surface : surfaces_.held())
+            out.push_back({.source_name = surface->source_name(),
+                           .start = surface->start_source(),
+                           .watch_subjects = surface->vendor_watch_subjects()});
         for (const auto* runner : attached()) {
             auto more = runner->running_feeds();
             out.insert(out.end(),

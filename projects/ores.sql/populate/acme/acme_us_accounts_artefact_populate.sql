@@ -58,7 +58,7 @@ begin
 
     insert into ores_dq_accounts_artefact_tbl (
         dataset_id, tenant_id, id, version, username, full_name,
-        email, password_hash, account_type, business_unit_code, role,
+        email, password_hash, account_type, business_unit_code, roles,
         job_title, reports_to_username, photo_key
     )
     values
@@ -71,7 +71,7 @@ begin
         (v_dataset_id, ores_utility_system_tenant_id_fn(), '1cd62629-f5b5-58fd-97d1-806d7e5e2a93', 0, 'elizabeth.barrett', 'Elizabeth Barrett', 'elizabeth.barrett@acmecorp.com', '', 'user', 'acme_us.ir_swaps', 'Trading', 'Junior Trader', 'yesenia.choi', 'acme_staff_photo:female_age30_african_01'),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), '99bc8d7e-3b15-576a-b7cd-adcb5f52720d', 0, 'john.robinson', 'John Robinson', 'john.robinson@acmecorp.com', '', 'user', 'acme_us.credit_trading', 'Trading', 'Head of Desk', 'paul.armstrong', 'acme_staff_photo:male_age20_latin_american_02'),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), 'e329300a-80d5-5443-9aa0-90a6bda88daa', 0, 'sandra.green', 'Sandra Green', 'sandra.green@acmecorp.com', '', 'user', 'acme_us.credit_trading', 'Trading', 'Senior Trader', 'john.robinson', 'acme_staff_photo:female_age20_east_asian_01'),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'ff024727-e600-5d68-9aec-d0d17562b782', 0, 'henry.jones', 'Henry Jones', 'henry.jones@acmecorp.com', '', 'user', 'acme_us.credit_trading', 'Trading', 'Junior Trader', 'john.robinson', 'acme_staff_photo:male_age25_south_asian_03'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'ff024727-e600-5d68-9aec-d0d17562b782', 0, 'henry.jones', 'Henry Jones', 'henry.jones@acmecorp.com', '', 'user', 'acme_us.credit_trading', 'Trading,Finance', 'Junior Trader', 'john.robinson', 'acme_staff_photo:male_age25_south_asian_03'),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), '82b638e8-0d5e-5846-8217-14ac2dd3c198', 0, 'laura.carlson', 'Laura Carlson', 'laura.carlson@acmecorp.com', '', 'user', 'acme_us.fx_rates', 'Trading', 'Head of Desk', 'paul.armstrong', 'acme_staff_photo:female_age30_european_02'),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), '565a224f-5517-5e5f-96ee-b5d365dc1dc0', 0, 'corey.gross', 'Corey Gross', 'corey.gross@acmecorp.com', '', 'user', 'acme_us.fx_rates', 'Trading', 'Senior Trader', 'laura.carlson', 'acme_staff_photo:male_age20_african_02'),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), '19d5f09f-dab6-5abd-b4a6-bd0314513428', 0, 'shirley.stevens', 'Shirley Stevens', 'shirley.stevens@acmecorp.com', '', 'user', 'acme_us.fx_rates', 'Trading', 'Junior Trader', 'laura.carlson', 'acme_staff_photo:female_age20_latin_american_02'),

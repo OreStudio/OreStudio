@@ -34,6 +34,7 @@
 #include "ores.synthetic.api/feeds/feed_overview.hpp"
 #include "ores.synthetic.api/messaging/feed_overview_protocol.hpp"
 #include <algorithm>
+#include <array>
 #include <exception>
 #include <memory>
 #include <optional>
@@ -179,9 +180,14 @@ public:
 private:
     using rows_t = std::vector<std::vector<std::optional<std::string>>>;
 
+    /// The table of each kind of feed, which every count of a folder's feeds reads.
+    static constexpr std::array feed_tables{"ores_synthetic_fx_spot_generation_configs_tbl",
+                                            "ores_synthetic_ir_curve_generation_configs_tbl",
+                                            "ores_synthetic_fx_vol_surface_feeds_tbl"};
+
     /**
      * A page of the feeds the filter matches, in label order, and how many match in
-     * all. Both kinds are read in one query, so a person pages through one list. Every
+     * all. Every kind is read in one query, so a person pages through one list. Every
      * part of the filter is checked or escaped by the filter itself, so nothing the
      * caller sends is run as SQL.
      */
@@ -295,11 +301,15 @@ private:
                 }
             }
         };
-        add(query(ctx, R"sql(
-            select folder_id::text, count(*) from ores_synthetic_fx_spot_generation_configs_tbl
-            where valid_to = ores_utility_infinity_timestamp_fn() and folder_id is not null
-            group by folder_id)sql"),
-            tally::fx);
+        // A vol surface feed is an FX feed: its asset class is fx.
+        for (const auto* table : {"ores_synthetic_fx_spot_generation_configs_tbl",
+                                  "ores_synthetic_fx_vol_surface_feeds_tbl"}) {
+            add(query(ctx,
+                      std::string("select folder_id::text, count(*) from ") + table +
+                          " where valid_to = ores_utility_infinity_timestamp_fn()"
+                          " and folder_id is not null group by folder_id"),
+                tally::fx);
+        }
         add(query(ctx, R"sql(
             select folder_id::text, count(*) from ores_synthetic_ir_curve_generation_configs_tbl
             where valid_to = ores_utility_infinity_timestamp_fn() and folder_id is not null
@@ -311,8 +321,7 @@ private:
         const std::string runnable = feed_kind_registry::is_system_caller(ctx) ?
                                          std::string() :
                                          " and tenant_id <> ores_utility_system_tenant_id_fn()";
-        for (const auto* table : {"ores_synthetic_fx_spot_generation_configs_tbl",
-                                  "ores_synthetic_ir_curve_generation_configs_tbl"}) {
+        for (const auto* table : feed_tables) {
             add(query(ctx,
                       std::string("select folder_id::text, count(*) from ") + table +
                           " where valid_to = ores_utility_infinity_timestamp_fn()"
@@ -326,8 +335,7 @@ private:
             std::string names;
             for (const auto& name : running)
                 names += (names.empty() ? "" : ", ") + ores::synthetic::feed::sql_literal(name);
-            for (const auto* table : {"ores_synthetic_fx_spot_generation_configs_tbl",
-                                      "ores_synthetic_ir_curve_generation_configs_tbl"}) {
+            for (const auto* table : feed_tables) {
                 add(query(ctx,
                           std::string("select folder_id::text, count(*) from ") + table +
                               " where valid_to = ores_utility_infinity_timestamp_fn()"

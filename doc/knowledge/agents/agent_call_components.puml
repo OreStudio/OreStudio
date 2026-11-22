@@ -1,0 +1,63 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title An agent's call enters through ores.http and nowhere else
+
+skinparam componentStyle rectangle
+left to right direction
+
+actor "Person" as person
+actor "Agent\n(MCP client)" as agent
+
+node "ores.web" {
+  [Grants page] as grants_page
+  [Agent activity] as activity
+  [Review panel] as panel
+}
+
+node "ores.http" {
+  [/mcp transport] as mcp
+  [Five tools] as tools
+  [Route registry] as registry
+  [Router and routes] as router
+}
+
+node "Services over NATS" {
+  [ores.iam\ngrants, keys, tokens] as iam
+  [Domain services\nreads and writes] as domain
+  [ores.inbox\napproval requests] as inbox
+  [ores.trading\noperational authorisation] as trading
+}
+
+person --> grants_page : creates and revokes grants
+person --> activity : reads what agents did
+person --> panel : approves held writes
+agent --> mcp : Bearer key
+mcp ..> iam : key for a token
+mcp --> tools
+tools --> registry : catalogue
+tools --> router : call an operation
+router --> domain : request with the agent's token
+domain --> inbox : agent write raises a request
+domain --> trading : agent booking
+grants_page --> iam
+activity --> domain
+panel --> inbox
+
+@enduml

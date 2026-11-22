@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: CCFD0961-9152-442D-AB7A-27366543CBF9
+:END:
+#+title: Task: Declare each route's place in the catalogue
+#+description: Every ores.http route declares its tool name, area, entity and whether it writes, and its body schema; a gate refuses a route that does not.
+#+type: task
+#+level: s1
+#+filetags: :serve_mcp_from_ores_http:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:008127D7-B897-4CF7-854B-6DDFB89AC7F4][Serve ORE's API to LLM agents over MCP]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every route of ores.http declares a stable tool name, the area and entity it belongs to, and whether it writes, and every route that takes a body declares its schema through the route builder's typed body declaration. Routes the codegen generates take the area and entity from their model. A gate refuses a route that declares none of these, so the catalogue is complete by construction.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:008127D7-B897-4CF7-854B-6DDFB89AC7F4][Serve ORE's API to LLM agents over MCP]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-22                               |
+
+* Acceptance
+
+- Every served route declares its tool name, area, entity and whether it writes.
+- Every route that takes a body declares its typed body schema.
+- A gate refuses a route that lacks any of these, and the OpenAPI document gains the same metadata.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -50,6 +50,22 @@ would need the account screens to render it.
 - =projects/ores.codegen/scripts/check_single_writer.py= -- the check that
   lists the table as the one remaining second copy.
 
+* Outcome
+
+Delivered by [[id:A611C520-54AA-4562-9BA6-768278E5DDEE][Task: Collapse the tables written both
+ways]]. The account artefact's column is now =roles= and carries a comma
+separated list of role names, and the publish resolves each name and grants it.
+The ACME seed states =Trading,Finance= for =henry.jones= and
+=acme_cut_take_roles_populate.sql= is gone, so the row arrives through the
+dataset like every other role.
+
+Design A, a separate roles artefact, was the first choice and is recorded here as
+not taken: the artefact tables are generated from the models, and the generator
+cannot yet stage natural keys for a uuid-keyed junction. A list in one column
+costs nothing outside the SQL, because no C++ and no screen reads the staging
+table. If a future change makes the generator able to project the junction, the
+list is the row to revisit.
+
 * See also
 
 - [[id:34172C9C-FC58-475C-BD18-7AF4782B163F][A tenant can write into a shared catalogue]] -- the other write-path

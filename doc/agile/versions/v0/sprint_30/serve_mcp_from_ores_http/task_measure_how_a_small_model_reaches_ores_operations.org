@@ -1,43 +1,42 @@
 :PROPERTIES:
-:ID: 3EB24EE2-82E5-4F11-AB20-4EEB16167FB3
+:ID: 529DBF0E-9AE6-448A-AD46-AA836FF33572
 :END:
-#+title: Task: Search and read the knowledge pages through ores.http
-#+description: The search over the indexed sections with PostgreSQL full-text search, and a page read by org id, as ores.orgmode.service messages served by ores.http routes.
+#+title: Task: Measure how a small model reaches ORE's operations
+#+description: Run a set of real requests with a small model through browsing and through search, and record how often it reaches the right operation and in how many steps.
 #+type: task
 #+level: s1
-#+filetags: :search_the_knowledge_base:sprint_30:v0:
+#+filetags: :serve_mcp_from_ores_http:sprint_30:v0:
 #+owner: marco
 #+branch:
 #+pr:
 #+blocked_on:
 #+blocked_since:
-#+created: 2026-11-21
-#+updated: 2026-11-21
+#+created: 2026-11-22
+#+updated: 2026-11-22
 #+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:05FE6068-3CBD-4B93-B6AE-47A5689F1FCB][Search the knowledge base from ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:008127D7-B897-4CF7-854B-6DDFB89AC7F4][Serve ORE's API to LLM agents over MCP]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-ores.orgmode.service answers a search, a few words in and the best pages out with the section that matched, ranked with PostgreSQL full-text search over the weighted sections; and a page read by org id, its title, description, tags and org text. ores.http serves both as routes, through NATS, in its route registry and OpenAPI document. Nothing goes through the BFF.
+Write a set of real requests a person would give an agent, each with the operation that answers it. Run each with a small local model through browsing and through search, and record how often it reaches the right operation and in how many steps. The result decides whether the catalogue's areas, entities and summaries need work, and is compared with what ores.agent's evaluations measured.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
-| Parent story | [[id:05FE6068-3CBD-4B93-B6AE-47A5689F1FCB][Search the knowledge base from ores.web]] |
+| Parent story | [[id:008127D7-B897-4CF7-854B-6DDFB89AC7F4][Serve ORE's API to LLM agents over MCP]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
-| Last touched | 2026-11-21                               |
+| Last touched | 2026-11-22                               |
 
 * Acceptance
 
-- A search for volatility answers the Volatility pages first, each with the section that matched.
-- A page read by org id answers its org text and its metadata, and an unknown id is refused by name.
-- Both routes are in ores.http's route registry and OpenAPI document, with their schemas.
+- The request set and its expected operations are kept in the repository, so the measurement can be rerun.
+- The share reached and the steps taken are recorded for browsing and for search, with every miss named.
 
 * Plan
 

@@ -26,11 +26,11 @@ No table is written by both a direct seed and a DQ publish, and a check proves i
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:7D2BBBBC-36A3-4BFB-9673-0F9005991D94][Take the DQ pipeline end to end, from a seeded artefact table to a published system]] |
-| Now          | Every table has one writer. The last row, an account's second role, now travels in the accounts dataset as a list of role names. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Raise the PR for the last row and close the task. |
+| Next         | Nothing. |
 | Last touched | 2026-11-22                              |
 
 * Acceptance

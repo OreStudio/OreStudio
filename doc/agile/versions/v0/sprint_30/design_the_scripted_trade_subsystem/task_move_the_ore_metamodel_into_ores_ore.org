@@ -170,3 +170,11 @@ via its "Verifies task" field.
 | 5028.6 | the testing section gives evidence only for the ratchet | none | no change | the PR body states the row counts, pgTAP, the suites, the BFF and the live listing |
 
 * Result
+
+In progress: the first of the two families is in. The ORE files, their
+categories and their contents per ORE release are =ores.ore='s tables,
+operations, history and shell commands, with the same rows as before, and the
+ore service is granted them through the service registry. The parameters family
+(the leaves of ORE's schemas, their value domains, value sets and vocabularies,
+and the element map) waits for the compass release whose =ore_value_sets= codec
+reads its names from the models.

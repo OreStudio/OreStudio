@@ -19,6 +19,7 @@
  */
 #include "ores.http.api/net/cors.hpp"
 #include <algorithm>
+#include <cctype>
 
 namespace ores::http::net {
 
@@ -39,7 +40,15 @@ constexpr std::string_view exposed_headers = "X-Request-Id, Content-Disposition"
 
 constexpr std::string_view preflight_max_age = "86400";
 
-/// The origins the option names, trimmed and in the order it names them.
+/// @p text folded to lowercase, because an origin is case-insensitive.
+std::string folded(std::string_view text) {
+    std::string out(text);
+    std::ranges::transform(
+        out, out.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+    return out;
+}
+
+/// The origins the option names, trimmed, folded and in the order it names them.
 std::vector<std::string> listed(const std::string& origins) {
     std::vector<std::string> out;
     std::string one;
@@ -50,7 +59,7 @@ std::vector<std::string> listed(const std::string& origins) {
             return;
         }
         const auto last = one.find_last_not_of(" \t");
-        out.push_back(one.substr(first, last - first + 1));
+        out.push_back(folded(std::string_view(one).substr(first, last - first + 1)));
         one.clear();
     };
     for (const auto c : origins) {
@@ -71,27 +80,40 @@ bool names_every_origin(const std::string& origins) {
     return origins.empty() || origins == "*";
 }
 
-/// Whether @p origin earns an answer at all.
-bool admitted(const http_server_options& options, std::string_view origin) {
-    if (!options.enable_cors || origin.empty())
+}
+
+cors_policy make_cors_policy(const http_server_options& options) {
+    cors_policy policy;
+    policy.enabled = options.enable_cors;
+    policy.every_origin = names_every_origin(options.cors_allowed_origins);
+    if (!policy.every_origin)
+        policy.origins = listed(options.cors_allowed_origins);
+    return policy;
+}
+
+bool cors_policy::admits(std::string_view origin) const {
+    if (!enabled || origin.empty())
         return false;
-    if (names_every_origin(options.cors_allowed_origins))
+    if (every_origin)
         return true;
-    const auto all = listed(options.cors_allowed_origins);
-    return std::ranges::find(all, std::string(origin)) != all.end();
+    return names(origin);
 }
 
+bool cors_policy::names(std::string_view origin) const {
+    if (!enabled || origin.empty() || every_origin)
+        return false;
+    return std::ranges::find(origins, folded(origin)) != origins.end();
 }
 
-std::vector<std::pair<std::string, std::string>> cors_headers(const http_server_options& options,
+std::vector<std::pair<std::string, std::string>> cors_headers(const cors_policy& policy,
                                                               std::string_view origin) {
-    if (!admitted(options, origin))
+    if (!policy.admits(origin))
         return {};
     std::vector<std::pair<std::string, std::string>> out;
-    if (names_every_origin(options.cors_allowed_origins)) {
+    if (policy.every_origin) {
         out.emplace_back("Access-Control-Allow-Origin", "*");
     } else {
-        out.emplace_back("Access-Control-Allow-Origin", std::string(origin));
+        out.emplace_back("Access-Control-Allow-Origin", folded(origin));
         out.emplace_back("Access-Control-Allow-Credentials", "true");
         // The answer varies by the origin asked for, so a cache must not share it.
         out.emplace_back("Vary", "Origin");
@@ -100,9 +122,9 @@ std::vector<std::pair<std::string, std::string>> cors_headers(const http_server_
     return out;
 }
 
-std::vector<std::pair<std::string, std::string>>
-cors_preflight_headers(const http_server_options& options, std::string_view origin) {
-    auto out = cors_headers(options, origin);
+std::vector<std::pair<std::string, std::string>> cors_preflight_headers(const cors_policy& policy,
+                                                                        std::string_view origin) {
+    auto out = cors_headers(policy, origin);
     if (out.empty()) {
         // A preflight still gets its no-content answer, but nothing that admits it.
         return out;
@@ -111,13 +133,6 @@ cors_preflight_headers(const http_server_options& options, std::string_view orig
     out.emplace_back("Access-Control-Allow-Headers", std::string(allowed_headers));
     out.emplace_back("Access-Control-Max-Age", std::string(preflight_max_age));
     return out;
-}
-
-bool cors_names(const http_server_options& options, std::string_view origin) {
-    if (!options.enable_cors || origin.empty() || names_every_origin(options.cors_allowed_origins))
-        return false;
-    const auto all = listed(options.cors_allowed_origins);
-    return std::ranges::find(all, std::string(origin)) != all.end();
 }
 
 }

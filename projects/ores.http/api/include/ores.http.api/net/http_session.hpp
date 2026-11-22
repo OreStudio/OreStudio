@@ -23,6 +23,7 @@
 #include "ores.http.api/domain/session_cookie.hpp"
 #include "ores.http.api/domain/session_store.hpp"
 #include "ores.http.api/export.hpp"
+#include "ores.http.api/net/cors.hpp"
 #include "ores.http.api/net/http_server_options.hpp"
 #include "ores.http.api/net/rate_limiter.hpp"
 #include "ores.http.api/net/router.hpp"
@@ -159,6 +160,7 @@ private:
     /// The id this session quotes for the request it is serving, on every answer.
     std::string request_id_;
 
+
     /**
      * @brief Writes a response, from its bytes or in chunks from its source.
      *
@@ -235,6 +237,9 @@ private:
     std::shared_ptr<worker_pool> workers_;
 
     http_server_options options_;
+
+    /// The origins this deployment admits, read once from its configuration.
+    cors_policy cors_;
     std::string remote_address_;
     session_bytes_callback bytes_callback_;
 

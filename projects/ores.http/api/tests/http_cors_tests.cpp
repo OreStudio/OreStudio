@@ -48,10 +48,10 @@ std::string header_of(const std::vector<std::pair<std::string, std::string>>& he
     return {};
 }
 
-http_server_options listing(const std::string& origins) {
+cors_policy listing(const std::string& origins) {
     http_server_options options;
     options.cors_allowed_origins = origins;
-    return options;
+    return make_cors_policy(options);
 }
 
 }
@@ -100,6 +100,25 @@ TEST_CASE("an_origin_the_list_does_not_name_earns_nothing", "[http_api][cors]") 
     REQUIRE(cors_headers(listing("http://localhost:20402"), "http://evil.example").empty());
 }
 
+/**
+ * @brief An origin's case is not its meaning, in the list or in the request.
+ *
+ * A person writing the deployment's origins can capitalise one, and a browser states the
+ * origin of a page in lowercase. A comparison of the two as written would admit nobody,
+ * and a write from that page would be refused by the CSRF rule for no visible reason.
+ */
+TEST_CASE("an_origin_matches_the_list_whatever_its_case", "[http_api][cors]") {
+    auto lg(make_logger(test_suite));
+    ORES_LOG_SEV(lg, info) << "Testing that an origin matches the list in any case";
+
+    const auto listed = listing("https://App.Example.com");
+
+    REQUIRE(listed.admits("https://app.example.com"));
+    REQUIRE(listed.names("https://app.example.com"));
+    REQUIRE(header_of(cors_headers(listed, "https://app.example.com"),
+                      "Access-Control-Allow-Origin") == "https://app.example.com");
+}
+
 TEST_CASE("a_request_that_states_no_origin_is_not_cross_origin", "[http_api][cors]") {
     auto lg(make_logger(test_suite));
     ORES_LOG_SEV(lg, info) << "Testing that a request without an origin earns no headers";
@@ -111,10 +130,11 @@ TEST_CASE("a_deployment_that_turns_cors_off_answers_none_of_it", "[http_api][cor
     auto lg(make_logger(test_suite));
     ORES_LOG_SEV(lg, info) << "Testing that disabling CORS answers no headers";
 
-    auto options = listing("*");
+    auto options = http_server_options{};
     options.enable_cors = false;
+    options.cors_allowed_origins = "*";
 
-    REQUIRE(cors_headers(options, "http://localhost:20402").empty());
+    REQUIRE(cors_headers(make_cors_policy(options), "http://localhost:20402").empty());
 }
 
 /**
@@ -275,11 +295,12 @@ TEST_CASE("only_a_named_origin_may_be_the_source_of_a_write", "[http_api][cors]"
     ORES_LOG_SEV(lg, info) << "Testing which origins the CSRF rule trusts";
 
     const auto listed = listing("http://localhost:20401, http://localhost:20402");
-    REQUIRE(cors_names(listed, "http://localhost:20402"));
-    REQUIRE_FALSE(cors_names(listed, "http://localhost:5173"));
-    REQUIRE_FALSE(cors_names(listing("*"), "http://localhost:20402"));
+    REQUIRE(listed.names("http://localhost:20402"));
+    REQUIRE_FALSE(listed.names("http://localhost:5173"));
+    REQUIRE_FALSE(listing("*").names("http://localhost:20402"));
 
-    auto off = listed;
+    auto off = http_server_options{};
     off.enable_cors = false;
-    REQUIRE_FALSE(cors_names(off, "http://localhost:20402"));
+    off.cors_allowed_origins = "http://localhost:20402";
+    REQUIRE_FALSE(make_cors_policy(off).names("http://localhost:20402"));
 }

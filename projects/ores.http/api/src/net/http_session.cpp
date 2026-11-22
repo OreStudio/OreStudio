@@ -185,6 +185,7 @@ http_session::http_session(asio::ip::tcp::socket socket,
     , verifier_(std::move(verifier))
     , workers_(std::move(workers))
     , options_(options)
+    , cors_(make_cors_policy(options_))
     , bytes_callback_(std::move(bytes_callback))
     , counters_(counters)
     , sessions_(std::move(sessions))
@@ -567,7 +568,7 @@ asio::awaitable<void> http_session::handle_request(domain::http_request domain_r
         static_cast<unsigned>(domain_req.http_version_major * 10 + domain_req.http_version_minor);
 
     // Worked out once, so every answer this request produces carries them.
-    cors_headers_ = cors_headers(options_, domain_req.get_header("Origin"));
+    cors_headers_ = cors_headers(cors_, domain_req.get_header("Origin"));
     request_id_ = next_request_id();
 
     ORES_LOG_SEV(lg(), trace) << "Processing request path: " << path
@@ -579,7 +580,7 @@ asio::awaitable<void> http_session::handle_request(domain::http_request domain_r
         domain::http_response cors_resp;
         cors_resp.status = domain::http_status::no_content;
         for (const auto& [name, value] :
-             cors_preflight_headers(options_, domain_req.get_header("Origin")))
+             cors_preflight_headers(cors_, domain_req.get_header("Origin")))
             cors_resp.set_header(name, value);
 
         co_await write_response(cors_resp, version, keep_alive, true);
@@ -884,7 +885,7 @@ std::optional<std::string> http_session::csrf_refusal(const domain::http_request
      * other place a write may come from. A wildcard states no such list, and answers
      * only reads, so a wildcard deployment refuses this as it always did.
      */
-    if (cors_names(options_, lowercase(origin)))
+    if (cors_.names(origin))
         return std::nullopt;
 
     return "The Origin does not match this deployment";

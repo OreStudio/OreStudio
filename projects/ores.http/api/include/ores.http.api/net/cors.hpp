@@ -30,41 +30,62 @@
 namespace ores::http::net {
 
 /**
+ * @brief The origins a deployment admits, read once from its configuration.
+ *
+ * A header's case is not its meaning, and an origin is case-insensitive, so both the
+ * configured origins and the one a request states are folded to lowercase here and in
+ * the comparison. A deployment that names no origin admits every origin, without
+ * credentials: enough for an anonymous caller, and never enough for a session, because
+ * a browser refuses to send a cookie to an answer that names every origin.
+ */
+struct ORES_HTTP_API_EXPORT cors_policy final {
+    /// Whether CORS is on at all.
+    bool enabled{true};
+
+    /// Whether the deployment names no origins, which admits them all without credentials.
+    bool every_origin{true};
+
+    /// The origins the deployment names, lowercased, in the order it names them.
+    std::vector<std::string> origins;
+
+    /**
+     * @brief Whether @p origin earns an answer.
+     *
+     * A request that states no origin is not a cross-origin request at all, so it earns
+     * nothing: a caller that is not a browser never sends one.
+     */
+    [[nodiscard]] bool admits(std::string_view origin) const;
+
+    /**
+     * @brief Whether the deployment names @p origin explicitly.
+     *
+     * A wildcard names none of them: it admits every origin to read, and no origin to act
+     * with a session, because it cannot tell a page we serve from any other. An origin the
+     * list names is one we serve, which is what makes it a trustworthy place for a write
+     * to come from.
+     */
+    [[nodiscard]] bool names(std::string_view origin) const;
+};
+
+/** The policy a deployment's configuration states. */
+ORES_HTTP_API_EXPORT cors_policy make_cors_policy(const http_server_options& options);
+
+/**
  * @brief The headers an answer to a request that states @p origin carries.
  *
- * Two modes, and they are not interchangeable.
- *
- * A wildcard deployment answers every origin, without credentials. That is what an
- * anonymous caller needs -- a tool, a page that reads the rates -- and it is what a
- * session can never use, because a browser refuses to send a cookie to an answer that
- * names every origin.
- *
- * A deployment that lists its origins answers only those, and to those it allows
- * credentials on the same answer. So a session rides a call only to an origin the list
- * names, and no other page can read the API with the person's cookie.
- *
- * A request that states no origin is not a cross-origin request at all and earns
- * nothing: a caller that is not a browser never sends one.
+ * A wildcard deployment answers every origin without credentials. A deployment that names
+ * its origins answers only those, and to those it allows credentials on the same answer,
+ * so a session rides a call only to an origin the list names. A named origin is also the
+ * only place a write may come from, besides this deployment's own.
  */
 ORES_HTTP_API_EXPORT
-std::vector<std::pair<std::string, std::string>> cors_headers(const http_server_options& options,
+std::vector<std::pair<std::string, std::string>> cors_headers(const cors_policy& policy,
                                                               std::string_view origin);
 
 /** The same, with what a preflight also needs: the methods and the headers it may send. */
 ORES_HTTP_API_EXPORT
-std::vector<std::pair<std::string, std::string>>
-cors_preflight_headers(const http_server_options& options, std::string_view origin);
-
-/**
- * @brief Whether the deployment names @p origin explicitly.
- *
- * A wildcard names none of them: it admits every origin to read, and no origin to act
- * with a session, because it cannot tell a page we serve from any other. An origin the
- * list names is one we serve, which is what makes it a trustworthy place for a write to
- * come from.
- */
-ORES_HTTP_API_EXPORT
-bool cors_names(const http_server_options& options, std::string_view origin);
+std::vector<std::pair<std::string, std::string>> cors_preflight_headers(const cors_policy& policy,
+                                                                        std::string_view origin);
 
 }
 

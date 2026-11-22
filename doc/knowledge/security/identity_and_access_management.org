@@ -33,6 +33,20 @@ Control]]. Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
   adhered to during operation. See [[id:3CAA394F-E84C-3434-331B-6E664F7E84D2][RBAC]] for how the role and
   permission model fits together.
 
+* Kinds of actor
+
+Every call names who acts, and IAM knows four kinds of actor.
+
+| Actor | Acts as | Token |
+|-------+---------+-------|
+| A person | themselves | a session token, from signing in |
+| A service | itself | its own token, from client credentials |
+| A scheduled run | its person, narrowed by a run grant | a run token, whose =act= names the step service |
+| An LLM agent | its person, narrowed by an agent grant | a delegation token, whose =act= names the agent ([[id:47B179BF-C982-4BB1-AF4F-35E00B9D2750][Delegated Access for LLM Agents]]) |
+
+The last two act for a person without the person present, and so neither may
+hold more than its grant's role and the person allow.
+
 * Operational Scope
 
 The IAM subsystem operates across two primary phases:

@@ -69,7 +69,7 @@ The analysis is in [[id:FC0847D1-9F09-42EF-A4BD-D5E3C34398EA][How ores.http serv
 |------+-------+-------+-----+-------------|
 | [[id:BEF95B2A-42BF-40DA-BC3D-7B703C34ED73][Decide how an outside MCP client authenticates]] | DONE | 2026-11-22 | 2026-11-22 | Decide how Claude Code, Claude Desktop or a local agent signs in to ores.http's MCP endpoint as a person, against MCP's OAuth 2.1 authorization and ORE's own sessions, before the session store and the audit trail are designed. |
 | [[id:D23A3EC6-DFDD-48F3-A3AB-475513EE6E73][Set out the architecture of agents acting through ores.http]] | DONE | 2026-11-22 | 2026-11-22 | Zettelkasten knowledge notes, with UML diagrams, on how an agent acts for a person through ores.http: grants, identity, audit, six eyes, MCP and the catalogue, built on ores.agent's experience. |
-| [[id:02A581CF-D286-4922-AE2F-C44E74C06D05][Give an agent a grant and a key]] | BACKLOG | | | A person creates, lists and revokes agent grants in ores.web, each with a key; ores.http exchanges a key for a session that names the person as subject and the agent as actor. |
+| [[id:02A581CF-D286-4922-AE2F-C44E74C06D05][Give an agent a grant and a key]] | STARTED | 2026-11-22 | | A person creates, lists and revokes agent grants in ores.web, each with a key; ores.http exchanges a key for a session that names the person as subject and the agent as actor. |
 | [[id:D278957D-3FF7-419B-9FB3-E22F2F2C7A0D][Record what an agent did and show it to its person]] | BACKLOG | | | Every write made with an agent's token records the agent in a new audit field, and ores.web shows a person what their agents did. |
 | [[id:49E595F6-9C23-45E0-B74C-A49DAC46AC74][Hold an agent's writes for six eyes]] | BACKLOG | | | An agent's write raises an approval request that its person approves before the write takes the approval a person's own write needs; trades go through trade authorisation. |
 | [[id:23D0536C-1854-4D2A-A287-621F86C2AD6E][Serve the MCP transport on ores.http]] | BACKLOG | | | /mcp on ores.http serves MCP's Streamable HTTP transport with sessions, JSON-RPC through ORE's codec, initialize, ping, tools/list and tools/call. |
@@ -104,6 +104,21 @@ The analysis is in [[id:FC0847D1-9F09-42EF-A4BD-D5E3C34398EA][How ores.http serv
   row it writes and in one log of its calls, reads included; no automatic
   approval rule closes the person's part of an agent's request; and the
   catalogue's first step is the sixteen published HTTP areas.
+- *The security review's decisions* (2026-11-22, product owner), from
+  [[id:6B455B15-0FDB-4E1E-A2A8-CEFC4C1D155C][Security review of delegated access for LLM agents]]: an agent grant names a role, and its token carries the role's
+  permissions held by the person; some permissions no agent ever holds
+  ([[id:1679B2CE-05C2-4CFF-9A4B-47EC721CB10A][Withholding of administrative permissions from LLM agents]]); =act= is =agent:= and the grant's id; the key is a bounded
+  credential at rest, with an expiry of at most ninety days; IAM's entry into
+  the tenant a key names is registered; and an agent's calls form sessions of
+  their own, shown apart from its person's ([[id:4DCD0684-F6AE-4E84-BB9D-2AE2DAFDB667][Sessions of LLM agents]]).
+- *Delegating to an agent is a permission* (2026-11-22, product owner):
+  =iam::agent_grants:create=, on a seeded role =AgentDelegator= and not on
+  Member, so each tenant decides who may use agents; administrators read and
+  revoke everyone's grants with =iam::agent_grants:read= and =:revoke=.
+
+* Investigations
+
+- [[id:6B455B15-0FDB-4E1E-A2A8-CEFC4C1D155C][Security review of delegated access for LLM agents]] — the design checked against the identity and access cluster before its first code.
 
 * Out of scope
 

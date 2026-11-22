@@ -2,7 +2,7 @@
 :ID: A7E2942C-66AD-449C-B80B-CA789EBC34FA
 :END:
 #+title: Agent grants: delegated consent for LLM agents
-#+description: A person's revocable consent that one agent acts for them, read only or read and write, until an expiry; keys redeem it.
+#+description: A person's revocable consent that one agent acts for them, bounded by a role, until an expiry; keys redeem it.
 #+type: knowledge
 #+level: cross
 #+filetags: :knowledge:agents:security:grants:
@@ -14,8 +14,8 @@ This page states the target design. It does not describe what is built.
 * Summary
 
 An agent grant is a person's consent that one named agent acts for them, in
-one tenant and one party, with read-only or read-and-write scope, until an
-expiry or until the person revokes it. It is ORE's second form of the
+one tenant and one party, bounded by a role made for the work, until an expiry
+of at most ninety days or until the person revokes it. It is ORE's second form of the
 [[id:AE30F62E-3B9E-4B59-9D11-E8FEE876949A][Grant Management]] pattern, after the run grant: the person consents once, and a
 credential redeems the consent each time the agent calls. The claim of this
 page is that the grant, not the credential, is the unit of consent, so the
@@ -24,28 +24,55 @@ recorded.
 
 * Detail
 
-** The grant and its keys
+** The grant and its role
 
 A grant belongs to one account. It names the agent, so that a person who uses
 two agents grants each separately and can tell their actions apart; it fixes
-the tenant and the party the agent acts in; and its scope is either read only
-or read and write. A read-only grant lets an agent hold less than its person
-holds: a person who may book trades can still give an agent only the right to
-look. This is the principle of least privilege (Saltzer and Schroeder, 1975)
-applied to delegation.
+the tenant and the party the agent acts in; and it names a role, as a run grant
+does. At creation, IAM checks that the person holds every permission of the
+role, so a person cannot grant more than they hold. At every exchange, the
+token carries the role's permissions intersected with the person's current
+permissions, less the permissions no agent ever holds ([[id:1679B2CE-05C2-4CFF-9A4B-47EC721CB10A][Withholding of administrative permissions from LLM agents]]). A grant of the
+person's whole permission set would be a session in disguise, which [[id:AE30F62E-3B9E-4B59-9D11-E8FEE876949A][Grant Management]] names
+as a pitfall; a role made for the work is the principle of least privilege
+(Saltzer and Schroeder, 1975) applied to delegation.
 
-A key redeems the grant. It is generated when the person asks for it from 256
-random bits, shown once, and stored as a prefix, by which it is found, and a
-SHA-256 hash, against which it is compared; the key itself is never stored. A
-fast hash suffices because the key is a long random secret, not a password a
-person chose. Failed exchanges are limited per source address and per prefix,
-as the prototype limited failed sign-ins ([[id:039005AD-8319-416C-9F70-6A5477FEE89D][The ores.agent prototype: findings for the target design]]). A grant may have several keys,
-so that a key can be replaced before the old one is revoked. Later, an OAuth
-client can redeem the same grant: the consent page of an OAuth sign-in creates
-a grant exactly as the grants page does, and everything after the grant is
-unchanged ([[id:BEF95B2A-42BF-40DA-BC3D-7B703C34ED73][Decide how an outside MCP client authenticates]]).
+IAM seeds one role made for agents, =AgentReader=, which holds explicit read
+codes and no wildcard. A tenant administrator defines others for the work their
+people delegate, such as one that books trades; a role that names a withheld
+permission cannot be granted. A read-only grant is a grant of a read-only role.
 
-#+caption: An agent grant belongs to one account, fixes the agent, tenant, party, scope and expiry, and is redeemed by keys now and by an OAuth client later.
+** The key, a credential at rest
+
+A key redeems the grant. Grant Management keeps a grant's id from being a
+credential by requiring the client's own token as well; an agent outside ORE
+has no token of its own, so the key it stores is its credential. This departs
+from the pattern deliberately, and the departure is bounded ([[id:6B455B15-0FDB-4E1E-A2A8-CEFC4C1D155C][Security review of delegated access for LLM agents]]):
+
+- every grant has an expiry, at most ninety days from its creation, and no
+  grant is open-ended or extended: continuing past the expiry is a new grant,
+  with a new key, which the person makes again;
+- the key is generated from 256 random bits, shown once, and stored as its id,
+  by which it is found, and a SHA-256 hash of its secret, against which it is
+  compared; a fast hash suffices because the secret is a long random value, not
+  a password a person chose;
+- the key is never written to a log, a refusal or a row, and ores.http keys its
+  cache by the hash;
+- a grant may have several keys, so a key is replaced before the old one is
+  revoked, and one key can be revoked alone;
+- the secret is compared in constant time, and an unknown tenant, an unknown
+  key and a wrong secret are refused alike;
+- failed exchanges are limited per source address at ores.http and per key at
+  IAM, as the prototype limited failed sign-ins ([[id:039005AD-8319-416C-9F70-6A5477FEE89D][The ores.agent prototype: findings for the target design]]), never per
+  tenant, so naming a tenant in bad keys cannot lock its agents out ([[id:1162906F-BB72-486E-9A11-30D567C65F3E][Delegation tokens for LLM agents: subject and actor claims]]).
+
+The key has the form =ores_ak_<tenant id>_<key id>_<secret>=: the tenant tells
+IAM where to read, and neither id is a secret. Later, an OAuth client can
+redeem the same grant: the consent page of an OAuth sign-in creates a grant
+exactly as the grants page does, and everything after the grant is unchanged
+([[id:BEF95B2A-42BF-40DA-BC3D-7B703C34ED73][Decide how an outside MCP client authenticates]]).
+
+#+caption: An agent grant belongs to one account, fixes the agent, tenant, party, role and expiry, and is redeemed by keys now and by an OAuth client later.
 #+attr_html: :width 100%
 [[proj:doc/knowledge/agents/agent_grant_classes.png]]
 
@@ -69,11 +96,28 @@ exchange, at most five minutes later ([[id:1162906F-BB72-486E-9A11-30D567C65F3E]
 Source: [[./agent_grant_states.puml][=agent_grant_states.puml=]]. Regenerate with
 =plantuml -tpng doc/knowledge/agents/agent_grant_states.puml=.
 
+** Who may delegate
+
+Delegating to an agent is itself a permission, so each tenant decides who may
+do it and nobody does by default.
+
+| Permission | Lets a person | Held by |
+|------------+---------------+---------|
+| =iam::agent_grants:create= | create a grant and its keys for themselves, list their own grants, and revoke their own | a role a tenant administrator assigns; IAM seeds =AgentDelegator= |
+| =iam::agent_grants:read= | list every grant in their parties | administrators |
+| =iam::agent_grants:revoke= | revoke anyone's grant or key, and end their agents' sessions | administrators |
+
+Member holds none of them. Listing one's own grants is a self read and listing
+another person's a privileged read, two subjects rather than one, as
+[[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised reads]] requires. All three are IAM permissions that are not reads, or
+that read other people's access, so no agent ever holds them ([[id:1679B2CE-05C2-4CFF-9A4B-47EC721CB10A][Withholding of administrative permissions from LLM agents]]).
+
 ** Where a person governs it
 
-A person creates, lists and revokes their grants on one page of ores.web. The
-page shows each grant's agent, scope, expiry, keys and when each key was last
-used, and links to what the agent did ([[id:2D36D474-2CF9-4498-AF49-818CEF080B98][Auditing of LLM agent actions]]).
+A person who holds =iam::agent_grants:create= creates, lists and revokes their
+grants on one page of ores.web. The page shows each grant's agent, role,
+expiry, keys and when each key was last used, links to the agent's sessions
+([[id:4DCD0684-F6AE-4E84-BB9D-2AE2DAFDB667][Sessions of LLM agents]]), and links to what the agent did ([[id:2D36D474-2CF9-4498-AF49-818CEF080B98][Auditing of LLM agent actions]]).
 
 * Patterns used
 
@@ -81,6 +125,8 @@ used, and links to what the agent did ([[id:2D36D474-2CF9-4498-AF49-818CEF080B98
   record, redeemed by a credential and ended by revocation or expiry.
 
 * See also
+- [[id:1679B2CE-05C2-4CFF-9A4B-47EC721CB10A][Withholding of administrative permissions from LLM agents]] — completes: the permissions no role can delegate.
+- [[id:4DCD0684-F6AE-4E84-BB9D-2AE2DAFDB667][Sessions of LLM agents]] — completes: the sessions a grant's keys open.
 
 - [[id:47B179BF-C982-4BB1-AF4F-35E00B9D2750][Delegated Access for LLM Agents]] — the structure note that orders this cluster.
 - [[id:78B82824-0BBB-4442-A9FA-E1F265DF57BD][Run grants and run tokens]] — exemplifies the same pattern: the run grant is consent for scheduled work, the agent grant consent for an agent.

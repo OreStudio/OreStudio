@@ -31,7 +31,7 @@ participant "Domain service" as svc
 
 agent -> mcp : tools/call call_operation(name, arguments)\nAuthorization: Bearer key
 mcp -> iam : exchange key
-iam --> mcp : token: sub = person, act = agent, scope
+iam --> mcp : token: sub = person, act = agent:grant, session
 mcp -> mcp : find the operation in the catalogue;\ncheck the person may call it
 mcp -> route : request with the token
 route -> svc : NATS request with the token

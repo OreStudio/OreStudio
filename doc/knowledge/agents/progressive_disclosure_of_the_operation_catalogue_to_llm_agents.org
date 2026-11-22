@@ -43,7 +43,8 @@ skill's description is the condition under which a model loads it
 ([[id:4ACD003D-5CEB-4D2E-BE10-BA77D1043FB8][Agent Skills]]). The catalogue applies the idea to the running system, so its
 summaries are written for that reader. Every list holds tens of lines at
 most and shows only what the person may call
-([[id:3CAA394F-E84C-3434-331B-6E664F7E84D2][Role-Based Access Control]]), and only reads when the grant is read only ([[id:A7E2942C-66AD-449C-B80B-CA789EBC34FA][Agent grants: delegated consent for LLM agents]]). For a
+([[id:3CAA394F-E84C-3434-331B-6E664F7E84D2][Role-Based Access Control]]), and within it only what the agent's token holds: the grant's role, less the
+permissions no agent holds ([[id:A7E2942C-66AD-449C-B80B-CA789EBC34FA][Agent grants: delegated consent for LLM agents]]). For a
 write, =call_operation= answers the approval request it raised, because the
 write is held ([[id:381D87BB-4E2D-47BA-8853-6132CF900305][Six-eyes approval of LLM agent writes]]). A client that searches tools itself may ask for the
 full catalogue through MCP's paginated =tools/list=, as an option.

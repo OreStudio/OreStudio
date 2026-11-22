@@ -70,8 +70,11 @@ Source: [[./agent_read_sequence.puml][=agent_read_sequence.puml=]]. Regenerate w
 ** What differs from the person's own call
 
 Three things, and each has its own page. The token names the agent, so every
-write records it beside the person ([[id:2D36D474-2CF9-4498-AF49-818CEF080B98][Auditing of LLM agent actions]]). A grant can be read only,
-so the agent can hold less than the person holds. And an agent's write does
+write records it beside the person ([[id:2D36D474-2CF9-4498-AF49-818CEF080B98][Auditing of LLM agent actions]]). A grant is bounded by a
+role made for the work, so the agent holds less than the person holds, and
+never the administration of access or the approval of requests
+([[id:1679B2CE-05C2-4CFF-9A4B-47EC721CB10A][Withholding of administrative permissions from LLM agents]]). Its calls form sessions of their own, shown apart from the
+person's ([[id:4DCD0684-F6AE-4E84-BB9D-2AE2DAFDB667][Sessions of LLM agents]]). And an agent's write does
 not apply at once: it waits for the person and then for a second approver
 ([[id:381D87BB-4E2D-47BA-8853-6132CF900305][Six-eyes approval of LLM agent writes]]).
 

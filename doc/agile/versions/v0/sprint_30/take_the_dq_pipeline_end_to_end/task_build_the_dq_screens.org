@@ -1,0 +1,105 @@
+:PROPERTIES:
+:ID: E25ACD77-495D-4D8E-832B-69B44C213D18
+:END:
+#+title: Task: Build the DQ screens from the signed-off prototypes
+#+description: The five DQ journeys and their signed-off prototypes are on main; the screens themselves are not built, and three of the five need operations the server does not serve.
+#+type: task
+#+level: s1
+#+filetags: :take_the_dq_pipeline_end_to_end:sprint_30:v0:
+#+owner: marco
+#+branch: feature/build-the-dq-screens
+#+pr:
+#+blocked_on: the DQ reads on both deployments, the coverage operation, the per-dataset preview, the artefact read and write, and the published-row count
+#+blocked_since: 2026-11-22
+#+created: 2026-11-22
+#+updated: 2026-11-22
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7D2BBBBC-36A3-4BFB-9673-0F9005991D94][Take the DQ pipeline end to end, from a seeded artefact table to a published system]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+ores.web shows each dataset, its artefacts, whether it is published, and offers the publish action, built from the five signed-off prototypes rather than from the Qt screens.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:7D2BBBBC-36A3-4BFB-9673-0F9005991D94][Take the DQ pipeline end to end, from a seeded artefact table to a published system]] |
+| Now          | Not yet started. The design it builds from is signed off and on main. |
+| Waiting on   | The DQ reads on both deployments, and the operations the journeys name. |
+| Next         | The coverage screen, once its reads answer on both deployments. |
+| Last touched | 2026-11-22                               |
+
+* Acceptance
+
+- Each of the five signed-off prototypes has a screen, and each draws what its design note records.
+- The coverage operation, the per-dataset preview, the artefact read and write, and the published-row count exist, or the screen states which is absent.
+- A person who has never seen the Qt client completes every journey on a fresh database.
+
+* Plan
+
+1. Serve the reads the screens need from both deployments, as
+   [[id:43B17B69-D1CA-4333-98BF-462AA5ECD8EF][Serve the DQ reads from both the C++ server and the BFF]]
+   does: one web API module through =baseFor('dq')=, and the same paths on
+   =ores.http= and on the BFF.
+2. Build the operations the journeys read: the coverage operation over the three
+   discovery functions, the per-dataset preview, and the published-row count.
+3. Build the artefact read and write, without which the correction cannot start.
+4. Build the five screens from the shared parts, in the order the journeys
+   imply: coverage, publish a dataset, publish a bundle, correct one artefact,
+   trace a published value.
+5. Prove each journey on a fresh database, as the story's last acceptance asks.
+
+Notes
+
+- The prototypes are the design record: =doc/prototypes/dq/=, one folder per
+  screen, each with a design note that states its states and what is fake.
+- The journeys are =doc/knowledge/journeys/dq/=, and each one's * What is
+  missing section names the operation that blocks it.
+- The used-by question in the trace journey needs the reference to be an
+  identifier or the text to be indexed, which is a trading component change and
+  not a DQ screen.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

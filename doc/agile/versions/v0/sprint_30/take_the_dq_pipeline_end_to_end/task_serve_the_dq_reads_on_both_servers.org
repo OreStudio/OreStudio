@@ -1,0 +1,100 @@
+:PROPERTIES:
+:ID: 43B17B69-D1CA-4333-98BF-462AA5ECD8EF
+:END:
+#+title: Task: Serve the DQ reads from both the C++ server and the BFF
+#+description: The DQ screens need DQ reads that no deployment serves today: the C++ server has no DQ HTTP part, and the BFF has no DQ route. Both must answer the same paths before a screen can run on either.
+#+type: task
+#+level: s1
+#+filetags: :take_the_dq_pipeline_end_to_end:sprint_30:v0:
+#+owner: marco
+#+branch: feature/build-the-dq-screens
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7D2BBBBC-36A3-4BFB-9673-0F9005991D94][Take the DQ pipeline end to end, from a seeded artefact table to a published system]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A DQ screen runs on either deployment: the same paths answer on ores.http and on the BFF, with the same shapes, and one flag moves the screen from one to the other.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:7D2BBBBC-36A3-4BFB-9673-0F9005991D94][Take the DQ pipeline end to end, from a seeded artefact table to a published system]] |
+| Now          | Clocked on. There is no DQ part on ores.http and no DQ route on the BFF. |
+| Waiting on   | Nothing.                               |
+| Next         | The DQ reads the coverage screen needs, on both deployments. |
+| Last touched | 2026-11-22                               |
+
+* Acceptance
+
+- ores.http gains a dq part that answers the reads the coverage screen needs: datasets, dataset bundles, bundle members by bundle code, and artefact types.
+- The BFF answers the same paths with the same response shapes, so the screen runs on the deployment the browser is on.
+- One web API module, api/dq.ts, sends every call through baseFor(dq), so VITE_ORE_CPP_SCREENS moves the screen without a second code path.
+- A route test on each side and a unit test on the module prove the same request answers the same way on both.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+* Notes
+
+The C++ server has HTTP parts for analytics, assets, compute, core, iam,
+marketdata, refdata, reporting, synthetic, trading and workflow, and none for
+dq — the reads the screens need are served by nobody. The BFF has no DQ route
+either: its seed-profile and workflow tests mention publishing, and no path
+answers a DQ list.
+
+A screen names its module, not its page, in =VITE_ORE_CPP_SCREENS= — the switch
+is =baseFor(screen)= in =api/servers.ts=, and =api/quotes.ts= is the worked
+example. One module per screen family is what keeps the flag honest.

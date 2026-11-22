@@ -26,11 +26,11 @@ A person signed in to ores.web creates a grant for one agent: its name, read onl
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                                |
+| State        | DONE                                |
 | Parent story | [[id:008127D7-B897-4CF7-854B-6DDFB89AC7F4][Serve ORE's API to LLM agents over MCP]] |
-| Now          | Built, tested and proven end to end through ores.http. |
-| Waiting on   | E9's sign-off, and the pull request's review. |
-| Next         | Raise the code pull request.           |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
 | Last touched | 2026-11-22                               |
 
 * Acceptance
@@ -178,8 +178,8 @@ via its "Verifies task" field.
 | 13 | Self-review: a misspelt =hypertable_partition_column= generated an empty time column and codegen said nothing | issue log model; codegen | Accept, follow-up | Fixed here; that codegen accepts an unknown property silently is a gap for compass-ng. |
 | 14 | Self-review: the generated agent key reads return =secret_hash= to holders of =iam::agent_keys:read= | generated key reads | Decline | The hash of a 256-bit random secret cannot be reversed or exchanged, and the read is an administrator's; the person's own list clears it. |
 | 15 | Self-review: ores.http clears its whole agent token cache on any grant or key event, creation included | =application.cpp= | Decline | Simpler than per-key eviction and correct; the cost is one extra exchange per active key after a change. |
-| 16 | Self-review: the withholding note's catalogue test, failing on a new write that matches no rule and no reviewed list, does not exist | withholding note | Open | The rules are tested on chosen codes; the catalogue test needs a reviewed list of the writes an agent may hold, whose scope is the owner's decision. |
-| 17 | Self-review: administrators list every grant through the generated reads, which no ores.web screen shows yet | acceptance | Open | The server side holds; the administrators' screen is not built. |
+| 16 | Self-review: the withholding note's catalogue test, failing on a new write that matches no rule and no reviewed list, does not exist | withholding note | Accept | Built in this PR at the owner's decision. Of 1771 seeded codes, 1060 writes are not withheld: 1048 are entities' own write or delete, held by approval, and 12 use other verbs. Seven are reviewed onto the list; five are withheld by new rules for =variability::= writes, =:review=, =:accept_terms= and =_service_origin=. |
+| 17 | Self-review: administrators list every grant through the generated reads, which no ores.web screen shows yet | acceptance | Follow-up | The server side holds; the screen is the task [[id:A869A8BE-78DC-44AA-A403-FF7DEB30A3A6][Show administrators every agent grant]]. |
 | 18 | PR #5038: the per-key budget is spent before the secret check, so anyone who knows a key id can lock its agent out | =agent_grant_operations_service.cpp= | Accept | The budget is keyed by the key and the source address; the agent's own address keeps its budget. ores.http still limits failed credentials per address. |
 | 19 | PR #5038: an IAM outage or a tenant's load shedding answers =invalid key= and counts as a failed credential | =agent_key_exchange.cpp=, =http_session.cpp= | Accept | A third outcome, unavailable, answers 503 with =Retry-After= and is not counted; a test shows an exchange that cannot reach IAM is unavailable. |
 | 20 | PR #5038: revocation on the next call depends on the event reaching every ores.http | =agent_key_cache= | Accept, as a bound | The bound is stated in the token note: a missed event leaves at most the token's five minutes. Clearing the cache on a NATS reconnect needs a reconnect hook ores.nats does not offer callers; it is a follow-up. |
@@ -187,7 +187,7 @@ via its "Verifies task" field.
 | 22 | PR #5038: the five in =left * 5 <= life= is obscure | =agent_key_exchange= | Accept | Named =serve_while_one_in=. |
 | 23 | PR #5038: listing one's own grants stops at a thousand | =list_own_agent_grants= | Decline | A person with a thousand agent grants is not a case this page serves; paging is added when one is. |
 | 24 | PR #5038: revoking a key whose grant is gone reports the ownership rule, not the orphan | =revoke_agent_key= | Decline | The refusal is correct and fails safe; a key cannot outlive its grant, which is never deleted, only revoked. |
-| 25 | PR #5038: close Review 16 before merge or track it as a blocker | withholding note | Open | The owner's decision. |
+| 25 | PR #5038: close Review 16 before merge or track it as a blocker | withholding note | Accept | Closed before merge; see 16. |
 
 * Result
 
@@ -205,6 +205,7 @@ grant ends its session and evicts ores.http's cache through the published
 events. Every refusal answers =invalid key= and is logged with its reason and
 never the key.
 
-Two items stay open (Review 16 and 17): the catalogue test of the withhold
-rules, and an administrators' screen of every grant. E9 records its evidence;
-its sign-off is the owner's.
+A test classifies every seeded write against the withhold rules and a
+reviewed list, and fails on a new verb nobody classified. The administrators'
+screen of every grant is the follow-up task
+[[id:A869A8BE-78DC-44AA-A403-FF7DEB30A3A6][Show administrators every agent grant]]. E9 records its evidence and the owner's sign-off.

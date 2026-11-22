@@ -46,7 +46,10 @@ bool is_withheld_from_agents(std::string_view code) {
         return true;
     if (is_read_permission(code))
         return false;
-    if (code.starts_with("iam::") || code.starts_with("inbox::"))
+    // Identity and access, the approval queue, and the system's own
+    // configuration are administered by people.
+    if (code.starts_with("iam::") || code.starts_with("inbox::") ||
+        code.starts_with("variability::"))
         return true;
     static constexpr std::array<std::string_view, 6> decisions = {
         "approval", "authorisation", "authorization", "decision", ":decide", "authorise"};
@@ -58,6 +61,11 @@ bool is_withheld_from_agents(std::string_view code) {
     for (const auto verb : identities)
         if (code.ends_with(verb))
             return true;
+    // A checker's review, a person's acceptance of terms, and a write made as
+    // a service are never an agent's.
+    if (code.ends_with(":review") || code.ends_with(":accept_terms") ||
+        code.ends_with("_service_origin"))
+        return true;
     return false;
 }
 

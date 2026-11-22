@@ -19,8 +19,13 @@
  */
 #include "ores.iam.core/service/agent_key_secrets.hpp"
 #include "ores.iam.core/service/agent_permissions.hpp"
+#include "ores.testing/project_root.hpp"
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
+#include <fstream>
+#include <regex>
+#include <set>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -156,4 +161,75 @@ TEST_CASE("an_explicit_role_the_person_holds_can_be_granted", tags) {
     const std::vector<std::string> role = {"trading::trades:read", "trading::trades:write"};
     const std::vector<std::string> person = {"trading::*"};
     CHECK(agent_role_refusal(role, person).empty());
+}
+
+namespace {
+
+/**
+ * The writes an agent may hold beyond an entity's own write and delete, each
+ * reviewed: work the person asks for, and the maker's raise that approval
+ * then holds. A new write of any other verb fails the test below until it is
+ * added here or a withhold rule covers it.
+ */
+const std::set<std::string> agent_reviewed_writes = {
+    "marketdata::curve_bootstrap:compute",
+    "marketdata::curve_bootstrap:publish",
+    "marketdata::curve_bootstrap:republish",
+    "marketdata::fx_vol_surface:calibrate",
+    "marketdata::fx_vol_surface:publish",
+    "reporting::cuts:take",
+    "synthetic::feeds:run",
+};
+
+std::set<std::string> seeded_permission_codes() {
+    std::ifstream in(ores::testing::project_root::resolve(
+        "projects/ores.sql/populate/iam/iam_permissions_populate.sql"));
+    std::stringstream text;
+    text << in.rdbuf();
+    const auto sql = text.str();
+    static const std::regex code(R"('([a-z_]+::[a-z_*]+(?::[a-z_*\-]+)?)')");
+    std::set<std::string> codes;
+    for (auto it = std::sregex_iterator(sql.begin(), sql.end(), code); it != std::sregex_iterator();
+         ++it)
+        codes.insert((*it)[1].str());
+    return codes;
+}
+
+}
+
+TEST_CASE("every_seeded_write_is_withheld_or_reviewed_for_agents", tags) {
+    using ores::iam::service::is_read_permission;
+    using ores::iam::service::is_withheld_from_agents;
+    const auto codes = seeded_permission_codes();
+    REQUIRE(codes.size() > 1000);
+
+    std::vector<std::string> unclassified;
+    for (const auto& code : codes) {
+        if (code.find('*') != std::string::npos || is_read_permission(code) ||
+            is_withheld_from_agents(code))
+            continue;
+        const bool entity_write = code.ends_with(":write") || code.ends_with(":delete");
+        if (!entity_write && !agent_reviewed_writes.contains(code))
+            unclassified.push_back(code);
+    }
+    INFO("Classify each: add a withhold rule, or review it into agent_reviewed_writes.");
+    CHECK(unclassified == std::vector<std::string>{});
+}
+
+TEST_CASE("every_reviewed_write_is_seeded_and_not_withheld", tags) {
+    const auto codes = seeded_permission_codes();
+    for (const auto& code : agent_reviewed_writes) {
+        INFO(code);
+        CHECK(codes.contains(code));
+        CHECK_FALSE(ores::iam::service::is_withheld_from_agents(code));
+    }
+}
+
+TEST_CASE("terms_reviews_service_origin_and_configuration_are_withheld", tags) {
+    using ores::iam::service::is_withheld_from_agents;
+    CHECK(is_withheld_from_agents("marketdata::providers:accept_terms"));
+    CHECK(is_withheld_from_agents("synthetic::variance_calibrations:review"));
+    CHECK(is_withheld_from_agents("trading::trades:write_service_origin"));
+    CHECK(is_withheld_from_agents("variability::flags:update"));
+    CHECK_FALSE(is_withheld_from_agents("variability::flags:read"));
 }

@@ -12,6 +12,7 @@
 #+web_resource: fx-vol-surface-feeds
 #+web_writes: many
 #+web_system_owned: true
+#+web_key_read: hand-written
 #+component: synthetic
 #+filetags: :model:entity:synthetic:
 #+entity_singular: fx_vol_surface_feed

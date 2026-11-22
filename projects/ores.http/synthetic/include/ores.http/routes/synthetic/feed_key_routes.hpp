@@ -72,6 +72,13 @@ public:
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_ir_curve_feed(const ores::http::domain::http_request& req,
                          ores::nats::service::nats_client& session);
+
+    /**
+     * @brief GET /api/synthetic/fx-vol-surface-feeds/key/{key} — one vol surface feed, composed.
+     */
+    static boost::asio::awaitable<ores::http::domain::http_response>
+    handle_fx_vol_surface_feed(const ores::http::domain::http_request& req,
+                               ores::nats::service::nats_client& session);
 };
 
 }

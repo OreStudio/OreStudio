@@ -57,7 +57,7 @@ break in passing.
 |------+----------|
 | [[id:5724BDE2-7FA4-4667-9129-2D9DD7783AB2][Entity-table writes]] | A write goes through the repository, so the claim and the audit stamps are made once |
 | [[id:FDA9A722-A1AD-4086-BE01-18C1D2042803][Entity-composed registrars]] | A registrar composes the entity's own rather than restating it |
-| [[id:723B0112-4DDC-4C03-924E-2C90C2F19B5C][Where should an entity-mirror cache live?]] | Placement of a cache that mirrors an entity |
+| [[id:723B0112-4DDC-4C03-924E-2C90C2F19B5C][Placement of entity-mirror caches]] | Placement of a cache that mirrors an entity |
 
 * The component an entity lives in
 

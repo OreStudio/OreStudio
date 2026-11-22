@@ -59,7 +59,7 @@ ORE Studio the ECB rates arrive as observed fixings through
 * See also
 
 - [[id:784D9D97-721A-42EC-BA91-A85764979CD0][Fixings]] — the structure note.
-- [[id:936BE1EE-89F0-4F82-9064-9AB53E886299][Why FX spot rates are observable Level 1 inputs]] — completes: why FX rates are observable at all.
+- [[id:936BE1EE-89F0-4F82-9064-9AB53E886299][Observability of FX spot rates as Level 1 inputs]] — completes: why FX rates are observable at all.
 
 * Sources
 

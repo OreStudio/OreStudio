@@ -222,7 +222,7 @@ configuration and output. The task that lit the report is
 - [[file:./report_strike_map.org][Strike Map]] reads the book by strike and tenor.
 - [[file:../architecture/report_execution_pipeline.org][Report execution pipeline]] states the phases every run goes through.
 - [[file:../architecture/report_post_processing.org][Report post-processing]] designs the tables that would hold the trade list.
-- [[file:../architecture/the_cut_is_the_body_a_run_prices_from.org][The cut model: recorded facts, derived states and authorisation]] states what a LIVE cut holds.
+- [[file:../architecture/the_cut_model_recorded_facts_derived_states_and_authorisation.org][The cut model: recorded facts, derived states and authorisation]] states what a LIVE cut holds.
 - [[id:D4938956-1A5E-4F67-BCE8-7A951CE957E9][Report definition and schedule]] states the definition fields and the schedule.
 
 * See also

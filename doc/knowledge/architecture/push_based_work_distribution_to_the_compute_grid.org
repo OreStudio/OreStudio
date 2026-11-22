@@ -30,7 +30,7 @@ notice costs at most the long timeout.
 
 A claim takes the oldest runnable job of the platform with =FOR UPDATE SKIP
 LOCKED=, leases it to the wrapper and mints its token, as
-[[id:7D4D8598-555D-4E86-8006-3BC79E926382][How the compute grid queues and claims work]] describes. Several wrappers woken by one notice race; the lock decides
+[[id:7D4D8598-555D-4E86-8006-3BC79E926382][Queueing and claiming in the compute grid]] describes. Several wrappers woken by one notice race; the lock decides
 which one takes the job, and the others find none and wait again.
 
 ** After a job

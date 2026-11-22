@@ -54,7 +54,7 @@ outlive both the publisher and the subscriber.
 Compute work does not use JetStream. A queue of jobs that wait for hours does
 not suit a push consumer, so the queue is a table in the database and a free
 node claims a job from it. See
-[[id:7D4D8598-555D-4E86-8006-3BC79E926382][How the compute grid queues and claims work]].
+[[id:7D4D8598-555D-4E86-8006-3BC79E926382][Queueing and claiming in the compute grid]].
 A deployment that ran an earlier wrapper may still hold a stream named
 =compute_assignments= and a durable consumer on it. Nothing reads or writes
 them now, and they may be deleted.

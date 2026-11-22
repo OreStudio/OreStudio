@@ -40,7 +40,7 @@ the choice comes before the design.
 - Bytes with no schema, too large or too shapeless for a row — start at
   [[id:286B7167-9B8A-4937-BBA5-E9D285AFECE3][Object Storage]].
 - A copy held for speed and safe to lose — start at
-  [[id:723B0112-4DDC-4C03-924E-2C90C2F19B5C][Where should an entity-mirror cache live?]].
+  [[id:723B0112-4DDC-4C03-924E-2C90C2F19B5C][Placement of entity-mirror caches]].
 - An event another service must receive after a restart — start at
   [[id:4682A7D5-04FC-494B-BD7C-6816500EB3C9][Message Queue]].
 
@@ -103,7 +103,7 @@ A cache is a copy held for speed, and it is not a store of record. Its
 placement rule names the component that owns it, and its contents must be
 rebuildable from the database or from object storage.
 
-- [[id:723B0112-4DDC-4C03-924E-2C90C2F19B5C][Where should an entity-mirror cache live?]] — the placement rule for the
+- [[id:723B0112-4DDC-4C03-924E-2C90C2F19B5C][Placement of entity-mirror caches]] — the placement rule for the
   cached copy of an entity.
 
 ** The durable stream, and what it is not

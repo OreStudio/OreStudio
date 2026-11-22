@@ -304,7 +304,7 @@ the environment and not about this report.
 - [[file:./report_gamma_ladder.org][Bump and Reprice Gamma ladder]], which carries the second-order column over the same buckets.
 - [[file:./report_dv01_ladder.org][Bump and Reprice DV01 ladder]], which reads the rate blocks as par values.
 - [[file:../architecture/report_execution_pipeline.org][Report execution pipeline]], which states the phases every run goes through.
-- [[file:../architecture/the_cut_is_the_body_a_run_prices_from.org][The cut model: recorded facts, derived states and authorisation]], which states what an end of day cut holds.
+- [[file:../architecture/the_cut_model_recorded_facts_derived_states_and_authorisation.org][The cut model: recorded facts, derived states and authorisation]], which states what an end of day cut holds.
 - [[file:../architecture/report_post_processing.org][Report post-processing]], which designs the result store this report waits for.
 - [[id:EA59C7E0-CFDF-4BBE-815C-8AF53BFC16E1][Light the intraday reports on the LIVE cut]], the task that lit the sibling reports.
 

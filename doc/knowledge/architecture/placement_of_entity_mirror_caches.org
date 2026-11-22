@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 723B0112-4DDC-4C03-924E-2C90C2F19B5C
 :END:
-#+title: Where should an entity-mirror cache live?
+#+title: Placement of entity-mirror caches
 #+description: Placement rule for the nats-event-cache facet's cached_by target: the entity's own component when there is exactly one consumer, a shared thin *.client component when multiple UI layers need the same cached entity.
 #+type: knowledge
 #+level: cross

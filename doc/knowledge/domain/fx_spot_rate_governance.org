@@ -49,4 +49,4 @@ right one.
 - [[id:48F6FD8D-56C7-4FF7-A369-CD13D08A6057][Cross-rates matrix (CRM)]] — the hub.
 - [[id:46224A12-6BE5-413E-A2B0-08B7308E786C][FX currency conventions]] — verification focuses on G11.
 - [[id:4B7E9471-F9A8-461E-B50C-C7B9A57C6D04][Spot rate blending]] — combining sources into the rate this governs.
-- [[id:936BE1EE-89F0-4F82-9064-9AB53E886299][Why FX spot rates are observable Level 1 inputs]] — why spot has no full IPV.
+- [[id:936BE1EE-89F0-4F82-9064-9AB53E886299][Observability of FX spot rates as Level 1 inputs]] — why spot has no full IPV.

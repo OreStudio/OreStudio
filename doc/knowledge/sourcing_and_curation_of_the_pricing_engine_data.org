@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 0B141B6B-EA10-4FD1-AFD1-FD12F9F43435
 :END:
-#+title: How the pricing engine data is sourced and curated
+#+title: Sourcing and curation of the pricing engine data
 #+description: The methodology that turns the ORE guide and source into the pricing engine data: extraction, curation, generation, provenance, review and the gates that keep it clean.
 #+type: knowledge
 #+level: cross

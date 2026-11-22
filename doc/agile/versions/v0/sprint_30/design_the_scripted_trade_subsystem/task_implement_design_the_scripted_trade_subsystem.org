@@ -44,7 +44,7 @@ generation and valuation, and the components with their dependency graph.
   =doc/knowledge/architecture=, linked to the others and to the existing pages
   by org-roam =id:= links
 - the existing pages are reused and refactored, not restated: [[id:2F5B28D9-9AB7-401E-8EF3-612712F626C1][Generic Scripted Products]],
-  [[id:CC7CC29C-9413-4DF3-BC32-D1C8A978D295][Which trade types ORE carries and ORE Studio holds]], [[id:ED964111-1F24-4A3B-B4CE-665E2CF527B0][Product Type]], the [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]]
+  [[id:CC7CC29C-9413-4DF3-BC32-D1C8A978D295][Coverage of ORE trade types in ORE Studio]], [[id:ED964111-1F24-4A3B-B4CE-665E2CF527B0][Product Type]], the [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]]
   component overview, the script entity pages ([[id:833F8F79-7FF0-42B0-8C52-E3ED6596843E][ores.trading.script]],
   [[id:B3FBDD1A-8FC6-4702-9600-B75581FC6494][ores.trading.scripted_instrument]] and their siblings) and the trade type
   catalogue's scripted tables

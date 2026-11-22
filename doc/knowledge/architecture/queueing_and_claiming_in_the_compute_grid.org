@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 7D4D8598-555D-4E86-8006-3BC79E926382
 :END:
-#+title: How the compute grid queues and claims work
+#+title: Queueing and claiming in the compute grid
 #+description: The design of the compute queue: the database holds the queue, a node claims a job on request under a lease, and the token is minted at the claim. States the problem, the options compared, the protocol, the lease and retry rules, and what stays on JetStream.
 #+type: knowledge
 #+level: cross

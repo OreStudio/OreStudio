@@ -176,7 +176,7 @@ The dispatcher keeps a result unsent in the database and publishes its assignmen
 - Tuning the push consumer was considered and not chosen, because it leaves a node holding jobs early and the credential in the queue.
 - The queue is bounded for each tenant, and the claim chooses across tenants. The rule for a job that waits past the bound is to refuse the dispatch.
 
-The page [[id:7D4D8598-555D-4E86-8006-3BC79E926382][How the compute grid queues and claims work]] holds the comparison, the protocol and the rollout. The tasks follow its rollout order.
+The page [[id:7D4D8598-555D-4E86-8006-3BC79E926382][Queueing and claiming in the compute grid]] holds the comparison, the protocol and the rollout. The tasks follow its rollout order.
 
 * Out of scope
 

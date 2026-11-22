@@ -28,7 +28,7 @@ scripted trade redesign; it is kept here so it is not lost.
 * References
 
 - [[id:4017DBBE-006E-4D37-BA93-E44182D53517][Task: Show the coverage in the UI]], the abandoned task
-- [[id:CC7CC29C-9413-4DF3-BC32-D1C8A978D295][Which trade types ORE carries and ORE Studio holds]]
+- [[id:CC7CC29C-9413-4DF3-BC32-D1C8A978D295][Coverage of ORE trade types in ORE Studio]]
 
 * See also
 

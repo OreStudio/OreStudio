@@ -12,7 +12,7 @@
 Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
 
 The queue of jobs is a table in the database, and a free node claims one job at a
-time. See [[id:7D4D8598-555D-4E86-8006-3BC79E926382][How the compute grid queues and claims work]]
+time. See [[id:7D4D8598-555D-4E86-8006-3BC79E926382][Queueing and claiming in the compute grid]]
 for why work is not pushed from a stream, the options and the protocol.
 
 * Summary

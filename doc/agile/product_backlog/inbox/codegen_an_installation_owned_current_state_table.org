@@ -31,7 +31,7 @@ The entity templates offer the current-state shape that the grid samples use, an
 
 - =projects/ores.sql/create/compute/compute_work_ledger_create.sql=, the hand-written table and its policy.
 - =projects/ores.compute/core/src/repository/work_ledger_repository.cpp=, the atomic statements.
-- [[id:7D4D8598-555D-4E86-8006-3BC79E926382][How the compute grid queues and claims work]], where the ledger is described.
+- [[id:7D4D8598-555D-4E86-8006-3BC79E926382][Queueing and claiming in the compute grid]], where the ledger is described.
 - [[id:5A5D6490-AF64-4AAF-8B3D-48EF3EDAF3D2][Tenant ownership and the information flow]], the three ownership classes.
 
 * See also

@@ -85,7 +85,7 @@ via its "Verifies task" field.
 * Result
 
 The methodology is written at
-[[file:../../../knowledge/how-the-pricing-engine-data-is-sourced-and-curated.org][How the pricing engine data is sourced and curated]].
+[[file:../../../knowledge/sourcing_and_curation_of_the_pricing_engine_data.org][Sourcing and curation of the pricing engine data]].
 It states six principles, the seven layers and their artefacts, the curation
 file schema with reason, source, curator and date, the per-row provenance
 fields, the generator gates and the review a curator follows. It records what

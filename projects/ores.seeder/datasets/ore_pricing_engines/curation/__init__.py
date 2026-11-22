@@ -24,7 +24,7 @@ changes, each entry carrying a reason, a source, a source reference, a curator a
 date.
 
 The files are the source of truth. A generator reads them; a person edits them. See
-doc/knowledge/how-the-pricing-engine-data-is-sourced-and-curated.org.
+doc/knowledge/sourcing_and_curation_of_the_pricing_engine_data.org.
 """
 
 import json

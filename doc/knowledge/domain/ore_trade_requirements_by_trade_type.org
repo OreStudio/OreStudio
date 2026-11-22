@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 10F9A53C-B978-428F-A0B1-48C97AC5828C
 :END:
-#+title: What ORE requires of each trade
+#+title: ORE trade requirements by trade type
 #+description: Per generated trade type, the terms ORE requires, the engine that prices it, and how TradeGenerator's approach extends to every type.
 #+type: knowledge
 #+level: cross

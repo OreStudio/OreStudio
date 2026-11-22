@@ -113,6 +113,7 @@ struct trade_population_trader final {
     std::string username;
 };
 
+// compass:except(wide_types/over_ceiling) expires=2026-12-04 approver=marco reason=the scope names every filter a generation run takes, and #5027 added to it
 struct trade_generation_scope final {
     boost::uuids::uuid config_id;
     boost::uuids::uuid party_id;

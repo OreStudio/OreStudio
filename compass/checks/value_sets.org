@@ -42,7 +42,7 @@ explains them, means the generator and the gate read the same curation.
 
 * Definition
 :PROPERTIES:
-:CODEC: ore_value_sets parameter_value_sets
+:CODEC: ore_value_sets parameter_value_sets curve_sections_wiring
 :END:
 
 * Catalogues
@@ -421,6 +421,27 @@ entity through an alias, as the FX mapper reaches the currency pair. This was
 |--------------+----------------------------|
 | =pair=       | =currency_pair=            |
 | =convention= | =currency_pair_convention= |
+
+* Value set entities
+
+The entity each part of the value sets is stored in, by its role. compass finds
+each entity's model by name under a =modeling/= directory, and takes from it the
+product, the component and the table: the seeds go to
+=projects/<product>.sql/populate/<component>/<component>_<plural>_populate.sql=
+and stamp =<product>_<component>_service=, and the validators call
+=<product>_<component>_value_in_set_fn= and
+=<product>_<component>_canonical_value_fn= of the value set's component. Moving
+a model to another component, or renaming an entity here, moves the seeds and
+renames what they write and call.
+
+| role                  | entity                              |
+|-----------------------+-------------------------------------|
+| =vocabulary=          | =ore_parameter_vocabulary=          |
+| =element_map_column=  | =ore_element_map_column=            |
+| =value_set=           | =ore_parameter_value_set=           |
+| =value_set_value=     | =ore_parameter_value_set_value=     |
+| =value_set_catalogue= | =ore_parameter_value_set_catalogue= |
+| =setting_value_set=   | =ore_parameter_setting_value_set=   |
 
 * Examples
 

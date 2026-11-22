@@ -30,6 +30,8 @@ import { partyChoiceRefused } from './SignInPage.js';
 const failure = (code: 'session-expired' | 'forbidden', message: string): ApiFailure =>
     new ApiFailure(code === 'session-expired' ? 401 : 403, { code, message } as never);
 
+const PORTS = { cpp: '20401', bff: '20402' } as const;
+
 function at(port: string, path = '/signin'): page {
     return { protocol: 'http:', hostname: 'localhost', port, pathname: path, search: '', hash: '' };
 }
@@ -64,7 +66,7 @@ describe('a refused choice of party', () => {
 
 describe('the way to the other server, on the sign-in screen', () => {
     it('presses the server that served the page, and links to the other one', () => {
-        const html = render(<ServerSwitch at={at('20402')} />);
+        const html = render(<ServerSwitch at={at('20402')} ports={PORTS} />);
 
         expect(html).toContain('aria-current="true"');
         expect(html).toContain('data-server="bff"');
@@ -73,13 +75,13 @@ describe('the way to the other server, on the sign-in screen', () => {
     });
 
     it('goes back to the BFF from the C++ server, on the same screen', () => {
-        const html = render(<ServerSwitch at={at('20401', '/market-data/quotes')} />);
+        const html = render(<ServerSwitch at={at('20401', '/market-data/quotes')} ports={PORTS} />);
 
         expect(html).toContain('href="http://localhost:20402/market-data/quotes"');
         expect(html).toContain('C++ server');
     });
 
     it('says nothing on a page that neither server serves', () => {
-        expect(render(<ServerSwitch at={at('5173')} />)).toBe('');
+        expect(render(<ServerSwitch at={at('5173')} ports={PORTS} />)).toBe('');
     });
 });

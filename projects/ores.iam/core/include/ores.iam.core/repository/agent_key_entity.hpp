@@ -55,7 +55,6 @@ struct agent_key_entity {
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
     int version = 0;
     boost::uuids::uuid grant_id;
-
     std::string secret_hash;
     std::optional<db_timestamp> revoked_at;
     std::string modified_by;

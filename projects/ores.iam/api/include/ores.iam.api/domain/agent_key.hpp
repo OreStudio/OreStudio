@@ -66,7 +66,8 @@ struct agent_key final {
     boost::uuids::uuid id;
 
     /**
-     * @brief The grant the key redeems.
+     * @brief The grant the key redeems. A grant may have several keys, so this is not the key's
+     * natural key.
      */
     boost::uuids::uuid grant_id;
 

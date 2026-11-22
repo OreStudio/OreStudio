@@ -51,10 +51,10 @@ its own.
 :PROPERTIES:
 :type:        uuid
 :cpp_type:    boost::uuids::uuid
-:natural_key: true
 :END:
 
-The grant the key redeems.
+The grant the key redeems. A grant may have several keys, so this is not the
+key's natural key.
 
 #+begin_src cpp :name generator
 ctx.generate_uuid()

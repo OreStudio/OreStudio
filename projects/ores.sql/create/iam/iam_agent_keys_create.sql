@@ -58,11 +58,6 @@ create table if not exists "ores_iam_agent_keys_tbl" (
     check ("id" <> ores_utility_nil_uuid_fn())
 );
 
--- Unique grant_id for active records
-create unique index if not exists agent_keys_grant_id_uniq_idx
-on "ores_iam_agent_keys_tbl" (tenant_id, grant_id)
-where valid_to = ores_utility_infinity_timestamp_fn();
-
 -- Version uniqueness for optimistic concurrency
 create unique index if not exists agent_keys_version_uniq_idx
 on "ores_iam_agent_keys_tbl" (tenant_id, id, version)

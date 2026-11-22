@@ -15,7 +15,8 @@ This page states the target design. It does not describe what is built.
 
 The operation catalogue is every operation =ores.http= serves, described so
 that an agent can find the one it needs. It is about 107,000 tokens listed in
-full, several times the context of a small model ([[id:6DFC4BF5-65AC-4E75-90EA-FBDC1272E01C][How the model sees ORE's operations]]), so it is
+full, several times the context window of a small model, which is the scarce
+resource of any model's work ([[id:0D919421-2B73-4322-9F79-9FDA38A67EA1][Large language models]]), and ([[id:6DFC4BF5-65AC-4E75-90EA-FBDC1272E01C][How the model sees ORE's operations]]), so it is
 never listed: an agent walks it in short steps, areas, then entities, then
 operations, or searches it by words. The claim of this page is that five fixed
 tools, whose cost does not grow with the catalogue, serve it to the smallest
@@ -36,7 +37,12 @@ whether it writes.
 | =find_operations= | a few words | the five best operations, ranked by BM25 over names, areas, entities, summaries and descriptions (Robertson and Zaragoza, 2009) |
 | =call_operation= | an operation's name and its arguments | its result; with no arguments or wrong ones, its input schema and an example |
 
-Every list holds tens of lines at most and shows only what the person may call
+Each entry's one-line purpose and summary is what a model chooses by. The
+development tooling meets the same constraint in a different setting: a
+skill's description is the condition under which a model loads it
+([[id:4ACD003D-5CEB-4D2E-BE10-BA77D1043FB8][Agent Skills]]). The catalogue applies the idea to the running system, so its
+summaries are written for that reader. Every list holds tens of lines at
+most and shows only what the person may call
 ([[id:3CAA394F-E84C-3434-331B-6E664F7E84D2][Role-Based Access Control]]), and only reads when the grant is read only ([[id:A7E2942C-66AD-449C-B80B-CA789EBC34FA][Agent grants: delegated consent for LLM agents]]). For a
 write, =call_operation= answers the approval request it raised, because the
 write is held ([[id:381D87BB-4E2D-47BA-8853-6132CF900305][Six-eyes approval of LLM agent writes]]). A client that searches tools itself may ask for the
@@ -69,6 +75,8 @@ construction, and the OpenAPI document gains the same metadata.
 - [[id:6DFC4BF5-65AC-4E75-90EA-FBDC1272E01C][How the model sees ORE's operations]] — the investigation behind the five tools and its measurements.
 - [[id:34CB899A-D114-4B54-9A0E-E3BEE5FF49F2][The HTTP route inventory]] — answers the investigation's open question: the sixteen published areas are the catalogue's first step.
 - [[id:5E479832-A0B2-4BC6-B008-BAD505F4E145][Serving the Model Context Protocol from ores.http]] — the methods that carry these tools.
+- [[id:0D919421-2B73-4322-9F79-9FDA38A67EA1][Large language models]] — answers: the context window is why the catalogue is disclosed in steps.
+- [[id:4ACD003D-5CEB-4D2E-BE10-BA77D1043FB8][Agent Skills]] — exemplifies the same disclosure in development tooling, not in the running system: a model reads a short description first and loads the body only when it applies.
 
 * Sources
 

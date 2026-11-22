@@ -26,7 +26,10 @@ waits for further eyes, and every call it makes is recorded as its own.
 
 ** One door
 
-An agent reaches ORE through the =/mcp= endpoint of =ores.http= and through
+A model executes nothing itself: every effect passes through the caller that
+runs its tool calls, which decides whether to permit it ([[id:0D919421-2B73-4322-9F79-9FDA38A67EA1][Large language models]],
+/Tool use/). For an agent acting in ORE, =ores.http= is that caller, and an
+agent reaches ORE through the =/mcp= endpoint of =ores.http= and through
 no other door: not through NATS, not through the database and not through the
 BFF. The rule follows from what an agent is. A person's access is decided by
 the roles the person holds and enforced by the services and by row-level
@@ -80,6 +83,7 @@ not apply at once: it waits for the person and then for a second approver
 - [[id:039005AD-8319-416C-9F70-6A5477FEE89D][The ores.agent prototype: findings for the target design]] — answers: why the agent has one door, after the prototype's separate process and credentials.
 - [[id:3E20C1A0-7BA1-4F31-8C34-1E5F13558890][Service-to-Service Auth]] — completes: the agent's call is a person's call carried by a token, as an on-behalf-of call is, never a service acting as itself.
 - [[id:FC0847D1-9F09-42EF-A4BD-D5E3C34398EA][How ores.http serves MCP]] — the investigation that chose to serve MCP from =ores.http=.
+- [[id:0D919421-2B73-4322-9F79-9FDA38A67EA1][Large language models]] — answers: why the caller of the model's tools, not the model, is where every check sits.
 
 * Sources
 

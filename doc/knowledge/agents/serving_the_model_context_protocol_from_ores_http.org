@@ -46,7 +46,8 @@ prompts and the other optional capabilities wait until a client needs them.
 
 ** Authentication
 
-Every request carries the agent's key as a bearer token, as MCP's
+An MCP client, Claude Code or a small local model's agent, sends a fixed
+bearer header on every request, so every request carries the agent's key as a bearer token, as MCP's
 authorization asks of every request in a session (Model Context Protocol,
 2025b); a missing or invalid key is answered with 401. An MCP session id is a
 transport identifier, not a credential, and grants nothing on its own. The key

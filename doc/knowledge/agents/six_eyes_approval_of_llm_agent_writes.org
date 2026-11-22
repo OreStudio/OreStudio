@@ -36,7 +36,9 @@ knows that the operation writes and the token carries the grant's scope.
 
 The request is an ordinary [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] in the one queue of [[id:EE61043C-CBCE-44B5-85E9-A3E433FBA3EF][ores.inbox]]. Its first
 part is the agent's person; its later parts are those the policy names for the
-act. The agent can never decide a part. The person decides only the first.
+act. The agent can never decide a part: a model checking its own work is a weak
+check, because the check shares the priors that produced the error
+([[id:0D919421-2B73-4322-9F79-9FDA38A67EA1][Large language models]], /Correlated errors/). The person decides only the first.
 The later parts are decided by someone else; when nobody else holds the right,
 the request stays pending, and the review panel says that it has no eligible
 approver. Over MCP the held write is an answer, not an error: =call_operation=
@@ -85,6 +87,7 @@ installation still needs the person and no one else.
 - [[id:71146F3F-B884-4E61-BA8B-A8A0731703C6][Rules for the automatic approval of requests]] — contradicts, in part: a rule may close the later parts of an agent's request but never its first.
 - [[id:A9E9D1EF-5879-4488-87C8-BDD914C3B502][Operational Authorisation]] — exemplifies: the existing second pair of eyes on a trade, which an agent's booking extends rather than duplicates.
 - [[id:2D36D474-2CF9-4498-AF49-818CEF080B98][Auditing of LLM agent actions]] — completes: where a held write is shown to the person.
+- [[id:0D919421-2B73-4322-9F79-9FDA38A67EA1][Large language models]] — answers: correlated errors are why the agent never approves and its person is not the last check.
 
 * Sources
 

@@ -38,6 +38,7 @@
 #include "ores.synthetic.api/feeds/feed_factory.hpp"
 #include "ores.synthetic.api/feeds/fx_spot_feed.hpp"
 #include "ores.synthetic.api/feeds/ir_curve_feed.hpp"
+#include "ores.testing/nats_options_helper.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -697,4 +698,39 @@ TEST_CASE("a_curve_the_policy_refuses_when_its_series_cannot_be_read_is_refused"
 
     CHECK(start.refused);
     CHECK(start.source.note.find("refuses to start without a fixing") != std::string::npos);
+}
+
+TEST_CASE("only the currency's discounting curve writes its curve on the run's board",
+          "[feed_factory]") {
+    // A surface strikes its expiries against the board's curve of each currency, so a
+    // projection curve that wrote there would replace the discounts with a shorter curve.
+    ores::nats::service::client nats(ores::testing::make_nats_options());
+    nats.connect();
+    REQUIRE(nats.is_connected());
+    ores::analytics::quant::service::manual_run_clock clock(std::chrono::system_clock::now());
+    ores::analytics::quant::service::run_market market(clock, {}, 42);
+    const auto usd = market.values().member_of(
+        ores::analytics::quant::domain::market_member_kind::curve, "USD");
+    const ores::analytics::quant::service::tick_context tick{
+        .elapsed_seconds = 1.0, .observed_at = std::chrono::system_clock::now()};
+
+    auto projection = make_ir_fixture();
+    projection.config.role = "projection";
+    projection.config.tenor = "3M";
+    projection.config.source_name = "usd_libor_3m_test";
+    const auto projecting = ores::synthetic::feed::make_ir_curve_feed(nats,
+                                                                      projection.config,
+                                                                      projection.entries,
+                                                                      projection.values,
+                                                                      projection.definitions,
+                                                                      projection.refctx,
+                                                                      market);
+    projecting->tick(tick);
+    CHECK_FALSE(market.values().view(usd).published);
+
+    const auto f = make_ir_fixture();
+    const auto discounting = ores::synthetic::feed::make_ir_curve_feed(
+        nats, f.config, f.entries, f.values, f.definitions, f.refctx, market);
+    discounting->tick(tick);
+    CHECK(market.values().view(usd).published);
 }

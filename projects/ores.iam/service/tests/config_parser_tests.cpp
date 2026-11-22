@@ -33,13 +33,18 @@ using namespace ores::iam::service::config;
 TEST_CASE("parse_defaults_returns_expected_values", "[config]") {
     auto lg(ores::logging::make_logger(test_suite));
     // Local (non-CI) ctest loads the whole .env into the test process,
-    // including shared ORES_NATS_* vars the parser now genuinely reads.
+    // including the shared ORES_NATS_* vars and the service's database host and
+    // port, which the parser reads.
     // Inject a fake provider with no overrides so this test asserts real
     // compiled-in defaults. The provider swap is thread-local, but the
     // real-environment sync (for boost::program_options) is process-global
     // — see story Decisions for the tradeoff.
-    const ores::testing::scoped_environment_override env_guard(
-        {}, {"ORES_NATS_URL", "ORES_NATS_SUBJECT_PREFIX", "ORES_NATS_WIRE_FORMAT"});
+    const ores::testing::scoped_environment_override env_guard({},
+                                                               {"ORES_NATS_URL",
+                                                                "ORES_NATS_SUBJECT_PREFIX",
+                                                                "ORES_NATS_WIRE_FORMAT",
+                                                                "ORES_IAM_SERVICE_DB_HOST",
+                                                                "ORES_IAM_SERVICE_DB_PORT"});
 
     const std::vector<std::string> args;
     std::ostringstream info, err;

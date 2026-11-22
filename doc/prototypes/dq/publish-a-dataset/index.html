@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Publish a dataset — ORE Studio prototype</title>
+<link rel="stylesheet" href="management.css">
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step.
+
+  One dataset published on its own: the destination the artefact type states, the
+  mode, the preview and the receipt.
+
+    ?step=1|2|3|4   the dataset, the mode, the preview, the receipt
+    ?mode=upsert|insert_only|replace_all
+    ?actor=<person>
+    ?gaps=0         hide the notes on what the server does not serve
+-->
+
+<div class="proto-note">Prototype · mock data · reads no server</div>
+<div id="app"></div>
+<div class="proto-bar" id="proto-bar"></div>
+
+<script src="management.js"></script>
+<script src="prototype.js"></script>
+</body>
+</html>

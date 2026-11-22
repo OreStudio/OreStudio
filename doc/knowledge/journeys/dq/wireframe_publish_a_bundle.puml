@@ -1,0 +1,60 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+salt
+{
+  <b>PUBLISH A BUNDLE</b>  { The bundle | The options | The preview | The run | The receipt }
+  --
+  {
+    {
+      <b>1 The bundle</b>
+      party_essentials · Tenant · writes into the tenant that asked
+      --
+      {#
+        Order | Dataset | Included | Staged | Published
+        10 | refdata.conventions | always | 10991 | 10991
+        20 | refdata.currency_pair_conventions | always | 88 | 84
+        30 | refdata.currency_pair_convention_calendars | optional | 34 | 0
+        40 | lei.parties | optional | 1200 | 0
+      }
+      <i>The order is the dependency closure's; display order breaks ties.</i>
+    } | {
+      <b>3 The preview</b>
+      {#
+        Dataset | Staged | Insert | Update | Skip
+        refdata.conventions | 10991 | 0 | 0 | 10991
+        refdata.currency_pair_conventions | 88 | 4 | 0 | 84
+      }
+      --
+      <b>4 The run</b>
+      step 1 done · step 2 done · step 3 halted · step 4 queued
+      <i>A failed step halts the run and does not undo the steps before it.</i>
+      --
+      <b>5 The receipt</b>
+      four counts per member, and the workflow instance
+      --
+      <b>What it cannot show</b>
+      The history. The run log exists and nothing writes it.
+    }
+  }
+  --
+  { Back | Continue | <i>The target tenant is read from the level and never chosen.</i> }
+}
+
+@enduml

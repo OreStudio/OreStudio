@@ -28,7 +28,7 @@ No document describes removed code, and no legacy pattern is left uncatalogued.
 |--------------+----------------------------------------|
 | State        | DONE                                 |
 | Parent story | [[id:7D2BBBBC-36A3-4BFB-9673-0F9005991D94][Take the DQ pipeline end to end, from a seeded artefact table to a published system]] |
-| Now          | Every document that described removed code describes the live model, and every count matches the file. |
+| Now          | Nothing.                              |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing.                               |
 | Last touched | 2026-11-22                              |

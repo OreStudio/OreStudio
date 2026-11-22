@@ -1,0 +1,107 @@
+:PROPERTIES:
+:ID: CB98437A-6293-4AC0-B68A-06D606FC9225
+:END:
+#+title: Reference data coverage prototype
+#+description: The roster of bundles by level, the members of one bundle and the reason a member is not ready, drawn as the answer to whether the tenant holds what its valuations read.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:dq:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+
+| Item          | Where                                          |
+|---------------+------------------------------------------------|
+| Prototype     | [[file:reference-data-coverage/][the prototype]] |
+| Gemini review | none                                           |
+| Group         | [[file:index.org][DQ prototypes]]                              |
+
+* Summary
+
+This prototype argues that the question "is my reference data complete?" is one
+list screen, grouped by the level a bundle publishes at, with the chosen
+bundle's members underneath. The level is not decoration: it decides which
+tenant holds the rows and whether a tenant owes a copy, so grouping by it is
+what makes the answer readable. The member table then says how much is staged,
+how much is published, and which of four reasons keeps a member from being
+ready. It answers to
+[[id:5344ADC1-E729-4846-BE07-C6BC2169C4C9][Is my reference data complete?]].
+
+It is throwaway. It reads no server, opens with no build and no session, and
+draws mock data. Every place where the server does not provide what the screen
+needs is marked on the page, and a link in the bar at the foot hides those
+notes.
+
+* Detail
+
+** What it argues
+
+- *The level is the first thing read, not a column.* A tenant that holds a
+  platform or world bundle has two copies of a fact, so the roster groups the
+  bundles by the level they publish at and states, for each, that the rows live
+  in the system tenant and are read where they lie.
+- *Readiness has four reasons and each has an owner.* No dataset row, no artefact
+  type, no target subject, no staged rows. A screen that says "not ready" without
+  the reason sends the person to the wrong owner: three of the four are DQ's to
+  fix and the fourth is the importer's.
+- *Published is a count, not a state.* The published column counts the rows whose
+  provenance names the dataset, and a member whose count is still zero after a run
+  is the only evidence that the run wrote nothing. The prototype draws the count
+  because a tick would hide exactly the failure the arc exists to fix.
+- *A fresh database looks like a screen, not like an error.* The state that
+  started this work was a recreate that reported success while the catalogues were
+  empty; the prototype draws that state with a sentence.
+- *The history is left out, on purpose.* The run log exists and nothing writes
+  it, so a history here would be an empty table, which reads as "nothing was ever
+  published" — a different claim. The absence is stated instead, in a server-gap
+  note.
+
+** The screen
+
+One list screen in three cards: the bundles grouped by level, the chosen
+bundle's members, and the four reasons with the owner of each. The screen
+publishes nothing. The publish itself is the journey's next step and is drawn by
+[[file:../publish-a-bundle.org][Publish a bundle]], so this page stays a read.
+
+** States, by query string
+
+=?bundle=system_core|world|crypto|tenant_defaults|party_essentials|risk_management=,
+=?empty=1=, =?actor=<person>=, =?gaps=0=. The bar at the foot switches between
+the tenant as it is and a fresh database, and hides the server-gap notes.
+
+** What is fake
+
+The bundles, their counts, and every staged and published figure, and the demo
+clock every relative time reads against.
+=party_essentials= and =risk_management= carry mock members because they are the
+two shapes the prototype argues: a bundle with a member that cannot publish, and
+a bundle with a member that publishes nothing. The other four bundles list their
+names and open no table, which is what the screen would do before the coverage
+operation exists. The provenance read behind the published column is not drawn at
+all.
+
+** Where the code lives
+
+[[proj:doc/prototypes/dq/reference-data-coverage/][=doc/prototypes/dq/reference-data-coverage/=]]:
+=index.html=, =prototype.js=, and =management.css= and =management.js=, which are
+the conventions prototypes' shell copied verbatim: the shell head, the
+breadcrumb, the page header, the refresh, the table, the badges and the server-gap
+note. The conventions mock data the script carries is inert here. Nothing is
+built, imported or served.
+
+** Verdict
+
+The layout holds. Grouping the bundles by level is the smallest thing that shows
+the level mattering, and the member table is the smallest thing that shows why a
+member is not ready. One question is left open: the published count costs one read
+per dataset, so it may belong behind the bundle rather than on every row of the
+list, which is where the idleness is most visible today. The history is not drawn
+here at all, because the run log has no writer; when it gets one, it belongs to
+the publish journey and not to this screen.
+
+*Signed off* on 2026-11-22 by Marco, on the page as it stands. The open question
+above is a note for the build, not a change to this design.
+
+* See also
+
+- [[file:index.org][DQ prototypes]] — the group this belongs to.
+- [[id:5344ADC1-E729-4846-BE07-C6BC2169C4C9][Is my reference data complete?]] — the journey it answers.

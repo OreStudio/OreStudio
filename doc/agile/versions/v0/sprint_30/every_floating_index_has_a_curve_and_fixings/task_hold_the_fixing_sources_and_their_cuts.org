@@ -7,10 +7,10 @@
 #+level: s1
 #+filetags: :every_floating_index_has_a_curve_and_fixings:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/hold-the-fixing-sources-and-their-cuts
 #+pr:
-#+blocked_on:
-#+blocked_since:
+#+blocked_on: B3E547A5-941B-439E-A10E-EE9EEE2900E4
+#+blocked_since: 2026-11-22
 #+created: 2026-11-22
 #+updated: 2026-11-22
 #+environment: clever_dijkstra
@@ -26,11 +26,11 @@ Hold the fixing sources of [[id:5AF9CEEF-A878-443A-8C32-C6E9F6C26FC9][Fixing sou
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | BLOCKED                              |
 | Parent story | [[id:0F936789-FEBE-4330-97B9-DFE0837E4466][Every index a generated trade floats on has a curve and fixings]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | Read the design; chose the entities and their shapes. |
+| Waiting on   | [[id:B3E547A5-941B-439E-A10E-EE9EEE2900E4][Add a time-of-day column type to the codegen]], which waits on compass v0.0.13. |
+| Next         | Write the models once a model column can be of type time. |
 | Last touched | 2026-11-22                               |
 
 * Acceptance
@@ -60,6 +60,20 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+The cut and publication times are time-of-day columns: PostgreSQL =time=
+without time zone, the zone in its own IANA column, and
+=ores::platform::time::time_of_day= in C++. compass-ng v0.0.12 cannot render a
+=:type: time= column: it derives the type flags from =:type:= only, and an
+unknown type leaves the generated TypeScript type empty. The task waits on
+compass v0.0.13, which carries the type.
+
+Shapes chosen, all in =ores.refdata= with the =simple-lookup= profile of
+=ores.reporting.cut_kind=: =fixing_source_kind= (published, keyed, derived),
+=fixing_source_status= (active, ceased), =fixing_source= (code, name,
+description, kind, asset class, administrator, publication time and zone,
+calendar, rounding, status) and =cut_code= (code, name, description, cut time
+and zone, fixing source); =currency_pair.default_cut_code= references the cut.
 
 * Test Scenarios
 

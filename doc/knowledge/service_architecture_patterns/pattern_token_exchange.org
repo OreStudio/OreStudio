@@ -130,7 +130,7 @@ within its scope until it expires, and names the service that obtained it.
   [[id:78B82824-0BBB-4442-A9FA-E1F265DF57BD][Run grants and run tokens]] for IAM's checks and claims.
 - *For an agent.* =ores.http= exchanges an agent's key for a five-minute token
   whose subject is the person and whose actor is the agent. See
-  [[id:1162906F-BB72-486E-9A11-30D567C65F3E][The agent in a token: subject and actor]].
+  [[id:1162906F-BB72-486E-9A11-30D567C65F3E][Delegation tokens for LLM agents: subject and actor claims]].
 
 * Related patterns
 

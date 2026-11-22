@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 1162906F-BB72-486E-9A11-30D567C65F3E
 :END:
-#+title: The agent in a token: subject and actor
+#+title: Delegation tokens for LLM agents: subject and actor claims
 #+description: An agent's token names the person as subject and the agent as actor, so every call is the person's, made by that agent.
 #+type: knowledge
 #+level: cross
@@ -67,10 +67,10 @@ the person does not.
 
 * See also
 
-- [[id:47B179BF-C982-4BB1-AF4F-35E00B9D2750][Agents]] — the structure note that orders this cluster.
-- [[id:A7E2942C-66AD-449C-B80B-CA789EBC34FA][Agent grants]] — answers: what the exchange checks.
+- [[id:47B179BF-C982-4BB1-AF4F-35E00B9D2750][LLM agents acting for a person]] — the structure note that orders this cluster.
+- [[id:A7E2942C-66AD-449C-B80B-CA789EBC34FA][Agent grants: delegated consent for LLM agents]] — answers: what the exchange checks.
 - [[id:AAC60D20-8696-4455-9292-E8FAE1389CBC][Internal actor impersonation]] — contradicts: impersonation hides the actor that this token exists to show.
-- [[id:2D36D474-2CF9-4498-AF49-818CEF080B98][The record of an agent's actions]] — completes: where the actor is written down.
+- [[id:2D36D474-2CF9-4498-AF49-818CEF080B98][Auditing of LLM agent actions]] — completes: where the actor is written down.
 
 * Sources
 

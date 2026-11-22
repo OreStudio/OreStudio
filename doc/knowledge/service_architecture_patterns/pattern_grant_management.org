@@ -126,7 +126,7 @@ that name it until they are revoked, and the issue log records each use.
   states the role and the audience.
 - *Agent grants.* A person consents that one named agent acts for them, read
   only or read and write, until an expiry, and keys redeem the consent.
-  [[id:A7E2942C-66AD-449C-B80B-CA789EBC34FA][Agent grants]] holds the entity and its lifecycle.
+  [[id:A7E2942C-66AD-449C-B80B-CA789EBC34FA][Agent grants: delegated consent for LLM agents]] holds the entity and its lifecycle.
 
 * Related patterns
 

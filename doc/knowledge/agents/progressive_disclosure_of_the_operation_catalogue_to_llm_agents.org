@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 4C382E8F-9449-4012-A09F-76291373E6F7
 :END:
-#+title: The operation catalogue for agents
+#+title: Progressive disclosure of the operation catalogue to LLM agents
 #+description: Every operation ores.http serves, shown to an agent in small steps of areas, entities and operations, with search beside.
 #+type: knowledge
 #+level: cross
@@ -37,9 +37,9 @@ whether it writes.
 | =call_operation= | an operation's name and its arguments | its result; with no arguments or wrong ones, its input schema and an example |
 
 Every list holds tens of lines at most and shows only what the person may call
-([[id:3CAA394F-E84C-3434-331B-6E664F7E84D2][Role-Based Access Control]]), and only reads when the grant is read only ([[id:A7E2942C-66AD-449C-B80B-CA789EBC34FA][Agent grants]]). For a
+([[id:3CAA394F-E84C-3434-331B-6E664F7E84D2][Role-Based Access Control]]), and only reads when the grant is read only ([[id:A7E2942C-66AD-449C-B80B-CA789EBC34FA][Agent grants: delegated consent for LLM agents]]). For a
 write, =call_operation= answers the approval request it raised, because the
-write is held ([[id:381D87BB-4E2D-47BA-8853-6132CF900305][Six-eyes approval of an agent's writes]]). A client that searches tools itself may ask for the
+write is held ([[id:381D87BB-4E2D-47BA-8853-6132CF900305][Six-eyes approval of LLM agent writes]]). A client that searches tools itself may ask for the
 full catalogue through MCP's paginated =tools/list=, as an option.
 
 ** The hierarchy is declared
@@ -65,10 +65,10 @@ construction, and the OpenAPI document gains the same metadata.
 
 * See also
 
-- [[id:47B179BF-C982-4BB1-AF4F-35E00B9D2750][Agents]] — the structure note that orders this cluster.
+- [[id:47B179BF-C982-4BB1-AF4F-35E00B9D2750][LLM agents acting for a person]] — the structure note that orders this cluster.
 - [[id:6DFC4BF5-65AC-4E75-90EA-FBDC1272E01C][How the model sees ORE's operations]] — the investigation behind the five tools and its measurements.
 - [[id:34CB899A-D114-4B54-9A0E-E3BEE5FF49F2][The HTTP route inventory]] — answers the investigation's open question: the sixteen published areas are the catalogue's first step.
-- [[id:5E479832-A0B2-4BC6-B008-BAD505F4E145][The MCP transport in ores.http]] — the methods that carry these tools.
+- [[id:5E479832-A0B2-4BC6-B008-BAD505F4E145][Serving the Model Context Protocol from ores.http]] — the methods that carry these tools.
 
 * Sources
 

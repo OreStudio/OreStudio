@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 3B1D40EA-121F-4F53-A612-FF13DCE1A0BB
 :END:
-#+title: The path of an agent's call through ORE
+#+title: Routing of LLM agent calls through ores.http
 #+description: How an agent's call reaches ORE: through ores.http's MCP endpoint and the person's own permissions, never around them.
 #+type: knowledge
 #+level: cross
@@ -33,7 +33,7 @@ the roles the person holds and enforced by the services and by row-level
 security ([[id:3CAA394F-E84C-3434-331B-6E664F7E84D2][Role-Based Access Control]]); a second door would need a second copy of those
 checks, and two copies drift. The prototype that preceded this design held
 its own NATS credentials and its own allowlist of subjects, and the lesson
-drawn from it is recorded in [[id:039005AD-8319-416C-9F70-6A5477FEE89D][Lessons of the ores.agent prototype]].
+drawn from it is recorded in [[id:039005AD-8319-416C-9F70-6A5477FEE89D][The ores.agent prototype: findings for the target design]].
 
 #+caption: The parts on an agent's path: the agent calls only /mcp on ores.http, IAM turns its key into the person's token, the routes call the services as for the person, and the person governs the agent from three pages of ores.web.
 #+attr_html: :width 100%
@@ -48,12 +48,12 @@ Source: [[./agent_call_components.puml][=agent_call_components.puml=]]. Regenera
 A read passes through five steps, drawn below.
 
 1. The agent sends an MCP request to =/mcp= with its key as a bearer token
-   ([[id:5E479832-A0B2-4BC6-B008-BAD505F4E145][The MCP transport in ores.http]]).
+   ([[id:5E479832-A0B2-4BC6-B008-BAD505F4E145][Serving the Model Context Protocol from ores.http]]).
 2. =ores.http= exchanges the key for a short token that names the person as
-   subject and the agent as actor ([[id:1162906F-BB72-486E-9A11-30D567C65F3E][The agent in a token: subject and actor]]); the key is the redeemable
-   form of the person's [[id:A7E2942C-66AD-449C-B80B-CA789EBC34FA][Agent grants]].
+   subject and the agent as actor ([[id:1162906F-BB72-486E-9A11-30D567C65F3E][Delegation tokens for LLM agents: subject and actor claims]]); the key is the redeemable
+   form of the person's [[id:A7E2942C-66AD-449C-B80B-CA789EBC34FA][Agent grants: delegated consent for LLM agents]].
 3. The tool the agent called finds the operation in the catalogue and checks
-   that the person may call it ([[id:4C382E8F-9449-4012-A09F-76291373E6F7][The operation catalogue for agents]]).
+   that the person may call it ([[id:4C382E8F-9449-4012-A09F-76291373E6F7][Progressive disclosure of the operation catalogue to LLM agents]]).
 4. The route serves the request exactly as it serves the person's own: the
    service receives the token and applies the person's permissions.
 5. The result returns, cut to a size a model can read.
@@ -69,15 +69,15 @@ Source: [[./agent_read_sequence.puml][=agent_read_sequence.puml=]]. Regenerate w
 ** What differs from the person's own call
 
 Three things, and each has its own page. The token names the agent, so every
-write records it beside the person ([[id:2D36D474-2CF9-4498-AF49-818CEF080B98][The record of an agent's actions]]). A grant can be read only,
+write records it beside the person ([[id:2D36D474-2CF9-4498-AF49-818CEF080B98][Auditing of LLM agent actions]]). A grant can be read only,
 so the agent can hold less than the person holds. And an agent's write does
 not apply at once: it waits for the person and then for a second approver
-([[id:381D87BB-4E2D-47BA-8853-6132CF900305][Six-eyes approval of an agent's writes]]).
+([[id:381D87BB-4E2D-47BA-8853-6132CF900305][Six-eyes approval of LLM agent writes]]).
 
 * See also
 
-- [[id:47B179BF-C982-4BB1-AF4F-35E00B9D2750][Agents]] — the structure note that orders this cluster.
-- [[id:039005AD-8319-416C-9F70-6A5477FEE89D][Lessons of the ores.agent prototype]] — answers: why the agent has one door, after the prototype's separate process and credentials.
+- [[id:47B179BF-C982-4BB1-AF4F-35E00B9D2750][LLM agents acting for a person]] — the structure note that orders this cluster.
+- [[id:039005AD-8319-416C-9F70-6A5477FEE89D][The ores.agent prototype: findings for the target design]] — answers: why the agent has one door, after the prototype's separate process and credentials.
 - [[id:3E20C1A0-7BA1-4F31-8C34-1E5F13558890][Service-to-Service Auth]] — completes: the agent's call is a person's call carried by a token, as an on-behalf-of call is, never a service acting as itself.
 - [[id:FC0847D1-9F09-42EF-A4BD-D5E3C34398EA][How ores.http serves MCP]] — the investigation that chose to serve MCP from =ores.http=.
 

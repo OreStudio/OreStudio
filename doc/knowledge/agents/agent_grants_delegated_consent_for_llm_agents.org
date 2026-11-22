@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: A7E2942C-66AD-449C-B80B-CA789EBC34FA
 :END:
-#+title: Agent grants
+#+title: Agent grants: delegated consent for LLM agents
 #+description: A person's revocable consent that one agent acts for them, read only or read and write, until an expiry; keys redeem it.
 #+type: knowledge
 #+level: cross
@@ -71,7 +71,7 @@ Source: [[./agent_grant_states.puml][=agent_grant_states.puml=]]. Regenerate wit
 
 A person creates, lists and revokes their grants on one page of ores.web. The
 page shows each grant's agent, scope, expiry, keys and when each key was last
-used, and links to what the agent did ([[id:2D36D474-2CF9-4498-AF49-818CEF080B98][The record of an agent's actions]]).
+used, and links to what the agent did ([[id:2D36D474-2CF9-4498-AF49-818CEF080B98][Auditing of LLM agent actions]]).
 
 * Patterns used
 
@@ -80,9 +80,9 @@ used, and links to what the agent did ([[id:2D36D474-2CF9-4498-AF49-818CEF080B98
 
 * See also
 
-- [[id:47B179BF-C982-4BB1-AF4F-35E00B9D2750][Agents]] — the structure note that orders this cluster.
+- [[id:47B179BF-C982-4BB1-AF4F-35E00B9D2750][LLM agents acting for a person]] — the structure note that orders this cluster.
 - [[id:78B82824-0BBB-4442-A9FA-E1F265DF57BD][Run grants and run tokens]] — exemplifies the same pattern: the run grant is consent for scheduled work, the agent grant consent for an agent.
-- [[id:1162906F-BB72-486E-9A11-30D567C65F3E][The agent in a token: subject and actor]] — completes: what a grant becomes on each call.
+- [[id:1162906F-BB72-486E-9A11-30D567C65F3E][Delegation tokens for LLM agents: subject and actor claims]] — completes: what a grant becomes on each call.
 - [[id:AF46793A-FF6C-4066-A059-279CE9936420][Identity and Access]] — the identity cluster this page extends.
 
 * Sources

@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 039005AD-8319-416C-9F70-6A5477FEE89D
 :END:
-#+title: Lessons of the ores.agent prototype
+#+title: The ores.agent prototype: findings for the target design
 #+description: What the ores.agent prototype taught about agents in ORE, and what the target design keeps, changes and drops.
 #+type: knowledge
 #+level: cross
@@ -46,11 +46,11 @@ findings that the target design keeps.
 
 | In the prototype | In the target design | Why |
 |------------------+----------------------+-----|
-| Its own process with its own NATS credentials and a hand-kept allowlist of 37 subjects, checked against the backend's codecs | One door, =/mcp= on =ores.http=, and a catalogue generated from the route registry | an allowlist beside the services drifts from them, and its broker access was not limited by the broker ([[id:3B1D40EA-121F-4F53-A612-FF13DCE1A0BB][The path of an agent's call through ORE]]) |
-| Sign-in with a principal and a password, to a token it kept itself | A grant the person creates, redeemed by a key, exchanged for the person's token naming the agent | the agent never holds the person's password, and the person can revoke it ([[id:A7E2942C-66AD-449C-B80B-CA789EBC34FA][Agent grants]]) |
-| Booking as a draft the person confirms in the agent's own page | Booking held for the person's approval and then authorised by Operations, in ORE's own queue | a confirmation in the client is the same person at the same keyboard and leaves no record in ORE ([[id:381D87BB-4E2D-47BA-8853-6132CF900305][Six-eyes approval of an agent's writes]]) |
-| No record in ORE of what the agent did | The agent on every row and every call in a log the person reads | ([[id:2D36D474-2CF9-4498-AF49-818CEF080B98][The record of an agent's actions]]) |
-| Discovery through a fixed set of tools written for each query | Five tools over the whole catalogue | the catalogue grows without changing the tools ([[id:4C382E8F-9449-4012-A09F-76291373E6F7][The operation catalogue for agents]]) |
+| Its own process with its own NATS credentials and a hand-kept allowlist of 37 subjects, checked against the backend's codecs | One door, =/mcp= on =ores.http=, and a catalogue generated from the route registry | an allowlist beside the services drifts from them, and its broker access was not limited by the broker ([[id:3B1D40EA-121F-4F53-A612-FF13DCE1A0BB][Routing of LLM agent calls through ores.http]]) |
+| Sign-in with a principal and a password, to a token it kept itself | A grant the person creates, redeemed by a key, exchanged for the person's token naming the agent | the agent never holds the person's password, and the person can revoke it ([[id:A7E2942C-66AD-449C-B80B-CA789EBC34FA][Agent grants: delegated consent for LLM agents]]) |
+| Booking as a draft the person confirms in the agent's own page | Booking held for the person's approval and then authorised by Operations, in ORE's own queue | a confirmation in the client is the same person at the same keyboard and leaves no record in ORE ([[id:381D87BB-4E2D-47BA-8853-6132CF900305][Six-eyes approval of LLM agent writes]]) |
+| No record in ORE of what the agent did | The agent on every row and every call in a log the person reads | ([[id:2D36D474-2CF9-4498-AF49-818CEF080B98][Auditing of LLM agent actions]]) |
+| Discovery through a fixed set of tools written for each query | Five tools over the whole catalogue | the catalogue grows without changing the tools ([[id:4C382E8F-9449-4012-A09F-76291373E6F7][Progressive disclosure of the operation catalogue to LLM agents]]) |
 
 ** What it left open
 
@@ -62,10 +62,10 @@ by the row-level security every call already passes.
 
 * See also
 
-- [[id:47B179BF-C982-4BB1-AF4F-35E00B9D2750][Agents]] — the structure note that orders this cluster.
+- [[id:47B179BF-C982-4BB1-AF4F-35E00B9D2750][LLM agents acting for a person]] — the structure note that orders this cluster.
 - [[id:BBEDFA8E-D43D-4F48-8FD7-1A3CC9F47E3E][Bring the assistant into ores.web on the target architecture]] — the story that commissioned the move onto the target architecture.
-- [[id:3B1D40EA-121F-4F53-A612-FF13DCE1A0BB][The path of an agent's call through ORE]] — answers: where the prototype's checks now sit.
-- [[id:381D87BB-4E2D-47BA-8853-6132CF900305][Six-eyes approval of an agent's writes]] — contradicts the prototype's confirmation step.
+- [[id:3B1D40EA-121F-4F53-A612-FF13DCE1A0BB][Routing of LLM agent calls through ores.http]] — answers: where the prototype's checks now sit.
+- [[id:381D87BB-4E2D-47BA-8853-6132CF900305][Six-eyes approval of LLM agent writes]] — contradicts the prototype's confirmation step.
 
 * Sources
 

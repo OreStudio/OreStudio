@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 5E479832-A0B2-4BC6-B008-BAD505F4E145
 :END:
-#+title: The MCP transport in ores.http
+#+title: Serving the Model Context Protocol from ores.http
 #+description: ores.http serves MCP's Streamable HTTP transport itself, on its own server, sessions and JSON codec.
 #+type: knowledge
 #+level: cross
@@ -42,7 +42,7 @@ prompts and the other optional capabilities wait until a client needs them.
 | A streamed response | =awaitable_body_source=, which already serves =text/event-stream= |
 | Sessions and authentication | the session store, and the bearer token every route reads |
 | JSON | ORE's codec in =ores.utility/codec= |
-| Tools | the route registry, through [[id:4C382E8F-9449-4012-A09F-76291373E6F7][The operation catalogue for agents]] |
+| Tools | the route registry, through [[id:4C382E8F-9449-4012-A09F-76291373E6F7][Progressive disclosure of the operation catalogue to LLM agents]] |
 
 ** Authentication
 
@@ -50,16 +50,16 @@ Every request carries the agent's key as a bearer token, as MCP's
 authorization asks of every request in a session (Model Context Protocol,
 2025b); a missing or invalid key is answered with 401. An MCP session id is a
 transport identifier, not a credential, and grants nothing on its own. The key
-is exchanged as [[id:1162906F-BB72-486E-9A11-30D567C65F3E][The agent in a token: subject and actor]] describes; when OAuth is added, the endpoint also
+is exchanged as [[id:1162906F-BB72-486E-9A11-30D567C65F3E][Delegation tokens for LLM agents: subject and actor claims]] describes; when OAuth is added, the endpoint also
 publishes protected resource metadata and names it in its 401 answers, and
 nothing else on the path changes.
 
 * See also
 
-- [[id:47B179BF-C982-4BB1-AF4F-35E00B9D2750][Agents]] — the structure note that orders this cluster.
+- [[id:47B179BF-C982-4BB1-AF4F-35E00B9D2750][LLM agents acting for a person]] — the structure note that orders this cluster.
 - [[id:FC0847D1-9F09-42EF-A4BD-D5E3C34398EA][How ores.http serves MCP]] — the investigation behind the choice to write it.
 - [[id:09BD5681-9C12-469A-80DA-27D1DF9D0808][ores.http]] — the component that serves it.
-- [[id:4C382E8F-9449-4012-A09F-76291373E6F7][The operation catalogue for agents]] — completes: what =tools/list= and =tools/call= answer.
+- [[id:4C382E8F-9449-4012-A09F-76291373E6F7][Progressive disclosure of the operation catalogue to LLM agents]] — completes: what =tools/list= and =tools/call= answer.
 
 * Sources
 

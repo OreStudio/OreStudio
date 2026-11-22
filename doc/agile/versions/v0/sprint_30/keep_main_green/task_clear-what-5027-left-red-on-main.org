@@ -1,0 +1,152 @@
+:PROPERTIES:
+:ID: ABE30398-FA7A-4721-BA2B-3CD32C15F0D5
+:END:
+#+title: Task: Clear what the web server switch left red on main
+#+description: The merge of the change that served the web app from the C++ server left the Compass check and the TypeScript workflow red: five malformed exception rows, two rows in the wrong table, three wide types over the ceiling and two sign-in tests that read ports the build did not have.
+#+type: task
+#+level: s1
+#+filetags: :ci:hotfix:keep_main_green:sprint_30:v0:
+#+owner: marco
+#+branch: hotfix/clear-the-ci-breakage-on-main
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4FCC628C-551E-4F7C-B1D7-69546174A9CD][Keep main green]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The merge that put the C++ server in front of the web app left two workflows red
+on =main=:
+
+- =Compass check=: the route inventory page had five exception rows with four
+  cells where the table needs six, which made the whole page unreadable, and two
+  rows of its Rules table had been pasted into Views. Three types had grown past
+  the wide-type ceiling as well.
+- =TypeScript=: two sign-in tests assert the switch between the servers, and the
+  ports they name are the ones the build defines, which the tests never set.
+
+Neither is a design problem; both are the kind of breakage a merge leaves and a
+gate catches.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:4FCC628C-551E-4F7C-B1D7-69546174A9CD][Keep main green]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-22                               |
+
+* Acceptance
+
+- =compass check= reports no diagnostics on this branch.
+- The ores.web suite passes: 96 files and 1335 tests in =@ores/web=, 4 and 24 in
+  =@ores/bff=, 2 and 61 in =@ores/contracts=.
+- The route inventory page parses: every table row agrees with its header, and
+  the inventory is regenerated from it.
+- No type is excused for longer than two weeks without a reason beside it.
+
+* Plan
+
+The repairs, in the order the gate reports them:
+
+- =compass/checks/route_inventory.org=: the five rows in =* Exceptions= that
+  carried =| POST | /api/market/… | POST | /api/market/… |= are deleted; they
+  belong to =* Pairs=, whose four columns are the BFF method and path and the
+  C++ method and path, so they move there. The two rows of =* Rules= that had
+  been pasted into =* Views= — the four market-data desk reads and the
+  authorisation queue, whose =bff= counterparts already sit in Rules — move
+  back beside them.
+- The inventory document is regenerated from the repaired tables with
+  =compass generate=.
+- =wide_types=: the three types the switch grew or added are excused with a
+  =compass:except= comment above each, expiring in two weeks, naming what each
+  holds and that splitting it is the next step. The check's own mechanism for
+  debt.
+- =ServerSwitch= takes its ports as a prop, defaulting to the compile-time
+  =__ORE_SERVER_PORTS__=, so the two sign-in tests state =20401=/=20402= instead
+  of depending on the .env of whoever runs them.
+
+The tests that failed for the missing global are the ones that already existed:
+they passed before only when the build's ports happened to be the ones they
+assert.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Diagnostics the ported gate reports | 0, where main reported 9 (5 malformed exception rows, one unreadable page, three wide types) | =compass-ng check= | working tree on 2026-11-22 |
+| Exceptions the gate accepts | 225, three of them the wide types this task excuses until 2026-12-04 | =compass-ng check= | working tree on 2026-11-22 |
+| Route inventory tables | 0 rows disagree with their header, where two tables carried rows from another one | a row-by-row cell count against each table's header | working tree on 2026-11-22 |
+| Inventory regenerated | one file written, =doc/knowledge/architecture/http_route_inventory.org= | =compass generate= | working tree on 2026-11-22 |
+| ores.web suites | 96 files and 1335 tests in =@ores/web=, 4 and 24 in =@ores/bff=, 2 and 61 in =@ores/contracts=, all passing | =npm run build && npm test= in =projects/ores.web= | working tree on 2026-11-22 |
+| Sign-in tests | 6 of 6 pass, where 2 failed in CI and locally | =npx vitest run packages/web/src/pages/SignInPage.test.tsx= | working tree on 2026-11-22 |
+| Local gate | format, lint and compass-ng pass | =compass check --only format --only lint --only cmake-sources= | working tree on 2026-11-22 |
+
+* Notes
+
+Two of the three repairs are the same mistake in different tables: a merge took
+rows that belong to one table and appended them to another, so the page said
+both that a row had the wrong number of cells and that it could not be read at
+all. The cell count against each header is what finds it, and it is worth a check
+of its own rather than a reader's eye.
+
+The TypeScript failure is the more interesting one. The two tests were not
+broken by the switch; they had always depended on the build's own ports, which
+are =20401= and =20402= in the environment file and =21601= and =8080= by
+default. They passed locally and failed on a runner without the file. The
+component now takes the ports it reads the page against, so the test states them
+and the bundle still gets the compile-time ones.
+
+The three wide types are debt, not repairs: the exception says so, names what
+each type holds, and expires in two weeks.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Both workflows that the merge left red are answered. =compass check= reports 0
+diagnostics: the five malformed exception rows are gone from the table that
+could not hold them, the two rows that had been pasted into Views are back in
+Rules beside their =bff= counterparts, the five route pairs are in Pairs, and the
+inventory is regenerated from the repaired page. The three wide types are
+excused with a date and a reason rather than left as warnings the gate reports
+on every run. The ores.web suites pass, 1335 tests in the web package among
+them, and the two sign-in tests now state the ports they assert instead of
+inheriting them from whichever environment built the bundle.

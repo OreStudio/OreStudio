@@ -21,7 +21,13 @@
 
 import type { ReactNode } from 'react';
 import { useTranslation } from '../i18n/Provider.js';
-import { peerOf, servingDeployment, type deployment, type page } from '../api/servers.js';
+import {
+    peerOf,
+    servingDeployment,
+    type deployment,
+    type page,
+    type serverPorts,
+} from '../api/servers.js';
 
 /**
  * The switch between the two servers of the port.
@@ -43,9 +49,12 @@ export function serverKey(one: deployment): string {
 
 export function ServerSwitch({
     at,
+    ports = __ORE_SERVER_PORTS__,
     compact = false,
 }: {
     readonly at?: page;
+    /** The ports the bundle was built with, overridable so a test states them. */
+    readonly ports?: serverPorts;
     /** The header's form: the pair alone, without the word that names it. */
     readonly compact?: boolean;
 }): ReactNode {
@@ -56,8 +65,8 @@ export function ServerSwitch({
      */
     const where = at ?? (typeof window === 'undefined' ? undefined : window.location);
     if (where === undefined) return null;
-    const here = servingDeployment(__ORE_SERVER_PORTS__, where);
-    const peer = peerOf(__ORE_SERVER_PORTS__, where);
+    const here = servingDeployment(ports, where);
+    const peer = peerOf(ports, where);
     if (here === undefined || peer === undefined) return null;
     const pair = (
         <div

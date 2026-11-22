@@ -41,6 +41,7 @@ namespace ores::http::routes::workflow {
 class authorisation_queue_routes final {
 public:
     /// One row of the queue: the request, the deal it names, and the deal now.
+    // compass:except(wide_types/over_ceiling) expires=2026-12-04 approver=marco reason=one queue row states the request and the deal it names, which #5027 joined in one struct
     struct queue_row final {
         std::string request_id;
         int request_version = 0;

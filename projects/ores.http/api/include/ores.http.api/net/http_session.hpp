@@ -67,6 +67,7 @@ using session_bytes_callback = std::function<void(const std::string& session_id,
 /**
  * @brief Handles a single HTTP session/connection.
  */
+// compass:except(wide_types/over_ceiling) expires=2026-12-04 approver=marco reason=the session's fields are its socket, its buffers and the request state #5027 made it carry; split it next
 class ORES_HTTP_API_EXPORT http_session final : public std::enable_shared_from_this<http_session> {
 public:
     explicit http_session(boost::asio::ip::tcp::socket socket,

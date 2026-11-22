@@ -128,6 +128,7 @@ target_link_libraries(${lib_target_name}
         ores.utility.lib
         ores.telemetry.core.lib
         ores.eventing.core.lib
+        ores.history.core.lib
     PRIVATE
         ores.ore.core.lib
         ores.ore.api.lib

@@ -322,7 +322,7 @@ when its type sheds fields; remove it when the type is at or under fifteen.
 | projects/ores.refdata/core/include/ores.refdata.core/repository/yield_volatility_config_entity.hpp | yield_volatility_config_entity | 20 |
 | projects/ores.refdata/core/include/ores.refdata.core/repository/zero_convention_entity.hpp | zero_convention_entity | 20 |
 | projects/ores.reporting/api/include/ores.reporting.api/domain/report_cashflow.hpp | report_cashflow | 20 |
-| projects/ores.reporting/core/include/ores.reporting.core/repository/ore_file_entity.hpp | ore_file_entity | 20 |
+| projects/ores.ore/core/include/ores.ore.core/repository/ore_file_entity.hpp | ore_file_entity | 20 |
 | projects/ores.reporting/core/include/ores.reporting.core/repository/report_metric_entity.hpp | report_metric_entity | 20 |
 | projects/ores.synthetic/api/include/ores.synthetic.api/domain/variance_calibration_input.hpp | variance_calibration_input | 20 |
 | projects/ores.synthetic/api/include/ores.synthetic.api/feeds/fx_vol_surface_feed.hpp | fx_vol_surface_feed | 19 |
@@ -382,7 +382,7 @@ when its type sheds fields; remove it when the type is at or under fifteen.
 | projects/ores.refdata/core/include/ores.refdata.core/repository/fx_option_convention_entity.hpp | fx_option_convention_entity | 19 |
 | projects/ores.refdata/core/include/ores.refdata.core/repository/fx_vol_surface_blueprint_entity.hpp | fx_vol_surface_blueprint_entity | 19 |
 | projects/ores.refdata/core/include/ores.refdata.core/repository/portfolio_entity.hpp | portfolio_entity | 19 |
-| projects/ores.reporting/api/include/ores.reporting.api/domain/ore_file.hpp | ore_file | 19 |
+| projects/ores.reporting/api/include/ores.ore.api/domain/ore_file.hpp | ore_file | 19 |
 | projects/ores.reporting/api/include/ores.reporting.api/messaging/report_cashflow_protocol.hpp | report_cashflow_write | 19 |
 | projects/ores.reporting/api/include/ores.reporting.api/messaging/report_operations_protocol.hpp | cut_row | 19 |
 | projects/ores.reporting/api/include/ores.reporting.api/messaging/report_operations_protocol.hpp | take_cut_response | 19 |

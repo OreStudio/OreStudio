@@ -36,6 +36,7 @@
 \ir ./compute/drop_compute.sql
 \ir ./mq/mq_drop.sql
 \ir ./reporting/reporting_drop.sql
+\ir ./ore/ore_drop.sql
 \ir ./scheduler/scheduler_drop.sql
 \ir ./geo/geo_drop.sql
 \ir ./assets/assets_drop.sql

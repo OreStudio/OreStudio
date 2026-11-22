@@ -140,10 +140,10 @@ select is(
 select results_eq(
     $$select t.code, t.ore_file_code, f.format, x.typical_filename
         from t_live t
-        join ores_reporting_ore_files_tbl f
+        join ores_ore_files_tbl f
           on f.tenant_id = t.tenant_id and f.code = t.ore_file_code
          and f.valid_to = ores_utility_infinity_timestamp_fn()
-        left join ores_reporting_ore_files_tbl x
+        left join ores_ore_files_tbl x
           on x.tenant_id = f.tenant_id and x.code = f.schema_ore_file_code
          and x.valid_to = ores_utility_infinity_timestamp_fn()
        where t.code in ('setup.conventionsFile', 'xva.csaFile', 'xva.collateralBalancesFile',

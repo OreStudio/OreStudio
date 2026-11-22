@@ -411,9 +411,9 @@ CATALOGUE: tuple[Check, ...] = (
         paths=(
             "projects/ores.sql/populate/reporting/reporting_file_types_populate.sql",
             "projects/ores.sql/utility/generate_file_types_populate.py",
-            "projects/ores.sql/populate/reporting/reporting_ore_file_categories_populate.sql",
-            "projects/ores.sql/populate/reporting/reporting_ore_files_populate.sql",
-            "projects/ores.sql/populate/reporting/reporting_ore_file_versions_populate.sql",
+            "projects/ores.sql/populate/ore/ore_ore_file_categories_populate.sql",
+            "projects/ores.sql/populate/ore/ore_ore_files_populate.sql",
+            "projects/ores.sql/populate/ore/ore_ore_file_versions_populate.sql",
             "external/ore/xsd/*",
             "projects/ores.sql/utility/ore_files.py",
             "projects/ores.sql/utility/ore_file_descriptions.py",

@@ -50,6 +50,7 @@
 \ir ./assets/assets_create.sql
 \ir ./geo/geo_create.sql
 \ir ./scheduler/scheduler_create.sql
+\ir ./ore/ore_create.sql
 \ir ./reporting/reporting_create.sql
 \ir ./mq/mq_create.sql
 \ir ./compute/compute_create.sql

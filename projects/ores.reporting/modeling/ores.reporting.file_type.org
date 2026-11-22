@@ -238,7 +238,7 @@ parameters each have an index of their own. A third index gives each configurati
 
 ** ore_file_code
 :PROPERTIES:
-:table:         ores_reporting_ore_files_tbl
+:table:         ores_ore_files_tbl
 :target_column: code
 :parent_entity: ore_file
 :nullable:      false

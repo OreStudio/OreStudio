@@ -115,9 +115,9 @@ begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
 
-    -- Validate ore_file_code (soft FK to ores_reporting_ore_files_tbl)
+    -- Validate ore_file_code (soft FK to ores_ore_files_tbl)
     if not exists (
-        select 1 from ores_reporting_ore_files_tbl
+        select 1 from ores_ore_files_tbl
         where tenant_id = NEW.tenant_id
           and code = NEW.ore_file_code
           and valid_to = ores_utility_infinity_timestamp_fn()

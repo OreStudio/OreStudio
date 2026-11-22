@@ -32,9 +32,9 @@
 #include "ores.logging/logger.hpp"
 #include "ores.ore.core/results/output_manifest.hpp"
 #include "ores.reporting.api/messaging/file_type_protocol.hpp"
-#include "ores.reporting.api/messaging/ore_file_category_protocol.hpp"
-#include "ores.reporting.api/messaging/ore_file_protocol.hpp"
-#include "ores.reporting.api/messaging/ore_file_version_protocol.hpp"
+#include "ores.ore.api/messaging/ore_file_category_protocol.hpp"
+#include "ores.ore.api/messaging/ore_file_protocol.hpp"
+#include "ores.ore.api/messaging/ore_file_version_protocol.hpp"
 #include "ores.reporting.api/messaging/report_instance_protocol.hpp"
 #include "ores.storage.api/messaging/objects_protocol.hpp"
 #include "ores.storage.api/net/object_keys.hpp"
@@ -62,6 +62,7 @@ namespace json = ores::utility::codec::json;
 namespace rr = ores::http::net::record_routes;
 namespace forwarding = ores::http::forwarding;
 namespace reporting_messaging = ores::reporting::messaging;
+namespace ore_messaging = ores::ore::messaging;
 namespace compute_messaging = ores::compute::messaging;
 namespace storage_messaging = ores::storage::messaging;
 namespace ore_results = ores::ore::results;
@@ -122,13 +123,13 @@ std::vector<catalogue_pattern> read_catalogue(const http_request& req, nats_clie
     try {
         std::map<std::string, std::pair<std::string, std::string>> category_of;
 
-        reporting_messaging::list_ore_file_categories_request categories;
+        ore_messaging::list_ore_file_categories_request categories;
         categories.limit = catalogue_limit;
         const auto answered = forwarding::forward(req, session, categories);
         for (const auto& category : answered.categories)
             category_of.emplace(category.code, std::pair{category.name, category.description});
 
-        reporting_messaging::list_ore_files_request msg;
+        ore_messaging::list_ore_files_request msg;
         msg.limit = catalogue_limit;
         const auto reply = forwarding::forward(req, session, msg);
         for (const auto& file : reply.files) {
@@ -230,7 +231,7 @@ bool schema_is_stored(const http_request& req,
                       const std::string& typical_filename,
                       const std::vector<catalogue_pattern>& catalogue) {
     try {
-        reporting_messaging::list_ore_file_versions_request msg;
+        ore_messaging::list_ore_file_versions_request msg;
         msg.limit = catalogue_limit;
         msg.filter.emplace();
         msg.filter->engine_version = engine_version;

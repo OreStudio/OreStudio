@@ -168,9 +168,8 @@ using recording_hold = ores::synthetic::service::basic_shared_surface_hold<recor
 
 // One offer: the id it answers and the feed, by source name, that it builds.
 generator_offer offer_of(const std::string& pair, const std::string& source_name) {
-    return {.id = pair_id(pair), .make = [source_name] {
-                return std::make_shared<named_generator>(source_name);
-            }};
+    return {.id = pair_id(pair),
+            .make = [source_name] { return std::make_shared<named_generator>(source_name); }};
 }
 
 std::shared_ptr<domain::i_feed> feed_named(const std::string& source_name) {
@@ -347,7 +346,9 @@ TEST_CASE("a surface built again after its last adapter left is a new path", "[s
 
 TEST_CASE("a held surface runs under its feed's own source name", "[shared_surfaces]") {
     recording_surfaces surfaces;
-    const auto make = [] { return std::make_shared<recording_surface>("synthetic.vol.eurusd"); };
+    const auto make = [] {
+        return std::make_shared<recording_surface>("synthetic.vol.eurusd");
+    };
     recording_hold bloomberg(
         surfaces, "feed-1", "bloomberg-a", "c-bbg", "synthetic.vol.eurusd.bloomberg", {}, make);
     recording_hold ice(surfaces, "feed-1", "ice-a", "c-ice", "synthetic.vol.eurusd.ice", {}, make);

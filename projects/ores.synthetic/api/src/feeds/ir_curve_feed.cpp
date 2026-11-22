@@ -62,6 +62,7 @@ ir_curve_feed::ir_curve_feed(
     std::string currency_code,
     std::string index_tenor,
     std::string role,
+    bool discounts_currency,
     std::unique_ptr<ores::analytics::quant::domain::i_yield_curve_process> process,
     const ores::analytics::quant::domain::arrival_spec& arrival,
     std::vector<ir_curve_resolved_entry> entries,
@@ -99,10 +100,11 @@ ir_curve_feed::ir_curve_feed(
     if (entries_.empty())
         throw std::invalid_argument("ir_curve_feed: entries must not be empty");
 
-    // The run's board holds this curve, so a surface on a pair that names this currency
-    // solves its strikes against the same discounts this feed prices its pillars off. The
-    // member is taken once, here, so a tick writes by index.
-    {
+    // The run's board holds the curve that discounts this currency, so a surface on a pair that
+    // names the currency solves its strikes against the same discounts this feed prices its
+    // pillars off. The board holds one curve per currency, so the currency's other curves leave
+    // it alone. The member is taken once, here, so a tick writes by index.
+    if (discounts_currency) {
         auto& shared = market_.values();
         board_member_ = shared.member_of(ores::analytics::quant::domain::market_member_kind::curve,
                                          index_.currency_code);
@@ -471,6 +473,7 @@ std::shared_ptr<ir_curve_feed> make_ir_curve_feed(
                                                 cfg.currency_code,
                                                 ir_curve_index_tenor(cfg),
                                                 cfg.role,
+                                                ir_curve_discounts_its_currency(cfg),
                                                 std::move(process),
                                                 arrival,
                                                 std::move(resolved),

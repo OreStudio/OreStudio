@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-17
-#+updated: 2026-11-21
+#+updated: 2026-11-22
 #+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,12 +26,12 @@ One tool, not two, owns each build-free gate and each generated artefact.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED |
+| State        | DONE |
 | Parent story | [[id:E3BF90FE-43DF-4A30-9F2C-FF5E20128C88][Move codegen and the gates to compass-ng]] |
-| Now          | Tiers 1 and 2 deleted; four scripts wait on compass to stop naming them; tiers 3 and 4 remain. |
+| Now          | Nothing. |
 | Waiting on   | Nothing. |
-| Next         | Tier 3: move the callers (check_clean_standard.sh, the unity exclusions, generator chains), then tier 4, the Python generator. |
-| Last touched | 2026-11-21 |
+| Next         | Nothing. |
+| Last touched | 2026-11-22 |
 
 * Acceptance
 
@@ -203,3 +203,38 @@ via its "Verifies task" field.
 | 4 | Historical agile pages name the deleted scripts. | doc/agile/** | Declined | Records of past work keep what was true then. |
 
 * Result
+
+All four tiers shipped across twelve PRs, #4946 to #5006, and main's Compass
+check passed after each merge that ended a tier.
+
+- Tiers 1 and 2: the Python gates compass-ng ports, their workflows, the
+  baseline files nothing read and their clauses in 211 exception comments.
+- Tier 3: =check_clean_standard.sh=, =compass capture= and
+  =validate_schemas.sh= moved to compass-ng codecs before their 21 files went
+  (#4991). Three scripts that compass-ng still read waited for v0.0.10 and
+  v0.0.11, which moved their data into check documents (#4995, #4997).
+- Tier 4: #5000 sent every entry point of the Python generator to compass-ng;
+  v0.0.12 took the skill levels and the API areas into check documents
+  (#5003); #5005 deleted the generator, 170 files, with =systemd_generate.py=
+  reading the registry through the new =service_registry.py=; #5006 rewrote
+  57 doc pages.
+
+Acceptance:
+
+- Each script went only after a full =compass-ng check= and =compass-ng diff=
+  on the branch reported nothing new without it. This caught scripts that
+  compass-ng read as input, which were kept until a release stopped reading
+  them.
+- The baseline files and their readers are deleted.
+- =local_checks.py= lists only the gates compass does not cover; the
+  component-drift, drift-sweep and cmake-sources gates now run compass-ng with
+  no Python fallback.
+- Exception reasons no longer name a retired baseline or script.
+- The compass repository's Retire legacy tooling table is compass-85's to
+  update, and it tracked each release that freed a script.
+
+Left as they are: =component_registry.py=, =doc_generate.py=, the ER parser
+and the LEI and data scripts, which are data or not code generation;
+=prune_deployed_skills.py=, which keeps the binding skill prune; and two
+orgmode C++ header comments that name the old loader, left out of the doc PR
+to keep C++ out of it.

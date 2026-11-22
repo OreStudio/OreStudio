@@ -1,43 +1,50 @@
 :PROPERTIES:
-:ID: 3EB24EE2-82E5-4F11-AB20-4EEB16167FB3
+:ID: 2D098FE0-9542-4F21-8223-E9D41B28964E
 :END:
-#+title: Task: Search and read the knowledge pages through ores.http
-#+description: The search over the indexed sections with PostgreSQL full-text search, and a page read by org id, as ores.orgmode.service messages served by ores.http routes.
+#+title: Task: Search and read the documents in ores.web
+#+description: A search bar, a list of results and a document view in ores.web over the ores.http document routes, showing the HTML compass renders, with links between documents and anchors on headings.
 #+type: task
 #+level: s1
-#+filetags: :search_the_knowledge_base:sprint_30:v0:
+#+filetags: :read_the_documents_from_compass:sprint_30:v0:
 #+owner: marco
 #+branch:
 #+pr:
-#+blocked_on:
+#+blocked_on: compass document service
 #+blocked_since:
 #+created: 2026-11-21
-#+updated: 2026-11-21
+#+updated: 2026-11-22
 #+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:05FE6068-3CBD-4B93-B6AE-47A5689F1FCB][Search the knowledge base from ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7764434E-173B-4006-8A44-8AC453AAC14B][Read the documents from compass]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-ores.orgmode.service answers a search, a few words in and the best pages out with the section that matched, ranked with PostgreSQL full-text search over the weighted sections; and a page read by org id, its title, description, tags and org text. ores.http serves both as routes, through NATS, in its route registry and OpenAPI document. Nothing goes through the BFF.
+A person types a few words into a search bar in ores.web and sees the
+matching documents, best first, each with its title, description and the
+section that matched, filtered to what their role may see. Opening one shows
+the document as compass renders it: a link to another document opens that
+document in ores.web, and each heading has an anchor a result can point at.
+ores.web reads only the ores.http document routes and parses no org.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
-| Parent story | [[id:05FE6068-3CBD-4B93-B6AE-47A5689F1FCB][Search the knowledge base from ores.web]] |
+| Parent story | [[id:7764434E-173B-4006-8A44-8AC453AAC14B][Read the documents from compass]] |
 | Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-21                               |
+| Waiting on   | compass releasing its document service. |
+| Next         | Plan once compass releases the service. |
+| Last touched | 2026-11-22                               |
 
 * Acceptance
 
-- A search for volatility answers the Volatility pages first, each with the section that matched.
-- A page read by org id answers its org text and its metadata, and an unknown id is refused by name.
-- Both routes are in ores.http's route registry and OpenAPI document, with their schemas.
+- The search bar answers as the person types, and a result opens its document
+  at the section that matched.
+- A link between documents opens the linked document in ores.web.
+- The document view shows compass's sanitised HTML and nothing else; ores.web
+  parses no org for it.
 
 * Plan
 

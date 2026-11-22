@@ -351,7 +351,7 @@ TEST_CASE("the_overnight_items_of_a_currency_follow_the_policy_order", tags) {
     const std::vector<calibration_candidate> candidates{
         {.item = "oresmd://ir/USD?type=fixing&index=ibor&name=SOFR", .provider_code = "nyfed"},
         {.item = "oresmd://ir/USD?type=fixing&index=ibor&name=SOFR", .provider_code = "fred"},
-        {.item = "oresmd://ir/EUR?type=fixing&index=ibor&name=ESTER", .provider_code = "ecb"},
+        {.item = "oresmd://ir/EUR?type=fixing&index=ibor&name=ESTR", .provider_code = "ecb"},
         {.item = "oresmd://ir/USD?type=fixing&index=ibor&name=LIBOR&tenor=3M",
          .provider_code = "nyfed"}};
     calibration_policy policy;

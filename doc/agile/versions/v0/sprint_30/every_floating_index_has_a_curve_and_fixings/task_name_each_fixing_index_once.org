@@ -2,13 +2,13 @@
 :ID: C1D1DAED-D5A6-436B-B43D-612D0571E0B2
 :END:
 #+title: Task: Name each fixing index once
-#+description: The simulated and public fixings of an index share one name, so EUR, JPY and MXN overnight fixings stop splitting into two series.
+#+description: Every index carries its market name inside ORE Studio, and ORE's own spellings are mapped at the ORE codec, so no index has two fixing addresses.
 #+type: task
 #+level: s1
 #+filetags: :every_floating_index_has_a_curve_and_fixings:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/name-each-fixing-index-once
+#+pr: 5023
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-22
@@ -20,29 +20,64 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-The simulated curve writer names the EUR, JPY and MXN overnight indices ESTR, TONA and TIIE, while the public publishers map them as ESTER, TONAR and FTIIE, and the floating index catalogue holds both EUR-ESTER and EUR-ESTR. Each half lands in its own series, so a public value cannot stand over a simulated one. Choose one name per index, the one ORE reads, and make the curve families, the mappings and the floating index catalogue agree.
+ORE Studio names market data by market convention, and ORE's peculiarities are
+mapped where data enters or leaves ORE. Three overnight indices break this. The
+conventions and the public mappings name two of them by ORE's spellings,
+=ESTER= and =TONAR=, while the synthetic curves name them =ESTR= and =TONA=; the
+synthetic curves name Banco de México's funding rate =TIIE=, the name of its
+term rates, while the mapping names it =FTIIE=. Each index has two fixing
+addresses, so an OIS
+trade on ORE's spelling finds no simulated history, and a public value cannot
+stand over a simulated one. Name each index by its market name, map ORE's
+spelling in the ORE index codec, and add a check that refuses a second address.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:0F936789-FEBE-4330-97B9-DFE0837E4466][Every index a generated trade floats on has a curve and fixings]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-22                               |
 
 * Acceptance
 
-- Every index has one fixing address, and a check refuses a second spelling of an index.
-- On a fresh provision, no overnight index has two fixing series.
+- The ORE index codec reads =EUR-ESTER= and =JPY-TONAR= as =ESTR= and =TONA=,
+  and writes them back as ORE names them; the codec tests prove the round trip.
+- The conventions, the public mappings and the synthetic curves name each index
+  by its market name; the overnight indices of HUF and ILS have conventions.
+- A check fails when a synthetic curve states a fixing address that no
+  convention or mapping names.
+- On a fresh provision, no overnight index has two fixing addresses.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. *The mapping in the codec.* =ore_index_codec= holds a table of the indices
+   whose ORE name differs from the market's: per currency, ORE's name and the
+   market's. =read= returns the market name, =write= the ORE name; an index
+   with no row keeps one name. Rows: EUR =ESTER= / =ESTR=; JPY =TONAR= /
+   =TONA=.
+2. *The data follows.* Regenerate =oresmd_index_map.tsv= from the codec and the
+   conventions artefact from it; the OreStudio alias conventions =EUR-ESTR= and
+   =JPY-TONA= state the market addresses; the public mappings of the ECB, the
+   BoJ and Banxico name =ESTR=, =TONA= and =FTIIE=.
+3. *The synthetic families.* Rename =tiie=, whose overnight curve is F-TIIE, to
+   =ftiie=. =estr= and =tona= are already the market names.
+4. *Conventions for every curve index.* Add overnight index conventions for
+   =HUF-HUFONIA= and =ILS-SHIR=, so ORE reads every index a curve projects.
+5. *The check.* A pgTAP test fails when a synthetic curve's fixing address is
+   named by no convention or mapping.
+6. *Proof.* Codec, seeder and pgTAP tests; a fresh provision with no overnight
+   index on two series.
+
+Out of scope here: ORE's overnight alias =MXN-TIIE=, from its Python notebook
+conventions. It is the only convention the TIIE term indices (=MXN-TIIE-28D=
+and the rest) resolve through, so mapping it to =FTIIE= leaves them undefined;
+the fix is IborIndex conventions of their own, which change how ORE builds
+those indices; see [[id:E018113F-F2C6-4723-8376-08F09E0C4BF0][TIIE term indices without conventions of their own]]. Also out of scope: other ORE peculiarities, such as the FX fixing source label
+=TR20H=, follow the same rule in their own tasks.
 
 * Measurements
 
@@ -56,6 +91,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
+| Overnight fixing addresses at an ORE spelling | 0 (ESTER, TONAR, overnight TIIE) | =evidence/overnight_series.sql=, readings in =evidence/one_name_per_overnight_index.txt= | branch head |
+| Currencies with more than one overnight name | 0 of 28 | =evidence/overnight_series.sql=, readings in =evidence/one_name_per_overnight_index.txt= | branch head |
+| ORE index map rows that change | 3 of 604: EUR-ESTER, JPY-TONAR, JPY-TONAR-3M | =marketdata oresmd-index= over the dumped index names | branch head |
+| pgTAP | 104 files, 985 tests, all pass | =projects/ores.sql/test/run_tests.sh= | branch head |
 |      |       |         |        |
 
 * Notes
@@ -75,12 +114,43 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5023][#5023]] | [marketdata] Name each overnight fixing index by its market name |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | pgTAP test copies the address formula of =index_fixing_uri= | =index_fixings.hpp= | Accepted | The function's comment names the test (e05f7e1959). |
+| 2 | Possible silent skip in the pgTAP test | =synthetic_curve_fixing_addresses_test.sql= | No change | The reviewer found no issue. |
+| 3 | Codec table and index map can drift | =datum_ore_index_codec_tests.cpp= | Declined | The map guard is not long running; it runs with the codec suite and caught the drift on this branch. |
+| 4 | =MXN-TIIE= still unmapped | — | Agreed | Out of scope; capture E018113F. |
+| 5 | Existing databases need the family rename | populate scripts | Declined | Environments are rebuilt from the populate scripts; no seed migrations. |
+| 6 | Diagram PNG and academic review of pages | =ores.marketdata.data_model.png=, knowledge pages | Accepted | PNG re-rendered; synthetic mention removed from a general note; market names cited (e05f7e1959). |
 
 * Result
+
+Each overnight index has one name in ORE Studio, its market name. On a fresh
+provision, each of the 28 currencies with an overnight curve has one overnight
+fixing address. No series is held at an ORE spelling.
+
+- The ORE index codec maps =EUR-ESTER= to =ESTR= and =JPY-TONAR= to =TONA= on
+  read, and back on write. The codec tests prove the round trip.
+- The index map changes three of its 604 rows. The conventions seed, the ECB and
+  BoJ public mappings, and the alias conventions =EUR-ESTR= and =JPY-TONA= now
+  state the market addresses.
+- The synthetic family =tiie= is now =ftiie=, so the MXN funding curve states
+  its fixings at =FTIIE=, as the Banxico mapping does. The vendor identifiers
+  follow.
+- New overnight index conventions =HUF-HUFONIA= (ACT/360, per the MNB HUFONIA
+  swap index regulation) and =ILS-SHIR= (ACT/365.FIXED, per market convention
+  tables; the Bank of Israel states no day count).
+- The pgTAP test =synthetic_curve_fixing_addresses_test.sql= fails when a
+  synthetic curve states a fixing address that no convention or mapping names.
+
+Not done: ORE's overnight alias =MXN-TIIE= still reads as =TIIE=. The TIIE term
+indices resolve only through it, so mapping it waits on the capture
+[[id:E018113F-F2C6-4723-8376-08F09E0C4BF0][TIIE term indices without conventions of their own]].
+
+Two series per address remain for ESTR, TONA, FTIIE and others: a public
+publisher and the simulated history. One producer per address is the subject of
+the task Generate simulated fixings through the simulator adapter.

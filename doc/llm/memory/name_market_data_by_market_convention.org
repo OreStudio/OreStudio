@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 37EB516D-2BC5-4E89-8FEB-7FF3C09B2983
+:END:
+#+title: Name market data by market convention, and map ORE's names
+#+description: Every market data name in ORE Studio is the market's own; ORE's spellings are mapped at the ORE boundary.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+
+ORE Studio names all market data by market convention: an index, a source, a curve or a quote carries the name the market and its administrator use, such as ESTR for the ECB's euro short-term rate and TONA for the Bank of Japan's overnight rate. Where ORE spells a name differently, such as EUR-ESTER or JPY-TONAR, the difference is ORE's peculiarity, and a mapping translates it where data enters or leaves ORE. ORE's spelling never becomes the name inside ORE Studio.
+
+*Why:* The fixing addresses of three overnight indices were split between ORE's spellings, which the conventions and the public mappings had taken from ORE's examples, and the market's, which the synthetic curves used. The first proposed fix adopted ORE's spellings everywhere; the user rejected it: ORE can keep its own conventions, and ORE Studio must name things correctly, with a mapping layer between the two.
+
+*How to apply:* When a name comes from ORE, from its examples, its schema or its parser, check the market's own name before adopting it. Store the market name, and put ORE's in the mapping that the ORE codecs apply at import and export. When a check or a dataset compares names, compare market names.

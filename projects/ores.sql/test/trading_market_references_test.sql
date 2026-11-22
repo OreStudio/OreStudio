@@ -79,7 +79,7 @@ select pg_temp.book_leg('00000000-0000-0000-0000-0000000e1001', '00000000-0000-0
 select pg_temp.book_leg('00000000-0000-0000-0000-0000000e1002', '00000000-0000-0000-0000-0000000e2002',
     'Fixed', null);
 select pg_temp.book_leg('00000000-0000-0000-0000-0000000e1003', '00000000-0000-0000-0000-0000000e2003',
-    'Floating', 'oresmd://ir/EUR?type=fixing&index=ibor&name=ESTER');
+    'Floating', 'oresmd://ir/EUR?type=fixing&index=ibor&name=ESTR');
 
 select results_eq(
     $$select trade_id, oresmd_uri, source
@@ -98,7 +98,7 @@ select is_empty(
 select is(
     (select count(*)::int from ores_trading_market_references_fn(ores_utility_system_tenant_id_fn(),
          array['00000000-0000-0000-0000-0000000e1001', '00000000-0000-0000-0000-0000000e1002']::uuid[])
-     where oresmd_uri like '%name=ESTER%'),
+     where oresmd_uri like '%name=ESTR%'),
     0,
     'a trade outside the set states none of its requirements');
 

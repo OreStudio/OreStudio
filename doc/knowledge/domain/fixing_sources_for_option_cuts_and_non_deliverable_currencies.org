@@ -101,10 +101,14 @@ The two families, term and overnight, are described in
 
 ** One name per index
 
-Each index has one name. Three indices are currently written under two: the
-EUR, JPY and MXN overnight rates appear as =ESTR= and =ESTER=, =TONA= and
-=TONAR=, and =TIIE= and =FTIIE=. The two halves land in different series, so
-one index has two histories. The catalogue of sources must fix one name per index.
+Each index has one name, its market name: =ESTR= for the ECB's euro short-term
+rate, =TONA= for the Bank of Japan's overnight rate, =FTIIE= for Banco de
+México's funding rate. Where ORE spells an index otherwise, as =EUR-ESTER= or
+=JPY-TONAR=, the ORE index codec maps its spelling to the market name on the
+way in and back on the way out; see
+[[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio Market Data URI]]. A
+curve may state its fixings only at an address that a convention or a mapping
+names, so no index acquires a second name.
 
 * See also
 
@@ -122,4 +126,7 @@ one index has two histories. The catalogue of sources must fix one name per inde
 - ISDA and EMTA (2019). /Annex A to the 1998 FX and Currency Option Definitions/, amended and restated 19 November 2017, amended 3 January 2019. [[https://www.isda.org/book/annex-a-to-the-1998-fx-and-currency-option-definitions/][isda.org]]
 - Tradition SEF (2015). /Non Deliverable Forwards/, product listing filed with the CFTC. [[https://www.cftc.gov/filings/ptc/ptc022615tradsef003.pdf][cftc.gov]]
 - European Central Bank. /Euro foreign exchange reference rates/. [[https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/index.en.html][ecb.europa.eu]]
+- European Central Bank. /Euro short-term rate (€STR): overview/. [[https://www.ecb.europa.eu/stats/financial_markets_and_interest_rates/euro_short-term_rate/html/eurostr_overview.en.html][ecb.europa.eu]]
+- Japan Exchange Group. /3-Month TONA Futures/, contract specification. [[https://www.jpx.co.jp/english/derivatives/products/interest-rate/3m-tona-futures/index.html][jpx.co.jp]]
+- Banco de México. /Securities prices and interest rates/, which publishes the TIIE de Fondeo. [[https://www.banxico.org.mx/markets/securities-prices-and-interes.html][banxico.org.mx]]
 - Financial Conduct Authority (2021). /Announcement on the future cessation and loss of representativeness of the LIBOR benchmarks/, 5 March 2021. [[https://www.fca.org.uk/publication/documents/future-cessation-loss-representativeness-libor-benchmarks.pdf][fca.org.uk]]

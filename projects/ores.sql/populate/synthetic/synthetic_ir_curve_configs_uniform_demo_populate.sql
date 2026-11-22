@@ -140,7 +140,7 @@ begin
         ('NZD', 'nzonia',  0.0400),
         ('KRW', 'kofr',    0.0280),
         ('INR', 'mibor',   0.0650),
-        ('MXN', 'tiie',    0.1000),
+        ('MXN', 'ftiie',    0.1000),
         ('ZAR', 'zaronia', 0.0750),
         ('DKK', 'destr',   0.0280),
         ('PLN', 'polonia', 0.0550),
@@ -159,7 +159,7 @@ begin
         ('CHF', 'saron'), ('AUD', 'aonia'), ('CAD', 'corra'),
         ('CNY', 'shibor'), ('HKD', 'honia'), ('SGD', 'sora'),
         ('SEK', 'swestr'), ('NOK', 'nowa'), ('NZD', 'nzonia'),
-        ('KRW', 'kofr'), ('INR', 'mibor'), ('MXN', 'tiie'),
+        ('KRW', 'kofr'), ('INR', 'mibor'), ('MXN', 'ftiie'),
         ('ZAR', 'zaronia'), ('DKK', 'destr'), ('PLN', 'polonia'),
         ('TWD', 'taibor')
     ) as c(currency_code, index_family)

@@ -131,6 +131,7 @@ import { CurveBlueprintsPage, CurveBlueprintPage } from './marketdata/curveBluep
 import { SubscriptionsPage } from './marketdata/SubscriptionsPage.js';
 import { FxFeedPage } from './marketdata/synthetic/fxFeeds.js';
 import { IrFeedPage } from './marketdata/synthetic/irFeeds.js';
+import { VolFeedPage } from './marketdata/synthetic/volFeeds.js';
 import { SyntheticScreen } from './marketdata/synthetic/SyntheticScreen.js';
 import { TenantAccountPage } from './access/TenantAccountPage.js';
 import { BookPage } from './refdata/BookPage.js';
@@ -1482,6 +1483,18 @@ export function AppRoutes({
                     shell,
                     () => (
                         <IrFeedPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path={`${PATHS.volFeed}/:id`}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <VolFeedPage />
                     ),
                     'workspace',
                 )}

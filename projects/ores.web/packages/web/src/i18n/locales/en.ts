@@ -4476,6 +4476,9 @@ export const en: SourceCatalogue = {
                 runs: 'Runs',
                 cuts: 'Cuts',
                 entries: 'Entries',
+                surface: 'Surface',
+                expiries: 'Expiries',
+                contributors: 'Contributors',
             },
         },
         fields: {
@@ -4590,6 +4593,34 @@ export const en: SourceCatalogue = {
             tenor_convention_code: 'Tenor convention',
             split_tenor_code: 'Split tenor',
             curve_role_code: 'Curve role',
+            start_skew: 'Start skew (ρ)',
+            start_curvature: 'Start curvature (η)',
+            skew_reversion: 'Skew reversion',
+            skew_volatility: 'Skew volatility',
+            curvature_reversion: 'Curvature reversion',
+            curvature_volatility: 'Curvature volatility',
+            spot_variance_correlation: 'Spot and variance correlation',
+            spot_skew_correlation: 'Spot and skew correlation',
+            segment_correlation: 'Segment correlation',
+            atm_vol: 'ATM volatility',
+            variance_reversion: 'Variance reversion',
+            variance_volatility: 'Variance volatility',
+            contributor_id: 'Contributor',
+            provider_code: 'Provider',
+            noise: 'Noise',
+            wing_widening: 'Wing widening',
+            expiry_widening: 'Expiry widening',
+            quote_step: 'Quote step',
+            missing_probability: 'Missing probability',
+            stale_probability: 'Stale probability',
+            outlier_probability: 'Outlier probability',
+            outlier_size: 'Outlier size',
+            bias: 'Bias',
+            feed_id: 'Feed',
+            arrival_mode: 'Arrival',
+            branching_ratio: 'Branching ratio',
+            decay: 'Decay',
+            sensitivity: 'Sensitivity',
         },
         choices: {
             requirement: {
@@ -7048,6 +7079,65 @@ export const en: SourceCatalogue = {
             add: 'Add a tenor entry',
             one: 'Tenor entry',
             remove: 'Delete the tenor entry',
+        },
+        volFeeds: {
+            add: 'New vol surface',
+            addTitle: 'New vol surface',
+            engine: 'SSVI',
+            samePair: 'The base and quote currencies must differ.',
+            removeWarning:
+                'The feed stops if it runs. Its expiries and contributor links are deleted first, then the feed. The history of each stays.',
+            help: {
+                ticks_per_hour:
+                    'How many surfaces the feed makes in an hour. 12 is one every five minutes.',
+                arrival_mode:
+                    'How the ticks arrive: at a fixed interval, at random, or in clusters.',
+                branching_ratio:
+                    'Only a clustered arrival uses it: how many further ticks one tick causes, below one.',
+                decay: 'Only a clustered arrival uses it: how fast a burst fades, in units of one over a second.',
+                sensitivity:
+                    'How strongly a market-wide regime moves this surface, where one is the average.',
+                start_skew:
+                    'The SSVI rho the surface starts at and reverts to, between -1 and 1. FX usually quotes a negative skew.',
+                start_curvature:
+                    'The SSVI eta the surface starts at and reverts to, above 0 and below the square root of 2 (1.4142). It sets how far the wings rise above the ATM.',
+                skew_reversion: 'How fast the skew returns to its start, per year.',
+                skew_volatility: 'How far the skew moves, per square root of a year.',
+                curvature_reversion: 'How fast the curvature returns to its start, per year.',
+                curvature_volatility: 'How far the curvature moves, per square root of a year.',
+                spot_variance_correlation:
+                    'How the forward variances move with spot, between -1 and 1.',
+                spot_skew_correlation: 'How the skew moves with spot, between -1 and 1.',
+                segment_correlation:
+                    'How closely neighbouring forward variances move together, from 0 to just below 1.',
+                enabled: 'A feed that is not enabled cannot start.',
+                auto_start: 'The feed starts when the synthetic service starts.',
+            },
+            surface: {
+                lead: 'The SSVI surface the feed evolves: where it starts, how its skew and curvature move, and how its moves correlate with spot.',
+                running: 'The feed is running. A change applies when it starts again.',
+                start: 'Start',
+                dynamics: 'Dynamics',
+                correlations: 'Correlations',
+                editTitle: '{part}: {pair}',
+                gamma: 'Gamma (γ)',
+                fixed: 'fixed',
+                gammaWhy:
+                    'The generator holds gamma at one half. At that value the surface is free of butterfly arbitrage while the curvature stays below the square root of 2, and the generator keeps it there. Another gamma makes the no-arbitrage conditions depend on each expiry and on the skew, so you cannot change it here.',
+            },
+            expiries: {
+                lead: 'The expiries the surface is quoted at, each with its ATM volatility and how its forward variance moves. The ATM total variance must rise from one expiry to the next. If it does not, the feed does not start.',
+                add: 'Add an expiry',
+                one: 'Expiry',
+                remove: 'Delete the expiry',
+            },
+            contributors: {
+                lead: 'The vendors that quote the surface. Each vendor adds its own noise to the quotes, and every surface it quotes shares that noise profile.',
+                add: 'Add a contributor',
+                one: 'Contributor',
+                remove: 'Remove the contributor',
+                noise: 'Noise profile: {provider}',
+            },
         },
         runs: {
             status: 'Status',

@@ -15,7 +15,7 @@ Adapter traffic uses one subject family under =marketdata.v1=. Ticks arrive on
 =marketdata.v1.ingress.<adapter>.<id token>=. Control messages use
 =marketdata.v1.adapters.*=. After the service stores a tick it publishes it
 once, on its feed's subject, as
-[[id:4DB1ED0C-4BEA-4164-9129-5731AE559AE9][A source tick is published once and entitled when it is watched]] states.
+[[id:4DB1ED0C-4BEA-4164-9129-5731AE559AE9][Publication and entitlement of live ticks]] states.
 No subject contains the word synthetic or any other mark of the source kind.
 
 * Detail

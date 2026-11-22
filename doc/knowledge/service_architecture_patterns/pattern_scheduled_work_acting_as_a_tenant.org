@@ -142,7 +142,7 @@ both appear in every audit row the run writes.
 - *Scheduled reports.* [[id:B3165E6F-AE8C-4DBD-8F87-2EC4F276FCF0][Report execution at scale]]
   applies the composite: the =ReportRun= role, the audience of reporting, ORE
   and compute, and the moments reporting creates and revokes a grant.
-- *Market data adapters.* [[id:A7D1927B-CB42-49A9-94EF-DBB40225274C][The identity an adapter runs as]]
+- *Market data adapters.* [[id:A7D1927B-CB42-49A9-94EF-DBB40225274C][Adapter identity]]
   is the counterexample: an adapter acts as no tenant and no party, so it needs
   no grant and no token exchange.
 - *The expiry sweep.* [[id:F06175E8-CA73-4A21-BEC5-898D0A388E17][Approval

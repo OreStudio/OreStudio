@@ -173,7 +173,7 @@ its trade id booked treats the trade as present.
 
 A read made with the unit of work's context runs on its transaction and does
 not end it, so the booking's reads see its own writes. See
-[[id:37D08E01-F99C-4D2D-8ACA-E19E252BBE3D][A repository works inside an open transaction and never holds credentials]].
+[[id:37D08E01-F99C-4D2D-8ACA-E19E252BBE3D][Repositories within the unit of work]].
 
 A refusal by the database rolls the whole unit back. The service reports the
 database's own words. It does not map them to a second set of codes.

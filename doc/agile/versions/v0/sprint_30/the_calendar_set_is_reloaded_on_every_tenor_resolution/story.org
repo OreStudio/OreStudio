@@ -165,7 +165,7 @@ duplicates:
 
 ** See also
 
-- [[id:675E89FC-B5AA-4250-8B86-78062F0F22BC][The forward a synthetic surface is struck against]] -- the arc that found this,
+- [[id:675E89FC-B5AA-4250-8B86-78062F0F22BC][Forwards for synthetic volatility surfaces]] -- the arc that found this,
   and that deliberately needs no calendar.
 - [[id:D6FDEFC6-ECF9-4C9A-A566-9BB61FCDBAC1][The yield curve process type catalogue]] -- the curve feeds whose tenor
   resolution pays this cost.

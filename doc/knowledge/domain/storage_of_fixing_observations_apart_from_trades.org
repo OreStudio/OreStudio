@@ -64,7 +64,7 @@ needs an authorisation status the store does not hold yet; see
 * See also
 
 - [[id:784D9D97-721A-42EC-BA91-A85764979CD0][Fixings]] — the structure note.
-- [[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][A quote series is keyed by item, provider and party]] — contrasts: how a quote is stored.
+- [[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][Market series and observations]] — contrasts: how a quote is stored.
 
 * Sources
 

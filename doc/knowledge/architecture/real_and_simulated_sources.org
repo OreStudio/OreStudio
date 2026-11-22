@@ -33,9 +33,9 @@ Source: [[proj:doc/knowledge/architecture/real_and_simulated_adapters.puml][=rea
 | Mapping | One mapping for the provider. See [[id:BAE0F052-CCA6-43FB-A139-03518CE2D929][The mapping belongs to the provider and not to the source]]. |
 | Adapter contract | The same four messages. See [[id:5DFA094B-4F9F-4190-8251-8D4D0B77A5C7][An adapter and the service meet at four messages]]. |
 | Ingest, quality, storage | The same path. See [[id:00D63182-C7FF-4AC9-8A83-9A5D984B2876][The ingest loop and the one pipeline]] and [[id:98E49FCD-10E4-4DCE-9099-E728359B6D60][Quality checks run between mapping and storage and ignore the source kind]]. |
-| Quote series key | (item, provider, party). See [[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][A quote series is keyed by item, provider and party]]. |
+| Quote series key | (item, provider, party). See [[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][Market series and observations]]. |
 | Subscription and routing | The same entities and the same screens. See [[id:37B27CA8-9F44-4A61-9B02-3EAABD8C3818][A party routes to exactly one source for each provider]]. |
-| Entitlement and metering | The same events. See [[id:3E51B0BD-D22B-4790-821F-E2FED44D152C][Usage is recorded as events and priced later]]. |
+| Entitlement and metering | The same events. See [[id:3E51B0BD-D22B-4790-821F-E2FED44D152C][Event-based metering of market data usage]]. |
 | Party stream | The same subject and the same tick. See [[id:1F609D0D-5C72-4A21-B988-6957F18D426F][The market tick]]. |
 
 ** What differs
@@ -64,7 +64,7 @@ same ids and the same mapping. See [[id:37B27CA8-9F44-4A61-9B02-3EAABD8C3818][A 
 
 A party can read the kind of any source it is routed to, on the source's screen
 and on the series. The service hides nothing. The system simply never needs the
-answer to behave correctly. See [[id:F64DB34E-084D-4437-B536-392AA26D8B77][No code path may behave differently because a source is simulated]].
+answer to behave correctly. See [[id:F64DB34E-084D-4437-B536-392AA26D8B77][Simulated sources as data rather than code paths]].
 
 ** Who defines what
 
@@ -73,6 +73,6 @@ See [[id:922C155B-6733-4D2B-A675-A7361A5BDC63][A system bundle installs the cata
 * See also
 
 - [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
-- [[id:F64DB34E-084D-4437-B536-392AA26D8B77][No code path may behave differently because a source is simulated]] — completes: the rule that this page applies.
+- [[id:F64DB34E-084D-4437-B536-392AA26D8B77][Simulated sources as data rather than code paths]] — completes: the rule that this page applies.
 - [[id:69287DA4-3558-4EAE-972B-82BC7F9296E9][The simulator stops at the adapter seam]] — completes: how far the simulator goes.
-- [[id:FA280E9B-7E00-4747-8D29-42B3D4258873][A source switch changes one route and nothing else]] — exemplifies: moving a party between the two.
+- [[id:FA280E9B-7E00-4747-8D29-42B3D4258873][Switching the source of a market data provider]] — exemplifies: moving a party between the two.

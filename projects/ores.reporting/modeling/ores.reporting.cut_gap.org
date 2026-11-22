@@ -233,5 +233,5 @@ rather than adding a second line a person reads twice.
 * See also
 
 - [[id:4A81F2C6-9D37-42E0-B5A8-0C61D94E7B23][ores.reporting.cut]] — the body these gaps belong to.
-- [[id:F6362451-D569-4609-97A3-F1C785AAAF02][The cut is the body a run prices from]] — why an incomplete body is refused before it is signed.
+- [[id:F6362451-D569-4609-97A3-F1C785AAAF02][The cut model: recorded facts, derived states and authorisation]] — why an incomplete body is refused before it is signed.
 - [[id:F1B83A47-E029-4D78-9A56-31B7CFE49265][ores.reporting]] — component group overview.

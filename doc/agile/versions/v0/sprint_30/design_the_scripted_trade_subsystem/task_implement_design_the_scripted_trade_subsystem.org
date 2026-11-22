@@ -129,7 +129,7 @@ tasks.
 ** What the survey found
 
 - The architecture lives where the rule of one component reading every ORE
-  document puts it ([[id:9697F09E-441A-4B51-869E-FC59433EEA1E][One component reads every ORE document, and none of them stores XML]]): a script's text is trading's data,
+  document puts it ([[id:9697F09E-441A-4B51-869E-FC59433EEA1E][Parsing of ORE documents and the ownership of their rows]]): a script's text is trading's data,
   not an ORE document, so its parser belongs to =ores.trading=. ORE's parser
   needs only Boost Spirit and a few header-only QuantLib types, so the copy can
   replace those and link no QuantLib.

@@ -61,7 +61,7 @@ task and name that file in the Command column.
 
 * Notes
 
-- Target state: [[id:E11DB09A-328A-476A-A71B-8E303A68D07D][A store error says whether a retry can succeed]].
+- Target state: [[id:E11DB09A-328A-476A-A71B-8E303A68D07D][Classification of store errors by retryability]].
 
 * Test Scenarios
 

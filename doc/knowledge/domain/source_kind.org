@@ -14,7 +14,7 @@
 A source is one adapter instance of a provider. Its =kind= is a reference data
 code: =live=, =replay=, =test=, =simulated= or =derived=. The kind lives on the
 source and nowhere else. A person can read it. The pipeline never branches on
-it. See [[id:F64DB34E-084D-4437-B536-392AA26D8B77][No code path may behave differently because a source is simulated]].
+it. See [[id:F64DB34E-084D-4437-B536-392AA26D8B77][Simulated sources as data rather than code paths]].
 
 * Detail
 
@@ -44,7 +44,7 @@ and an optional rate card. The name is a label. No code parses it.
   value came from.
 - A series does not carry the kind. A series is keyed by provider and not by
   source, so one series can hold values from more than one source over time. See
-  [[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][A quote series is keyed by item, provider and party]] and [[id:FA280E9B-7E00-4747-8D29-42B3D4258873][A source switch changes one route and nothing else]].
+  [[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][Market series and observations]] and [[id:FA280E9B-7E00-4747-8D29-42B3D4258873][Switching the source of a market data provider]].
 
 ** How it differs from derivation_kind
 
@@ -56,7 +56,7 @@ from simulated quotes is =derived= by one axis and =simulated= by the other.
 * See also
 
 - [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
-- [[id:F64DB34E-084D-4437-B536-392AA26D8B77][No code path may behave differently because a source is simulated]] — completes: the rule for how the kind may be used.
+- [[id:F64DB34E-084D-4437-B536-392AA26D8B77][Simulated sources as data rather than code paths]] — completes: the rule for how the kind may be used.
 - [[id:68CE1E1D-7568-4911-BB71-CCF5A9E07BB7][Every source belongs to a provider in the catalogue]] — completes: the provider that owns the source.
 - [[id:6FA21D8B-F95A-47BE-BD16-26048798A164][Derivation Kind]] — completes: the sibling axis of observed against computed.
 - [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — the component the vocabulary lives in.

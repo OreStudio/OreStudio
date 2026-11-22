@@ -24,7 +24,7 @@
  */
 
 -- =============================================================================
--- One contributor's quote of a pillar: the market series it is read from, and the weight the contributor carries in the calibration. A pillar reads one series per contributor, so a broker's quotes and the derived source's quotes of the same point are two sources of one pillar, and a missing observation from one of them is not a refusal by itself. See [[id:7AE57098-08D4-4D4A-83D6-918FE520B68E][A pillar names the market series it reads]]. market_series_id is a soft reference to an fx_option quote series in ores.marketdata, named by the caller from the series the party holds. contributor_code names the provider whose series it is, as the series' own provider_code does, so a reader sees the contributor without a cross-component read. - Artefact Table
+-- One contributor's quote of a pillar: the market series it is read from, and the weight the contributor carries in the calibration. A pillar reads one series per contributor, so a broker's quotes and the derived source's quotes of the same point are two sources of one pillar, and a missing observation from one of them is not a refusal by itself. See [[id:7AE57098-08D4-4D4A-83D6-918FE520B68E][Market series identity in curve pillars]]. market_series_id is a soft reference to an fx_option quote series in ores.marketdata, named by the caller from the series the party holds. contributor_code names the provider whose series it is, as the series' own provider_code does, so a reader sees the contributor without a cross-component read. - Artefact Table
 -- =============================================================================
 
 create table if not exists "ores_dq_fx_vol_surface_pillar_sources_artefact_tbl" (

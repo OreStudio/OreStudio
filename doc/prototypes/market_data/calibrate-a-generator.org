@@ -212,5 +212,5 @@ every action.
 - [[id:3A15911E-4EA6-40A6-BC45-E8AEBE49AC54][Prototype the calibration screen]] — the task this page answers.
 - [[id:818D388A-04FA-4C83-BC08-B5E0B9A94DE0][Model the market calibration policy]] — the data the policy needs.
 - [[id:2159FD0C-714C-45CF-BC8A-9ABFB98D3254][Build the calibration screen]] — the task that carries the decision.
-- [[file:../../knowledge/domain/synthetic_calibration_sources.org][Synthetic prices are calibrated from free public sources]] — which sources, and what their terms say.
+- [[file:../../knowledge/domain/synthetic_calibration_sources.org][Free public sources for synthetic price calibration]] — which sources, and what their terms say.
 - [[file:../../knowledge/domain/fx_spot_generation_config.org][The FX spot generation config]] — the config and its items.

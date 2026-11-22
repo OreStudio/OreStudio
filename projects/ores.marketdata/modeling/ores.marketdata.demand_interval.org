@@ -246,5 +246,5 @@ demand_interval_repository::read_latest_all_tenants(const context& ctx) {
 * See also
 
 - [[id:083D4B54-549B-4D56-AE89-430A8A4277FF][Demand drives what an adapter publishes]] -- the demand set these intervals record.
-- [[id:3E51B0BD-D22B-4790-821F-E2FED44D152C][Usage is recorded as events and priced later]] -- the events this table records.
+- [[id:3E51B0BD-D22B-4790-821F-E2FED44D152C][Event-based metering of market data usage]] -- the events this table records.
 

@@ -267,7 +267,7 @@ reply:    result_id, workunit_id, package_uri, package_sha256,
 A node asks only when it is free, and asks again at once after a job.
 When no work waits, it waits for the =work_available= notice, or for a
 long timeout measured in minutes that covers a lost notice, and sends
-nothing until one of them comes ([[id:2EEE37F6-0570-43B8-979F-079153A3DECA][Work is pushed to the grid, and an idle grid costs one claim per wrapper per timeout]]). The service chooses the job: the platform decides which
+nothing until one of them comes ([[id:2EEE37F6-0570-43B8-979F-079153A3DECA][Push-based work distribution to the compute grid]]). The service chooses the job: the platform decides which
 entries a node can run, the tenant with the fewest running jobs goes
 first, and then priority and age. The claim holds the job under a
 lease of five minutes. The heartbeat extends the lease, and a node that

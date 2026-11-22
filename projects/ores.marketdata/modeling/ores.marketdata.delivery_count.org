@@ -262,5 +262,5 @@ delivery_count_repository::read_latest_all_tenants(const context& ctx) {
 
 * See also
 
-- [[id:3E51B0BD-D22B-4790-821F-E2FED44D152C][Usage is recorded as events and priced later]] -- the events this table records.
+- [[id:3E51B0BD-D22B-4790-821F-E2FED44D152C][Event-based metering of market data usage]] -- the events this table records.
 

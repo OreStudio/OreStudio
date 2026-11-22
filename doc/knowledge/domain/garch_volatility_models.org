@@ -386,7 +386,7 @@ variance more than a fall of the same size.
 
 The parameters are estimated from the daily fixings of the pair, five years of
 which every environment holds; see
-[[id:3F9D6EAE-9FB8-4A0D-9BAF-1EA3EA93AB4F][Synthetic prices are calibrated from free public sources]].
+[[id:3F9D6EAE-9FB8-4A0D-9BAF-1EA3EA93AB4F][Free public sources for synthetic price calibration]].
 
 1. *Variance targeting.* The unconditional variance is set to the sample
    variance of the daily log returns, and =omega = sigma^2_inf * (1 - kappa)=.

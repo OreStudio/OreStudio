@@ -363,7 +363,7 @@ firm seeded its own.
 
 * See also
 
-- [[id:F6362451-D569-4609-97A3-F1C785AAAF02][The cut is the body a run prices from]] — why the kind is reference data, and the columns it states.
+- [[id:F6362451-D569-4609-97A3-F1C785AAAF02][The cut model: recorded facts, derived states and authorisation]] — why the kind is reference data, and the columns it states.
 - [[id:33E879B7-496A-406D-B3F2-72637379AD02][Kinds of cut]] — the occasions the seeded kinds name.
 - [[id:5C31A0D7-6E42-4B18-9F0A-2D7E4C81B3A6][ores.reporting.cut_family]] — the family a kind belongs to.
 - [[id:7D40B2E9-3A15-4C86-8E57-91B6C2D4093F][ores.reporting.cut_resolution_rule]] — the rule a kind names.

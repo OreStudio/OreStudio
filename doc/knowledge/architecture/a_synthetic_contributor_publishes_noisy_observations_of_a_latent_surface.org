@@ -89,7 +89,7 @@ short-rate model each IR curve feed steps -- and strikes every surface against i
 without publishing it. A contributor's quote is an observation of a surface solved
 in that market, so the whole contributor layer sits on top of one forward per
 expiry and one curve per currency. The design, the interface and the four choices
-it settles are [[id:675E89FC-B5AA-4250-8B86-78062F0F22BC][The forward a synthetic surface is struck against]]; the reason a
+it settles are [[id:675E89FC-B5AA-4250-8B86-78062F0F22BC][Forwards for synthetic volatility surfaces]]; the reason a
 party's own curve differs from it by the bootstrap is
 [[id:53D14F31-EE32-493E-BBEB-140AA4906BE4][Constructing a volatility surface: from quotes to a published set]].
 
@@ -117,7 +117,7 @@ contributors publish through the four messages of
 [[id:5DFA094B-4F9F-4190-8251-8D4D0B77A5C7][An adapter and the service meet at four messages]],
 and their quotes are stored as series keyed by item, provider and party. Past
 the seam a contributor's quote is a vendor's quote, as
-[[id:F64DB34E-084D-4437-B536-392AA26D8B77][No code path may behave differently because a source is simulated]]
+[[id:F64DB34E-084D-4437-B536-392AA26D8B77][Simulated sources as data rather than code paths]]
 requires, so a real vendor replaces a contributor by a change of route.
 
 * See also
@@ -125,5 +125,5 @@ requires, so a real vendor replaces a contributor by a change of route.
 - [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
 - [[id:69287DA4-3558-4EAE-972B-82BC7F9296E9][The simulator stops at the adapter seam]] — completes: stale values, gaps and bad ticks per contributor and per point, where that note's fault injection works per generator.
 - [[id:53D14F31-EE32-493E-BBEB-140AA4906BE4][Constructing a volatility surface: from quotes to a published set]] — completes: the construction a tenant performs on the quotes the contributors publish.
-- [[id:F64DB34E-084D-4437-B536-392AA26D8B77][No code path may behave differently because a source is simulated]] — exemplifies: noise that lives entirely behind the seam.
+- [[id:F64DB34E-084D-4437-B536-392AA26D8B77][Simulated sources as data rather than code paths]] — exemplifies: noise that lives entirely behind the seam.
 - [[id:478EFA03-AB47-4286-A3CE-583C7438632D][User Journey: Adjust a curve or surface by hand]] — answers: what a trader's hand marks correct, which a clean feed would leave nothing to correct.

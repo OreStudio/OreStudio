@@ -293,7 +293,7 @@ feeds, the values and the fetch.
 - [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders the market data cluster.
 - [[id:93BF1249-609F-452C-B1EC-FEB493F44273][Spot rate governance]] — why an official rate is not the live market, and who approves a rate set.
 - [[id:6F3F1A80-5B4C-4F33-ADF0-F42CDE8FF8C2][The tick ingest pipeline]] — how a published value reaches the durable store.
-- [[id:D71F9446-C62E-48A6-A87B-136EF598A59E][A source tick is stored once and entitled when it is read]] — the party entitlement a fixing read carries.
+- [[id:D71F9446-C62E-48A6-A87B-136EF598A59E][Storage and entitlement of stored ticks]] — the party entitlement a fixing read carries.
 
 * See also
 

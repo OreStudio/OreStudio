@@ -37,7 +37,7 @@ composite follows the same routing and delivery path as any other item. See
 
 Each input provider's licence limits derived use. The system checks that the
 party holds =derived= on every input provider. A composite with a missing right
-gets no values and shows the reason. See [[id:B746D4F2-F1B5-4563-A6E4-D36BDF8E6BBE][Display, non-display and derived rights are modelled on the subscription]].
+gets no values and shows the reason. See [[id:B746D4F2-F1B5-4563-A6E4-D36BDF8E6BBE][Display, non-display and derived market data rights]].
 
 ** Cost attribution
 
@@ -57,7 +57,7 @@ needs no schema change.
 * See also
 
 - [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
-- [[id:B746D4F2-F1B5-4563-A6E4-D36BDF8E6BBE][Display, non-display and derived rights are modelled on the subscription]] — completes: the licence a composite needs.
-- [[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][A quote series is keyed by item, provider and party]] — completes: the inputs and the output are quote series.
+- [[id:B746D4F2-F1B5-4563-A6E4-D36BDF8E6BBE][Display, non-display and derived market data rights]] — completes: the licence a composite needs.
+- [[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][Market series and observations]] — completes: the inputs and the output are quote series.
 - [[id:4B7E9471-F9A8-461E-B50C-C7B9A57C6D04][Spot rate blending]] — completes: the business reason and the methods.
 - [[id:93BF1249-609F-452C-B1EC-FEB493F44273][Spot rate governance]] — completes: who approves the rule.

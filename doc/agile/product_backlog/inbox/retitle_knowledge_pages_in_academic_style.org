@@ -72,8 +72,13 @@ to copy them.
 
 The rule is now written down: /Titles/ in [[id:E3B70401-5142-4ACC-A61F-1BBF19F8470F][Zettelkasten]] states it, the
 knowledge document contract and the academic prose review point at it, and
-=CLAUDE.md= names it. Two parts remain: the lint, and the retitling of the pages
-the scan finds.
+=CLAUDE.md= names it. The retitling is done: sixty-three
+knowledge pages that the scan found now carry titles in the form of academic
+paper titles, with their files renamed to match. The scan's other matches are
+noun phrases it misread ("Wash books and risk routing", "The workflow instance
+and step states") and the journey-named pages under =doc/prototypes=, which are
+left for a decision on their scope. The lint remains; compass-85 has scoped it as
+a =knowledge_titles= codec for compass v0.0.13.
 
 The fix should leave a structure behind, not only renamed pages: a rule on titles
 in the academic review skill and in the knowledge document contract, and a

@@ -176,6 +176,6 @@ faker::number::integer(1, 100)
 
 * See also
 
-- [[id:F6362451-D569-4609-97A3-F1C785AAAF02][The cut is the body a run prices from]] — why a family and why EOM and EOY are kinds.
+- [[id:F6362451-D569-4609-97A3-F1C785AAAF02][The cut model: recorded facts, derived states and authorisation]] — why a family and why EOM and EOY are kinds.
 - [[id:1B2C3D4E-5F60-4718-9A2B-3C4D5E6F7A80][ores.reporting.cut_kind]] — the kinds the family groups.
 - [[id:F1B83A47-E029-4D78-9A56-31B7CFE49265][ores.reporting]] — component group overview.

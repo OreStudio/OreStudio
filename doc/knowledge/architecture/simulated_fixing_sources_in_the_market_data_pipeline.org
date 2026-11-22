@@ -32,7 +32,7 @@ through an adapter as durable fixing ticks, and the ingest stores them in the
 fixing series of their index; see
 [[id:F4BBEF34-D84C-4AE6-A3AA-DC47C3EE06EE][Public publishers publish daily fixings through a supplier session]].
 The simulator is an adapter too, and the rule that it never writes to the store
-holds for it; see [[id:54C9E31E-26FF-4530-A868-0850FCE1FE30][The simulator is one adapter plus the tools that author its generators]].
+holds for it; see [[id:54C9E31E-26FF-4530-A868-0850FCE1FE30][The synthetic market data simulator: adapter and authoring tools]].
 A simulated fixing source therefore takes the same path, and the only
 difference from a public one is inside the adapter, as
 [[id:5ABE694A-7F87-46A9-943E-B6734B3B6EF9][A live and a simulated source differ only inside the adapter]]
@@ -76,7 +76,7 @@ history oldest first, each value dated with its fixing date. Then, at each
 fixing time on the simulator's clock, it reads its input from the run's market
 board, rounds it as the source does, and publishes one fixing. The board is the
 run's shared view of spots and curves; see
-[[id:675E89FC-B5AA-4250-8B86-78062F0F22BC][The forward a synthetic surface is struck against]].
+[[id:675E89FC-B5AA-4250-8B86-78062F0F22BC][Forwards for synthetic volatility surfaces]].
 
 The ingest stores each fixing in the series of its item under the system party.
 A value it already holds for that date is skipped, so a restart that backfills

@@ -377,7 +377,7 @@ One pool serves every tenant and party. Each service process holds a floor of
 long-lived connections and may burst above it to the concurrency its work has,
 opened to the address its configuration states: PostgreSQL directly, or a pooler
 in transaction pooling mode where the database is shared with other environments
-([[id:929A4722-8F06-4DEF-B759-D0800D4AC6D5][A pooler stands where the database is shared]]):
+([[id:929A4722-8F06-4DEF-B759-D0800D4AC6D5][Connection pooling for shared database instances]]):
 
 #+begin_example
   request 1 (tenant AAA)   request 2 (tenant BBB)   request 3 (tenant CCC)
@@ -604,7 +604,7 @@ first statement.
 - Where the database is shared with other environments, a pooler bounds the
   server connections of the whole fleet; where it is not, the service's own floor
   and ceiling are the only connections there are
-  ([[id:929A4722-8F06-4DEF-B759-D0800D4AC6D5][A pooler stands where the database is shared]]).
+  ([[id:929A4722-8F06-4DEF-B759-D0800D4AC6D5][Connection pooling for shared database instances]]).
 - RLS handles isolation at the query level.
 
 * Tenant Isolation Guarantees

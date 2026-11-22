@@ -135,7 +135,7 @@ listing =FX Swap data=.
 
 * See also
 
-- [[id:2BF0E688-D053-5FC4-B4A3-10A5B685789D][Short-date swap points run between their own two value dates]] — completes: how its near leg labels a tenor.
+- [[id:2BF0E688-D053-5FC4-B4A3-10A5B685789D][Short-date swap points and their value dates]] — completes: how its near leg labels a tenor.
 - [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
   with the alphabetical product run.
 

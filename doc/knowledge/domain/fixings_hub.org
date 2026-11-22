@@ -61,7 +61,7 @@ The fixings cluster leans on notes that already cover parts of the subject:
 - how public fixings reach the store, and why the publisher is part of an FX
   fixing's identity: [[id:F4BBEF34-D84C-4AE6-A3AA-DC47C3EE06EE][Public publishers publish daily fixings through a supplier session]];
 - how a fixing is named: [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio Market Data URI]];
-- how a quote, the other kind of datum, is stored: [[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][A quote series is keyed by item, provider and party]];
+- how a quote, the other kind of datum, is stored: [[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][Market series and observations]];
 - non-deliverable trades: [[id:CD3E82C6-AE56-4D06-B949-0B3A5CE7A5FC][Deliverability and non-deliverable instruments]] and
   [[id:B60031AD-CE57-5F9D-885C-1DAF504E6004][An NDF pays a cash difference on its settlement date]];
 - calendars and schedules: [[id:A960FE8E-56FA-4655-AA51-54C14882179B][Calendars, Holidays and Events]];

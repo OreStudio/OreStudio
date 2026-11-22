@@ -116,7 +116,7 @@ coincide; otherwise it is smaller in magnitude, by the overlap ratio. This is
 the Epps effect, and it is a property of the measurement, not of the noise:
 the noise carries the stated correlation exactly, and an estimator that sums
 over overlapping intervals recovers it
-([[id:92644AAC-BE5F-43B6-96E4-084226CDA094][Tick-to-tick returns understate a correlation that holds exactly]]).
+([[id:92644AAC-BE5F-43B6-96E4-084226CDA094][Non-synchronous trading and the Epps effect]]).
 
 When series $i$ ticks at $T$ after its last tick at $t_i$, the latent market
 returns
@@ -187,7 +187,7 @@ stated.
 
 A factor's value at a time is a pure function of the run seed, the factor and
 the time; it does not depend on which series asked or when
-([[id:14C79EA2-4E36-4EF2-A0DB-0EB932655029][A keyed Brownian path is a pure function of seed and time]]).
+([[id:14C79EA2-4E36-4EF2-A0DB-0EB932655029][Keyed Brownian paths from counter-based draws]]).
 So a series' path is invariant to the presence, absence and tick times of any
 other series. A series that anchors no block draws its own $E_i$ from its own
 price stream, so it depends only on its own ticks, as its noise does today. An
@@ -273,7 +273,7 @@ strikes are solved against the forward $F(t, T) = S(t)\, P_f(t, T) / P_d(t, T)$
 built from the spot and the two discount curves the run's own curve feeds
 publish to its market board -- not from a party's published curves, which are
 derived from these very quotes. The design is
-[[id:675E89FC-B5AA-4250-8B86-78062F0F22BC][The forward a synthetic surface is struck against]].
+[[id:675E89FC-B5AA-4250-8B86-78062F0F22BC][Forwards for synthetic volatility surfaces]].
 
 ** Later work
 
@@ -357,6 +357,6 @@ derived from these very quotes. The design is
 - [[id:84E7CEA8-9654-431C-A8D1-C8B97E35B6D5][Paper summary: Gaussian GenAI]] -- completes: per-regime loadings are the continuous-time form of the joint GMM's components.
 - [[id:7A6E2C55-3F1B-4E8D-9C7A-2B5E8D4F1A63][Market Arrival Regime]] -- completes: extends its rank-one shared factor from activity to signed noise.
 - [[id:9D778F72-8FF6-4F01-AF4B-696DC7BA855A][The market's volatility channel]] -- completes: its business time is the time the noise runs in.
-- [[id:14C79EA2-4E36-4EF2-A0DB-0EB932655029][A keyed Brownian path is a pure function of seed and time]] -- how a factor is evaluated.
-- [[id:92644AAC-BE5F-43B6-96E4-084226CDA094][Tick-to-tick returns understate a correlation that holds exactly]] -- how the correlation is measured.
+- [[id:14C79EA2-4E36-4EF2-A0DB-0EB932655029][Keyed Brownian paths from counter-based draws]] -- how a factor is evaluated.
+- [[id:92644AAC-BE5F-43B6-96E4-084226CDA094][Non-synchronous trading and the Epps effect]] -- how the correlation is measured.
 - [[id:C39E7B78-B305-4E14-A46B-29EF85BFCBCC][Correlation management]] -- an improbable neighbour: once two pairs' spots load on shared factors, $\mathbf{b}_i \cdot \mathbf{b}_j$ is the correlation that fixes their cross's ATM volatility, so a synthetic cross surface that ignores it contradicts its legs.

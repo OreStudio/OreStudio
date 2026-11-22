@@ -27,7 +27,7 @@ the internal item.
 - =provider= is the provider code of the series.
 - =source= is the id of the source that produced the value. It is information
   for the party. A party can use it to find out that the source is simulated.
-  No logic may depend on it. See [[id:F64DB34E-084D-4437-B536-392AA26D8B77][No code path may behave differently because a source is simulated]].
+  No logic may depend on it. See [[id:F64DB34E-084D-4437-B536-392AA26D8B77][Simulated sources as data rather than code paths]].
 
 The tick carries no tenant and no party. The subject carries them.
 
@@ -46,7 +46,7 @@ names the feed and not the party,
 =marketdata.v1.ops.market_tick.<provider>.<feed>.<instrument_type>.<series_token>.<coordinate_token>=.
 The ingest publishes each tick once on it, for every party that may watch the
 feed. See
-[[id:4DB1ED0C-4BEA-4164-9129-5731AE559AE9][A source tick is published once and entitled when it is watched]].
+[[id:4DB1ED0C-4BEA-4164-9129-5731AE559AE9][Publication and entitlement of live ticks]].
 
 * See also
 

@@ -61,7 +61,7 @@ task and name that file in the Command column.
 
 * Notes
 
-- Target state: [[id:37D08E01-F99C-4D2D-8ACA-E19E252BBE3D][A repository works inside an open transaction and never holds credentials]].
+- Target state: [[id:37D08E01-F99C-4D2D-8ACA-E19E252BBE3D][Repositories within the unit of work]].
 
 * Test Scenarios
 

@@ -115,10 +115,10 @@ surface used for daily pricing is regenerated once per business day.
 
 - [[id:33E879B7-496A-406D-B3F2-72637379AD02][Kinds of cut]]: the end of day, start of day, month end and year end cuts.
 - [[id:DD59B04C-DAD2-458C-B35E-3F6B0B3D6DC6][Market data cut]]: the market half of a cut, approved rates and overrides.
-- [[id:F6362451-D569-4609-97A3-F1C785AAAF02][The cut is the body a run prices from]]
+- [[id:F6362451-D569-4609-97A3-F1C785AAAF02][The cut model: recorded facts, derived states and authorisation]]
 - [[id:9123193E-352D-4F46-8174-7763FA0A44CD][User Journey: Give a report its cut]]
 - [[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]]: curves daily at the close, surfaces once a business day.
-- [[id:3F9D6EAE-9FB8-4A0D-9BAF-1EA3EA93AB4F][Synthetic prices are calibrated from free public sources]]: the thirteen overnight rates the roll would read.
+- [[id:3F9D6EAE-9FB8-4A0D-9BAF-1EA3EA93AB4F][Free public sources for synthetic price calibration]]: the thirteen overnight rates the roll would read.
 - Code: =projects/ores.synthetic/api/src/feeds/derived_fx_vol.cpp= (the 17:00 stamp),
   =projects/ores.synthetic/service/src/derived_fx_vol_adapter.hpp= (the hourly refresh),
   =projects/ores.marketdata/service/include/ores.marketdata.service/app/curve_republish_service.hpp=

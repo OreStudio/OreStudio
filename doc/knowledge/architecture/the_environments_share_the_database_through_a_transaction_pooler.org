@@ -31,7 +31,7 @@ the next.
 | Server connections for the instance | below =max_connections=, with room for direct connections |
 | Server connections kept open while idle | a timeout, so an idle environment holds none |
 
-A service's pool ([[id:729F746E-36DD-40A2-A592-6972239E31F0][A service holds a few long-lived connections and never connects per query]]) is what the service may have open at once - its floor
+A service's pool ([[id:729F746E-36DD-40A2-A592-6972239E31F0][Long-lived database connections in services]]) is what the service may have open at once - its floor
 and its burst ceiling; the pooler's cap is what the environment may have running
 at once. That is why the two are separate numbers: a service may ask for the
 concurrency its work has without that number becoming the instance's problem.
@@ -49,7 +49,7 @@ Work that needs a session goes around the pooler:
   not request traffic and must not be queued behind it.
 
 These name PostgreSQL's address while the services name the pooler's
-([[id:929A4722-8F06-4DEF-B759-D0800D4AC6D5][A pooler stands where the database is shared]]).
+([[id:929A4722-8F06-4DEF-B759-D0800D4AC6D5][Connection pooling for shared database instances]]).
 
 ** Prepared statements
 
@@ -63,5 +63,5 @@ disagree.
 * See also
 
 - [[id:CE41E828-18EB-4E88-BB02-6A4930E7B67C][The data path]] — the structure note that orders this cluster.
-- [[id:929A4722-8F06-4DEF-B759-D0800D4AC6D5][A pooler stands where the database is shared]] — which deployments have a pooler at all, and why a developer's does not.
+- [[id:929A4722-8F06-4DEF-B759-D0800D4AC6D5][Connection pooling for shared database instances]] — which deployments have a pooler at all, and why a developer's does not.
 - [[id:81AB065B-E6EB-4CC2-BB18-F3FD2652EC47][PostgreSQL: Database Architecture and Conventions]] — the instance behind the pooler.

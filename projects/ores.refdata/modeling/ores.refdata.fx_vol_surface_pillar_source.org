@@ -20,7 +20,7 @@ weight the contributor carries in the calibration. A pillar reads one series per
 contributor, so a broker's quotes and the derived source's quotes of the same point
 are two sources of one pillar, and a missing observation from one of them is not a
 refusal by itself. See
-[[id:7AE57098-08D4-4D4A-83D6-918FE520B68E][A pillar names the market series it reads]].
+[[id:7AE57098-08D4-4D4A-83D6-918FE520B68E][Market series identity in curve pillars]].
 
 =market_series_id= is a soft reference to an =fx_option= quote series in
 =ores.marketdata=, named by the caller from the series the party holds.
@@ -184,5 +184,5 @@ refuses NaN as well.
 * See also
 
 - [[id:E3778CAD-A176-4B6D-839F-3E8AB20AF28F][FX Volatility Surface Pillar]] -- the pillar this source quotes.
-- [[id:7AE57098-08D4-4D4A-83D6-918FE520B68E][A pillar names the market series it reads]] -- why a pillar names its series.
+- [[id:7AE57098-08D4-4D4A-83D6-918FE520B68E][Market series identity in curve pillars]] -- why a pillar names its series.
 - [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] -- component group overview.

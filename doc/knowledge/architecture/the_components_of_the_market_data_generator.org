@@ -41,7 +41,7 @@ The pieces are the domain pages': the loop and its arrivals are
 [[id:F135B9AF-902F-46C5-847C-0820D8C92D28][One scheduler draws every feed's gaps]], the noise is
 [[id:25C467BE-07A3-432C-8CB8-6B194E748570][Shared Brownian factors give every synthetic series a signed correlation]], the
 processes are [[id:A8C46639-0639-4587-B07D-B8B006C46618][Stochastic Processes]], and the values are
-[[id:675E89FC-B5AA-4250-8B86-78062F0F22BC][The forward a synthetic surface is struck against]]. This page does not restate
+[[id:675E89FC-B5AA-4250-8B86-78062F0F22BC][Forwards for synthetic volatility surfaces]]. This page does not restate
 their reasoning; it states the shape that carries it.
 
 ** How they fit
@@ -383,7 +383,7 @@ tick, so a curve's move does not yet reach the surface's quotes
 
 - [[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]] -- the method per asset class, the
   cross-asset constraints and the measure split this page implements.
-- [[id:675E89FC-B5AA-4250-8B86-78062F0F22BC][The forward a synthetic surface is struck against]] -- why the board exists and
+- [[id:675E89FC-B5AA-4250-8B86-78062F0F22BC][Forwards for synthetic volatility surfaces]] -- why the board exists and
   what a surface does with it.
 - [[id:25C467BE-07A3-432C-8CB8-6B194E748570][Shared Brownian factors give every synthetic series a signed correlation]] -- the
   noise, and the correlation it buys.

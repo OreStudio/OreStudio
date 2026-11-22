@@ -216,18 +216,18 @@ The transaction sets =TimeZone= too, so a role without the default still reads
 UTC.
 
 The unit of work sends these settings in the same round trip as the
-transaction's first statement. See [[id:3C334C3B-2760-4278-95B8-B71268E8FD18][A transaction sets its own tenant context, so any connection serves any tenant]] and [[id:37D08E01-F99C-4D2D-8ACA-E19E252BBE3D][A repository works inside an open transaction and never holds credentials]].
+transaction's first statement. See [[id:3C334C3B-2760-4278-95B8-B71268E8FD18][A transaction sets its own tenant context, so any connection serves any tenant]] and [[id:37D08E01-F99C-4D2D-8ACA-E19E252BBE3D][Repositories within the unit of work]].
 
 ** Connections
 
 A service holds a small pool of long-lived connections, as many as its worker
 pool, opened when it starts. No query opens a connection of its own. See
-[[id:729F746E-36DD-40A2-A592-6972239E31F0][A service holds a few long-lived connections and never connects per query]].
+[[id:729F746E-36DD-40A2-A592-6972239E31F0][Long-lived database connections in services]].
 
 A worker holds a connection only while it runs a transaction, and the pool is
 as large as the worker pool, so a worker does not wait for a connection. A
 wait that does occur is bounded by the deadline of the work, and ends in a
-retryable error ([[id:E11DB09A-328A-476A-A71B-8E303A68D07D][A store error says whether a retry can succeed]]).
+retryable error ([[id:E11DB09A-328A-476A-A71B-8E303A68D07D][Classification of store errors by retryability]]).
 
 The environments that share an instance reach it through a pooler in
 transaction mode, which caps the server connections. See [[id:42930B6A-544A-4F7E-ACF4-9ABC60F2B408][The environments share the database through a transaction pooler]].

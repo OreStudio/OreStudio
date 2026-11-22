@@ -227,7 +227,7 @@ configuration and output. The task that lit the report is
 - [[file:./report_trades_since_last_in.org][Trades Since Last In]] is the other report on demand from the live cut.
 - [[file:../architecture/report_execution_pipeline.org][Report execution pipeline]] states the phases every run goes through.
 - [[file:../architecture/report_post_processing.org][Report post-processing]] designs the tables that would hold the grid.
-- [[file:../architecture/the_cut_is_the_body_a_run_prices_from.org][The cut is the body a run prices from]] states what a LIVE cut holds.
+- [[file:../architecture/the_cut_is_the_body_a_run_prices_from.org][The cut model: recorded facts, derived states and authorisation]] states what a LIVE cut holds.
 - [[id:D4938956-1A5E-4F67-BCE8-7A951CE957E9][Report definition and schedule]] states the definition fields and the schedule.
 
 * See also

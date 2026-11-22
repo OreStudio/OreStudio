@@ -42,7 +42,7 @@ The page [[id:5A5D6490-AF64-4AAF-8B3D-48EF3EDAF3D2][Tenant ownership and the inf
 - *The catalogue* (providers, sources, vendor instruments, mappings) belongs to the system tenant and every tenant reads it. This part is right now.
 - *Routes and subscriptions* belong to a party in a tenant. The one platform reader is the marketdata service. It reads them through a select-only policy for its own database role. The CRM configs already use this shape, in [[id:0EAAEDFD-7954-4649-A463-9EE377B023F7][Data read across tenants]]. No other system tenant session gains a read or a write of another tenant's routes.
 - *Demand* is a pure function of the catalogue, the routes and the subscriptions. The supervisor computes it on a timer and on events. A missed event delays demand by one interval. It never loses demand.
-- *Ticks* are stored once for each source stream, owned by the installation with no tenant, and a party's entitlement is checked when it reads. See [[id:D71F9446-C62E-48A6-A87B-136EF598A59E][A source tick is stored once and entitled when it is read]].
+- *Ticks* are stored once for each source stream, owned by the installation with no tenant, and a party's entitlement is checked when it reads. See [[id:D71F9446-C62E-48A6-A87B-136EF598A59E][Storage and entitlement of stored ticks]].
 - *Every claim of health is observable.* One status shows, for each adapter, the routes seen, the ids demanded and accepted, the ticks of the last minute and the age of the last tick.
 - *One check proves the path.* It provisions a non-system tenant on a fresh database and fails unless ticks arrive.
 

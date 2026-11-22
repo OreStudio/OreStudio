@@ -62,7 +62,7 @@ observation itself.
 
 ORE Studio keeps the two apart. A quote is a tick of a source's stream; a
 fixing is a value of an index for a date, stored durably in the fixing series
-of the index. [[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][A quote series is keyed by item, provider and party]]
+of the index. [[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][Market series and observations]]
 describes the quote side, and [[id:F4BBEF34-D84C-4AE6-A3AA-DC47C3EE06EE][Public publishers publish daily fixings through a supplier session]]
 describes the fixing side, including why the publisher is part of an FX
 fixing's identity. The oresmd URI names a fixing with =type=fixing=; see

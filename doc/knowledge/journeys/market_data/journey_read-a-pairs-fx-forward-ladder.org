@@ -93,7 +93,7 @@ A static page at =doc/prototypes/market_data/fx-forward-ladder/index.html=: mock
 | =curve_publish= | The published set of each currency, its as-of and its publisher | [[id:9BC6FEDE-01E5-43B8-8A04-ACF0A5AB12B6][ores.marketdata.curve_publish]] |
 | =ir_curve_bootstrap_config= | The name and currency of each funding curve | [[id:73A5FAA1-377C-45A6-999E-4AD4DE406F78][ores.refdata.ir_curve_bootstrap_config]] |
 
-A forward is read from its published set and never computed for display; see [[id:AB7A0BE5-7EB8-5B44-B98D-05E0CD58E51D][ORE Studio publishes FX forwards derived from published curves]].
+A forward is read from its published set and never computed for display; see [[id:AB7A0BE5-7EB8-5B44-B98D-05E0CD58E51D][Derivation of FX forwards from published curves]].
 
 * Operations and messages
 

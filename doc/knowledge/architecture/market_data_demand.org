@@ -41,7 +41,7 @@ shows the rejected ids on the source's screen.
 ** Demand intervals
 
 The service records when each (party, instrument) pair enters and leaves the
-set. See [[id:3E51B0BD-D22B-4790-821F-E2FED44D152C][Usage is recorded as events and priced later]]. Demand is therefore both a control signal and a billing
+set. See [[id:3E51B0BD-D22B-4790-821F-E2FED44D152C][Event-based metering of market data usage]]. Demand is therefore both a control signal and a billing
 fact.
 
 * See also
@@ -51,4 +51,4 @@ fact.
 - [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
 - [[id:5DFA094B-4F9F-4190-8251-8D4D0B77A5C7][An adapter and the service meet at four messages]] — completes: the message that carries the set.
 - [[id:37B27CA8-9F44-4A61-9B02-3EAABD8C3818][A party routes to exactly one source for each provider]] — completes: the input that decides which adapter a party uses.
-- [[id:3E51B0BD-D22B-4790-821F-E2FED44D152C][Usage is recorded as events and priced later]] — completes: the use of demand intervals as a driver of cost.
+- [[id:3E51B0BD-D22B-4790-821F-E2FED44D152C][Event-based metering of market data usage]] — completes: the use of demand intervals as a driver of cost.

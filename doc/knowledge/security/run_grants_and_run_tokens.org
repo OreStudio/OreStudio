@@ -240,4 +240,4 @@ so a fault in one caller cannot exhaust it.
 - [[id:AF46793A-FF6C-4066-A059-279CE9936420][Identity and Access]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:C79B5E4D-71D0-44C2-9D06-444EA2AC1CB7][Scheduled Work Acting as a Tenant]] — the pattern this page implements.
 - [[id:B3165E6F-AE8C-4DBD-8F87-2EC4F276FCF0][Report execution at scale]] — the first component to use run grants.
-- [[id:A7D1927B-CB42-49A9-94EF-DBB40225274C][The identity an adapter runs as]] — contradicts: a market data adapter acts as no tenant and needs no grant.
+- [[id:A7D1927B-CB42-49A9-94EF-DBB40225274C][Adapter identity]] — contradicts: a market data adapter acts as no tenant and needs no grant.

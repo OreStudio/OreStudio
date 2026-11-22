@@ -163,8 +163,8 @@ Acceptance:
   ticks-smoke check of compass check provisioned a tenant on a fresh database,
   and the tenant's routed feeds stored 16742 ticks. See Measurements.
 - The pages describe the shared store: met by
-  [[id:D71F9446-C62E-48A6-A87B-136EF598A59E][A source tick is stored once and entitled when it is read]]
-  and [[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][A quote series is keyed by item, provider and party]].
+  [[id:D71F9446-C62E-48A6-A87B-136EF598A59E][Storage and entitlement of stored ticks]]
+  and [[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][Market series and observations]].
 
 Open: the entitled-stream wrapper type and its coverage test (review item 1).
 A party with a derived right alone cannot read a snapshot of its own

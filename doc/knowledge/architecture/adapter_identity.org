@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: A7D1927B-CB42-49A9-94EF-DBB40225274C
 :END:
-#+title: The identity an adapter runs as
+#+title: Adapter identity
 #+description: Why an adapter runs as a system service with no tenant and no party, how the service identifies it, and how a restart restores its work.
 #+type: knowledge
 #+level: cross

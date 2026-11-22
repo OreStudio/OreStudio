@@ -46,7 +46,7 @@ paging, order and filters of both tables. A tick has no id and no source, and it
 correction. A merged list gives it a made-up id, and the count over the tick table costs
 more than a page is worth. The reads are separate instead. The task "Read the ticks of a
 series with one history call" adds the tick read, and the list of observations stays a list
-of observations. See [[id:10E479D2-990E-4627-95A2-1DA0FA5D68D5][A chart reads a series with one history call and one live subscription]].
+of observations. See [[id:10E479D2-990E-4627-95A2-1DA0FA5D68D5][Charting a series from its history and its live stream]].
 
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the

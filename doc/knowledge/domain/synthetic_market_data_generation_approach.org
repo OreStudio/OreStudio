@@ -21,7 +21,7 @@ analysis ([[id:8AF6B7C5-4E09-4361-A00A-21C5A61B7F27][intermediate analysis]]) as
 analysis documents the reasoning; this document documents the decisions.  It
 does not include implementation code.  Where a generator starts from public
 data, the sources and their terms are in
-[[id:3F9D6EAE-9FB8-4A0D-9BAF-1EA3EA93AB4F][Synthetic prices are calibrated from free public sources]].
+[[id:3F9D6EAE-9FB8-4A0D-9BAF-1EA3EA93AB4F][Free public sources for synthetic price calibration]].
 The decisions still open are listed in
 [[#open-design-decisions][open design decisions]].
 
@@ -311,7 +311,7 @@ with spot under this correlation is the question
 The processes start from a surface fitted to starting quotes.  No free public
 source publishes FX implied volatilities, so the starting quotes come from a
 derived source that infers ATM, RR and BF from the pair's spot fixings, as
-[[id:3F9D6EAE-9FB8-4A0D-9BAF-1EA3EA93AB4F][Synthetic prices are calibrated from free public sources]]
+[[id:3F9D6EAE-9FB8-4A0D-9BAF-1EA3EA93AB4F][Free public sources for synthetic price calibration]]
 describes.  A real vol source, where one is available, ranks above it.
 
 *** Where the skew and curvature parameters come from
@@ -440,7 +440,7 @@ a surface feed builds one market per expiry from its pair's spot and the two
 currencies' discounts; the strikes are solved in that market; the clean quotes
 are observed by the contributors.  The interface, the code that holds each step
 and the four choices it settles are
-[[id:675E89FC-B5AA-4250-8B86-78062F0F22BC][The forward a synthetic surface is struck against]].
+[[id:675E89FC-B5AA-4250-8B86-78062F0F22BC][Forwards for synthetic volatility surfaces]].
 
 Two measured facts say how much of the curve a surface actually needs.  Its
 quoted volatilities are invariant to the *level* of the spot, to $10^{-12}$, when
@@ -653,7 +653,7 @@ look for them.
   on one point: we do not have to infer the curve from a fitted joint law, nor take
   the forward from the market.  The quotes come from a short-rate model, so the
   forward is the generator's own state.  See
-  [[id:675E89FC-B5AA-4250-8B86-78062F0F22BC][The forward a synthetic surface is struck against]].
+  [[id:675E89FC-B5AA-4250-8B86-78062F0F22BC][Forwards for synthetic volatility surfaces]].
 
 * Time evolution strategy
 :PROPERTIES:

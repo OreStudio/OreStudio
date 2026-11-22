@@ -239,7 +239,7 @@ the rules let through.
 
 Nothing changes after the feed. A tick carries its time, the marketdata ingest
 loop plans and stores it, and the rule in
-[[id:F64DB34E-084D-4437-B536-392AA26D8B77][No code path may behave differently because a source is simulated]]
+[[id:F64DB34E-084D-4437-B536-392AA26D8B77][Simulated sources as data rather than code paths]]
 holds: the arrival law is a property of the generator and no later stage
 reads it.
 

@@ -134,6 +134,6 @@ TEST_CASE("the_curves_serve_one_address_each_and_the_meeting_dated_curve_none",
                                             curve("USD", "sofr", "FOMC"),
                                             curve("", "libor", "6M")});
 
-    CHECK(served == std::set<std::string>{
-                        gbp_libor_3m, "oresmd://ir/USD?type=fixing&index=ibor&name=SOFR"});
+    CHECK(served ==
+          std::set<std::string>{gbp_libor_3m, "oresmd://ir/USD?type=fixing&index=ibor&name=SOFR"});
 }

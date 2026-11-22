@@ -404,6 +404,12 @@ std::string_view bond_trade_planner::asset_class_code() const {
 
 namespace {
 
+// A trade on an index no curve serves has no fixings, so no draw names one.
+bool drawable(const ores::refdata::domain::swap_convention& swap,
+              const domain::trade_generation_scope& scope) {
+    return swap.oresmd_uri && scope.served_fixing_uris.contains(*swap.oresmd_uri);
+}
+
 /*
  * The swaps a rate trade draws: one for each swap the tenant's conventions
  * state on an index with a tenor, so a builder can read each leg's terms and a
@@ -421,17 +427,6 @@ namespace {
  * indices of every currency ORE's examples know, and a trade on one no curve
  * serves has no fixings and cannot be valued.
  */
-/*
- * Whether a swap convention may be drawn: it names the fixing address of its
- * index, and a curve serves that address. Every draw of a floating index from
- * the conventions asks this, so a trade never floats on an index with no
- * fixings.
- */
-bool drawable(const ores::refdata::domain::swap_convention& swap,
-              const domain::trade_generation_scope& scope) {
-    return swap.oresmd_uri && scope.served_fixing_uris.contains(*swap.oresmd_uri);
-}
-
 struct swap_choice final {
     ores::marketdata::datum::market_reference index;
     std::string convention;
@@ -667,9 +662,9 @@ ores::trading::domain::bond_product build_bond_trade(const domain::trade_generat
     if (type == "Ascot") {
         const auto& swaps = swaps_of_scope.domestic;
         if (swaps.empty())
-            throw trade_population_error("No swap convention of the tenant names an index in " +
-                                         scope.currency_code +
-                                         ", so no Ascot can state its swap leg.");
+            throw trade_population_error(
+                "No swap convention of the tenant names an index a curve serves in " +
+                scope.currency_code + ", so no Ascot can state its swap leg.");
         return built(tb::ascot_builder({.convertible = convertible(),
                                         .kind = kind,
                                         .position = position,
@@ -1200,9 +1195,9 @@ built_commodity_trade(const domain::trade_generation_scope& scope,
     if (type == "CommodityWorstOfBasketSwap") {
         const auto funding = funding_index_in(scope, currency);
         if (!funding)
-            throw trade_population_error("A commodity worst-of basket swap funds on an index in " +
-                                         currency +
-                                         ", and the tenant's swap conventions name none.");
+            throw trade_population_error(
+                "A commodity worst-of basket swap funds on an index in " + currency +
+                ", and no swap convention of the tenant names one a curve serves.");
         // Each member starts from the drawn price, stepped so no two start equal.
         std::vector<tb::commodity_worst_of_member> basket;
         for (const auto& member : distinct_basket())
@@ -1647,9 +1642,9 @@ build_rate_trade(const domain::trade_generation_scope& scope,
 
     const auto& domestic = swaps.domestic;
     if (domestic.empty())
-        throw trade_population_error("No swap convention of the tenant names an index in " +
-                                     scope.currency_code +
-                                     ", so no interest rate trade can state its legs.");
+        throw trade_population_error(
+            "No swap convention of the tenant names an index a curve serves in " +
+            scope.currency_code + ", so no interest rate trade can state its legs.");
 
     const auto slot = entry.slot;
     const auto& type = entry.trade_type_code;
@@ -1696,10 +1691,10 @@ build_rate_trade(const domain::trade_generation_scope& scope,
     if (type == "CrossCurrencySwap") {
         const auto& foreign = swaps.foreign;
         if (foreign.empty())
-            throw trade_population_error("No swap convention of the tenant names an index "
-                                         "outside " +
-                                         scope.currency_code +
-                                         ", so no cross currency swap can state its foreign leg.");
+            throw trade_population_error(
+                "No swap convention of the tenant names an index a curve serves "
+                "outside " +
+                scope.currency_code + ", so no cross currency swap can state its foreign leg.");
         const auto& chosen = foreign[slot % foreign.size()];
         return built(
             tb::cross_currency_swap_builder(conventions,
@@ -1717,8 +1712,8 @@ build_rate_trade(const domain::trade_generation_scope& scope,
          */
         if (ibor_swaps.empty())
             throw trade_population_error(
-                "No swap convention of the tenant names an Ibor index in " + scope.currency_code +
-                ", so no forward rate agreement can state its index.");
+                "No swap convention of the tenant names an Ibor index a curve serves in " +
+                scope.currency_code + ", so no forward rate agreement can state its index.");
         const auto from = add_months(scope.as_of_date, 3);
         const auto& chosen = *ibor_swaps[slot % ibor_swaps.size()];
         return built(
@@ -2535,11 +2530,12 @@ swap_choice underlying_index_of(const domain::trade_generation_scope& scope) {
         if (index && index->index() != nullptr && index->index()->subject() == scope.currency_code)
             return swap_choice{std::move(*index), swap.id};
     }
-    throw trade_population_error("No swap convention of the tenant floats on an index in " +
-                                 scope.currency_code +
-                                 ", so no floating leg in it can be stated: a risk "
-                                 "participation agreement's swap and a total return swap's "
-                                 "funding need one.");
+    throw trade_population_error(
+        "No swap convention of the tenant floats on an index a curve serves in " +
+        scope.currency_code +
+        ", so no floating leg in it can be stated: a risk "
+        "participation agreement's swap and a total return swap's "
+        "funding need one.");
 }
 
 ores::trading::domain::instrument_batch

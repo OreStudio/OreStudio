@@ -970,8 +970,7 @@ TEST_CASE("a_rate_population_without_a_swap_convention_in_its_currency_is_refuse
     CHECK_THROWS_AS(plan_of(scope), trade_population_error);
 }
 
-TEST_CASE("a_rate_population_draws_no_index_the_market_does_not_serve",
-          "[trade_population]") {
+TEST_CASE("a_rate_population_draws_no_index_the_market_does_not_serve", "[trade_population]") {
     auto scope = rate_scope();
     auto unserved = scope.conventions.swaps.front();
     unserved.id = "AOA-GENERIC-3M-SWAP";
@@ -1752,6 +1751,34 @@ TEST_CASE("an_equity_swap_builds_its_funding_leg_when_two_conventions_name_the_i
 
     REQUIRE_FALSE(plan.slots.empty());
     CHECK(plan.slots.front().instruments.equity_swap_instruments.size() == 1u);
+}
+
+TEST_CASE("an_equity_swap_funds_on_an_index_a_curve_serves", "[trade_population]") {
+    auto scope = equity_scope();
+    scope.trade_type_codes = {"EquitySwap"};
+    // Each unserved convention comes first, so a draw that ignored the served
+    // set would fund on it.
+    std::vector<ores::refdata::domain::swap_convention> unserved;
+    for (const auto& swap : scope.conventions.swaps) {
+        auto copy = swap;
+        copy.id = "UNSERVED-" + swap.id;
+        copy.oresmd_uri = *swap.oresmd_uri + "-UNSERVED";
+        unserved.push_back(copy);
+    }
+    scope.conventions.swaps.insert(
+        scope.conventions.swaps.begin(), unserved.begin(), unserved.end());
+
+    const auto plan = plan_of(scope);
+
+    REQUIRE_FALSE(plan.slots.empty());
+    std::size_t funded = 0;
+    for (const auto& slot : plan.slots)
+        for (const auto& leg : slot.instruments.swap_legs)
+            if (leg.leg_type_code == "Floating") {
+                ++funded;
+                CHECK(scope.served_fixing_uris.contains(leg.floating_index_code));
+            }
+    CHECK(funded > 0u);
 }
 
 namespace {

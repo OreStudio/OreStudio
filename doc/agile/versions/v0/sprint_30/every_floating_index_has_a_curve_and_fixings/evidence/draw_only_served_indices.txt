@@ -1,0 +1,46 @@
+The interest rate fixing addresses the acme_demo trades name and no fixing
+answers, after the planner draws only the indices a curve serves. The query is
+fixing_gap_by_trade.sql beside this file.
+
+Environment clever_dijkstra, branch feature/draw-only-the-indices-the-market-can-serve
+at 70fae4dd51 (code at b4d6aa99d4), 2026-11-22: a fresh database (compass db
+recreate), the services started, and Acme provisioned with
+how_do_i_provision_the_system_with_acme_corporation_holding_group.ores
+(profile acme_demo). The provision completed all 17 steps; 4 ended with
+warnings for the 72 party curves it defers.
+
+== Totals
+
+ trades | ir_fixing_addresses | empty_ir_fixing_addresses
+--------+---------------------+---------------------------
+   1235 |                  18 |                         0
+
+Before the change (fixing_gap_by_trade.txt, main at c0f6ed8c38): 12 empty
+addresses, on 11 ACCOHK cross-currency trades.
+
+== Addresses with no fixing
+
+ oresmd_uri | trade_type | party | centre | source | trades
+------------+------------+-------+--------+--------+--------
+(0 rows)
+
+== Trades by party
+
+ party  | centre | trades
+--------+--------+--------
+ ACCOHK | HKHK   |    252
+ ACCOUK | GBLO   |    649
+ ACCOUS | USNY   |    254
+ ACMCOR | GBLO   |     80
+
+== The two rates configs refused before
+
+From the provision log:
+  info: ACME ACCOUK rates for ACME Corporation UK plc: wrote 154 trade(s), 0 already present
+  info: ACME ACCOUS rates for ACME Corporation US Inc: wrote 154 trade(s), 0 already present
+
+== Served term indices the trades draw
+
+All 18 term indices a curve serves are named by at least one trade:
+CHF LIBOR 3M, 6M; EURIBOR 1W, 1M, 6M, 12M; GBP LIBOR 1W, 1M, 3M, 6M, 12M;
+HKD HIBOR 2W, 1M, 3M; JPY LIBOR 1M, 3M; USD LIBOR 1M, 6M.

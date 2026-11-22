@@ -30,11 +30,6 @@
 namespace ores::synthetic::tests {
 
 /**
- * @brief The conventions of ORE's Products example the generated trades build
- * from: the standard CDS convention, the EUR six month Euribor and USD three
- * month Libor swaps, and the seed's inflation swaps of the indices the tests draw.
- */
-/**
  * @brief The fixing addresses the Products market serves: one curve for each
  * index the example's swaps float on.
  */
@@ -43,6 +38,11 @@ inline std::set<std::string> ore_example_served_fixing_uris() {
             "oresmd://ir/USD?type=fixing&index=ibor&name=LIBOR&tenor=3M"};
 }
 
+/**
+ * @brief The conventions of ORE's Products example the generated trades build
+ * from: the standard CDS convention, the EUR six month Euribor and USD three
+ * month Libor swaps, and the seed's inflation swaps of the indices the tests draw.
+ */
 inline marketdata::conventions::convention_set ore_example_conventions() {
     refdata::domain::cds_convention cds;
     cds.id = "CDS-STANDARD-CONVENTIONS";

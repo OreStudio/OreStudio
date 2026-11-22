@@ -49,6 +49,7 @@ target_link_libraries(${tests_target_name}
         ${lib_target_name}
         ores.eventing.api.lib
         ores.eventing.core.lib
+        ores.service.lib
         ores.utility.lib
         ores.testing.lib
         ores.openssl_cleanup

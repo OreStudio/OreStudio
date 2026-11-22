@@ -196,8 +196,12 @@ public:
                 return;
             }
             if (shared) {
-                const auto caller = boost::uuids::to_string(ctx.tenant_id().to_uuid());
-                if (caller != ores::database::service::tenant_context::system_tenant_id) {
+                // Compared as a uuid, not as text: the constant is written for
+                // SQL and the caller's tenant arrives as a value.
+                static const auto system_tenant = boost::uuids::string_generator{}(
+                    ores::database::service::tenant_context::system_tenant_id);
+                const auto caller = ctx.tenant_id().to_uuid();
+                if (caller != system_tenant) {
                     ORES_LOG_SEV(publish_handler_lg(), warn)
                         << "Refused bundle publish: bundle=" << req->bundle_code
                         << " level=" << *level << " caller=" << caller;

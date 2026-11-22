@@ -131,7 +131,13 @@ public:
      * resolves against) silently omitted them unless a bundle's own membership
      * happened to be hand-ordered to include them too.
      *
-     * @param bundle_code The bundle to query (e.g., 'base', 'crypto').
+     * The publish verbs are its only callers: nothing previews a bundle through it, so a member
+     * that names no dataset is refused here rather than listed leniently. A preview that must
+     * tolerate a missing member asks the store instead, through
+     * ores_dq_bundle_datasets_list_fn and ores_dq_bundle_preview_fn, which report the gap as a
+     * metric and do not raise.
+     *
+     * @param bundle_code The bundle to query (e.g., 'world', 'crypto').
      * @param resolve_dependencies If true (the default), transitive dependencies of bundle
      * members are included and ordered before their dependents. Kept as a caller-visible option,
      * matching list_publishable_datasets(), rather than silently hardcoded, for the (currently

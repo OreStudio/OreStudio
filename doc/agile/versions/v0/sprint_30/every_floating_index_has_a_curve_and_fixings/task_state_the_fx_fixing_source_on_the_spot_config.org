@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: 51AB9126-26A5-4819-ABF9-AC9E0CDA7901
+:END:
+#+title: Task: State the FX fixing source on the spot config
+#+description: The FX spot generation config names the fixing source its feed writes, TR20H by default, and the trade planner reads it from there instead of from a constant.
+#+type: task
+#+level: s1
+#+filetags: :every_floating_index_has_a_curve_and_fixings:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0F936789-FEBE-4330-97B9-DFE0837E4466][Every index a generated trade floats on has a curve and fixings]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The planner hard-codes the FX fixing source TR20H (trade_population_planner.cpp, fx_fixing_source), and its comment says the source belongs to the market data configuration. Add a fixing_source to the FX spot generation config, with TR20H as the default for the synthetic collections. The feed writes its history under that source, and a trade on a pair names the source of that pair's config. A public fixing, such as ECB, keeps its own source and does not collide.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:0F936789-FEBE-4330-97B9-DFE0837E4466][Every index a generated trade floats on has a curve and fixings]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-22                               |
+
+* Acceptance
+
+- The FX spot generation config has a fixing_source; the seeded synthetic configs state TR20H.
+- The feed writes and the planner names the source of the config; no constant is left.
+- A pair with no config that states a source is not drawn for an FX fixing.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

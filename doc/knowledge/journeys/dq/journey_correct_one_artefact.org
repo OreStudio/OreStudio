@@ -118,6 +118,10 @@ bookkeeping columns, and the page must say so.
 
 * What is missing
 
+Both acts the journey needs are blocked: nothing reads a staged row and nothing
+writes one, so neither the save nor the republish it exists to carry can happen
+from a screen.
+
 - *No read of an artefact table over the bus.* This is the journey's whole first
   half. DQ publishes artefact types and datasets, and never the rows they stage,
   so a screen cannot list a row, read it or write it. The

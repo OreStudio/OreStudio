@@ -136,7 +136,7 @@
         var items = MEMBERS.filter(included).map(function (m, i) {
             var halted = i === haltAt;
             var done = haltAt === -1 || i < haltAt;
-            var badge = halted ? M.badge('bad', 'halted') : done ? M.badge('ok', 'done') : M.badge('inactive', 'queued');
+            var badge = halted ? M.badge('bad', 'halted') : done ? M.badge('ok', 'done') : M.badge('pending', 'queued');
             var note = halted
                 ? '<p class="note">The publish function raised: 4 staged rows name no artefact type.</p>'
                 : done ? '<p class="note">Four counts returned.</p>' : '';

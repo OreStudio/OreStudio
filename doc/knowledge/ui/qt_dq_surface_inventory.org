@@ -40,7 +40,8 @@ and a reviewer reruns it:
 
 It reads the column enum from each =Client<Entity>Model.hpp= and the column
 labels from that model's =headerData=, so the list columns below are the ones
-the widget showed. Each entity area is an entity where a =<Entity>MdiWindow=, a
+the widget showed. A shallow checkout cannot see the commit, so run
+=git fetch --unshallow= first. Each entity area is an entity where a =<Entity>MdiWindow=, a
 =Client<Entity>Model= and a =<Entity>DetailDialog.ui= exist. A dialog's fields
 are the text of its field labels; a wizard's pages are the doc comments on its
 class. The judgement — what a journey needs and what it does not — is not in the
@@ -73,7 +74,9 @@ the audit tail. Seven of the seventeen carry a history dialog and ten do not,
 and the seven are the ones a person edits rather than registers. The task that
 commissioned this page recorded 18 detail dialogs and 9 history dialogs; the
 tree holds 17 and 10, and it also holds 17 list windows the record did not
-count.
+count. The total of 27 agrees, so one dialog is filed differently in the two
+records, and a count taken from file names cannot say which one: the names are
+the authority here, and the reader who compares the two should count the files.
 
 ** The fields the detail dialogs asked for
 

@@ -116,7 +116,9 @@ and its design note is
 - *A used-by operation.* Nothing answers "which trades reference this value".
   The reference is a text column on the instrument tables — a convention is named
   by its business-day convention, its calendars and its key — and not an
-  identifier, so even a scan would compare strings.
+  identifier, so even a scan would compare strings. The column is declared as a
+  text member at =ores.trading.instrument_schedule.org= line 245 and created as
+  ="convention" text null= at =trading_instrument_schedules_create.sql= line 81.
 - *A convention held by identifier.* Because the reference is text, a rename in
   the reference data does not move with the trade. The trace journey's inverse
   question is unanswerable for the same reason a rename is dangerous.

@@ -47,7 +47,9 @@ Create =doc/prototypes/dq/<name>/= with an =index.html= and a =prototype.js=, an
 copy =management.css= and =management.js= beside them from the conventions
 prototypes: that pair is the shell every prototype in the project draws on — the
 header, the breadcrumb, the rail, the table, the badges and the server-gap note —
-and each folder carries an identical copy of it. Open the page with the links
+and each folder carries an identical copy of it. The copies must stay identical:
+a change to the shell is a change to all five at once, which is the cost of a
+prototype that opens on its own. Open the page with the links
 table every prototype carries, and leave its review row at =none=. Add a row to
 the table above, with the design note beside the prototype. Stop there: the site
 build finds every prototype under this tree, so no build file names it.

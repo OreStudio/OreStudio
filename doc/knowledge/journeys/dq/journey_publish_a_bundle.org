@@ -76,7 +76,11 @@ progress is read from the instance, so the person can leave and come back.
 
 One page with a rail of five steps and a card each: the bundle, the options, the
 preview, the run and the receipt. The target tenant is read from the bundle's
-level and never offered as a control.
+level and never offered as a control. The screen states it on the preview, before
+the run starts, because the level is what refuses a caller and the person should
+learn that before pressing anything: =publish_handler.hpp= reads the bundle's
+level at line 189 and compares the caller's tenant with the system tenant at line
+204.
 
 #+caption: Publish a bundle: the rail, the preview that makes the run readable
 #+caption: before it happens, and the receipt.

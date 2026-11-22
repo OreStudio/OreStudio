@@ -26,11 +26,11 @@ Move the one switch that sends the requests of ores.web to the C++ server, and t
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | 322 of 334 routes paired. The 12 doc-backed routes are blocked on the docs moving into the database, so the QA and agile screens stay on the BFF. |
+| Now          | Nothing. |
 | Waiting on   | Nothing. The fleet starts, and the full build is green. |
-| Next         | Name the screens the doc-backed routes do not touch in VITE_ORE_CPP_SCREENS, and drive them in a browser. |
+| Next         | Nothing. |
 | Last touched | 2026-11-22                               |
 
 * Acceptance
@@ -148,3 +148,40 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+* Result
+
+The browser talks to the C++ server. At the addresses, member names and status codes
+the BFF answered, ores.http now serves the quotes view's four routes, the four
+market-data desk reads, the identity shape views, the classification lists, the
+authorisation queue, the reporting runs and the curve analytics, and it serves the
+bundle those screens came from, so a screen and its endpoint share one origin.
+
+`ORES_WEB_PORT` states the address a person opens and is now the HTTP server's; the
+BFF keeps its own port, `ORES_BFF_PORT`, on the offset it always had, so no listener
+moved and no screen lost its fallback. The sign-in card and the header offer the
+other server while both are live, and the harness, the notification links and the
+verify-first-run script follow the app's address.
+
+The gateway answers CORS from an origin list: a wildcard deployment stays anonymous,
+a deployment that names its origins allows credentials only to those, and the headers
+ride every answer, a missing route included. A page on one deployment may write to
+another, and only an origin the list names may.
+
+The document the gateway publishes describes the API a client may generate from:
+851 paths, 1132 operations, 25 areas each described and ordered in the document,
+both credentials a caller may present, and 883 models named once and referenced
+instead of expanded into every operation.
+
+What the report covers: `ores.http.api.tests` 190 cases and 6774 assertions, the
+browser suite 2633 tests in 211 files, and the local gate 15 of 16 checks. The
+sixteenth, `compass-tests`, fails on `test_a_role_in_hong_kong_returns_only_hong_kong_staff`
+with `KeyError: 'role'`, which fails identically at the merge base `3e723042bc`, so it
+is not this task's; it is captured in the inbox.
+
+What is not done here, and why: the fleet runs the build from before the last
+rebases, so the gateway must be rebuilt and restarted before these routes are what a
+person reads; the database was recreated and holds the system administrator but no
+ACME tenant, so the screens that need a party's records were checked against the
+gateway's answers rather than with data. The BFF stays deployed as the fallback the
+task asked for, and it retires in its own task once no screen needs it.

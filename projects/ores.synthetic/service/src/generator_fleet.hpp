@@ -60,9 +60,19 @@ public:
         return surfaces_;
     }
 
-    /** The source names of the feeds the service runs now. */
+    /**
+     * @brief The source names of the feeds the service runs now.
+     *
+     * A shared surface runs under its feed's own name while any adapter holds it, though each
+     * hold runs under a name of its own, so the screens read the surface feed as running.
+     */
     [[nodiscard]] std::vector<std::string> running_source_names() const {
-        return names_.names();
+        auto out = names_.names();
+        auto held = surfaces_.source_names();
+        out.insert(out.end(),
+                   std::make_move_iterator(held.begin()),
+                   std::make_move_iterator(held.end()));
+        return out;
     }
 
     /**

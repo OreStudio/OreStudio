@@ -88,6 +88,16 @@ public:
         }
     }
 
+    /// The source names of the surfaces that run, each once whatever number of adapters hold it.
+    [[nodiscard]] std::vector<std::string> source_names() const {
+        const std::lock_guard lock(mu_);
+        std::vector<std::string> out;
+        out.reserve(surfaces_.size());
+        for (const auto& [_, surface] : surfaces_)
+            out.push_back(surface->source_name());
+        return out;
+    }
+
     /// How many surfaces run.
     [[nodiscard]] std::size_t running_count() const {
         const std::lock_guard lock(mu_);

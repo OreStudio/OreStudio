@@ -28,6 +28,7 @@
 #include <stdexcept>
 #include <string>
 #include <thread>
+#include <utility>
 #include <vector>
 
 namespace {
@@ -128,6 +129,13 @@ class recording_surface final {
 public:
     using point_targets = std::map<std::string, std::string>;
 
+    explicit recording_surface(std::string source_name = "synthetic.vol.eurusd")
+        : source_name_(std::move(source_name)) {}
+
+    const std::string& source_name() const {
+        return source_name_;
+    }
+
     void attach(const std::string& adapter_id, const std::string&, point_targets) {
         adapters_[adapter_id] = true;
     }
@@ -151,6 +159,7 @@ public:
     std::size_t attached_at_start = 0;
 
 private:
+    std::string source_name_;
     std::map<std::string, bool> adapters_;
 };
 
@@ -334,4 +343,22 @@ TEST_CASE("a surface built again after its last adapter left is a new path", "[s
     again.start();
     CHECK(builds == 2);
     CHECK(surfaces.running_count() == 1);
+}
+
+TEST_CASE("a held surface runs under its feed's own source name", "[shared_surfaces]") {
+    recording_surfaces surfaces;
+    const auto make = [] { return std::make_shared<recording_surface>("synthetic.vol.eurusd"); };
+    recording_hold bloomberg(
+        surfaces, "feed-1", "bloomberg-a", "c-bbg", "synthetic.vol.eurusd.bloomberg", {}, make);
+    recording_hold ice(surfaces, "feed-1", "ice-a", "c-ice", "synthetic.vol.eurusd.ice", {}, make);
+    CHECK(surfaces.source_names().empty());
+
+    bloomberg.start();
+    ice.start();
+    CHECK(surfaces.source_names() == std::vector<std::string>{"synthetic.vol.eurusd"});
+
+    bloomberg.stop();
+    CHECK(surfaces.source_names() == std::vector<std::string>{"synthetic.vol.eurusd"});
+    ice.stop();
+    CHECK(surfaces.source_names().empty());
 }

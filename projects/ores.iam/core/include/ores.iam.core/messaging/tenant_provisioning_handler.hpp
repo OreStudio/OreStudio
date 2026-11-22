@@ -1026,19 +1026,25 @@ private:
         const auto params_json = dq::messaging::build_params_json(params);
         const auto bundle_code = std::string(ores::iam::workflow::system_core_bundle_code);
 
+        // Each phase is reported before it starts, not after it ends, so a run
+        // that stalls says which phase it stalled in rather than which one it
+        // last finished.
+        wf.record("Looking for the system tenant's administrator");
         const auto super_actor = system_administrator();
         if (!super_actor) {
             wf.fail("The system tenant holds no administrator to publish '" + bundle_code +
                     "' as.");
             return;
         }
+        wf.record("Found the administrator " + super_actor->username + "; publishing " +
+                  bundle_code);
         auto admin_client = make_step_client(tenant_context::system_tenant_id,
                                              super_actor->account_id,
                                              super_actor->party_id,
                                              super_actor->username);
         publish_bundle_or_throw(
             admin_client, bundle_code, super_actor->username, params_json, command.kind);
-        wf.record("Published the bundle " + bundle_code);
+        wf.record("Published the bundle " + bundle_code + "; marking the onboarding complete");
         complete_system_onboarding(admin_client);
         wf.record("Marked the system's onboarding complete");
         wf.complete(ores::utility::codec::json::write(

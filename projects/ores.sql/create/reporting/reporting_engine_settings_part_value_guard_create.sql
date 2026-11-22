@@ -62,14 +62,14 @@ begin
         v_code := 'Setup:' || v_setting.ore_name;
         select v.found, v.is_in_set, v.value_set_code
           into v_found, v_in_set, v_set_code
-          from ores_reporting_setting_value_verdict_fn(v_code, v_value) v;
+          from ores_ore_setting_value_verdict_fn(v_code, v_value) v;
 
         if not coalesce(v_found and v_in_set, false) then
             raise exception 'Invalid value % for %.%, the value is not in its value set.',
                 v_value, TG_ARGV[0], v_setting.column_name;
         end if;
 
-        v_canonical := ores_reporting_canonical_value_fn(v_set_code, v_value);
+        v_canonical := ores_ore_canonical_value_fn(v_set_code, v_value);
         if v_canonical is distinct from v_value then
             v_stored := v_stored || jsonb_build_object(v_setting.column_name, v_canonical);
         end if;

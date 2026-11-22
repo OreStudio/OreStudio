@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :design_the_scripted_trade_subsystem:sprint_30:v0:
 #+owner: marco
-#+branch: feature/move-the-ore-metamodel-into-ores-ore
+#+branch: feature/move-the-ore-parameters-into-ores-ore
 #+pr: 5028
 #+blocked_on:
 #+blocked_since:
@@ -26,11 +26,11 @@ ores.ore owns the description of ORE: its files and their versions, the leaves o
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:E6359881-7919-4BBC-9B9C-03A8EEDB8A03][Design the scripted trade subsystem]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-22                               |
 
 * Acceptance
@@ -90,6 +90,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
+| parameters rows after the move | 2554 parameters, 5 value domains, 249 value sets, 558 values, 3 catalogues, 996 setting links, 477 vocabularies, 479 element map columns; the same as the reporting tables before; no ores_reporting_ore_ table left | counts before on the PR 1 database, after compass db recreate -y -k | PR 2 head |
+| pgTAP of the parameters | 14 files pass: the nine ore_* tests, ore_ore_files, the refdata convention and curve validators, the risk report config publish, the file types | pg_prove as the test user | PR 2 head |
+| suites after the parameters move | ores.ore.api 1204 in 328, ores.ore.core 521281 in 607, ores.ore.service 54 in 10, ores.shell.ore 462 in 163, ores.shell.reporting 1651 in 599, ores.shell.application 237 in 65, ores.reporting.api 4717 in 1211, ores.reporting.core 1640 in 282, ores.http.core 100592 in 100, ores.http.refdata 3200 in 529, ores.http.reporting 731 in 102, ores.analytics.core 1080 in 107; BFF 1335 tests in 96 files; web and BFF tsc clean | the test binaries; npx vitest run; npx tsc --noEmit | PR 2 head |
+| through the services | ore.v1 lists of parameter value domains, parameters and value sets answer; bundles publish system_core completes its 18 datasets, ore.parameter_value_domains and ore.parameters through the ore service's publish handler; ore export-run reads a stored run document, and reporting's cache loads the parameters from ore.v1.ore_parameters.list at that moment | compass shell -f, after a recreate and a services start | PR 2 head |
 | rows after the move | 14 ORE file categories, 148 ORE files, 24 file versions at 1.8.17.0, 164 file types; no ores_reporting_ore_file table left | compass db recreate -y -k, then a count of the current rows | PR 1 head |
 | seeds | identical to the seeds they replace; 164 file types and 148 ORE files match the guide and the 416 ORE samples | generate_file_types_populate.py --check, and a diff of each seed with its predecessor | PR 1 head |
 | reads through the service | ore_file_categories, ore_files and ore_file_versions list answer on ore.v1 with totals 14, 148 and 24 | compass shell -f, after a recreate and a services start | PR 1 head |
@@ -98,6 +102,32 @@ task and name that file in the Command column.
 
 
 * Notes
+
+** What the second PR found
+
+- Compass 0.0.13 takes the names of the value set tables, their seeds, the
+  validator functions and the writer stamp from the models, so moving the models
+  moved the four compass seeds to =populate/ore= and repointed refdata's
+  generated validators, with no compass edit; =curve_parameter_paths= is pointed
+  at the moved parameters seed in =.compass.org=.
+- Reporting's =run_document_service= read =ore_parameter= through its repository.
+  It now takes the analytics' parameters as data: the service supplies them from
+  an entity-mirror cache of =ores.ore='s parameters (=cached_by: reporting=, the
+  list of analytic parameters as the cache's aux index), loaded on first use with
+  the reporting service's own token and refreshed by the parameters' events; the
+  tests supply them from the store. The cache needs =ores.eventing.core= in
+  reporting's core, under the =core_link_edges= exception IAM's core carries for
+  its party cache (approved).
+- A service serves one family of step commands per stream, so the ore service's
+  publish-from-DQ steps join its import steps on one consumer; a second
+  =serve_step_commands= stopped the service at start.
+- Reporting's engine settings proposal calls =ores_ore_setting_value_verdict_fn=
+  from C++, which became =ores.ore='s with the move; it is recorded on
+  [[id:68EA32A5-733C-43C2-A757-30C6EEBECEEE][Read other services' data through event-fed caches]].
+- =ore import-run= fails on main as well as here: since the recent DQ changes no
+  service subscribes =refdata.v1.ops.begin_bundle_import=, which the run
+  configuration import calls; so the import could not exercise the cache's
+  name-to-id direction live, which reporting's database tests cover.
 
 ** What the first PR found
 
@@ -171,10 +201,15 @@ via its "Verifies task" field.
 
 * Result
 
-In progress: the first of the two families is in. The ORE files, their
-categories and their contents per ORE release are =ores.ore='s tables,
-operations, history and shell commands, with the same rows as before, and the
-ore service is granted them through the service registry. The parameters family
-(the leaves of ORE's schemas, their value domains, value sets and vocabularies,
-and the element map) waits for the compass release whose =ore_value_sets= codec
-reads its names from the models.
+Done in two PRs. =ores.ore= owns the description of ORE: the ORE files, their
+categories and their contents per release, and the parameters of ORE's documents
+with their value domains, value sets, vocabulary and element map. Their models,
+tables (=ores_ore_*=), DQ datasets and publish functions, operations under
+=ore.v1=, history, shell commands, HTTP and BFF reads, pgTAP tests and generators
+moved from =ores.reporting= with no row changed. The ore service publishes the
+parameters from DQ and is granted its tables through the service registry.
+Compass 0.0.13 writes the value set seeds and refdata's validators from the
+models. Reporting reads the parameters through an entity-mirror cache fed by
+their events, not from =ores.ore='s table; refdata's and analytics' triggers call
+=ores.ore='s value set functions, as a trigger may. The knowledge page on the
+ownership of ORE rows states what =ores.ore= owns.

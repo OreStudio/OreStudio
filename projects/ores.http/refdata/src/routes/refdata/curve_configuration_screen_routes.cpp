@@ -30,6 +30,7 @@
 #include "ores.http/routes/refdata/curve_document_cells.hpp"
 #include "ores.http/routes/refdata/curve_document_edit.hpp"
 #include "ores.http/routes/refdata/curve_section_wiring.hpp"
+#include "ores.ore.api/messaging/ore_parameter_protocol.hpp"
 #include "ores.refdata.api/messaging/configuration_document_protocol.hpp"
 #include "ores.refdata.api/messaging/currency_protocol.hpp"
 #include "ores.refdata.api/messaging/curve_configuration_protocol.hpp"
@@ -37,7 +38,6 @@
 #include "ores.refdata.api/messaging/curve_section_protocol.hpp"
 #include "ores.refdata.api/messaging/curve_segment_type_protocol.hpp"
 #include "ores.refdata.api/messaging/tenor_protocol.hpp"
-#include "ores.reporting.api/messaging/ore_parameter_protocol.hpp"
 #include "ores.utility/codec/json_codec.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -111,7 +111,7 @@ std::string party_of(const http_request& req) {
  * The rows outlive the contract in the caller, which owns them for the length of
  * one answer.
  */
-void fill_contract(const std::vector<ores::reporting::domain::ore_parameter>& parameters,
+void fill_contract(const std::vector<ores::ore::domain::ore_parameter>& parameters,
                    curve_view::contract& contract) {
     for (const auto& parameter : parameters)
         if (parameter.schema_name == curve_schema)
@@ -306,8 +306,8 @@ void curve_configuration_screen_routes::register_routes(
                         const auto parameters = forwarding::forward_all(
                             req,
                             session,
-                            ores::reporting::messaging::list_ore_parameters_request{},
-                            &ores::reporting::messaging::list_ore_parameters_response::parameters);
+                            ores::ore::messaging::list_ore_parameters_request{},
+                            &ores::ore::messaging::list_ore_parameters_response::parameters);
                         curve_view::contract contract;
                         fill_contract(parameters, contract);
                         const auto kinds = segment_kinds_of(req, session);
@@ -374,8 +374,8 @@ void curve_configuration_screen_routes::register_routes(
                         const auto parameters = forwarding::forward_all(
                             req,
                             session,
-                            ores::reporting::messaging::list_ore_parameters_request{},
-                            &ores::reporting::messaging::list_ore_parameters_response::parameters);
+                            ores::ore::messaging::list_ore_parameters_request{},
+                            &ores::ore::messaging::list_ore_parameters_response::parameters);
                         curve_view::contract contract;
                         fill_contract(parameters, contract);
                         const auto values = value_set_reader(

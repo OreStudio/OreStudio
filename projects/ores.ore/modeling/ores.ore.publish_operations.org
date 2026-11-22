@@ -1,0 +1,66 @@
+:PROPERTIES:
+:ID: 1FEEFF9B-6C15-44D8-9A79-876CBFD6809A
+:ores.cpp.wire-codec.enabled: true
+:END:
+#+title: ores.ore.publish_operations
+#+description: Codegen operation model for the workflow steps that publish the description of ORE from DQ datasets.
+#+type: ores.codegen.operation
+#+component: ore
+#+subcomponent: api
+#+entity_singular: publish_operation
+#+namespace: ores::ore::messaging
+#+brief: The ore publish-from-DQ workflow steps.
+#+filetags: :model:operation:ore:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+
+The workflow steps that publish the description of ORE that =ores.ore= owns from
+its DQ datasets: the value domains of the ORE parameters and the parameters
+themselves. Each is a trigger: the DQ publisher sends it and reads no reply, so
+the step states a subject and no response, and its body is the DQ artefact the
+server-side function knows how to expand.
+
+The SQL function the step calls is derived from its subject, so the spelling of
+the subject matters twice: once as the subject the registrar subscribes and once
+as the function the handler calls.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <string_view>
+#+end_src
+
+* Messages
+
+** publish_ore_parameter_value_domains_from_dq_request
+:PROPERTIES:
+:subject: ore.v1.ops.publish_ore_parameter_value_domains_from_dq
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow step that publishes the DQ-cleared ORE parameter value domains.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is derived from the subject,
+ * ores_ore_publish_ore_parameter_value_domains_from_dq_fn.
+ */
+#+end_src
+
+** publish_ore_parameters_from_dq_request
+:PROPERTIES:
+:subject: ore.v1.ops.publish_ore_parameters_from_dq
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow step that publishes the DQ-cleared ORE parameter documentation.
+ *
+ * The same trigger shape as the value domains' publish, which comes first,
+ * because the parameters name their value domains.
+ */
+#+end_src
+
+* See also
+
+- [[id:5F280C8C-8C50-40A2-8C84-C85B8821D33E][ores.ore]] — component group overview.

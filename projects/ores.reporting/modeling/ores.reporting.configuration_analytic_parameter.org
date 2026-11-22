@@ -151,7 +151,7 @@ The definition of a parameter has an id that differs between databases, so a dat
 
 ** ore_parameter_id
 :PROPERTIES:
-:table:         ores_reporting_ore_parameters_tbl
+:table:         ores_ore_parameters_tbl
 :target_column: id
 :use_system_tenant: true
 :parent_entity: ore_parameter

@@ -337,8 +337,8 @@ BEGIN
     -- row and its three parts. Deleting a configuration stays with the
     -- administrative roles. The configuration rows are party-scoped by row-level
     -- security, like the report definitions above.
-    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'reporting::ore_parameters:read');
-    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'reporting::ore_parameter_value_domains:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'ore::ore_parameters:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'ore::ore_parameter_value_domains:read');
     -- The curve configuration screen reads a curve document, which the ORE bundle
     -- import writes as the party's own rows and the report configuration binds.
     -- The sections are the vocabulary the document is built from, so both are
@@ -875,10 +875,10 @@ BEGIN
     -- takes its values from. The list needs none of them, the form fills from
     -- all of them, and none is a business fact of the tenant.
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'refdata::instrument_codes:read');
-    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'reporting::ore_parameter_value_sets:read');
-    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'reporting::ore_parameter_value_set_values:read');
-    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'reporting::ore_parameter_value_set_catalogues:read');
-    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'reporting::ore_parameter_setting_value_sets:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'ore::ore_parameter_value_sets:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'ore::ore_parameter_value_set_values:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'ore::ore_parameter_value_set_catalogues:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'ore::ore_parameter_setting_value_sets:read');
     -- The market-risk decision an approval request waits for. *Decide a
     -- publish* and *Decide a convention change* name a person from Market
     -- Risk, other than the requester, and the request's kind carries this
@@ -1117,6 +1117,9 @@ BEGIN
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportingService', 'scheduler::job_definitions:delete');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportingService', 'storage::objects:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportingService', 'storage::objects:write');
+    -- A run document names its parameters by the ore parameters, which are ores.ore's; the
+    -- service mirrors them in a cache it fills through the ore service.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportingService', 'ore::ore_parameters:read');
 
     -- Telemetry service: full own-component + tenant read
     PERFORM ores_iam_roles_upsert_fn(ores_utility_system_tenant_id_fn(), 'TelemetryService', 'Telemetry domain service', false);

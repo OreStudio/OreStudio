@@ -28,7 +28,7 @@
  * pair accepts, the value ORE's examples use and whether ORE needs the setting. The
  * control the screen draws and the values it accepts belong to the value set of the
  * setting, which
- * ores_reporting_ore_parameter_setting_value_sets_tbl links by scope and name,
+ * ores_ore_parameter_setting_value_sets_tbl links by scope and name,
  * so the same rule serves every pair that takes the setting and the write path
  * that refuses a value outside it.
  */

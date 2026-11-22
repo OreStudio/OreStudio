@@ -19,6 +19,22 @@
  */
 
 -- Notify triggers, then tables, in reverse dependency order
+\ir ./ore_ore_parameters_notify_trigger_drop.sql
+\ir ./ore_ore_parameters_drop.sql
+\ir ./ore_ore_parameter_value_domains_notify_trigger_drop.sql
+\ir ./ore_ore_parameter_value_domains_drop.sql
+\ir ./ore_ore_parameter_setting_value_sets_notify_trigger_drop.sql
+\ir ./ore_ore_parameter_setting_value_sets_drop.sql
+\ir ./ore_ore_parameter_value_set_values_notify_trigger_drop.sql
+\ir ./ore_ore_parameter_value_set_values_drop.sql
+\ir ./ore_ore_parameter_value_sets_notify_trigger_drop.sql
+\ir ./ore_ore_parameter_value_sets_drop.sql
+\ir ./ore_ore_parameter_value_set_catalogues_notify_trigger_drop.sql
+\ir ./ore_ore_parameter_value_set_catalogues_drop.sql
+\ir ./ore_ore_element_map_columns_notify_trigger_drop.sql
+\ir ./ore_ore_element_map_columns_drop.sql
+\ir ./ore_ore_parameter_vocabularies_notify_trigger_drop.sql
+\ir ./ore_ore_parameter_vocabularies_drop.sql
 \ir ./ore_ore_file_versions_notify_trigger_drop.sql
 \ir ./ore_ore_file_versions_drop.sql
 \ir ./ore_ore_files_notify_trigger_drop.sql

@@ -35,13 +35,13 @@ select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::t
 
 -- The trigger reads the parameter contract, which the system provisioning step
 -- publishes; a fresh database has not run it, so the test publishes it here.
-select * from ores_reporting_publish_ore_parameter_value_domains_from_dq_fn(
+select * from ores_ore_publish_ore_parameter_value_domains_from_dq_fn(
     (select id from ores_dq_datasets_tbl
       where code = 'ore.parameter_value_domains'
         and valid_to = ores_utility_infinity_timestamp_fn()),
     ores_utility_system_tenant_id_fn(), 'upsert', '{}'::jsonb);
 
-select * from ores_reporting_publish_ore_parameters_from_dq_fn(
+select * from ores_ore_publish_ore_parameters_from_dq_fn(
     (select id from ores_dq_datasets_tbl
       where code = 'ore.parameters'
         and valid_to = ores_utility_infinity_timestamp_fn()),
@@ -192,12 +192,12 @@ select ok(
 select is(
     (select l.value_set_code
        from ores_refdata_curve_configuration_columns_tbl k
-       join ores_reporting_ore_parameters_tbl p
+       join ores_ore_parameters_tbl p
          on p.schema_name = k.schema_name
         and p.xpath = k.xpath
         and p.tenant_id = ores_utility_system_tenant_id_fn()
         and p.valid_to = ores_utility_infinity_timestamp_fn()
-       join ores_reporting_ore_parameter_setting_value_sets_tbl l
+       join ores_ore_parameter_setting_value_sets_tbl l
          on l.code = p.scope || ':' || p.name
         and l.valid_to = ores_utility_infinity_timestamp_fn()
       where k.code = 'yield_curve_config|currency'

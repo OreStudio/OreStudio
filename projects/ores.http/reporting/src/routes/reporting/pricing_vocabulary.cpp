@@ -35,9 +35,9 @@
 #include "ores.http.nats/forwarding.hpp"
 #include "ores.http/routes/reporting/ore_value_set_rows.hpp"
 #include "ores.logging/logger.hpp"
+#include "ores.ore.api/messaging/ore_parameter_protocol.hpp"
 #include "ores.refdata.api/messaging/instrument_code_protocol.hpp"
 #include "ores.refdata.api/messaging/tenor_protocol.hpp"
-#include "ores.reporting.api/messaging/ore_parameter_protocol.hpp"
 #include "ores.utility/codec/json_codec.hpp"
 #include <algorithm>
 #include <map>
@@ -54,12 +54,12 @@ namespace rr = ores::http::net::record_routes;
 namespace forwarding = ores::http::forwarding;
 namespace analytics_messaging = ores::analytics::messaging;
 namespace refdata_messaging = ores::refdata::messaging;
-namespace reporting_messaging = ores::reporting::messaging;
+namespace ore_messaging = ores::ore::messaging;
 
 using ores::http::domain::http_request;
 using ores::http::domain::http_response;
 using ores::http::routes::value_set_reader;
-using ores::reporting::domain::ore_parameter;
+using ores::ore::domain::ore_parameter;
 using ores::nats::service::nats_client;
 using ores::http::net::shape::member;
 using ores::http::net::shape::object;
@@ -205,8 +205,8 @@ vocabulary_rows read_rows(const http_request& req, nats_client& session) {
     rows.parameters =
         forwarding::forward_all(req,
                                 session,
-                                reporting_messaging::list_ore_parameters_request{},
-                                &reporting_messaging::list_ore_parameters_response::parameters);
+                                ore_messaging::list_ore_parameters_request{},
+                                &ore_messaging::list_ore_parameters_response::parameters);
     return rows;
 }
 

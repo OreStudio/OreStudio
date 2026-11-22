@@ -62,7 +62,9 @@ struct fixture {
 
     ores::reporting::messaging::run_document_handler handler() {
         return ores::reporting::messaging::run_document_handler(
-            nats, db.context(), std::optional(keys.verifier()));
+            nats, db.context(), std::optional(keys.verifier()), [this]() {
+                return ores::testing::system_analytic_parameters(db.context(), db.db_user());
+            });
     }
 
     void subscribe(const std::string& op, std::function<void(ores::nats::message)> f) {

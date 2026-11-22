@@ -21,10 +21,10 @@
 #define ORES_TESTING_ORE_PARAMETER_FIXTURE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.reporting.api/generators/ore_parameter_generator.hpp"
-#include "ores.reporting.api/generators/ore_parameter_value_domain_generator.hpp"
-#include "ores.reporting.core/repository/ore_parameter_repository.hpp"
-#include "ores.reporting.core/repository/ore_parameter_value_domain_repository.hpp"
+#include "ores.ore.api/generators/ore_parameter_generator.hpp"
+#include "ores.ore.api/generators/ore_parameter_value_domain_generator.hpp"
+#include "ores.ore.core/repository/ore_parameter_repository.hpp"
+#include "ores.ore.core/repository/ore_parameter_value_domain_repository.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/random_generator.hpp>
@@ -62,18 +62,18 @@ write_system_parameters(const ores::database::context& party_ctx,
     const auto system_ctx =
         party_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), db_user);
 
-    auto domain = ores::reporting::generators::generate_synthetic_ore_parameter_value_domain(gen);
+    auto domain = ores::ore::generators::generate_synthetic_ore_parameter_value_domain(gen);
     domain.change_reason_code = "system.test";
     domain.tenant_id = ores::utility::uuid::tenant_id::system();
     // The generator draws the code from a few words and a counter, so two runs
     // against one database could meet; a random uuid cannot.
     domain.code = "test-" + boost::uuids::to_string(boost::uuids::random_generator()());
-    ores::reporting::repository::ore_parameter_value_domain_repository().write(system_ctx, domain);
+    ores::ore::repository::ore_parameter_value_domain_repository().write(system_ctx, domain);
 
     std::vector<boost::uuids::uuid> ids;
-    ores::reporting::repository::ore_parameter_repository parameters;
+    ores::ore::repository::ore_parameter_repository parameters;
     for (std::size_t i = 0; i != count; ++i) {
-        auto parameter = ores::reporting::generators::generate_synthetic_ore_parameter(gen);
+        auto parameter = ores::ore::generators::generate_synthetic_ore_parameter(gen);
         parameter.change_reason_code = "system.test";
         parameter.tenant_id = ores::utility::uuid::tenant_id::system();
         parameter.ore_parameter_value_domain_code = domain.code;
@@ -125,7 +125,7 @@ inline void seed_system_analytic_parameters(
     const std::string& db_user,
     ores::utility::generation::generation_context& gen,
     const std::vector<analytic_parameter>& wanted = example_analytic_parameters()) {
-    namespace repository = ores::reporting::repository;
+    namespace repository = ores::ore::repository;
     const auto system_ctx =
         party_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), db_user);
 
@@ -136,8 +136,7 @@ inline void seed_system_analytic_parameters(
     for (const auto& want : wanted) {
         if (!known.insert(want.domain).second)
             continue;
-        auto domain =
-            ores::reporting::generators::generate_synthetic_ore_parameter_value_domain(gen);
+        auto domain = ores::ore::generators::generate_synthetic_ore_parameter_value_domain(gen);
         domain.change_reason_code = "system.test";
         domain.tenant_id = ores::utility::uuid::tenant_id::system();
         domain.code = want.domain;
@@ -166,7 +165,7 @@ inline void seed_system_analytic_parameters(
         ++position;
         if (holds(want))
             continue;
-        auto parameter = ores::reporting::generators::generate_synthetic_ore_parameter(gen);
+        auto parameter = ores::ore::generators::generate_synthetic_ore_parameter(gen);
         parameter.change_reason_code = "system.test";
         parameter.tenant_id = ores::utility::uuid::tenant_id::system();
         parameter.scope = "analytic";
@@ -190,6 +189,20 @@ inline void seed_system_analytic_parameters(
     }
 }
 
+
+/**
+ * @brief The ore parameters of the analytics the system tenant describes, as the
+ *        reporting service reads them from its cache of ores.ore's parameters.
+ */
+inline std::vector<ores::ore::domain::ore_parameter>
+system_analytic_parameters(const ores::database::context& ctx, const std::string& db_user) {
+    const auto system_ctx = ctx.with_tenant(ores::utility::uuid::tenant_id::system(), db_user);
+    std::vector<ores::ore::domain::ore_parameter> out;
+    for (auto& p : ores::ore::repository::ore_parameter_repository().read_latest(system_ctx))
+        if (p.scope == "analytic")
+            out.push_back(std::move(p));
+    return out;
+}
 }
 
 #endif

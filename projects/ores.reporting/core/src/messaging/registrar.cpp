@@ -74,18 +74,6 @@
 #include "ores.reporting.core/messaging/engine_settings_registrar.hpp"
 #include "ores.reporting.core/messaging/file_type_history_provider_registrar.hpp"
 #include "ores.reporting.core/messaging/file_type_registrar.hpp"
-#include "ores.reporting.core/messaging/ore_parameter_history_provider_registrar.hpp"
-#include "ores.reporting.core/messaging/ore_parameter_registrar.hpp"
-#include "ores.reporting.core/messaging/ore_parameter_setting_value_set_history_provider_registrar.hpp"
-#include "ores.reporting.core/messaging/ore_parameter_setting_value_set_registrar.hpp"
-#include "ores.reporting.core/messaging/ore_parameter_value_domain_history_provider_registrar.hpp"
-#include "ores.reporting.core/messaging/ore_parameter_value_domain_registrar.hpp"
-#include "ores.reporting.core/messaging/ore_parameter_value_set_catalogue_history_provider_registrar.hpp"
-#include "ores.reporting.core/messaging/ore_parameter_value_set_catalogue_registrar.hpp"
-#include "ores.reporting.core/messaging/ore_parameter_value_set_history_provider_registrar.hpp"
-#include "ores.reporting.core/messaging/ore_parameter_value_set_registrar.hpp"
-#include "ores.reporting.core/messaging/ore_parameter_value_set_value_history_provider_registrar.hpp"
-#include "ores.reporting.core/messaging/ore_parameter_value_set_value_registrar.hpp"
 #include "ores.reporting.core/messaging/publish_from_dq_handler.hpp"
 #include "ores.reporting.core/messaging/report_cashflow_registrar.hpp"
 #include "ores.reporting.core/messaging/report_configuration_history_provider_registrar.hpp"
@@ -114,11 +102,16 @@
 #include "ores.reporting.core/messaging/report_type_history_provider_registrar.hpp"
 #include "ores.reporting.core/messaging/run_document_handler.hpp"
 #include "ores.reporting.core/messaging/run_result_registrar.hpp"
+#include "ores.reporting.core/service/cache/ore_parameter_cache.hpp"
+#include "ores.reporting.core/service/cache/ore_parameter_cache_registrar.hpp"
 #include "ores.service/messaging/step_command_stream.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.workflow.core/service/fsm_state_map.hpp"
+#include <atomic>
 #include <iterator>
 #include <memory>
 #include <optional>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 
@@ -491,7 +484,30 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // ----------------------------------------------------------------
     // Report instances (generated CRUD handler)
     // ----------------------------------------------------------------
-    auto rdoc = std::make_shared<run_document_handler>(nats, ctx, verifier);
+    // The ore parameters are ores.ore's. A run document names a parameter by
+    // its analytic and its name and a stored configuration by its id, so the
+    // service mirrors them in a cache fed by their events, read with the
+    // service's own token, rather than reading ores.ore's table. The cache is
+    // loaded on its first use, so the service starts whether or not the ore
+    // service is up, and the subscription reloads it on every change.
+    auto ore_parameters = std::make_shared<service::cache::ore_parameter_cache>(nats);
+    ore_parameters->set_token_provider(
+        [&svc_nats](const std::string&, bool) { return svc_nats.bearer_token(); });
+    for (auto& sub :
+         service::cache::warm_and_subscribe_ore_parameter_cache(nats, ore_parameters, {}))
+        subs.push_back(std::move(sub));
+    auto parameters_loaded = std::make_shared<std::atomic<bool>>(false);
+    auto rdoc = std::make_shared<run_document_handler>(
+        nats, ctx, verifier, [ore_parameters, parameters_loaded]() {
+            const auto system = utility::uuid::tenant_id::system().to_string();
+            if (!*parameters_loaded) {
+                if (const auto error = ore_parameters->load(system); !error.empty())
+                    throw std::runtime_error(
+                        "The ore parameters could not be read from the ore service: " + error);
+                *parameters_loaded = true;
+            }
+            return ore_parameters->analytics_parameters(system);
+        });
     subs.push_back(nats.queue_subscribe(
         save_run_document_request::nats_subject, group, [rdoc](ores::nats::message msg) {
             rdoc->save_run_document(std::move(msg));
@@ -704,8 +720,6 @@ registrar::register_handlers(ores::nats::service::client& nats,
             publish_report_definitions_from_dq_request::nats_subject,
             publish_risk_report_configs_from_dq_request::nats_subject,
             publish_engine_settings_from_dq_request::nats_subject,
-            publish_ore_parameter_value_domains_from_dq_request::nats_subject,
-            publish_ore_parameters_from_dq_request::nats_subject,
         };
         ores::service::messaging::step_routes routes;
         for (const auto subject : publish_subjects)
@@ -759,18 +773,6 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // entity's own read serves the shell and a future audit screen.
     for (auto& sub : register_engine_settings_change_handlers(nats, ctx, verifier))
         subs.push_back(std::move(sub));
-    for (auto& sub : register_ore_parameter_handlers(nats, ctx, verifier))
-        subs.push_back(std::move(sub));
-    for (auto& sub : register_ore_parameter_value_domain_handlers(nats, ctx, verifier))
-        subs.push_back(std::move(sub));
-    for (auto& sub : register_ore_parameter_value_set_handlers(nats, ctx, verifier))
-        subs.push_back(std::move(sub));
-    for (auto& sub : register_ore_parameter_value_set_value_handlers(nats, ctx, verifier))
-        subs.push_back(std::move(sub));
-    for (auto& sub : register_ore_parameter_value_set_catalogue_handlers(nats, ctx, verifier))
-        subs.push_back(std::move(sub));
-    for (auto& sub : register_ore_parameter_setting_value_set_handlers(nats, ctx, verifier))
-        subs.push_back(std::move(sub));
 
     // ----------------------------------------------------------------
     // A run's figures, as the post-processor stores them, and the read model
@@ -818,12 +820,6 @@ registrar::register_handlers(ores::nats::service::client& nats,
         register_engine_settings_group_setting_history_provider(hist_registry);
         register_engine_settings_history_provider(hist_registry);
         register_file_type_history_provider(hist_registry);
-        register_ore_parameter_history_provider(hist_registry);
-        register_ore_parameter_setting_value_set_history_provider(hist_registry);
-        register_ore_parameter_value_domain_history_provider(hist_registry);
-        register_ore_parameter_value_set_catalogue_history_provider(hist_registry);
-        register_ore_parameter_value_set_history_provider(hist_registry);
-        register_ore_parameter_value_set_value_history_provider(hist_registry);
         register_report_configuration_history_provider(hist_registry);
         register_report_definition_history_provider(hist_registry);
         register_report_error_scope_history_provider(hist_registry);

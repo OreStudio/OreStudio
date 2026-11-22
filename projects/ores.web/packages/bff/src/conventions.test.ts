@@ -302,7 +302,7 @@ describe('convention routes', () => {
                     },
                 ],
             },
-            'reporting.v1.ore_parameters.list': {
+            'ore.v1.ore_parameters.list': {
                 result: ok,
                 parameters: [
                     {
@@ -321,11 +321,11 @@ describe('convention routes', () => {
                     },
                 ],
             },
-            'reporting.v1.ore_parameter_value_sets.list': {
+            'ore.v1.ore_parameter_value_sets.list': {
                 result: ok,
                 sets: [{ code: 'convention.frequency', source_kind: 'enumerated' }],
             },
-            'reporting.v1.ore_parameter_value_set_values.list': {
+            'ore.v1.ore_parameter_value_set_values.list': {
                 result: ok,
                 values: [
                     {
@@ -342,8 +342,8 @@ describe('convention routes', () => {
                     },
                 ],
             },
-            'reporting.v1.ore_parameter_value_set_catalogues.list': { result: ok, catalogues: [] },
-            'reporting.v1.ore_parameter_setting_value_sets.list': {
+            'ore.v1.ore_parameter_value_set_catalogues.list': { result: ok, catalogues: [] },
+            'ore.v1.ore_parameter_setting_value_sets.list': {
                 result: ok,
                 setting_value_sets: [
                     {
@@ -416,11 +416,11 @@ describe('convention routes', () => {
             },
             'refdata.v1.convention_kinds.list': { result: ok, kinds: [] },
             'refdata.v1.convention_kind_terms.list': { result: ok, terms: [] },
-            'reporting.v1.ore_parameters.list': { result: ok, parameters: [] },
-            'reporting.v1.ore_parameter_value_sets.list': { result: ok, sets: [] },
-            'reporting.v1.ore_parameter_value_set_values.list': { result: ok, values: [] },
-            'reporting.v1.ore_parameter_value_set_catalogues.list': { result: ok, catalogues: [] },
-            'reporting.v1.ore_parameter_setting_value_sets.list': {
+            'ore.v1.ore_parameters.list': { result: ok, parameters: [] },
+            'ore.v1.ore_parameter_value_sets.list': { result: ok, sets: [] },
+            'ore.v1.ore_parameter_value_set_values.list': { result: ok, values: [] },
+            'ore.v1.ore_parameter_value_set_catalogues.list': { result: ok, catalogues: [] },
+            'ore.v1.ore_parameter_setting_value_sets.list': {
                 result: ok,
                 setting_value_sets: [],
             },
@@ -486,11 +486,11 @@ describe('convention routes', () => {
                     },
                 ],
             },
-            'reporting.v1.ore_parameters.list': { result: ok, parameters: [] },
-            'reporting.v1.ore_parameter_value_sets.list': { result: ok, sets: [] },
-            'reporting.v1.ore_parameter_value_set_values.list': { result: ok, values: [] },
-            'reporting.v1.ore_parameter_value_set_catalogues.list': { result: ok, catalogues: [] },
-            'reporting.v1.ore_parameter_setting_value_sets.list': {
+            'ore.v1.ore_parameters.list': { result: ok, parameters: [] },
+            'ore.v1.ore_parameter_value_sets.list': { result: ok, sets: [] },
+            'ore.v1.ore_parameter_value_set_values.list': { result: ok, values: [] },
+            'ore.v1.ore_parameter_value_set_catalogues.list': { result: ok, catalogues: [] },
+            'ore.v1.ore_parameter_setting_value_sets.list': {
                 result: ok,
                 setting_value_sets: [],
             },
@@ -805,7 +805,7 @@ describe('convention routes', () => {
                     },
                 ],
             },
-            'reporting.v1.ore_parameters.list': {
+            'ore.v1.ore_parameters.list': {
                 result: ok,
                 parameters: [
                     {
@@ -822,13 +822,13 @@ describe('convention routes', () => {
                     },
                 ],
             },
-            'reporting.v1.ore_parameter_value_sets.list': {
+            'ore.v1.ore_parameter_value_sets.list': {
                 result: ok,
                 sets: [{ code: 'convention.flag', source_kind: 'boolean' }],
             },
-            'reporting.v1.ore_parameter_value_set_values.list': { result: ok, values: [] },
-            'reporting.v1.ore_parameter_value_set_catalogues.list': { result: ok, catalogues: [] },
-            'reporting.v1.ore_parameter_setting_value_sets.list': {
+            'ore.v1.ore_parameter_value_set_values.list': { result: ok, values: [] },
+            'ore.v1.ore_parameter_value_set_catalogues.list': { result: ok, catalogues: [] },
+            'ore.v1.ore_parameter_setting_value_sets.list': {
                 result: ok,
                 setting_value_sets: [
                     { scope: 'Swap', name: 'EOM', value_set_code: 'convention.flag' },

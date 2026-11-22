@@ -290,49 +290,6 @@ struct publish_engine_settings_from_dq_request {
                            const publish_engine_settings_from_dq_request&) = default;
 };
 
-/**
- * @brief The workflow step that publishes the DQ-cleared ORE parameter value domains.
- *
- * The same trigger shape as publish_engine_settings_from_dq_request, and
- * declared the same way: the SQL function name the handler derives from the
- * subject depends on the spelling.
- */
-struct publish_ore_parameter_value_domains_from_dq_request {
-    static constexpr std::string_view nats_subject =
-        "reporting.v1.ops.publish_ore_parameter_value_domains_from_dq";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
-
-    friend bool operator==(const publish_ore_parameter_value_domains_from_dq_request&,
-                           const publish_ore_parameter_value_domains_from_dq_request&) = default;
-};
-
-/**
- * @brief The workflow step that publishes the DQ-cleared ORE parameter documentation.
- *
- * The same trigger shape as publish_engine_settings_from_dq_request. The
- * value domains publish first, because the dataset depends on theirs.
- */
-struct publish_ore_parameters_from_dq_request {
-    static constexpr std::string_view nats_subject =
-        "reporting.v1.ops.publish_ore_parameters_from_dq";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
-
-    friend bool operator==(const publish_ore_parameters_from_dq_request&,
-                           const publish_ore_parameters_from_dq_request&) = default;
-};
-
 struct gather_trades_request {
     using response_type = struct gather_trades_result;
     static constexpr std::string_view nats_subject = "reporting.v1.ops.gather_trades";
@@ -1150,32 +1107,6 @@ wire_fields(std::type_identity<publish_risk_report_configs_from_dq_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<publish_engine_settings_from_dq_request>) {
-    return ::ores::utility::codec::field_list{};
-}
-
-/**
- * @brief The members of publish_ore_parameter_value_domains_from_dq_request, named as the wire
- * names them and in the order the type declares them.
- *
- * This is the one statement of the message's shape. The carriers find it by
- * argument-dependent lookup, so no caller passes a list, and a message that
- * holds another message or a domain type encodes it as its own object.
- */
-[[nodiscard]] constexpr auto
-wire_fields(std::type_identity<publish_ore_parameter_value_domains_from_dq_request>) {
-    return ::ores::utility::codec::field_list{};
-}
-
-/**
- * @brief The members of publish_ore_parameters_from_dq_request, named as the wire names them and in
- * the order the type declares them.
- *
- * This is the one statement of the message's shape. The carriers find it by
- * argument-dependent lookup, so no caller passes a list, and a message that
- * holds another message or a domain type encodes it as its own object.
- */
-[[nodiscard]] constexpr auto
-wire_fields(std::type_identity<publish_ore_parameters_from_dq_request>) {
     return ::ores::utility::codec::field_list{};
 }
 
@@ -2095,34 +2026,6 @@ struct ORES_REPORTING_API_EXPORT
     static std::string
     write_msgpack(const ores::reporting::messaging::publish_engine_settings_from_dq_request& v);
     static ores::reporting::messaging::publish_engine_settings_from_dq_request
-    read_msgpack(std::span<const std::byte> data);
-};
-template <>
-struct ORES_REPORTING_API_EXPORT
-    wire_traits<ores::reporting::messaging::publish_ore_parameter_value_domains_from_dq_request> {
-    static constexpr bool is_generated = true;
-
-    static std::string write_json(
-        const ores::reporting::messaging::publish_ore_parameter_value_domains_from_dq_request& v);
-    static ores::reporting::messaging::publish_ore_parameter_value_domains_from_dq_request
-    read_json(std::string_view text);
-    static std::string write_msgpack(
-        const ores::reporting::messaging::publish_ore_parameter_value_domains_from_dq_request& v);
-    static ores::reporting::messaging::publish_ore_parameter_value_domains_from_dq_request
-    read_msgpack(std::span<const std::byte> data);
-};
-template <>
-struct ORES_REPORTING_API_EXPORT
-    wire_traits<ores::reporting::messaging::publish_ore_parameters_from_dq_request> {
-    static constexpr bool is_generated = true;
-
-    static std::string
-    write_json(const ores::reporting::messaging::publish_ore_parameters_from_dq_request& v);
-    static ores::reporting::messaging::publish_ore_parameters_from_dq_request
-    read_json(std::string_view text);
-    static std::string
-    write_msgpack(const ores::reporting::messaging::publish_ore_parameters_from_dq_request& v);
-    static ores::reporting::messaging::publish_ore_parameters_from_dq_request
     read_msgpack(std::span<const std::byte> data);
 };
 template <>

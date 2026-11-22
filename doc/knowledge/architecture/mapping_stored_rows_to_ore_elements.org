@@ -29,11 +29,11 @@ per-tenant contract varies by tenant, so it has no fixed count.
 
 | Table | Rows | Answers | Read by |
 |-------+------+---------+---------|
-| =ores_reporting_ore_parameter_vocabularies_tbl= | 480 | which set governs this leaf, and why | both leaf guards, the element map check |
-| =ores_reporting_ore_element_map_columns_tbl= | 482 | which column of which table carries that leaf | both leaf guards |
-| =ores_reporting_ore_parameters_tbl= | per tenant | what this parameter is, and where it sits in the document | the shell check, the screens |
+| =ores_ore_parameter_vocabularies_tbl= | 480 | which set governs this leaf, and why | both leaf guards, the element map check |
+| =ores_ore_element_map_columns_tbl= | 482 | which column of which table carries that leaf | both leaf guards |
+| =ores_ore_parameters_tbl= | per tenant | what this parameter is, and where it sits in the document | the shell check, the screens |
 | =ores_dq_ore_parameters_artefact_tbl= | 2295 | the same, staged from the ORE guide | the publish functions that fill the contract |
-| =ores_reporting_ore_parameter_setting_value_sets_tbl= | 972 | which set governs this setting, by =(scope, name)= | the parameter trigger, the screens, the shell |
+| =ores_ore_parameter_setting_value_sets_tbl= | 972 | which set governs this setting, by =(scope, name)= | the parameter trigger, the screens, the shell |
 | =ores_refdata_curve_configuration_columns_tbl= | 212 | which curve column carries a leaf | the map's seed, nothing at runtime |
 | =ores_refdata_convention_kind_terms_tbl= | 270 | which convention term carries a leaf | the map's seed, the convention screens |
 | =ores_reporting_engine_settings_group_settings_tbl= | 15 | which part column is which =Setup= name | the engine run settings screen |
@@ -51,8 +51,8 @@ From
 
 #+begin_src sql
 select k.column_name, m.value_set_code
-  from ores_reporting_ore_element_map_columns_tbl k
-  join ores_reporting_ore_parameter_vocabularies_tbl m
+  from ores_ore_element_map_columns_tbl k
+  join ores_ore_parameter_vocabularies_tbl m
     on m.code = k.element_map_code
    and m.tenant_id = ores_utility_system_tenant_id_fn()
    and m.valid_to = ores_utility_infinity_timestamp_fn()

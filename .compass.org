@@ -47,7 +47,7 @@ rule_table stay off, because ORE Studio has its own index and contract checks.
 | unique_type_names | yes | |
 | unity_collisions | yes | |
 | xml_family_census | yes | |
-| curve_parameter_paths | yes | |
+| curve_parameter_paths | yes | artefact=projects/ores.sql/populate/ore/ore_ore_parameters_artefact_populate.sql |
 | handler_permissions | yes | |
 | populate_refs | yes | |
 | rls_widenings | yes | |

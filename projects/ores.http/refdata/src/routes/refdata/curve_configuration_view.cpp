@@ -39,7 +39,7 @@ namespace rr = ores::http::net::record_routes;
 namespace wiring = ores::http::routes::refdata::wiring;
 using ores::http::net::shape::member;
 using ores::http::net::shape::object;
-using ores::reporting::domain::ore_parameter;
+using ores::ore::domain::ore_parameter;
 
 /// The document element every curve leaf's path starts at.
 constexpr std::string_view root_element = "CurveConfiguration";

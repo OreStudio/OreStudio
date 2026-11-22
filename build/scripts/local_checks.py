@@ -428,7 +428,7 @@ CATALOGUE: tuple[Check, ...] = (
         argv=("python3", "projects/ores.sql/utility/generate_ore_parameters_dataset.py", "--check"),
         classes=("sql",),
         paths=(
-            "projects/ores.sql/populate/reporting/reporting_ore_parameters_artefact_populate.sql",
+            "projects/ores.sql/populate/ore/ore_ore_parameters_artefact_populate.sql",
             "projects/ores.sql/utility/generate_ore_parameters_dataset.py",
             "projects/ores.sql/utility/ore_parameter_seed.py",
             "projects/ores.sql/utility/setup_parameter_rows.py",

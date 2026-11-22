@@ -1,0 +1,123 @@
+:PROPERTIES:
+:ID: F24FA489-790A-4065-B8E1-DCC141595356
+:END:
+#+title: A simulated fixing source is a publisher the simulator serves
+#+description: The simulator fixes each simulated source from its own market at the source's time and publishes durable fixing ticks.
+#+type: knowledge
+#+audience: user
+#+level: cross
+#+filetags: :architecture:market_data:synthetic:fixing:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+
+* Summary
+
+A simulated fixing source is served by the simulator exactly as a public one is
+served by its adapter. The source's administrator is a publisher in the
+catalogue; its fixings are vendor instruments mapped to fixing items; the system
+party routes to it, so its fixings are stored once under the system party for
+every party to read. A /fixing generator/ fixes each item from the simulator's
+own market at the source's time, publishes a durable fixing tick through the
+adapter contract, and on start publishes a backfilled history. The simulator
+never writes to the store. The fixing history the curves now write directly is
+replaced by this path.
+
+* Detail
+
+** Why a publisher, not a side effect
+
+A fixing is a different kind of datum from a quote: it has an administrator, a
+time and a calendar, and it is stored durably. Public fixings already arrive
+through an adapter as durable fixing ticks, and the ingest stores them in the
+fixing series of their index; see
+[[id:F4BBEF34-D84C-4AE6-A3AA-DC47C3EE06EE][Public publishers publish daily fixings through a supplier session]].
+The simulator is an adapter too, and the rule that it never writes to the store
+holds for it; see [[id:54C9E31E-26FF-4530-A868-0850FCE1FE30][The simulator is one adapter plus the tools that author its generators]].
+A simulated fixing source therefore takes the same path, and the only
+difference from a public one is inside the adapter, as
+[[id:5ABE694A-7F87-46A9-943E-B6734B3B6EF9][A live and a simulated source differ only inside the adapter]]
+states for quotes.
+
+The fixing history an IR curve feed now writes straight to the store, through
+the synthetic service's fixing writer, breaks that rule and names some indices
+differently from their public publishers. It is replaced.
+
+** The catalogue
+
+For each administrator of a simulated source, the system bundle installs:
+
+- a publisher, of kind =reference=, such as =wmr= for LSEG's WM/R rates,
+  =emmi= for EURIBOR or =iba= for the legacy LIBOR settings, with its status;
+- a simulated source of that publisher, served by =ores.marketdata.synthetic=;
+- a vendor instrument for each fixing, in the publisher's notation, and a
+  mapping from it to the fixing item, such as
+  =oresmd://fx/EUR?type=fixing&index=fx&source=WMR1000NYC&ccy=USD=.
+
+The system party subscribes to each fixing publisher and routes to its source,
+as it does for the public publishers, so the demand of the system party names
+every fixing item; see [[id:083D4B54-549B-4D56-AE89-430A8A4277FF][Demand drives what an adapter publishes]].
+
+** The fixing generator
+
+A fixing generator is a new generator kind beside FX spot, IR curve and FX
+volatility surface. Its configuration states:
+
+| Field | Meaning |
+|-------+---------|
+| Fixing item | The fixing URI it produces |
+| Source | The fixing source, with its label, time, zone, calendar and rounding |
+| Input | What it observes: an FX spot item, two spot items for a cross, or the index rate of an IR curve config |
+| History | How many business days it backfills on start, and the walk it uses |
+
+On start, the generator backfills its history: it reads its input's level from
+the run's market and walks back from it, by amount for a rate and by proportion
+for a price, over the business days of the source's calendar. It publishes the
+history oldest first, each value dated with its fixing date. Then, at each
+fixing time on the simulator's clock, it reads its input from the run's market
+board, rounds it as the source does, and publishes one fixing. The board is the
+run's shared view of spots and curves; see
+[[id:675E89FC-B5AA-4250-8B86-78062F0F22BC][The forward a synthetic surface is struck against]].
+
+The ingest stores each fixing in the series of its item under the system party.
+A value it already holds for that date is skipped, so a restart that backfills
+again adds nothing.
+
+** One producer per item
+
+A fixing item has one producer: an observed publisher where one exists, a
+fixing generator otherwise. The catalogue of sources states which; see
+[[id:5AF9CEEF-A878-443A-8C32-C6E9F6C26FC9][The fixing sources ORE Studio supports, and the cut each one serves]].
+An overnight rate with a public adapter is therefore never simulated, and a
+cut source such as WM/R, which is licensed, is always simulated.
+
+** Consistency with the run
+
+Because a fixing reads the same board the run's other generators write, the
+fixing of EUR/USD at the New York cut equals the run's EUR/USD spot at that
+instant, and an interest rate fixing equals the curve's index rate. A trade
+that fixes on a generated source therefore settles on the market it was valued
+on.
+
+** What changes
+
+| Today | After |
+|-------+-------|
+| The IR curve feed plans its index history; the synthetic service writes it straight to the store | A fixing generator per index publishes it through the adapter |
+| No FX fixing is generated | A fixing generator per cut source and pair publishes it |
+| Simulated and public fixings of one index can carry two names | The catalogue names each index once |
+| Generated trades name =TR20H= | Generated trades name a supported source |
+
+The implementation is tracked by the story
+[[id:0F936789-FEBE-4330-97B9-DFE0837E4466][Every index a generated trade floats on has a curve and fixings]].
+
+* See also
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
+- [[id:784D9D97-721A-42EC-BA91-A85764979CD0][Fixings]] — completes: what a fixing is.
+- [[id:39057B64-8F85-4882-9B66-D2D4FC7468E4][The synthetic runner]] — completes: how demand starts a generator.
+- [[id:3EF67CE4-6AF2-45FC-AA9B-D543550EF8C2][Generators belong to the system tenant and the system party]] — completes: why the system party owns the generators.
+
+* Sources
+
+- LSEG. /WMR FX Benchmarks/: closing spot rates at 4pm London and hourly intraday spot rates. [[https://www.lseg.com/en/ftse-russell/benchmarks/wmr-fx-benchmarks][lseg.com]]
+- ISDA and EMTA (2019). /Annex A to the 1998 FX and Currency Option Definitions/, amended and restated 19 November 2017, amended 3 January 2019. [[https://www.isda.org/book/annex-a-to-the-1998-fx-and-currency-option-definitions/][isda.org]]

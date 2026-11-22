@@ -26,7 +26,7 @@ The planner hard-codes the FX fixing source TR20H (trade_population_planner.cpp,
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                              |
 | Parent story | [[id:0F936789-FEBE-4330-97B9-DFE0837E4466][Every index a generated trade floats on has a curve and fixings]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -85,3 +85,5 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Abandoned. A fixing source belongs to the index and its administrator, not to a quote generator. Superseded by [[id:D8405F74-8E0A-43FF-96DA-C846E988911A][Hold the fixing sources and their cuts as reference data]]. The default synthetic FX source is no longer TR20H, whose meaning ORE does not document, but the WM/R cut sources.

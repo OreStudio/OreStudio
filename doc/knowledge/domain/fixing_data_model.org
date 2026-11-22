@@ -79,6 +79,11 @@ whether the values are observed or simulated. Trade generation and fixing
 checks both need that answer: a generated trade should name only a definition
 that has a producer.
 
+The supported sources and their producers are listed in
+[[id:5AF9CEEF-A878-443A-8C32-C6E9F6C26FC9][The fixing sources ORE Studio supports, and the cut each one serves]], and the
+path by which the simulator fills a simulated source is in
+[[id:F24FA489-790A-4065-B8E1-DCC141595356][A simulated fixing source is a publisher the simulator serves]].
+
 ** Open questions
 
 - How a derived observation is timed when its parents fix at different times:

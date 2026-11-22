@@ -49,6 +49,10 @@ Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
     valuation, risk jumps and attribution.
 12. [[id:2400E0FE-AEF0-4F9A-8392-F7D2E0E2A1E2][A data model for fixings: sources, definitions, observations and events]] —
     the entities, and what ORE Studio holds today.
+13. [[id:5AF9CEEF-A878-443A-8C32-C6E9F6C26FC9][The fixing sources ORE Studio supports, and the cut each one serves]] —
+    the standard sources, the cut each serves, and their producers.
+14. [[id:F24FA489-790A-4065-B8E1-DCC141595356][A simulated fixing source is a publisher the simulator serves]] —
+    how the simulator produces the fixings of a simulated source.
 
 ** Neighbouring notes
 

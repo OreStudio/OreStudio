@@ -43,6 +43,7 @@ Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
 
 ** Neighbouring notes
 
+- the fixing source each cut needs: [[id:5AF9CEEF-A878-443A-8C32-C6E9F6C26FC9][The fixing sources ORE Studio supports, and the cut each one serves]];
 - the instant an option expires, and its cut code: [[id:3B39B2E2-6E05-4DF8-B68B-6ACA12F2FCE9][The option-expiry cut code]];
 - the cut as a frozen body of data, a different sense of the word: [[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]];
 - the products: [[id:199AB340-A254-40A9-8CBE-FBABB17FF51F][FX Option]], [[id:6CAED5F9-21CB-4300-B1B0-89599CFBFC7C][FX Barrier Option]], [[id:C880CEB4-4FB7-41AA-8A4A-A650B6FC388C][FX Digital Option]];

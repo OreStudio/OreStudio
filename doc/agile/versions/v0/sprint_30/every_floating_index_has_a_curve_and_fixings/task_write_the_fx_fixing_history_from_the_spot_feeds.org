@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :every_floating_index_has_a_curve_and_fixings:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/write-the-fx-fixing-history-from-the-spot-feeds
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,7 +26,7 @@ Today no generator writes an FX fixing. The planner names oresmd://fx/BASE?type=
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                              |
 | Parent story | [[id:0F936789-FEBE-4330-97B9-DFE0837E4466][Every index a generated trade floats on has a curve and fixings]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -41,9 +41,24 @@ Today no generator writes an FX fixing. The planner names oresmd://fx/BASE?type=
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- One plan type. =fixing_plan= moves from =ir_curve_feed= to
+  =index_fixings.hpp=, beside =derive_fixing_history=, and carries its walk.
+  A =states_fixings= mixin holds it on both feeds; the service's start
+  callback casts to the mixin and hands the plan to =fixing_history_writer=.
+- Two walk scales. A rate moves by an amount, as before; a price moves by a
+  proportion, =level * exp(deviation)=, so a price stays positive and EUR/USD
+  and USD/JPY move alike. The FX walk is 0.6% a day, near a 10% annual
+  volatility, a constant as the IR walk's 2 basis points is.
+- One address. =fx_fixing_uri(base, quote)= writes the pair's fixing address
+  with source TR20H; the feed writes to it and the planner names it, so the
+  two cannot drift. The planner's own constant is removed.
+- One derivation kind. The writer filed IR histories under
+  =IR_CURVE_BOOTSTRAP=, which they are not. A new kind,
+  =SIMULATED_FIXING_HISTORY=, covers both. Only the writer read the old one.
+- Out of scope: the five cross pairs the trades name with no spot config of
+  their own (AUD/CAD, AUD/CHF, GBP/AUD, GBP/CAD, GBP/NZD), and the seven pairs
+  two collections configure. The planning task decides the first; the
+  fixing source task decides which config states a pair's fixings.
 
 * Measurements
 
@@ -85,3 +100,5 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Abandoned. A spot feed is a quote generator, not an index administrator, so it should not write fixings; and the simulator must not write to the store. Superseded by [[id:A18D3933-9817-4885-BC5A-B343427651CE][Generate simulated fixings through the simulator adapter]], after the fixings knowledge cluster set out the model. The work on a proportional walk and a shared fixing plan is reusable there.

@@ -105,6 +105,19 @@ task and name that file in the Command column.
 
 * Notes
 
+** What the fifth PR found
+
+The pin is set by a trigger on the scripted instruments table rather than by
+the booking service, because three paths write the table: booking, the import
+of an ORE portfolio and the generators. The trigger fires after the generated
+insert trigger, as Postgres fires a table's triggers in name order; by then the
+generated trigger has validated the tenant and closed the trade's current row,
+so an amendment's previous pin is read from the trade's latest row.
+
+A name no library holds is recorded with no version rather than refused. The
+generators name =Autocallable=, which ORE's library does not hold, and the run,
+which needs the script, is where its absence is an error.
+
 ** What the fourth PR found
 
 A trade could not have recorded a version that meant anything. A change to a

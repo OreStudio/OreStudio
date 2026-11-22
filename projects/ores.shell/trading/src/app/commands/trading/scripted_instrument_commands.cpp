@@ -140,7 +140,8 @@ void scripted_instrument_commands::register_commands(cli::Menu& root_menu, nats_
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
         "add <trade_id> <trade_type_code> <trade_activity_id> <script_name> <script_body> "
-        "<script_npv> <description> <data_element> <reason> <commentary>");
+        "<script_npv> <description> <data_element> <script_tenant_id> <script_version> "
+        "<script_hash> <reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -148,7 +149,8 @@ void scripted_instrument_commands::register_commands(cli::Menu& root_menu, nats_
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
         "set <trade_id> <trade_type_code> <trade_activity_id> <script_name> <script_body> "
-        "<script_npv> <description> <data_element> <reason> <commentary> [--version <n>]");
+        "<script_npv> <description> <data_element> <script_tenant_id> <script_version> "
+        "<script_hash> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -156,7 +158,8 @@ void scripted_instrument_commands::register_commands(cli::Menu& root_menu, nats_
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
         "put-many --count <n> <trade_id> <trade_type_code> <trade_activity_id> <script_name> "
-        "<script_body> <script_npv> <description> <data_element> <reason> <commentary>");
+        "<script_body> <script_npv> <description> <data_element> <script_tenant_id> "
+        "<script_version> <script_hash> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -357,8 +360,8 @@ void scripted_instrument_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 8 + 2) {
-            fail(out) << "Expected " << (8 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 11 + 2) {
+            fail(out) << "Expected " << (11 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -378,6 +381,12 @@ void scripted_instrument_commands::process_add(std::ostream& out,
             req.change.write.description, parsed->positionals[next++], "description");
         scripted_instrument_read_token(
             req.change.write.data_element, parsed->positionals[next++], "data_element");
+        scripted_instrument_read_token(
+            req.change.write.script_tenant_id, parsed->positionals[next++], "script_tenant_id");
+        scripted_instrument_read_token(
+            req.change.write.script_version, parsed->positionals[next++], "script_version");
+        scripted_instrument_read_token(
+            req.change.write.script_hash, parsed->positionals[next++], "script_hash");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -422,8 +431,8 @@ void scripted_instrument_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 8 + 2) {
-            fail(out) << "Expected " << (8 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 11 + 2) {
+            fail(out) << "Expected " << (11 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -443,6 +452,12 @@ void scripted_instrument_commands::process_set(std::ostream& out,
             req.change.write.description, parsed->positionals[next++], "description");
         scripted_instrument_read_token(
             req.change.write.data_element, parsed->positionals[next++], "data_element");
+        scripted_instrument_read_token(
+            req.change.write.script_tenant_id, parsed->positionals[next++], "script_tenant_id");
+        scripted_instrument_read_token(
+            req.change.write.script_version, parsed->positionals[next++], "script_version");
+        scripted_instrument_read_token(
+            req.change.write.script_hash, parsed->positionals[next++], "script_hash");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -499,8 +514,8 @@ void scripted_instrument_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 8 + 2) {
-            fail(out) << "Expected " << (change_count * 8 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 11 + 2) {
+            fail(out) << "Expected " << (change_count * 11 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -522,6 +537,12 @@ void scripted_instrument_commands::process_put_many(std::ostream& out,
                 change.write.description, parsed->positionals[next++], "description");
             scripted_instrument_read_token(
                 change.write.data_element, parsed->positionals[next++], "data_element");
+            scripted_instrument_read_token(
+                change.write.script_tenant_id, parsed->positionals[next++], "script_tenant_id");
+            scripted_instrument_read_token(
+                change.write.script_version, parsed->positionals[next++], "script_version");
+            scripted_instrument_read_token(
+                change.write.script_hash, parsed->positionals[next++], "script_hash");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }

@@ -48,6 +48,13 @@ render_scripted_instrument_fields(const domain::scripted_instrument& v) {
     fields.push_back({.name = "Script Npv", .value = v.script_npv});
     fields.push_back({.name = "Description", .value = v.description});
     fields.push_back({.name = "Data Element", .value = v.data_element.value_or(std::string{})});
+    fields.push_back({.name = "Script Tenant ID",
+                      .value = v.script_tenant_id ? boost::uuids::to_string(*v.script_tenant_id) :
+                                                    std::string{}});
+    fields.push_back(
+        {.name = "Script Version",
+         .value = v.script_version ? std::to_string(*v.script_version) : std::string{}});
+    fields.push_back({.name = "Script Hash", .value = v.script_hash.value_or(std::string{})});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.audit.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.audit.performed_by});

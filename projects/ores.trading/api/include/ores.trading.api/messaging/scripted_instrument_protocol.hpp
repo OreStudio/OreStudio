@@ -58,6 +58,9 @@ struct scripted_instrument_write {
     std::string script_npv;
     std::string description;
     std::optional<std::string> data_element;
+    std::optional<boost::uuids::uuid> script_tenant_id;
+    std::optional<int> script_version;
+    std::optional<std::string> script_hash;
 
     friend bool operator==(const scripted_instrument_write&,
                            const scripted_instrument_write&) = default;
@@ -397,6 +400,9 @@ inline constexpr std::string_view deleted = "trading.v1.events.scripted_instrume
         utility::codec::field{"script_npv", &scripted_instrument_write::script_npv},
         utility::codec::field{"description", &scripted_instrument_write::description},
         utility::codec::field{"data_element", &scripted_instrument_write::data_element},
+        utility::codec::field{"script_tenant_id", &scripted_instrument_write::script_tenant_id},
+        utility::codec::field{"script_version", &scripted_instrument_write::script_version},
+        utility::codec::field{"script_hash", &scripted_instrument_write::script_hash},
     };
 }
 

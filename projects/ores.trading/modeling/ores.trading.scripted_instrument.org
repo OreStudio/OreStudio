@@ -170,6 +170,48 @@ a generic scripted trade, or the named product's element, such as
 =MovingMaxYYIISData=. The parameters are =scripted_parameter= rows, and the
 element tells the writer which of the two forms to state them in.
 
+** script_tenant_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
+:economic: true
+:END:
+
+The tenant that holds the library script the trade was booked on: the trade's
+own tenant when it holds a script of that name, else the system tenant, which
+holds ORE's library. Empty when the trade states its script inline, or names a
+script no library holds.
+
+The store sets it when a row states no version: from the trade's current row
+when that row names the same script, so an amendment keeps the script the trade
+was booked on, else from the current library.
+
+** script_version
+:PROPERTIES:
+:type:     integer
+:cpp_type: std::optional<int>
+:nullable: true
+:economic: true
+:END:
+
+The version of the library script the trade was booked on, in the tenant
+=script_tenant_id= names. The rows of the script that carry this version are
+the script the trade runs, whatever the library holds later. Empty when
+=script_tenant_id= is.
+
+** script_hash
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: false
+:END:
+
+The SHA-256 of the inline script, as lower-case hexadecimal. The store computes
+it from =script_body= on every write, so it identifies the text the trade
+states. Empty when the trade names a library script.
+
 * Foreign keys
 
 ** trade_id

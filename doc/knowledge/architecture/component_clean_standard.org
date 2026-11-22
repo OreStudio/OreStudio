@@ -81,7 +81,7 @@ a typecheck all missed; only a build and a test run found them.
 
 | Id  | Applies to | Item | Evidence |
 |-----+------------+------+----------|
-| B01 | All | Record the baseline before any edit: regenerate with nothing changed and record every pre-existing difference. A later difference is attributable only against this baseline. | =check_component_drift.py --component <c> --dry-run= and =compass-ng check --codec model_rules= output, in the task's =* Measurements= table with the command and the commit each figure was measured at |
+| B01 | All | Record the baseline before any edit: regenerate with nothing changed and record every pre-existing difference. A later difference is attributable only against this baseline. | =./compass.sh diff --scope <model>= over the component's models and =compass-ng check --codec model_rules= output, in the task's =* Measurements= table with the command and the commit each figure was measured at |
 | B02 | All | Classify every model file by metatype: entity, junction, operation, message, field group, module, component. Record and exclude the metatypes that carry no variability. | Survey table on the task |
 | B03 | All | Classify every hand-written C++ file (no generated marker): generatable (domain, repository, mapper, service, handler, registrar, protocol, generator, table and JSON I/O), infrastructure that stays hand-written, or dead. | Survey table on the task |
 | B04 | Protocol | List every NATS subject the component serves or sends, every protocol header, and every raw subject string outside a protocol header. | Survey table on the task |
@@ -118,12 +118,12 @@ a typecheck all missed; only a build and a test run found them.
 
 | Id  | Applies to | Item | Evidence |
 |-----+------------+------+----------|
-| G01 | Entity | Regeneration is byte-identical to the checked-in tree and idempotent: a second run changes nothing. This covers SQL, C++ (domain, repository, mapper, service, handler, registrar, generators, eventing tests), shell units, shell recipes and the CMake source lists. | =check_component_drift.py --component <c>=, run twice |
+| G01 | Entity | Regeneration is byte-identical to the checked-in tree and idempotent: a second run changes nothing. This covers SQL, C++ (domain, repository, mapper, service, handler, registrar, generators, eventing tests), shell units, shell recipes and the CMake source lists. | =./compass.sh generate= twice: the second writes nothing |
 | G02 | All | Every hand-written file that the generation supersedes is deleted, together with dead headers and the hand-written protocol umbrella. | Survey B03 re-run: no generatable file left hand-written |
 | G03 | All | Every generated file carries the generated marker, and no hand-written file carries it. | =grep= for =AUTO-GENERATED FILE= against the survey |
 | G04 | Entity | The generated code reads like the component's best hand-written code. A finding is a template defect and is fixed in the template. | Review record on the task |
 | G05 | All | Every generator defect found is fixed at its source with a regression test in the codegen suite. | Codegen test suite |
-| G06 | All | The CMake source lists match the tree. | =regenerate_cmake_component_files.py --all --check= |
+| G06 | All | The CMake source lists match the tree. | =compass-ng check --codec component_files= |
 | G07 | All | No generated artefact is refreshed while its generator has a known defect, because a refresh can delete correct content. Fix the generator at its source with a regression test, then refresh. A diagram refresh also honours the two-pass contract: run the automated pass, redo the manual pass below the sentinel, and verify the sentinel section survived. | The generator's own dry run, with its diff read line by line against the committed artefact |
 | G08 | All | The namespace documentation headers are not dead headers. Every component keeps one for its outermost namespace: =include/<component>/<component>.hpp= for a single-module component, and =include/<component>.<module>/<component>.<module>.hpp= for each module of a multi-module one. Where a facet has a header of its own, at =include/<component>/<facet>/<component>.<facet>.hpp= or =include/<component>/<facet>/<facet>.hpp=, that documents the sub-namespace and is not dead either; the coverage of facet headers is uneven across the tree today and filling the gaps is separate work, not a condition of this item. Each carries the namespace =@brief= that doxygen renders, and the outermost one is the description the diagram conventions read. A consumer census does not apply to them: an empty namespace is their whole content, so nothing includes them and nothing should. A claim in one is a document bug, corrected in place, never a reason to delete the file. | The diagram conventions; the component's own header list; a census of every component |
 
@@ -172,7 +172,7 @@ the rest of the review.
 | V03 | Entity | The database recreates from scratch, and the fleet starts and serves. | =compass db recreate -y -k=; =compass services start= |
 | V04 | Entity | Every generated shell command runs against the live fleet and answers. Record any command that cannot run, with the reason. | Recipe run log on the task |
 | V05 | All | Every codegen gate is green with the component added: component drift, the catalogue drift sweep, pasted block symbols, model drift, protocol twin coverage, handler permissions, populate references, recipe inventory, test case reachability and CMake source lists. | Each check script |
-| V06 | All | The component joins =COMPONENTS_UNDER_TEST=, and =check_component_drift.py --all= passes with it listed. | =component_registry.py= diff |
+| V06 | All | The component joins =COMPONENTS_UNDER_TEST=, and =compass-ng check --codec codegen= passes with it listed. | =component_registry.py= diff |
 | V07 | All | No vacuous test. Every test fails when its subject does nothing, so a test that asserts only a length, a non-throw, a truthiness, or one production run against another is a finding. Assert a literal expected value. | Stub the subject and re-run. The test must fail |
 | V08 | All | Every source file has a test that exercises it, or is recorded with the reason it does not. The list of source files no test touches is the coverage work item. | Per-file survey under =src/=, against the component's test run |
 

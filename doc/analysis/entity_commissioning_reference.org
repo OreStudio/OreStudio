@@ -238,32 +238,15 @@ See [[id:C0075180-2306-42F9-B4F7-F34D801709B4][Codegen model safety guardrails]]
 ** How to run codegen
 
 #+begin_src bash
-# Run a single profile for one entity (recommended for targeted sync)
-./projects/ores.codegen/codegen.sh regenerate \
-    --component refdata --profile qt \
-    --entity rounding_type
+# Every output of one entity model, written only where it changed
+./compass.sh generate --scope projects/ores.refdata/modeling/ores.refdata.rounding_type.org
 
-# Run a single profile for all entities in a component (generates everything)
-./projects/ores.codegen/codegen.sh regenerate \
-    --component refdata --profile qt
+# The whole tree
+./compass.sh generate
 #+end_src
 
-When running =--component= without =--entity= (once that flag lands; see
-[[id:A083FE26-521D-4046-9E58-AFB901B28809][Codegen developer experience improvements]]):
-- 13 spurious =ERROR= lines appear for =table= and =junction= models under the =qt= profile. These are expected skips, not real failures — see [[id:A72E617F-5443-4009-8173-A605D8F01485][Downgrade profile/model-type incompatibility from error to skip]].
-- Files for all 25+ entities are written to disk. Scope the diff to the target entities and discard the rest.
-
-** Post-run cleanup
-
-After running =--component= mode, discard out-of-scope generated files:
-
-#+begin_src bash
-# Revert tracked files modified for non-target entities
-git checkout HEAD -- projects/ores.qt/refdata/
-
-# Remove untracked new files generated for entities not in target set
-git status --short | grep '^?' | awk '{print $2}' | xargs rm -f
-#+end_src
+compass-ng writes only the outputs whose content changed, so a scoped run
+leaves no out-of-scope files to discard.
 
 * Codegen output map
 

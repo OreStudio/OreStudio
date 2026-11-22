@@ -22,8 +22,8 @@ approved automatically?
 * Answer
 
 The most common cause is a missing =./= prefix variant. Glob patterns
-like =Bash(projects/ores.codegen/codegen.sh *)= do not match
-=./projects/ores.codegen/codegen.sh ...= — the leading =./= is
+like =Bash(projects/ores.sql/utility/validate_schemas.sh *)= do not match
+=./projects/ores.sql/utility/validate_schemas.sh ...= — the leading =./= is
 treated as part of the command string.
 
 ** Step 1 — identify the failing pattern
@@ -31,7 +31,7 @@ treated as part of the command string.
 Note the exact command string that triggered the prompt, e.g.:
 
 #+begin_example
-./projects/ores.codegen/codegen.sh regenerate --component refdata --address ores.cpp.nats-handler
+./projects/ores.sql/utility/validate_schemas.sh
 #+end_example
 
 ** Step 2 — open the org source
@@ -40,7 +40,7 @@ Note the exact command string that triggered the prompt, e.g.:
 $EDITOR doc/llm/claude_code_settings.org
 #+end_src
 
-Find the relevant =** Section= (e.g. =** Code generation=) by searching
+Find the relevant =** Section= (e.g. =** SQL scripts=) by searching
 for the script name. Each section has a =#+begin_src json ... #+end_src=
 block holding the allow entries and prose explaining the covered surface.
 
@@ -49,8 +49,8 @@ block holding the allow entries and prose explaining the covered surface.
 Add a line for the missing variant. For a =./= prefix gap:
 
 #+begin_example
-"Bash(./projects/ores.codegen/codegen.sh *)",
-"Bash(projects/ores.codegen/codegen.sh *)",
+"Bash(./projects/ores.sql/utility/validate_schemas.sh *)",
+"Bash(projects/ores.sql/utility/validate_schemas.sh *)",
 #+end_example
 
 Keep both variants (with and without =./=) — callers use both forms.
@@ -74,7 +74,7 @@ Settings deployed to …/.claude/settings.json
 ** Step 5 — verify
 
 #+begin_src sh :results verbatim
-python3 -m json.tool .claude/settings.json | grep -A1 "codegen"
+python3 -m json.tool .claude/settings.json | grep -A1 "validate_schemas"
 #+end_src
 
 Confirm the new entry is present in the JSON.

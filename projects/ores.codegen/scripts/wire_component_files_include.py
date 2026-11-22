@@ -4,7 +4,7 @@ One-off migration helper: replace the inline `set(files ...)` /
 `set(HEADERS ...)` blocks left by the earlier GLOB_RECURSE migration
 pass with `include(${CMAKE_CURRENT_SOURCE_DIR}/component_files.cmake)`,
 for every component that now has a generated component_files.cmake
-(see regenerate_cmake_component_files.py).
+(compass-ng's component_files codec writes it).
 
 Not meant to be re-run routinely -- once a CMakeLists.txt has the
 include() line, there is nothing left for this script to do there.

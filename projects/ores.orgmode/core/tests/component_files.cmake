@@ -20,6 +20,7 @@
 # Template: cmake_component_files_tests.mustache
 # To modify, update the template and regenerate.
 set(files
+    "knowledge_index_tests.cpp"
     "knowledge_page_eventing_integration_tests.cpp"
     "main.cpp"
 )

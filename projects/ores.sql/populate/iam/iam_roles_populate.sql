@@ -178,6 +178,7 @@ BEGIN
     -- The wildcard above does not cover an installation code, so the read of
     -- the deployment as a whole is granted by name.
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'SuperAdmin', 'installation::deployment:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'SuperAdmin', 'installation::knowledge_index:rebuild');
 
     -- Assign permissions to TenantAdmin role
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'TenantAdmin', '*');

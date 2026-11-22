@@ -225,7 +225,7 @@ A codegen drift check covers the generated output. It regenerates the models and
 fails when the checked-in files differ from the generated ones.
 
 ```sh
-python3 projects/ores.codegen/scripts/check_component_drift.py --all
+./compass.sh check --codec codegen
 ```
 
 See `projects/ores.web/modeling/0001-protocol-types-from-codegen.org` for the

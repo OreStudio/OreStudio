@@ -27,3 +27,4 @@
 \ir ./orgmode_knowledge_pages_create.sql
 \ir ./orgmode_knowledge_pages_notify_trigger_create.sql
 \ir ./orgmode_publish_from_dq_create.sql
+\ir ./orgmode_knowledge_index_create.sql

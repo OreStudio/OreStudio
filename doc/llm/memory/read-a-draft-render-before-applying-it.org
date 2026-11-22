@@ -2,7 +2,7 @@
 :ID: 1DA75022-C844-48A9-B51A-BB1339691957
 :END:
 #+title: Read a draft render before applying it
-#+description: The drift check's dry run discards what it rendered; render_component_draft.py keeps it, so a draft model's output can be read before it lands.
+#+description: Read what generate would write before applying it: compass-ng diff --scope prints the rendered change of one model as a unified diff, which a list of paths does not show.
 #+type: memory
 #+memory_subtype: project
 #+level: cross
@@ -10,8 +10,8 @@
 #+created: 2026-09-26
 #+updated: 2026-09-26
 
-Render a draft model into a kept directory and read the generated files before applying the generation, because the drift check's --dry-run throws the rendered tree away and reports only the paths that would change.
+Read the rendered output of a draft model before applying the generation, not only the list of paths that would change.
 
 *Why:* Reading the rendered artefacts, rather than the list of paths, is what found a codegen defect that no gate could see: a write record dropped a natural key spelled like a server-owned field, so a create could not say which party's row it wrote. A diff, the drift check and a typecheck all missed it. Generated output is also where a model's mistakes surface: two generator expressions mixed std::string with faker-cxx's std::string_view and only the compiler found them.
 
-*How to apply:* Run projects/ores.codegen/scripts/render_component_draft.py <catalogue-slug> <output-dir> [address] after writing or editing a model, then read the files. It calls the same _generate_single the in-place mode uses, with output_root pointed elsewhere, so the units are identical and the repository is untouched. Point it at .audit/ for the draft and read the SQL, the protocol header and the service before running the drift check in write mode.
+*How to apply:* After writing or editing a model, run ./compass.sh diff --scope <model.org> and read the diff it prints, before ./compass.sh generate. It writes nothing. Read the SQL, the protocol header and the write record as you would a hand-written change.

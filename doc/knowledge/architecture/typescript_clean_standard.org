@@ -99,7 +99,7 @@ catch, and each names the rule that does.
 | TS-T11 | All | Import a type with =import type=, so a type-only edge never becomes a runtime one. | =verbatimModuleSyntax= at compile time; =@typescript-eslint/consistent-type-imports= and =no-import-type-side-effects= for the style |
 | TS-T12 | All | Never silence the compiler. =@ts-expect-error= carries a reason and fails once the error goes away; =@ts-ignore= and =@ts-nocheck= do not. | =@typescript-eslint/ban-ts-comment= |
 | TS-T13 | All | Declare the return type of an exported function. Inference is for locals; a published signature is part of the interface. | =@typescript-eslint/explicit-module-boundary-types= |
-| TS-T14 | All | Derive a wire shape from its model. A hand-written type that duplicates a generated one is drift with a delay on it. | The generated marker; =check_component_drift.py --dry-run= |
+| TS-T14 | All | Derive a wire shape from its model. A hand-written type that duplicates a generated one is drift with a delay on it. | The generated marker; =compass-ng check --codec codegen= |
 | TS-T15 | All | No =Function=, no =Object=, no ={}= as a type. Each accepts almost anything and says nothing. | =@typescript-eslint/no-restricted-types= |
 
 ** Data at the boundary
@@ -176,7 +176,7 @@ value, and there is no second representation downstream.
 |-------+------------+------+----------|
 | TS-R01 | Generated | Every generated file carries the generated marker, and no hand-written file carries it. | The marker against the census |
 | TS-R02 | Generated | No generated file is edited by hand, and none is formatted by a different tool from the one that wrote it. Either the generator emits canonical output, or the generated paths are excluded from the formatter. | =git diff= after regeneration; the prettier step inside the generator, which the drift gate then depends on |
-| TS-R03 | Generated | Regeneration is byte-identical to the checked-in tree, and idempotent: a second run changes nothing. | =check_component_drift.py --dry-run=, run twice |
+| TS-R03 | Generated | Regeneration is byte-identical to the checked-in tree, and idempotent: a second run changes nothing. | =./compass.sh generate= twice: the second writes nothing |
 | TS-R04 | All | A generator defect is fixed in the template, with a regression test in the codegen suite. | The codegen suite |
 | TS-R05 | All | The generated TypeScript compiles under the same strictness as the hand-written code. | =npm run typecheck=, over the generated tree included |
 
@@ -276,7 +276,7 @@ measurement rather than an intention.
 | The format gate | green | =npm run format:check= |
 | ... of which generated | 0 of 306 | the same list, =src/generated/= kept |
 | A tracked prettier configuration | one, =.prettierrc.yaml= at the repository root | =find . -name '.prettierrc*'= |
-| The formatter inside the render | =prettier_format_files=, called beside =clang_format_files= | =projects/ores.codegen/src/codegen/generate.py= |
+| The formatter inside the render | prettier, run beside clang-format | compass-ng's =codegen= codec |
 | Files the one-off format touched | 216: 148 generated, 68 hand-written | =git diff --diff-filter=M --name-only= |
 | Generated files the render no longer produces | 1, deleted | =git diff --diff-filter=D --name-only= |
 | The workflow that runs the check | =typescript.yml=, a =Format check= step between the typecheck and the tests | the workflow |

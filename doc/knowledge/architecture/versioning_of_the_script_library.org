@@ -112,6 +112,17 @@ A version of a script arises in one of two ways.
   a name a tenant already uses leaves that tenant's script in force; no
   constraint forbids the pair, since the two rows lie in different tenants.
 
+  The operation is =trading.v1.ops.publish_script=, under
+  =trading::scripts:write=. The caller states the script's name, product tag,
+  description and variants, each with its code, NPV variable, results,
+  calibrations and coarsenings; one variant is the default. The service never
+  takes the inputs from the caller: it derives them from the variants, the
+  default variant's first. It writes the script and every row beneath it
+  through the trading repositories in one transaction, so a failure leaves the
+  previous version whole. A script equal to its current version writes nothing.
+  A publish in the system tenant is refused, as the world library is published
+  from its dataset.
+
 A version of a script is the version of its script row together with the rows
 beneath it that carry the same number. A change writes the script row first, as
 a new version, then every row of the script, each stamped in =script_version=
@@ -143,6 +154,25 @@ of that name first, else the system tenant's. A stated version is checked
 against the store, and a name no library holds is recorded with no version, so
 that the run, which needs the script, is what fails. Such a trade has no version
 to keep, so a later amendment that states none takes the version current then.
+
+The packaging step of a run writes the library. It collects the versions its
+scripted trades name, reads them from the trading service with the run's token,
+and writes =scriptlibrary.xml= where the run document's =scriptLibrary=
+parameter names it, stating that parameter when the document does not; a copy of
+the library that the run's configuration carries is replaced. A version is read
+as the script's row at that version and every row beneath the script that
+carries it as its script version. ORE finds a script by its name alone, so one
+run holds one script for each name. Where the trades of a run name one script at
+more than one version, each version is written under a name of its own, the
+script's name followed by its tenant and version, and each trade that states its
+variables in the generic =ScriptedTradeData= form is given that name. A trade
+that states them on the product's own element cannot be renamed, as ORE takes
+the script's name from the element, so it keeps the script's name, and trades of
+that kind that name two versions of one script refuse the run. A trade with its
+script inline is written with no script name, as ORE reads a script name before
+an inline script. The run is refused, naming each trade or version, when a trade
+names a script no library held when it was booked, or the store does not hold a
+version a trade names.
 
 * See also
 

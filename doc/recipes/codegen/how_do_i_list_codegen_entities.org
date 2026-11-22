@@ -2,12 +2,12 @@
 :ID: 923AE3E7-5B55-43F4-967C-0E71AB9F2C46
 :END:
 #+title: How do I list codegen entities?
-#+description: Use compass codegen entity list to enumerate entities grouped by metatype, with short UUID for compass show.
+#+description: Entity models are org files under each component modeling directory; list them by their #+type line with compass doc find or git grep.
 #+type: recipe
 #+level: cross
 #+filetags: :codegen:compass:entity:recipe:
 #+created: 2026-06-26
-#+updated: 2026-06-26
+#+updated: 2026-11-22
 
 Entities are defined as org-mode model files under each component's
 =modeling/= directory and discovered via [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]]'s manifest.
@@ -18,68 +18,35 @@ How do I list all codegen entities by metatype?
 
 * Answer
 
-Run =compass codegen entity list= from the project root:
+Each entity is an org model file under its component's =modeling/= directory,
+and its =#+type:= line names its metatype. List the entities of one metatype:
 
 #+begin_src sh
-./compass.sh codegen entity list
+git grep -l '^#+type: ores.codegen.entity' -- 'projects/*/modeling/*.org'
+git grep -l '^#+type: ores.codegen.junction' -- 'projects/*/modeling/*.org'
 #+end_src
 
-By default only the *Entity tier* is shown (=domain_entity= and =junction=).
-Each row includes a short ID (first 8 hex chars of the org-roam UUID) that
-can be passed directly to =compass show=:
+Count every metatype:
 
 #+begin_src sh
-./compass.sh show 9F2A1B3C
+git grep -h '^#+type:' -- 'projects/*/modeling/*.org' | sort | uniq -c | sort -rn
 #+end_src
 
-To include *meta-entity* types (=enum=, =field_group=, =table=, =schema=,
-=data=, =component=, =service_registry=):
-
-#+begin_src sh
-./compass.sh codegen entity list --all
-#+end_src
-
-To filter to a single metatype:
-
-#+begin_src sh
-./compass.sh codegen entity list --type domain_entity
-./compass.sh codegen entity list --type junction
-#+end_src
-
-Sample output (trimmed):
-
-#+begin_example
-domain_entity  [entity]  (133)
-  name                           ID         component            model path
-  ------------------------------ ---------- -------------------- ----------
-  country                        9F2A1B3C   refdata              projects/ores.refdata/modeling/ores.refdata.country.org
-  currency                       A3F2C1D0   refdata              projects/ores.refdata/modeling/ores.refdata.currency.org
-
-junction  [entity]  (13)
-  name                           ID         component            model path
-  ------------------------------ ---------- -------------------- ----------
-  party_country                  ...        refdata              projects/ores.refdata/modeling/ores.refdata.party_country_junction.org
-#+end_example
-
-Junction models live under =projects/ores.refdata/modeling/= but are not
-discovered by the =refdata= component's bulk regeneration (see the
-[[id:B3CBBDED-7CD9-423B-94D8-F5C4C0488CEA][component catalogue]]'s =exclude_org_types=); use =compass codegen entity
-generate <name>= to target one directly.
+Each model carries an org-roam =:ID:=, so =./compass.sh show <id-prefix>=
+opens it.
 
 * Script
 
-=compass codegen entity= is implemented in
-[[proj:projects/ores.compass/src/compass_codegen_entity.py][=projects/ores.compass/src/compass_codegen_entity.py=]] and dispatched from
-[[proj:projects/ores.compass/src/compass.py][=compass.py=]].
+=git grep= over the model files. compass-ng's =codegen= codec reads the same
+files when it generates.
 
 * Tested by
 
-Run =./compass.sh codegen entity list= and verify the Entity tier appears
-grouped by metatype with a non-zero count.
+Run the count command and verify that =ores.codegen.entity= and
+=ores.codegen.junction= appear with non-zero counts.
 
 * See also
 
-- [[id:BF893756-546E-4EAF-BB3C-C88BD16B3935][How do I show generated files for a codegen entity?]]
 - [[id:8010834F-9179-4ECD-999D-5D017D393D36][How do I generate a codegen entity?]]
 - [[id:153D67F4-F420-4983-AA3F-0A3246477BEE][How do I discover the physical-space catalogue?]] — every ores.* address, or an entity's supported set.
 - [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] — component model and metatype taxonomy.

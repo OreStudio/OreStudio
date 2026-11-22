@@ -21,16 +21,27 @@
 #define ORES_ORGMODE_CORE_MESSAGING_REGISTRAR_HPP
 
 #include "ores.database/domain/context_fwd.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/subscription.hpp"
 #include "ores.orgmode.core/export.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include <optional>
+#include <string_view>
 #include <vector>
 
 namespace ores::orgmode::messaging {
 
 class ORES_ORGMODE_CORE_EXPORT registrar {
+private:
+    inline static std::string_view logger_name = "ores.orgmode.messaging.registrar";
+
+    [[nodiscard]] static auto& lg() {
+        using namespace ores::logging;
+        static auto instance = make_logger(logger_name);
+        return instance;
+    }
+
 public:
     static std::vector<ores::nats::service::subscription> register_handlers(
         ores::nats::service::client& nats,

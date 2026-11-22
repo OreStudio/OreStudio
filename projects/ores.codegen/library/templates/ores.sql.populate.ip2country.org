@@ -20,7 +20,7 @@ this archetype has. The artefact data is the source TSV, which the generated
 script loads at run time, so nothing but metadata reaches the generator. A
 separate payload file would restate the manifest and add nothing.
 
-The enrichment in =codegen/core.py= selects the manifest dataset whose
+The enrichment in compass-ng's =codegen= codec selects the manifest dataset whose
 =artefact_type= is =ip2country=, translates its =subject_area= and =domain=
 to the =subject_area_name= and =domain_name= forms used here, and exposes the
 manifest source's =data_file= as a repository-relative

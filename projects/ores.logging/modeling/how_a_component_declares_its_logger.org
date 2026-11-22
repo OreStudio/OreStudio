@@ -1,0 +1,105 @@
+:PROPERTIES:
+:ID: B09EFEF3-9DCE-4703-A5E3-9D9ED52FD314
+:END:
+#+title: How a component declares its logger
+#+description: Every class owns its logger as a private static member in its header; a file of free functions names its logger after the file. Both survive a unity build.
+#+type: knowledge
+#+level: cross
+#+filetags: :logging:cpp:unity_build:conventions:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+
+Code in ORE Studio logs through a logger it gets from
+[[id:1FBCC86B-8E04-4F81-8558-85C0B6C54836][ores.logging]]'s =make_logger=. Each logger has a channel name, which the
+sinks write on every record. This page gives the one place that logger is
+declared, and the name it has.
+
+* The rule
+
+A class declares its logger in its header, as private static members:
+
+#+begin_src cpp
+class ORES_ORGMODE_CORE_EXPORT knowledge_indexer {
+private:
+    inline static std::string_view logger_name = "ores.orgmode.service.knowledge_indexer";
+
+    [[nodiscard]] static auto& lg() {
+        using namespace ores::logging;
+        static auto instance = make_logger(logger_name);
+        return instance;
+    }
+
+public:
+    // ...
+};
+#+end_src
+
+The header includes =ores.logging/logger.hpp= and =<string_view>=. The
+implementation calls =lg()= from the class's members:
+
+#+begin_src cpp
+ORES_LOG_SEV(lg(), info) << "Knowledge index rebuilt: pages=" << result.pages;
+#+end_src
+
+Every generated class follows this rule, so a hand-written class next to it
+reads the same.
+
+* The channel name
+
+The channel name is the class's full name with dots: =ores.=, the component,
+the facet folder, then the class. For example:
+
+- =ores.orgmode.service.knowledge_indexer=
+- =ores.orgmode.messaging.index_handler=
+
+The name tells the reader of a log which file wrote the record.
+
+* A file with no class
+
+A file of free functions has no class to hold the logger. It declares the
+logger at file scope, and it puts the file's name in front of both names:
+
+#+begin_src cpp
+inline static std::string_view tenant_lookups_logger_name = "ores.iam.repository.tenant_lookups";
+
+static auto& tenant_lookups_lg() {
+    static auto instance = make_logger(tenant_lookups_logger_name);
+    return instance;
+}
+#+end_src
+
+Use this form only when the file has no class. When the file implements a
+class, use the class's member.
+
+* Why not a bare lg() in an anonymous namespace
+
+The build is a unity build: CMake merges the sources of one target into a few
+translation units. Two files that each define =lg()= or =logger_name= in an
+anonymous namespace inside the same enclosing namespace then define the name
+twice, and the compile fails:
+
+#+begin_example
+error: redefinition of 'logger_name'
+error: redefinition of 'lg'
+#+end_example
+
+A static member lives in its class's scope, so two classes never collide. A
+file-scope logger with the file's name in front collides only if two files in
+one namespace have the same name. Each facet folder has its own namespace, and
+one folder cannot hold two files with the same name.
+
+=build/scripts/check_unity_collisions.py= finds names that two files of one
+target define. Run it after you add a logger:
+
+#+begin_src sh
+python3 build/scripts/check_unity_collisions.py --list
+#+end_src
+
+Do not add the file to =cmake/unity_exclusions.cmake= to get past the error.
+That list only gets shorter.
+
+* See also
+
+- [[id:1FBCC86B-8E04-4F81-8558-85C0B6C54836][ores.logging]] — the component that provides =make_logger=, =logger_t=
+  and =ORES_LOG_SEV=.
+- [[id:0FB2EA84-EBB8-45C8-A8C8-F5815431C2D2][Code Review Checklist]] — the checks a change passes before review.

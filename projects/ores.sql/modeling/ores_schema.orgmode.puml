@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: orgmode
-Tables: 1
+Tables: 4
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -41,6 +41,35 @@ end note
 ' ==================== orgmode (Knowledge Base (Org Pages)) ====================
 '
 package "orgmode" #F3E5F5 {
+    entity ores_orgmode_knowledge_index_links_tbl  #F7E5FF {
+        * page_id : text <<PK, FK>>
+        * section_ord : integer <<PK>>
+        * ord : integer <<PK>>
+        --
+        * target_id : text <<FK>>
+        * text : text
+    }
+
+    entity ores_orgmode_knowledge_index_pages_tbl  #F7E5FF {
+        * page_id : text <<PK, FK>>
+        --
+        * path : text
+        * title : text
+        * description : text
+        * tags : text[]
+    }
+
+    entity ores_orgmode_knowledge_index_sections_tbl  #F7E5FF {
+        * page_id : text <<PK, FK>>
+        * ord : integer <<PK>>
+        --
+        * anchor : text
+        * heading_path : text
+        * level : integer
+        * text : text
+        * search : tsvector
+    }
+
     entity ores_orgmode_knowledge_pages_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : text <<PK>>

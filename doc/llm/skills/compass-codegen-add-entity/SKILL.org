@@ -91,7 +91,7 @@ and phase boundaries). Use =feature-branch-manager= between phases and
 
 * Reference
 
-- [[id:08FBD248-257A-A474-DD43-DB08949978F1][ORE Studio Codegen]] — model schema, physical-space graph, =codegen.sh= usage.
+- [[id:08FBD248-257A-A474-DD43-DB08949978F1][ORE Studio Codegen]] — model schema and physical-space graph.
 - [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] — complete file checklist; links to every layer skill and pattern doc.
 
 * Artefacts                                                        :noexport:

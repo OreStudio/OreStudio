@@ -39,6 +39,8 @@ describe_product serves every product's schema: its fields, with type, list or s
 - labels, coded values, defaults and descriptions are annotations held as data
 - each form states the script it runs and the engine its product tag prices with
 - a test fails when a product has no schema
+- ores.http serves a product's schema and the list of products as JSON routes over the trading service's operation
+- the BFF serves the same under /api/trading/products, with a unit test of each route
 
 * Plan
 

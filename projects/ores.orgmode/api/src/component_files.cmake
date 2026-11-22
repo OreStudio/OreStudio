@@ -25,6 +25,7 @@ set(files
     "domain/knowledge_page_table.cpp"
     "domain/knowledge_page_table_io.cpp"
     "generators/knowledge_page_generator.cpp"
+    "messaging/index_operations_protocol_codec.cpp"
     "messaging/knowledge_page_protocol_codec.cpp"
     "messaging/publish_operation_protocol_codec.cpp"
 )
@@ -39,6 +40,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.orgmode.api/eventing/knowledge_page_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.orgmode.api/export.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.orgmode.api/generators/knowledge_page_generator.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.orgmode.api/messaging/index_operations_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.orgmode.api/messaging/knowledge_page_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.orgmode.api/messaging/publish_operation_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.orgmode.api/ores.orgmode.api.hpp"

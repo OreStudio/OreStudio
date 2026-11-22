@@ -43,11 +43,11 @@ that precedent and its field tables.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:7D2BBBBC-36A3-4BFB-9673-0F9005991D94][Take the DQ pipeline end to end]] |
-| Now          | All five journeys are written and their five prototypes are signed off. |
+| Now          | Nothing. |
 | Waiting on   | Nothing. The publish model is settled. |
-| Next         | Build the screens from the shared parts, then prove each journey on a fresh database. |
+| Next         | Nothing. |
 | Last touched | 2026-11-22                              |
 
 * Acceptance
@@ -153,5 +153,29 @@ they would otherwise become.
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
 |   |                 |      |          |       |
+
+* Result
+
+Done, with a scope change agreed at close: the deliverable is the design, and the
+screens are a follow-up.
+
+- The Qt area is inventoried from the commit that still held it, by a script a
+  reviewer reruns. The page corrects the task's own figures — 17 detail dialogs
+  and 10 history dialogs, not 18 and 9 — and says why the total of 27 agrees.
+- Five journeys are written under =doc/knowledge/journeys/dq/=, each with a
+  rendered wireframe and an operations table that says, step by step, whether the
+  server serves it.
+- Five prototypes are drawn on the conventions prototypes' shell, in the UX
+  language's colours, and all five were signed off on 2026-11-22.
+- The design records what the tree cannot serve: one coverage operation, a
+  per-dataset preview, any read or write of an artefact table, the unwritten run
+  log, and a used-by path from a value to a trade.
+
+Three of the five journeys cannot be built as drawn until those operations
+exist, which is why the journeys state them and the screens do not promise them.
+
+Evidence: the gate passed 9 of 9 on the changed paths; the Qt tables are the
+script's own output; each prototype was opened at each of its states in a headless
+browser and read back. Merged in PR #5030.
 
 * Result

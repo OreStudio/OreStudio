@@ -72,7 +72,7 @@ This page documents a test scenario verifying [[id:CE661B08-A485-4326-9558-3AE58
 | Status        | PASSED |
 | Completed at  | 2026-11-22 18:00 |
 | Branch        | feature/diagnose-the-provision-stall |
-| Commit        | be4c78c522 |
+| Commit        | 90aba99986 |
 | Worktree      | ores_dev_merry_newton |
 
 * Notes

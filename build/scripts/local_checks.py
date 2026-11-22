@@ -370,33 +370,6 @@ CATALOGUE: tuple[Check, ...] = (
         fix="Name the new helper for what it does, or share one definition; when a "
             "recorded file no longer collides, remove it from cmake/unity_exclusions.cmake.",
     ),
-    # The classification work needs a list that cannot be short. This reads the
-    # routes from the code that registers them, on both surfaces, and fails when
-    # one is answered but absent from the inventory, when the inventory names a
-    # route nobody answers, or when a row disagrees with the decisions in
-    # route_classification.
-    Check(
-        id="route-inventory",
-        title="Every HTTP route is in the inventory",
-        argv=("python3", "build/scripts/route_inventory.py", "--check"),
-        classes=("cpp", "web", "docs", "codegen", "tooling"),
-        paths=("projects/ores.http/*",
-               "projects/ores.web/packages/bff/src/*",
-               "doc/knowledge/architecture/http_route_inventory.org",
-               "build/scripts/route_inventory.py",
-               "build/scripts/route_classification.py",
-               "build/scripts/route_pairing.py"),
-        fix="Run python3 build/scripts/route_inventory.py --write and commit the "
-            "table, or delete the row of a route neither server answers.",
-    ),
-    Check(
-        id="component-docs",
-        title="Every component has an overview and a diagram",
-        argv=("bash", "projects/ores.codegen/validate_docs.sh"),
-        classes=("modeling", "codegen"),
-        after=("component-drift",),
-        phase=PREPARE,
-    ),
     Check(
         id="cmake-sources",
         title="Every component_files.cmake list matches the tree",
@@ -424,38 +397,6 @@ CATALOGUE: tuple[Check, ...] = (
         argv=(CODEGEN_PY, "projects/ores.codegen/scripts/check_component_drift.py", "--sweep"),
         classes=("modeling", "codegen"),
         timeout=1800,
-    ),
-    Check(
-        id="model-drift",
-        title="Every model matches its schema",
-        argv=(CODEGEN_PY, "projects/ores.codegen/scripts/check_model_drift.py", "--summary"),
-        classes=("modeling", "codegen"),
-        phase=PREPARE,
-    ),
-    Check(
-        id="er-diagram",
-        title="The committed ER diagrams match the schema",
-        argv=(
-            "bash",
-            "-c",
-            "projects/ores.codegen/venv/bin/python projects/ores.codegen/src/plantuml_er_parse_sql.py"
-            " --create-dir projects/ores.sql/create --drop-dir projects/ores.sql/drop"
-            " --output build/output/codegen/plantuml_er_model.json"
-            " --ignore-file projects/ores.sql/utility/validation_ignore.txt --warn --strict"
-            " && projects/ores.codegen/venv/bin/python projects/ores.codegen/src/plantuml_er_generate.py"
-            " --model build/output/codegen/plantuml_er_model.json"
-            " --template projects/ores.codegen/library/templates/plantuml_er.mustache"
-            " --index-template projects/ores.codegen/library/templates/plantuml_er_index.mustache"
-            " --output projects/ores.sql/modeling/ores_schema.puml --check",
-        ),
-        classes=("sql", "modeling"),
-        fix="Run projects/ores.codegen/plantuml_er_generate.sh and commit the diagrams.",
-    ),
-    Check(
-        id="sql-hygiene",
-        title="The SQL tree has no split string, unterminated comment or repeated index",
-        argv=("python3", "projects/ores.sql/utility/check_sql_hygiene.py", "projects/ores.sql"),
-        classes=("sql",),
     ),
     Check(
         id="file-types-seed",
@@ -510,77 +451,6 @@ CATALOGUE: tuple[Check, ...] = (
         fix="Run projects/ores.sql/utility/generate_ore_parameters_dataset.py and commit the seed.",
     ),
     Check(
-        id="curve-sections-wiring",
-        title="The curve screen's column wiring is the projection's",
-        argv=(
-            "python3",
-            "projects/ores.sql/utility/generate_curve_section_parameters.py",
-            "--check",
-        ),
-        classes=("sql", "web", "cpp"),
-        paths=(
-            "projects/ores.web/packages/bff/src/curve-sections.generated.ts",
-            "projects/ores.http/refdata/include/ores.http/routes/refdata/curve_section_wiring.hpp",
-            "projects/ores.http/refdata/src/routes/refdata/curve_section_wiring.cpp",
-            "projects/ores.sql/utility/generate_curve_section_parameters.py",
-            "projects/ores.ore/core/src/domain/curve_configuration_projection.cpp",
-            "external/ore/xsd/curveconfig.xsd",
-        ),
-        fix="Run projects/ores.sql/utility/generate_curve_section_parameters.py"
-            " and commit the module.",
-    ),
-    Check(
-        id="curve-column-guards",
-        title="The curve column map and its guard are the projection's",
-        argv=(
-            "python3",
-            "projects/ores.sql/utility/generate_curve_column_guards.py",
-            "--check",
-        ),
-        classes=("sql", "cpp", "modeling"),
-        paths=(
-            "projects/ores.sql/populate/refdata/refdata_curve_configuration_columns_populate.sql",
-            "projects/ores.sql/create/refdata/refdata_curve_configuration_columns_validate_create.sql",
-            "projects/ores.sql/drop/refdata/refdata_curve_configuration_columns_validate_drop.sql",
-            "projects/ores.sql/utility/generate_curve_column_guards.py",
-            "projects/ores.sql/utility/generate_curve_section_parameters.py",
-            "projects/ores.ore/core/src/domain/curve_configuration_projection.cpp",
-            "external/ore/xsd/curveconfig.xsd",
-        ),
-        fix="Run projects/ores.sql/utility/generate_curve_column_guards.py"
-            " and commit the map, the guard and the drop.",
-    ),
-    Check(
-        id="protocol-twins",
-        title="Every protocol header has its TypeScript twin",
-        argv=(CODEGEN_PY, "projects/ores.codegen/scripts/check_protocol_twin_coverage.py"),
-        classes=("modeling", "codegen"),
-    ),
-    Check(
-        id="handler-permissions",
-        title="Every handler permission code is seeded",
-        argv=(CODEGEN_PY, "projects/ores.codegen/scripts/check_handler_permissions.py"),
-        classes=("modeling", "sql", "codegen"),
-    ),
-    Check(
-        id="route-auth",
-        title="Every route declares its authorisation",
-        argv=(CODEGEN_PY, "projects/ores.codegen/scripts/check_route_auth_declarations.py"),
-        classes=("modeling", "codegen"),
-    ),
-    Check(
-        id="registry-exceptions",
-        title="Every registry exception is justified",
-        argv=(CODEGEN_PY, "projects/ores.codegen/scripts/check_registry_exceptions.py"),
-        classes=("codegen",),
-    ),
-    Check(
-        id="populate-refs",
-        title="Every populate script names a reference something defines",
-        argv=(CODEGEN_PY, "projects/ores.codegen/scripts/check_populate_references.py"),
-        classes=("sql", "modeling"),
-    ),
-    Check(
         id="boost-deps",
         title="No Boost header is included where it is not declared",
         argv=("python3", "build/scripts/check_boost_dependencies.py"),
@@ -613,23 +483,6 @@ CATALOGUE: tuple[Check, ...] = (
         # formatting step reads prettier from. It mutates what other checks
         # use, so it runs in the serial prepare phase like the other writers.
         phase=PREPARE,
-    ),
-    Check(
-        id="backlog-indexes",
-        title="The backlog bucket indexes match the captures",
-        argv=(
-            "bash",
-            "-c",
-            "python3 projects/ores.codegen/scripts/regenerate_backlog_indexes.py"
-            " && git diff --exit-code -- doc/agile/product_backlog",
-        ),
-        classes=("docs",),
-        paths=("doc/agile/product_backlog/*",),
-        phase=PREPARE,
-        fix="Promote or file the capture with compass (compass capture promote,"
-            " compass capture file), which regenerates the indexes, or run"
-            " projects/ores.codegen/scripts/regenerate_backlog_indexes.py and"
-            " commit the result.",
     ),
     Check(
         id="conventions-dataset",
@@ -824,22 +677,9 @@ COMPASS_CODECS: dict[str, tuple[str, ...]] = {
     "tangle-http": ("http_recipe_library",),
     "lint": ("lint",),
     "unity-collisions": ("unity_collisions",),
-    "route-inventory": ("route_inventory",),
-    "component-docs": ("component_docs",),
     "cmake-sources": ("component_files",),
     "component-drift": ("codegen",),
     "drift-sweep": ("codegen",),
-    "model-drift": ("model_rules",),
-    "er-diagram": ("er_diagram", "rls_coverage",),
-    "sql-hygiene": ("sql_hygiene",),
-    "curve-column-guards": ("curve_sections_wiring",),
-    "curve-sections-wiring": ("curve_sections_wiring",),
-    "protocol-twins": ("protocol_twins", "model_rules"),
-    "handler-permissions": ("handler_permissions",),
-    "route-auth": ("route_auth",),
-    "registry-exceptions": ("registry_exceptions",),
-    "populate-refs": ("populate_refs",),
-    "backlog-indexes": ("backlog_indexes",),
     "conventions-dataset": ("conventions_dataset",),
 }
 

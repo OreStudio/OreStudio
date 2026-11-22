@@ -59,7 +59,7 @@ layer wiring, and PR checkpoints at each layer boundary.
 ./projects/ores.sql/utility/validate_schemas.sh
 
 # Component documentation
-./projects/ores.codegen/validate_docs.sh
+compass-ng check --codec component_docs
 #+end_src
 
 Ask the user to build the affected targets before raising each PR.

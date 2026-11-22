@@ -80,11 +80,11 @@ the rest of the audit backlog when more than one component is ready.
 
 ** Automated checks
 
-One tool covers the mechanical checks repo-wide:
-=projects/ores.codegen/validate_docs.py=, run through its wrapper:
+One tool covers the mechanical checks repo-wide: compass-ng's
+=component_docs= codec.
 
 #+begin_src sh :results verbatim
-projects/ores.codegen/validate_docs.sh
+compass-ng check --codec component_docs
 #+end_src
 
 The tool walks every =projects/ores.*= directory and its composite

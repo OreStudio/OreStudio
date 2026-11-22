@@ -42,7 +42,7 @@ component "production-ready". For PR-delta reviews, use the sibling
 3. /Run the validators that automate parts of the checklist/:
 
    #+begin_src sh :results verbatim
-   ./projects/ores.codegen/validate_docs.sh
+   compass-ng check --codec component_docs
    #+end_src
 
 4. /Score each dimension/ 1–5 to produce a Component Health Score:

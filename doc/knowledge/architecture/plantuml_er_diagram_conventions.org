@@ -54,13 +54,14 @@ for the routes architecture): codegen parses already-generated
 artefacts, derives a model from them, and renders new artefacts from
 that model.
 
-The pipeline has three stages, all driven by
-[[proj:projects/ores.codegen/plantuml_er_generate.sh][=projects/ores.codegen/plantuml_er_generate.sh=]]:
+The pipeline has three stages. compass-ng's =er_diagram= codec runs
+the first two on =./compass.sh generate=, and the CMake target
+=generate_ores_schema_diagram= runs the third:
 
 | Stage    | Reads                                                  | Tool                                         | Writes                          |
 |----------+--------------------------------------------------------+----------------------------------------------+---------------------------------|
-| Parse    | =projects/ores.sql/create/**/*.sql=                    | [[proj:projects/ores.codegen/src/plantuml_er_parse_sql.py][=projects/ores.codegen/src/plantuml_er_parse_sql.py=]] | =build/output/codegen/plantuml_er_model.json= |
-| Render   | the intermediate JSON + a mustache template per group, and one for the index | [[proj:projects/ores.codegen/src/plantuml_er_generate.py][=projects/ores.codegen/src/plantuml_er_generate.py=]] (pystache) | =projects/ores.sql/modeling/ores_schema.<group>.puml=, and the index at =ores_schema.puml= |
+| Parse    | =projects/ores.sql/create/**/*.sql=                    | [[proj:projects/ores.codegen/src/plantuml_er_parse_sql.py][=projects/ores.codegen/src/plantuml_er_parse_sql.py=]], which the codec runs | the intermediate model |
+| Render   | the intermediate JSON + a mustache template per group, and one for the index | compass-ng's =er_diagram= codec | =projects/ores.sql/modeling/ores_schema.<group>.puml=, and the index at =ores_schema.puml= |
 | Draw     | the =.puml= files                                      | PlantUML (system =plantuml=, or =plantuml.jar=) | =projects/ores.sql/modeling/ores_schema*.svg= |
 
 The intermediate model file is *not* committed and *not* literate. It

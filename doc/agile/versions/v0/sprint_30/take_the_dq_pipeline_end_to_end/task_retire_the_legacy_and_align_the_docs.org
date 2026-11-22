@@ -91,7 +91,11 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The codegen overview still lists JSON models as an input, and the knowledge index repeats the claim | projects/ores.codegen/modeling/component_overview.org, doc/knowledge/knowledge.org | Fixed | 531fee1900 |
+| 1 | Hard-coded counts will drift; the page should name the command that derives them | projects/ores.dq/modeling/publication_pipeline.org | Fixed | Points at this task's measurements, 531fee1900 |
+| 1 | The gap table needs a deletion trigger once the facet lands | publish_from_dq_codegen_facet/story.org | Accepted | Recorded as a decision on that story |
+| 1 | The diagram is not rendered or embedded | projects/ores.codegen/modeling/ores.codegen.puml | Accepted | It had never been rendered; the source is edited and parses |
+| 1 | The dependency-order, level-gate and no-subject claims were left untraced | projects/ores.dq/modeling/publication_pipeline.org | Noted | Both were read from publish_service.cpp and publish_handler.hpp when written |
 
 * Result
 

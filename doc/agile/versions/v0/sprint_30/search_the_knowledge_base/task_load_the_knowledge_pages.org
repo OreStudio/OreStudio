@@ -108,6 +108,10 @@ task and name that file in the Command column.
   positive: compass read the psql variable =:knowledge_pages_populate= as a
   path. compass PR #160 fixes it. Delete the exception once the pinned
   compass-ng carries #160; compass-85 will name the version.
+- Amended on 2026-11-22: the loader takes every doc that has an =:ID:= and a
+  =#+title:=, not only the user-facing pages, because the agile tree and the QA
+  scenarios are moved off the BFF and read from here. See the story's decisions.
+
 
 * Test Scenarios
 

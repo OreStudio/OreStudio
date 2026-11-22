@@ -74,6 +74,16 @@ public:
     /**
      * @brief Generates the OpenAPI 3.0 JSON specification.
      */
+    /**
+     * @brief The cookie a browser's session rides in, as this deployment names it.
+     *
+     * The document states it as a security scheme, so a client generated from the
+     * document authenticates the way the web client does.
+     */
+    void set_session_cookie_name(std::string name) {
+        session_cookie_name_ = std::move(name);
+    }
+
     std::string generate_openapi_json() const;
 
     /**
@@ -95,6 +105,8 @@ private:
     api_info info_;
     std::vector<server_info> servers_;
     std::vector<domain::route> routes_;
+    /// The cookie a session rides in, as the document names it for a client to use.
+    std::string session_cookie_name_{"ores_web_session"};
 };
 
 }

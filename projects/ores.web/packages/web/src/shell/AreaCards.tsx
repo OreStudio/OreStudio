@@ -26,6 +26,8 @@ import { useTranslation } from '../i18n/Provider.js';
 import { Tiles, type Tile } from '../ui/Tiles.js';
 import { MENU, offered } from './areas.js';
 import { ACCOUNT_CARDS, AREA_CARDS, FOLDERS, cardOf, type CardArea, type CardId } from './cards.js';
+import { apiReaderUrl } from './apiReader.js';
+import { useTheme } from '../theme/useTheme.js';
 
 /** The cards of one list that this person is offered, named and worded in their language. */
 function useTiles(ids: readonly CardId[]): readonly Tile[] {
@@ -61,6 +63,8 @@ export function AreaCards({ area }: { readonly area: CardArea }): ReactNode {
 export function ActiveCards(): ReactNode {
     const { t } = useTranslation();
     const holds = useHeld();
+    const { theme } = useTheme();
+    const page = typeof window === 'undefined' ? undefined : window.location;
     const folders: Tile[] = MENU.flatMap((entry) => {
         const folder = FOLDERS.find((candidate) => candidate.to === entry.to);
         return folder !== undefined && offered(entry, holds)
@@ -70,6 +74,9 @@ export function ActiveCards(): ReactNode {
                       body: t(folder.bodyKey),
                       to: folder.to,
                       icon: folder.icon,
+                      ...(folder.external === true
+                          ? { href: apiReaderUrl(folder.to, page, theme) }
+                          : {}),
                   },
               ]
             : [];

@@ -27,6 +27,7 @@
 #include <magic_enum/magic_enum.hpp>
 #include <map>
 #include <optional>
+#include <set>
 #include <string>
 #include <string_view>
 #include <tuple>
@@ -76,14 +77,70 @@ struct is_map<std::map<std::string, T>> : std::true_type {};
 template <typename T>
 concept written_as_text = requires { sizeof(text_form<std::remove_cvref_t<T>>); };
 
+/**
+ * @brief The type's own name, as the compiler states it.
+ *
+ * A schema that a reader resolves by name needs a name, and the compiler is the only
+ * place one exists: the wire shape says what the members are, not what the type is
+ * called. The name is taken from the function's own signature, which is the one thing
+ * both clang and gcc state the same way once the brackets are stripped.
+ */
 template <typename T>
-void write_schema(json_value out);
+constexpr std::string_view stated_name() {
+    constexpr std::string_view signature = __PRETTY_FUNCTION__;
+    const auto at = signature.find("T = ");
+    if (at == std::string_view::npos)
+        return {};
+    const auto first = at + 4;
+    const auto last = signature.find_first_of("];", first);
+    return signature.substr(first,
+                            (last == std::string_view::npos ? signature.size() : last) - first);
+}
+
+/**
+ * @brief The name a definition is registered under: the type's name as a dotted path.
+ *
+ * The leading =ores= is dropped because every type in the document is one of its own,
+ * and the rest is kept whole: a component whose name is its own path is traceable to the
+ * type that writes it, and two types that differ only by namespace stay apart.
+ */
+template <typename T>
+std::string definition_name() {
+    auto name = std::string(stated_name<T>());
+    if (name.starts_with("ores::"))
+        name.erase(0, std::string("ores::").size());
+    for (auto at = name.find("::"); at != std::string::npos; at = name.find("::", at + 1))
+        name.replace(at, 2, ".");
+    return name;
+}
+
+/// The definitions one document collects, and the names it already holds.
+struct definitions final {
+    json_value of;
+    std::set<std::string> written;
+};
 
 template <typename T>
-void write_object(json_value out) {
-    out.set("type", "object");
-    auto properties = out.add_object("properties");
-    auto required = out.add_array("required");
+void write_schema(json_value out, definitions& defs);
+
+template <typename T>
+void write_object(json_value out, definitions& defs) {
+    const auto name = definition_name<T>();
+    if (name.empty()) {
+        // A compiler that states no name still gets a schema; it just states it in place.
+        out.set("type", "object");
+        return;
+    }
+    out.set("$ref", "#/$defs/" + name);
+    if (defs.written.contains(name))
+        return;
+    // Written before the members are walked, so a type that holds itself refers to itself.
+    defs.written.insert(name);
+
+    auto self = defs.of.add_object(name);
+    self.set("type", "object");
+    auto properties = self.add_object("properties");
+    auto required = self.add_array("required");
     apply_fields(
         [&](const auto&... members) {
             (
@@ -93,11 +150,11 @@ void write_object(json_value out) {
                     auto slot = properties.add_object(members.name);
                     if constexpr (is_optional<member_type>::value) {
                         // Written as null when empty, and may be left out of a body.
-                        write_schema<typename member_type::value_type>(slot);
+                        write_schema<typename member_type::value_type>(slot, defs);
                         slot.set("nullable", true);
                     } else {
                         required.push(members.name);
-                        write_schema<member_type>(slot);
+                        write_schema<member_type>(slot, defs);
                     }
                 }(),
                 ...);
@@ -106,16 +163,17 @@ void write_object(json_value out) {
 }
 
 template <typename T>
-void write_schema(json_value out) {
+void write_schema(json_value out, definitions& defs) {
     using value_type = std::remove_cvref_t<T>;
     if constexpr (is_optional<value_type>::value) {
-        write_schema<typename value_type::value_type>(out);
+        write_schema<typename value_type::value_type>(out, defs);
     } else if constexpr (is_vector<value_type>::value) {
         out.set("type", "array");
-        write_schema<typename value_type::value_type>(out.add_object("items"));
+        write_schema<typename value_type::value_type>(out.add_object("items"), defs);
     } else if constexpr (is_map<value_type>::value) {
         out.set("type", "object");
-        write_schema<typename value_type::mapped_type>(out.add_object("additionalProperties"));
+        write_schema<typename value_type::mapped_type>(out.add_object("additionalProperties"),
+                                                       defs);
     } else if constexpr (std::is_same_v<value_type, bool>) {
         out.set("type", "boolean");
     } else if constexpr (std::is_integral_v<value_type>) {
@@ -130,7 +188,7 @@ void write_schema(json_value out) {
     } else if constexpr (written_as_text<value_type>) {
         out.set("type", "string");
     } else if constexpr (states_wire_form<value_type>) {
-        write_object<value_type>(out);
+        write_object<value_type>(out, defs);
     } else {
         // A message whose shape lives in a codec header that is not in view
         // here still gets a schema: an object with no members stated, which is
@@ -149,7 +207,12 @@ void write_schema(json_value out) {
 template <typename T>
 [[nodiscard]] std::string json_schema() {
     auto document = json_document::make_object();
-    json_schema_detail::write_schema<std::remove_cvref_t<T>>(document.root());
+    auto definitions = json_document::make_object();
+    auto state = json_schema_detail::definitions{definitions.root(), {}};
+    json_schema_detail::write_schema<std::remove_cvref_t<T>>(document.root(), state);
+    // A shape with no named type inside it states no definitions at all.
+    if (definitions.root().size() > 0)
+        document.root().add("$defs", definitions.root());
     return document.write();
 }
 

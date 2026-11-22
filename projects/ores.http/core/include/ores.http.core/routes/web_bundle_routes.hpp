@@ -53,10 +53,13 @@ public:
     /**
      * @brief Registers the bundle's routes with the router.
      *
-     * Must be called after every other route module.
+     * Must be called after every other route module. The routes keep the bundle
+     * alive: a route outlives the statement that registered it, and a handler
+     * that reads a destroyed bundle answers nothing at all.
      */
-    void register_routes(std::shared_ptr<http::net::router> router,
-                         std::shared_ptr<http::openapi::endpoint_registry> registry);
+    static void register_routes(std::shared_ptr<web_bundle_routes> self,
+                                std::shared_ptr<http::net::router> router,
+                                std::shared_ptr<http::openapi::endpoint_registry> registry);
 
     /// The files the bundle holds, so a caller can log what it is serving.
     [[nodiscard]] std::size_t size() const {

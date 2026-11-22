@@ -74,6 +74,7 @@ public:
 
     /// How this deployment names and protects the cookie a session rides in.
     void set_cookie_settings(domain::cookie_settings settings) {
+        registry_->set_session_cookie_name(settings.name);
         cookie_ = std::move(settings);
     }
 

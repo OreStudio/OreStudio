@@ -1,0 +1,87 @@
+The four desk reads, proved against the gateway and against the BFF's own answer.
+
+Commit under test : the branch head, built from this checkout
+Database          : ores_dev_brave_hopper, as the fleet found it
+Gateway           : ores.http.server-brave_hopper, http://localhost:20401
+BFF               : ores.web.service-brave_hopper, http://localhost:20402
+Services running  : the whole fleet, started by compass services start
+Account           : tenant_admin, in Acme Corporation, acting as its party
+
+The run signs in to each server on its own and asks both the same body at the
+same address. All four answers are identical, byte for byte: the same members,
+the same values. The two payload reads are the instrument catalogue, 30
+instruments of which the first five come back with the answer truncated, and the
+EUR FX montage with its one pair; the two refusals are the rate ladder and the
+curve analytics, which the service answers as a 422 with its own words and the
+gateway passes on unchanged.
+
+What this database cannot show is a ladder's rungs and a curve's pillars. It
+holds no rate quote at any currency, instrument type or instant tried, and no
+curve bootstrap configuration at all, so both reads answer the service's
+refusal. The payload path of those two is the same forwarding and the same
+answer as the two reads that came back whole.
+
+A body the screen would not send is a 400 at both servers, and each names what
+was wrong: an unknown member, a currency that is not three letters, an instant
+that is not one, an id that is not one.
+
+--- 8< ---
+
+=== signing in to the gateway
+  choose party: 200
+=== signing in to the BFF
+  choose party: 200
+
+=== POST /api/market/instruments
+body: {"query":"","kinds":[],"provider_code":"","offset":0,"limit":5}
+gateway: HTTP 200
+the BFF: HTTP 200
+gateway members: ['instruments', 'total', 'truncated']
+the BFF's members: ['instruments', 'total', 'truncated']
+identical as sent: True
+identical once the age each answer states is set aside: True
+  total                30
+  truncated            True
+  instruments          5
+    first: {"instrument_id": "a39cd2b7-db1a-440e-8bf5-73bff620aa93|oresmd://fx/AUD?type=series&instrument=fx_spot&quote=rate&ccy=USD", "kind": "pair", "name": "AUD/USD", "currency": "USD", "base_currency": "AUD", "quote_currency": 
+
+=== POST /api/market/rate-ladder
+body: {"currency":"USD","instrument_type":"discount","forward_start":"","as_of":"2026-11-20 00:00:00Z","providers":[],"limit":10}
+gateway: HTTP 422
+the BFF: HTTP 422
+gateway members: ['code', 'message']
+the BFF's members: ['code', 'message']
+identical as sent: True
+identical once the age each answer states is set aside: True
+
+=== POST /api/market/fx-montage
+body: {"base_currency":"EUR","as_of":"2026-11-20 00:00:00Z","providers":[]}
+gateway: HTTP 200
+the BFF: HTTP 200
+gateway members: ['as_of', 'base_currency', 'change_since', 'pairs']
+the BFF's members: ['as_of', 'base_currency', 'change_since', 'pairs']
+identical as sent: True
+identical once the age each answer states is set aside: True
+  base_currency        EUR
+  as_of                2026-11-20 00:00:00.000000Z
+  pairs                1
+    first: {"pair_name": "EUR/USD", "base_currency": "EUR", "quote_currency": "USD", "spot_by_provider": [{"provider_code": "ore", "value": 1.0552, "as_of": "2016-12-30 00:00:00.000000Z", "age_seconds": 312225383, "stale": true, "s
+
+=== a curve from the catalogue
+curve configurations in this database: 0
+no curve configuration, so the read names one the service does not hold: 00000000-0000-0000-0000-0000000000c1
+
+=== POST /api/market/curve-analytics
+body: {"instrument_id":"00000000-0000-0000-0000-0000000000c1","as_of":"2026-11-20 00:00:00Z","compare_at":null}
+gateway: HTTP 422
+the BFF: HTTP 422
+gateway members: ['code', 'message']
+the BFF's members: ['code', 'message']
+identical as sent: True
+identical once the age each answer states is set aside: True
+
+=== the addresses refuse what the BFF refused
+/api/market/instruments          gateway HTTP 400  BFF HTTP 400  {"code":"invalid-request","message":"A market read states the body its screen sends."}
+/api/market/rate-ladder          gateway HTTP 400  BFF HTTP 400  {"code":"invalid-request","message":"A currency is three letters."}
+/api/market/fx-montage           gateway HTTP 400  BFF HTTP 400  {"code":"invalid-request","message":"An instant is written YYYY-MM-DD HH:MM:SSZ."}
+/api/market/curve-analytics      gateway HTTP 400  BFF HTTP 400  {"code":"invalid-request","message":"A market read states the body its screen sends."}

@@ -150,7 +150,7 @@ against the answer the BFF gives.
 | auth | 18 | 18 | 0 |
 | changes | 2 | 2 | 0 |
 | grid | 14 | 14 | 0 |
-| market-data | 41 | 31 | 10 |
+| market-data | 41 | 35 | 6 |
 | operations | 5 | 4 | 1 |
 | qa | 6 | 0 | 6 |
 | reference-data | 30 | 30 | 0 |
@@ -160,7 +160,7 @@ against the answer the BFF gives.
 | trading | 24 | 24 | 0 |
 | workflow | 18 | 18 | 0 |
 | (none) | 35 | 29 | 6 |
-| total | 334 | 305 | 29 |
+| total | 334 | 309 | 25 |
 
 * The pairing
 
@@ -275,10 +275,10 @@ against the answer the BFF gives.
 | GET =/api/marketdata/public-rates/coverage= | GET /api/marketdata/public-rates/coverage |
 | GET =/api/marketdata/public-rates/fixings= | GET /api/marketdata/public-rates/fixings |
 | GET =/api/marketdata/public-rates/fixings.csv= | GET /api/marketdata/public-rates/fixings.csv |
-| GET =/api/marketdata/quotes= | none |
-| GET =/api/marketdata/quotes/feeds= | none |
-| GET =/api/marketdata/quotes/history= | none |
-| POST =/api/marketdata/quotes/vols-by-delta= | none |
+| GET =/api/marketdata/quotes= | GET /api/marketdata/quotes |
+| GET =/api/marketdata/quotes/feeds= | GET /api/marketdata/quotes/feeds |
+| GET =/api/marketdata/quotes/history= | GET /api/marketdata/quotes/history |
+| POST =/api/marketdata/quotes/vols-by-delta= | POST /api/marketdata/quotes/vols-by-delta |
 | GET =/api/marketdata/routes= | GET /api/marketdata/routes |
 | POST =/api/marketdata/routes= | POST /api/marketdata/routes |
 | DELETE =/api/marketdata/routes/:publisher= | DELETE /api/marketdata/routes/{publisher} |

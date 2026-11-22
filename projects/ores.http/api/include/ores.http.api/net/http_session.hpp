@@ -23,6 +23,7 @@
 #include "ores.http.api/domain/session_cookie.hpp"
 #include "ores.http.api/domain/session_store.hpp"
 #include "ores.http.api/export.hpp"
+#include "ores.http.api/net/cors.hpp"
 #include "ores.http.api/net/http_server_options.hpp"
 #include "ores.http.api/net/rate_limiter.hpp"
 #include "ores.http.api/net/router.hpp"
@@ -42,6 +43,8 @@
 #include <string>
 #include <string_view>
 #include <unordered_map>
+#include <utility>
+#include <vector>
 
 namespace ores::http::net {
 
@@ -145,6 +148,20 @@ private:
     [[nodiscard]] std::optional<std::string> csrf_refusal(const domain::http_request& req) const;
 
     /**
+     * @brief The headers a browser reads on every answer of this request.
+     *
+     * They are worked out once, from the =Origin= the request states, and written
+     * with whichever answer the route produces. So a refusal, a missing route and a
+     * served answer all carry them, and a browser sees the status instead of a
+     * cross-origin failure that says nothing.
+     */
+    std::vector<std::pair<std::string, std::string>> cors_headers_;
+
+    /// The id this session quotes for the request it is serving, on every answer.
+    std::string request_id_;
+
+
+    /**
      * @brief Writes a response, from its bytes or in chunks from its source.
      *
      * @param send_body false for a HEAD request, which answers the headers that
@@ -220,6 +237,9 @@ private:
     std::shared_ptr<worker_pool> workers_;
 
     http_server_options options_;
+
+    /// The origins this deployment admits, read once from its configuration.
+    cors_policy cors_;
     std::string remote_address_;
     session_bytes_callback bytes_callback_;
 

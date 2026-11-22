@@ -143,6 +143,41 @@ std::string yield_curve_process_type_web_routes::catalogue_entry(const http_requ
            R"json(,"search":false,"sortable":[],"readPermission":"synthetic::yield_curve_process_types:read","writePermission":"synthetic::yield_curve_process_types:write","deletePermission":"synthetic::yield_curve_process_types:delete"})json";
 }
 
+/// The order, the search and the filters a query states, on a page request.
+///
+/// A whole read takes the same query a paged one takes: a screen that searches a
+/// list it holds whole reads the rows that match, not the list.
+messaging::list_yield_curve_process_types_request
+yield_curve_process_type_web_query(messaging::list_yield_curve_process_types_request msg,
+                                   const http_request& req) {
+    const std::string page_sentence = "A page names an offset and a limit of 1 to 1000.";
+    const auto sort = req.get_query_param("sort");
+    if (!sort.empty()) {
+        constexpr std::string_view sortable[] = {""};
+        if (std::find(std::begin(sortable), std::end(sortable) - 1, sort) == std::end(sortable) - 1)
+            rr::invalid("process-types cannot be ordered by " + sort + ".");
+        msg.order.field = sort;
+    }
+    const auto descending = req.get_query_param("descending");
+    if (!descending.empty() && descending != "true" && descending != "false")
+        rr::invalid(page_sentence);
+    msg.order.descending = descending == "true";
+
+    const auto search = req.get_query_param("search");
+    if (!search.empty())
+        rr::invalid("process-types cannot be searched.");
+
+    for (const auto& [name, value] : req.query_params) {
+        if (!name.starts_with("f."))
+            continue;
+        const auto member = name.substr(2);
+        constexpr std::string_view filters[] = {""};
+        if (std::find(std::begin(filters), std::end(filters) - 1, member) == std::end(filters) - 1)
+            rr::invalid("process-types cannot be filtered by " + member + ".");
+    }
+    return msg;
+}
+
 boost::asio::awaitable<http_response>
 yield_curve_process_type_web_routes::handle_list(const http_request& req, nats_client& session) {
     try {
@@ -155,8 +190,10 @@ yield_curve_process_type_web_routes::handle_list(const http_request& req, nats_c
                 const auto reply = ores::http::forwarding::forward(
                     req,
                     session,
-                    yield_curve_process_type_web_page(offset,
-                                                      yield_curve_process_type_web_page_size));
+                    yield_curve_process_type_web_query(
+                        yield_curve_process_type_web_page(offset,
+                                                          yield_curve_process_type_web_page_size),
+                        req));
                 rr::require_ok(reply.result);
                 const auto& got = reply.process_types;
                 rows.insert(rows.end(), got.begin(), got.end());
@@ -182,33 +219,8 @@ yield_curve_process_type_web_routes::handle_list(const http_request& req, nats_c
         if (limit < 1 || limit > 1000)
             rr::invalid(page_sentence);
 
-        auto msg = yield_curve_process_type_web_page(offset, limit);
-        const auto sort = req.get_query_param("sort");
-        if (!sort.empty()) {
-            constexpr std::string_view sortable[] = {""};
-            if (std::find(std::begin(sortable), std::end(sortable) - 1, sort) ==
-                std::end(sortable) - 1)
-                rr::invalid("process-types cannot be ordered by " + sort + ".");
-            msg.order.field = sort;
-        }
-        const auto descending = req.get_query_param("descending");
-        if (!descending.empty() && descending != "true" && descending != "false")
-            rr::invalid(page_sentence);
-        msg.order.descending = descending == "true";
-
-        const auto search = req.get_query_param("search");
-        if (!search.empty())
-            rr::invalid("process-types cannot be searched.");
-
-        for (const auto& [name, value] : req.query_params) {
-            if (!name.starts_with("f."))
-                continue;
-            const auto member = name.substr(2);
-            constexpr std::string_view filters[] = {""};
-            if (std::find(std::begin(filters), std::end(filters) - 1, member) ==
-                std::end(filters) - 1)
-                rr::invalid("process-types cannot be filtered by " + member + ".");
-        }
+        const auto msg = yield_curve_process_type_web_query(
+            yield_curve_process_type_web_page(offset, limit), req);
 
         const auto reply = ores::http::forwarding::forward(req, session, msg);
         rr::require_ok(reply.result);

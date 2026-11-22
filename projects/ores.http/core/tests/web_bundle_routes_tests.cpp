@@ -93,7 +93,7 @@ public:
         : server_(std::make_shared<http_server>(io_, make_options()))
         , bundle_(std::make_shared<web_bundle_routes>(root)) {
 
-        bundle_->register_routes(server_->get_router(), server_->get_registry());
+        web_bundle_routes::register_routes(bundle_, server_->get_router(), server_->get_registry());
 
         asio::co_spawn(
             io_, [this]() -> asio::awaitable<void> { co_await server_->run(); }, asio::detached);

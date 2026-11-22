@@ -124,6 +124,46 @@ std::string currency_calendar_web_routes::catalogue_entry(const http_request& re
            R"json(,"search":false,"sortable":[],"events":{"component":"refdata","entity":"currency_calendars"},"writePermission":"refdata::currency_calendars:write","deletePermission":"refdata::currency_calendars:delete"})json";
 }
 
+/// The order, the search and the filters a query states, on a page request.
+///
+/// A whole read takes the same query a paged one takes: a screen that searches a
+/// list it holds whole reads the rows that match, not the list.
+messaging::list_currency_calendars_request
+currency_calendar_web_query(messaging::list_currency_calendars_request msg,
+                            const http_request& req) {
+    const std::string page_sentence = "A page names an offset and a limit of 1 to 1000.";
+    const auto sort = req.get_query_param("sort");
+    if (!sort.empty()) {
+        constexpr std::string_view sortable[] = {""};
+        if (std::find(std::begin(sortable), std::end(sortable) - 1, sort) == std::end(sortable) - 1)
+            rr::invalid("currency-calendars cannot be ordered by " + sort + ".");
+        msg.order.field = sort;
+    }
+    const auto descending = req.get_query_param("descending");
+    if (!descending.empty() && descending != "true" && descending != "false")
+        rr::invalid(page_sentence);
+    msg.order.descending = descending == "true";
+
+    const auto search = req.get_query_param("search");
+    if (!search.empty())
+        rr::invalid("currency-calendars cannot be searched.");
+
+    for (const auto& [name, value] : req.query_params) {
+        if (!name.starts_with("f."))
+            continue;
+        const auto member = name.substr(2);
+        constexpr std::string_view filters[] = {"currency_iso_code", ""};
+        if (std::find(std::begin(filters), std::end(filters) - 1, member) == std::end(filters) - 1)
+            rr::invalid("currency-calendars cannot be filtered by " + member + ".");
+    }
+    if (const auto raw = req.get_query_param("f.currency_iso_code"); !raw.empty()) {
+        if (!msg.filter)
+            msg.filter = messaging::currency_calendars_filter{};
+        msg.filter->currency_iso_code = rr::read<std::string>(raw, "f.currency_iso_code");
+    }
+    return msg;
+}
+
 boost::asio::awaitable<http_response>
 currency_calendar_web_routes::handle_list(const http_request& req, nats_client& session) {
     try {
@@ -136,7 +176,8 @@ currency_calendar_web_routes::handle_list(const http_request& req, nats_client& 
                 const auto reply = ores::http::forwarding::forward(
                     req,
                     session,
-                    currency_calendar_web_page(offset, currency_calendar_web_page_size));
+                    currency_calendar_web_query(
+                        currency_calendar_web_page(offset, currency_calendar_web_page_size), req));
                 rr::require_ok(reply.result);
                 const auto& got = reply.currency_calendars;
                 rows.insert(rows.end(), got.begin(), got.end());
@@ -161,38 +202,8 @@ currency_calendar_web_routes::handle_list(const http_request& req, nats_client& 
         if (limit < 1 || limit > 1000)
             rr::invalid(page_sentence);
 
-        auto msg = currency_calendar_web_page(offset, limit);
-        const auto sort = req.get_query_param("sort");
-        if (!sort.empty()) {
-            constexpr std::string_view sortable[] = {""};
-            if (std::find(std::begin(sortable), std::end(sortable) - 1, sort) ==
-                std::end(sortable) - 1)
-                rr::invalid("currency-calendars cannot be ordered by " + sort + ".");
-            msg.order.field = sort;
-        }
-        const auto descending = req.get_query_param("descending");
-        if (!descending.empty() && descending != "true" && descending != "false")
-            rr::invalid(page_sentence);
-        msg.order.descending = descending == "true";
-
-        const auto search = req.get_query_param("search");
-        if (!search.empty())
-            rr::invalid("currency-calendars cannot be searched.");
-
-        for (const auto& [name, value] : req.query_params) {
-            if (!name.starts_with("f."))
-                continue;
-            const auto member = name.substr(2);
-            constexpr std::string_view filters[] = {"currency_iso_code", ""};
-            if (std::find(std::begin(filters), std::end(filters) - 1, member) ==
-                std::end(filters) - 1)
-                rr::invalid("currency-calendars cannot be filtered by " + member + ".");
-        }
-        if (const auto raw = req.get_query_param("f.currency_iso_code"); !raw.empty()) {
-            if (!msg.filter)
-                msg.filter = messaging::currency_calendars_filter{};
-            msg.filter->currency_iso_code = rr::read<std::string>(raw, "f.currency_iso_code");
-        }
+        const auto msg =
+            currency_calendar_web_query(currency_calendar_web_page(offset, limit), req);
 
         const auto reply = ores::http::forwarding::forward(req, session, msg);
         rr::require_ok(reply.result);

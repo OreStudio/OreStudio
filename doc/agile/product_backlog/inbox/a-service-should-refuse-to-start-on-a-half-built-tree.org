@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: 7A4BD4F7-2AB9-4C50-BDF5-D8FC31A01026
+:END:
+#+title: A service should refuse to start on a half-built tree
+#+description: A partial build leaves a service library older than the libraries it links, and the service dies with heap corruption instead of naming the fault.
+#+type: capture
+#+level: cross
+#+filetags: :services:build:defect:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+A service should refuse to start, with a sentence that names the fault, when a
+library it links is newer than the service itself. Today it aborts inside a
+destructor on a corrupted heap, and the operator reads a backtrace.
+
+* Why
+
+Starting =ores.iam.service= on 2026-11-21 gave
+
+#+begin_example
+#5 malloc_printerr_tail
+#6 ores::database::database_options::~database_options()
+#7 ores::service::config::standard_options::~standard_options()
+#8 ores::iam::service::config::parser::parse(...)
+#+end_example
+
+That is heap corruption detected while the configuration was being parsed, and
+the cause is not code: =libores.iam.service.so= was built at 01:53 while
+=libores.database.so= and =libores.service.so= were rebuilt at 12:50 and 14:20 by
+targeted builds. A service library older than the libraries it links reads
+structures whose layout has moved, and a destructive error is the honest
+symptom.
+
+Nothing can catch this at run time: the heap is already corrupt when the object
+is destroyed, and a =try=/=catch= would only hide it. The guard therefore belongs
+before the process runs: =compass services start= can compare the modification
+time of each service binary against the libraries in =publish/lib= and refuse,
+naming the service and the newer library. A build system that rebuilt the stale
+targets would also do, but the check is cheap and states the fault in words a
+person can act on.
+
+The narrower lesson: a targeted =compass build <target>= rebuilds the libraries a
+target depends on and leaves every sibling service stale. Whoever builds one part
+should build the fleet, or be told why they cannot start it.
+
+* References
+
+- =projects/ores.compass/src/= — the services verb, where the check would live
+- =build/output/<preset>/publish/lib= and =publish/bin= — the timestamps compared
+- The capture's own run: IAM core-dumps from 14:08, four times inside five
+  minutes, each =SIGABRT= with the same frames
+
+* See also
+
+- [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then
+  retire it — the remaining work]]

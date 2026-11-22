@@ -67,6 +67,9 @@ const pt: SourceCatalogue = {
     },
 
     shell: {
+        api: {
+            lead: 'Todas as rotas deste servidor, descritas a partir das próprias rotas.',
+        },
         theme: {
             toLight: 'Mudar para a paleta clara',
             toDark: 'Mudar para a paleta escura',
@@ -86,6 +89,7 @@ const pt: SourceCatalogue = {
             operations: 'Operações',
             reporting: 'Relatórios',
             development: 'Desenvolvimento',
+            api: 'API',
             parties: 'Partes',
             rescue: 'Recuperação de acesso',
             audit: 'Entradas',
@@ -800,6 +804,9 @@ const pt: SourceCatalogue = {
         sessionEnded:
             'A sua sessão terminou e foi desligado. Inicie a sessão novamente para continuar.',
         partyCategory: 'Categoria',
+        server: 'Servidor',
+        serverCpp: 'servidor C++',
+        serverBff: 'BFF',
     },
 
     signUp: {

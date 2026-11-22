@@ -68,6 +68,9 @@ export const en: SourceCatalogue = {
     },
 
     shell: {
+        api: {
+            lead: 'Every route this server answers, described from the routes themselves.',
+        },
         theme: {
             toLight: 'Switch to the light palette',
             toDark: 'Switch to the dark palette',
@@ -87,6 +90,7 @@ export const en: SourceCatalogue = {
             operations: 'Operations',
             reporting: 'Reporting',
             development: 'Development',
+            api: 'API',
             parties: 'Parties',
             rescue: 'Rescue access',
             audit: 'Sign-ins',
@@ -793,6 +797,9 @@ export const en: SourceCatalogue = {
         sessionEnded:
             'Your session has ended, so you have been signed out. Sign in again to continue.',
         partyCategory: 'Category',
+        server: 'Server',
+        serverCpp: 'C++ server',
+        serverBff: 'BFF',
     },
 
     signUp: {

@@ -539,15 +539,17 @@ void trade_read_routes::register_routes(
                             &trading_messaging::list_structure_identifiers_response::identifiers);
                     }
 
+                    // The service answers a trade's versions oldest first and
+                    // refuses an order, because a version key has one. The history
+                    // a person reads is newest first, so the page turns it here.
                     trading_messaging::list_trade_versions_request versions_msg;
                     versions_msg.key.id = id;
-                    versions_msg.order.field = "version";
-                    versions_msg.order.descending = true;
-                    const auto versions = forwarding::forward_all(
+                    auto versions = forwarding::forward_all(
                         req,
                         session,
                         versions_msg,
                         &trading_messaging::list_trade_versions_response::versions);
+                    std::ranges::reverse(versions);
 
                     return http_response::json(
                         "{\"trade\":" + trade + ",\"identifiers\":" + json::write(identifiers) +

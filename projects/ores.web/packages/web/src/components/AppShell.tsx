@@ -39,6 +39,9 @@ import { SetupReportNotice } from '../shell/SetupReport.js';
 import { MENU, modeKey, offered } from '../shell/areas.js';
 import { LanguageMenu } from '../shell/LanguageMenu.js';
 import { ThemeToggle } from '../shell/ThemeToggle.js';
+import { ServerSwitch } from '../shell/ServerSwitch.js';
+import { apiReaderUrl } from '../shell/apiReader.js';
+import { useTheme } from '../theme/useTheme.js';
 import { SHELL_WIDTHS, type ShellWidth } from '../shell/layout.js';
 import { VersionFooter } from './VersionFooter.js';
 
@@ -136,6 +139,8 @@ export function AppShell({
 }: AppShellProps): ReactNode {
     const { t } = useTranslation();
     const holds = useHeld();
+    const { theme } = useTheme();
+    const page = typeof window === 'undefined' ? undefined : window.location;
     const menu = MENU.filter((item) => offered(item, holds));
 
     return (
@@ -171,20 +176,34 @@ export function AppShell({
                         </span>
                     )}
                     <nav aria-label={t('nav.areas')} className="flex items-center gap-1">
-                        {menu.map((item) => (
-                            <NavLink
-                                key={item.to}
-                                to={item.to}
-                                end={item.to === '/'}
-                                className={({ isActive }) =>
-                                    `rounded-md px-2 py-1 text-xs hover:text-ink ${
-                                        isActive ? 'bg-surface-overlay text-ink' : 'text-ink-muted'
-                                    }`
-                                }
-                            >
-                                {t(item.nameKey)}
-                            </NavLink>
-                        ))}
+                        {menu.map((item) =>
+                            item.external === true ? (
+                                <a
+                                    key={item.to}
+                                    href={apiReaderUrl(item.to, page, theme)}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="rounded-md px-2 py-1 text-xs text-ink-muted hover:text-ink"
+                                >
+                                    {t(item.nameKey)}
+                                </a>
+                            ) : (
+                                <NavLink
+                                    key={item.to}
+                                    to={item.to}
+                                    end={item.to === '/'}
+                                    className={({ isActive }) =>
+                                        `rounded-md px-2 py-1 text-xs hover:text-ink ${
+                                            isActive
+                                                ? 'bg-surface-overlay text-ink'
+                                                : 'text-ink-muted'
+                                        }`
+                                    }
+                                >
+                                    {t(item.nameKey)}
+                                </NavLink>
+                            ),
+                        )}
                     </nav>
                     {/*
                      * Two settings about reading rather than about the records:
@@ -194,6 +213,7 @@ export function AppShell({
                      * language behind their own picture.
                      */}
                     <div className="ml-auto flex items-center gap-2">
+                        <ServerSwitch compact />
                         <ThemeToggle />
                         <LanguageMenu />
                         <NotificationBell />

@@ -4289,10 +4289,12 @@ export const api = {
 
     /** The runs of one report, newest first. */
     async reportRuns(id: string): Promise<readonly ReportRunRowView[]> {
-        const reply = (await request(`/api/reporting/reports/${id}/runs`, {
-            method: 'GET',
-        })) as { runs?: readonly unknown[] };
-        return (reply.runs ?? []).map((one) => reportRunRowViewSchema.parse(one));
+        // A run list is a stated member, not an array: an answer that leaves it
+        // out is a fault and not an empty list, so it is parsed and not defaulted.
+        const reply = z
+            .object({ runs: z.array(z.unknown()) })
+            .parse(await request(`/api/reporting/reports/${id}/runs`, { method: 'GET' }));
+        return reply.runs.map((one) => reportRunRowViewSchema.parse(one));
     },
 
     /** One report run: the state it reached, its batch, and where its output is. */

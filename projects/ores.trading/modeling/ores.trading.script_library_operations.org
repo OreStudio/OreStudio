@@ -1,0 +1,226 @@
+:PROPERTIES:
+:ID: EA0C6361-CE23-43D3-99AA-8D2F10AB2151
+:ores.cpp.wire-codec.enabled: true
+:END:
+#+title: ores.trading.script_library_operations
+#+description: Codegen operation model for reading the versions of the script library that a run's trades name.
+#+type: ores.codegen.operation
+#+component: trading
+#+subcomponent: api
+#+entity_singular: script_library_operation
+#+namespace: ores::trading::messaging
+#+brief: Reads stated versions of the script library.
+#+filetags: :model:operation:trading:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+
+A scripted trade records the version of the library script it was booked on:
+the tenant that holds the script, its name and its version. A run writes the
+library the engine reads from those versions, and only trading can read them,
+because the script tables are trading's. So the packaging step states the
+versions its trades name and trading returns their rows.
+
+A version is the script's row at that version together with every row beneath
+the script that carries it as its script version. A stated version the store
+does not hold is returned as missing rather than refused, so that the caller
+can name each one in the failure of its run.
+
+The handler stays hand-written beside this model, because an operation model
+generates no service handler.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <vector>
+#include <boost/uuid/uuid.hpp>
+#include "ores.trading.api/domain/script.hpp"
+#include "ores.trading.api/domain/script_calibration.hpp"
+#include "ores.trading.api/domain/script_calibration_strike.hpp"
+#include "ores.trading.api/domain/script_coarsening.hpp"
+#include "ores.trading.api/domain/script_result.hpp"
+#include "ores.trading.api/domain/script_variant.hpp"
+#+end_src
+
+* Messages
+
+** script_pin
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief One version of a library script, as a scripted trade records it.
+ */
+#+end_src
+
+*** tenant_id
+:PROPERTIES:
+:cpp_type: boost::uuids::uuid
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The tenant that holds the script: the trade's own, or the system tenant for the world library.
+ */
+#+end_src
+
+*** name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The script's name.
+ */
+#+end_src
+
+*** version
+:PROPERTIES:
+:cpp_type: int
+:default:  0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The version of the script.
+ */
+#+end_src
+
+** export_script_library_request
+:PROPERTIES:
+:subject:  trading.v1.ops.export_script_library
+:response: export_script_library_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Reads the rows of stated versions of library scripts.
+ */
+#+end_src
+
+*** pins
+:PROPERTIES:
+:cpp_type: std::vector<script_pin>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The versions to read.
+ */
+#+end_src
+
+** export_script_library_response
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The rows of the stated versions, and the versions the store does not hold.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default:  false
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Whether the read ran.
+ */
+#+end_src
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Why the read failed, when it did.
+ */
+#+end_src
+
+*** scripts
+:PROPERTIES:
+:cpp_type: std::vector<ores::trading::domain::script>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The script row of each version held.
+ */
+#+end_src
+
+*** variants
+:PROPERTIES:
+:cpp_type: std::vector<ores::trading::domain::script_variant>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The variants of each version held.
+ */
+#+end_src
+
+*** results
+:PROPERTIES:
+:cpp_type: std::vector<ores::trading::domain::script_result>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The results of each version held.
+ */
+#+end_src
+
+*** calibrations
+:PROPERTIES:
+:cpp_type: std::vector<ores::trading::domain::script_calibration>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The calibrations of each version held.
+ */
+#+end_src
+
+*** calibration_strikes
+:PROPERTIES:
+:cpp_type: std::vector<ores::trading::domain::script_calibration_strike>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The calibration strikes of each version held.
+ */
+#+end_src
+
+*** coarsenings
+:PROPERTIES:
+:cpp_type: std::vector<ores::trading::domain::script_coarsening>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The schedule coarsenings of each version held.
+ */
+#+end_src
+
+*** missing
+:PROPERTIES:
+:cpp_type: std::vector<script_pin>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The stated versions the store does not hold, in the order stated.
+ */
+#+end_src
+
+* See also
+
+- [[id:5F53B504-95AB-48EE-98F9-A0F014072420][ores.trading.publish_operations]] — the publish of the library these versions come from.

@@ -452,4 +452,26 @@ std::string run_document_projection::with_as_of_date(std::string_view text, std:
     return write(reverse(mapped));
 }
 
+std::optional<std::string> run_document_projection::setup_file(std::string_view text,
+                                                               std::string_view parameter) {
+    const auto mapped = map(read(text));
+    const auto file =
+        std::ranges::find(mapped.files, parameter, &reporting::messaging::run_file::parameter);
+    if (file == mapped.files.end() || file->name.empty())
+        return std::nullopt;
+    return file->name;
+}
+
+std::string run_document_projection::with_setup_file(std::string_view text,
+                                                     std::string_view parameter,
+                                                     std::string_view name) {
+    auto mapped = map(read(text));
+    const auto file =
+        std::ranges::find(mapped.files, parameter, &reporting::messaging::run_file::parameter);
+    if (file != mapped.files.end())
+        file->name = std::string(name);
+    else
+        mapped.files.push_back({std::string(parameter), std::string(name)});
+    return write(reverse(mapped));
+}
 }

@@ -337,6 +337,7 @@ set(files
     "script_codec_roundtrip_tests.cpp"
     "script_input_codec_roundtrip_tests.cpp"
     "script_input_protocol_codec_roundtrip_tests.cpp"
+    "script_library_operation_protocol_codec_roundtrip_tests.cpp"
     "script_protocol_codec_roundtrip_tests.cpp"
     "script_result_codec_roundtrip_tests.cpp"
     "script_result_protocol_codec_roundtrip_tests.cpp"

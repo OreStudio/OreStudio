@@ -42,6 +42,8 @@ The trading service books a product in any form it offers, and a free-form scrip
 - the twin recipe evaluator lives in ores.trading.api
 - validate_script returns the diagnostics as structured data, located by line and column, or by variable for a finding about the trade's variables
 - a booking rejected by the server's validation carries the same diagnostics, and a validation that reports only warnings books
+- ores.http serves book, book_scripted and validate_script as JSON routes, and a rejected booking returns its diagnostics in the body
+- the BFF serves the same under /api/trading/booking, with a unit test of each route, and its booking reads the script pin the store sets
 
 * Plan
 

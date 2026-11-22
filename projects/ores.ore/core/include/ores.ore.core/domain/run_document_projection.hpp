@@ -143,6 +143,25 @@ public:
      * @throws std::runtime_error if it is XML the model cannot read.
      */
     static std::string with_as_of_date(std::string_view text, std::string_view date);
+
+    /**
+     * @brief The file a run document names in a Setup parameter, when it names one.
+     *
+     * @throws std::invalid_argument if the text is not XML.
+     * @throws std::runtime_error if it is XML the model cannot read.
+     */
+    static std::optional<std::string> setup_file(std::string_view text, std::string_view parameter);
+
+    /**
+     * @brief The same run document, naming @p name in the Setup parameter @p parameter.
+     *
+     * The document is read into the model and written back, as with_as_of_date does.
+     *
+     * @throws std::invalid_argument if the text is not XML.
+     * @throws std::runtime_error if it is XML the model cannot read.
+     */
+    static std::string
+    with_setup_file(std::string_view text, std::string_view parameter, std::string_view name);
 };
 
 }

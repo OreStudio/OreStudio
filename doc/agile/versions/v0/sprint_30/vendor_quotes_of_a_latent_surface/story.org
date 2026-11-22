@@ -49,6 +49,7 @@ The system tenant simulates FX volatility quotes as if they were public market d
 | [[id:C63E4382-E698-440C-848A-C98F638E6539][Bring the Acme surfaces and two suites up to the 35 blueprint pairs]] | DONE | 2026-11-17 | 2026-11-17 | A peer environment found two pgTAP suites failing after the blueprints grew to 35 pairs. |
 | [[id:5549B26A-16CF-4FBE-AC51-75202A1CD51E][Publish every vendor volatility surface on the quotes board]] | DONE | 2026-11-22 | 2026-11-22 | Strike each synthetic surface against its own collection's discounting curve, so all fourteen surfaces publish their vendor quotes. |
 | [[id:D9A61A85-F8E6-446C-B5D4-D5A1855DAAA5][Configure a vol surface feed on the synthetic screen]] | STARTED | 2026-11-22 | | The synthetic screen's Provider tab lists FX spot and IR curve feeds but no vol surface feed, though the routes serve them; add the vol surface feed as a third kind in the FX and IR screen language, with its SSVI settings editable and gamma shown fixed at one half. |
+| [[id:BC75AE1F-BD6B-46E0-BA50-794DBD35576E][Start and stop a provider's simulated source from the Provider tab]] | BACKLOG | | | A control on the Provider tab that starts and stops a provider's simulated source, which the vol surface feeds run under. |
 
 * Decisions
 

@@ -19,9 +19,9 @@ declared, and the name it has.
 A class declares its logger in its header, as private static members:
 
 #+begin_src cpp
-class ORES_ORGMODE_CORE_EXPORT knowledge_indexer {
+class ORES_IAM_CORE_EXPORT account_repository {
 private:
-    inline static std::string_view logger_name = "ores.orgmode.service.knowledge_indexer";
+    inline static std::string_view logger_name = "ores.iam.repository.account_repository";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -38,7 +38,7 @@ The header includes =ores.logging/logger.hpp= and =<string_view>=. The
 implementation calls =lg()= from the class's members:
 
 #+begin_src cpp
-ORES_LOG_SEV(lg(), info) << "Knowledge index rebuilt: pages=" << result.pages;
+ORES_LOG_SEV(lg(), debug) << "Writing account. " << "id: " << v.id;
 #+end_src
 
 Every generated class follows this rule, so a hand-written class next to it
@@ -49,8 +49,8 @@ reads the same.
 The channel name is the class's full name with dots: =ores.=, the component,
 the facet folder, then the class. For example:
 
-- =ores.orgmode.service.knowledge_indexer=
-- =ores.orgmode.messaging.index_handler=
+- =ores.iam.repository.account_repository=
+- =ores.refdata.messaging.calendar_adjustment_handler=
 
 The name tells the reader of a log which file wrote the record.
 

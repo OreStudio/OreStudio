@@ -65,6 +65,7 @@ full-text search. The analysis is in [[id:3237D7CF-8EBA-4B9B-9B54-7135A4A7AA4A][
 | [[id:3EB24EE2-82E5-4F11-AB20-4EEB16167FB3][Search and read the knowledge pages through ores.http]] | BACKLOG | | | The search over the indexed sections with PostgreSQL full-text search, and a page read by org id, as ores.orgmode.service messages served by ores.http routes. |
 | [[id:2D098FE0-9542-4F21-8223-E9D41B28964E][Search the knowledge base in ores.web]] | BACKLOG | | | A search bar, a list of results and a page view in ores.web that renders the org with @ores/org, with links between pages and anchors on headings. |
 | [[id:2924A178-BC49-460B-8D2C-0210D4372824][Measure the knowledge search]] | BACKLOG | | | Run at least twenty real questions, each with the pages that should answer it, and record how many find their page in the first five. |
+| [[id:A436C077-AEB1-4010-9587-67269252CC4B][Decommission ores.orgmode and the knowledge base pipeline]] | DONE | 2026-11-22 | 2026-11-22 | Remove ORE Studio's own org support: the ores.orgmode parser, api, core and service, the shell commands on them, and the knowledge base pipeline from the generated pages to the index. |
 
 * Decisions
 

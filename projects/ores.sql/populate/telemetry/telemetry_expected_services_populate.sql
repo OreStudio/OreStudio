@@ -184,16 +184,6 @@ on conflict (service_name) do update set
 
 insert into ores_telemetry_expected_services_tbl
     (service_name, replicas, display_name, description, service_account)
-values ('ores.orgmode.service', 1, 'Org-mode Service', 'Indexes ORE''s knowledge pages and answers searches and page reads.',
-        :'orgmode_service_user')
-on conflict (service_name) do update set
-    replicas = excluded.replicas,
-    display_name = excluded.display_name,
-    description = excluded.description,
-    service_account = excluded.service_account;
-
-insert into ores_telemetry_expected_services_tbl
-    (service_name, replicas, display_name, description, service_account)
 values ('ores.http.server', 1, 'HTTP Server', 'Serves the REST API, projecting the services'' operations onto HTTP routes.',
         :'http_user')
 on conflict (service_name) do update set

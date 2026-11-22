@@ -38,7 +38,6 @@ SERVICE_NAMES=(
     ore
     marketdata
     analytics
-    orgmode
     storage
     inbox
 )

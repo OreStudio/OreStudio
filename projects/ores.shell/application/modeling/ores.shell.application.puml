@@ -132,10 +132,6 @@ namespace ores #F2F2F2 {
                     +process_last(ostream& out, pagination_context& pagination) : void
                     +process_page_size(ostream& out, pagination_context& pagination, uint32_t size) : void
                 }
-                class orgmode_commands {
-                    +register_commands(cli::Menu& root_menu) : void
-                    +process_doc_show(ostream& out, const string& path) : void
-                }
                 class provision_commands {
                     -lg() : auto&
                     +register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session) : void

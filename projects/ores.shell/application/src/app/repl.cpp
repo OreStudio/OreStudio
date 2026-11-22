@@ -69,9 +69,6 @@
 #include "ores.shell/app/commands/marketdata/public_terms_commands.hpp"
 #include "ores.shell/app/commands/marketdata_commands.hpp"
 #include "ores.shell/app/commands/navigation_commands.hpp"
-#include "ores.shell/app/commands/orgmode/index_operations_operations_commands.hpp"
-#include "ores.shell/app/commands/orgmode/knowledge_page_commands.hpp"
-#include "ores.shell/app/commands/orgmode_commands.hpp"
 #include "ores.shell/app/commands/provision_commands.hpp"
 #include "ores.shell/app/commands/rbac_commands.hpp"
 #include "ores.shell/app/commands/refdata/refdata_commands.hpp"
@@ -177,8 +174,6 @@ std::unique_ptr<cli::Cli> repl::setup_menus() {
     refdata_commands::register_commands(*root, session_);
     analytics_commands::register_commands(*root, session_);
     storage_commands::register_commands(*root, session_);
-    knowledge_page_commands::register_commands(*root, session_);
-    index_operations_operations_commands::register_commands(*root, session_);
     accounts_commands::register_commands(*root, session_, pagination_);
     system_setting_commands::register_commands(*root, session_);
     concurrency_policy_commands::register_commands(*root, session_);
@@ -230,7 +225,6 @@ std::unique_ptr<cli::Cli> repl::setup_menus() {
     role_grant_request_commands::register_commands(*root, session_);
     role_grant_request_role_commands::register_commands(*root, session_);
     navigation_commands::register_commands(*root, pagination_);
-    orgmode_commands::register_commands(*root);
     history_commands::register_commands(*root, session_);
     script_commands::register_commands(*root, active_session_);
     bundles_commands::register_commands(*root, session_);

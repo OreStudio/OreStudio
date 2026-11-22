@@ -191,19 +191,6 @@ def _confirm(prompt, assume_yes):
     return reply.strip() == "yes"
 
 
-def _generate_knowledge_pages(project_root: Path) -> str:
-    """Write the knowledge pages' artefact rows and return their path.
-
-    The pages are never committed, so each recreate writes them from the org
-    files that declare #+audience: user; the populate reads the file through
-    the psql variable knowledge_pages_populate.
-    """
-    script = project_root / "projects/ores.sql/utility/generate_knowledge_pages_dataset.py"
-    out = project_root / "build/output/generated/sql/orgmode_knowledge_pages_artefact_populate.sql"
-    subprocess.run([sys.executable, str(script), "--output", str(out)], check=True)
-    return str(out)
-
-
 def _svc_psql_args(env, names, with_passwords):
     args = []
     for svc in names:
@@ -479,7 +466,6 @@ def cmd_setup(project_root, env, args):
 
     print("--- Phase 2: Setting up schema ---")
     skip = "on" if args.skip_validation else "off"
-    knowledge_pages = _generate_knowledge_pages(project_root)
     schema_args = [
         "--set", "ON_ERROR_STOP=on",
         "-v", f"skip_validation={skip}",
@@ -494,7 +480,6 @@ def cmd_setup(project_root, env, args):
         "-v", f"test_dml_user={env.get('ORES_TEST_DB_USER', '')}",
         "-v", f"marketdata_writer_user={env.get('ORES_MARKETDATA_SERVICE_WRITER_DB_USER', '')}",
     ] + _svc_psql_args(env, names, with_passwords=False) + [
-        "-v", f"knowledge_pages_populate={knowledge_pages}",
         "-f", "setup_schema.sql",
     ]
     _psql(env, *schema_args, user=ddl_user, password=ddl_password,

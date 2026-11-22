@@ -363,3 +363,43 @@ TEST_CASE("endpoint_registry_generates_swagger_ui_html_default_spec_url", "[endp
 
     REQUIRE(html.find("/openapi.json") != std::string::npos);
 }
+
+/*
+ * The groups, the credentials and the models are what a person reads the document
+ * through, so each is asserted on the document rather than on the code that writes it.
+ */
+TEST_CASE("endpoint_registry_groups_operations_by_an_area_it_describes", "[endpoint_registry]") {
+    auto lg(make_logger(test_suite));
+    ORES_LOG_SEV(lg, info) << "Testing the groups the operations are listed under";
+
+    endpoint_registry registry;
+    auto first = make_test_route(http_method::get, "/api/quotes", "The quotes");
+    first.tags = {"marketdata"};
+    auto second = make_test_route(http_method::get, "/api/quotes/feeds", "The feeds");
+    second.tags = {"market-data"};
+    registry.register_route(first);
+    registry.register_route(second);
+
+    const auto json = registry.generate_openapi_json();
+
+    // One area, whatever the two routes spell it as, with the words that describe it.
+    REQUIRE(json.find("\"name\":\"market-data\",\"description\":\"Market series") !=
+            std::string::npos);
+    REQUIRE(json.find("\"name\":\"marketdata\"") == std::string::npos);
+}
+
+TEST_CASE("endpoint_registry_states_both_ways_a_caller_may_authenticate", "[endpoint_registry]") {
+    auto lg(make_logger(test_suite));
+    ORES_LOG_SEV(lg, info) << "Testing that a route states a bearer token and a cookie";
+
+    endpoint_registry registry;
+    registry.set_session_cookie_name("ores_web_session_test");
+    registry.register_route(make_test_route(http_method::get, "/api/secret", "A record", "", true));
+
+    const auto json = registry.generate_openapi_json();
+
+    REQUIRE(json.find("\"cookieAuth\":{\"type\":\"apiKey\",\"in\":\"cookie\","
+                      "\"name\":\"ores_web_session_test\"}") != std::string::npos);
+    REQUIRE(json.find("\"security\":[{\"bearerAuth\":[]},{\"cookieAuth\":[]}]") !=
+            std::string::npos);
+}

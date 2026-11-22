@@ -134,6 +134,7 @@ via its "Verifies task" field.
 | 11 | PR #5010 review: the page title at weight A ranks every section of a matching page alike | =orgmode_knowledge_index_create.sql= | Defer | Intended. The measure-the-search task checks the ranking. |
 | 12 | PR #5010 review: the whole index travels as one jsonb parameter | =knowledge_indexer.cpp= | Decline | About 3,000 sections today; worth revisiting only if the pages grow tenfold. |
 | 13 | PR #5010 review: the replace function has only manual evidence | =orgmode_replace_knowledge_index_test.sql= | Accept | New pgTAP test, 8 cases: counts, title match and weight, whole replace, cascade, empty index. =run_tests.sh= passes 8/8. The race needs two sessions, so the evidence files above cover it. |
+| 14 | Gate after the rebase onto main: =entity_writes/sql_writer= flags the replace function for writing the index tables outside a repository | =orgmode_knowledge_index_create.sql= | Exception | Approved by marco: the index is derived data with no repository, and the function is its only writer. Inline =compass:except= expires 2027-05-18. The full =compass check= gate was skipped at marco's instruction; =compass-ng check --ratchet= reports 0 new diagnostics. |
 
 * Result
 

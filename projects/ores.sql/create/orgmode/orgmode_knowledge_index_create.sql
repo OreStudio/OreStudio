@@ -77,6 +77,7 @@ on "ores_orgmode_knowledge_index_links_tbl" ("target_id");
 -- three arrays: pages, sections and links, each element an object whose keys
 -- are the columns above. The search vector is weighted here, so its recipe
 -- lives in one place: the page title A, the heading path B, the text D.
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=the knowledge index is derived from the knowledge pages and has no repository; this function replaces it whole in one transaction and is its only writer
 create or replace function ores_orgmode_replace_knowledge_index_fn(p_index jsonb)
 returns table (
     pages bigint,

@@ -8,12 +8,12 @@
 #+filetags: :take_the_dq_pipeline_end_to_end:sprint_30:v0:
 #+owner: marco
 #+branch: feature/retire-the-legacy-and-align-the-docs
-#+pr:
+#+pr: 5029
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-14
 #+updated: 2026-11-22
-#+environment: swift_curie swift_curie
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7D2BBBBC-36A3-4BFB-9673-0F9005991D94][Take the DQ pipeline end to end, from a seeded artefact table to a published system]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -85,7 +85,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5029][#5029]] | [doc] State the publication pipeline as the tree implements it |
 
 * Review
 

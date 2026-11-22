@@ -101,6 +101,10 @@ Taken on =main= at =a0408fb02d=.
   is left, and the =sql_schema_artefact_create= template is deleted.
 - *The =model_type == 'schema'= enrichment bug is moot.* It was raised as a
   prerequisite for rendering from a =lookup_entity= model. That path is gone.
+- *The pipeline page's inventory is deleted when this lands.* The gap table in
+  the bundle publication pipeline page exists to argue for this facet. Once the
+  facet generates the function, that table states a solved problem, so the change
+  that closes the last hand-written function deletes it.
 - *Subject constants are partly modelled already.* =ores.codegen.operation=
   renders C++ protocol from =ores.analytics.publish_operations.org=,
   =ores.iam.account_messages.org= and =ores.reporting.operations.org=; refdata,

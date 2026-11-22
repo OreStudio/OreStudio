@@ -165,6 +165,11 @@ file defines. The 72 are spread unequally:
 |-----------+-------------------+------|
 | total | 72 | |
 
+The commands that produce these counts are recorded, with the commit they were
+measured at, on
+[[id:9D8A7038-FF2B-4F09-9BD3-E487B5ED0A48][Retire the legacy patterns and align
+the documentation]]; re-run them before quoting a number here.
+
 The function is the one sanctioned exception to strict service-table isolation.
 It reads =ores_dq_<plural>_artefact_tbl=, which belongs to another service, at
 DDL-owner privilege, and it writes only tables its own service owns. DQ itself

@@ -75,7 +75,7 @@ package "dq_staging" #F3E5F5 {
         * password_hash : text
         * account_type : text
           business_unit_code : text
-          role : text
+          roles : text
           job_title : text
           reports_to_username : text
           photo_key : text

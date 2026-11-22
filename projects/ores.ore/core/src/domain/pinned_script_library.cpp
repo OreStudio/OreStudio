@@ -125,6 +125,15 @@ pinned_script_library pin_script_library(trading::domain::instrument_batch& batc
 
         for (const auto& version : versions) {
             auto library_name = version == plain ? name : qualified_name(version);
+            // A qualified name is the run's own, so a script that holds it already
+            // would be overwritten in the library.
+            if (library_name != name && versions_of.contains(library_name))
+                out.refusals.push_back(std::format(
+                    "The run would write {} of the script {} as {}, a name another script "
+                    "of the run already has.",
+                    describe(version),
+                    name,
+                    library_name));
             library_name_of[version] = library_name;
             out.entries.push_back({.pin = {.tenant_id = std::get<1>(version),
                                            .name = name,

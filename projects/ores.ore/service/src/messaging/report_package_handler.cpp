@@ -43,6 +43,7 @@
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
+#include <array>
 #include <filesystem>
 #include <format>
 #include <fstream>
@@ -291,6 +292,8 @@ void report_package_handler::prepare_package(ores::nats::delivery delivery) {
         // version the store does not hold cannot be priced as booked, so the
         // run is refused, naming it, rather than priced on another script.
         auto plan = ores::ore::domain::pin_script_library(rows.instruments);
+        if (!plan.entries.empty() && document == run_input.end())
+            plan.refusals.push_back("The run has no run document to name its script library in.");
         if (!plan.entries.empty() && plan.refusals.empty()) {
             ores::trading::messaging::export_script_library_request library_request;
             library_request.pins = ores::ore::domain::pins_of(plan);
@@ -310,13 +313,6 @@ void report_package_handler::prepare_package(ores::nats::delivery delivery) {
                                 pin.name,
                                 boost::uuids::to_string(pin.tenant_id)));
             if (read->missing.empty()) {
-                if (document == run_input.end()) {
-                    wf->fail("prepare_ore_package: the run has no run document to name its "
-                             "script library in, for run " +
-                             req.report_instance_id);
-                    std::move(delivery).commit();
-                    return;
-                }
                 auto library_file = ores::ore::domain::run_document_projection::setup_file(
                     document->second, "scriptLibrary");
                 if (!library_file) {
@@ -324,14 +320,37 @@ void report_package_handler::prepare_package(ores::nats::delivery delivery) {
                     document->second = ores::ore::domain::run_document_projection::with_setup_file(
                         document->second, "scriptLibrary", *library_file);
                 }
-                run_input[*library_file] =
-                    ores::ore::domain::write_pinned_script_library(plan, *read);
+                // The library replaces a copy of the library the configuration
+                // carries, and never a file of another kind that the document
+                // names by the same name.
+                const auto held = run_input.find(*library_file);
+                const auto taken_by_data = std::ranges::any_of(
+                    std::array{places.market_data, places.fixings, places.portfolio},
+                    [&](const std::string& place) {
+                        return !place.empty() &&
+                               std::filesystem::path(place).filename() ==
+                                   std::filesystem::path(*library_file).filename();
+                    });
+                if (taken_by_data || (held != run_input.end() &&
+                                      held->second.find("<ScriptLibrary") == std::string::npos))
+                    plan.refusals.push_back(
+                        std::format("The run document names {} as its script library, and "
+                                    "another of the run's files has that name.",
+                                    *library_file));
+                else
+                    run_input[*library_file] =
+                        ores::ore::domain::write_pinned_script_library(plan, *read);
             }
         }
         if (!plan.refusals.empty()) {
+            // The first reasons name the problem; a portfolio of many trades
+            // states the rest as a count rather than a message of any length.
+            constexpr std::size_t stated = 10;
             std::string reasons;
-            for (const auto& refusal : plan.refusals)
-                reasons += (reasons.empty() ? "" : " ") + refusal;
+            for (std::size_t i = 0; i < plan.refusals.size() && i < stated; ++i)
+                reasons += (reasons.empty() ? "" : " ") + plan.refusals[i];
+            if (plan.refusals.size() > stated)
+                reasons += std::format(" And {} more.", plan.refusals.size() - stated);
             wf->fail("prepare_ore_package: the run's scripted trades cannot be given the scripts "
                      "they were booked on. " +
                      reasons + " Run " + req.report_instance_id);

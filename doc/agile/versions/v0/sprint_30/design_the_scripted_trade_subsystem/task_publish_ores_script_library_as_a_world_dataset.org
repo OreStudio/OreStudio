@@ -106,7 +106,7 @@ task and name that file in the Command column.
 | suites after the column | ores.trading.api.tests 21118 assertions in 5601 cases; ores.trading.core.tests 1841 in 282; ores.ore.core.tests 521015 in 567; ores.trading.scripting.tests 1200 in 18; all pass | the four test binaries | 9d0e657bec + PR 4 |
 | script pin | 9 of 9 pgTAP assertions, among them: a library trade records the system tenant and current version, an inline trade the SHA-256 of its text, an amendment keeps its version after the library moves on, a stated missing version is refused | pg_prove -U $ORES_TEST_DB_USER projects/ores.sql/test/trading_scripted_instrument_script_pin_test.sql | 12c04dcb75 + PR 5 |
 | ctest with the services and the pooler up | 93 of 107 pass; ores.synthetic.core.tests failed on the pin, which its booking comparison now clears as store-set, and passes 5041 assertions in 167 cases after; the 13 others fail only parse_defaults_returns_expected_values, as the .env points each service's database port at the pooler, and pass with the port variable unset | compass test run, then the suite | 12c04dcb75 + PR 5 |
-| pinned library plan | 31 assertions in 6 test cases: one version keeps its name; two versions get names of their own and the written library holds each one's code and no other version's; a product element's version keeps the name; two element versions, an unpinned name refused; an inline trade states no name | ores.ore.core.tests "[pin]" | b7e988f819 |
+| pinned library plan | 36 assertions in 8 test cases after the review: one version keeps its name; two tenants at one version number are two scripts; a qualified name another script holds is refused; two versions get names of their own and the written library holds each one's code and no other version's; a product element's version keeps the name; two element versions, an unpinned name refused; an inline trade states no name | ores.ore.core.tests "[pin]" | b7e988f819 |
 | setup file of the run document | 51 assertions in 9 test cases, among them a document with no scriptLibrary gains one and a named one is renamed | ores.ore.core.tests "[run_document]" | b7e988f819 |
 | reading stated versions | 13 assertions in 2 test cases: Accumulator01's current version reads back as one script row with variants and results all carrying that version; a version and a tenant the store does not hold are named as missing | ores.trading.core.tests "[script_library]" | b7e988f819 |
 | suites after the change | ores.ore.core.tests 521050 assertions in 574 cases pass; the export_script_library codec round trip 12 assertions in 3 cases | the two test binaries | b7e988f819 |
@@ -297,10 +297,20 @@ via its "Verifies task" field.
 | 5001.4 | the shell's add, set and put-many take three more arguments | none | reject | the shell commands are generated with every column positional, as for every entity; the generated recipes and scripts carry the change |
 | 5001.5 | PR 7 must test a tenant's own script winning | task | accept | PR 7's plan names the test |
 | 5001.6 | the exception for the row struct | none | no change | approved |
+| 5008.1 | a qualified library name could equal a real script's name | pinned_script_library.cpp | accept | the run is refused naming both; a test plants the clash |
+| 5008.2 | a carried library stays when every scripted trade is inline | none | decline | an inline trade is written with no ScriptName, and ORE reads the library only by a name (scriptedtrade.cpp: ScriptName, else Script) |
+| 5008.3 | the library could overwrite another file of the same name | report_package_handler.cpp | accept | a name held by a non-library file or by the market data, fixings or portfolio refuses the run |
+| 5008.4 | the run document is checked after the call to trading | report_package_handler.cpp | accept | checked before the call, as a refusal |
+| 5008.5 | the joined refusals can grow without bound | report_package_handler.cpp | accept | the first ten are stated and the rest counted |
+| 5008.6 | a test of two tenants at one version number | domain_pinned_script_library_tests.cpp | accept | added |
+| 5008.7 | does the run token cover the subject | none | no change | the handler checks trading::trades:read, which ReportRun holds, and the token is that role narrowed to the grantor, who reads trades to run a report on them |
 
 * Result
 
-In progress: the first five of seven PRs are in. The fifth records on each
+In progress: the first six of seven PRs are in. The sixth has each run write
+the script library from the versions its scripted trades name, read from the
+trading service with the run's token, and refuse a run whose trades name a
+script the store cannot supply. The fifth records on each
 scripted trade the script it was booked on: the tenant and version of a library
 script, or the SHA-256 of an inline one, set by the store on every write. The fourth makes a script
 version name the whole script: every row beneath a script carries the version

@@ -197,3 +197,30 @@ TEST_CASE("an inline script needs no library and states no script name",
     CHECK(plan.refusals.empty());
     CHECK(names_of(batch).at(t1).empty());
 }
+
+TEST_CASE("one version number held by two tenants is two scripts", "[ore][script_library][pin]") {
+    instrument_batch batch;
+    batch.scripted_instruments.push_back(library_trade(t1, "Accumulator01", 1));
+    batch.scripted_instruments.push_back(library_trade(t2, "Accumulator01", 1, acme));
+
+    const auto plan = pin_script_library(batch);
+
+    CHECK(plan.refusals.empty());
+    CHECK(plan.entries.size() == 2u);
+    const auto names = names_of(batch);
+    CHECK(names.at(t1) != names.at(t2));
+}
+
+TEST_CASE("a version is refused when its qualified name is another script's name",
+          "[ore][script_library][pin]") {
+    const auto taken = "Accumulator01." + boost::uuids::to_string(world) + ".v3";
+    instrument_batch batch;
+    batch.scripted_instruments.push_back(library_trade(t1, "Accumulator01", 3));
+    batch.scripted_instruments.push_back(library_trade(t2, "Accumulator01", 4));
+    batch.scripted_instruments.push_back(library_trade(t3, taken, 1, acme));
+
+    const auto plan = pin_script_library(batch);
+
+    REQUIRE(plan.refusals.size() == 1u);
+    CHECK_THAT(plan.refusals[0], Catch::Matchers::ContainsSubstring(taken));
+}

@@ -98,6 +98,9 @@ the page to show it — and whether the root-LEI page is a step of this rail or 
 dialog of its own. The run step is drawn as a list rather than a progress dialog,
 which is the claim that a halt must stay readable after the fact.
 
+*Signed off* on 2026-11-22 by Marco, on the page as it stands. The two open
+questions are notes for the build.
+
 * See also
 
 - [[file:index.org][DQ prototypes]] — the group this belongs to.

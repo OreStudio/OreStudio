@@ -98,6 +98,9 @@ list, which is where the idleness is most visible today. The history is not draw
 here at all, because the run log has no writer; when it gets one, it belongs to
 the publish journey and not to this screen.
 
+*Signed off* on 2026-11-22 by Marco, on the page as it stands. The open question
+above is a note for the build, not a change to this design.
+
 * See also
 
 - [[file:index.org][DQ prototypes]] — the group this belongs to.

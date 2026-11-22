@@ -120,10 +120,11 @@ registry outside the repository. Checked on 2026-11-22.
 | Deployed drop-in folders | =~/.config/systemd/user/ores.orgmode.service-<env>.service.d/= | Nothing: the deploy removes files, not folders | Gap: remove by hand |
 | Environment variables | =ORES_ORGMODE_SERVICE_DB_*= in each =.env= (10 keys) | =compass env status= reports them undeclared; =compass env configure= rewrites the file | Per environment |
 | NATS certificate and key | =build/keys/nats/ores.orgmode.service.{crt,key}= | Nothing: =nats_certs.py= issues for the registry and never removes | Gap: remove by hand |
+| JetStream stream | =ores_dev_<env>_orgmode_steps= on each environment's NATS server | Nothing: =compass db recreate= purges streams (=nats_purge.py=) but never deletes one | Gap: =nats stream rm=, found after the task closed |
 | Database role | =ores_<env>_orgmode_service= in the shared PostgreSQL cluster; present for bright_faraday, eager_maxwell and swift_curie | Nothing: a recreate drops the database, and roles belong to the cluster | Gap: drop by hand, per environment |
 | Container image and Quadlet unit | derived from the registry by code | Follows the registry | Done |
 
-The three gaps are not specific to this service: any retired service leaves
+The four gaps are not specific to this service: any retired service leaves
 them behind. They belong in compass's service tooling, recorded on the PR.
 
 ** Order
@@ -196,6 +197,6 @@ Not run: a database recreate and a fleet start without the service; the full
 =ores.orgmode.service= config tests read the developer's environment.
 
 Left by hand, per environment, because no tool removes them (see the
-checklist): the unit's drop-in folder, the NATS certificate and key, and the
-database role.
+checklist): the unit's drop-in folder, the NATS certificate and key, the
+JetStream stream and the database role.
 

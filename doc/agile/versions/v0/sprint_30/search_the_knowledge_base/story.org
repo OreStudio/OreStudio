@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :knowledge:search:web:http:sprint_30:v0:
 #+created: 2026-11-21
-#+updated: 2026-11-21
+#+updated: 2026-11-22
 #+environment: bright_faraday
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -29,12 +29,12 @@ full-text search. The analysis is in [[id:3237D7CF-8EBA-4B9B-9B54-7135A4A7AA4A][
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | ABANDONED                            |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
-| Now           | Not yet started.                       |
+| Now           | Superseded by [[id:7764434E-173B-4006-8A44-8AC453AAC14B][Read the documents from compass]]. |
 | Waiting on    | Nothing.                               |
-| Next          | Split ores.orgmode into its parts. |
-| Last touched  | 2026-11-21                               |
+| Next          | Nothing. |
+| Last touched  | 2026-11-22                               |
 
 * Acceptance
 
@@ -62,9 +62,6 @@ full-text search. The analysis is in [[id:3237D7CF-8EBA-4B9B-9B54-7135A4A7AA4A][
 | [[id:011FF055-90D8-4DBD-98C2-FC64B04BB516][Split ores.orgmode into its parts]] | DONE | 2026-11-21 | 2026-11-21 | Make ores.orgmode a compound component: move the parser into ores.orgmode.parser and scaffold the api, core and service parts, with no change in what the parser does. |
 | [[id:075A26CE-A1A8-4050-87EB-33EF43AAFA7A][Load the knowledge pages into PostgreSQL as org]] | DONE | 2026-11-21 | 2026-11-22 | Declare which pages are user-facing, add the raw pages table in the system tenant, and a script that loads those pages into it as they are. |
 | [[id:8B46AA17-7FD1-4682-BC0B-13A89B9B56F1][Index the knowledge pages in ores.orgmode.service]] | DONE | 2026-11-22 | 2026-11-22 | The indexing step: parse each loaded page with ores.orgmode.parser into pages, sections and links with a weighted tsvector, whenever the load changes, replacing the index whole. |
-| [[id:3EB24EE2-82E5-4F11-AB20-4EEB16167FB3][Search and read the knowledge pages through ores.http]] | BACKLOG | | | The search over the indexed sections with PostgreSQL full-text search, and a page read by org id, as ores.orgmode.service messages served by ores.http routes. |
-| [[id:2D098FE0-9542-4F21-8223-E9D41B28964E][Search the knowledge base in ores.web]] | BACKLOG | | | A search bar, a list of results and a page view in ores.web that renders the org with @ores/org, with links between pages and anchors on headings. |
-| [[id:2924A178-BC49-460B-8D2C-0210D4372824][Measure the knowledge search]] | BACKLOG | | | Run at least twenty real questions, each with the pages that should answer it, and record how many find their page in the first five. |
 | [[id:A436C077-AEB1-4010-9587-67269252CC4B][Decommission ores.orgmode and the knowledge base pipeline]] | DONE | 2026-11-22 | 2026-11-22 | Remove ORE Studio's own org support: the ores.orgmode parser, api, core and service, the shell commands on them, and the knowledge base pipeline from the generated pages to the index. |
 
 * Decisions
@@ -84,6 +81,15 @@ full-text search. The analysis is in [[id:3237D7CF-8EBA-4B9B-9B54-7135A4A7AA4A][
   "knowledge", since search is one of its four jobs. Each part is added by the
   task that gives it real code (2026-11-21): the gate refuses scaffold stubs in
   the tree, and a service part links a real core.
+- *Superseded: org documents are compass's, not ORE Studio's* (2026-11-22,
+  marco). Every project that uses compass needs the same thing, so compass
+  parses, indexes and serves the documents, and ORE Studio only runs its
+  service, gates it and builds its pages. The pipeline this story built (PRs
+  #4998 and #5010) was removed by [[id:A436C077-AEB1-4010-9587-67269252CC4B][Decommission ores.orgmode and the knowledge base pipeline]] (PR #5015), and the
+  ores.orgmode decisions above went with it. The search, the ores.web view and
+  the measurement moved, rewritten against compass's endpoints, to
+  [[id:7764434E-173B-4006-8A44-8AC453AAC14B][Read the documents from compass]]. The proposal is
+  =/home/marco/Vault/Development/masd/compass_document_service_architecture.org=.
 
 * Out of scope
 

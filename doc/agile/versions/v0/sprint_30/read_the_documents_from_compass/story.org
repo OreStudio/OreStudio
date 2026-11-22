@@ -38,7 +38,7 @@ which built the pipeline inside ORE Studio and is being removed by
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
 | Now           | Not yet started.                       |
 | Waiting on    | compass releasing its document service. |
-| Next          | Define the tasks once compass releases the service. |
+| Next          | Plan the tasks once compass releases the service. |
 | Last touched  | 2026-11-22                               |
 
 * Acceptance
@@ -63,7 +63,9 @@ To be written with the tasks. What the story has to cover, as known today:
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-|      |       |       |     |             |
+| [[id:3EB24EE2-82E5-4F11-AB20-4EEB16167FB3][Serve compass's document search and reads through ores.http]] | BACKLOG | | | ores.http routes that forward document search, list and read requests to compass's document service, for a signed-in caller, in the view the caller's role allows. |
+| [[id:2D098FE0-9542-4F21-8223-E9D41B28964E][Search and read the documents in ores.web]] | BACKLOG | | | A search bar, a list of results and a document view in ores.web over the ores.http document routes, showing the HTML compass renders, with links between documents and anchors on headings. |
+| [[id:2924A178-BC49-460B-8D2C-0210D4372824][Measure the document search on ORE's questions]] | BACKLOG | | | Run at least twenty real questions about ORE, each with the documents that should answer it, through the ores.http document route, and record how many find their document in the first five. |
 
 * Decisions
 

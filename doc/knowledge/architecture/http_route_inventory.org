@@ -15,11 +15,11 @@ capability, or a rendering concern that is not an API) decides every row, and th
 * How to regenerate
 
 #+begin_src sh :results verbatim
-python3 build/scripts/route_inventory.py --write
+./compass.sh generate
 #+end_src
 
-The decisions are data in =build/scripts/route_classification.py=: an ordered list
-of rules over the method and path, an exception for a route no rule decides, and the
+The decisions are data in =compass/checks/route_inventory.org=: an ordered list of
+rules over the method and path, an exemption for a route no rule decides, and the
 owner, computation and cache policy each composed view owes. A regeneration rewrites
 every cell from them, so the table states the decisions and never holds a second copy
 of them.
@@ -31,14 +31,10 @@ component that must answer each one after the port.
 
 * How it is enforced
 
-=python3 build/scripts/route_inventory.py --check= fails when a route answered by
-either server is absent from this table, when a row names a route neither server
-answers, when two routes share one identity, when a route is unclassified, and when a
-decision names no published kind or area, carries no evidence, or calls itself a
-composed view without stating its owner, computation and cache policy. It also fails
-when a pair in =build/scripts/route_pairing.py= names a route that neither server
-answers, and when the coverage section does not match the pairs. The gate runs it as
-the =route-inventory= check.
+=compass check= fails when this page differs from what the tables of
+=compass/checks/route_inventory.org= and the code that registers the routes
+generate: a route either server adds, or a decision, pair or family that changes, is
+a finding until =./compass.sh generate= writes the page again.
 
 * What it reads, and what it cannot
 

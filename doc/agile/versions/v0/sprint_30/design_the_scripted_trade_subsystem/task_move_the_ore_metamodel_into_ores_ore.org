@@ -1,0 +1,90 @@
+:PROPERTIES:
+:ID: 0FD7D2A8-7A4A-4052-A4D5-6C8A01CAAA41
+:END:
+#+title: Task: Move the ORE metamodel into ores.ore
+#+description: The description of ORE itself, its files, their versions, the leaves of its schemas and the values they accept, is held by ores.reporting, which was its first consumer, while ores.ore owns no tables; a product's schema needs it, and it is not reporting's.
+#+type: task
+#+level: s1
+#+filetags: :design_the_scripted_trade_subsystem:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E6359881-7919-4BBC-9B9C-03A8EEDB8A03][Design the scripted trade subsystem]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+ores.ore owns the description of ORE: its files and their versions, the leaves of its schemas with their documentation and release range, their value domains and value sets, and the map from a leaf to the column that stores it. The tables, their DQ datasets and publish functions, their operations and their generators move from ores.reporting to ores.ore with no row changed, so the product schema can be built on them.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:E6359881-7919-4BBC-9B9C-03A8EEDB8A03][Design the scripted trade subsystem]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-22                               |
+
+* Acceptance
+
+- ore_file, ore_file_category, ore_file_version, ore_parameter, ore_parameter_value_domain, ore_parameter_value_set, ore_parameter_value_set_value, ore_parameter_value_set_catalogue, ore_parameter_vocabulary, ore_parameter_setting_value_set and ore_element_map_column are models of ores.ore, held in ores_ore_* tables
+- their DQ datasets publish through ores.ore's publish functions, and the bring-up publishes the same rows as before, counted per table
+- the ore service serves their operations under ore.v1, and the BFF, ores.http, the shell and the clients call those subjects
+- the SQL validators of refdata and analytics read the moved tables and functions
+- the generators under projects/ores.sql/utility and the compass codecs that write these tables write the moved ones
+- the knowledge page One component reads every ORE document states that ores.ore owns the description of ORE and stores no run document, and names the schema text ore_file_version holds
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

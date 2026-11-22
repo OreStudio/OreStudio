@@ -123,8 +123,8 @@ ir_curve_tenor_convention_code(const ores::synthetic::domain::ir_curve_generatio
  * @brief Whether an IR curve is the one that discounts its currency: a discount or
  * self-discounting curve on the overnight index, whose config tenor is empty.
  *
- * The run's board holds one curve per currency, and a surface strikes its expiries against it,
- * so only this curve writes there. A projection curve and the meeting-dated FOMC short end are
+ * The run's board holds one curve for each collection and currency, and a surface strikes its
+ * expiries against it, so only this curve writes there. A projection curve and the meeting-dated FOMC short end are
  * other curves of the same currency, and they end before a surface's longest expiry.
  */
 ORES_SYNTHETIC_API_EXPORT bool

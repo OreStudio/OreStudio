@@ -45,9 +45,9 @@ that precedent and its field tables.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:7D2BBBBC-36A3-4BFB-9673-0F9005991D94][Take the DQ pipeline end to end]] |
-| Now          | The Qt DQ area is inventoried on a page a reviewer reruns. |
+| Now          | The Qt area is inventoried and the first journey is written with its wireframe. |
 | Waiting on   | Nothing. The publish model is settled. |
-| Next         | Write the five journeys under =doc/knowledge/journeys/dq/=, and judge them before designing. |
+| Next         | Write the other four journeys, then judge the set before designing. |
 | Last touched | 2026-11-22                              |
 
 * Acceptance
@@ -99,6 +99,12 @@ that precedent and its field tables.
 | Qt DQ tree | removed; read from the commit before =af67db3062= | =git log --diff-filter=D -1 -- projects/ores.qt= | 264f0702f4 |
 
 * Notes
+
+The DQ journeys live under =doc/knowledge/journeys/dq/=, with the group hub
+=dq.org= wired into the journeys index. The first is
+[[id:5344ADC1-E729-4846-BE07-C6BC2169C4C9][Is my reference data complete?]],
+which reads the tenant against the three levels and names why a bundle member is
+not ready; its wireframe is rendered beside it.
 
 The Qt area is inventoried in
 [[id:D53501D6-5FF5-44BF-B389-AAA727ACAE6F][Qt DQ surface inventory]], which

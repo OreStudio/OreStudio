@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID: 50550498-38ED-4A07-AF28-209BAFF378F0
+:END:
+#+title: DQ journeys
+#+description: What a data quality operator does with staged reference data: reading whether the tenant holds what it needs, publishing a dataset and a bundle, correcting one artefact, and tracing a published value to the trade it belongs to.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:user_journey:dq:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+
+These are the journeys of the person who moves staged reference data into the
+services that read it. The data is not authored here: it is curated in a
+dataset, staged in an artefact table, and published by a function into the
+tables a valuation reads. What the person needs is to know what arrived, what
+did not, and what a run would do before they run it.
+
+The group sits beside the topic groups rather than inside them. A conventions
+journey asks what a term means and which list it picks from; this one asks
+whether the term is in the tenant at all. Where the two meet, the topic journey
+owns the meaning and a journey here owns the move. The precedent is
+[[id:99481EA8-1D2B-426D-A4E6-5E834FF5FFCE][Publish conventions from data
+quality]], which is a topic journey that publishes one catalogue and reads its
+receipt.
+
+The Qt client did this from one window, and that window went with the client.
+What it offered is inventoried in
+[[id:D53501D6-5FF5-44BF-B389-AAA727ACAE6F][Qt DQ surface inventory]], because
+these journeys are argued from what a person needs and not from what Qt drew.
+
+One property is shared by every journey here. A publication runs as a workflow
+instance, so the progress is read from the instance and not kept by the screen;
+the journey itself carries no state. See
+[[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]].
+
+* Journeys
+
+#+ATTR_HTML: :class hug-leading
+| Journey | Actor | Gist |
+|---------+-------+------|
+| [[id:5344ADC1-E729-4846-BE07-C6BC2169C4C9][Is my reference data complete?]] | data quality operator, tenant administrator | Read what the tenant holds at each level, name why a member is not ready, and publish what fills the gap |
+
+Three more are named by
+[[id:34A4373F-1BD1-4710-885B-95B3C3A3B8F7][Design and build the DQ screens from
+the journeys]] and are not written yet: publishing one dataset, publishing a
+bundle, correcting a single artefact, and finding the trade a published value
+belongs to.
+
+* Related
+
+- [[id:99481EA8-1D2B-426D-A4E6-5E834FF5FFCE][Publish conventions from data quality]] — the topic journey that publishes a catalogue, and the shape this group follows.
+- [[id:F05B779F-769B-49D5-B369-D2AAC029B36D][DQ Bundle Publication Pipeline]] — what a publish does, and what it records.
+- [[id:7287B58F-964C-4D42-8EC4-6C5DA53EEE2D][Reference data classification by publication level]] — the levels the first journey reads the tenant against.
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]] — the index of every group.
+
+* See also
+
+- [[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX]] — the structure note for the journeys cluster.

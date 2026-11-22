@@ -26,6 +26,7 @@
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.refdata.core/mapping/fx_option_convention_mapping.hpp"
+#include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <chrono>
 #include <format>
@@ -177,6 +178,10 @@ std::string fx_pair_member_code(std::string_view base, std::string_view quote) {
     return std::string(base) + "/" + std::string(quote);
 }
 
+std::string curve_member_code(const boost::uuids::uuid& collection, std::string_view currency) {
+    return boost::uuids::to_string(collection) + "/" + std::string(currency);
+}
+
 std::expected<fx_vol_market_inputs, std::string>
 fx_vol_board_inputs(const ores::analytics::quant::domain::market_board& values,
                     ores::analytics::quant::domain::market_board::member_id base_curve,
@@ -249,9 +254,11 @@ fx_vol_surface_feed::fx_vol_surface_feed(
     {
         auto& values = market_.values();
         base_curve_id_ =
-            values.member_of(ores::analytics::quant::domain::market_member_kind::curve, base);
+            values.member_of(ores::analytics::quant::domain::market_member_kind::curve,
+                             curve_member_code(input.config.config_id, base));
         quote_curve_id_ =
-            values.member_of(ores::analytics::quant::domain::market_member_kind::curve, quote);
+            values.member_of(ores::analytics::quant::domain::market_member_kind::curve,
+                             curve_member_code(input.config.config_id, quote));
         spot_id_ = values.member_of(ores::analytics::quant::domain::market_member_kind::spot,
                                     fx_pair_member_code(base, quote));
     }

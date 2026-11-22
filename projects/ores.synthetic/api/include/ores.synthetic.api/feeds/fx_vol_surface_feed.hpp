@@ -32,6 +32,7 @@
 #include "ores.synthetic.api/export.hpp"
 #include "ores.synthetic.api/feeds/adapter_target.hpp"
 #include "ores.synthetic.api/feeds/fx_vol_surface_emitter.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <atomic>
 #include <cstddef>
 #include <cstdint>
@@ -132,6 +133,17 @@ fx_vol_expiry_markets(const fx_vol_market_inputs& inputs,
  */
 [[nodiscard]] ORES_SYNTHETIC_API_EXPORT std::string fx_pair_member_code(std::string_view base,
                                                                         std::string_view quote);
+
+/**
+ * @brief The member code a currency's discounting curve is published under: the collection
+ * the curve belongs to, then the currency.
+ *
+ * Each collection is a vendor with latent curves of its own, and a surface is struck against
+ * its own vendor's curves. A currency code alone would let another collection's curve, such as
+ * a demo curve that stops at two years, replace them.
+ */
+[[nodiscard]] ORES_SYNTHETIC_API_EXPORT std::string
+curve_member_code(const boost::uuids::uuid& collection, std::string_view currency);
 
 /**
  * @brief The emitter a row describes, at its start.

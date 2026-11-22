@@ -35,9 +35,42 @@ Three kinds of node, each named for what it is:
 
 | Node | Entity | Name, for AUD/USD | What it is |
 |------+--------+-------------------+------------|
-| Upstream | =fx_spot_generation_config=, =ir_curve_generation_config= | =synthetic.bloomberg.audusd=, =synthetic.bloomberg.usdsofr= | One vendor's own path for a spot or a curve, in that vendor's collection. Unchanged. |
-| Latent surface | =fx_vol_surface_feed= | =synthetic.vol.audusd.latent= | The one hidden vol market of the pair. Vendor-neutral: no vendor in its name and not in a vendor's collection. Publishes nothing itself. |
-| Vendor view | =fx_vol_surface_feed_contributor= | =synthetic.vol.audusd.bloomberg= | One vendor's noisy quotes of the latent surface, published through that vendor's source. |
+| Upstream | =fx_spot_generation_config=, =ir_curve_generation_config= | =synthetic.bloomberg.fx.fx_spot.audusd=, =synthetic.bloomberg.ir.yield_curve.sofr.usd= | One vendor's own path for a spot or a curve, in that vendor's collection. |
+| Latent surface | =fx_vol_surface_feed= | =synthetic.latent.fx.fx_option.audusd= | The one hidden vol market of the pair. Vendor-neutral: the =latent= source in place of a vendor, and not in a vendor's collection. Publishes nothing itself. |
+| Vendor view | =fx_vol_surface_feed_contributor= | =synthetic.bloomberg.fx.fx_option.audusd= | One vendor's noisy quotes of the latent surface, published through that vendor's source, in that vendor's namespace beside its spots and curves. |
+
+The names are illustrative: they follow the naming scheme below, which is
+designed and signed off before any feed is renamed.
+
+** The naming scheme
+
+Today a feed's source name is built ad hoc in the publish step:
+=synthetic.<provider>.<pair>= for a spot, =synthetic.<provider>.<ccy><index><tenor>=
+for a curve and =synthetic.<provider>.vol.<pair>= for a surface. Nothing says
+what kind of feed it is, and the publish's own comment says the namespace is
+the provider "not by asset class". A source name is also more than a label: it
+is the feed's key, part of its tick subject (=synthetic.v1.ops.tick.<name>=), the
+spot's board key, and the seed of its random streams, so a rename draws new
+paths and should happen once.
+
+The proposed scheme, based on =oresmd=, which names what is observed (asset
+class, subject, instrument); the feed name adds who produces it:
+
+: synthetic.<source>.<asset_class>.<instrument>.<subject>
+
+- =source= is the provider code, or =latent= for a vendor-neutral market.
+- =asset_class= and =instrument= are spelled as =oresmd= spells them.
+- =subject= is ordered so that names sort usefully: for a curve the index
+  comes before the currency, =yield_curve.sofr.usd=, so the curves of one index
+  sort together.
+- Every part is lower case and the parts are dot-separated, so a name is a
+  valid NATS subject token sequence.
+
+To settle in the design: the instrument of a whole curve, which publishes
+pillar quotes of several =oresmd= instruments (=yield_curve= above is the
+working spelling); where an index's tenor goes (=euribor.eur.6m= or
+=euribor.6m.eur=); and how a name maps back to the =oresmd= series it
+publishes.
 
 The edges, each stored as data on the dependent node:
 
@@ -101,15 +134,18 @@ the order, the states and the screens read one structure.
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
-| Next          | Write the design note, then scaffold the tasks. |
+| Next          | Design the naming scheme and get it signed off. |
 | Last touched  | 2026-11-22                               |
 
 * Acceptance
 
-- The latent surface of each pair is named =synthetic.vol.<pair>.latent=, has
-  no vendor in its name, and is not in a vendor's collection.
-- Each vendor view is named =synthetic.vol.<pair>.<vendor>= and is a node a
-  person can stop and start on its own, with the stop stored.
+- A naming scheme for synthetic feeds, based on =oresmd=, is designed, signed
+  off by the owner, and written into the documentation before any feed is
+  renamed.
+- Every synthetic feed is named by that scheme; the latent surface of each pair
+  carries the =latent= source and is not in a vendor's collection.
+- Each vendor view is named in its vendor's namespace and is a node a person
+  can stop and start on its own, with the stop stored.
 - The latent surface's spot and both discounting curves are edges stored as
   data, and the screens show them.
 - Every node's state is running, stopped, starved or failing, and carries its
@@ -132,9 +168,15 @@ the order, the states and the screens read one structure.
 
 * Decisions
 
+- *A naming scheme comes first, and is signed off.* Feed names follow
+  =synthetic.<source>.<asset_class>.<instrument>.<subject>=, based on =oresmd=,
+  with =latent= as the source of a vendor-neutral market and subjects ordered
+  to sort usefully (=yield_curve.sofr.usd=). The scheme is designed, signed off
+  by the owner and documented before any rename, because a name seeds a feed's
+  random streams and keys its ticks.
 - *Three node kinds, named for what they are.* An upstream is a vendor's own
-  path; a latent surface is vendor-neutral and suffixed =.latent=; a vendor
-  view is the surface's name with the vendor in place of =latent=.
+  path; a latent surface is vendor-neutral, under the =latent= source; a vendor
+  view is in its vendor's namespace, under the instrument it quotes.
 - *Edges are data on the dependent node.* The spot pair is already stored this
   way; the curves follow. Nothing is found through where a node is filed.
 - *Stopped and starved are different states.* A stop is an operator's and is
@@ -156,16 +198,22 @@ the order, the states and the screens read one structure.
 
 * Planned tasks
 
-To be scaffolded when the story starts, each ending in a check:
+To be scaffolded when the story starts, each ending in a check. The first
+gates the rest: no feed is renamed and no node is built until the scheme is
+signed off.
 
+0. *The naming scheme.* Design the source name scheme from =oresmd=, settle the
+   open points (the instrument of a curve, the place of a tenor, the mapping
+   back to the published series), get the owner's sign-off, and write it into
+   the documentation.
 1. *The design note.* A knowledge page for the graph: node kinds, names,
    edges, states, the propagation rule and the diagnostics, and the updates to
    the approach and components pages.
-2. *The vendor-neutral latent surface.* Rename to =synthetic.vol.<pair>.latent=,
-   move it out of the vendor collection, store the curve edges, and change the
+2. *The vendor-neutral latent surface.* Rename every feed to the signed-off
+   scheme, move the latent surface out of the vendor collection, store the curve edges, and change the
    dataset and the publish to match.
-3. *Vendor views as nodes.* Name each view =synthetic.vol.<pair>.<vendor>=,
-   and give it a stored stop and start.
+3. *Vendor views as nodes.* Name each view in its vendor's namespace, by the
+   scheme, and give it a stored stop and start.
 4. *State and propagation.* The service holds each node's state and reason,
    propagates starves down the edges, and answers the graph as one read.
 5. *Diagnostics.* A message log per node, fed by state changes and by the

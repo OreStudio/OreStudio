@@ -52,7 +52,10 @@ gamma could make the generator publish an arbitrageable surface. See
 * Acceptance
 
 - The Provider tab lists a provider's vol surface feeds, grouped and counted
-  as its FX spot and IR curve feeds are, and starts and stops them.
+  as its FX spot and IR curve feeds are.
+- A vol surface feed reads as running while a provider's simulated source
+  holds its surface. Its page shows that state and offers no Start or Stop,
+  and the service refuses a hand start of it with the reason.
 - A vol surface feed's page follows the FX and IR feed pages: details,
   calibration, its own tabs and history, with add, edit and revert.
 - A person edits the SSVI start (skew and curvature), the skew and curvature
@@ -106,6 +109,22 @@ union as they stand.
    - *Arrivals*: the shared =ArrivalsTab=.
 4. *Words and tests*: English, French and Portuguese, and tests beside
    the FX and IR ones.
+5. *Run state.* A vol surface runs while an adapter holds it, under its
+   feed's source name, but each hold runs under
+   =<source_name>.<provider_code>=, so the screens read every vol feed as
+   stopped. A hand start built a second, independent surface. So:
+   - =basic_shared_surfaces::held()= answers the held surfaces.
+     =generator_fleet::running_source_names()= adds their source names, which
+     the folder counts read, and =generator_fleet::running_feeds()= adds them
+     as feeds, which the BFF reads for each feed's =running=.
+   - =feed_kind::held_by_adapters= marks the vol kind, and
+     =feed_kind_registry::make_feed= refuses a feed of such a kind. The
+     single start and the bulk start both go through =make_feed=; the
+     adapters build their holds without it.
+   - =FeedKind.heldByProvider= hides Start and Stop on the vol feed page and
+     says why.
+   A control to start and stop a provider's simulated source is a separate
+   task: [[id:BC75AE1F-BD6B-46E0-BA50-794DBD35576E][Start and stop a provider's simulated source from the Provider tab]].
 
 Gamma stays a constant in the generator, so the page states it rather than
 reading a stored value.
@@ -125,6 +144,13 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+- The ids that the DQ publish derives are not RFC-versioned UUIDs (for
+  example =de1e72b7-bae2-c70f-...=), so =z.uuid()= refused them and no vol
+  feed page opened. The synthetic routes now parse ids with
+  =storeUuidSchema= from =@ores/contracts=.
+- A bulk start over a folder counts each vol feed as skipped, with the
+  refusal in the service log.
 
 * Test Scenarios
 

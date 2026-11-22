@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :take_the_dq_pipeline_end_to_end:sprint_30:v0:
 #+owner: marco
-#+branch: feature/take-the-dq-pipeline-end-to-end
-#+pr: 4712
+#+branch: feature/build-the-dq-screens-from-the-journeys
+#+pr: 5030
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-14
-#+updated: 2026-11-14
-#+environment:
+#+updated: 2026-11-22
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7D2BBBBC-36A3-4BFB-9673-0F9005991D94][Take the DQ pipeline end to end, from a seeded artefact table to a published system]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -24,11 +24,13 @@ Give DQ a better experience in ores.web than the Qt client had, designed from th
 journeys a person actually runs rather than from the screens Qt happened to
 ship.
 
-The Qt area is input, not a specification: =ores.qt/dq= holds 88 translation
+The Qt area was input, not a specification: =ores.qt/dq= held 88 translation
 units, 27 screens (18 entity detail dialogs, 9 history dialogs) and a publishing
-surface (Librarian window, bundle wizard, publish dialog). None of that is a
-requirement in itself. A screen may answer one journey or several, and a journey
-may need a screen that has no Qt ancestor at all.
+surface (Librarian window, bundle wizard, publish dialog). None of that was a
+requirement in itself, and the tree is no longer in the checkout: it went in
+=af67db3062=, so the evidence is read from =af67db3062^=. A screen may answer
+one journey or several, and a journey may need a screen that has no Qt ancestor
+at all.
 
 The refdata work already shows the method: 63 Qt reference-data entities became
 three web shapes — 12 record screens, 24 rows of one classification screen and 9
@@ -41,12 +43,12 @@ that precedent and its field tables.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:7D2BBBBC-36A3-4BFB-9673-0F9005991D94][Take the DQ pipeline end to end]] |
 | Now          | Nothing. |
-| Waiting on   | The publish model the review settles.  |
-| Next         | Port the record screens first.         |
-| Last touched | 2026-11-14                               |
+| Waiting on   | Nothing. The publish model is settled. |
+| Next         | Nothing. |
+| Last touched | 2026-11-22                              |
 
 * Acceptance
 
@@ -93,8 +95,29 @@ that precedent and its field tables.
 | Entities with a detail dialog | 18 | listing *=DetailDialog.ui= | n/a |
 | Entities with a history dialog | 9 | listing *=HistoryDialog.ui= | n/a |
 | DQ screens in ores.web today | 0 | listing =packages/web/src/**/*Page.tsx= | e050a2d239 |
+| Qt DQ list windows, detail dialogs, history dialogs | 17, 17, 10 | =evidence/qt_dq_inventory.py --ref 'af67db3062^'= | 264f0702f4 |
+| Qt DQ tree | removed; read from the commit before =af67db3062= | =git log --diff-filter=D -1 -- projects/ores.qt= | 264f0702f4 |
 
 * Notes
+
+The DQ journeys live under =doc/knowledge/journeys/dq/=, with the group hub
+=dq.org= wired into the journeys index. The first is
+[[id:5344ADC1-E729-4846-BE07-C6BC2169C4C9][Is my reference data complete?]],
+which reads the tenant against the three levels and names why a bundle member is
+not ready; its wireframe is rendered beside it.
+
+Five prototypes answer the five journeys, one each, listed on
+[[proj:doc/prototypes/dq/index.org][=doc/prototypes/dq/index.org=]]: coverage,
+publish a dataset, publish a bundle, correct one artefact, and trace a published
+value. All are drawn on the project's prototype shell and all five were signed off on
+2026-11-22. Review cells stay at =none=, because a review there is a generated
+alternative to the agreed design and none has been generated.
+
+The Qt area is inventoried in
+[[id:D53501D6-5FF5-44BF-B389-AAA727ACAE6F][Qt DQ surface inventory]], which
+records the 17 entity areas, the fields their dialogs asked for and the five
+classes of the publishing surface. The tree it reads is gone from the checkout,
+so the page names the commit and the script that reproduce it.
 
 Publish state is the point of the screens. The Qt client showed it because the
 Librarian was where publishing happened; ores.web has neither the screens nor the
@@ -121,6 +144,7 @@ they would otherwise become.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5030][#5030]] | [doc] Write the DQ journeys and sign off their prototypes |
 | [[https://github.com/OreStudio/OreStudio/pull/4712][#4712]] | [agile] Scope the DQ screens as journeys and prototypes, not a port |
 | [[https://github.com/OreStudio/OreStudio/pull/4711][#4711]] | [agile] Record the Qt source and screens for the DQ port |
 
@@ -129,5 +153,29 @@ they would otherwise become.
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
 |   |                 |      |          |       |
+
+* Result
+
+Done, with a scope change agreed at close: the deliverable is the design, and the
+screens are a follow-up.
+
+- The Qt area is inventoried from the commit that still held it, by a script a
+  reviewer reruns. The page corrects the task's own figures — 17 detail dialogs
+  and 10 history dialogs, not 18 and 9 — and says why the total of 27 agrees.
+- Five journeys are written under =doc/knowledge/journeys/dq/=, each with a
+  rendered wireframe and an operations table that says, step by step, whether the
+  server serves it.
+- Five prototypes are drawn on the conventions prototypes' shell, in the UX
+  language's colours, and all five were signed off on 2026-11-22.
+- The design records what the tree cannot serve: one coverage operation, a
+  per-dataset preview, any read or write of an artefact table, the unwritten run
+  log, and a used-by path from a value to a trade.
+
+Three of the five journeys cannot be built as drawn until those operations
+exist, which is why the journeys state them and the screens do not promise them.
+
+Evidence: the gate passed 9 of 9 on the changed paths; the Qt tables are the
+script's own output; each prototype was opened at each of its states in a headless
+browser and read back. Merged in PR #5030.
 
 * Result

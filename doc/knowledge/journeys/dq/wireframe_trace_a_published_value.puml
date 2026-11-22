@@ -1,0 +1,63 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+salt
+{
+  <b>TRACE A PUBLISHED VALUE</b>  { swap · AED-EIBOR-6M-SWAP }
+  --
+  {
+    {
+      <b>Where it came from</b>
+      --
+      <b>The row</b>
+      kind      refdata.conventions
+      key       AED-EIBOR-6M-SWAP
+      version   3
+      --
+      <b>Its provenance</b>
+      dataset   refdata.conventions
+      reason    system.external_data_import
+      imported  Imported from DQ dataset: refdata.conventions
+      recorded  2 hours ago
+      --
+      <b>The dataset behind it</b>
+      source    Vendor conventions list
+      as of     2026-11-20
+    } | {
+      <b>What references it</b>
+      --
+      <b>The question</b>
+      Which trades use AED-EIBOR-6M-SWAP?
+      --
+      <b>What the tree can answer</b>
+      A trade opened by its own key shows the convention it names.
+      --
+      <b>What it cannot answer</b>
+      The inverse. A trade names a convention by a text column on its
+      instrument tables, not by an identifier, and no subject searches
+      the trading tree for a value.
+      --
+      <i>State the gap, do not draw an empty list as if it meant "no trade uses this".</i>
+    }
+  }
+  --
+  { <i>Read only. This journey changes nothing.</i> }
+}
+
+@enduml

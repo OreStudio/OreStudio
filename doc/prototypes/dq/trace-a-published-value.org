@@ -1,0 +1,84 @@
+:PROPERTIES:
+:ID: 4AD548F1-06BC-47D7-B15F-138DA4805CF0
+:END:
+#+title: Trace a published value prototype
+#+description: A published value traced back to the dataset that wrote it and forward to the trades that reference it, as far as the tree can carry the question.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:dq:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+
+| Item          | Where                                           |
+|---------------+-------------------------------------------------|
+| Prototype     | [[file:trace-a-published-value/][the prototype]] |
+| Gemini review | none                                            |
+| Group         | [[file:index.org][DQ prototypes]]                       |
+
+* Summary
+
+This prototype argues that half of the trace question is answerable and half is
+not, and that a screen must say which. Walking back from a value to the dataset
+that published it works, because the provenance names the dataset on every row.
+Walking forward from a value to the trades that reference it does not, because a
+trade names a convention by a text column and no subject searches for one. The
+page draws the first half and states the second. It answers to
+[[id:84DB1AC9-9384-43BB-A97A-2A17261DA50F][Find the trade a published value
+belongs to]].
+
+It is throwaway. It reads no server, opens with no build and no session, and
+draws mock data.
+
+* Detail
+
+** What it argues
+
+- *A gap is drawn as a gap.* An empty results table reads as "no trade uses this
+  value", which is false. The page states that the question has no path instead,
+  and names what would have to change.
+- *The provenance is the backwards half.* The dataset name, the reason code, the
+  commentary and the version are the chain from a value to its origin, and they
+  are already on the row.
+- *What the tree can answer is offered.* A person who knows a trade opens it and
+  reads the convention it names; the screen shows that direction rather than
+  leaving the person with nothing.
+- *The kind matters.* One string names rows in more than one kind, so the screen
+  asks for the kind before the key.
+
+** The screen
+
+A card for the value held, a card for where it came from, and a card for what
+references it — the last carrying the gap and the direction the tree does carry.
+
+** States, by query string
+
+=?kind=<code>=, =?key=<value>=, =?gaps=0=. The mock holds one value,
+=AED-EIBOR-6M-SWAP=, because the point is the shape of the answer and not a
+catalogue.
+
+** What is fake
+
+The row, its values, its provenance, the dataset behind it, and the two trades
+shown as "found by trying keys". Those two are the honest part: a person found
+them one at a time, which is what the gap means in practice.
+
+** Where the code lives
+
+[[proj:doc/prototypes/dq/trace-a-published-value/][=doc/prototypes/dq/trace-a-published-value/=]]:
+=index.html=, =prototype.js=, and the shared =management.css= and
+=management.js=.
+
+** Verdict
+
+The two-direction split holds, and stating the missing half is the design's
+point. The open question is whether the forward half belongs in this screen at
+all before the reference becomes an identifier: if it never does, this page is a
+provenance screen and the trades question needs its own home in the trading area.
+
+*Signed off* on 2026-11-22 by Marco, on the page as it stands. The open question
+above is a note for the build.
+
+* See also
+
+- [[file:index.org][DQ prototypes]] — the group this belongs to.
+- [[id:84DB1AC9-9384-43BB-A97A-2A17261DA50F][Find the trade a published value belongs to]] — the journey it answers.

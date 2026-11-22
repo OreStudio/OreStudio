@@ -253,6 +253,25 @@ TEST_CASE("the_index_codec_reads_every_corpus_index_name_as_ore_does",
     report(t);
 }
 
+TEST_CASE("an_ore_spelling_reads_as_the_market_name_and_writes_back",
+          "[marketdata][datum][ore_index_codec]") {
+    const auto name_of = [](std::string_view ore) {
+        const auto index = ore_index_codec::read(ore);
+        REQUIRE(index);
+        return *index->get("name");
+    };
+    CHECK(name_of("EUR-ESTER") == "ESTR");
+    CHECK(name_of("JPY-TONAR") == "TONA");
+    CHECK(name_of("JPY-TONAR-3M") == "TONA");
+    CHECK(name_of("MXN-FTIIE") == "FTIIE");
+    CHECK(name_of("MXN-TIIE-28D") == "TIIE");
+    CHECK(name_of("USD-SOFR") == "SOFR");
+
+    CHECK(ore_index_codec::write(*ore_index_codec::read("EUR-ESTER")) == "EUR-ESTER");
+    CHECK(ore_index_codec::write(*ore_index_codec::read("JPY-TONAR-3M")) == "JPY-TONAR-3M");
+    CHECK(ore_index_codec::write(*ore_index_codec::read("MXN-TIIE-28D")) == "MXN-TIIE-28D");
+}
+
 TEST_CASE("every_index_round_trips_through_its_fixing_uri",
           "[long_running][marketdata][datum][ore_index_codec]") {
     std::vector<std::string> failures;

@@ -149,6 +149,15 @@ ORE's order, and it splits the name into the fields ORE's parser reads. It
 accepts a name by its structure, as ORE does when a convention file defines
 the name. So =CZK-CZEONIA= reads with no list of index names.
 
+ORE Studio names an index by its market name, and the codec is where ORE's
+spellings are mapped. Where ORE spells an index otherwise than its
+administrator, =read= returns the market name and =write= returns ORE's:
+
+| ORE name | Market name | Administrator |
+|----------+-------------+---------------|
+| =EUR-ESTER= | =ESTR= | European Central Bank (€STR) |
+| =JPY-TONAR= | =TONA= | Bank of Japan |
+
 =ore_index_codec::write= is the inverse. =write(read(n))= is =n=, with one
 exception: ORE's spaced inflation aliases, such as =UK RPI=, are written
 without the space, as =UKRPI=.
@@ -373,6 +382,8 @@ gives the axes of each.
 | =GENERIC-JuniorNote= | =oresmd://generic/JuniorNote?type=fixing&index=generic= |
 
 =UK RPI= reads as =UKRPI= and gets the same URI.
+=EUR-ESTER= gets =oresmd://ir/EUR?type=fixing&index=ibor&name=ESTR=, the market
+name of the index, as the codec maps it.
 
 * Storage and the export
 

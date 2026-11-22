@@ -2214,17 +2214,19 @@ OvernightIndex	DKK-DESTR	DayCounter=ACT/360 ; FixingCalendar=Denmark ; Settlemen
 OvernightIndex	DKK-DKKOIS	DayCounter=ACT/360 ; FixingCalendar=Denmark ; SettlementDays=1	ORE engine: OREData/ored/utilities/indexparser.cpp, mined by tools/ore_conventions/mine_builtin_conventions.py		
 OvernightIndex	EUR-EONIA	DayCounter=ACT/360 ; FixingCalendar=TARGET ; SettlementDays=0	ORE engine: OREData/ored/utilities/indexparser.cpp, mined by tools/ore_conventions/mine_builtin_conventions.py		
 OvernightIndex	EUR-ESTER	DayCounter=ACT/360 ; FixingCalendar=TARGET ; SettlementDays=0	ORE engine: OREData/ored/utilities/indexparser.cpp, mined by tools/ore_conventions/mine_builtin_conventions.py		
-OvernightIndex	EUR-ESTR	DayCounter=ACT/360 ; FixingCalendar=TARGET ; SettlementDays=0	OreStudio: Source: QuantLib::Estr (ql/indexes/ibor/estr.hpp/.cpp).	oresmd://ir/EUR?type=fixing&index=ibor&name=ESTER	
+OvernightIndex	EUR-ESTR	DayCounter=ACT/360 ; FixingCalendar=TARGET ; SettlementDays=0	OreStudio: Source: QuantLib::Estr (ql/indexes/ibor/estr.hpp/.cpp).	oresmd://ir/EUR?type=fixing&index=ibor&name=ESTR	
 OvernightIndex	GBP-BoEBASE	DayCounter=A365 ; FixingCalendar=UK ; SettlementDays=0	ORE examples: AmericanMonteCarlo/Input/conventions.xml		
 OvernightIndex	GBP-BoEBase	DayCounter=ACT/365.FIXED ; FixingCalendar=UK settlement ; SettlementDays=0	ORE engine: OREData/ored/utilities/indexparser.cpp, mined by tools/ore_conventions/mine_builtin_conventions.py		
 OvernightIndex	GBP-SONIA	DayCounter=ACT/365.FIXED ; FixingCalendar=London stock exchange ; SettlementDays=0	ORE engine: OREData/ored/utilities/indexparser.cpp, mined by tools/ore_conventions/mine_builtin_conventions.py		
 OvernightIndex	HKD-HIBOROIS	DayCounter=A365 ; FixingCalendar=HKD ; SettlementDays=0	ORE examples: AmericanMonteCarlo/Input/conventions.xml		
 OvernightIndex	HKD-HONIA	DayCounter=A365 ; FixingCalendar=HKD ; SettlementDays=0	ORE examples: AmericanMonteCarlo/Input/conventions.xml		
 OvernightIndex	HUF-BUBORON	DayCounter=A365 ; FixingCalendar=HUF ; SettlementDays=0	ORE examples: AmericanMonteCarlo/Input/conventions.xml		
+OvernightIndex	HUF-HUFONIA	DayCounter=ACT/360 ; FixingCalendar=HUF ; SettlementDays=0	OreStudio: Magyar Nemzeti Bank, HUFONIA swap index regulation (HUFONIA quoted ACT/360).	oresmd://ir/HUF?type=fixing&index=ibor&name=HUFONIA	
+OvernightIndex	ILS-SHIR	DayCounter=ACT/365.FIXED ; FixingCalendar=ILS ; SettlementDays=0	OreStudio: Bank of Israel publishes SHIR, a same-day overnight rate that replaced TELBOR in derivatives; ACT/365 per market convention tables.	oresmd://ir/ILS?type=fixing&index=ibor&name=SHIR	
 OvernightIndex	ILS-TELBORON	DayCounter=A365 ; FixingCalendar=ILS ; SettlementDays=0	ORE examples: AmericanMonteCarlo/Input/conventions.xml		
 OvernightIndex	INR-MIBOR	DayCounter=ACT/365.FIXED ; FixingCalendar=India ; SettlementDays=0	OreStudio: Source: QuantExt::INRMiborOis (qle/indexes/ibor/inrmiborois.hpp).	oresmd://ir/INR?type=fixing&index=ibor&name=MIBOR	
 OvernightIndex	INR-MIBOROIS	DayCounter=ACT/365.FIXED ; FixingCalendar=National Stock Exchange of India ; SettlementDays=0	ORE engine: OREData/ored/utilities/indexparser.cpp, mined by tools/ore_conventions/mine_builtin_conventions.py		
-OvernightIndex	JPY-TONA	DayCounter=ACT/365.FIXED ; FixingCalendar=Japan ; SettlementDays=0	OreStudio: Source: QuantLib::Tonar (ql/indexes/ibor/tonar.hpp), aka Tona.	oresmd://ir/JPY?type=fixing&index=ibor&name=TONAR	
+OvernightIndex	JPY-TONA	DayCounter=ACT/365.FIXED ; FixingCalendar=Japan ; SettlementDays=0	OreStudio: Source: QuantLib::Tonar (ql/indexes/ibor/tonar.hpp), aka Tona.	oresmd://ir/JPY?type=fixing&index=ibor&name=TONA	
 OvernightIndex	JPY-TONAR	DayCounter=ACT/365.FIXED ; FixingCalendar=Japan ; SettlementDays=0	ORE engine: OREData/ored/utilities/indexparser.cpp, mined by tools/ore_conventions/mine_builtin_conventions.py		
 OvernightIndex	KRW-KOFR	DayCounter=ACT/365.FIXED ; FixingCalendar=SouthKorea.Settlement ; SettlementDays=0	OreStudio: Source: QuantLib::Kofr (ql/indexes/ibor/kofr.hpp).	oresmd://ir/KRW?type=fixing&index=ibor&name=KOFR	
 OvernightIndex	MXN-FTIIE	DayCounter=A360 ; FixingCalendar=MXN ; SettlementDays=0	ORE examples: ORE-Python/Notebooks/Dependencies/conventions.xml		

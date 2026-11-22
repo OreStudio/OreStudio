@@ -101,10 +101,14 @@ The two families, term and overnight, are described in
 
 ** One name per index
 
-Each index has one name. Three indices are currently written under two: the
-EUR, JPY and MXN overnight rates appear as =ESTR= and =ESTER=, =TONA= and
-=TONAR=, and =TIIE= and =FTIIE=. The two halves land in different series, so
-one index has two histories. The catalogue of sources must fix one name per index.
+Each index has one name, its market name: =ESTR= for the ECB's euro short-term
+rate, =TONA= for the Bank of Japan's overnight rate, =FTIIE= for Banco de
+México's funding rate. Where ORE spells an index otherwise, as =EUR-ESTER= or
+=JPY-TONAR=, the ORE index codec maps its spelling to the market name on the
+way in and back on the way out; see
+[[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio Market Data URI]]. A
+check fails when a synthetic curve states a fixing address that no convention
+or mapping names.
 
 * See also
 

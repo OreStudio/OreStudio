@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 5AF9CEEF-A878-443A-8C32-C6E9F6C26FC9
 :END:
-#+title: Each option cut requires a fixing source observed at its instant
+#+title: Fixing sources for option cuts and non-deliverable currencies
 #+description: The standard FX, NDF and interest rate fixing sources, the option cut each serves, and whether its values are observed or simulated.
 #+type: knowledge
 #+audience: user
@@ -31,7 +31,7 @@ A cut code names the instant an option expires; see
 source records the market at it. A cash-settled option settles on that
 observation, a fixing-determined option exercises from it, and a holder who
 decides late needs the spot at the cut that was set aside; see
-[[id:970D334D-2576-41BF-8664-1AA4CB76D31B][An option near the money at its cut makes expiry a matter of judgement]].
+[[id:970D334D-2576-41BF-8664-1AA4CB76D31B][Pin risk in the expiry of near-the-money options]].
 So each supported cut is paired with one fixing source whose time and zone are
 the cut's. A cut with no source cannot be offered.
 
@@ -58,7 +58,7 @@ The label is the =SOURCE= of the ORE index =FX-SOURCE-CCY1-CCY2=, so the FX
 fixing of EUR/USD at the New York cut is =FX-WMR1000NYC-EUR-USD=. WM/R is
 licensed, so its rates are simulated. A pair the cut source does not fix
 directly is derived through USD; see
-[[id:6A625509-CD9A-4D13-8E16-37B75A4AED83][A derived fixing source composes the fixings of its parent sources]].
+[[id:6A625509-CD9A-4D13-8E16-37B75A4AED83][Derived and composite fixing sources]].
 
 Four central-bank reference rates are observed, and serve FX trades that name
 them rather than an option cut: the ECB euro reference rates at about 14:15
@@ -116,7 +116,7 @@ simulated one. The catalogue of sources must fix one name per index.
 An observed source is fetched by the public sources adapters and is never
 simulated. A simulated source is fixed by the simulator, through the same
 adapter contract; see
-[[id:F24FA489-790A-4065-B8E1-DCC141595356][A simulated fixing source is a publisher the simulator serves]].
+[[id:F24FA489-790A-4065-B8E1-DCC141595356][Simulated fixing sources in the market data pipeline]].
 
 * See also
 

@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 0CBDBE85-17DF-4A77-A231-FFB2101FC0CC
 :END:
-#+title: A fixing automates the decision an expiry leaves to the holder
+#+title: Fixing-determined and holder-determined exercise
 #+description: An agreed fixing source lets the exercise of a cash-settled option follow automatically; an expiry waits for the holder.
 #+type: knowledge
 #+audience: user
@@ -59,7 +59,7 @@ is common when it shares an expiry time with a digital in one structure.
   observation was entered. The system must therefore undo every fix made from
   one observation and redo them; the unit of work is the set of trades
   attached to an observation, not a single trade. See
-  [[id:CA61B445-B6DC-41D3-ACF9-D3FB32D0D342][The fixing process observes, authorises, applies and can undo an observation]].
+  [[id:CA61B445-B6DC-41D3-ACF9-D3FB32D0D342][The fixing process: observation, authorisation, application and reversal]].
 
 ** Which event handles which product
 
@@ -74,7 +74,7 @@ and at maturity otherwise.
 
 - [[id:784D9D97-721A-42EC-BA91-A85764979CD0][Fixings]] — the structure note.
 - [[id:C9887852-42C9-48BE-8E8C-BB66FCC48E83][Expiries]] — the structure note of the manual counterpart.
-- [[id:86DA6985-C92E-40F6-AE43-71C4BBF126CB][A fixing is an agreed observation that settles a contract]] — completes: the definition.
+- [[id:86DA6985-C92E-40F6-AE43-71C4BBF126CB][Fixings: definition and distinction from quotes]] — completes: the definition.
 - [[id:C880CEB4-4FB7-41AA-8A4A-A650B6FC388C][FX Digital Option]] — exemplifies: a fixing-determined product.
 
 * Sources

@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 6E566C97-F2A4-4AE8-B509-BDE23568A0B8
 :END:
-#+title: A fixing source is identified by its rate source definition, not by a vendor screen
+#+title: Identity and lifecycle of fixing sources
 #+description: A fixing source names an administrator, a method, a time and a calendar; ISDA codes identify it, screens are attributes.
 #+type: knowledge
 #+audience: user
@@ -27,12 +27,12 @@ the record, and ORE Studio keeps some as simulated legacy sources for teaching.
 
 | Attribute | Meaning |
 |-----------+---------|
-| Kind | Published by a feed, keyed by a person, or derived from other sources. See [[id:6A625509-CD9A-4D13-8E16-37B75A4AED83][A derived fixing source composes the fixings of its parent sources]]. |
+| Kind | Published by a feed, keyed by a person, or derived from other sources. See [[id:6A625509-CD9A-4D13-8E16-37B75A4AED83][Derived and composite fixing sources]]. |
 | Asset | A currency for an interest rate source, a currency pair for an FX source. |
 | Tenor | The tenor of a rate source, such as 3M; none for an FX source. |
 | Quote convention | Mid, bid or offer, and whether the publisher quotes the pair inverted. |
 | Publication time and time zone | For example 16:00 London for the WM/Reuters fix. |
-| Holiday calendar | The days on which the source publishes. See [[id:53DB3AF1-6FA4-4B53-9D8E-A65F739F6F4D][A fixing date follows the calendar of the rate it observes]]. |
+| Holiday calendar | The days on which the source publishes. See [[id:53DB3AF1-6FA4-4B53-9D8E-A65F739F6F4D][Fixing dates and holiday calendars]]. |
 | Rounding | The number of decimal places of the result. |
 | Screen reference | The vendor page that displays it, such as a Reuters instrument code. |
 
@@ -96,7 +96,7 @@ explains. It does not yet hold the source's other attributes as data; see
 * See also
 
 - [[id:784D9D97-721A-42EC-BA91-A85764979CD0][Fixings]] — the structure note.
-- [[id:7B09CA1B-606D-493F-A784-676BAE701FC8][The WM/Reuters 4pm fix is the dominant FX benchmark]] — exemplifies: one administrator and its method.
+- [[id:7B09CA1B-606D-493F-A784-676BAE701FC8][The WM/Reuters 4pm fix as the dominant FX benchmark]] — exemplifies: one administrator and its method.
 - [[id:5DD9A309-91E0-4CAB-BD9D-6ECB3B5EB58E][Currency pairs]] — completes: the quote and inversion conventions of a pair.
 
 * Sources

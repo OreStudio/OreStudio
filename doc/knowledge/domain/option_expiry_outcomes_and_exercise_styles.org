@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 16A04B6A-AB93-4C50-9273-E18CC0130C5F
 :END:
-#+title: Expiry resolves an option by exercise, lapse or fixing
+#+title: Option expiry outcomes and exercise styles
 #+description: Expiry ends an option's risk: it is exercised into a trade or cash, expires worthless, or settles from a fixing.
 #+type: knowledge
 #+audience: user
@@ -28,10 +28,10 @@ cash settlement.
 |------+---------|
 | Exercised | The option ended in the money and was exercised. |
 | Expired | The option ended out of the money and lapsed. |
-| Settled from a fixing | The outcome followed from a fixing agreed at inception. See [[id:0CBDBE85-17DF-4A77-A231-FFB2101FC0CC][A fixing automates the decision an expiry leaves to the holder]]. |
+| Settled from a fixing | The outcome followed from a fixing agreed at inception. See [[id:0CBDBE85-17DF-4A77-A231-FFB2101FC0CC][Fixing-determined and holder-determined exercise]]. |
 | Matured | The contract has passed its final date. This is not an expiry. |
 | Exercise trade | The trade booked by an exercise: an FX trade for a vanilla, sometimes a further derivative for an exotic. |
-| Unexpire, unexercise | The reversal of an expiry or an exercise made in error. See [[id:0E638BE0-E3DA-4D05-A2FC-0F52FC1D24FC][Every expiry event has an inverse]]. |
+| Unexpire, unexercise | The reversal of an expiry or an exercise made in error. See [[id:0E638BE0-E3DA-4D05-A2FC-0F52FC1D24FC][Reversal of expiry events and post-expiry option states]]. |
 
 ** Exercise styles
 

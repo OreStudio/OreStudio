@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: D4CA27E5-8194-470B-A422-B77C53545560
 :END:
-#+title: A fixing replaces a projected rate with an observed one
+#+title: Effects of fixings on valuation, risk and P&L
 #+description: Before its fixing a coupon is projected; after, it is observed. The switch moves value, makes delta jump and has its own P&L.
 #+type: knowledge
 #+audience: user
@@ -32,7 +32,7 @@ past coupon without a settlement trade uses the fixing; a coupon whose
 settlement trade exists has left the swap. Projections are computed by the
 pricing library for valuation and for rolling a portfolio through time; they
 are never stored as observations. See
-[[id:C6A619F3-B2B6-42D5-9C41-5269A84BC96C][An observation is stored once per source and never stamped on the trades it fixes]].
+[[id:C6A619F3-B2B6-42D5-9C41-5269A84BC96C][Storage of fixing observations apart from trades]].
 
 A non-deliverable forward is discounted from its settlement date, and its
 settlement amount stops depending on spot once it has fixed; see
@@ -78,7 +78,7 @@ The attribution identity and its activity components are in
 * See also
 
 - [[id:784D9D97-721A-42EC-BA91-A85764979CD0][Fixings]] — the structure note.
-- [[id:1BA05AA4-1B24-48B4-83F9-366624D0A88E][Products that settle on fixings]] — completes: which products jump and why.
+- [[id:1BA05AA4-1B24-48B4-83F9-366624D0A88E][Fixing requirements by product]] — completes: which products jump and why.
 
 * Sources
 

@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: B5CA0D8F-D9C5-4F09-ABD7-7ED6F0FEF1A5
 :END:
-#+title: Fixing management authorises every fixing that live trades require
+#+title: Fixing management and its controls
 #+description: A fixings view lists the observations live trades require for authorisation; control reports find fixings not applied.
 #+type: knowledge
 #+audience: user
@@ -83,7 +83,7 @@ starts with a read-only list of the stored fixing series.
 * See also
 
 - [[id:784D9D97-721A-42EC-BA91-A85764979CD0][Fixings]] — the structure note.
-- [[id:CA61B445-B6DC-41D3-ACF9-D3FB32D0D342][The fixing process observes, authorises, applies and can undo an observation]] — completes: the process the view drives.
+- [[id:CA61B445-B6DC-41D3-ACF9-D3FB32D0D342][The fixing process: observation, authorisation, application and reversal]] — completes: the process the view drives.
 
 * Sources
 

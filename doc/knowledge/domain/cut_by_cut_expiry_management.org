@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: FE1C63AB-A242-4B02-86AA-8035EEC8DF54
 :END:
-#+title: Expiry is processed cut by cut against frozen spot rates
+#+title: Cut-by-cut expiry management
 #+description: Options are expired per cut and pair against spots that do not move under the user, with a preview and undo.
 #+type: knowledge
 #+audience: user
@@ -40,7 +40,7 @@ cancelled since the last load is flagged, and running on stale data raises a
 warning and a final check. The operator can override a spot, or give a range.
 A tolerance, in pips or in percent, highlights the options whose decision a
 small move would change; see
-[[id:970D334D-2576-41BF-8664-1AA4CB76D31B][An option near the money at its cut makes expiry a matter of judgement]].
+[[id:970D334D-2576-41BF-8664-1AA4CB76D31B][Pin risk in the expiry of near-the-money options]].
 
 ** Actions and views
 
@@ -64,15 +64,15 @@ A timeline shows the cuts of the day that are done and those still open.
 A non-deliverable option takes two steps: it is exercised into a
 non-deliverable forward, and that forward is then fixed. The forward's fixing
 date is shown beside the option; it is normally the same day, but holidays can
-move it. See [[id:53DB3AF1-6FA4-4B53-9D8E-A65F739F6F4D][A fixing date follows the calendar of the rate it observes]].
+move it. See [[id:53DB3AF1-6FA4-4B53-9D8E-A65F739F6F4D][Fixing dates and holiday calendars]].
 
 ** Netting, undo and export
 
 Cash settlements of a structure are netted by default; see
-[[id:04278F00-8B96-4987-9AF1-61E971B9087C][A structure expires as a single unit]].
+[[id:04278F00-8B96-4987-9AF1-61E971B9087C][Default expiry actions and the expiry of structures]].
 The operator can list the actions the process took and undo some or all of
 them, unexpiries and unfixes included; see
-[[id:0E638BE0-E3DA-4D05-A2FC-0F52FC1D24FC][Every expiry event has an inverse]]. The result exports as the
+[[id:0E638BE0-E3DA-4D05-A2FC-0F52FC1D24FC][Reversal of expiry events and post-expiry option states]]. The result exports as the
 expiry report, by portfolio.
 
 ** Preview before commit
@@ -103,7 +103,7 @@ is described in [[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade Blotter]].
 * See also
 
 - [[id:C9887852-42C9-48BE-8E8C-BB66FCC48E83][Expiries]] — the structure note.
-- [[id:B5CA0D8F-D9C5-4F09-ABD7-7ED6F0FEF1A5][Fixing management authorises every fixing that live trades require]] — contrasts: the automated counterpart.
+- [[id:B5CA0D8F-D9C5-4F09-ABD7-7ED6F0FEF1A5][Fixing management and its controls]] — contrasts: the automated counterpart.
 
 * Sources
 

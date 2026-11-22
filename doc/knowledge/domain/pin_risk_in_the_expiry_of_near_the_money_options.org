@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 970D334D-2576-41BF-8664-1AA4CB76D31B
 :END:
-#+title: An option near the money at its cut makes expiry a matter of judgement
+#+title: Pin risk in the expiry of near-the-money options
 #+description: Near the strike, the spot used flips the decision and the position; such options are set aside and decided late.
 #+type: knowledge
 #+audience: user
@@ -53,7 +53,7 @@ parties may agree the conditions for exercise in advance.
 Traders expire their own books. They need to see, for each cut, the options
 still to decide; to exclude a book with a recorded reason that reports show;
 and to see which of the day's cuts are complete. See
-[[id:FE1C63AB-A242-4B02-86AA-8035EEC8DF54][Expiry is processed cut by cut against frozen spot rates]].
+[[id:FE1C63AB-A242-4B02-86AA-8035EEC8DF54][Cut-by-cut expiry management]].
 
 * See also
 

@@ -25,33 +25,33 @@ Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
 
 ** Reading order
 
-1. [[id:86DA6985-C92E-40F6-AE43-71C4BBF126CB][A fixing is an agreed observation that settles a contract]] —
+1. [[id:86DA6985-C92E-40F6-AE43-71C4BBF126CB][Fixings: definition and distinction from quotes]] —
    the definition, the vocabulary, and why a fixing is not a quote.
-2. [[id:0CBDBE85-17DF-4A77-A231-FFB2101FC0CC][A fixing automates the decision an expiry leaves to the holder]] —
+2. [[id:0CBDBE85-17DF-4A77-A231-FFB2101FC0CC][Fixing-determined and holder-determined exercise]] —
    fixing-determined and holder-determined exercise.
-3. [[id:6E566C97-F2A4-4AE8-B509-BDE23568A0B8][A fixing source is identified by its rate source definition, not by a vendor screen]] —
+3. [[id:6E566C97-F2A4-4AE8-B509-BDE23568A0B8][Identity and lifecycle of fixing sources]] —
    administrators, ISDA codes, benchmarks, and sources that cease.
-4. [[id:6A625509-CD9A-4D13-8E16-37B75A4AED83][A derived fixing source composes the fixings of its parent sources]] —
+4. [[id:6A625509-CD9A-4D13-8E16-37B75A4AED83][Derived and composite fixing sources]] —
    crosses and composites.
-5. [[id:7B09CA1B-606D-493F-A784-676BAE701FC8][The WM/Reuters 4pm fix is the dominant FX benchmark]] —
+5. [[id:7B09CA1B-606D-493F-A784-676BAE701FC8][The WM/Reuters 4pm fix as the dominant FX benchmark]] —
    the leading FX source and the research on it.
-6. [[id:1BA05AA4-1B24-48B4-83F9-366624D0A88E][Products that settle on fixings]] —
+6. [[id:1BA05AA4-1B24-48B4-83F9-366624D0A88E][Fixing requirements by product]] —
    swaps, non-deliverable trades, digitals, barriers, averages, volatility swaps.
-7. [[id:53DB3AF1-6FA4-4B53-9D8E-A65F739F6F4D][A fixing date follows the calendar of the rate it observes]] —
+7. [[id:53DB3AF1-6FA4-4B53-9D8E-A65F739F6F4D][Fixing dates and holiday calendars]] —
    fixing holidays and the dates of non-deliverable forwards.
-8. [[id:CA61B445-B6DC-41D3-ACF9-D3FB32D0D342][The fixing process observes, authorises, applies and can undo an observation]] —
+8. [[id:CA61B445-B6DC-41D3-ACF9-D3FB32D0D342][The fixing process: observation, authorisation, application and reversal]] —
    the controlled process.
-9. [[id:C6A619F3-B2B6-42D5-9C41-5269A84BC96C][An observation is stored once per source and never stamped on the trades it fixes]] —
+9. [[id:C6A619F3-B2B6-42D5-9C41-5269A84BC96C][Storage of fixing observations apart from trades]] —
    the storage principle and its invariants.
-10. [[id:B5CA0D8F-D9C5-4F09-ABD7-7ED6F0FEF1A5][Fixing management authorises every fixing that live trades require]] —
+10. [[id:B5CA0D8F-D9C5-4F09-ABD7-7ED6F0FEF1A5][Fixing management and its controls]] —
     the operational view and the control reports.
-11. [[id:D4CA27E5-8194-470B-A422-B77C53545560][A fixing replaces a projected rate with an observed one]] —
+11. [[id:D4CA27E5-8194-470B-A422-B77C53545560][Effects of fixings on valuation, risk and P&L]] —
     valuation, risk jumps and attribution.
 12. [[id:2400E0FE-AEF0-4F9A-8392-F7D2E0E2A1E2][A data model for fixings]] —
     the entities, and what ORE Studio holds today.
-13. [[id:5AF9CEEF-A878-443A-8C32-C6E9F6C26FC9][Each option cut requires a fixing source observed at its instant]] —
+13. [[id:5AF9CEEF-A878-443A-8C32-C6E9F6C26FC9][Fixing sources for option cuts and non-deliverable currencies]] —
     the standard sources, the cut each serves, and their producers.
-14. [[id:F24FA489-790A-4065-B8E1-DCC141595356][A simulated fixing source is a publisher the simulator serves]] —
+14. [[id:F24FA489-790A-4065-B8E1-DCC141595356][Simulated fixing sources in the market data pipeline]] —
     how the simulator produces the fixings of a simulated source.
 
 ** Neighbouring notes

@@ -9,6 +9,16 @@ word, active voice, simple tense, one instruction per sentence, short
 sentences. Do not apply STE100 rewriting to structured output — JSON,
 diffs, code, commit messages, or command output.
 
+**Knowledge pages (Zettelkasten pages):** any page under `doc/knowledge`
+follows the house style in `doc/knowledge/documentation/zettelkasten.org`,
+sections *Creating a knowledge document* and *The house style*. Read them
+before writing. In short: search first and link instead of repeating;
+academic prose; every claim derived, cited or labelled unsupported, with
+academic papers preferred and private notes never cited; a title that reads
+like an academic paper title (a noun phrase, never a sentence); the file name
+is the title in snake case. Review with the `compass-doc-review-academic`
+skill before committing.
+
 **Code comments:** the `compass-code-review-comments` skill sets the rules for
 every comment in code we create or edit: use comments sparingly, remove
 commented-out code, never narrate edit history, never use end-of-line

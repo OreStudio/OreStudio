@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: C6A619F3-B2B6-42D5-9C41-5269A84BC96C
 :END:
-#+title: An observation is stored once per source and never stamped on the trades it fixes
+#+title: Storage of fixing observations apart from trades
 #+description: Observations live with their source; a trade expands its own schedule into observed and projected fixings on load.
 #+type: knowledge
 #+audience: user
@@ -41,14 +41,14 @@ the trades pick it up when they are next read.
 3. *Official observations of a source form an unbroken prefix in time.* This
    is what lets a future fixing keyed in advance stay dormant until the
    fixings before it are official. See
-   [[id:CA61B445-B6DC-41D3-ACF9-D3FB32D0D342][The fixing process observes, authorises, applies and can undo an observation]].
+   [[id:CA61B445-B6DC-41D3-ACF9-D3FB32D0D342][The fixing process: observation, authorisation, application and reversal]].
 
 ** Projected fixings are not observations
 
 A projected fixing is a value computed for valuation, such as a forward rate
 for a future coupon. It is not saved as an observation, or, if saved, it is
 marked as a projection, so that it can never be mistaken for a published value.
-See [[id:D4CA27E5-8194-470B-A422-B77C53545560][A fixing replaces a projected rate with an observed one]].
+See [[id:D4CA27E5-8194-470B-A422-B77C53545560][Effects of fixings on valuation, risk and P&L]].
 
 ** In ORE Studio
 

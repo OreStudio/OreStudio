@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 7B09CA1B-606D-493F-A784-676BAE701FC8
 :END:
-#+title: The WM/Reuters 4pm fix is the dominant FX benchmark
+#+title: The WM/Reuters 4pm fix as the dominant FX benchmark
 #+description: The WM/R 4pm London fix is a median of market rates over a five-minute window; the ECB rate is its main peer.
 #+type: knowledge
 #+audience: user
@@ -19,7 +19,7 @@ described it in 2014 as "by far the dominant benchmark" in FX, used also as an
 input to multi-currency equity, bond and credit indices, alongside the
 European Central Bank's euro reference rates, published at about 14:15 CET.
 ORE Studio fixes its simulated FX cut sources on the WM/R family; see
-[[id:5AF9CEEF-A878-443A-8C32-C6E9F6C26FC9][Each option cut requires a fixing source observed at its instant]].
+[[id:5AF9CEEF-A878-443A-8C32-C6E9F6C26FC9][Fixing sources for option cuts and non-deliverable currencies]].
 
 * Detail
 

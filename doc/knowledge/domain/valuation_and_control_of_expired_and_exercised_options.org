@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 49E61902-364C-4729-A53E-D55873D9A03D
 :END:
-#+title: Expired and exercised options are valued for control, not for P&L
+#+title: Valuation and control of expired and exercised options
 #+description: After expiry an option leaves P&L, but it is still valued to catch wrong decisions; controls check each cut.
 #+type: knowledge
 #+audience: user
@@ -40,7 +40,7 @@ amendments and cancellations and before fixings; an exercise pairs an amended
 option with a new FX or cash trade, which net together but each look like a
 break alone. The activity components are in [[id:B50355E0-F016-4CA1-9932-404DAF83EA7A][P&L Attribution]], and
 the fixings that follow expiries are in
-[[id:D4CA27E5-8194-470B-A422-B77C53545560][A fixing replaces a projected rate with an observed one]].
+[[id:D4CA27E5-8194-470B-A422-B77C53545560][Effects of fixings on valuation, risk and P&L]].
 
 ** Controls
 
@@ -54,14 +54,14 @@ the fixings that follow expiries are in
 | Non-deliverable warnings | Holiday conflicts on expiry, delivery and fixing dates |
 
 The fixing controls are in
-[[id:B5CA0D8F-D9C5-4F09-ABD7-7ED6F0FEF1A5][Fixing management authorises every fixing that live trades require]].
+[[id:B5CA0D8F-D9C5-4F09-ABD7-7ED6F0FEF1A5][Fixing management and its controls]].
 The front-office screen marks expired trades and those expiring or maturing
 today; see [[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade Blotter]].
 
 * See also
 
 - [[id:C9887852-42C9-48BE-8E8C-BB66FCC48E83][Expiries]] — the structure note.
-- [[id:0E638BE0-E3DA-4D05-A2FC-0F52FC1D24FC][Every expiry event has an inverse]] — completes: the reversals these controls catch.
+- [[id:0E638BE0-E3DA-4D05-A2FC-0F52FC1D24FC][Reversal of expiry events and post-expiry option states]] — completes: the reversals these controls catch.
 
 * Sources
 

@@ -70,6 +70,11 @@ prose and says nothing about its title, and no lint checks titles. Each such pag
 then serves as precedent for the next, which is how the scripted trade pages came
 to copy them.
 
+The rule is now written down: /Titles/ in [[id:E3B70401-5142-4ACC-A61F-1BBF19F8470F][Zettelkasten]] states it, the
+knowledge document contract and the academic prose review point at it, and
+=CLAUDE.md= names it. Two parts remain: the lint, and the retitling of the pages
+the scan finds.
+
 The fix should leave a structure behind, not only renamed pages: a rule on titles
 in the academic review skill and in the knowledge document contract, and a
 compass-ng lint that flags a knowledge title written as a finite clause, so a new

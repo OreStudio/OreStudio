@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 53DB3AF1-6FA4-4B53-9D8E-A65F739F6F4D
 :END:
-#+title: A fixing date follows the calendar of the rate it observes
+#+title: Fixing dates and holiday calendars
 #+description: Fixing holidays belong to the observed rate, not to the coupon; an NDF derives its fixing date from its delivery.
 #+type: knowledge
 #+audience: user

@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 1BA05AA4-1B24-48B4-83F9-366624D0A88E
 :END:
-#+title: Products that settle on fixings
+#+title: Fixing requirements by product
 #+description: Swaps, NDFs, NDOs, digitals, discrete barriers, averages and volatility swaps each need fixings for a different result.
 #+type: knowledge
 #+audience: user
@@ -73,13 +73,13 @@ fixing taken some days before payment. The two legs may convert into different
 settlement currencies and settle on different dates. The order is fixed:
 authorise the observation, store it, then update every affected trade, generate
 its coupons and net the cash. See
-[[id:CA61B445-B6DC-41D3-ACF9-D3FB32D0D342][The fixing process observes, authorises, applies and can undo an observation]].
+[[id:CA61B445-B6DC-41D3-ACF9-D3FB32D0D342][The fixing process: observation, authorisation, application and reversal]].
 
 * See also
 
 - [[id:784D9D97-721A-42EC-BA91-A85764979CD0][Fixings]] — the structure note.
-- [[id:0CBDBE85-17DF-4A77-A231-FFB2101FC0CC][A fixing automates the decision an expiry leaves to the holder]] — completes: which event handles which product.
-- [[id:D4CA27E5-8194-470B-A422-B77C53545560][A fixing replaces a projected rate with an observed one]] — completes: what the fixing does to value.
+- [[id:0CBDBE85-17DF-4A77-A231-FFB2101FC0CC][Fixing-determined and holder-determined exercise]] — completes: which event handles which product.
+- [[id:D4CA27E5-8194-470B-A422-B77C53545560][Effects of fixings on valuation, risk and P&L]] — completes: what the fixing does to value.
 
 * Sources
 

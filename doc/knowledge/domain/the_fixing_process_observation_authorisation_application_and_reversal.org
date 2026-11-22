@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: CA61B445-B6DC-41D3-ACF9-D3FB32D0D342
 :END:
-#+title: The fixing process observes, authorises, applies and can undo an observation
+#+title: The fixing process: observation, authorisation, application and reversal
 #+description: An observation is collected, authorised by operations, applied to every subscribed trade by an event, and can be undone.
 #+type: knowledge
 #+audience: user
@@ -61,7 +61,7 @@ future fixing keyed in advance therefore stays dormant until every fixing
 between now and its date is official.
 
 Observations are stored once and never stamped on the trades; see
-[[id:C6A619F3-B2B6-42D5-9C41-5269A84BC96C][An observation is stored once per source and never stamped on the trades it fixes]].
+[[id:C6A619F3-B2B6-42D5-9C41-5269A84BC96C][Storage of fixing observations apart from trades]].
 
 ** Undo
 
@@ -87,7 +87,7 @@ unfix is an event, gives the undo and the audit for free.
 * See also
 
 - [[id:784D9D97-721A-42EC-BA91-A85764979CD0][Fixings]] — the structure note.
-- [[id:B5CA0D8F-D9C5-4F09-ABD7-7ED6F0FEF1A5][Fixing management authorises every fixing that live trades require]] — completes: the views and the controls.
+- [[id:B5CA0D8F-D9C5-4F09-ABD7-7ED6F0FEF1A5][Fixing management and its controls]] — completes: the views and the controls.
 - [[id:24748A22-DB67-4E22-A52F-5D0FBA668D10][Trade]] — completes: the trade life cycle the fixings drive.
 
 * Sources

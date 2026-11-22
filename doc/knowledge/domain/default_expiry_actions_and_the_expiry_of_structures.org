@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 04278F00-8B96-4987-9AF1-61E971B9087C
 :END:
-#+title: A structure expires as a single unit
+#+title: Default expiry actions and the expiry of structures
 #+description: Each product has a default expiry action; a structure is expired and netted as one, by FX or by cash.
 #+type: knowledge
 #+audience: user
@@ -32,14 +32,14 @@ cash flow, before they reach the ledger.
 | Generic structure | Cash settled if it holds digitals that share a rebate currency; otherwise exercised into FX |
 
 The default is a starting point that the holder's decision can override; see
-[[id:970D334D-2576-41BF-8664-1AA4CB76D31B][An option near the money at its cut makes expiry a matter of judgement]].
+[[id:970D334D-2576-41BF-8664-1AA4CB76D31B][Pin risk in the expiry of near-the-money options]].
 
 ** Which process handles which product
 
 A product is handled by expiry management, by fixing management, or by barrier
 monitoring, according to whether its outcome waits for the holder or follows
 from a fixing. The table is in
-[[id:0CBDBE85-17DF-4A77-A231-FFB2101FC0CC][A fixing automates the decision an expiry leaves to the holder]].
+[[id:0CBDBE85-17DF-4A77-A231-FFB2101FC0CC][Fixing-determined and holder-determined exercise]].
 Barrier monitoring and expiry management can share their logic, but they serve
 different decisions and show different fields, so traders use them as two
 views.
@@ -70,7 +70,7 @@ of an expiry.
 * See also
 
 - [[id:C9887852-42C9-48BE-8E8C-BB66FCC48E83][Expiries]] — the structure note.
-- [[id:16A04B6A-AB93-4C50-9273-E18CC0130C5F][Expiry resolves an option by exercise, lapse or fixing]] — completes: how each action settles.
+- [[id:16A04B6A-AB93-4C50-9273-E18CC0130C5F][Option expiry outcomes and exercise styles]] — completes: how each action settles.
 
 * Sources
 

@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: F24FA489-790A-4065-B8E1-DCC141595356
 :END:
-#+title: A simulated fixing source is a publisher the simulator serves
+#+title: Simulated fixing sources in the market data pipeline
 #+description: The simulator fixes each simulated source from its own market at the source's time and publishes durable fixing ticks.
 #+type: knowledge
 #+audience: user
@@ -86,7 +86,7 @@ again adds nothing.
 
 A fixing item has one producer: an observed publisher where one exists, a
 fixing generator otherwise. The catalogue of sources states which; see
-[[id:5AF9CEEF-A878-443A-8C32-C6E9F6C26FC9][Each option cut requires a fixing source observed at its instant]].
+[[id:5AF9CEEF-A878-443A-8C32-C6E9F6C26FC9][Fixing sources for option cuts and non-deliverable currencies]].
 An overnight rate with a public adapter is therefore never simulated, and a
 cut source such as WM/R, which is licensed, is always simulated.
 

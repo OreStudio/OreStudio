@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 6A625509-CD9A-4D13-8E16-37B75A4AED83
 :END:
-#+title: A derived fixing source composes the fixings of its parent sources
+#+title: Derived and composite fixing sources
 #+description: A cross or composite fixing is computed from two parent fixings, which may be published at different times.
 #+type: knowledge
 #+audience: user
@@ -45,7 +45,7 @@ once the later parent is published. See
 
 A view of required fixings should show, for a derived source, the parent
 sources it was computed from, so that an authoriser can check each parent. See
-[[id:B5CA0D8F-D9C5-4F09-ABD7-7ED6F0FEF1A5][Fixing management authorises every fixing that live trades require]].
+[[id:B5CA0D8F-D9C5-4F09-ABD7-7ED6F0FEF1A5][Fixing management and its controls]].
 
 * See also
 

@@ -1,0 +1,125 @@
+The market data supply, the parties' rights, and where the data sits
+====================================================================
+
+Measured on the provisioned acme_demo tenant at commit 7bb52278f6. Each table
+names the query file beside this one that produces it.
+
+
+1. Who can supply an item
+-------------------------
+Query: market_data_suppliers.sql
+
+  supplier  | asset_class |  form  | items
+------------+-------------+--------+-------
+ banxico    | ir          | fixing |     1
+ bcb        | ir          | fixing |     1
+ bcch       | ir          | fixing |     1
+ bloomberg  | fx          | series |   936
+ bloomberg  | ir          | series |   336
+ boc        | fx          | fixing |    27
+ boc        | ir          | fixing |     1
+ boe        | ir          | fixing |     1
+ boj        | ir          | fixing |     1
+ cnb        | ir          | fixing |     1
+ demo       | fx          | series |    11
+ demo       | ir          | series |    60
+ derived    | fx          | series |  2275
+ ecb        | fx          | fixing |    44
+ ecb        | ir          | fixing |     1
+ ice        | fx          | series |   910
+ ice        | ir          | series |    56
+ imf        | fx          | fixing |    48
+ lseg       | fx          | series |    14
+ mas        | ir          | fixing |     1
+ norgesbank | ir          | fixing |     1
+ nyfed      | ir          | fixing |     1
+ ore        | fx          | fixing |     2
+ rba        | ir          | fixing |     1
+ riksbank   | ir          | fixing |     1
+ tcmb       | fx          | fixing |    21
+ tradeweb   | fx          | series |   910
+ tradeweb   | ir          | series |    49
+
+Every FX fixing mapping belongs to a public publisher and none to a data vendor:
+ECB 44, IMF 48, BOC 27, TCMB 21, and two =ore= rows that name test ids. The
+vendors supply FX spot only. So a trade that names the 4pm London convention,
+which ORE spells =TR20H=, names a convention with no supplier in this catalogue.
+
+
+2. Who may read what
+--------------------
+Query: party_market_data_rights.sql
+
+          party          |    grant     | publisher | asset_class |           detail
+-------------------------+--------------+-----------+-------------+----------------------------
+ ACCOHK                  | route        | bloomberg | fx          | bloomberg
+ ACCOHK                  | route        | derived   | fx          | derived
+ ACCOHK                  | route        | ice       | fx          | ice
+ ACCOHK                  | route        | tradeweb  | fx          | tradeweb
+ ACCOHK                  | subscription | bloomberg | derived     | display,non-display,derived
+ ACCOHK                  | subscription | derived   | derived     | display,non-display,derived
+ ACCOHK                  | subscription | ice       | derived     | display,non-display,derived
+ ACCOHK                  | subscription | tradeweb  | derived     | display,non-display,derived
+ ACCOUK                  | route        | bloomberg | fx          | bloomberg
+ ACCOUK                  | route        | demo      | fx          | demo
+ ACCOUK                  | route        | derived   | fx          | derived
+ ACCOUK                  | route        | ice       | fx          | ice
+ ACCOUK                  | route        | tradeweb  | fx          | tradeweb
+ ACCOUK                  | subscription | bloomberg | derived     | display,non-display,derived
+ ACCOUK                  | subscription | demo      | derived     | display,non-display,derived
+ ACCOUK                  | subscription | derived   | derived     | display,non-display,derived
+ ACCOUK                  | subscription | ice       | derived     | display,non-display,derived
+ ACCOUK                  | subscription | tradeweb  | derived     | display,non-display,derived
+ ACCOUS                  | route        | bloomberg | fx          | bloomberg
+ ACCOUS                  | route        | derived   | fx          | derived
+ ACCOUS                  | route        | ice       | fx          | ice
+ ACCOUS                  | route        | lseg      | fx          | lseg
+ ACCOUS                  | route        | tradeweb  | fx          | tradeweb
+ ACCOUS                  | subscription | bloomberg | derived     | display,non-display,derived
+ ACCOUS                  | subscription | derived   | derived     | display,non-display,derived
+ ACCOUS                  | subscription | ice       | derived     | display,non-display,derived
+ ACCOUS                  | subscription | lseg      | derived     | display,non-display,derived
+ ACCOUS                  | subscription | tradeweb  | derived     | display,non-display,derived
+ ACMCOR                  | route        | bloomberg | fx          | bloomberg
+ ACMCOR                  | route        | derived   | fx          | derived
+ ACMCOR                  | route        | ice       | fx          | ice
+ ACMCOR                  | route        | tradeweb  | fx          | tradeweb
+ ACMCOR                  | subscription | bloomberg | derived     | display,non-display,derived
+ ACMCOR                  | subscription | derived   | derived     | display,non-display,derived
+ ACMCOR                  | subscription | ice       | derived     | display,non-display,derived
+ ACMCOR                  | subscription | tradeweb  | derived     | display,non-display,derived
+ acme_corporation_system | route        | bloomberg | fx          | bloomberg
+ acme_corporation_system | subscription | bloomberg | derived     | display,non-display,derived
+
+Every route names =fx= and every one points at a vendor or the derived feed. No
+acme party routes or subscribes to a public publisher, and none routes an
+interest rate publisher at all. The system tenant's party does: 21 (publisher,
+asset class) pairs, including ecb/fx, imf/fx, boc/fx, tcmb/fx and sixteen
+interest rate publishers.
+
+The rights granted are the same for every subscription: display, non-display and
+derived. So the columns do not distinguish the parties; the providers do.
+
+
+3. Where the data sits
+----------------------
+Query: market_data_storage.sql
+
+      tenant      | asset_class |  form  | series | parties
+------------------+-------------+--------+--------+---------
+ acme_corporation | fx          | series |    612 |       5
+ acme_corporation | ir          | series |    535 |       5
+ system           | fx          | fixing |    132 |       1
+ system           | fx          | series |    138 |       1
+ system           | ir          | fixing |     51 |       1
+ system           | ir          | series |    109 |       2
+
+                   tenant                   | fixings | parties
+--------------------------------------------+---------+---------
+ system                                     |  325571 |       1
+ marketdata_corpus_20261121_184404_129_9767 |   13639 |       1
+ marketdata_export_20261121_184351_129_3223 |       2 |       1
+
+The acme tenant holds prices and curves and no fixing of any class; the system
+tenant keeps the durable fixings, as the design intends. The other fixing rows
+belong to the market data tests' own tenants, not to a provision.

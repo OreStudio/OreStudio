@@ -610,7 +610,7 @@ feeds it answers with, because a caller reads it beside the config list.
 
 ** stop_simulated_source_request
 :PROPERTIES:
-:subject: synthetic.v1.simulated_sources.stop
+:subject: synthetic.v1.ops.stop_simulated_source
 :response: stop_simulated_source_response
 :END:
 #+begin_src cpp :name comment
@@ -666,7 +666,7 @@ feeds it answers with, because a caller reads it beside the config list.
 
 ** start_simulated_source_request
 :PROPERTIES:
-:subject: synthetic.v1.simulated_sources.start
+:subject: synthetic.v1.ops.start_simulated_source
 :response: start_simulated_source_response
 :END:
 #+begin_src cpp :name comment

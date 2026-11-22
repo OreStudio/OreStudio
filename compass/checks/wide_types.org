@@ -82,13 +82,13 @@ when its type sheds fields; remove it when the type is at or under fifteen.
 | projects/ores.analytics/quant/include/ores.analytics.quant/service/tick_scheduler.hpp | tick_scheduler | 32 |
 | projects/ores.ore/core/include/ores.ore.core/xml/generated/portfolio.hpp | leg_data_capfloor | 32 |
 | projects/ores.ore/core/include/ores.ore.core/xml/generated/portfolio.hpp | worst_of_basket_swap_data2 | 32 |
-| projects/ores.synthetic/core/include/ores.synthetic.core/repository/fx_vol_surface_feed_entity.hpp | fx_vol_surface_feed_entity | 32 |
+| projects/ores.synthetic/core/include/ores.synthetic.core/repository/fx_vol_surface_feed_entity.hpp | fx_vol_surface_feed_entity | 34 |
 | projects/ores.trading/core/include/ores.trading.core/repository/fx_barrier_option_instrument_entity.hpp | fx_barrier_option_instrument_entity | 32 |
 | projects/ores.trading/core/include/ores.trading.core/repository/fx_worst_of_basket_swap_instrument_entity.hpp | fx_worst_of_basket_swap_instrument_entity | 32 |
 | projects/ores.trading/core/include/ores.trading.core/repository/instrument_schedule_entity.hpp | instrument_schedule_entity | 32 |
 | projects/ores.refdata/core/include/ores.refdata.core/repository/book_change_entity.hpp | book_change_entity | 31 |
 | projects/ores.refdata/core/include/ores.refdata.core/repository/csa_entity.hpp | csa_entity | 31 |
-| projects/ores.synthetic/api/include/ores.synthetic.api/domain/fx_vol_surface_feed.hpp | fx_vol_surface_feed | 31 |
+| projects/ores.synthetic/api/include/ores.synthetic.api/domain/fx_vol_surface_feed.hpp | fx_vol_surface_feed | 33 |
 | projects/ores.trading/api/include/ores.trading.api/domain/instrument_schedule.hpp | instrument_schedule | 31 |
 | projects/ores.refdata/api/include/ores.refdata.api/domain/book_change.hpp | book_change | 30 |
 | projects/ores.refdata/api/include/ores.refdata.api/domain/csa.hpp | csa | 30 |
@@ -218,7 +218,7 @@ when its type sheds fields; remove it when the type is at or under fifteen.
 | projects/ores.refdata/core/include/ores.refdata.core/repository/ois_convention_entity.hpp | ois_convention_entity | 23 |
 | projects/ores.refdata/core/include/ores.refdata.core/repository/yield_curve_config_entity.hpp | yield_curve_config_entity | 23 |
 | projects/ores.reporting/api/include/ores.reporting.api/domain/ore_parameter.hpp | ore_parameter | 23 |
-| projects/ores.synthetic/api/include/ores.synthetic.api/messaging/fx_vol_surface_feed_protocol.hpp | fx_vol_surface_feed_write | 23 |
+| projects/ores.synthetic/api/include/ores.synthetic.api/messaging/fx_vol_surface_feed_protocol.hpp | fx_vol_surface_feed_write | 25 |
 | projects/ores.synthetic/core/include/ores.synthetic.core/repository/trade_generation_config_entity.hpp | trade_generation_config_entity | 23 |
 | projects/ores.synthetic/core/src/service/trade_population_planner.cpp | drawn_commodity | 23 |
 | projects/ores.synthetic/service/src/derived_fx_vol_adapter.hpp | derived_fx_vol_adapter | 23 |

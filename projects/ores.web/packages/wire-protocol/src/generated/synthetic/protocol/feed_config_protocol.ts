@@ -463,8 +463,8 @@ export const subjects = {
     stop_feed_request: 'synthetic.v1.ops.stop_feed',
     list_feeds_request: 'synthetic.v1.feed_configs.list',
     list_simulated_sources_request: 'synthetic.v1.simulated_sources.list',
-    stop_simulated_source_request: 'synthetic.v1.simulated_sources.stop',
-    start_simulated_source_request: 'synthetic.v1.simulated_sources.start',
+    stop_simulated_source_request: 'synthetic.v1.ops.stop_simulated_source',
+    start_simulated_source_request: 'synthetic.v1.ops.start_simulated_source',
     calibrate_request: 'synthetic.v1.ops.calibrate_feeds',
     review_variance_calibration_request: 'synthetic.v1.ops.review_variance_calibration',
 } as const;

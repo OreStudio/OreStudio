@@ -319,7 +319,7 @@ struct list_simulated_sources_response {
  */
 struct stop_simulated_source_request {
     using response_type = struct stop_simulated_source_response;
-    static constexpr std::string_view nats_subject = "synthetic.v1.simulated_sources.stop";
+    static constexpr std::string_view nats_subject = "synthetic.v1.ops.stop_simulated_source";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -354,7 +354,7 @@ struct stop_simulated_source_response {
  */
 struct start_simulated_source_request {
     using response_type = struct start_simulated_source_response;
-    static constexpr std::string_view nats_subject = "synthetic.v1.simulated_sources.start";
+    static constexpr std::string_view nats_subject = "synthetic.v1.ops.start_simulated_source";
     /**
      * @brief Whether the caller must have established a session first.
      *

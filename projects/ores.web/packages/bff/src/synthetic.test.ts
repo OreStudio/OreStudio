@@ -1917,7 +1917,7 @@ describe('synthetic operations', () => {
 
     it('stops a simulated source with the reason the person gave', async () => {
         const { server, sessionId, calls } = buildTestServer({
-            'synthetic.v1.simulated_sources.stop': {
+            'synthetic.v1.ops.stop_simulated_source': {
                 success: true,
                 message: 'Stopped bloomberg-a',
             },
@@ -1952,7 +1952,7 @@ describe('synthetic operations', () => {
 
     it('starts a stopped simulated source', async () => {
         const { server, sessionId, calls } = buildTestServer({
-            'synthetic.v1.simulated_sources.start': {
+            'synthetic.v1.ops.start_simulated_source': {
                 success: true,
                 message: 'Started bloomberg-a',
             },

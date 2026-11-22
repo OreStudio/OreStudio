@@ -280,16 +280,14 @@ TEST_CASE("a tick whose run has not published what the surface reads says which 
             {.date = std::chrono::year_month_day{}, .discount_factor = 1.0},
             {.date = std::chrono::year_month_day{}, .discount_factor = factor}};
     };
-    const auto eur =
-        market.values().member_of(ores::analytics::quant::domain::market_member_kind::curve,
-                                  curve_member_code({}, "EUR"));
+    const auto eur = market.values().member_of(
+        ores::analytics::quant::domain::market_member_kind::curve, curve_member_code({}, "EUR"));
     market.values().publish_curve(eur, std::chrono::year_month_day{}, flat(0.97), at);
     CHECK(tick() == "no market: curve:" + curve_member_code({}, "USD"));
     CHECK(feed.publish_count() == 0);
 
-    const auto usd_id =
-        market.values().member_of(ores::analytics::quant::domain::market_member_kind::curve,
-                                  curve_member_code({}, "USD"));
+    const auto usd_id = market.values().member_of(
+        ores::analytics::quant::domain::market_member_kind::curve, curve_member_code({}, "USD"));
     market.values().publish_curve(usd_id, std::chrono::year_month_day{}, flat(0.99), at);
     CHECK(tick() == "no market: spot:EUR/USD");
     CHECK(feed.publish_count() == 0);
@@ -357,8 +355,10 @@ TEST_CASE("a contributor no adapter serves records its points while the vendors 
              .discount_factor = std::exp(-rate)}};
     };
     const auto at = system_clock::now();
-    const auto eur = market.values().member_of(market_member_kind::curve, curve_member_code({}, "EUR"));
-    const auto usd = market.values().member_of(market_member_kind::curve, curve_member_code({}, "USD"));
+    const auto eur =
+        market.values().member_of(market_member_kind::curve, curve_member_code({}, "EUR"));
+    const auto usd =
+        market.values().member_of(market_member_kind::curve, curve_member_code({}, "USD"));
     const auto spot = market.values().member_of(market_member_kind::spot, "EUR/USD");
     market.values().publish_curve(eur, spot_date, flat(0.03), at);
     market.values().publish_curve(usd, spot_date, flat(0.01), at);

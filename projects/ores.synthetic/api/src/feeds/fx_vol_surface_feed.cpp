@@ -253,9 +253,8 @@ fx_vol_surface_feed::fx_vol_surface_feed(
     // by the one function its feed publishes it under, so the two agree by construction.
     {
         auto& values = market_.values();
-        base_curve_id_ =
-            values.member_of(ores::analytics::quant::domain::market_member_kind::curve,
-                             curve_member_code(input.config.config_id, base));
+        base_curve_id_ = values.member_of(ores::analytics::quant::domain::market_member_kind::curve,
+                                          curve_member_code(input.config.config_id, base));
         quote_curve_id_ =
             values.member_of(ores::analytics::quant::domain::market_member_kind::curve,
                              curve_member_code(input.config.config_id, quote));

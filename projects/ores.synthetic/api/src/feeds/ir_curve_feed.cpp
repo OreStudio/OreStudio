@@ -467,24 +467,24 @@ std::shared_ptr<ir_curve_feed> make_ir_curve_feed(
                                  record.value.to_string() + ", its fixed initial rate")
         << (record.note.empty() ? "" : ". " + record.note);
 
-    auto feed = std::make_shared<ir_curve_feed>(nats,
-                                                cfg.source_name,
-                                                producer_subject(cfg.source_name),
-                                                cfg.currency_code,
-                                                ir_curve_index_tenor(cfg),
-                                                cfg.role,
-                                                ir_curve_discounts_its_currency(cfg) ?
-                                                    std::optional(curve_member_code(
-                                                        cfg.config_id, cfg.currency_code)) :
-                                                    std::nullopt,
-                                                std::move(process),
-                                                arrival,
-                                                std::move(resolved),
-                                                market,
-                                                step_speed,
-                                                cfg.sensitivity,
-                                                std::move(adapter_targets),
-                                                refctx.spot);
+    auto feed = std::make_shared<ir_curve_feed>(
+        nats,
+        cfg.source_name,
+        producer_subject(cfg.source_name),
+        cfg.currency_code,
+        ir_curve_index_tenor(cfg),
+        cfg.role,
+        ir_curve_discounts_its_currency(cfg) ?
+            std::optional(curve_member_code(cfg.config_id, cfg.currency_code)) :
+            std::nullopt,
+        std::move(process),
+        arrival,
+        std::move(resolved),
+        market,
+        step_speed,
+        cfg.sensitivity,
+        std::move(adapter_targets),
+        refctx.spot);
     feed->record_start_source(std::move(record));
 
     // The curve also states the fixings of its own index, because a generated leg that has

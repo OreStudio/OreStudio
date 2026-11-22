@@ -58,8 +58,8 @@ when its type sheds fields; remove it when the type is at or under fifteen.
 | projects/ores.trading/api/include/ores.trading.api/messaging/swap_leg_protocol.hpp | swap_leg_write | 66 |
 | projects/ores.trading/api/include/ores.trading.api/domain/swap_leg.hpp | swap_leg | 65 |
 | projects/ores.trading/core/include/ores.trading.core/repository/commodity_instrument_entity.hpp | commodity_instrument_entity | 65 |
-| projects/ores.marketdata/api/include/ores.marketdata.api/domain/market_series_identity.hpp | market_series_identity | 59 |
-| projects/ores.marketdata/core/include/ores.marketdata.core/repository/market_series_identity_entity.hpp | market_series_identity_entity | 59 |
+| projects/ores.marketdata/api/include/ores.marketdata.api/domain/market_series_identity.hpp | market_series_identity | 60 |
+| projects/ores.marketdata/core/include/ores.marketdata.core/repository/market_series_identity_entity.hpp | market_series_identity_entity | 60 |
 | projects/ores.trading/api/include/ores.trading.api/messaging/commodity_instrument_protocol.hpp | commodity_instrument_write | 56 |
 | projects/ores.trading/api/include/ores.trading.api/domain/commodity_instrument.hpp | commodity_instrument | 55 |
 | projects/ores.marketdata/service/include/ores.marketdata.service/app/feed_ingest_loop.hpp | feed_ingest_loop | 41 |

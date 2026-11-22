@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: EA2E8BAA-6EA8-45A0-B9F0-8E3ECC9079B2
+:END:
+#+title: Provision the database user the orgmode service needs
+#+description: The orgmode service has a unit and a pooler configuration, and its unit was never deployed, so the fleet reported it missing rather than stopped. Deployed, it exits at once: db-user is required but not set, and no ORES_ORGMODE_SERVICE_DB_USER exists in the environment.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-11-22
+#+updated: 2026-11-22
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Provision a database role and user for =ores.orgmode.service=, and state it in
+the environment as =ORES_ORGMODE_SERVICE_DB_USER=, so the service starts instead
+of exiting on its first line.
+
+* Why
+
+The registry names the service, =compass systemd generate= emits its unit and a
+=pooler.conf= drop-in, and =compass systemd deploy= installs both. Nothing gives
+it a database identity, so:
+
+#+begin_src
+ores.orgmode.service-brave_hopper.service:
+Error: db-user is required but not set. Set ORES_<APP>_DB_USER environment variable.
+Failed to execute command.
+#+end_src
+
+The gap was invisible until the unit was deployed: =compass services status= said
+=missing (unit not loaded)=, which reads as a service this tree does not have,
+rather than one it has and cannot run. Deploying it turned a missing service into
+a restart loop, which is worse, and stopping it leaves the fleet one service
+short of its target.
+
+* How it was found
+
+Deploying the units for the CORS change (2026-11-22) installed the orgmode unit
+for the first time, alongside the one change that was meant. Starting it failed
+and it began restarting; it was stopped rather than left looping.
+
+* References
+
+- =projects/modeling/service_registry.org= (=ores.orgmode.service=)
+- =journalctl --user -u ores.orgmode.service-brave_hopper=
+
+* See also
+
+-

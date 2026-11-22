@@ -168,6 +168,7 @@ the order, the states and the screens read one structure.
 |------+-------+-------+-----+-------------|
 | [[id:642ED805-A23C-404F-B494-8A74BB8AEB12][Design the synthetic feed naming scheme, based on oresmd, for sign-off]] | DONE | 2026-11-22 | 2026-11-22 | A scheme for the source names of synthetic feeds, built from the oresmd identity of what each feed observes and who produces it, settled with the owner and written into the documentation before any feed is renamed. |
 | [[id:46546EEB-580D-4C37-9398-422D3A18D692][Design the synthetic feed graph: nodes, edges, states and diagnostics]] | DONE | 2026-11-22 | 2026-11-22 | A design note for the feed graph: how its nodes and edges are stored, how a node's state and reason are kept and propagated, and where each node's messages live, settled with the owner before any of it is built. |
+| [[id:B7B370E1-1C20-4474-8C0F-4160ADE6AACD][Rename the synthetic feeds by the scheme and give the latent surfaces their own collection]] | STARTED | 2026-11-22 | | Every synthetic feed takes its name from the signed-off scheme, the latent vol surfaces move out of the Bloomberg collection into a provider-less latent collection, and a surface's two discounting curves become stored edges. |
 
 * Decisions
 

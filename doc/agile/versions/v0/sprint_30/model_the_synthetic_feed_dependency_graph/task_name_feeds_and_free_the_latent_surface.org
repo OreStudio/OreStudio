@@ -1,0 +1,118 @@
+:PROPERTIES:
+:ID: B7B370E1-1C20-4474-8C0F-4160ADE6AACD
+:END:
+#+title: Task: Rename the synthetic feeds by the scheme and give the latent surfaces their own collection
+#+description: Every synthetic feed takes its name from the signed-off scheme, the latent vol surfaces move out of the Bloomberg collection into a provider-less latent collection, and a surface's two discounting curves become stored edges.
+#+type: task
+#+level: s1
+#+filetags: :synthetic:naming:graph:model_the_synthetic_feed_dependency_graph:sprint_30:v0:
+#+owner: marco
+#+branch: feature/name-feeds-and-free-the-latent-surface
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8DE041AE-95E6-40CE-9B62-2CE3BA77838A][Model the synthetic feeds as a dependency graph: upstreams, latent surfaces and vendor views]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every synthetic feed is named by the signed-off scheme, wherever a name is made: the publish, the screens' Add dialogs and the adapters' holds. The latent vol surfaces leave the Bloomberg collection for a latent collection of their own, seeded by their own dataset, and each names its spot and its two discounting curves as stored edges, so no edge is found by a rule.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:8DE041AE-95E6-40CE-9B62-2CE3BA77838A][Model the synthetic feeds as a dependency graph: upstreams, latent surfaces and vendor views]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-22                               |
+
+* Acceptance
+
+- Every seeded feed carries its scheme name, and a test refuses two feeds that derive one name.
+- A vendor's quotes of a surface run under the vendor's own fx_option name.
+- The latent surfaces are in a latent collection with no provider, seeded by synthetic.feeds.latent, and the Provider tab still shows them.
+- A surface stores its base and quote discounting curves by name, a curve publishes to the board under its own name, and the surface reads the curves it names.
+- The vol ticks still publish live for every pair, and the Calibration tab links the stored curves.
+
+* Plan
+
+One PR, by the owner's choice, in slices that each end in a check.
+
+1. *A system provider.* The provider's kind gains =system=: a provider no
+   tenant or party sees. The provider table's shared read admits a system
+   tenant row only when its kind is not =system=, through a new optional model
+   flag, =rls_shared_read_condition=, that the RLS template appends to the
+   system-tenant clause (an entity without the flag generates byte-identical
+   SQL). The provider validation runs as the table's owner, so a subscription
+   to a =system= provider is refused explicitly. The =latent= provider is
+   seeded with kind =system=. Tests: a tenant reads no =latent= provider; the
+   system tenant reads it; a tenant's subscription to it is refused.
+2. *The latent collection.* A dataset =synthetic.feeds.latent= seeds the vol
+   surfaces, their expiries, contributors and links, which leave the Bloomberg
+   dataset. Its feeds name the =latent= provider, so the publish makes a
+   =latent= collection as it makes any other. The artefact carries the spot
+   pair and the two curve names, since the collection no longer gives them.
+3. *Curve edges as columns.* The surface gains =base_curve_name= and
+   =quote_curve_name=, the scheme names of its discounting curves. A curve
+   publishes to the board under its own name, as a spot does, and the surface
+   reads the curves it names; the rule that searched the collection goes. The
+   wide type ceilings of the surface's three types rise by two, as with the
+   spot pair.
+4. *Names.* The publish derives every feed's name by the scheme; the vendor
+   views run under =synthetic.<provider>.fx.fx_option.<pair>=; the screens' Add
+   dialogs default to the scheme. A test refuses two seeded feeds that derive
+   one name.
+5. *Screens.* The vol feed's Calibration tab links the stored curves; the
+   Provider tab lists the =latent= provider for a system session only.
+6. *Proof.* Rebuild, recreate, provision; check live that every pair's vol
+   ticks publish, that the names are the scheme's, that a tenant sees no
+   =latent= provider, and that the Calibration tab links resolve, on the BFF
+   and on ores.http.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -399,7 +399,7 @@ def staff():
             full_name=f"{first} {last}",
             email=f"{username}@{EMAIL_DOMAIN}",
             account_type="user",
-            role=STAFF_ROLES[e["employee_id"]],
+            roles=STAFF_ROLES[e["employee_id"]],
             job_title=e["title"],
             reports_to_username=reports_to,
             business_unit_code=STAFF_UNITS[e["employee_id"]],
@@ -867,7 +867,7 @@ def generate_accounts_populate():
         f"{sql_str(a['id'])}, 0, {sql_str(a['username'])}, {sql_str(a['full_name'])}, "
         f"{sql_str(a['email'])}, {sql_str(NO_STAGED_PASSWORD)}, "
         f"{sql_str(a['account_type'])}, {sql_str(a['business_unit_code'])}, "
-        f"{sql_str(a['role'])}, {sql_str(a['job_title'])}, "
+        f"{sql_str(a['roles'])}, {sql_str(a['job_title'])}, "
         f"{sql_str(a['reports_to_username'])}, {sql_str(a['photo_key'])})"
         for a in staff()]
     artefact_script(
@@ -878,7 +878,7 @@ def generate_accounts_populate():
         "through the server's own password API.",
         "ores_dq_accounts_artefact_tbl",
         ["id", "version", "username", "full_name", "email", "password_hash",
-         "account_type", "business_unit_code", "role", "job_title",
+         "account_type", "business_unit_code", "roles", "job_title",
          "reports_to_username", "photo_key"], rows)
 
 

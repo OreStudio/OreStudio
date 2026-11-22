@@ -48,6 +48,15 @@ default, but a client may exercise an out-of-the-money option, or let an
 in-the-money one lapse to avoid a delta it would then have to hedge. The
 parties may agree the conditions for exercise in advance.
 
+** Measuring the risk on the expiry day
+
+The hours before the cut are where the decision is made and where the risk is
+largest, yet an engine that values at day resolution sees an option expiring
+today as fully alive or already expired, and reports none of its sensitivity in
+those hours. Measuring it needs an engine that values at a time of day; the
+work towards that, and the open questions for the reports that would show it,
+are in [[id:5E3514FB-4237-4DCF-9380-C197A4931F57][Intraday valuation of options expiring today]].
+
 ** Working through a cut
 
 Traders expire their own books. They need to see, for each cut, the options

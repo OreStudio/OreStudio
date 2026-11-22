@@ -38,6 +38,7 @@ Every write made with an agent's token records the agent beside the person, in a
 - A write made with an agent's token records the agent; a write made by the person directly records none.
 - ores.web lists a person's agent activity by agent and by time, with the grant used.
 - A record's history shows which changes an agent made, and for whom.
+- The sessions window shows an agent's sessions apart from its person's, with the agent's name, and links each to its grant and its activity.
 
 * Plan
 

@@ -50,6 +50,20 @@ whole, across every tenant. A tenant's administrator holds =*=, so =*= does not
 cover an installation code. Only the code itself, or =installation::*=, grants
 one, and the super administrator role holds the code by name.
 
+An LLM agent acts through a role too. Its grant names a role, and its token
+carries that role's permissions held by the person. IAM seeds one role made for
+agents, =AgentReader=, of explicit read codes, and a tenant administrator
+defines others; an agent role holds explicit codes only, never a wildcard. Some permissions no agent ever holds, whatever its role: every
+=installation::= code, every IAM write, every decision of the approval queue,
+and every permission that mints or exchanges an identity. IAM withholds them by
+rule, expanding =*= and =component::*= first so a wildcard never reaches an
+agent ([[id:1679B2CE-05C2-4CFF-9A4B-47EC721CB10A][Withholding of administrative permissions from LLM agents]]).
+Delegating to an agent is a permission of its own, =iam::agent_grants:create=,
+which Member does not hold: IAM seeds a role =AgentDelegator= that holds it and
+nothing else, so a tenant decides who may use agents at all. It is a permission
+of people only: like every IAM write, no agent ever holds it, so an agent can
+never delegate further.
+
 Every person account holds *Member*. Member holds the reads every person's
 screens need and nothing more: the reference data vocabulary, and the
 furniture every screen uses, such as badges, change reasons, feature flags and

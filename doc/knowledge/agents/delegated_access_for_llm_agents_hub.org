@@ -35,6 +35,13 @@ it before the token, because the token is what the grant becomes on a call.
 [[id:1162906F-BB72-486E-9A11-30D567C65F3E][Delegation tokens for LLM agents: subject and actor claims]] — the person as subject and the agent as actor. Everything that
 follows decides on one or the other.
 
+[[id:1679B2CE-05C2-4CFF-9A4B-47EC721CB10A][Withholding of administrative permissions from LLM agents]] — what no role can delegate, and the three places that
+keep it so. Read it after the token, because the exchange is the first of
+them.
+
+[[id:4DCD0684-F6AE-4E84-BB9D-2AE2DAFDB667][Sessions of LLM agents]] — an agent's calls as sessions of their own, shown apart
+from its person's.
+
 ** The way in
 
 [[id:5E479832-A0B2-4BC6-B008-BAD505F4E145][Serving the Model Context Protocol from ores.http]] — the MCP endpoint, written in =ores.http=.

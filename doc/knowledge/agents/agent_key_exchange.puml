@@ -29,10 +29,10 @@ participant "ores.http" as http
 participant "ores.iam" as iam
 actor "Agent" as agent
 
-person -> web : create a grant: agent name, scope, expiry
+person -> web : create a grant: agent name, role, expiry
 web -> http : POST grant, as the signed-in person
 http -> iam : create grant and key
-iam -> iam : store the key's prefix and hash
+iam -> iam : store the key's id and the hash of its secret
 iam --> http : the key, once
 http --> web : the key, once
 web --> person : copy the key into the agent
@@ -44,8 +44,8 @@ alt a token for this key is cached and fresh
   http -> http : use it
 else
   http -> iam : exchange the key
-  iam -> iam : find the grant by prefix, compare the hash;\ncheck it is active and the person is active
-  iam --> http : token: sub = person, act = agent,\nscope, five minutes
+  iam -> iam : find the key by its id, compare the hash;\ncheck key, grant and person are active;\nopen or reuse the key's session
+  iam --> http : token: sub = person, act = agent:grant,\nrole ∩ person − withheld, session, five minutes
 end
 http -> http : serve the request with the token
 

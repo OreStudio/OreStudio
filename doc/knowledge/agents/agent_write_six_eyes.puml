@@ -31,10 +31,11 @@ actor "Person" as person
 actor "Second approver" as second
 
 agent -> http : call_operation(write, arguments)
-alt the grant is read only
-  http --> agent : refused: the grant cannot write
+http -> svc : write, token with act = agent:grant
+alt the token's permissions do not cover the write
+  svc --> http : refused
+  http --> agent : refused: the grant's role does not cover it
 else
-  http -> svc : write, token with act = agent
   svc -> inbox : raise request:\npart 1 = the agent's person,\nthen the parts the policy names
   inbox --> svc : request id
   svc --> http : held, request id

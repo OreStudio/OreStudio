@@ -55,8 +55,20 @@ is written by compass.
    value, value set catalogue, vocabulary, setting value set and element map
    column. Compass's =ore_value_sets= codec writes four of their seeds and the
    convention validator SQL with the reporting table names and paths built in,
-   so this family waits for a compass release that takes them as settings or
-   reads them from the models.
+   so this family waits for a compass release that reads them from the models.
+   Agreed with compass on 2026-11-22: the codec takes each table's name and
+   component from its model (=:tablename:= and =#+component:=), the data document
+   maps each role to an entity name, seeds go to
+   =populate/<component>/<component>_<plural>_populate.sql=, and the functions and
+   the writer stamp are named after the value set entity's component. Nothing
+   generated on main changes until the models move. The release is held until
+   compass's document service is built, past this sprint; compass notifies this
+   session.
+The entities keep their names (=ore_file=, =ore_parameter= and the rest), so the
+move is a relocation and the C++, TypeScript and shell names stay; their tables
+become =ores_ore_*_tbl= through =:tablename:=, which 29 models already set to a
+name the entity does not derive.
+
 3. Reporting's own C++ reads of =ore_parameter= (=run_document_service.cpp:74,261=)
    become an entity-mirror cache, =cached_by= reporting, in the same PR as the
    parameters move, so no release has reporting's C++ reading =ores.ore='s tables.

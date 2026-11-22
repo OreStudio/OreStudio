@@ -7,12 +7,12 @@
 #+level: s1
 #+filetags: :search_the_knowledge_base:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/index-the-knowledge-pages
+#+pr: 5010
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-21
-#+updated: 2026-11-21
+#+updated: 2026-11-22
 #+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,12 +26,12 @@ ores.orgmode.service runs the indexing step on the raw table's change notificati
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:05FE6068-3CBD-4B93-B6AE-47A5689F1FCB][Search the knowledge base from ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-21                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-22                               |
 
 * Acceptance
 
@@ -41,9 +41,41 @@ ores.orgmode.service runs the indexing step on the raw table's change notificati
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The index is derived data: the service computes it from the knowledge pages
+and can compute it again at any time. So it is not a bitemporal entity. It
+has no versions, no history and no writer but the service, and it lives in
+three plain tables in the system tenant, which every tenant reads.
+
+| Table | One row per | Columns |
+|-------+-------------+---------|
+| =ores_orgmode_knowledge_index_pages_tbl= | loaded page | page id, path, title, description, tags |
+| =ores_orgmode_knowledge_index_sections_tbl= | heading, plus the page's preamble | page id, order, anchor, heading path, level, text, =search= (tsvector) |
+| =ores_orgmode_knowledge_index_links_tbl= | =[[id:...]]= link | page id, section order, target id, text |
+
+1. *Shape.* The tsvector is weighted in SQL: the page title A, the heading path
+   B, the text D, with the =english= configuration. A GIN index covers it. The
+   anchor is the heading's =:ID:= when it has one, else a slug of the heading
+   path, unique within the page.
+2. *Replace whole.* One SQL function,
+   =ores_orgmode_replace_knowledge_index_fn(jsonb)=, takes the whole index and
+   deletes and inserts the three tables in one transaction. A reader sees the
+   old index or the new one, by MVCC, never a mix. The function is the
+   tables' only writer.
+3. *Build.* A core =knowledge_indexer= reads every current knowledge page,
+   parses each with =ores.orgmode.parser=, flattens the heading tree into
+   sections and links, and calls the function once. It is pure apart from
+   the read and the call, so a test can run it on fixed pages.
+4. *Trigger.* The pages change only through a publish. The bootstrap
+   publishes them in SQL before the service starts, so the service rebuilds
+   the index when it starts. A later publish goes through the service's
+   publish step, which rebuilds the index after it changes pages and before it
+   reports the step complete. No change notification or debounce is needed.
+   An operation, =orgmode.v1.ops.reindex_knowledge_pages=, rebuilds it on
+   demand without a reload. It needs the installation permission
+   =installation::knowledge_index:rebuild=, which SuperAdmin holds and a
+   tenant administrator's =*= does not cover.
+5. *Prove.* After a recreate, the index holds one section per heading of every
+   loaded page; a second run gives the same rows.
 
 * Measurements
 
@@ -57,7 +89,14 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Index at service start | pages=273 sections=3113 links=2285 | =ores.orgmode.service= log, after =compass db recreate -y -k= and =compass services start= | c41c89c3ef |
+| Pages whose sections equal their heading lines plus one | 273 of 273; 3113 expected, 3113 indexed | =compass sql -f evidence/index_the_knowledge_pages_check.sql= | c41c89c3ef |
+| Sections with an empty search vector | 0 | same | c41c89c3ef |
+| Row fingerprints after the start, a service restart and a shell rebuild | sections =c88abd44902b8880d348eec45440b26e=, links =a382105d3b52574227b81c220d2b819a=, all three runs | same | c41c89c3ef |
+| Shell rebuild as =super_admin= | ={"pages":273,"sections":3113,"links":2285,"success":true}= | =index_operations reindex-knowledge-pages= | c41c89c3ef |
+| Shell rebuild as =tenant_admin@acme_corporation= | refused: =forbidden= | same | c41c89c3ef |
+| Replace function time | 1720 ms at the first start, 737 ms at a restart | slow-query WARN in the service log | c41c89c3ef |
+| Core tests | 8 =[knowledge_index]= cases; 5 of 5 orgmode suites pass | =compass test run -- -R orgmode= | 740f9bf93a |
 
 * Notes
 
@@ -76,12 +115,51 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5010][#5010]] | [orgmode] Index the knowledge pages and rebuild the index on demand |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: two rebuilds at once could race in the replace function | =orgmode_knowledge_index_create.sql= | Superseded by 5 | A race on full tables (=evidence/index_the_knowledge_pages_race_a.sql=, =race_b.sql=) passed, and I declined. It did not cover empty tables. |
+| 2 | Local review: a rebuild that throws after a publish fails the step although the pages are written | =publish_from_dq_handler.cpp= | Superseded by 6 | |
+| 3 | Local review: the reindex reply carries the exception text | =index_handler.cpp= | Decline | Only an installation administrator can call it, and the text is what they need to fix the cause. |
+| 4 | Misspell check on the 44 changed files | | Clean | =misspell-fixer= exit 0. |
+| 5 | PR #5010 review 1: concurrent rebuilds fail when the second finds nothing to delete | =orgmode_knowledge_index_create.sql= | Accept | Reproduced: on empty tables (=evidence/index_the_knowledge_pages_empty.sql=, then =empty_race_a.sql= and =empty_race_b.sql= at once) B failed with a duplicate key on =ores_orgmode_knowledge_index_pages_tbl_pkey=. The function now takes =pg_advisory_xact_lock= first; the same race then had B wait for A's commit and succeed. |
+| 6 | PR #5010 review 2: a failed rebuild after a publish fails a publish that committed, and a retry would not rebuild | =publish_from_dq_handler.cpp= | Accept | The rebuild has its own try/catch: it logs an error and the step completes. The reindex operation recovers the index. |
+| 7 | PR #5010 review 3: the start rebuild delays the subscriptions | =registrar.cpp= | Accept | The registrar subscribes first and rebuilds after; requests meanwhile read the previous index, which the replace swaps whole. |
+| 8 | PR #5010 review: the section 0 comment says the text above the first heading, the code uses the description | =orgmode_knowledge_index_create.sql= | Accept | Comment fixed. =ores.orgmode.parser= keeps no prose above the first heading, so there is none to index. |
+| 9 | PR #5010 review: non-ASCII titles slug to =section=, and path anchors change with a title | =knowledge_index.cpp= | Defer | Unique and safe today. The search task links to anchors, so it decides whether to link only =:ID:= anchors. |
+| 10 | PR #5010 review: a NUL in one page fails the whole rebuild | =knowledge_indexer.cpp= | Decline | The pages table is =text=, which cannot hold a NUL, so no stored page carries one. |
+| 11 | PR #5010 review: the page title at weight A ranks every section of a matching page alike | =orgmode_knowledge_index_create.sql= | Defer | Intended. The measure-the-search task checks the ranking. |
+| 12 | PR #5010 review: the whole index travels as one jsonb parameter | =knowledge_indexer.cpp= | Decline | About 3,000 sections today; worth revisiting only if the pages grow tenfold. |
+| 13 | PR #5010 review: the replace function has only manual evidence | =orgmode_replace_knowledge_index_test.sql= | Accept | New pgTAP test, 8 cases: counts, title match and weight, whole replace, cascade, empty index. =run_tests.sh= passes 8/8. The race needs two sessions, so the evidence files above cover it. |
+| 14 | Gate after the rebase onto main: =entity_writes/sql_writer= flags the replace function for writing the index tables outside a repository | =orgmode_knowledge_index_create.sql= | Exception | Approved by marco: the index is derived data with no repository, and the function is its only writer. Inline =compass:except= expires 2027-05-18. The full =compass check= gate was skipped at marco's instruction; =compass-ng check --ratchet= reports 0 new diagnostics. |
 
 * Result
+
+The service builds the index from the 273 loaded pages when it starts, and
+rebuilds it after a publish that changes pages and on demand through
+=orgmode.v1.ops.reindex_knowledge_pages=.
+
+- SQL: three tables and =ores_orgmode_replace_knowledge_index_fn(jsonb)=, which
+  replaces them in one transaction, so a reader sees the old index or the new
+  one. The search vector weights the title A, the heading path B and the text
+  D, and a GIN index covers it.
+- Core: =build_knowledge_index= parses each page with =ores.orgmode.parser=
+  into one page row, one section per heading after section 0 (the page itself)
+  and one row per =id:= link. =knowledge_indexer= reads the pages and calls the
+  function once.
+- Messaging: the registrar rebuilds at start, the publish step rebuilds after
+  it changes pages, and =index_handler= serves the operation behind
+  =installation::knowledge_index:rebuild=, which SuperAdmin holds.
+- Shell: =index_operations reindex-knowledge-pages=.
+
+Acceptance, as measured above: every page holds one section per heading, and
+the start, a restart and a shell rebuild gave identical rows. The publish
+step's rebuild after a second load is not run end to end, because no shell
+command publishes one dataset; the step calls the same =knowledge_indexer=.
+
+The unity build caught the hand-written classes defining =lg()= in anonymous
+namespaces. They now declare class-scoped loggers, and [[id:B09EFEF3-9DCE-4703-A5E3-9D9ED52FD314][How a component
+declares its logger]] records the pattern.

@@ -25,7 +25,7 @@ hide circle
 skinparam linetype ortho
 
 note as IndexNote
-816 tables in 22 groups.
+819 tables in 22 groups.
 Each group is drawn in its own file, named under its heading.
 Table naming: <component>_<entity>_tbl
 end note
@@ -993,11 +993,14 @@ Inbox — Approval Requests and Notifications
 end note
 
 entity "orgmode" as orgmode {
+  ores_orgmode_knowledge_index_links_tbl
+  ores_orgmode_knowledge_index_pages_tbl
+  ores_orgmode_knowledge_index_sections_tbl
   ores_orgmode_knowledge_pages_tbl
 }
 note bottom of orgmode
 Knowledge Base (Org Pages)
-1 tables — ores_schema.orgmode.puml
+4 tables — ores_schema.orgmode.puml
 end note
 
 

@@ -18,7 +18,9 @@
  *
  */
 
--- Reverse dependency order: the publish function, the trigger, the table.
+-- Reverse dependency order: the index, the publish function, the trigger,
+-- the table.
+\ir ./orgmode_knowledge_index_drop.sql
 \ir ./orgmode_publish_from_dq_drop.sql
 \ir ./orgmode_knowledge_pages_notify_trigger_drop.sql
 \ir ./orgmode_knowledge_pages_drop.sql

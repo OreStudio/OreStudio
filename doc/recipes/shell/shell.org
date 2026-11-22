@@ -2284,3 +2284,7 @@ tangled into the runnable script library
 * Knowledge Pages
 
 - [[id:057079A6-AB6E-5320-B12F-60AC2197EEB6][How do I run the knowledge_pages commands from the shell?]]
+
+* Index Operations
+
+- [[id:A1C69627-AC93-5EA6-B1F7-70484AEDC1FA][How do I run the index_operations commands from the shell?]]

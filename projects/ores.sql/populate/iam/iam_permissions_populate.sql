@@ -2274,6 +2274,7 @@ BEGIN
     -- administrator, who holds '*', does not hold this. Only the code itself or
     -- 'installation::*' grants it.
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'installation::deployment:read', 'View the deployment as a whole: its tenants, services, grid, message bus and logs');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'installation::knowledge_index:rebuild', 'Rebuild the knowledge index from the loaded knowledge pages');
 END $$;
 
 

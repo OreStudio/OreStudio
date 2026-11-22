@@ -42,6 +42,17 @@ struct example_row {
     std::vector<std::string> codes = {};
 };
 
+struct example_tree {
+    std::string name;
+    std::vector<example_tree> children = {};
+};
+
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<example_tree>) {
+    using ::ores::utility::codec::field;
+    return ::ores::utility::codec::field_list{field{"name", &example_tree::name},
+                                              field{"children", &example_tree::children}};
+}
+
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<example_row>) {
     using ::ores::utility::codec::field;
     return ::ores::utility::codec::field_list{field{"name", &example_row::name},
@@ -85,4 +96,23 @@ TEST_CASE("an optional member may be null", "[codec][json][schema]") {
     const auto schema = ores::utility::codec::json_schema<schema_example::example_row>();
 
     CHECK(schema.find(R"("note":{"type":"string","nullable":true})") != std::string::npos);
+}
+
+/*
+ * A document that a reader resolves by name needs names, so the type is registered beside
+ * the shape that refers to it and the shape points at it rather than repeating it.
+ */
+TEST_CASE("a named type is written once and referred to", "[codec][json][schema]") {
+    const auto schema = ores::utility::codec::json_schema<schema_example::example_row>();
+
+    CHECK(schema.find(R"("$ref":"#/$defs/schema_example.example_row")") != std::string::npos);
+    CHECK(schema.find(R"("$defs":{"schema_example.example_row":{"type":"object")") !=
+          std::string::npos);
+}
+
+TEST_CASE("a type that holds itself refers to itself rather than expanding", "[codec][json][schema]") {
+    const auto schema = ores::utility::codec::json_schema<schema_example::example_tree>();
+
+    CHECK(schema.find(R"("#/$defs/schema_example.example_tree")") != std::string::npos);
+    CHECK(schema.find(R"("children":{"type":"array","items":{"$ref":)") != std::string::npos);
 }

@@ -105,6 +105,40 @@ std::string_view description_of(std::string_view tag) {
 }
 
 /**
+ * @brief Moves a schema's definitions into the document's components.
+ *
+ * A route states its schema with the definitions it uses beside it, and OpenAPI reads a
+ * reference against the document root. So each definition is moved to
+ * =components.schemas= once, and every reference in the schema is pointed at it: a model
+ * that many routes state is written once, and the UI links to it rather than each route
+ * carrying its own copy.
+ */
+json_document lift_schema(json_document schema, json_value schemas) {
+    const auto root = schema.root();
+    if (!root.is_object())
+        return schema;
+
+    if (const auto defs = root.member("$defs"); defs.is_object())
+        for (const auto& [name, definition] : defs.members())
+            if (!schemas.has(name))
+                schemas.add(name, definition);
+
+    auto text = schema.write();
+    for (auto at = text.find("#/$defs/"); at != std::string::npos; at = text.find("#/$defs/"))
+        text.replace(at, std::string("#/$defs/").size(), "#/components/schemas/");
+
+    auto rewritten = json_document::parse(text);
+    if (!rewritten)
+        return schema;
+
+    auto lifted = json_document::make_object();
+    for (const auto& [name, value] : rewritten->root().members())
+        if (name != "$defs")
+            lifted.root().add(name, value);
+    return lifted;
+}
+
+/**
  * @brief A response that states only a description, as the standard errors do.
  */
 json_document make_response(std::string_view description) {
@@ -216,6 +250,7 @@ std::string endpoint_registry::generate_openapi_json() const {
 
     // Build components section
     auto components = root.add_object("components");
+    auto schemas = components.add_object("schemas");
     auto security_schemes = components.add_object("securitySchemes");
     auto bearer_auth = security_schemes.add_object("bearerAuth");
     bearer_auth.set("type", "http");
@@ -301,9 +336,8 @@ std::string endpoint_registry::generate_openapi_json() const {
         }
 
         /*
-         * The schema a route states, as the codec writes it: one object per route, with
-         * every member expanded in place. A schema that is not JSON becomes an empty one,
-         * as it always has.
+         * The schema a route states, with the types it names lifted into the document's
+         * components. A schema that is not JSON becomes an empty one, as it always has.
          */
         const auto schema_from = [&](const std::string& json_schema, std::string_view what) {
             auto parsed = json_document::parse(json_schema);
@@ -312,7 +346,7 @@ std::string endpoint_registry::generate_openapi_json() const {
                     << "Failed to parse " << what << " for route: " << route.pattern;
                 return json_document::make_object();
             }
-            return std::move(*parsed);
+            return lift_schema(std::move(*parsed), schemas);
         };
 
         // Request body

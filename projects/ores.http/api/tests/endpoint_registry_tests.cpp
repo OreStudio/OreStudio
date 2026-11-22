@@ -403,3 +403,31 @@ TEST_CASE("endpoint_registry_states_both_ways_a_caller_may_authenticate", "[endp
     REQUIRE(json.find("\"security\":[{\"bearerAuth\":[]},{\"cookieAuth\":[]}]") !=
             std::string::npos);
 }
+
+TEST_CASE("endpoint_registry_writes_a_model_once_and_points_the_route_at_it",
+          "[endpoint_registry]") {
+    auto lg(make_logger(test_suite));
+    ORES_LOG_SEV(lg, info) << "Testing that a schema's definitions become components";
+
+    endpoint_registry registry;
+    auto route = make_test_route(http_method::post, "/api/things", "A thing");
+    request_body_schema body;
+    body.json_schema = R"({
+        "$ref": "#/$defs/thing_change",
+        "$defs": {
+            "thing_change": {
+                "type": "object",
+                "properties": {"name": {"type": "string"}}
+            }
+        }
+    })";
+    route.body_schema = body;
+    registry.register_route(route);
+
+    const auto json = registry.generate_openapi_json();
+
+    REQUIRE(json.find("\"schemas\":{\"thing_change\":{\"type\":\"object\"") != std::string::npos);
+    REQUIRE(json.find("\"schema\":{\"$ref\":\"#/components/schemas/thing_change\"}") !=
+            std::string::npos);
+    REQUIRE(json.find("\"$defs\"") == std::string::npos);
+}

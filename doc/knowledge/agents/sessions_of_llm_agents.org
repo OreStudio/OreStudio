@@ -44,9 +44,12 @@ session, because it serves a process and not an actor ([[id:78B82824-0BBB-4442-A
 IAM opens the session at the first exchange of a key that has no open session,
 and every later exchange of that key reuses it. The session closes when no
 exchange has happened for its idle limit, thirty minutes, when its key or its
-grant is revoked, or when it is ended from the sessions window. A key therefore
-has at most one open session, and an agent that works through a day without a
-pause of thirty minutes is one session.
+grant is revoked, or when it is ended from the sessions window. The idle clock
+counts exchanges, not calls: a call answered from ores.http's cache makes no
+exchange, but a key in steady use is exchanged again about every four minutes,
+when its token has less than a fifth of its life left, so it stays open. A key
+therefore has at most one open session, and an agent that works through a day
+without a pause of thirty minutes is one session.
 
 ** In the sessions window
 
@@ -61,8 +64,16 @@ agent did in it ([[id:2D36D474-2CF9-4498-AF49-818CEF080B98][Auditing of LLM agen
 Ending an agent's session from the window also revokes the key that opened it,
 and the window says so before it acts. Ending the session alone would not stop
 the agent: its next exchange would open a new session within five minutes.
-Revoking the key does, and a key is cheap to replace with another for the same
+Revoking the key does: ores.http evicts its cached token, so the agent's next
+call is refused at once, and at most five minutes later if the eviction is
+missed ([[id:1162906F-BB72-486E-9A11-30D567C65F3E][Delegation tokens for LLM agents: subject and actor claims]], /How soon a change reaches the agent/). The window's warning
+says both. A key is cheap to replace with another for the same
 grant ([[id:A7E2942C-66AD-449C-B80B-CA789EBC34FA][Agent grants: delegated consent for LLM agents]]). Revoking the grant stops every key at once.
+
+A person ends their own agents' sessions under =iam::agent_grants:create=, which
+lets them revoke their own keys; ending another person's agent's session needs
+=iam::agent_grants:revoke=. Neither needs =iam::sessions:end=, which ends a
+person's sessions and is withheld from every agent.
 
 ** What an agent's session is not
 

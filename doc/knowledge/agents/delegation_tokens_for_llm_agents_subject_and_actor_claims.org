@@ -28,15 +28,24 @@ to the step service that acts ([[id:78B82824-0BBB-4442-A9FA-E1F265DF57BD][Run gr
 An agent presents its key as a bearer token (Jones and Hardt, 2012). =ores.http=
 asks IAM to exchange it, with its own token and the permission
 =iam::agent_keys:exchange=, which no agent can hold. IAM enters the tenant the
-key names, refusing before any read when the tenant id does not parse, finds
-the key by its id, compares the hash of its secret, and checks that the key and
-its grant are active, that the grant is inside its expiry, and that the person
+key names, refusing before any read when the tenant id does not parse or names
+no tenant, finds the key by its id, compares the hash of its secret in constant
+time, and checks that the key and its grant are active, that the grant is inside its expiry, and that the person
 is active. It computes the permissions: the grant's role intersected with the
 person's current permissions, less the permissions no agent ever holds
 ([[id:1679B2CE-05C2-4CFF-9A4B-47EC721CB10A][Withholding of administrative permissions from LLM agents]]). It opens or reuses the key's session ([[id:4DCD0684-F6AE-4E84-BB9D-2AE2DAFDB667][Sessions of LLM agents]]), appends a row to the
 issue log, and issues a JSON Web Token (Jones, Bradley and Sakimura, 2015)
-that lasts five minutes. Exchanges are limited per tenant and per key, and a
-refusal is logged with its reason and never with the key.
+that lasts five minutes.
+
+An unknown tenant, an unknown key id and a wrong secret are answered alike,
+=invalid key=, so a caller cannot learn which tenants or keys exist. Failures
+are limited in two places. ores.http limits failed credentials per source
+address, as it limits every failed credential, so bad keys from one address
+stop there. IAM limits failed exchanges per key, and allocates that budget only
+for a key id that exists in a tenant that exists, so an unknown tenant or key
+costs no memory and a caller who names a victim's tenant cannot exhaust that
+tenant's agents. IAM limits successful exchanges per tenant as well, as load,
+and a refusal is logged with its reason and never with the key.
 
 =ores.http= keeps the token in memory, keyed by the hash of the key, while it
 has more than 20% of its life left, as a run token is kept ([[id:78B82824-0BBB-4442-A9FA-E1F265DF57BD][Run grants and run tokens]]); it never
@@ -81,10 +90,15 @@ token that left ORE would need the object form.
 ** How soon a change reaches the agent
 
 Everything the exchange checks takes effect at the next exchange: a revoked
-or expired grant, a person disabled or removed, and a role the person loses.
-Because a token lasts five minutes and the cache never keeps one past its
-expiry, an agent keeps at most five minutes of the access it had. This is the
-one bound; the pages that need it link here.
+or expired grant, a revoked key, a person disabled or removed, and a role the
+person loses. The agent never holds a token: it holds only its key, and the
+token stays in ores.http's cache. When IAM revokes a key or a grant it
+publishes the change, and ores.http evicts the cache entries of that key or
+grant, so the agent's next call is exchanged again and refused at once. If the
+event is missed, the bound is the token's lifetime: because a token lasts five
+minutes and the cache never keeps one past its expiry, an agent keeps at most
+five minutes of the access it had. A request already in flight completes. This
+is the one bound; the pages that need it link here.
 
 ** What it is not
 

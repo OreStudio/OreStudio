@@ -49,7 +49,9 @@ credential by requiring the client's own token as well; an agent outside ORE
 has no token of its own, so the key it stores is its credential. This departs
 from the pattern deliberately, and the departure is bounded ([[id:6B455B15-0FDB-4E1E-A2A8-CEFC4C1D155C][Security review of delegated access for LLM agents]]):
 
-- every grant has an expiry, at most ninety days, and no grant is open-ended;
+- every grant has an expiry, at most ninety days from its creation, and no
+  grant is open-ended or extended: continuing past the expiry is a new grant,
+  with a new key, which the person makes again;
 - the key is generated from 256 random bits, shown once, and stored as its id,
   by which it is found, and a SHA-256 hash of its secret, against which it is
   compared; a fast hash suffices because the secret is a long random value, not
@@ -58,8 +60,11 @@ from the pattern deliberately, and the departure is bounded ([[id:6B455B15-0FDB-
   cache by the hash;
 - a grant may have several keys, so a key is replaced before the old one is
   revoked, and one key can be revoked alone;
-- failed exchanges are limited per tenant and per key, as the prototype
-  limited failed sign-ins ([[id:039005AD-8319-416C-9F70-6A5477FEE89D][The ores.agent prototype: findings for the target design]]).
+- the secret is compared in constant time, and an unknown tenant, an unknown
+  key and a wrong secret are refused alike;
+- failed exchanges are limited per source address at ores.http and per key at
+  IAM, as the prototype limited failed sign-ins ([[id:039005AD-8319-416C-9F70-6A5477FEE89D][The ores.agent prototype: findings for the target design]]), never per
+  tenant, so naming a tenant in bad keys cannot lock its agents out ([[id:1162906F-BB72-486E-9A11-30D567C65F3E][Delegation tokens for LLM agents: subject and actor claims]]).
 
 The key has the form =ores_ak_<tenant id>_<key id>_<secret>=: the tenant tells
 IAM where to read, and neither id is a secret. Later, an OAuth client can

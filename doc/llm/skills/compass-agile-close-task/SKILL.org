@@ -39,7 +39,7 @@ routine review feedback as reopening the task by default.
 
 1. /Run the component audit first, when the task touched a component/.
    Clearing codegen drift, moving a part, adding a facet — none of it
-   says the component has a legal shape, and =validate_docs= is only
+   says the component has a legal shape, and the =component_docs= codec is only
    the audit's automated half. Walk
    [[id:45CAC01F-BC56-4600-B206-EEE7545AE3AB][the component architecture audit]] over each component the task
    touched, and record what it found on the task. A component whose
@@ -47,7 +47,7 @@ routine review feedback as reopening the task by default.
    gathered.
 
    #+begin_src sh :results verbatim
-   projects/ores.codegen/validate_docs.sh
+   compass-ng check --codec component_docs
    #+end_src
 
 2. /Flip the state/ — task DONE, story table row synced, journal stamped:

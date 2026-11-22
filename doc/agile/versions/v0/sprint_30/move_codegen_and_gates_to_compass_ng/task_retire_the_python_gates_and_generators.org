@@ -181,6 +181,7 @@ via its "Verifies task" field.
 | PR | Title |
 |----+-------|
 | [[https://github.com/OreStudio/OreStudio/pull/4995][#4995]] | [compass] Adopt compass-ng v0.0.10 and delete three generator scripts |
+| [[https://github.com/OreStudio/OreStudio/pull/4991][#4991]] | [codegen] Move the tier 3 callers to compass-ng and delete 21 files |
 | [[https://github.com/OreStudio/OreStudio/pull/4986][#4986]] | [build] Delete the tier 2 Python gates |
 | [[https://github.com/OreStudio/OreStudio/pull/4963][#4963]] | [build] Adopt compass-ng v0.0.6 and own the XML binding table |
 | [[https://github.com/OreStudio/OreStudio/pull/4950][#4950]] | [build] Adopt compass-ng v0.0.5 and delete the Python it replaces |

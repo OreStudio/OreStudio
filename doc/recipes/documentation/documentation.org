@@ -48,7 +48,7 @@ For the codegen scripts that generate /code/ (not docs) see the
 * Validation
 
 - [[id:6AC06A04-EB95-4925-8488-C7A47C6A451F][How do I validate component documentation before committing?]] — run
-  =validate_docs.sh= before pushing any component doc change.
+  =compass-ng check --codec component_docs= before pushing any component doc change.
 
 * See also
 

@@ -67,7 +67,7 @@ Read these first on a new contact:
 
 - [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][Document types]] — frontmatter contract.
 - [[id:6AC06A04-EB95-4925-8488-C7A47C6A451F][How do I validate component documentation before committing?]] —
-  =validate_docs.sh= before every push that touches =modeling/=.
+  =compass-ng check --codec component_docs= before every push that touches =modeling/=.
 
 * Database isolation
 

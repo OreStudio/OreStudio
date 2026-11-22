@@ -8,7 +8,7 @@
 #+filetags: :vendor_quotes_of_a_latent_surface:sprint_30:v0:
 #+owner: marco
 #+branch: feature/configure-a-vol-surface-feed-on-the-synthetic-screen
-#+pr:
+#+pr: 5018
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-22
@@ -171,7 +171,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5018][#5018]] | [web] Configure a vol surface feed on the synthetic screen |
 
 * Review
 

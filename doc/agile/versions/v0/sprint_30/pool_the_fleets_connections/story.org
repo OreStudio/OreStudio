@@ -63,6 +63,7 @@ them.
 | [[id:83C4FD4E-888C-4C3F-BE3D-50136487B458][Prove the pooled path in CI]] | DONE | 2026-11-21 | 2026-11-21 | Developers keep a direct connection, so the pooled path is only proven if something runs it. One CI job runs the marketdata suite through a transaction pooler on every change. |
 | [[id:04CD1C47-0893-4D5F-B812-2DD1E907F921][Pass the environment to the option parser]] | DONE | 2026-11-22 | 2026-11-22 | Every defaults test hand-clears the environment variables the parser reads, one name at a time, so each new environment-read option breaks every defaults suite at gate time. Make the environment an explicit input to parse, so a defaults test passes nothing and an env-wins test states the value it expects. |
 | [[id:3470D321-8708-4819-8AD2-681FA2230A9F][Make the pooler's credential file private]] | DONE | 2026-11-22 | 2026-11-22 | The pooler's user list is written 0644 inside a directory whose mode the deploy never sets, so every local user on the host can read every database password. The fix needs the uid the container drops to, read from the image. |
+| [[id:4F1178FD-3615-4C25-A8B7-45ABDB57EFBB][Diagnose the stall that blocked the four-lanes scenario]] | BACKLOG | | | The provisioning the four-lanes scenario names failed twice on a recreated database, and neither failure named the pool the story is about. Find what actually stops a step, and make the step say so. |
 
 * Decisions
 

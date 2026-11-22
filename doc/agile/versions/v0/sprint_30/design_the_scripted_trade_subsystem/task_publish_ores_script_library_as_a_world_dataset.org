@@ -102,6 +102,8 @@ task and name that file in the Command column.
 | trading publish tests | 10 assertions in 6 test cases (subject plan); the generated codec round trip within 18920 assertions in 5303 test cases | ores.trading.core.tests [publish], ores.trading.api.tests [codec] | a2d0beeee1 |
 | script versions | 9 of 9 pgTAP assertions: every current row carries its script's version after bring-up; a changed script's earlier version reads back as it was, its current rows as staged, an unchanged script keeps its version | pg_prove -U $ORES_TEST_DB_USER projects/ores.sql/test/trading_script_library_versions_test.sql | 9d0e657bec + PR 4 |
 | suites after the column | ores.trading.api.tests 21118 assertions in 5601 cases; ores.trading.core.tests 1841 in 282; ores.ore.core.tests 521015 in 567; ores.trading.scripting.tests 1200 in 18; all pass | the four test binaries | 9d0e657bec + PR 4 |
+| script pin | 9 of 9 pgTAP assertions, among them: a library trade records the system tenant and current version, an inline trade the SHA-256 of its text, an amendment keeps its version after the library moves on, a stated missing version is refused | pg_prove -U $ORES_TEST_DB_USER projects/ores.sql/test/trading_scripted_instrument_script_pin_test.sql | 12c04dcb75 + PR 5 |
+| ctest with the services and the pooler up | 93 of 107 pass; ores.synthetic.core.tests failed on the pin, which its booking comparison now clears as store-set, and passes 5041 assertions in 167 cases after; the 13 others fail only parse_defaults_returns_expected_values, as the .env points each service's database port at the pooler, and pass with the port variable unset | compass test run, then the suite | 12c04dcb75 + PR 5 |
 
 * Notes
 

@@ -262,6 +262,13 @@ void normalise(Row& row) {
         reset(row.change_commentary);
     if constexpr (requires { row.recorded_at; })
         reset(row.recorded_at);
+    // A scripted trade's script is pinned by the store when it is written: the
+    // library version it names, or the hash of the text it states.
+    if constexpr (requires { row.script_version; }) {
+        reset(row.script_tenant_id);
+        reset(row.script_version);
+        reset(row.script_hash);
+    }
 }
 
 /// The trade a row belongs to, or nothing for a row keyed by something else.

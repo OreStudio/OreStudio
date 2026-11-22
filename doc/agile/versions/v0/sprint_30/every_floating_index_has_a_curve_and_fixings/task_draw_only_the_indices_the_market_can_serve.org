@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :every_floating_index_has_a_curve_and_fixings:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/draw-only-the-indices-the-market-can-serve
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -30,7 +30,7 @@ config that can draw an index outside the list, before a provision does.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:0F936789-FEBE-4330-97B9-DFE0837E4466][Every index a generated trade floats on has a curve and fixings]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

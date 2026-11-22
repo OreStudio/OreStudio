@@ -8,7 +8,7 @@
 #+filetags: :pool_the_fleets_connections:sprint_30:v0:
 #+owner: marco
 #+branch: feature/pass-the-environment-to-the-option-parser
-#+pr:
+#+pr: 5002
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-21
@@ -136,7 +136,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5002][#5002]] | [service] Parse against a stated environment |
 
 * Review
 

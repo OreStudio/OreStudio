@@ -252,13 +252,15 @@ begin
         insert into ores_trading_script_variants_tbl (
             script_name, purpose, tenant_id, version, script_version, code, npv_variable,
             modified_by, performed_by, change_reason_code, change_commentary)
-        select a.script_name, a.purpose, p_target_tenant_id, 0, v_version, a.code, a.npv_variable,
+        select a.script_name, a.purpose, p_target_tenant_id, 0, v_version,
+               a.code, a.npv_variable,
                v_modified_by, current_user, 'system.external_data_import', v_commentary
         from ores_dq_script_variants_artefact_tbl a
         where a.dataset_id = p_dataset_id and a.script_name = v_name;
 
         insert into ores_trading_script_results_tbl (
-            script_name, purpose, sequence_number, tenant_id, version, script_version, variable, rename,
+            script_name, purpose, sequence_number, tenant_id, version, script_version,
+            variable, rename,
             modified_by, performed_by, change_reason_code, change_commentary)
         select a.script_name, a.purpose, a.sequence_number, p_target_tenant_id, 0, v_version,
                a.variable, a.rename,
@@ -267,7 +269,8 @@ begin
         where a.dataset_id = p_dataset_id and a.script_name = v_name;
 
         insert into ores_trading_script_calibrations_tbl (
-            script_name, purpose, sequence_number, tenant_id, version, script_version, index_variable,
+            script_name, purpose, sequence_number, tenant_id, version, script_version,
+            index_variable,
             modified_by, performed_by, change_reason_code, change_commentary)
         select a.script_name, a.purpose, a.sequence_number, p_target_tenant_id, 0, v_version,
                a.index_variable,
@@ -286,7 +289,8 @@ begin
         where a.dataset_id = p_dataset_id and a.script_name = v_name;
 
         insert into ores_trading_script_coarsenings_tbl (
-            script_name, purpose, sequence_number, tenant_id, version, script_version, eligible_schedule,
+            script_name, purpose, sequence_number, tenant_id, version, script_version,
+            eligible_schedule,
             modified_by, performed_by, change_reason_code, change_commentary)
         select a.script_name, a.purpose, a.sequence_number, p_target_tenant_id, 0, v_version,
                a.eligible_schedule,
@@ -295,10 +299,12 @@ begin
         where a.dataset_id = p_dataset_id and a.script_name = v_name;
 
         insert into ores_trading_script_inputs_tbl (
-            script_name, sequence_number, tenant_id, version, script_version, input_name, data_type, is_array,
+            script_name, sequence_number, tenant_id, version, script_version,
+            input_name, data_type, is_array,
             value_rule, description,
             modified_by, performed_by, change_reason_code, change_commentary)
-        select a.script_name, a.sequence_number, p_target_tenant_id, 0, v_version, a.input_name,
+        select a.script_name, a.sequence_number, p_target_tenant_id, 0, v_version,
+               a.input_name,
                a.data_type, a.is_array, a.value_rule, a.description,
                v_modified_by, current_user, 'system.external_data_import', v_commentary
         from ores_dq_script_inputs_artefact_tbl a
@@ -323,6 +329,7 @@ comment on function ores_trading_publish_script_library_from_dq_fn(uuid, uuid, t
  time: a script whose staged rows equal the published ones is skipped, any other is
  written whole as a new version and its rows no longer staged are closed. Every row
  written carries the version the script row was given, so the rows of one script
- version read it back whole. Counts are of scripts. In insert_only mode a script the target already holds is skipped whatever its
- staged rows. A published script the dataset no longer stages stays live: a booked
- trade may name it, so it is retired deliberately rather than by a republish.';
+ version read it back whole. Counts are of scripts. In insert_only mode a script the
+ target already holds is skipped whatever its staged rows. A published script the
+ dataset no longer stages stays live: a booked trade may name it, so it is retired
+ deliberately rather than by a republish.';

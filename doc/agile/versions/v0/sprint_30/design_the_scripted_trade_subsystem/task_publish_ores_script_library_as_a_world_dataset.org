@@ -100,7 +100,7 @@ task and name that file in the Command column.
 | bus publish of the world bundle | 41 of 41 steps completed, ore.script_library among them; the trading service logged inserted=0 updated=0 after the bring-up publish | compass db recreate -y -k, services start, then bundles publish world --wait as super_admin | a2d0beeee1 |
 | bus republish after one staged change | the trading service logged updated=1; Accumulator01's first input at version 2, version 1 kept | the same, after an update of one staged input description | a2d0beeee1 |
 | trading publish tests | 10 assertions in 6 test cases (subject plan); the generated codec round trip within 18920 assertions in 5303 test cases | ores.trading.core.tests [publish], ores.trading.api.tests [codec] | a2d0beeee1 |
-| script versions | 7 of 7 pgTAP assertions: every current row carries its script's version after bring-up; a changed script's earlier version reads back as it was, its current rows as staged, an unchanged script keeps its version | pg_prove -U $ORES_TEST_DB_USER projects/ores.sql/test/trading_script_library_versions_test.sql | 9d0e657bec + PR 4 |
+| script versions | 9 of 9 pgTAP assertions: every current row carries its script's version after bring-up; a changed script's earlier version reads back as it was, its current rows as staged, an unchanged script keeps its version | pg_prove -U $ORES_TEST_DB_USER projects/ores.sql/test/trading_script_library_versions_test.sql | 9d0e657bec + PR 4 |
 | suites after the column | ores.trading.api.tests 21118 assertions in 5601 cases; ores.trading.core.tests 1841 in 282; ores.ore.core.tests 521015 in 567; ores.trading.scripting.tests 1200 in 18; all pass | the four test binaries | 9d0e657bec + PR 4 |
 
 * Notes
@@ -236,6 +236,12 @@ via its "Verifies task" field.
 | 4993.5 | the empty-operation test fails at the ops lookup, so it tests something else | service_publish_subject_plan_tests.cpp | accept | its subject is trading.v1.ops. |
 | 4993.6 | no test covers the handler itself | none | reject | the handler needs a NATS server and a workflow step; the bus publish ran both its success paths, and the capture's shared handler is the place for one test of all copies |
 | 4993.7 | a missing SQL function fails the step with the database's text | publish_from_dq_handler.cpp | reject | the step's failure goes to the workflow, which only administrators read; every copy reports it the same way |
+| 4994.1 | a database made before the branch lacks the column, and no upgrade script fills it | none | reject | the repository has no upgrade scripts; services refuse a database whose schema fingerprint differs, so a recreate is the path |
+| 4994.2 | the test's fixture rows can vanish and turn the changes into silent no-ops | trading_script_library_versions_test.sql | accept | an assertion that the staged rows and the untouched script exist, before the change |
+| 4994.3 | no test reads a version the script never had | trading_script_library_versions_test.sql | accept | it reads back as no script and empty lists |
+| 4994.4 | a long line in the function comment | trading_publish_from_dq_create.sql | accept | re-wrapped |
+| 4994.5 | long insert column lists | trading_publish_from_dq_create.sql | accept | wrapped |
+| 4994.6 | a regeneration could reorder the column | none | reject | the column order comes from the model; a regeneration of the branch changes no file |
 
 * Result
 

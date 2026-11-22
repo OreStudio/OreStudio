@@ -29,13 +29,14 @@
  * - The rows of the earlier version still read back as the script it was
  * - The current rows read back as the staged script
  * - A script that did not change keeps its version
+ * - A version the script never had reads back as no script
  *
  * Run with: pg_prove -d <database> test/trading_script_library_versions_test.sql
  */
 
 begin;
 
-select plan(7);
+select plan(9);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
 
@@ -85,6 +86,16 @@ select is(
     0::bigint,
     'every current row of every script carries its script''s current version');
 
+select ok(
+    exists (select 1 from ores_dq_script_inputs_artefact_tbl
+            where dataset_id = (select dataset_id from t_ctx)
+              and script_name = 'Accumulator01' and sequence_number = 1)
+    and exists (select 1 from ores_dq_script_results_artefact_tbl
+                where dataset_id = (select dataset_id from t_ctx)
+                  and script_name = 'Accumulator01' and sequence_number = 4)
+    and (select other_version from t_ctx) is not null,
+    'the staged rows the test changes and the script it leaves alone exist');
+
 update ores_dq_script_inputs_artefact_tbl set description = 'changed for the test'
 where dataset_id = (select dataset_id from t_ctx)
   and script_name = 'Accumulator01' and sequence_number = 1;
@@ -132,6 +143,14 @@ select is(
        and valid_to = ores_utility_infinity_timestamp_fn()),
     (select other_version from t_ctx),
     'a script that did not change keeps its version');
+
+select is(
+    ores_trading_published_script_state_fn(
+        ores_utility_system_tenant_id_fn(), 'Accumulator01', 999999),
+    jsonb_build_object('script', null, 'variants', '[]'::jsonb, 'results', '[]'::jsonb,
+                       'calibrations', '[]'::jsonb, 'strikes', '[]'::jsonb,
+                       'coarsenings', '[]'::jsonb, 'inputs', '[]'::jsonb),
+    'a version the script never had reads back as no script');
 
 select * from finish();
 rollback;

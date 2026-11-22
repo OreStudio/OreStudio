@@ -33,6 +33,13 @@
  *
  * The catalogue owns the sources and has no flag for this, and a collection's own
  * enabled flag gates the hand starts of its feeds too, so the stop is held here.
+ *
+ * An operator stops and starts a source through the simulated source verbs, which
+ * take the feeds run permission, write this row and stop or start the adapter
+ * together. The generated write and delete of this entity take their own
+ * permissions, in the system tenant only, and change the row alone: the adapter
+ * follows the row at the next start of the service. They are for the record, not
+ * for operating a source.
  */
 
 create table if not exists "ores_synthetic_stopped_simulated_sources_tbl" (

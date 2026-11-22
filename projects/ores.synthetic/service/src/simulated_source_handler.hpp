@@ -31,6 +31,7 @@
 #include "ores.synthetic.core/service/stopped_simulated_source_service.hpp"
 #include "source_control.hpp"
 #include <algorithm>
+#include <cctype>
 #include <exception>
 #include <optional>
 #include <string>
@@ -115,14 +116,27 @@ public:
                 refuse("The simulated source " + req->source_name + " is already stopped.");
                 return;
             }
+            if (std::ranges::all_of(req->reason_code,
+                                    [](unsigned char c) { return std::isspace(c) != 0; })) {
+                refuse("A stop states its reason.");
+                return;
+            }
             ores::synthetic::domain::stopped_simulated_source row;
             row.source_name = source->source_name;
             row.provider_code = source->provider_code;
             row.change_reason_code = req->reason_code;
             row.change_commentary = req->commentary;
-            ores::synthetic::service::stopped_simulated_source_service(*ctx).save_stopped_source(
-                row);
-            sources_.stop(source->source_name);
+            // The stop is recorded before the adapter stops, so a crash between the two leaves
+            // the source stopped after a restart. An adapter that throws undoes the record, so
+            // no record says a running source is stopped.
+            ores::synthetic::service::stopped_simulated_source_service records(*ctx);
+            records.save_stopped_source(row);
+            try {
+                sources_.stop(source->source_name);
+            } catch (...) {
+                records.delete_stopped_source(source->source_name);
+                throw;
+            }
             ores::service::messaging::reply(
                 nats_,
                 msg,
@@ -161,9 +175,17 @@ public:
                 refuse("The simulated source " + req->source_name + " is not stopped.");
                 return;
             }
-            ores::synthetic::service::stopped_simulated_source_service(*ctx).delete_stopped_source(
-                source->source_name);
+            // The adapter starts before the record goes, so an adapter that does not start leaves
+            // the source stopped and recorded as stopped. A record that cannot be removed stops
+            // the adapter again, so the two agree whichever step fails.
             sources_.start(source->source_name);
+            try {
+                ores::synthetic::service::stopped_simulated_source_service(*ctx)
+                    .delete_stopped_source(source->source_name);
+            } catch (...) {
+                sources_.stop(source->source_name);
+                throw;
+            }
             ores::service::messaging::reply(
                 nats_,
                 msg,

@@ -36,6 +36,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -58,11 +59,15 @@ public:
         return all_;
     }
     bool stop(const std::string& source_name) override {
+        if (fail_stop)
+            throw std::runtime_error("the adapter did not stop");
         stops.push_back(source_name);
         all_.front().stopped = true;
         return true;
     }
     bool start(const std::string& source_name) override {
+        if (fail_start)
+            throw std::runtime_error("the adapter did not start");
         starts.push_back(source_name);
         all_.front().stopped = false;
         return true;
@@ -70,6 +75,8 @@ public:
 
     std::vector<std::string> stops;
     std::vector<std::string> starts;
+    bool fail_stop = false;
+    bool fail_start = false;
 
 private:
     std::vector<source_messaging::simulated_source> all_;
@@ -185,5 +192,59 @@ TEST_CASE("a stopped source is recorded with its reason, and a start removes the
     f.handler().start(source_request_message(
         source_messaging::start_simulated_source_request{.source_name = f.source}, system));
     CHECK(f.sources.starts == std::vector<std::string>{f.source});
+    CHECK(f.stored().empty());
+}
+
+TEST_CASE("a stop states its reason, or nothing is stored and nothing stops",
+          "[simulated_source_handler][integration]") {
+    source_fixture f;
+    const auto system =
+        source_token_for(std::string(ores::database::service::tenant_context::system_tenant_id),
+                         {source_run_permission});
+    f.handler().stop(source_request_message(
+        source_messaging::stop_simulated_source_request{.source_name = f.source,
+                                                        .reason_code = "  "},
+        system));
+    CHECK(f.sources.stops.empty());
+    CHECK(f.stored().empty());
+}
+
+TEST_CASE("an adapter that does not stop leaves no stored stop behind",
+          "[simulated_source_handler][integration]") {
+    source_fixture f;
+    const auto system =
+        source_token_for(std::string(ores::database::service::tenant_context::system_tenant_id),
+                         {source_run_permission});
+    f.sources.fail_stop = true;
+    f.handler().stop(source_request_message(
+        source_messaging::stop_simulated_source_request{.source_name = f.source,
+                                                        .reason_code = "system.test"},
+        system));
+    // The source still runs, so no record may say it is stopped.
+    CHECK(f.stored().empty());
+}
+
+TEST_CASE("an adapter that does not start keeps the stored stop",
+          "[simulated_source_handler][integration]") {
+    source_fixture f;
+    const auto system =
+        source_token_for(std::string(ores::database::service::tenant_context::system_tenant_id),
+                         {source_run_permission});
+    f.handler().stop(source_request_message(
+        source_messaging::stop_simulated_source_request{.source_name = f.source,
+                                                        .reason_code = "system.test"},
+        system));
+    REQUIRE(f.stored().size() == 1);
+
+    // The source is still stopped, so the record that says so stays.
+    f.sources.fail_start = true;
+    f.handler().start(source_request_message(
+        source_messaging::start_simulated_source_request{.source_name = f.source}, system));
+    CHECK(f.stored().size() == 1);
+
+    // Clean up so the system tenant keeps no stop of a test source.
+    f.sources.fail_start = false;
+    f.handler().start(source_request_message(
+        source_messaging::start_simulated_source_request{.source_name = f.source}, system));
     CHECK(f.stored().empty());
 }

@@ -1,0 +1,55 @@
+The browser interface served by ores.http, with the harness driving it.
+
+Commit under test : the branch head, built from this checkout
+Database          : ores_dev_brave_hopper, as the fleet found it
+Gateway           : ores.http.server-brave_hopper, http://localhost:20401
+BFF               : ores.web.service-brave_hopper, http://localhost:20402
+Services running  : the whole fleet, started by compass services start
+Account           : tenant_admin, in Acme Corporation
+
+The build now publishes the browser bundle and the site configuration beside the
+binaries, and the service registry names them, so the gateway serves the
+application and the screens call the gateway's own routes.
+
+What the run shows. The gateway answers the application and what it was built
+from: / is the index, an asset is served with its own type, and a screen path
+answers the shell. /api/site and /api/site/deployment answer the site
+environment. The harness signs in against the gateway and drives the screens:
+
+| Suite | Gateway | The BFF |
+|-------+---------+---------|
+| smoke.spec.ts and identity-shapes.spec.ts | 4 passed, 2 failed | 4 passed, 2 failed |
+
+The same two fail on both servers, so the switch does not break them: the
+currencies search, which the gateway now answers on the server and the screen
+still does not take up, and a shape write in the editor. The whole harness is 842
+cases on one worker and asks for data this database does not seed, so the switch
+is proved screen by screen and not in one run.
+
+What serving the bundle found and fixed:
+
+- The bundle routes captured the bundle by this, and the bundle was a local in
+  the function that registered them, so the first request read a destroyed object
+  and the gateway died. It had never fired, because no deployment had served a
+  bundle. The routes now hold the bundle.
+- A whole read of a generated record route ignored the query, so a screen that
+  searches a list it holds whole was answered the list. The template states the
+  order, the search and the filters once and both reads take them.
+
+--- 8< ---
+
+$ curl -sS -o /dev/null -w '%{http_code} %{content_type}\n' http://localhost:20401/
+200 text/html; charset=utf-8
+$ curl -sS -o /dev/null -w '%{http_code} %{content_type}\n' http://localhost:20401/assets/index-BclRjkab.js
+200 text/javascript; charset=utf-8
+$ curl -sS -o /dev/null -w '%{http_code} %{content_type}\n' http://localhost:20401/market-data/blotter
+200 text/html; charset=utf-8
+$ curl -sS -o /dev/null -w '%{http_code}\n' http://localhost:20401/api/site
+200
+$ curl -sS -o /dev/null -w '%{http_code}\n' http://localhost:20401/api/site/deployment
+200
+
+$ ORES_HARNESS_URL=http://localhost:20401 npx playwright test tests/smoke.spec.ts tests/identity-shapes.spec.ts
+2 failed, 4 passed (1.7m)
+$ npx playwright test tests/smoke.spec.ts tests/identity-shapes.spec.ts
+2 failed, 4 passed (1.9m)

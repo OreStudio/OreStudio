@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reference data coverage — ORE Studio prototype</title>
+<link rel="stylesheet" href="management.css">
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step.
+
+  Is my reference data complete? The bundles by level, the members of one
+  bundle, the reason a member is not ready, and the published count that a run
+  leaves behind.
+
+    ?bundle=<code>     the bundle whose members are drawn
+    ?empty=1           a database nothing has published into
+    ?gaps=0            hide the notes on what the server does not serve
+
+  Three of the six bundles carry mock members. The rest state their count and
+  open no table, which is what the screen would do before the coverage
+  operation exists.
+-->
+
+<div class="proto-note">Prototype · mock data · reads no server</div>
+<div id="app"></div>
+<div class="proto-bar" id="proto-bar"></div>
+
+<script src="management.js"></script>
+<script src="prototype.js"></script>
+</body>
+</html>

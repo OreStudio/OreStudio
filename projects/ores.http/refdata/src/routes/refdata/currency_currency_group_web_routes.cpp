@@ -127,6 +127,46 @@ std::string currency_currency_group_web_routes::catalogue_entry(const http_reque
            R"json(,"search":false,"sortable":[],"events":{"component":"refdata","entity":"currency_currency_groups"},"writePermission":"refdata::currency_currency_groups:write","deletePermission":"refdata::currency_currency_groups:delete"})json";
 }
 
+/// The order, the search and the filters a query states, on a page request.
+///
+/// A whole read takes the same query a paged one takes: a screen that searches a
+/// list it holds whole reads the rows that match, not the list.
+messaging::list_currency_currency_groups_request
+currency_currency_group_web_query(messaging::list_currency_currency_groups_request msg,
+                                  const http_request& req) {
+    const std::string page_sentence = "A page names an offset and a limit of 1 to 1000.";
+    const auto sort = req.get_query_param("sort");
+    if (!sort.empty()) {
+        constexpr std::string_view sortable[] = {""};
+        if (std::find(std::begin(sortable), std::end(sortable) - 1, sort) == std::end(sortable) - 1)
+            rr::invalid("currency-memberships cannot be ordered by " + sort + ".");
+        msg.order.field = sort;
+    }
+    const auto descending = req.get_query_param("descending");
+    if (!descending.empty() && descending != "true" && descending != "false")
+        rr::invalid(page_sentence);
+    msg.order.descending = descending == "true";
+
+    const auto search = req.get_query_param("search");
+    if (!search.empty())
+        rr::invalid("currency-memberships cannot be searched.");
+
+    for (const auto& [name, value] : req.query_params) {
+        if (!name.starts_with("f."))
+            continue;
+        const auto member = name.substr(2);
+        constexpr std::string_view filters[] = {"currency_iso_code", ""};
+        if (std::find(std::begin(filters), std::end(filters) - 1, member) == std::end(filters) - 1)
+            rr::invalid("currency-memberships cannot be filtered by " + member + ".");
+    }
+    if (const auto raw = req.get_query_param("f.currency_iso_code"); !raw.empty()) {
+        if (!msg.filter)
+            msg.filter = messaging::currency_currency_groups_filter{};
+        msg.filter->currency_iso_code = rr::read<std::string>(raw, "f.currency_iso_code");
+    }
+    return msg;
+}
+
 boost::asio::awaitable<http_response>
 currency_currency_group_web_routes::handle_list(const http_request& req, nats_client& session) {
     try {
@@ -139,8 +179,10 @@ currency_currency_group_web_routes::handle_list(const http_request& req, nats_cl
                 const auto reply = ores::http::forwarding::forward(
                     req,
                     session,
-                    currency_currency_group_web_page(offset,
-                                                     currency_currency_group_web_page_size));
+                    currency_currency_group_web_query(
+                        currency_currency_group_web_page(offset,
+                                                         currency_currency_group_web_page_size),
+                        req));
                 rr::require_ok(reply.result);
                 const auto& got = reply.currency_currency_groups;
                 rows.insert(rows.end(), got.begin(), got.end());
@@ -166,38 +208,8 @@ currency_currency_group_web_routes::handle_list(const http_request& req, nats_cl
         if (limit < 1 || limit > 1000)
             rr::invalid(page_sentence);
 
-        auto msg = currency_currency_group_web_page(offset, limit);
-        const auto sort = req.get_query_param("sort");
-        if (!sort.empty()) {
-            constexpr std::string_view sortable[] = {""};
-            if (std::find(std::begin(sortable), std::end(sortable) - 1, sort) ==
-                std::end(sortable) - 1)
-                rr::invalid("currency-memberships cannot be ordered by " + sort + ".");
-            msg.order.field = sort;
-        }
-        const auto descending = req.get_query_param("descending");
-        if (!descending.empty() && descending != "true" && descending != "false")
-            rr::invalid(page_sentence);
-        msg.order.descending = descending == "true";
-
-        const auto search = req.get_query_param("search");
-        if (!search.empty())
-            rr::invalid("currency-memberships cannot be searched.");
-
-        for (const auto& [name, value] : req.query_params) {
-            if (!name.starts_with("f."))
-                continue;
-            const auto member = name.substr(2);
-            constexpr std::string_view filters[] = {"currency_iso_code", ""};
-            if (std::find(std::begin(filters), std::end(filters) - 1, member) ==
-                std::end(filters) - 1)
-                rr::invalid("currency-memberships cannot be filtered by " + member + ".");
-        }
-        if (const auto raw = req.get_query_param("f.currency_iso_code"); !raw.empty()) {
-            if (!msg.filter)
-                msg.filter = messaging::currency_currency_groups_filter{};
-            msg.filter->currency_iso_code = rr::read<std::string>(raw, "f.currency_iso_code");
-        }
+        const auto msg =
+            currency_currency_group_web_query(currency_currency_group_web_page(offset, limit), req);
 
         const auto reply = ores::http::forwarding::forward(req, session, msg);
         rr::require_ok(reply.result);

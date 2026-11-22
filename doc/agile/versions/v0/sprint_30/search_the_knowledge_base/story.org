@@ -66,6 +66,18 @@ full-text search. The analysis is in [[id:3237D7CF-8EBA-4B9B-9B54-7135A4A7AA4A][
 
 * Decisions
 
+- Decided on 2026-11-22, from the BFF port's needs: the loader takes **every**
+  doc that has an =:ID:= and a =#+title:=, not only the user-facing pages. The
+  agile tree and the QA scenarios live under =doc/= too, and the screens that
+  read them are moving off the BFF, so they must be loaded or those screens have
+  nothing to read. Which pages are user-facing stays a query over the tags, not a
+  second load.
+- Decided on 2026-11-22, from the BFF port's needs: the service states a page
+  write beside the read, version-checked and reasoned, so a QA run can record its
+  outcomes into the scenario page. The write is
+  [[id:7C83579B-4DA3-4EF8-BF5B-33E97C2E3874][Write an org page back through the service]],
+  which the BFF port's story owns because the need is its own.
+
 - *Store the pages as org, unchanged, and parse them in one indexing step*
   (2026-11-21). The script does not parse; the indexing step writes the shape
   readers need and can be rerun without reloading. ORE already parses org in

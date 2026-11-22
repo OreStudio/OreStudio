@@ -5,7 +5,7 @@
 #+SUBTITLE: Reconciling bulk artefact publishing with strict service table isolation
 #+DATE: 2026-05-14
 #+AUTHOR: ORE Studio Team
-#+STATUS: IN PROGRESS
+#+STATUS: SUPERSEDED (2026-11-22: see "From an entity model to a published row" and "Reference data classification by publication level")
 #+OPTIONS: toc:t num:nil
 
 * Background

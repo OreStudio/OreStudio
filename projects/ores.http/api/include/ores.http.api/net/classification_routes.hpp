@@ -24,10 +24,12 @@
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <algorithm>
+#include <cctype>
 #include <cstdint>
 #include <map>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <tuple>
 #include <type_traits>
 #include <vector>
@@ -166,6 +168,39 @@ int display_order_of(const Row& row) {
 }
 
 /**
+ * @brief Whether one code comes before another as the screen listed it.
+ *
+ * The screen sorts the codes with the browser's collation, which compares the
+ * letters without their case and puts a lower-case letter before the same
+ * letter in upper case: =Act/360= before =ACT/360=. A byte comparison would put
+ * every upper-case code first and list the rows in another order than the one a
+ * person read, so the fold is stated here once.
+ */
+inline bool code_before(std::string_view left, std::string_view right) {
+    const auto fold = [](std::string_view text, std::size_t at) {
+        const auto c = static_cast<unsigned char>(text[at]);
+        return c < 0x80 ? static_cast<unsigned char>(std::tolower(c)) : c;
+    };
+    const auto common = std::min(left.size(), right.size());
+    for (std::size_t i = 0; i < common; ++i) {
+        const auto a = fold(left, i);
+        const auto b = fold(right, i);
+        if (a != b)
+            return a < b;
+    }
+    if (left.size() != right.size())
+        return left.size() < right.size();
+    for (std::size_t i = 0; i < common; ++i) {
+        if (left[i] == right[i])
+            continue;
+        const auto a = static_cast<unsigned char>(left[i]);
+        const auto b = static_cast<unsigned char>(right[i]);
+        return a > b;
+    }
+    return false;
+}
+
+/**
  * @brief The rows in the order the screen lists them: by display order, then by code.
  */
 template <typename Row>
@@ -173,7 +208,7 @@ void sort_rows(std::vector<Row>& rows) {
     std::sort(rows.begin(), rows.end(), [](const Row& a, const Row& b) {
         const auto oa = display_order_of(a);
         const auto ob = display_order_of(b);
-        return oa != ob ? oa < ob : a.code < b.code;
+        return oa != ob ? oa < ob : code_before(a.code, b.code);
     });
 }
 

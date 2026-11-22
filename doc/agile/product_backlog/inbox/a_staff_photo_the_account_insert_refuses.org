@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: 0760D39C-CA2D-4F2C-A04D-DEB8AF820C21
+:END:
+#+title: The account insert cannot see a staff photo the step just read
+#+description: The attach_photos step reads a staff photo the system tenant holds, and the account insert's own check refuses its id.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-11-22
+#+updated: 2026-11-22
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The =attach_photos= step reads a staff photo by its code, takes the id it finds,
+and hands it to the account insert. The insert refuses it: =Invalid image_id:
+89b3bc34-78ad-5998-b935-23fb06a692da. Image must exist.= The row exists, it is the
+current version, and the step could read it a moment earlier. What the insert's
+check cannot do is see it: the row belongs to the system tenant, and the check
+runs under the tenant whose account is being written.
+
+* Why
+
+One provisioning run of 22 November attached 25 administrator pictures and left
+this one account without one, so the tenant holds an administrator whose photo is
+missing and the run carries a warning a reader has to explain:
+
+#+begin_src text
+ores_q_12: ERROR:  Invalid image_id: 89b3bc34-78ad-5998-b935-23fb06a692da.
+Image must exist.
+CONTEXT: PL/pgSQL function ores_iam_accounts_insert_fn() line 16 at RAISE
+#+end_src
+
+The read and the check disagree about one row, and each is doing what its own
+policy says. =system_core= publishes the avatar images into the system tenant, and
+the installation reads those rows through a shared-reference policy wherever it
+needs them. A step that reads by code reaches them. The insert's check reads by
+id under the caller, and no policy carries the row across, so the id names
+nothing there.
+
+#+begin_src sh
+compass sql -- -c "select id, tenant_id, code, valid_to from ores_assets_images_tbl where code like 'acme_staff_photo:male_age20_european_01%'"
+#+end_src
+
+#+begin_src text
+                  id                  |              tenant_id               |                  code                   |        valid_to
+--------------------------------------+--------------------------------------+-----------------------------------------+------------------------
+ 89b3bc34-78ad-5998-b935-23fb06a692da | ffffffff-ffff-ffff-ffff-ffffffffffff | acme_staff_photo:male_age20_european_01 | 9999-12-31 23:59:59+00
+#+end_src
+
+The record shows the row is live and sits in the system tenant, so the id is
+valid and the visibility is the fault. This is the shape the RLS exception
+register already covers elsewhere: an installation-owned row that a tenant
+references must be readable by the foreign-key check that references it, or the
+check refuses a row the model says is there.
+
+* References
+
+- The run that recorded it: =doc/agile/versions/v0/sprint_30/pool_the_fleets_connections/scenario_four_lanes_meet_no_acquisition_failure.org=.
+- The insert that refuses: =ores_iam_accounts_insert_fn=.
+- The step that asks: =attach_staff_photos= and =attach_account_photo= in =ores.iam.core/messaging/tenant_provisioning_handler.hpp=.

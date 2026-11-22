@@ -20,11 +20,25 @@
  */
 
 import { describe, expect, it } from 'vitest';
+import { renderToStaticMarkup } from 'react-dom/server';
 import { ApiFailure } from '../api/transport.js';
+import type { page } from '../api/servers.js';
+import { TranslationProvider } from '../i18n/Provider.js';
+import { ServerSwitch } from '../shell/ServerSwitch.js';
 import { partyChoiceRefused } from './SignInPage.js';
 
 const failure = (code: 'session-expired' | 'forbidden', message: string): ApiFailure =>
     new ApiFailure(code === 'session-expired' ? 401 : 403, { code, message } as never);
+
+const PORTS = { cpp: '20401', bff: '20402' } as const;
+
+function at(port: string, path = '/signin'): page {
+    return { protocol: 'http:', hostname: 'localhost', port, pathname: path, search: '', hash: '' };
+}
+
+function render(node: React.ReactNode): string {
+    return renderToStaticMarkup(<TranslationProvider>{node}</TranslationProvider>);
+}
 
 describe('a refused choice of party', () => {
     it('begins the sign-in again and says it timed out, when the session ended', () => {
@@ -47,5 +61,27 @@ describe('a refused choice of party', () => {
             beginAgain: false,
             message: 'Network down',
         });
+    });
+});
+
+describe('the way to the other server, on the sign-in screen', () => {
+    it('presses the server that served the page, and links to the other one', () => {
+        const html = render(<ServerSwitch at={at('20402')} ports={PORTS} />);
+
+        expect(html).toContain('aria-current="true"');
+        expect(html).toContain('data-server="bff"');
+        expect(html).toContain('href="http://localhost:20401/signin"');
+        expect(html).toContain('data-server="cpp"');
+    });
+
+    it('goes back to the BFF from the C++ server, on the same screen', () => {
+        const html = render(<ServerSwitch at={at('20401', '/market-data/quotes')} ports={PORTS} />);
+
+        expect(html).toContain('href="http://localhost:20402/market-data/quotes"');
+        expect(html).toContain('C++ server');
+    });
+
+    it('says nothing on a page that neither server serves', () => {
+        expect(render(<ServerSwitch at={at('5173')} ports={PORTS} />)).toBe('');
     });
 });

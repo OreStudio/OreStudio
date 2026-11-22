@@ -132,8 +132,6 @@ via its "Verifies task" field.
 
 * Result
 
-* Result
-
 The six views are served from =ores.http.marketdata= at the BFF's addresses and in
 the BFF's shapes, in five commits, one for each thing that could be checked on
 its own:

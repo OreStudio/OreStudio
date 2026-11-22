@@ -87,6 +87,19 @@ TEST_CASE("classification_routes_lists_rows_by_order_then_code", "[classificatio
     CHECK(plain[0].code == "M");
 }
 
+TEST_CASE("classification_routes_lists_a_code_as_the_screen_did", "[classification_routes]") {
+    std::vector<classification_plain_row> rows(4);
+    rows[0].code = "ACT/360";
+    rows[1].code = "Act/360";
+    rows[2].code = "ACT/364";
+    rows[3].code = "1/1";
+    cr::sort_rows(rows);
+    CHECK(rows[0].code == "1/1");
+    CHECK(rows[1].code == "Act/360");
+    CHECK(rows[2].code == "ACT/360");
+    CHECK(rows[3].code == "ACT/364");
+}
+
 TEST_CASE("classification_routes_writes_a_row_with_its_label_and_the_members_it_has",
           "[classification_routes]") {
     classification_named_row named;

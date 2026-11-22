@@ -1,0 +1,83 @@
+:PROPERTIES:
+:ID: 9F601830-091B-4F2D-A02F-70FB402F5206
+:END:
+#+title: Publish a dataset prototype
+#+description: One dataset published on its own: its destination read from the artefact type, the mode, the preview and the receipt, and the level the verb cannot check.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:dq:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+
+| Item          | Where                                    |
+|---------------+------------------------------------------|
+| Prototype     | [[file:publish-a-dataset/][the prototype]] |
+| Gemini review | none                                     |
+| Group         | [[file:index.org][DQ prototypes]]                |
+
+* Summary
+
+This prototype argues that publishing one dataset is a smaller screen than
+publishing a bundle, and that its one interesting fact is the destination: the
+staging table, the target table and the subject all come from the artefact type,
+and the tenant that receives the rows comes from the level the dataset's bundle
+carries. None of the three is a control. It answers to
+[[id:23E34C1D-4C42-450A-BF19-E5165739D20C][Publish a dataset]].
+
+It is throwaway. It reads no server, opens with no build and no session, and
+draws mock data. The one thing it draws that the tree cannot yet do is stated on
+the page: the verb the screen calls names no level.
+
+* Detail
+
+** What it argues
+
+- *The destination is read.* The artefact type owns the staging table, the target
+  table and the subject, so a person never types a table name, and a screen that
+  offered one would let a run write where the model forbids.
+- *The level is the missing half.* The bundle verb refuses a caller the bundle's
+  level does not admit. The dataset verb has nothing to compare, so the page says
+  so rather than pretending the target is decided.
+- *A run that changes nothing is a success.* The preview's skip count is what
+  tells the person the catalogue already agrees. A screen that showed only
+  inserts would push a person to run a publish to find out.
+- *The receipt is four numbers and a run identifier.* Nothing else survives, so
+  the screen offers nothing else.
+
+** The screen
+
+One page with a rail of four steps: the dataset and its destination, the mode,
+the preview, the receipt. The rail is the same shell the bundle journey uses, so
+a person who has published a bundle recognises this screen.
+
+** States, by query string
+
+=?step=1|2|3|4=, =?mode=upsert|insert_only|replace_all=, =?actor=<person>=,
+=?gaps=0=. The bar at the foot switches the mode and hides the server-gap notes.
+
+** What is fake
+
+The dataset, its counts, the destination tables and the workflow instance. The
+staged and published counts are the two figures the tree cannot serve, so they
+are mock through and through.
+
+** Where the code lives
+
+[[proj:doc/prototypes/dq/publish-a-dataset/][=doc/prototypes/dq/publish-a-dataset/=]]:
+=index.html=, =prototype.js=, and =management.css= and =management.js= copied
+verbatim from the conventions prototypes, as every group carries the same copy.
+
+** Verdict
+
+The rail holds, and the level notice is the design's point: it is the honest
+answer to a verb that cannot check what the model requires. One question is left
+open — whether this belongs on the same page as the coverage screen, since a
+person reaches it from a gap there, or stays a page of its own with the bundle.
+
+*Signed off* on 2026-11-22 by Marco, on the page as it stands. The open question
+above is a note for the build.
+
+* See also
+
+- [[file:index.org][DQ prototypes]] — the group this belongs to.
+- [[id:23E34C1D-4C42-450A-BF19-E5165739D20C][Publish a dataset]] — the journey it answers.

@@ -71,6 +71,8 @@ const RECORD_ROUTES: Readonly<Record<string, Placement>> = {
     'party-counterparties': 'link',
     'series-identity-shapes': '/market-data/identity-shapes',
     'series-identity-shape-entries': 'part',
+    'ir-curve-bootstrap-configs': '/market-data/curve-blueprints',
+    'ir-curve-bootstrap-pillars': 'part',
 };
 
 export function recordScreens(): readonly Screen[] {

@@ -1,0 +1,44 @@
+:PROPERTIES:
+:ID: EE093C01-E3E9-4403-A081-54E21B57C6CC
+:END:
+#+title: The compass open-as suite fails on a staff row with no role
+#+description: test_a_role_in_hong_kong_returns_only_hong_kong_staff fails with KeyError 'role' because compass_open_as.by_role reads p["role"] from staff rows that do not carry it. It fails identically at the merge base of the current branch, so it is not a regression of that branch, but it makes the gate red for every pull request opened against it.
+#+type: capture
+#+level: cross
+#+filetags:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Make =compass_open_as.by_role= read a staff row it can actually hold, or make the
+fixture state the member the function reads.
+
+* Why
+
+#+begin_src
+projects/ores.compass/tests/test_compass_open_as.py::test_a_role_in_hong_kong_returns_only_hong_kong_staff
+>       found = [p for p in staff if p["role"] == role and in_location(p, prefix)]
+E       KeyError: 'role'
+#+end_src
+
+The rows the fixture holds carry =company_code=, =id=, =username= and =email= but no
+=role=, so the one test that filters by role cannot pass. Thirty-eight other tests in
+the file pass.
+
+* How it was found
+
+The local gate on PR #5027 failed =compass-tests= on this test. A clean worktree at
+the merge base =3e723042bc= fails it identically, so the branch under review does not
+cause it; the branch is the first to run the gate since the reading changed.
+
+* References
+
+- =projects/ores.compass/src/compass_open_as.py= (=by_role=)
+- =projects/ores.compass/tests/test_compass_open_as.py=
+
+* See also
+
+-

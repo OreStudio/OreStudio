@@ -1,0 +1,154 @@
+:PROPERTIES:
+:ID: D53501D6-5FF5-44BF-B389-AAA727ACAE6F
+:END:
+#+title: Qt DQ surface inventory
+#+description: What the Qt data-quality area offered, measured from the last commit that held it: the entity areas, the fields their dialogs asked for, and the publishing surface.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:ui:ux:web:qt:dq:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+
+* Summary
+
+The Qt client's data-quality area held 88 translation units over 17 entity
+areas. Each area had a list window; all 17 had a detail dialog and 10 had a
+history dialog. Beside them stood a publishing surface of five classes: the Data
+Librarian window, a bundle wizard, a datasets wizard, a dataset view and a
+publication audit dialog. =ores.web= holds no DQ screen at all.
+
+This page records what the area offered, measured rather than remembered, so
+that the journeys replacing it argue from the domain instead of from a screen
+list. It is evidence and not a specification: the count of detail dialogs is not
+a count of screens to build, and
+[[id:C82ED7AD-7E13-46FA-B7E9-C4E66E823478][Qt to web reference data matrix]]
+shows why — 63 Qt reference-data entities became three web shapes once they
+were grouped by the journey that uses them.
+
+* Detail
+
+** How the inventory was built
+
+The Qt tree is no longer in the checkout: it went in =af67db3062=, so the
+evidence lives in git. The script is
+[[proj:doc/agile/versions/v0/sprint_30/take_the_dq_pipeline_end_to_end/evidence/qt_dq_inventory.py][~doc/agile/versions/v0/sprint_30/take_the_dq_pipeline_end_to_end/evidence/qt_dq_inventory.py~]],
+and a reviewer reruns it:
+
+#+begin_example
+  ./qt_dq_inventory.py --ref 'af67db3062^'
+#+end_example
+
+It reads the column enum from each =Client<Entity>Model.hpp= and the column
+labels from that model's =headerData=, so the list columns below are the ones
+the widget showed. A shallow checkout cannot see the commit, so run
+=git fetch --unshallow= first. Each entity area is an entity where a =<Entity>MdiWindow=, a
+=Client<Entity>Model= and a =<Entity>DetailDialog.ui= exist. A dialog's fields
+are the text of its field labels; a wizard's pages are the doc comments on its
+class. The judgement — what a journey needs and what it does not — is not in the
+script, because that is the work this page prepares.
+
+** The entity areas
+
+| Entity | List columns | Detail | History |
+|--------+--------------+--------+---------|
+| ArtefactType | Code, Name, Artefact Table, Target Table, Target Subject, Order, Version, Modified By, Recorded At | yes | — |
+| BadgeDefinition | Code, Name, Description, Background, Text, Severity, Order, Version, Modified By, Recorded At | yes | yes |
+| BadgeSeverity | Code, Name, Description, Order, Version, Modified By, Recorded At | yes | yes |
+| Catalog | Name, Description, Owner, Version, Modified By, Recorded At | yes | — |
+| ChangeReason | Code, Category, Applies To Amend, Applies To Delete, Requires Commentary, Display Order, Version, Modified By, Recorded At | yes | — |
+| ChangeReasonCategory | Code, Description, Modified By, Recorded At | yes | — |
+| CodeDomain | Code, Name, Description, Order, Version, Modified By, Recorded At | yes | yes |
+| CodingScheme | Code, Name, Authority Type, Subject Area, Domain, Description, Version, Modified By, Recorded At | yes | yes |
+| CodingSchemeAuthorityType | Code, Name, Description, Version, Modified By, Recorded At | yes | yes |
+| DataDomain | Name, Description, Modified By, Recorded At | yes | — |
+| Dataset | Name, Code, Catalog, Subject Area, Domain, Origin, Nature, Treatment, Source, As Of Date, Version, Modified By, Recorded At, Dimensions | yes | yes |
+| DatasetBundle | Code, Name, Description, Version, Modified By, Recorded At | yes | — |
+| Methodology | Name, Description, Logic Reference, Version, Modified By, Recorded At | yes | yes |
+| NatureDimension | Code, Name, Description, Version, Modified By, Recorded At | yes | yes |
+| OriginDimension | Code, Name, Description, Version, Modified By, Recorded At | yes | yes |
+| SubjectArea | Name, Domain, Description, Version, Modified By, Recorded At | yes | — |
+| TreatmentDimension | Code, Name, Description, Version, Modified By, Recorded At | yes | yes |
+
+Ten of the seventeen rows repeat one shape: a code, a name, a description and
+the audit tail. Seven of the seventeen carry a history dialog and ten do not,
+and the seven are the ones a person edits rather than registers. The task that
+commissioned this page recorded 18 detail dialogs and 9 history dialogs; the
+tree holds 17 and 10, and it also holds 17 list windows the record did not
+count. The total of 27 agrees, so one dialog is filed differently in the two
+records, and a count taken from file names cannot say which one: the names are
+the authority here, and the reader who compares the two should count the files.
+
+** The fields the detail dialogs asked for
+
+- *ArtefactType* (7): Code, Name, Description, Artefact Table, Target Table, Target Subject, Display Order
+- *BadgeDefinition* (7): Code, Name, Description, Background, Text, Severity, Order
+- *BadgeSeverity* (3): Code, Name, Description
+- *Catalog* (3): Name, Description, Owner
+- *ChangeReason* (3): Code, Description, Category
+- *ChangeReasonCategory* (2): Code, Description
+- *CodeDomain* (3): Code, Name, Description
+- *CodingScheme* (7): Code, Name, Authority Type, Subject Area, Domain, URI, Description
+- *CodingSchemeAuthorityType* (3): Code, Name, Description
+- *DataDomain* (2): Name, Description
+- *Dataset* (16): Name, Code, Catalog, Subject Area, Domain, Origin, Nature, Treatment, Coding Scheme, Methodology, Source System, As Of Date, Lineage Depth, Business Context, License Info, Description
+- *DatasetBundle* (3): Code, Name, Description
+- *Methodology* (4): Name, Logic Reference, Implementation, Description
+- *NatureDimension* (3): Code, Name, Description
+- *OriginDimension* (3): Code, Name, Description
+- *SubjectArea* (3): Name, Domain, Description
+- *TreatmentDimension* (3): Code, Name, Description
+
+The =Dataset= dialog is the only one that asks for much: its 16 fields are the
+dataset's identity, its classification, its provenance and its licence. Twelve
+of the seventeen dialogs ask for three fields or fewer.
+
+** The publishing surface
+
+| Class | What it offered |
+|-------+-----------------|
+| =DataLibrarianWindow= | A navigation tree of domain, subject area and catalog; the dataset table with filtering; an inline accession card for the selected dataset; and a lineage flow diagram. Its toolbar opened the dimensions, coding schemes and methodologies windows. |
+| =DatasetViewDialog= | The accession card in full: a header carrying name, code, version and id, then three tabs — overview, provenance and methodology, and dependencies, the last an interactive lineage graph with zoom, pan and a reset. |
+| =PublishBundleWizard= | Five pages: the bundle's datasets in publish order; LEI party parameters where the bundle needs them; each optional dataset as a checkbox; the mode and the atomicity; then progress and a per-dataset result. |
+| =PublishDatasetsDialog= | Five pages: the chosen datasets; the options; the publication order with its resolved dependencies; progress over the request; and the workflow's steps as they complete. |
+| =PublicationAuditDialog= | A table of publication events: timestamp, dataset code, mode, record counts, and who published. |
+
+** What the audit dialog implies for publish state
+
+The Qt client could show a publication history because it read a publication
+table. That table exists today — =ores_dq_dataset_publications_tbl=, modelled as
+a run log — but nothing on the publish path writes a row, which is captured as
+[[id:5C20BEF9-13CA-48B5-8221-E83C1D6345DD][The publication run log has no
+writer, so the history screen is always empty]].
+
+A journey that asks "what did publishing do?" therefore cannot be answered by a
+history screen today. What a run leaves is the workflow instance the caller
+receives and the provenance stamped on each published row, and
+[[id:F05B779F-769B-49D5-B369-D2AAC029B36D][DQ Bundle Publication Pipeline]]
+states what the second of those records. A journey designed from this inventory
+must decide which of the two it reads, or the screen it names will be empty
+however well it is built.
+
+** What the evidence does not decide
+
+The inventory says what the Qt area held. It does not say that any of it was
+worth keeping, and it cannot show what a person needed and did not get: the Qt
+client had no way to see that a catalogue was empty after a recreate, which is
+the failure the replacement work exists to fix. Those are judgements for the
+journeys, and
+[[id:34A4373F-1BD1-4710-885B-95B3C3A3B8F7][Design and build the DQ screens from
+the journeys]] is where they are made.
+
+* See also
+
+- [[id:C82ED7AD-7E13-46FA-B7E9-C4E66E823478][Qt to web reference data matrix]] — the same measurement over reference data, and the precedent for grouping entities by journey.
+- [[id:F05B779F-769B-49D5-B369-D2AAC029B36D][DQ Bundle Publication Pipeline]] — what the publish path does today, and what it records.
+- [[id:CA94C762-B0C8-40E7-85CE-D4C6355023CC][User journey]] — the document type the journeys are written in.
+- [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] — the shape a record screen takes before any of this is built.
+- [[id:34A4373F-1BD1-4710-885B-95B3C3A3B8F7][Design and build the DQ screens from the journeys]] — the task this page is evidence for.
+- [[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX]] — the structure note for this cluster; this page sits alongside its sequence rather than in it.
+
+* Sources
+
+- ORE Studio, *Qt DQ tree*, commit =af67db3062^= — =projects/ores.qt/dq=, the
+  last revision that held it, read through
+  =evidence/qt_dq_inventory.py=.

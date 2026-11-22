@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:user_journey:index:security:
 #+created: 2026-09-23
-#+updated: 2026-10-05
+#+updated: 2026-11-22
 
 A [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]] describes what one person is trying to do, before anything is
 built. Each journey is one document: the actor, the trigger, the steps, a
@@ -44,6 +44,7 @@ not to the folder the code happens to live in.
 | [[id:0169FDD7-9B88-4766-9AE9-93FE87200700][Compute]] | The grid's work: the load, one job end to end, a failure to reproduce, the capacity planned, and what it may run |
 | [[id:38D55527-A968-41BD-8C51-FFBC184DEC5B][Reporting]] | A party's reports: which definitions it runs and how the last run of each went, running one on demand, reading what it produced, finding out what went wrong, choosing when it runs, and the configurations it binds, including the pricing engine configurations, the engine run settings and the published curves each market role prices from |
 | [[id:E9A7D292-593C-4E72-8C1B-109F3DE38241][Cuts]] | The body of data a valuation prices from: taking a cut at a timepoint and having it authorised, naming one in a report's run settings, and rerunning and auditing one |
+| [[id:50550498-38ED-4A07-AF28-209BAFF378F0][DQ]] | Staged reference data and its publication: whether the tenant holds what it needs, publishing a dataset and a bundle, correcting one artefact, and tracing a published value to the trade it belongs to |
 | [[id:9D60A92B-A65F-4474-896C-1C1E751FDEA3][Currencies and FX]] | Currencies with their countries, calendars and desk groups, and currency pairs |
 | [[id:A38B168A-8F37-4D8D-A99D-C485E32B9DCE][Calendars]] | Holiday calendars: their rules, exceptions and events, and the business days they produce |
 | [[id:85930439-D6B2-4811-81FB-C28DD3F45F75][Classifications]] | The short code lists that classify reference data |

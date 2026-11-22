@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: EEF34F4B-D1FE-4E3B-A13F-F145EE9AC7C4
+:END:
+#+title: A partial build leaves executables behind the libraries, and the wire they share disagrees
+#+description: Check that every executable is newer than the libraries it loads before reading a decoder crash as a codec fault.
+#+type: memory
+#+memory_subtype: project
+#+level: cross
+#+filetags: :build:memory:project:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+
+Before reading a crash inside a message decoder, or a bad_alloc in a client, as a codec or schema fault, check that every executable is newer than the libraries it loads.
+
+*Why:* The publish, the receive and the decode of one message are inline code from the headers a target was compiled with, and only a link of the executable ties it to the libraries it calls. A build that names a target rebuilds that target alone, so a tree can hold an executable from one day and its libraries from the next. On 2026-11-22 the fleet ran ores.shell and ores.dq.service linked on 21 November against libraries built on 22 November: dq died copying a decoded request whose string data pointer was 0x5c, the shell that sent the same request reported std::bad_alloc, and two provisioning runs failed for reasons that named neither.
+
+*How to apply:* Compare the modification time of the binary with the libraries it calls under build/output/<preset>/publish. When a binary is older, run a full ./compass.sh build rather than a targeted one, restart the fleet, and only then investigate the crash.

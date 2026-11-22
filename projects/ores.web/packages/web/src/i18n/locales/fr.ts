@@ -62,6 +62,9 @@ const fr: SourceCatalogue = {
     },
 
     shell: {
+        api: {
+            lead: 'Toutes les routes de ce serveur, décrites à partir des routes elles-mêmes.',
+        },
         theme: {
             toLight: 'Passer à la palette claire',
             toDark: 'Passer à la palette sombre',
@@ -81,6 +84,7 @@ const fr: SourceCatalogue = {
             operations: 'Opérations',
             reporting: 'Rapports',
             development: 'Développement',
+            api: 'API',
             parties: 'Parties',
             rescue: "Récupération d'accès",
             audit: 'Connexions',
@@ -800,6 +804,9 @@ const fr: SourceCatalogue = {
         sessionEnded:
             'Votre session a pris fin et vous avez été déconnecté. Connectez-vous de nouveau pour continuer.',
         partyCategory: 'Catégorie',
+        server: 'Serveur',
+        serverCpp: 'serveur C++',
+        serverBff: 'BFF',
     },
 
     signUp: {

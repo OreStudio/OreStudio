@@ -1,0 +1,79 @@
+The classification routes, proved against the gateway and against the BFF's own
+answer.
+
+Commit under test : the branch head, built from this checkout
+Database          : ores_dev_brave_hopper, as the fleet found it
+Gateway           : ores.http.server-brave_hopper, http://localhost:20401
+BFF               : ores.web.service-brave_hopper, http://localhost:20402
+Services running  : the whole fleet, started by compass services start
+Account           : tenant_admin, in Acme Corporation, acting as its party
+
+The six routes take the list as a path parameter in the BFF and as one generated
+route per list in ores.http, so the pairing names a family of 28 routes, one per
+list, at the addresses the screen calls.
+
+What the run shows. Three lists read whole and answer the same rows in the same
+order: monetary-nature, tenor-anchor and day-counter, the last of them 71 rows.
+The catalogue answers the same 28 lists with the same count for each. The four
+writes a read-only list refuses answer a 403 at both servers with the same
+words. A row is created on an editable list, refused when the same code is sent
+again, read back by both servers with the same fields, and removed, after which
+both servers no longer hold it.
+
+The run found one thing the port had to put right. ores.http listed the codes by
+their bytes, which puts every upper-case code before the lower-case one, and the
+screen listed them the way a browser collates: =Act/360= before =ACT/360=. The
+day-counter list showed the difference. The shared sort now folds the case and
+puts the lower-case letter first, and the day-counter list reads in the screen's
+order.
+
+--- 8< ---
+
+=== signing in to the gateway
+  choose party: 200
+=== signing in to the BFF
+  choose party: 200
+
+=== GET /api/classifications/monetary-nature
+gateway: HTTP 200
+the BFF: HTTP 200
+rows: gateway 4, the BFF 4
+identical once the instant each row recorded at is set aside: True
+the same order: True
+  first: {"code": "fiat", "name": "Fiat Currency", "description": "Government-issued currency not backed by a commodity", "displayOrder": 1, "version": 1, "modifiedBy": "ores_brave_hopper_ddl_user", "recordedA
+
+=== GET /api/classifications/tenor-anchor
+gateway: HTTP 200
+the BFF: HTTP 200
+rows: gateway 6, the BFF 6
+identical once the instant each row recorded at is set aside: True
+the same order: True
+  first: {"code": "SPOT", "name": "", "description": "Horizon date plus spot days (currency-pair specific).", "displayOrder": 10, "version": 1, "modifiedBy": "ores_brave_hopper_ddl_user", "recordedAt": "2026-1
+
+=== GET /api/classifications/day-counter
+gateway: HTTP 200
+the BFF: HTTP 200
+rows: gateway 71, the BFF 71
+identical once the instant each row recorded at is set aside: True
+the same order: True
+  first: {"code": "1/1", "name": "", "description": "", "displayOrder": null, "version": 1, "modifiedBy": "ores_brave_hopper_ddl_user", "recordedAt": "2026-11-21 11:55:53.222353Z", "reasonCode": "system.initia
+
+=== the catalogue's counts
+lists: gateway 28, the BFF 28
+the same keys and counts: True
+  lists with no count: []
+
+=== the read-only list refuses the writes the BFF refused
+POST    /api/classifications/day-counter/rows          gateway HTTP 403  BFF HTTP 403  same words: True | This list holds spellings ORE documents must write exactly.
+PUT     /api/classifications/day-counter/rows/ACT_365  gateway HTTP 403  BFF HTTP 403  same words: True | This list holds spellings ORE documents must write exactly.
+PUT     /api/classifications/day-counter/order         gateway HTTP 403  BFF HTTP 403  same words: True | This list holds spellings ORE documents must write exactly.
+DELETE  /api/classifications/day-counter/rows/ACT_365  gateway HTTP 403  BFF HTTP 403  same words: True | This list holds spellings ORE documents must write exactly.
+
+=== one row written on the editable list, read by both, and removed: probe.zz.1795283740
+the gateway creates:   HTTP 204
+the gateway creates it again: HTTP 409  The monetary_nature already exists for that code. State the version you read to replace it
+cpp        reads it:  HTTP 200  the row read back: {'code': 'probe.zz.1795283740', 'name': 'Probe row', 'description': 'Written by the live run', 'version': 1, 'reasonCode': 'system.initial_load'}
+bff        reads it:  HTTP 200  the row read back: {'code': 'probe.zz.1795283740', 'name': 'Probe row', 'description': 'Written by the live run', 'version': 1, 'reasonCode': 'system.initial_load'}
+the gateway removes:   HTTP 204
+cpp        reads:     HTTP 200  the row gone: True | rows: 4
+bff        reads:     HTTP 200  the row gone: True | rows: 4

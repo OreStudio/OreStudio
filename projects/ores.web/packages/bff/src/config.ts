@@ -31,7 +31,12 @@ import { z } from 'zod';
  */
 
 const environmentSchema = z.object({
-    /** Port the browser-facing HTTP server listens on. */
+    /**
+     * The BFF's own port. The address a person opens the app at is ORES_WEB_PORT,
+     * which is the HTTP server's, so the comparison copy states its port apart.
+     */
+    ORES_BFF_PORT: z.coerce.number().int().positive().optional(),
+    /** The app's address, which the BFF answers on when no port of its own is stated. */
     ORES_WEB_PORT: z.coerce.number().int().positive().default(8080),
     ORES_WEB_BFF_HOST: z.string().default('127.0.0.1'),
 
@@ -50,10 +55,15 @@ const environmentSchema = z.object({
         .enum(['true', 'false'])
         .default('false')
         .transform((value) => value === 'true'),
-    /** Origins allowed to call the API, comma separated. */
+    /**
+     * Origins allowed to call the API, comma separated.
+     *
+     * Left out, the two deployments of this port are allowed: the app's own address
+     * and this server's, so a screen on either can reach the API while the port runs.
+     */
     ORES_WEB_ALLOWED_ORIGINS: z
         .string()
-        .default('http://localhost:21802')
+        .default('')
         .transform((value) =>
             value
                 .split(',')
@@ -107,14 +117,19 @@ export function buildConfig(input: ConfigurationInput): Config {
     }
     const env = parsed.data;
     return {
-        port: env.ORES_WEB_PORT,
+        port: env.ORES_BFF_PORT ?? env.ORES_WEB_PORT,
         host: env.ORES_WEB_BFF_HOST,
         logLevel: env.ORES_WEB_LOG_LEVEL,
         session: {
             ttlSeconds: env.ORES_WEB_SESSION_TTL_SECONDS,
             cookieSecure: env.ORES_WEB_COOKIE_SECURE,
         },
-        allowedOrigins: env.ORES_WEB_ALLOWED_ORIGINS,
+        allowedOrigins:
+            env.ORES_WEB_ALLOWED_ORIGINS.length > 0
+                ? env.ORES_WEB_ALLOWED_ORIGINS
+                : [env.ORES_WEB_PORT, env.ORES_BFF_PORT ?? env.ORES_WEB_PORT].map(
+                      (port) => `http://localhost:${String(port)}`,
+                  ),
         loginAttemptsPerMinute: env.ORES_WEB_LOGIN_ATTEMPTS_PER_MINUTE,
         docRoot: env.ORES_WEB_DOC_ROOT,
     };

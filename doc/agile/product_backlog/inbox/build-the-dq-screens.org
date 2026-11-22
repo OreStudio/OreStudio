@@ -1,0 +1,50 @@
+:PROPERTIES:
+:ID: E25ACD77-495D-4D8E-832B-69B44C213D18
+:END:
+#+title: Build the DQ screens from the signed-off prototypes
+#+description: The five DQ journeys and their signed-off prototypes are on main; the screens themselves are not built, and three of the five need operations the server does not serve.
+#+type: capture
+#+level: cross
+#+filetags: :code:dq:ui:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Build the five DQ screens in ores.web from the signed-off prototypes: reference
+data coverage, publish a dataset, publish a bundle, correct one artefact, and
+trace a published value. Each prototype is the design record under
+=doc/prototypes/dq/=, and each journey under =doc/knowledge/journeys/dq/= states
+the operations its screen needs and whether the server serves them.
+
+* Why
+
+The design is finished and signed off; the product has no DQ screen at all,
+which is why an empty catalogue after a recreate went unnoticed. Three of the
+five journeys cannot be built as drawn until the server carries what they read:
+
+- a coverage operation that answers readiness, member counts and the preview —
+  =ores_dq_bundles_list_fn=, =ores_dq_bundle_datasets_list_fn= and
+  =ores_dq_bundle_preview_fn= compute all three and no subject serves them;
+- a per-dataset preview, and a published-row count per dataset;
+- any read or write of an =ores_dq_*_artefact_tbl=, without which the artefact
+  correction cannot start;
+- a used-by path from a published value to the trades that reference it, which
+  needs the reference to be an identifier or the text to be indexed.
+
+The run log also has no writer, so no screen can show a publication history
+until one exists.
+
+* References
+
+- [[id:50550498-38ED-4A07-AF28-209BAFF378F0][DQ journeys]] — the five journeys, each with its operations table.
+- [[proj:doc/prototypes/dq/index.org][DQ prototypes]] — the five signed-off prototypes.
+- [[id:D53501D6-5FF5-44BF-B389-AAA727ACAE6F][Qt DQ surface inventory]] — what the Qt client offered, and what not to port.
+- [[id:5C20BEF9-13CA-48B5-8221-E83C1D6345DD][The publication run log has no writer, so the history screen is always empty]].
+- [[id:B14DE752-043F-4EA0-A72E-ECDEB034C5F4][A dataset publish names no level, so a tenant can publish a world dataset into itself]].
+
+* See also
+
+- [[id:7D2BBBBC-36A3-4BFB-9673-0F9005991D94][Take the DQ pipeline end to end, from a seeded artefact table to a published system]] — the story this continues, closed with the design as its deliverable.

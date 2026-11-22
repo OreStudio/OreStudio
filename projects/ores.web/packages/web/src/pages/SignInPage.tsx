@@ -24,6 +24,7 @@ import { Link } from 'react-router';
 import { useTranslation } from '../i18n/Provider.js';
 import { Button, Field, Input, Notice } from '../ui/Primitives.js';
 import { ApiFailure } from '../api/transport.js';
+import { ServerSwitch } from '../shell/ServerSwitch.js';
 import { PartyChoice, type PartyOption } from '../ui/PartyChoice.js';
 import { PasswordInput } from '../ui/PasswordField.js';
 import { JourneySplash } from '../journeys/parts.js';
@@ -217,6 +218,7 @@ export function SignInPage({
                 <JourneySplash />
             </div>
             {parties !== undefined ? picker : form}
+            <ServerSwitch />
         </div>
     );
 }

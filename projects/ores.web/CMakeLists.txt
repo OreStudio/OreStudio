@@ -60,6 +60,22 @@ if(ORES_WEB_ENABLED)
         COMMENT "Building the ores.web TypeScript component"
         VERBATIM)
 
+    # A server serves the bundle from the publish tree, beside the binaries, as
+    # it does everything else it runs: the BFF reads packages/web/dist while a
+    # developer runs it, and ores.http serves the copy here. The copy is a
+    # target of its own so it follows a rebuild of the bundle and never a stale
+    # one.
+    add_custom_target(ores_web_bundle ALL
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${ORES_PUBLISH_DIRECTORY}/web
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${ORES_WEB_DIR}/packages/web/dist ${ORES_PUBLISH_DIRECTORY}/web
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            ${ORES_WEB_DIR}/config/environments.json
+            ${ORES_PUBLISH_DIRECTORY}/web/environments.json
+        DEPENDS ores_web
+        COMMENT "Publishing the browser bundle to ${ORES_PUBLISH_DIRECTORY}/web"
+        VERBATIM)
+
     # The checks are ctest entries rather than steps of the build target: an
     # incremental build then stays fast, and `compass test run` covers the
     # TypeScript the same way it covers the C++ suites. Both read the source

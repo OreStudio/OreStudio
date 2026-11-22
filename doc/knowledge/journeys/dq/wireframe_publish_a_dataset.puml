@@ -1,0 +1,60 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+salt
+{
+  <b>PUBLISH A DATASET</b>  { refdata.conventions | Publish }
+  --
+  {
+    {
+      <b>refdata.conventions</b>
+      ORE Instrument Conventions
+      --
+      <b>Destination, read from the artefact type</b>
+      staging    ores_dq_conventions_artefact_tbl
+      target     ores_refdata_conventions_tbl
+      subject    refdata.v1.ops.publish_conventions_from_dq
+      --
+      <b>Counts</b>
+      staged 10,991    published 10,991
+      <i>The second count is the provenance rows, which no subject offers.</i>
+    } | {
+      <b>Mode</b>
+      ( ) Upsert   ( ) Insert only   ( ) Replace all
+      --
+      <b>Preview</b>
+      {#
+        Insert | Update | Skip
+        0 | 0 | 10991
+      }
+      <i>A dataset whose rows agree reports every row skipped.</i>
+      --
+      <b>Receipt</b>
+      workflow instance 7f3c-4a91-9d20
+      inserted 0 · updated 0 · skipped 10991 · deleted 0
+      --
+      <b>What the verb cannot check</b>
+      The dataset names no level, so the target tenant is not the verb's to decide.
+    }
+  }
+  --
+  { Publish | <i>No history row: nothing writes the run log.</i> }
+}
+
+@enduml

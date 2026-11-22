@@ -285,8 +285,8 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
      */
     if (!cfg.web_dir.empty()) {
         if (std::filesystem::is_directory(cfg.web_dir)) {
-            routes::web_bundle_routes bundle(cfg.web_dir);
-            bundle.register_routes(router, registry);
+            routes::web_bundle_routes::register_routes(
+                std::make_shared<routes::web_bundle_routes>(cfg.web_dir), router, registry);
         } else {
             ORES_LOG_SEV(lg(), warn)
                 << "No browser bundle at " << cfg.web_dir << "; the server serves no application";

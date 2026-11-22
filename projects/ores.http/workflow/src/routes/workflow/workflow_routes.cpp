@@ -18,6 +18,7 @@
  *
  */
 #include "ores.http/routes/workflow/workflow_routes.hpp"
+#include "ores.http/routes/workflow/authorisation_queue_routes.hpp"
 #include "ores.http/routes/workflow/inbox_view_routes.hpp"
 #include "ores.http/routes/workflow/lookup_routes.hpp"
 #include "ores.http/routes/workflow/notification_routes.hpp"
@@ -41,6 +42,7 @@ void workflow_routes::register_routes(
     operations_routes::register_routes(router, registry, session);
     lookup_routes::register_routes(router, registry, session);
     inbox_view_routes::register_routes(router, registry, session);
+    authorisation_queue_routes::register_routes(router, registry, session);
     request_proposal_routes::register_routes(router, registry, session);
     request_story_routes::register_routes(router, registry, session);
     progress_routes::register_routes(router, registry, session);

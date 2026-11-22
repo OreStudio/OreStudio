@@ -88,13 +88,13 @@ public:
         }
     }
 
-    /// The source names of the surfaces that run, each once whatever number of adapters hold it.
-    [[nodiscard]] std::vector<std::string> source_names() const {
+    /// The surfaces that run, each once whatever number of adapters hold it.
+    [[nodiscard]] std::vector<surface_ptr> held() const {
         const std::lock_guard lock(mu_);
-        std::vector<std::string> out;
+        std::vector<surface_ptr> out;
         out.reserve(surfaces_.size());
         for (const auto& [_, surface] : surfaces_)
-            out.push_back(surface->source_name());
+            out.push_back(surface);
         return out;
     }
 

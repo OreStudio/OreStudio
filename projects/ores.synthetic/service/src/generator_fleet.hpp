@@ -68,10 +68,8 @@ public:
      */
     [[nodiscard]] std::vector<std::string> running_source_names() const {
         auto out = names_.names();
-        auto held = surfaces_.source_names();
-        out.insert(out.end(),
-                   std::make_move_iterator(held.begin()),
-                   std::make_move_iterator(held.end()));
+        for (const auto& surface : surfaces_.held())
+            out.push_back(surface->source_name());
         return out;
     }
 
@@ -79,10 +77,15 @@ public:
      * @brief The feeds the service runs now, each with where its run started.
      *
      * The runs of every runner are read once each, and no source name runs in two
-     * runners, so a feed appears once. The answer is in source name order.
+     * runners, so a feed appears once. A held surface appears under its feed's own name,
+     * beside the holds of its adapters. The answer is in source name order.
      */
     [[nodiscard]] std::vector<running_feed_start> running_feeds() const {
         auto out = manual_.running_feeds();
+        for (const auto& surface : surfaces_.held())
+            out.push_back({.source_name = surface->source_name(),
+                           .start = surface->start_source(),
+                           .watch_subjects = surface->vendor_watch_subjects()});
         for (const auto* runner : attached()) {
             auto more = runner->running_feeds();
             out.insert(out.end(),

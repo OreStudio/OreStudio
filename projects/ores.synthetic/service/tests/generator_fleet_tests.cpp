@@ -351,14 +351,20 @@ TEST_CASE("a held surface runs under its feed's own source name", "[shared_surfa
     recording_hold bloomberg(
         surfaces, "feed-1", "bloomberg-a", "c-bbg", "synthetic.vol.eurusd.bloomberg", {}, make);
     recording_hold ice(surfaces, "feed-1", "ice-a", "c-ice", "synthetic.vol.eurusd.ice", {}, make);
-    CHECK(surfaces.source_names().empty());
+    const auto names = [&surfaces] {
+        std::vector<std::string> out;
+        for (const auto& surface : surfaces.held())
+            out.push_back(surface->source_name());
+        return out;
+    };
+    CHECK(names().empty());
 
     bloomberg.start();
     ice.start();
-    CHECK(surfaces.source_names() == std::vector<std::string>{"synthetic.vol.eurusd"});
+    CHECK(names() == std::vector<std::string>{"synthetic.vol.eurusd"});
 
     bloomberg.stop();
-    CHECK(surfaces.source_names() == std::vector<std::string>{"synthetic.vol.eurusd"});
+    CHECK(names() == std::vector<std::string>{"synthetic.vol.eurusd"});
     ice.stop();
-    CHECK(surfaces.source_names().empty());
+    CHECK(names().empty());
 }

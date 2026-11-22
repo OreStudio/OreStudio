@@ -800,8 +800,7 @@ const pt: SourceCatalogue = {
         sessionEnded:
             'A sua sessão terminou e foi desligado. Inicie a sessão novamente para continuar.',
         partyCategory: 'Categoria',
-        servedBy: 'Servido pelo {server}',
-        switchTo: 'Abrir no {server}',
+        server: 'Servidor',
         serverCpp: 'servidor C++',
         serverBff: 'BFF',
     },

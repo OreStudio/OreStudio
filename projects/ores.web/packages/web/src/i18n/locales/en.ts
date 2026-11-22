@@ -793,8 +793,7 @@ export const en: SourceCatalogue = {
         sessionEnded:
             'Your session has ended, so you have been signed out. Sign in again to continue.',
         partyCategory: 'Category',
-        servedBy: 'Served by the {server}',
-        switchTo: 'Open on the {server}',
+        server: 'Server',
         serverCpp: 'C++ server',
         serverBff: 'BFF',
     },

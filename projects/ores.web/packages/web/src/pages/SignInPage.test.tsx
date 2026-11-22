@@ -62,20 +62,20 @@ describe('a refused choice of party', () => {
 });
 
 describe('the way to the other server, on the sign-in screen', () => {
-    it('names the server that served the page, and links to the other one', () => {
+    it('presses the server that served the page, and links to the other one', () => {
         const html = render(<ServerSwitch at={at('20402')} />);
 
-        expect(html).toContain('Served by the BFF');
+        expect(html).toContain('aria-current="true"');
+        expect(html).toContain('data-server="bff"');
         expect(html).toContain('href="http://localhost:20401/signin"');
         expect(html).toContain('data-server="cpp"');
     });
 
-    it('goes back to the BFF from the C++ server', () => {
+    it('goes back to the BFF from the C++ server, on the same screen', () => {
         const html = render(<ServerSwitch at={at('20401', '/market-data/quotes')} />);
 
-        expect(html).toContain('Served by the C++ server');
         expect(html).toContain('href="http://localhost:20402/market-data/quotes"');
-        expect(html).toContain('data-server="bff"');
+        expect(html).toContain('C++ server');
     });
 
     it('says nothing on a page that neither server serves', () => {

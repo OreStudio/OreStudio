@@ -37,12 +37,13 @@ function serverKey(one: deployment): string {
 }
 
 /**
- * The way to the other server of the port, on the screen where a person decides which
- * one they are using.
+ * The switch between the two servers of the port, on the screen where a person decides
+ * which one they are using.
  *
- * The app is the same bundle on both, so the switch is a link to the same screen on the
- * other origin and the page moves rather than a prefix. A page on neither port, such as
- * one the dev server answers, has no peer and states nothing.
+ * The app is the same bundle on both, so the switch is a pair of buttons: the server
+ * serving this page is pressed and the other one is a link to the same screen on its
+ * origin, which moves the page rather than a prefix. A page on neither port, such as one
+ * the dev server answers, has no peer and states nothing.
  */
 export function ServerSwitch({ at }: { readonly at?: page }): ReactNode {
     const { t } = useTranslation();
@@ -51,16 +52,29 @@ export function ServerSwitch({ at }: { readonly at?: page }): ReactNode {
     const peer = peerOf(__ORE_SERVER_PORTS__, where);
     if (here === undefined || peer === undefined) return null;
     return (
-        <p className="mt-4 border-t border-line pt-4 text-xs text-ink-muted">
-            {t('signIn.servedBy', { server: t(serverKey(here)) })}{' '}
-            <a
-                className="font-medium text-accent-bright hover:underline"
-                href={peer.url}
-                data-server={peer.deployment}
+        <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-line pt-4">
+            <span className="text-xs text-ink-muted">{t('signIn.server')}</span>
+            <div
+                role="group"
+                aria-label={t('signIn.server')}
+                className="inline-flex overflow-hidden rounded border border-line"
             >
-                {t('signIn.switchTo', { server: t(serverKey(peer.deployment)) })}
-            </a>
-        </p>
+                <span
+                    aria-current="true"
+                    data-server={here}
+                    className="bg-accent/15 px-3 py-1 text-sm font-medium text-ink"
+                >
+                    {t(serverKey(here))}
+                </span>
+                <a
+                    href={peer.url}
+                    data-server={peer.deployment}
+                    className="border-l border-line px-3 py-1 text-sm text-ink-muted hover:bg-panel-2 hover:text-ink"
+                >
+                    {t(serverKey(peer.deployment))}
+                </a>
+            </div>
+        </div>
     );
 }
 

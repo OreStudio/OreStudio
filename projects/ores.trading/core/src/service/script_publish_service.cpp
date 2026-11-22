@@ -59,37 +59,56 @@ struct published_script_rows final {
     std::vector<domain::script_input> inputs;
 };
 
+/// A field of a row's content, prefixed by its length, so that no two rows of
+/// different fields give the same content, and an absent value differs from an empty one.
+std::string published_field(std::string_view value) {
+    return std::format("{}:{}", value.size(), value);
+}
+
+std::string published_field(const std::string& value) {
+    return published_field(std::string_view(value));
+}
+
+std::string published_field(const std::optional<std::string>& value) {
+    return value ? published_field(*value) : std::string("~");
+}
+
+std::string published_field(int value) {
+    return published_field(std::to_string(value));
+}
+
+std::string published_field(bool value) {
+    return published_field(std::string_view(value ? "true" : "false"));
+}
+
+/// One row's content: its table and its fields, each length-prefixed.
+template <typename... Fields>
+std::string published_row(std::string_view table, const Fields&... fields) {
+    std::string out(table);
+    ((out += published_field(fields)), ...);
+    return out;
+}
+
 /// What each row of a version states, without its version or audit, in key order.
 std::vector<std::string> published_content_of(const published_script_rows& rows) {
     std::vector<std::string> out;
     if (rows.script)
-        out.push_back(std::format("script|{}|{}",
-                                  rows.script->product_tag.value_or(""),
-                                  rows.script->description.value_or("")));
+        out.push_back(published_row("script", rows.script->product_tag, rows.script->description));
     for (const auto& v : rows.variants)
-        out.push_back(std::format("variant|{}|{}|{}", v.purpose, v.code, v.npv_variable));
+        out.push_back(published_row("variant", v.purpose, v.code, v.npv_variable));
     for (const auto& r : rows.results)
-        out.push_back(std::format(
-            "result|{}|{}|{}|{}", r.purpose, r.sequence_number, r.variable, r.rename.value_or("")));
+        out.push_back(published_row("result", r.purpose, r.sequence_number, r.variable, r.rename));
     for (const auto& c : rows.calibrations)
-        out.push_back(
-            std::format("calibration|{}|{}|{}", c.purpose, c.sequence_number, c.index_variable));
+        out.push_back(published_row("calibration", c.purpose, c.sequence_number, c.index_variable));
     for (const auto& k : rows.strikes)
-        out.push_back(std::format("strike|{}|{}|{}|{}",
-                                  k.purpose,
-                                  k.calibration_number,
-                                  k.sequence_number,
-                                  k.strike_variable));
+        out.push_back(published_row(
+            "strike", k.purpose, k.calibration_number, k.sequence_number, k.strike_variable));
     for (const auto& o : rows.coarsenings)
         out.push_back(
-            std::format("coarsening|{}|{}|{}", o.purpose, o.sequence_number, o.eligible_schedule));
+            published_row("coarsening", o.purpose, o.sequence_number, o.eligible_schedule));
     for (const auto& i : rows.inputs)
-        out.push_back(std::format("input|{}|{}|{}|{}|{}",
-                                  i.sequence_number,
-                                  i.input_name,
-                                  i.data_type,
-                                  i.is_array,
-                                  i.value_rule.value_or("")));
+        out.push_back(published_row(
+            "input", i.sequence_number, i.input_name, i.data_type, i.is_array, i.value_rule));
     std::ranges::sort(out);
     return out;
 }
@@ -195,7 +214,7 @@ template <typename Row>
 void stamp_published_row(Row& row,
                          const ores::database::context& ctx,
                          std::string_view reason,
-                         int version) {
+                         int version = 0) {
     // The session's actor and service replace these; a context with neither,
     // as a test's, still writes a row the store accepts.
     row.modified_by = row.performed_by = std::string(publish_writer);
@@ -212,6 +231,7 @@ void close_dropped_published_rows(const std::vector<Row>& current,
                                   const std::vector<Row>& wanted,
                                   const Key& key_of,
                                   const Remove& remove) {
+    // decltype does not evaluate its operand, so an empty current is safe here.
     std::set<decltype(key_of(current.front()))> kept;
     for (const auto& row : wanted)
         kept.insert(key_of(row));
@@ -248,6 +268,25 @@ publish_script_response script_publish_service::publish(const publish_script_req
         if (!purposes.insert(v.purpose).second)
             return publish_refused("The purpose " + v.purpose +
                                    " is stated by more than one variant.");
+    }
+    for (const auto& v : request.variants) {
+        if (v.code.empty() || v.npv_variable.empty())
+            return publish_refused("The variant " + v.purpose +
+                                   " states its code and the variable its NPV is in.");
+        const auto unnamed = [](const auto& names) {
+            return std::ranges::any_of(names, [](const std::string& n) { return n.empty(); });
+        };
+        std::vector<std::string> named;
+        for (const auto& r : v.results)
+            named.push_back(r.variable);
+        for (const auto& c : v.calibrations) {
+            named.push_back(c.index_variable);
+            named.insert(named.end(), c.strikes.begin(), c.strikes.end());
+        }
+        named.insert(named.end(), v.coarsenings.begin(), v.coarsenings.end());
+        if (unnamed(named))
+            return publish_refused("The variant " + v.purpose +
+                                   " names a result, calibration or schedule with no variable.");
     }
     if (!purposes.contains(std::string(publish_default_purpose)))
         return publish_refused("A published script has a " + std::string(publish_default_purpose) +
@@ -291,18 +330,19 @@ publish_script_response script_publish_service::publish(const publish_script_req
     const auto inputs = scripting::merge_inputs(inputs_by_variant);
     auto wanted = published_requested_rows(request, inputs);
 
+
+    ores::database::repository::unit_of_work uow(ctx_);
+    const auto& ctx = uow.ctx();
+
     repository::script_repository scripts;
     const auto world_holds_it =
-        std::ranges::any_of(scripts.read_latest(ctx_, request.name),
+        std::ranges::any_of(scripts.read_latest(ctx, request.name),
                             [](const auto& s) { return s.tenant_id.is_system(); });
     if (world_holds_it)
         response.warnings.push_back(std::format(
             "The world library also holds a script named {}. The tenant's trades that name it "
             "now book on the tenant's own script.",
             request.name));
-
-    ores::database::repository::unit_of_work uow(ctx_);
-    const auto& ctx = uow.ctx();
 
     const auto current = published_current_rows(ctx, request.name);
     if (current.script && published_content_of(current) == published_content_of(wanted)) {
@@ -317,7 +357,7 @@ publish_script_response script_publish_service::publish(const publish_script_req
 
     const auto reason = current.script ? ores::service::messaging::change_reasons::update :
                                          ores::service::messaging::change_reasons::new_record;
-    stamp_published_row(*wanted.script, ctx, reason, 0);
+    stamp_published_row(*wanted.script, ctx, reason);
     scripts.write(ctx, *wanted.script);
 
     int version = 0;

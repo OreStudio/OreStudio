@@ -31,6 +31,7 @@
 #include "ores.trading.core/repository/trade_activity_repository.hpp"
 #include "ores.trading.core/repository/trade_repository.hpp"
 #include "ores.trading.core/service/script_publish_service.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -195,4 +196,22 @@ TEST_CASE("a script with no default variant is refused", "[service][script_libra
 
     CHECK_FALSE(refused.success);
     CHECK_THAT(refused.message, Catch::Matchers::ContainsSubstring("default"));
+}
+
+TEST_CASE("a publish in the system tenant is refused, and a variant with no code is refused",
+          "[service][script_library][publish]") {
+    ores::testing::scoped_database_helper h;
+    const auto system_ctx =
+        h.context().with_tenant(ores::utility::uuid::tenant_id::system(), h.db_user());
+
+    const auto in_world = service::script_publish_service(system_ctx)
+                              .publish(request_of("Accumulator01", {"default"}, fresh_code()));
+    CHECK_FALSE(in_world.success);
+    CHECK_THAT(in_world.message, Catch::Matchers::ContainsSubstring("dataset"));
+
+    const auto no_code = service::script_publish_service(h.context())
+                             .publish(request_of("TenantPayoff_NoCode", {"default"}, ""));
+    CHECK_FALSE(no_code.success);
+    CHECK(no_code.diagnostics.empty());
+    CHECK_THAT(no_code.message, Catch::Matchers::ContainsSubstring("code"));
 }

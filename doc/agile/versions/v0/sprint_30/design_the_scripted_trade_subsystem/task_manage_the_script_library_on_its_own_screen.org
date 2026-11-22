@@ -40,6 +40,7 @@ A person browses the script library on a screen of its own: each script with its
 - the screen lists the scripts of the world library and of the tenant, marks a tenant script that shadows a world script of the same name, and shows a script's variants, inputs, results and code read-only
 - the screen shows a script's versions and the rows of any version, and the trades booked on each
 - a publish shows the diagnostics located by line and column, and refuses a script with an error
+- a publish names the version it edited, and a publish over a newer version is refused as a conflict rather than writing
 
 * Plan
 

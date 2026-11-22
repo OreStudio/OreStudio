@@ -111,8 +111,8 @@ task and name that file in the Command column.
 | reading stated versions | 13 assertions in 2 test cases: Accumulator01's current version reads back as one script row with variants and results all carrying that version; a version and a tenant the store does not hold are named as missing | ores.trading.core.tests "[script_library]" | b7e988f819 |
 | suites after the change | ores.ore.core.tests 521050 assertions in 574 cases pass; the export_script_library codec round trip 12 assertions in 3 cases | the two test binaries | b7e988f819 |
 | pins in the live store | 52 of 53 current scripted trades pinned, all in the generic form; the one without a pin is RoundTripScript | a count over ores_trading_scripted_instruments_tbl | b7e988f819 |
-| tenant publish | 32 assertions in 4 test cases: a tenant's Accumulator01 is published with the world-name warning and its derived inputs, and a trade booked in the tenant records the tenant's own version; an equal republish keeps the version, a changed one writes version 2 and closes the dropped AMC variant; a script that does not parse is refused with a located diagnostic and writes nothing; a script with no default variant is refused | ores.trading.core.tests "[service][script_library][publish]" | PR 7 head |
-| trading core suite after the publish | 1886 assertions pass in three runs in a row; one earlier run failed the sixth PR's reader test on the tenant's own Accumulator01, fixed by keeping the world row | ores.trading.core.tests -r junit, three times | PR 7 head |
+| tenant publish | 37 assertions in 5 test cases after the review, the fifth refusing a publish in the system tenant and a variant with no code: a tenant's Accumulator01 is published with the world-name warning and its derived inputs, and a trade booked in the tenant records the tenant's own version; an equal republish keeps the version, a changed one writes version 2 and closes the dropped AMC variant; a script that does not parse is refused with a located diagnostic and writes nothing; a script with no default variant is refused | ores.trading.core.tests "[service][script_library][publish]" | PR 7 head |
+| trading core suite after the publish | 1886 assertions pass in three runs in a row, and 1891 in two runs after the review; one earlier run failed the sixth PR's reader test on the tenant's own Accumulator01, fixed by keeping the world row | ores.trading.core.tests -r junit, three times | PR 7 head |
 
 * Notes
 
@@ -327,6 +327,13 @@ via its "Verifies task" field.
 | 5008.5 | the joined refusals can grow without bound | report_package_handler.cpp | accept | the first ten are stated and the rest counted |
 | 5008.6 | a test of two tenants at one version number | domain_pinned_script_library_tests.cpp | accept | added |
 | 5008.7 | does the run token cover the subject | none | no change | the handler checks trading::trades:read, which ReportRun holds, and the token is that role narrowed to the grantor, who reads trades to run a report on them |
+| 5011.1 | the content comparison joins fields with a separator, so two different scripts can compare equal | script_publish_service.cpp | accept | each field is length-prefixed and an absent value differs from an empty one |
+| 5011.2 | thin validation of the request | script_publish_service.cpp | accept in part | an empty code, NPV variable, or result, calibration, strike or schedule variable is refused; no rule on the characters of a name or purpose, as none exists for those keys |
+| 5011.3 | exceptions from the write or commit | none | no change | the handler catches every exception into success false with its message; a test of two concurrent transactions is not added |
+| 5011.4 | the world-name read is outside the unit of work | script_publish_service.cpp | accept | read through the unit of work's context |
+| 5011.5 | no expected version on the request | task_manage_the_script_library_on_its_own_screen.org | accept as follow-up | the screen's task states that a publish names the version it edited |
+| 5011.6 | decltype on an empty vector; a dummy version for the script row; every child row rewritten | script_publish_service.cpp | accept in part | a comment and a default argument; the rewrite of every row is the design doc's stated rule, unchanged |
+| 5011.7 | tests of the system-tenant refusal | service_script_publish_tests.cpp | accept | a test of the system-tenant refusal and of an empty code |
 
 * Result
 

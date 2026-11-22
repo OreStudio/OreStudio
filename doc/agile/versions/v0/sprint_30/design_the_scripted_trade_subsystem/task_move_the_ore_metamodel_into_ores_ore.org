@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :design_the_scripted_trade_subsystem:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/move-the-ore-metamodel-into-ores-ore
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,7 +26,7 @@ ores.ore owns the description of ORE: its files and their versions, the leaves o
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:E6359881-7919-4BBC-9B9C-03A8EEDB8A03][Design the scripted trade subsystem]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

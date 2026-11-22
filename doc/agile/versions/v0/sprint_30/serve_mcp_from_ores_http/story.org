@@ -68,7 +68,7 @@ The analysis is in [[id:FC0847D1-9F09-42EF-A4BD-D5E3C34398EA][How ores.http serv
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:BEF95B2A-42BF-40DA-BC3D-7B703C34ED73][Decide how an outside MCP client authenticates]] | DONE | 2026-11-22 | 2026-11-22 | Decide how Claude Code, Claude Desktop or a local agent signs in to ores.http's MCP endpoint as a person, against MCP's OAuth 2.1 authorization and ORE's own sessions, before the session store and the audit trail are designed. |
-| [[id:D23A3EC6-DFDD-48F3-A3AB-475513EE6E73][Set out the architecture of agents acting through ores.http]] | BACKLOG | | | Zettelkasten knowledge notes, with UML diagrams, on how an agent acts for a person through ores.http: grants, identity, audit, six eyes, MCP and the catalogue, built on ores.agent's experience. |
+| [[id:D23A3EC6-DFDD-48F3-A3AB-475513EE6E73][Set out the architecture of agents acting through ores.http]] | DONE | 2026-11-22 | 2026-11-22 | Zettelkasten knowledge notes, with UML diagrams, on how an agent acts for a person through ores.http: grants, identity, audit, six eyes, MCP and the catalogue, built on ores.agent's experience. |
 | [[id:02A581CF-D286-4922-AE2F-C44E74C06D05][Give an agent a grant and a key]] | BACKLOG | | | A person creates, lists and revokes agent grants in ores.web, each with a key; ores.http exchanges a key for a session that names the person as subject and the agent as actor. |
 | [[id:D278957D-3FF7-419B-9FB3-E22F2F2C7A0D][Record what an agent did and show it to its person]] | BACKLOG | | | Every write made with an agent's token records the agent in a new audit field, and ores.web shows a person what their agents did. |
 | [[id:49E595F6-9C23-45E0-B74C-A49DAC46AC74][Hold an agent's writes for six eyes]] | BACKLOG | | | An agent's write raises an approval request that its person approves before the write takes the approval a person's own write needs; trades go through trade authorisation. |
@@ -97,6 +97,13 @@ The analysis is in [[id:FC0847D1-9F09-42EF-A4BD-D5E3C34398EA][How ores.http serv
 - *The architecture is written first* (2026-11-22, product owner), as
   zettelkasten notes with UML that build on ores.agent's experience, and the
   other tasks start once it is approved.
+- *The architecture is approved* (2026-11-22, product owner), as
+  [[id:47B179BF-C982-4BB1-AF4F-35E00B9D2750][Delegated Access for LLM Agents]], with four choices: a trade an agent
+  books is held through its operational authorisation, which names the
+  agent's person before Operations; an agent's actions are recorded on every
+  row it writes and in one log of its calls, reads included; no automatic
+  approval rule closes the person's part of an agent's request; and the
+  catalogue's first step is the sixteen published HTTP areas.
 
 * Out of scope
 

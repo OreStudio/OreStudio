@@ -107,3 +107,4 @@ time.
 - [[id:F9AD7932-8E11-433C-A812-B57DBC9BF5D8][LLM instructions]] — entry point; read before acting.
 - [[id:B69989F6-19E1-430D-AC6D-B2416E4C433F][Compass]] — top-level map of [[proj:doc][=doc/=]].
 - [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Orientation]] — navigation by reader intent.
+- [[id:47B179BF-C982-4BB1-AF4F-35E00B9D2750][Delegated Access for LLM Agents]] — not part of this index: the production use of LLMs, agents acting for a person in the running system, kept apart from the development use this page indexes.

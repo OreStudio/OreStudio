@@ -1,0 +1,92 @@
+:PROPERTIES:
+:ID: A7E2942C-66AD-449C-B80B-CA789EBC34FA
+:END:
+#+title: Agent grants: delegated consent for LLM agents
+#+description: A person's revocable consent that one agent acts for them, read only or read and write, until an expiry; keys redeem it.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:agents:security:grants:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+
+This page states the target design. It does not describe what is built.
+
+* Summary
+
+An agent grant is a person's consent that one named agent acts for them, in
+one tenant and one party, with read-only or read-and-write scope, until an
+expiry or until the person revokes it. It is ORE's second form of the
+[[id:AE30F62E-3B9E-4B59-9D11-E8FEE876949A][Grant Management]] pattern, after the run grant: the person consents once, and a
+credential redeems the consent each time the agent calls. The claim of this
+page is that the grant, not the credential, is the unit of consent, so the
+way an agent signs in can change without changing what it may do or how it is
+recorded.
+
+* Detail
+
+** The grant and its keys
+
+A grant belongs to one account. It names the agent, so that a person who uses
+two agents grants each separately and can tell their actions apart; it fixes
+the tenant and the party the agent acts in; and its scope is either read only
+or read and write. A read-only grant lets an agent hold less than its person
+holds: a person who may book trades can still give an agent only the right to
+look. This is the principle of least privilege (Saltzer and Schroeder, 1975)
+applied to delegation.
+
+A key redeems the grant. It is generated when the person asks for it from 256
+random bits, shown once, and stored as a prefix, by which it is found, and a
+SHA-256 hash, against which it is compared; the key itself is never stored. A
+fast hash suffices because the key is a long random secret, not a password a
+person chose. Failed exchanges are limited per source address and per prefix,
+as the prototype limited failed sign-ins ([[id:039005AD-8319-416C-9F70-6A5477FEE89D][The ores.agent prototype: findings for the target design]]). A grant may have several keys,
+so that a key can be replaced before the old one is revoked. Later, an OAuth
+client can redeem the same grant: the consent page of an OAuth sign-in creates
+a grant exactly as the grants page does, and everything after the grant is
+unchanged ([[id:BEF95B2A-42BF-40DA-BC3D-7B703C34ED73][Decide how an outside MCP client authenticates]]).
+
+#+caption: An agent grant belongs to one account, fixes the agent, tenant, party, scope and expiry, and is redeemed by keys now and by an OAuth client later.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/agents/agent_grant_classes.png]]
+
+Source: [[./agent_grant_classes.puml][=agent_grant_classes.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/agents/agent_grant_classes.puml=.
+
+** Its lifecycle
+
+A grant is created active by its person. It ends when the person or an
+administrator revokes it, or when its expiry passes, and an ended grant does
+not return. A person who is disabled or removed does not change the grant's
+state; each exchange checks that the person is still active, as each run-grant
+exchange checks its grantor ([[id:78B82824-0BBB-4442-A9FA-E1F265DF57BD][Run grants and run tokens]]). Revocation takes effect at the next
+exchange, at most five minutes later ([[id:1162906F-BB72-486E-9A11-30D567C65F3E][Delegation tokens for LLM agents: subject and actor claims]],
+/How soon a change reaches the agent/).
+
+#+caption: An agent grant is active until its person or an administrator revokes it or its expiry passes; a lapsed person is refused at each exchange.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/agents/agent_grant_states.png]]
+
+Source: [[./agent_grant_states.puml][=agent_grant_states.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/agents/agent_grant_states.puml=.
+
+** Where a person governs it
+
+A person creates, lists and revokes their grants on one page of ores.web. The
+page shows each grant's agent, scope, expiry, keys and when each key was last
+used, and links to what the agent did ([[id:2D36D474-2CF9-4498-AF49-818CEF080B98][Auditing of LLM agent actions]]).
+
+* Patterns used
+
+- [[id:AE30F62E-3B9E-4B59-9D11-E8FEE876949A][Grant Management]] — the agent grant is a grant: a person's consent, held as a
+  record, redeemed by a credential and ended by revocation or expiry.
+
+* See also
+
+- [[id:47B179BF-C982-4BB1-AF4F-35E00B9D2750][Delegated Access for LLM Agents]] — the structure note that orders this cluster.
+- [[id:78B82824-0BBB-4442-A9FA-E1F265DF57BD][Run grants and run tokens]] — exemplifies the same pattern: the run grant is consent for scheduled work, the agent grant consent for an agent.
+- [[id:1162906F-BB72-486E-9A11-30D567C65F3E][Delegation tokens for LLM agents: subject and actor claims]] — completes: what a grant becomes on each call.
+- [[id:AF46793A-FF6C-4066-A059-279CE9936420][Identity and Access]] — the identity cluster this page extends.
+
+* Sources
+
+- Saltzer, J. H. and Schroeder, M. D. (1975). The protection of information in computer systems. /Proceedings of the IEEE/, 63(9), 1278–1308.

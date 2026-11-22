@@ -8,7 +8,7 @@
 #+filetags: :search_the_knowledge_base:sprint_30:v0:
 #+owner: marco
 #+branch: feature/decommission-ores-orgmode-and-the-knowledge-base
-#+pr: 5015
+#+pr: 5019
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-22
@@ -168,6 +168,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5019][#5019]] | [agile] Supersede the knowledge base story with the compass one |
 | [[https://github.com/OreStudio/OreStudio/pull/5015][#5015]] | [orgmode] Decommission ores.orgmode and the knowledge base pipeline |
 
 * Review

@@ -105,8 +105,7 @@ void publish_from_dq_handler::handle(ores::nats::delivery delivery) {
                 result.records_deleted += count;
         }
 
-        ORES_LOG_SEV(lg(), info) << "publish_from_dq complete: inserted="
-                                 << result.records_inserted
+        ORES_LOG_SEV(lg(), info) << "publish_from_dq complete: inserted=" << result.records_inserted
                                  << " updated=" << result.records_updated
                                  << " skipped=" << result.records_skipped
                                  << " deleted=" << result.records_deleted;

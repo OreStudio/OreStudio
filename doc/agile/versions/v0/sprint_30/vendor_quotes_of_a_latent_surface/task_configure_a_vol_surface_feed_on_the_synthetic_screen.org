@@ -180,6 +180,12 @@ via its "Verifies task" field.
 | 1 | Local review: the id helpers sat between two import statements. | =bff/src/synthetic.ts= | Accept | Moved below the imports (b8e798efc7). |
 | 2 | Local review: the FX tally loop names its two tables again beside =feed_tables=. | =feed_overview_handler.hpp= | Decline | The FX tally needs the FX tables only; a second array for two names adds a layer for no gain. |
 | 3 | Misspell check over the changed files. | all | Clean | =misspell-fixer= exit 0. |
+| 4 | PR review: a held surface's name could appear twice in the running list. | =generator_fleet.hpp= | Decline | Holds run as =<source_name>.<provider_code>=, the surface as the feed's own name, and a hand start under that name is refused, so the names are distinct by construction. |
+| 5 | PR review: the surface accessors are called after =held()= drops the lock. | =shared_surfaces.hpp= | Decline | =source_name()= returns a member set in the constructor; the vol surface keeps the base =start_source()= and =vendor_watch_subjects()=, which return constants; the =shared_ptr= keeps it alive. |
+| 6 | PR review: ='ssvi'= and the pair label are literals in the vol branch. | =feed_filter.cpp= | No action | The reviewer confirms the columns match; =feed_listing_tests.cpp= covers the branch. |
+| 7 | PR review: the store id check applies to every synthetic route. | =bff/src/synthetic.ts= | Accept | Intended: DQ-derived ids name no UUID version. The PR description now says it applies to every synthetic route. |
+| 8 | PR review: assert a non-permitted session is refused a vol write. | =bff/src/synthetic.test.ts= | Already done | "refuses a tenant session a write to a vol surface feed" expects 403. |
+| 9 | PR review: =--keep-infra= with a named service is ignored. | =compass_services.py= | Decline | A named service stop never touches the pooler or NATS, which are not registry services, so the flag has no effect to warn about. |
 
 * Result
 

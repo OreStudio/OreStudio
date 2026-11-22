@@ -60,13 +60,14 @@ struct publish_bundle_level_fixture {
         : nats(ores::testing::make_nats_options()) {
         nats.connect();
         REQUIRE(nats.is_connected());
-        subs.push_back(nats.queue_subscribe(
-            publish_bundle_subject + publish_bundle_method,
-            "ores.test",
-            [this](ores::nats::message m) {
-                ores::dq::messaging::publish_handler(nats, db.context(), std::optional(keys.verifier()))
-                    .publish_bundle(std::move(m));
-            }));
+        subs.push_back(
+            nats.queue_subscribe(publish_bundle_subject + publish_bundle_method,
+                                 "ores.test",
+                                 [this](ores::nats::message m) {
+                                     ores::dq::messaging::publish_handler(
+                                         nats, db.context(), std::optional(keys.verifier()))
+                                         .publish_bundle(std::move(m));
+                                 }));
     }
 
     /**
@@ -79,19 +80,16 @@ struct publish_bundle_level_fixture {
     publish(const std::string& bundle_code,
             std::optional<ores::utility::uuid::tenant_id> tenant = std::nullopt) {
         const auto caller = tenant.value_or(db.tenant_id());
-        const auto token =
-            keys.token_without_party(caller.to_string(), {"dq::datasets:write"});
+        const auto token = keys.token_without_party(caller.to_string(), {"dq::datasets:write"});
 
         ores::dq::messaging::publish_bundle_request req;
         req.bundle_code = bundle_code;
         req.published_by = "publish-bundle-level-test";
 
-        const auto reply = ores::testing::request(nats,
-                                                  publish_bundle_subject + publish_bundle_method,
-                                                  token,
-                                                  req);
-        const auto decoded = ores::testing::decode_reply<
-            ores::dq::messaging::publish_bundle_response>(reply);
+        const auto reply = ores::testing::request(
+            nats, publish_bundle_subject + publish_bundle_method, token, req);
+        const auto decoded =
+            ores::testing::decode_reply<ores::dq::messaging::publish_bundle_response>(reply);
         REQUIRE(decoded);
         return *decoded;
     }

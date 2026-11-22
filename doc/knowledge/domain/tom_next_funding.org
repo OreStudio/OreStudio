@@ -4,6 +4,7 @@
 #+title: Tom/Next
 #+description: What Tom/Next (T/N) is, and its dual role as both a settlement convention for rolling an open spot position and a funding mechanism accruing interest on cash held overnight.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:domain:finance:fx:crm:
 #+created: 2026-07-12

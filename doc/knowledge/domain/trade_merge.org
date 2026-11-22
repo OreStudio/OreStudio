@@ -4,6 +4,7 @@
 #+title: Trade merge
 #+description: Combining several trades into one trade: client netting, deal netting with inter-desk transfers, expiry netting, the no-residual rule, and why each merge has an identity.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:domain:finance:trading:merge:
 #+created: 2026-10-02

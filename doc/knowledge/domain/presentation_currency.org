@@ -4,6 +4,7 @@
 #+title: Presentation Currency
 #+description: The presentational, live-spot currency a report is converted into for display -- distinct from aggregation currency, which generates real risk -- and the apparent P&L movement it can create.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:currency:trading:book:
 #+created: 2026-07-14

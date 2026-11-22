@@ -4,6 +4,7 @@
 #+title: Sandbox
 #+description: Importing and experimenting without disturbing official data: sandboxes anchored to the official portfolio tree, virtual books that never reach the ledger, the states their trades may hold, how a sandbox trade becomes real, and the regulatory rules that bound it.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:domain:finance:trading:book:sandbox:
 #+created: 2026-10-02

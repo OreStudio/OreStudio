@@ -4,6 +4,7 @@
 #+title: Trade sets and trade groups
 #+description: The way into the trade-set cluster: the words and the test that separates them, the taxonomy, the reading order, and what the cluster leaves to the grid, the runs and the processes.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:domain:finance:trading:trade_groups:structure_note:
 #+created: 2026-10-02

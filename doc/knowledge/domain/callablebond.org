@@ -4,6 +4,7 @@
 #+title: Callable Bond
 #+description: A bond with issuer call and investor put rights; ORE's CallableBond product.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:callablebond:
 #+created: 2026-09-06

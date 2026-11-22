@@ -4,6 +4,7 @@
 #+title: Book types and the controls on each
 #+description: Which kinds of book the system holds, which process opens, changes, moves and closes each, and who must approve each act.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:trading:book:controls:four-eyes:
 #+created: 2026-10-10

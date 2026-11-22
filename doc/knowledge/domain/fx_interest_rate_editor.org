@@ -4,6 +4,7 @@
 #+title: Swap points and interest rate differentials are two views of one number
 #+description: Swap points imply a rate differential and the reverse, so a system can key one and derive the other.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:fx:fx_forward:
 #+created: 2026-11-09

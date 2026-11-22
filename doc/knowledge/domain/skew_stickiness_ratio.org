@@ -4,6 +4,7 @@
 #+title: Volatility: Skew Stickiness Ratio
 #+description: How an implied volatility surface moves when spot moves: sticky strike vs sticky delta, the Skew Stickiness Ratio (SSR) that measures ATM-vol response against the ATM skew, and its effect on delta and gamma.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:domain:finance:volatility:quantitative_finance:
 #+created: 2026-08-25

@@ -4,6 +4,7 @@
 #+title: CRM risk: recentering and artefacts
 #+description: Why the cross-rates matrix's graph topology makes bumping a single rate non-local, how star-shaped recentering on the aggregation currency restores per-pair risk, and the spurious sensitivities and theta effects that recentering itself introduces.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :marketdata:fx:crm:risk:domain:
 #+created: 2026-06-28

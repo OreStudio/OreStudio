@@ -293,6 +293,9 @@ values
     (ores_utility_system_tenant_id_fn(), 'script_library', 0, 'Script Library', 'ORE''s payoff scripts with their variants, results, calibrations, schedule coarsenings and inputs, published into the system tenant one script at a time',
      'dq_scripts_artefact_tbl, dq_script_variants_artefact_tbl, dq_script_results_artefact_tbl, dq_script_calibrations_artefact_tbl, dq_script_calibration_strikes_artefact_tbl, dq_script_coarsenings_artefact_tbl, dq_script_inputs_artefact_tbl',
      'trading_scripts_tbl', 'trading.v1.ops.publish_script_library_from_dq', 80,
+     current_user, current_user, 'system.initial_load', 'Initial population of artefact types'),
+    (ores_utility_system_tenant_id_fn(), 'knowledge_pages', 0, 'Knowledge Pages', 'ORE Studio''s user-facing org pages, published into the system tenant, which every tenant reads',
+     'dq_knowledge_pages_artefact_tbl', 'orgmode_knowledge_pages_tbl', 'orgmode.v1.ops.publish_knowledge_pages_from_dq', 81,
      current_user, current_user, 'system.initial_load', 'Initial population of artefact types')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()

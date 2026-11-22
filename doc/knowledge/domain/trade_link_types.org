@@ -4,6 +4,7 @@
 #+title: Trade link types
 #+description: The catalogue of trade link types: what each one connects, the role of each end, which process creates it, and whether it carries an economic effect.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:domain:finance:trading:trade_links:
 #+created: 2026-10-02

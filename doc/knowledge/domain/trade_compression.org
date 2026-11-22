@@ -4,6 +4,7 @@
 #+title: Trade compression
 #+description: Replacing a portfolio of offsetting trades with fewer trades of the same net risk: the kinds, the cycle, what it ends and creates, and why each run has an identity.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:domain:finance:trading:compression:
 #+created: 2026-10-02

@@ -4,6 +4,7 @@
 #+title: Market Data Identifier
 #+description: The single, fully-specified market data identifier — its logical fields (shared with the requirement it satisfies) and physical fields (needed to re-express it in any external vendor's own notation) — and how it differs from the requirement it satisfies.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:domain:marketdata:identifiers:
 #+created: 2026-07-23

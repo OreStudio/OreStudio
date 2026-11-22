@@ -1,0 +1,119 @@
+:PROPERTIES:
+:ID: 057079A6-AB6E-5320-B12F-60AC2197EEB6
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the knowledge_pages commands from the shell?
+#+description: Every command the knowledge_pages submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:knowledge_pages:
+
+This file documents the knowledge_pages resource at the shell, one section per command. Every command is a subcommand of =knowledge_pages=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: C30ED301-DCDF-5A32-8A0B-BB77876014D6
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+knowledge_pages list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =orgmode.v1.knowledge_pages.list=.
+
+#+name: knowledge_pages-list
+#+begin_src ores-shell :tangle knowledge_pages-list.ores :exports none
+knowledge_pages list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 0A9562D8-20F6-5EC4-BD69-4D615D02C0C2
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+knowledge_pages get <id>
+#+end_example
+
+It is addressed at =orgmode.v1.knowledge_pages.get=.
+
+#+name: knowledge_pages-get
+#+begin_src ores-shell :tangle knowledge_pages-get.ores :exports none
+knowledge_pages get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: C6824E66-0FD5-5C53-AA68-2A49E8ADDDE3
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+knowledge_pages get-many <id>
+#+end_example
+
+It is addressed at =orgmode.v1.knowledge_pages.get_many=.
+
+#+name: knowledge_pages-get-many
+#+begin_src ores-shell :tangle knowledge_pages-get-many.ores :exports none
+knowledge_pages get-many __none__
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: BB1D2FD6-155A-5EBB-8DA1-C6ED7E2831C6
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+knowledge_pages versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =orgmode.v1.knowledge_pages_versions.list=.
+
+#+name: knowledge_pages-versions
+#+begin_src ores-shell :tangle knowledge_pages-versions.ores :exports none
+knowledge_pages versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 23C7FD80-7C88-529C-82C2-BA7DD43CB071
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+knowledge_pages version <id> --version <n>
+#+end_example
+
+It is addressed at =orgmode.v1.knowledge_pages_versions.get=.
+
+#+name: knowledge_pages-version
+#+begin_src ores-shell :tangle knowledge_pages-version.ores :exports none
+knowledge_pages version __none__ --version 1
+#+end_src
+

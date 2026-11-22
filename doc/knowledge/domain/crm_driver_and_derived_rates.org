@@ -4,6 +4,7 @@
 #+title: Driver and derived rates
 #+description: Driver (directly quoted) vs derived (triangulated, a proxy) rates: choosing drivers by liquidity, the pivot currency, and the never-set-both-sides / no-cycle invariant.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :marketdata:fx:crm:domain:
 #+created: 2026-06-28

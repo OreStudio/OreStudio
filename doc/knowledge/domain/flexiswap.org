@@ -4,6 +4,7 @@
 #+title: Flexi Swap
 #+description: A swap with an option to cut the notional toward a lower bound; ORE's FlexiSwap product.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:flexiswap:
 #+created: 2026-09-06

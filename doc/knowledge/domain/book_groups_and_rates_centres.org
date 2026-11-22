@@ -4,6 +4,7 @@
 #+title: Book groups and rates centres
 #+description: Rolling up books by rates centre for consistent revaluation market data, aggregating centre-owned books into a book group, and how centre ownership doubles as access control.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:trading:book:finance:
 #+created: 2026-07-08

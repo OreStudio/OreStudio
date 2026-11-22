@@ -4,6 +4,7 @@
 #+title: Ito's Lemma
 #+description: The stochastic calculus chain rule for functions of a Wiener-driven process, why the ordinary chain rule fails here, and where this cluster's processes rely on it.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:domain:quantitative_finance:stochastic_processes:ore:
 #+created: 2026-07-16

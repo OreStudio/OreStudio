@@ -4,6 +4,7 @@
 #+title: FRTB trading book / banking book boundary
 #+description: The Basel III/IV regulatory classification of instruments into the trading book or banking book: intent-based assignment, the presumptive lists, capital treatment differences, and the FRTB reforms that tightened the boundary and restrict switching.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:trading:book:finance:regulatory:basel:
 #+created: 2026-07-08

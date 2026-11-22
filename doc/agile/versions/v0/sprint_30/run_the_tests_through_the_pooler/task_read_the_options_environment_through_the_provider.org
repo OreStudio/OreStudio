@@ -85,6 +85,11 @@ task and name that file in the Command column.
 
 * Notes
 
+- PR #4998 (the knowledge pages) made a point fix so its gate could run with
+  the pooler up: each of the 14 =parse_defaults_returns_expected_values= tests,
+  ores.orgmode.service's among them, also clears its own
+  =ORES_<SVC>_SERVICE_DB_HOST= and =ORES_<SVC>_SERVICE_DB_PORT=. Reading the
+  options' environment through the provider replaces those lists.
 - Measured on 2026-11-21 at c35f696b41: with =.env= loaded,
   =ores.refdata.service.tests parse_defaults_returns_expected_values= fails
   with =21607 == 5432=. With =ORES_REFDATA_SERVICE_DB_PORT= unset, it passes

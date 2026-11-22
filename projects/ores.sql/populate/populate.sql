@@ -274,6 +274,7 @@ select ores_utility_allow_version_replace_fn();
 \echo ''
 \echo '--- Reporting Layer ---'
 \ir reporting/reporting_populate.sql
+\ir orgmode/orgmode_populate.sql
 
 -- =============================================================================
 -- Telemetry Layer

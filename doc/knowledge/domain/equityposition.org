@@ -4,6 +4,7 @@
 #+title: Equity Position
 #+description: A position in a single equity or a weighted equity basket; ORE's EquityPosition product.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:equityposition:
 #+created: 2026-09-06

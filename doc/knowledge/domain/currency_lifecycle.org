@@ -4,6 +4,7 @@
 #+title: Currency Lifecycle
 #+description: A currency's own birth-to-retirement lifecycle -- creation, circulation, and withdrawal -- and why redenomination and monetary-union events matter operationally.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:currency:
 #+created: 2026-07-14

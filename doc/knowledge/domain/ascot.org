@@ -4,6 +4,7 @@
 #+title: Ascot
 #+description: An American-style option to buy back a convertible bond; ORE's Ascot product.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:ascot:
 #+created: 2026-09-06

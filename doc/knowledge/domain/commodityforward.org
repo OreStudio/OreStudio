@@ -4,6 +4,7 @@
 #+title: Commodity Forward
 #+description: An agreement to buy or sell a commodity at a set price later; ORE's CommodityForward product.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:commodityforward:
 #+created: 2026-09-06

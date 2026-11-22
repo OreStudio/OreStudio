@@ -4,6 +4,7 @@
 #+title: Cash Position
 #+description: An amount of cash in a currency; ORE's CashPosition product.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:cashposition:
 #+created: 2026-09-06

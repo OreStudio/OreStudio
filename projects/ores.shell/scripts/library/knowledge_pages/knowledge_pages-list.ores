@@ -1,0 +1,6 @@
+# =list=
+#
+# GENERATED from doc/recipes/shell/knowledge_pages/knowledge_page.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+knowledge_pages list --limit 1

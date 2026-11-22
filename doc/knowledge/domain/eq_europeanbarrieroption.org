@@ -4,6 +4,7 @@
 #+title: Equity European Barrier Option
 #+description: A barrier option monitored once at expiry; ORE's EquityEuropeanBarrierOption product.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:eq_europeanbarrieroption:
 #+created: 2026-09-06

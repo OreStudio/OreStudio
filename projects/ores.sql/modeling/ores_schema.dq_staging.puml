@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: dq_staging
-Tables: 186
+Tables: 187
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -2516,6 +2516,20 @@ package "dq_staging" #F3E5F5 {
 
     note right of ores_dq_ir_curve_template_entries_artefact_tbl
     One row of the raw instrument grid (the "Curve Template") an ir_curve_generation_config publishes: which tenor period, priced as which instrument type (deposit-equivalent, FRA-equivalent, swap-equivalent -- see ores.refdata.instrument_code), in what order. Every entry is modelled as a genuine [start, end) period rather than a single maturity label: start_tenor_code/end_tenor_code are both ordinary tenor references resolved through the same ores::refdata::domain::resolve_end_date machinery (see ores.refdata.api/domain/tenor_resolution.hpp). Point instruments (deposits, swaps) set start_tenor_code to 'SPOT' (a genuine zero-duration PERIOD/DAY tenor already in the catalog, resolving directly to the horizon's spot date -- not a null/sentinel hack); interval instruments (FRAs) set it to the period's own front tenor (e.g. '3M' for a 3x6 FRA whose end_tenor_code is '6M'). This symmetric shape is what lets the tenor-collision validator (validate_curve_template in ores.synthetic.api) detect genuine period overlaps via plain windows_overlap(), without a special case for point vs. interval instruments. Entries belong to a parent config via ir_curve_config_id, the same one-config-many-children shape fx_spot_generation_config's gmm_component rows use. Every entry's published rate is derived from the parent config's short-rate process's discount_factor() at the tenor's maturity -- never an independently-noised value -- so the published tick batch is, by construction, a slice of one internally consistent curve. Party- and tenant-scoped. - Artefact Table
+    end note
+
+    entity ores_dq_knowledge_pages_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : text
+        * version : integer
+        * path : text
+        * org : text
+    }
+
+    note right of ores_dq_knowledge_pages_artefact_tbl
+    A page of ORE's knowledge base, exactly as it was loaded: a user-facing org file, its org id, where it lives in the repository, and its text, unchanged. A page is user-facing when its frontmatter says #+audience: user. The pages are installation data: they are published from DQ into the system tenant at bring-up, and every tenant reads them there. Nothing here is parsed; the indexing step reads the text and writes the sections the search reads. - Artefact Table
     end note
 
     entity ores_dq_legal_entities_artefact_tbl  #F7E5FF {

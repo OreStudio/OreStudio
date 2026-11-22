@@ -4,6 +4,7 @@
 #+title: Nested trade sets
 #+description: Where trade sets contain each other, membership is part of the trade's identity: a trade is a path in a tree of sets. Where they do not, membership is an annotation. The test, and what it decides for the model.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:domain:finance:trading:trade_groups:
 #+created: 2026-10-07

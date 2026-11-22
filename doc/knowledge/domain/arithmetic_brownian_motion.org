@@ -4,6 +4,7 @@
 #+title: Arithmetic Brownian Motion
 #+description: The additive price process behind arithmetic_gaussian_mixture_model_process — its SDE, why it can go negative unlike its geometric counterpart, and when that is actually the right trade-off.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:domain:quantitative_finance:stochastic_processes:ore:
 #+created: 2026-07-16

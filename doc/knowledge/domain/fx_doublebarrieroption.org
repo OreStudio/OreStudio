@@ -4,6 +4,7 @@
 #+title: FX Double Barrier Option
 #+description: An FX option with two barriers around the strike; ORE's FxDoubleBarrierOption product.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:fx_doublebarrieroption:
 #+created: 2026-09-06

@@ -4,6 +4,7 @@
 #+title: Out Of Convention
 #+description: The reference point a forward rate ladder is quoted off (spot, tomorrow, or today), and why non-standard bases must be visually distinguished.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:domain:finance:rates:curves:tenors:ore:
 #+created: 2026-07-12

@@ -4,6 +4,7 @@
 #+title: FX Spot Revaluation Types
 #+description: The ledger's three FX Spot Revaluation types -- Balance Sheet, Position Account, and Forward Position reval -- and which side of settled versus unsettled FX each one covers.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:currency:trading:book:
 #+created: 2026-07-14

@@ -4,6 +4,7 @@
 #+title: Point Process and Conditional Intensity
 #+description: A point process is a random set of event times, described by the rate at which an event is expected next given everything that has happened so far.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:domain:quantitative_finance:stochastic_processes:point_process:ore:
 #+created: 2026-10-23

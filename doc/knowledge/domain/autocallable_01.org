@@ -4,6 +4,7 @@
 #+title: Autocallable Type 01
 #+description: A structured option that pays accumulated amounts and redeems early below a trigger level; ORE's Autocallable Type 01 product.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:autocallable_01:
 #+created: 2026-09-07

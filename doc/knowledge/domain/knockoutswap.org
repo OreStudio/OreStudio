@@ -4,6 +4,7 @@
 #+title: Knock Out Swap
 #+description: A swap that terminates when a rate fixing breaches a barrier; ORE's KnockOutSwap product.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:knockoutswap:
 #+created: 2026-09-06

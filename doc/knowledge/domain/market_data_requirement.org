@@ -4,6 +4,7 @@
 #+title: Market Data Requirement
 #+description: A logical, symbolic description of a piece of market data needed for a valuation, independent of any physical instance; the static requirement set (per trade type), instance requirement set (per trade instance), and dynamic requirement set (per trade instance and date) that together generate it.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:domain:marketdata:requirements:
 #+created: 2026-07-23

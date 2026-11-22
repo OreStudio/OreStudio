@@ -4,6 +4,7 @@
 #+title: Equity Auto Delta Hedged Option
 #+description: Batches of European equity options with an embedded delta-hedging strategy; ORE's EquityAutoDeltaHedgedOption product.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:equityautodeltahedgedoption:
 #+created: 2026-09-06

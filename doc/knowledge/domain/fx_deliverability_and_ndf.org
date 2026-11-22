@@ -4,6 +4,7 @@
 #+title: Deliverability and non-deliverable instruments
 #+description: Deliverable vs non-deliverable currencies, NDFs and NDOs, onshore/offshore bifurcation (KRW, CNY/CNH), pseudo currency codes, deal-level deliverability, counterparty/booking restrictions, the ISO boundary at the ledger, and the Offshore Forward Report.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :marketdata:fx:crm:domain:
 #+created: 2026-07-04

@@ -4,6 +4,7 @@
 #+title: Window Barrier Option
 #+description: An option with a barrier active only inside a time window; ORE's Window Barrier Option product.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:window_barrieroption:
 #+created: 2026-09-07

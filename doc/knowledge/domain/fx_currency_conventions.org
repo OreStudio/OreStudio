@@ -4,6 +4,7 @@
 #+title: FX currency conventions
 #+description: Currency classification (G11/majors vs EM/minors), base/quote precedence, reciprocal/inverted quoting, and the Product-vs-Valuation bounded-context split.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :marketdata:fx:crm:domain:
 #+created: 2026-06-28

@@ -4,6 +4,7 @@
 #+title: Currency
 #+description: Hub note for the currency cluster: the money-currency-cash foundation, the several currency roles one position carries at once, and the mechanisms that reconcile them.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:currency:trading:book:
 #+created: 2026-07-14

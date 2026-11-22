@@ -4,6 +4,7 @@
 #+title: FX forwards
 #+description: Structure note for FX forward rates: how a forward is defined, quoted and derived, how a ladder shows it, and how it is hedged and accounted for.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:fx:fx_forward:structure_note:
 #+created: 2026-11-09

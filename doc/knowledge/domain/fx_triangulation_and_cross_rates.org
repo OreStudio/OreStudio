@@ -4,6 +4,7 @@
 #+title: Triangulation and cross rates
 #+description: Direct vs triangulated (cross) rates via a shared pivot currency, one-way vs two-way matrices with failover, and CRM sanity checks.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :marketdata:fx:crm:domain:
 #+created: 2026-06-28

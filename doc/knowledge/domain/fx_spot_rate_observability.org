@@ -4,6 +4,7 @@
 #+title: Why FX spot rates are observable Level 1 inputs
 #+description: Spot rates are continuously quoted, tight-consensus Level 1 inputs, so they need lighter verification than trader-marked vols and curves.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :marketdata:fx:spot:ipv:domain:
 #+created: 2026-06-29

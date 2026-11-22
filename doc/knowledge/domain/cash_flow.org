@@ -4,6 +4,7 @@
 #+title: Cash Flow
 #+description: A cash flow as a signed, dated, currency-denominated movement of money, its notional/principal magnitude, and the cash flow stream or leg it belongs to.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:currency:
 #+created: 2026-07-15

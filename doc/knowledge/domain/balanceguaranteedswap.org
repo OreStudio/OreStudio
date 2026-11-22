@@ -4,6 +4,7 @@
 #+title: Balance Guaranteed Swap
 #+description: An amortising swap that follows the prepayments of a reference security; ORE's BalanceGuaranteedSwap product.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:balanceguaranteedswap:
 #+created: 2026-09-06

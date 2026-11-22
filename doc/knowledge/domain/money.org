@@ -4,6 +4,7 @@
 #+title: Money
 #+description: Money as a social convention verified by record rather than substance, and the four functions that qualify anything as money.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:currency:
 #+created: 2026-07-14

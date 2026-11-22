@@ -4,6 +4,7 @@
 #+title: Composite Trade
 #+description: A hybrid position bundling multiple component trades; ORE's CompositeTrade product.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:compositetrade:
 #+created: 2026-09-07

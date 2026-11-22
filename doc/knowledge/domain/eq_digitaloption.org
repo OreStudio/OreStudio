@@ -4,6 +4,7 @@
 #+title: Equity Digital Option
 #+description: A cash-or-nothing digital option on an equity; ORE's EquityDigitalOption product.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:eq_digitaloption:
 #+created: 2026-09-06

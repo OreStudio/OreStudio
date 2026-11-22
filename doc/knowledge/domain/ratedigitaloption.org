@@ -4,6 +4,7 @@
 #+title: Rate Digital Option
 #+description: A fixed-payout option on an interest rate fixing; ORE's RateDigitalOption product.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:ratedigitaloption:
 #+created: 2026-09-06

@@ -4,6 +4,7 @@
 #+title: Currency Pairs
 #+description: Currency pair and currency pair convention management in ORE Studio: domain concepts (base/quote, classification, pip factor), the Qt UI, and the relationship between the two entities.
 #+type: manual
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:manual:currency-pairs:refdata:user_guide:
 #+created: 2026-07-10

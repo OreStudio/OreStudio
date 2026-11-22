@@ -4,6 +4,7 @@
 #+title: Performance Option Type 01
 #+description: An option paying a performance return against a strike; ORE's Performance Option Type 01 product.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:performanceoption_01:
 #+created: 2026-09-07

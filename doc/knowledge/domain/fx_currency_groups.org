@@ -4,6 +4,7 @@
 #+title: Currency groups (desk groupings)
 #+description: Extensible, many-to-many currency groupings used by trading desks (G11, Scandies, Antipodeans, Asians, Latams, commodity currencies) as opposed to the single-valued market tier and pair classification.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :marketdata:fx:crm:domain:
 #+created: 2026-07-04

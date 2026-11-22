@@ -4,6 +4,7 @@
 #+title: Trade group
 #+description: A trade set created for a run of a process. The foreign key to the run, the two levels of role the process declares, the catalogue of processes, and the mathematical root of the word with its limits.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:domain:finance:trading:trade_groups:
 #+created: 2026-10-07

@@ -4,6 +4,7 @@
 #+title: Interest Rate Curves
 #+description: Structure note for the interest rate curve cluster: what a curve is, how one is built from pillars, why one curve became many, and how the family is stored and namespaced.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:domain:structure_note:rates:curves:
 #+created: 2026-09-10

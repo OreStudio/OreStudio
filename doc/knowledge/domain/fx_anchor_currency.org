@@ -4,6 +4,7 @@
 #+title: The US dollar is the natural hub for FX forward curves
 #+description: The dollar's share of FX turnover makes it the hub of forward curves, and what a second hub would cost.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:fx:fx_forward:
 #+created: 2026-11-09

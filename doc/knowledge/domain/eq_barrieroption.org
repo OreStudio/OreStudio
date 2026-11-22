@@ -4,6 +4,7 @@
 #+title: Equity Barrier Option
 #+description: A barrier option on an equity price; ORE's EquityBarrierOption product.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:eq_barrieroption:
 #+created: 2026-09-06

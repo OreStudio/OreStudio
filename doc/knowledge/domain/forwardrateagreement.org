@@ -4,6 +4,7 @@
 #+title: Forward Rate Agreement
 #+description: A single-period lock on a future interest rate; ORE's ForwardRateAgreement product.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:forwardrateagreement:
 #+created: 2026-09-06

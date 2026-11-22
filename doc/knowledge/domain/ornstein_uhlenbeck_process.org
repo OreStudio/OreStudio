@@ -4,6 +4,7 @@
 #+title: Ornstein-Uhlenbeck Process
 #+description: The general mean-reverting building block behind ornstein_uhlenbeck_process — its SDE, exact per-tick discretisation, and why Vasicek/Hull-White/CIR are all specialisations of it.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:domain:quantitative_finance:stochastic_processes:ore:
 #+created: 2026-07-16

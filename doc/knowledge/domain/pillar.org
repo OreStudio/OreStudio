@@ -4,6 +4,7 @@
 #+title: Pillar
 #+description: The subset of a term structure's tenor points that are actually quoted/bootstrapped inputs, as distinct from a tenor label in general.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:domain:finance:rates:curves:tenors:ore:
 #+created: 2026-07-12

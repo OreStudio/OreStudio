@@ -4,6 +4,7 @@
 #+title: Market Data Dependency Resolution
 #+description: How a resolved set of physical market data identifiers is expanded into its full transitive dependency closure, and loaded, before a valuation can proceed.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:domain:marketdata:dependency:resolution:
 #+created: 2026-07-23

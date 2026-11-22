@@ -4,6 +4,7 @@
 #+title: Random Walk
 #+description: The discrete-time process of summing independent steps — its defining properties, why it already has the Markov property, and how it relates to the Wiener process as a continuous-time limit.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:domain:quantitative_finance:stochastic_processes:ore:
 #+created: 2026-07-16

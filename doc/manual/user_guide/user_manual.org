@@ -6,6 +6,7 @@
 #+options: date:nil <:nil c:nil todo:nil H:7 ^:{} d:nil
 #+description: User manual for the retired ORE Studio Qt desktop client, kept as the record of what it did and as the source of the domain material.
 #+type: manual
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:
 #+created: 2024-06-23

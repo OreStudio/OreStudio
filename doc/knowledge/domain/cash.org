@@ -4,6 +4,7 @@
 #+title: Cash
 #+description: Cash as the most liquid form of a currency: physical notes and coins, plus currency-equivalent financial assets accessible immediately or near-immediately.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:currency:
 #+created: 2026-07-15

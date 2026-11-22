@@ -4,6 +4,7 @@
 #+title: ORE's AdvanceCalendar Convention Field
 #+description: What ORE's FXConvention AdvanceCalendar field is, how it drives spot/maturity date advancing (distinct from business-day or settlement calendars), and why it stays a comma-joined calendar list.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:domain:finance:calendar:refdata:ore:
 #+created: 2026-07-13

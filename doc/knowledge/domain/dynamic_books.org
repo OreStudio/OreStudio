@@ -4,6 +4,7 @@
 #+title: Dynamic books
 #+description: A saved, live filter that behaves like a book without being one: deals are automatically added as they are booked if they satisfy the filter's criteria.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:trading:book:finance:
 #+created: 2026-07-08

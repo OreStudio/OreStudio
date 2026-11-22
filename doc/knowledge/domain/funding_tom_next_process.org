@@ -4,6 +4,7 @@
 #+title: Funding process
 #+description: The Middle Office process that flattens a firm's net overnight cash position per currency by borrowing shorts and depositing longs, run through a designated Funding Book.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:trading:book:finance:funding:
 #+created: 2026-07-11

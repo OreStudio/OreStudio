@@ -4,6 +4,7 @@
 #+title: Swap
 #+description: An interest rate swap exchanges streams of interest payments between two parties on a notional; ORE's swap family.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:swap:
 #+created: 2026-09-06

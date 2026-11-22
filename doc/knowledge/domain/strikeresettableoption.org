@@ -4,6 +4,7 @@
 #+title: Strike Resettable Option
 #+description: An option whose strike resets when the underlying reaches a level; ORE's Strike Resettable Option product.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:strikeresettableoption:
 #+created: 2026-09-07

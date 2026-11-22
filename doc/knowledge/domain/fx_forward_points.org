@@ -4,6 +4,7 @@
 #+title: Forward points are the difference between the outright and spot
 #+description: The definition of forward points, premium and discount, and what the quoted points contain beyond parity.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:fx:fx_forward:
 #+created: 2026-11-09

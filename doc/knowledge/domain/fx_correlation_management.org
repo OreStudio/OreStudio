@@ -4,6 +4,7 @@
 #+title: Correlation management
 #+description: Correlations as discrete per-tenor points that drive cross ATM vol, never interpolated; held and managed in ores.marketdata alongside the CRM.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :marketdata:fx:volatility:correlation:domain:
 #+created: 2026-06-28

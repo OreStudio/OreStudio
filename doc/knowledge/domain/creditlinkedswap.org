@@ -4,6 +4,7 @@
 #+title: Credit Linked Swap
 #+description: A swap with payments contingent on credit events of a reference; ORE's CreditLinkedSwap product.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:creditlinkedswap:
 #+created: 2026-09-06

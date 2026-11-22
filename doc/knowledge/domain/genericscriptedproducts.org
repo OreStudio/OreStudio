@@ -4,6 +4,7 @@
 #+title: Generic Scripted Products
 #+description: The scripted trade module and its flexible payoff scripts; ORE's Generic Scripted Products section.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:genericscriptedproducts:
 #+created: 2026-09-07

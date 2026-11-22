@@ -4,6 +4,7 @@
 #+title: Worst Of Basket Swap
 #+description: A swap whose coupon references the worst performing asset in a basket; ORE's WorstOfBasketSwap product.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:worstofbasketswap:
 #+created: 2026-09-07

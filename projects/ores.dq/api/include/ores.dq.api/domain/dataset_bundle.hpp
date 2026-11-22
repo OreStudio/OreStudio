@@ -50,6 +50,12 @@ namespace ores::dq::domain {
  * the rule that assigns both, and the handler refuses a caller whose tenant the
  * level does not admit.
  *
+ * The column has no default and no migration carries it to an existing database.
+ * That is deliberate: the tree recreates the schema from scratch, so there is
+ * nothing for a migration to protect, and a database that predates the column is
+ * recreated from the tree rather than altered in place. The component standard
+ * states the same rule where it governs every component.
+ *
  * Examples:
  * - "system_core": the platform's own vocabulary, published at bring-up
  * - "world": reference data adopted from an outside standard, published at bring-up

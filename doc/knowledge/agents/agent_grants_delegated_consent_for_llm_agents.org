@@ -80,7 +80,7 @@ used, and links to what the agent did ([[id:2D36D474-2CF9-4498-AF49-818CEF080B98
 
 * See also
 
-- [[id:47B179BF-C982-4BB1-AF4F-35E00B9D2750][LLM agents acting for a person]] — the structure note that orders this cluster.
+- [[id:47B179BF-C982-4BB1-AF4F-35E00B9D2750][Delegated Access for LLM Agents]] — the structure note that orders this cluster.
 - [[id:78B82824-0BBB-4442-A9FA-E1F265DF57BD][Run grants and run tokens]] — exemplifies the same pattern: the run grant is consent for scheduled work, the agent grant consent for an agent.
 - [[id:1162906F-BB72-486E-9A11-30D567C65F3E][Delegation tokens for LLM agents: subject and actor claims]] — completes: what a grant becomes on each call.
 - [[id:AF46793A-FF6C-4066-A059-279CE9936420][Identity and Access]] — the identity cluster this page extends.

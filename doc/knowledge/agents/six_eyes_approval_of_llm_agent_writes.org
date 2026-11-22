@@ -80,7 +80,7 @@ installation still needs the person and no one else.
 
 * See also
 
-- [[id:47B179BF-C982-4BB1-AF4F-35E00B9D2750][LLM agents acting for a person]] — the structure note that orders this cluster.
+- [[id:47B179BF-C982-4BB1-AF4F-35E00B9D2750][Delegated Access for LLM Agents]] — the structure note that orders this cluster.
 - [[id:E21DFC83-9F3F-45BE-AD3F-48262126DFAC][Four-eyes framework]] — completes: the framework this page adds one condition to.
 - [[id:71146F3F-B884-4E61-BA8B-A8A0731703C6][Rules for the automatic approval of requests]] — contradicts, in part: a rule may close the later parts of an agent's request but never its first.
 - [[id:A9E9D1EF-5879-4488-87C8-BDD914C3B502][Operational Authorisation]] — exemplifies: the existing second pair of eyes on a trade, which an agent's booking extends rather than duplicates.

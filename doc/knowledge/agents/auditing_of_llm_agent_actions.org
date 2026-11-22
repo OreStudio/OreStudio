@@ -50,7 +50,7 @@ From the activity a person reaches the grant, and revokes it
 
 * See also
 
-- [[id:47B179BF-C982-4BB1-AF4F-35E00B9D2750][LLM agents acting for a person]] — the structure note that orders this cluster.
+- [[id:47B179BF-C982-4BB1-AF4F-35E00B9D2750][Delegated Access for LLM Agents]] — the structure note that orders this cluster.
 - [[id:1162906F-BB72-486E-9A11-30D567C65F3E][Delegation tokens for LLM agents: subject and actor claims]] — answers: where the actor comes from.
 - [[id:381D87BB-4E2D-47BA-8853-6132CF900305][Six-eyes approval of LLM agent writes]] — completes: a held write appears in the log with its request.
 - [[id:3E20C1A0-7BA1-4F31-8C34-1E5F13558890][Service-to-Service Auth]] — contradicts the shortcut of a service identity: a service acting as itself would leave the person out of the record.

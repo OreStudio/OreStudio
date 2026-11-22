@@ -76,7 +76,7 @@ not apply at once: it waits for the person and then for a second approver
 
 * See also
 
-- [[id:47B179BF-C982-4BB1-AF4F-35E00B9D2750][LLM agents acting for a person]] — the structure note that orders this cluster.
+- [[id:47B179BF-C982-4BB1-AF4F-35E00B9D2750][Delegated Access for LLM Agents]] — the structure note that orders this cluster.
 - [[id:039005AD-8319-416C-9F70-6A5477FEE89D][The ores.agent prototype: findings for the target design]] — answers: why the agent has one door, after the prototype's separate process and credentials.
 - [[id:3E20C1A0-7BA1-4F31-8C34-1E5F13558890][Service-to-Service Auth]] — completes: the agent's call is a person's call carried by a token, as an on-behalf-of call is, never a service acting as itself.
 - [[id:FC0847D1-9F09-42EF-A4BD-D5E3C34398EA][How ores.http serves MCP]] — the investigation that chose to serve MCP from =ores.http=.

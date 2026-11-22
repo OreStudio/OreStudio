@@ -67,7 +67,7 @@ the person does not.
 
 * See also
 
-- [[id:47B179BF-C982-4BB1-AF4F-35E00B9D2750][LLM agents acting for a person]] — the structure note that orders this cluster.
+- [[id:47B179BF-C982-4BB1-AF4F-35E00B9D2750][Delegated Access for LLM Agents]] — the structure note that orders this cluster.
 - [[id:A7E2942C-66AD-449C-B80B-CA789EBC34FA][Agent grants: delegated consent for LLM agents]] — answers: what the exchange checks.
 - [[id:AAC60D20-8696-4455-9292-E8FAE1389CBC][Internal actor impersonation]] — contradicts: impersonation hides the actor that this token exists to show.
 - [[id:2D36D474-2CF9-4498-AF49-818CEF080B98][Auditing of LLM agent actions]] — completes: where the actor is written down.

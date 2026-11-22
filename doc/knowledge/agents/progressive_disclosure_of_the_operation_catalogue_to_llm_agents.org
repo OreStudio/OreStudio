@@ -65,7 +65,7 @@ construction, and the OpenAPI document gains the same metadata.
 
 * See also
 
-- [[id:47B179BF-C982-4BB1-AF4F-35E00B9D2750][LLM agents acting for a person]] — the structure note that orders this cluster.
+- [[id:47B179BF-C982-4BB1-AF4F-35E00B9D2750][Delegated Access for LLM Agents]] — the structure note that orders this cluster.
 - [[id:6DFC4BF5-65AC-4E75-90EA-FBDC1272E01C][How the model sees ORE's operations]] — the investigation behind the five tools and its measurements.
 - [[id:34CB899A-D114-4B54-9A0E-E3BEE5FF49F2][The HTTP route inventory]] — answers the investigation's open question: the sixteen published areas are the catalogue's first step.
 - [[id:5E479832-A0B2-4BC6-B008-BAD505F4E145][Serving the Model Context Protocol from ores.http]] — the methods that carry these tools.

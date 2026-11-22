@@ -49,7 +49,7 @@ plan itself stays — it is the historical record of what we did.)
 
 The architecture is a new cluster, =doc/knowledge/agents/=, written by the
 procedure of [[id:E3B70401-5142-4ACC-A61F-1BBF19F8470F][Zettelkasten]]:
-one structure note, [[id:47B179BF-C982-4BB1-AF4F-35E00B9D2750][LLM agents acting for a person]], and eight notes, each one idea,
+one structure note, [[id:47B179BF-C982-4BB1-AF4F-35E00B9D2750][Delegated Access for LLM Agents]], and eight notes, each one idea,
 with seven PlantUML diagrams beside them. It builds on the run grant (Grant
 Management and Token Exchange are reused, not reinvented), the four-eyes
 framework, operational authorisation, the published area map of the route

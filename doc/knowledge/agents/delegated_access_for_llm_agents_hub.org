@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 47B179BF-C982-4BB1-AF4F-35E00B9D2750
 :END:
-#+title: LLM agents acting for a person
+#+title: Delegated Access for LLM Agents
 #+description: Structure note for LLM agents acting for a person through ores.http: grants, MCP, record and six eyes.
 #+type: knowledge
 #+level: cross

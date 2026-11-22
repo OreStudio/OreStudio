@@ -131,6 +131,10 @@ snapshot, so a revoked permission takes effect at the next token.
   seconds, renewal at 80% of the lifetime, and a session ceiling of 8 hours.
 - *Verification.* =make_request_context= in =ores.service= builds the request
   context, and =has_permission= checks a permission.
+- *The actor.* =act= is absent from a person's own token. A run token sets it to
+  the step service's role name, and an LLM agent's token to =agent:= and the
+  agent grant's id, so no agent is read as a service. It is a string, where
+  RFC 8693 defines an object; see [[id:1162906F-BB72-486E-9A11-30D567C65F3E][Delegation tokens for LLM agents: subject and actor claims]].
 - *The edge.* The HTTP gateway verifies with the same key and never signs. See
   [[id:3E20C1A0-7BA1-4F31-8C34-1E5F13558890][Service-to-service auth]].
 - *The database.* [[id:0FF2B4E7-473D-A754-A893-C4C70E636C76][Multi-Tenancy Architecture]]

@@ -104,6 +104,13 @@ The analysis is in [[id:FC0847D1-9F09-42EF-A4BD-D5E3C34398EA][How ores.http serv
   row it writes and in one log of its calls, reads included; no automatic
   approval rule closes the person's part of an agent's request; and the
   catalogue's first step is the sixteen published HTTP areas.
+- *The security review's decisions* (2026-11-22, product owner), from
+  [[id:6B455B15-0FDB-4E1E-A2A8-CEFC4C1D155C][Security review of delegated access for LLM agents]]: an agent grant names a role, and its token carries the role's
+  permissions held by the person; some permissions no agent ever holds
+  ([[id:1679B2CE-05C2-4CFF-9A4B-47EC721CB10A][Withholding of administrative permissions from LLM agents]]); =act= is =agent:= and the grant's id; the key is a bounded
+  credential at rest, with an expiry of at most ninety days; IAM's entry into
+  the tenant a key names is registered; and an agent's calls form sessions of
+  their own, shown apart from its person's ([[id:4DCD0684-F6AE-4E84-BB9D-2AE2DAFDB667][Sessions of LLM agents]]).
 
 * Investigations
 

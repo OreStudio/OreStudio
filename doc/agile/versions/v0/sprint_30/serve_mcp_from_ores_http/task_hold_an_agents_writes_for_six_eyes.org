@@ -36,7 +36,8 @@ An agent's write does not apply. It raises an approval request in the existing f
 * Acceptance
 
 - A write made with an agent's token raises an approval request and changes nothing until it is approved.
-- A read made with an agent's token is not held. A write made with a read-only grant is refused before any approval request is raised.
+- A read made with an agent's token is not held. A write the token's permissions do not cover is refused before any approval request is raised.
+- The approval queue, trade authorisation and IAM's write handlers refuse a token whose =act= names an agent, whatever permissions it carries.
 - The person the agent acts for approves first, and the agent can never approve. The further approval a person's own write would need is given by someone other than the agent's person; when nobody else holds that right, the request stays pending and the review panel says it has no eligible approver.
 - A trade booked by an agent, once its person approves, enters trade authorisation, and its authoriser is neither the agent's person nor the agent.
 - An approval policy rule can exempt an agent write, and without a rule every agent write is held.

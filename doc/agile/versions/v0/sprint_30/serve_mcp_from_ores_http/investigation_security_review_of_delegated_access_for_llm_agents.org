@@ -161,6 +161,17 @@ change once they are made, and the code task resumes after.
    lapsed grant, a revoked key, a wrong secret, a key for another tenant, and a
    key in a log line.
 
+* Decision
+
+The product owner approved the seven recommendations on 2026-11-22, and added
+one: an agent's calls form sessions of their own, shown apart from its
+person's in the sessions window, and ending one revokes the key that opened it
+([[id:4DCD0684-F6AE-4E84-BB9D-2AE2DAFDB667][Sessions of LLM agents]]). The design notes and the existing security pages were updated in one
+change: the agent grant and token notes, the new notes [[id:1679B2CE-05C2-4CFF-9A4B-47EC721CB10A][Withholding of administrative permissions from LLM agents]] and [[id:4DCD0684-F6AE-4E84-BB9D-2AE2DAFDB667][Sessions of LLM agents]], Run
+grants and run tokens, Service-to-Service Auth, Role-Based Access Control,
+Access Token, Token Exchange, the RLS and permission exceptions register (entry
+E9) and Identity and Access Management.
+
 * See also
 
 - [[id:47B179BF-C982-4BB1-AF4F-35E00B9D2750][Delegated Access for LLM Agents]] — the design reviewed.

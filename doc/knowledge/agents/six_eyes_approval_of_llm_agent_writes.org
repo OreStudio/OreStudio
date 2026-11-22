@@ -30,15 +30,18 @@ Every write made with an agent's token is held unless a rule exempts it. The
 approval policy of the [[id:E21DFC83-9F3F-45BE-AD3F-48262126DFAC][Four-eyes framework]] says which acts are gated and which part
 decides each; it gains one condition, /made by an agent/, so that a rule can
 gate an act only when an agent makes it, or exempt it. Without a rule, an
-agent's write is held. Reads are never held. A write under a read-only grant
-is refused by =ores.http= before any request is raised, because the catalogue
-knows that the operation writes and the token carries the grant's scope.
+agent's write is held. Reads are never held. A write the token's permissions do
+not cover, such as any write under a read-only role, is refused by the owning
+service's own permission check before any request is raised, as it is for any
+caller ([[id:A7E2942C-66AD-449C-B80B-CA789EBC34FA][Agent grants: delegated consent for LLM agents]]).
 
 The request is an ordinary [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] in the one queue of [[id:EE61043C-CBCE-44B5-85E9-A3E433FBA3EF][ores.inbox]]. Its first
 part is the agent's person; its later parts are those the policy names for the
 act. The agent can never decide a part: a model checking its own work is a weak
 check, because the check shares the priors that produced the error
-([[id:0D919421-2B73-4322-9F79-9FDA38A67EA1][Large language models]], /Correlated errors/). The person decides only the first.
+([[id:0D919421-2B73-4322-9F79-9FDA38A67EA1][Large language models]], /Correlated errors/). This is enforced twice: no
+agent's token holds a decide permission, and the queue refuses a decision from
+a token whose =act= names an agent ([[id:1679B2CE-05C2-4CFF-9A4B-47EC721CB10A][Withholding of administrative permissions from LLM agents]]). The person decides only the first.
 The later parts are decided by someone else, or closed by a rule exactly as for
 the person's own write (see /What a rule cannot close/ below). When no rule
 closes a later part and nobody else holds the right to decide it, the request
@@ -47,7 +50,7 @@ a tenant cannot complete that kind of agent write until it has a second person
 or a rule. Over MCP the held write is an answer, not an error: =call_operation=
 returns the request, so the agent can tell its person what waits.
 
-#+caption: An agent's write: refused at ores.http under a read-only grant, otherwise held as an approval request that the agent's person approves and then a second approver approves before the change applies.
+#+caption: An agent's write: refused by the service when the token's permissions do not cover it, otherwise held as an approval request that the agent's person approves and then a second approver approves before the change applies.
 #+attr_html: :width 100%
 [[proj:doc/knowledge/agents/agent_write_six_eyes.png]]
 
@@ -67,8 +70,8 @@ P&L follows the same rule whoever booked it.
 
 The difference is accountability. A trader's own booking is the act of a
 person who answers for it; an agent's booking is live before any person has
-looked at it. Three rules bound that. A read-only grant cannot book: the
-booking is refused at =ores.http= like any other write. The trade carries its
+looked at it. Three rules bound that. A grant whose role does not hold the
+booking permission cannot book: trading's own permission check refuses it. The trade carries its
 acting agent ([[id:2D36D474-2CF9-4498-AF49-818CEF080B98][Auditing of LLM agent actions]]), so the blotter, the authorisation queue and the
 risk and P&L views can show the trades an agent booked that nobody has yet
 authorised, and filter them out. And the person's part comes first, so
@@ -92,6 +95,7 @@ one person, a rule closes the later parts, so the person's approval is all the
 write needs; it still needs that.
 
 * See also
+- [[id:1679B2CE-05C2-4CFF-9A4B-47EC721CB10A][Withholding of administrative permissions from LLM agents]] — completes: how an agent is kept from deciding, at the token and in the queue.
 
 - [[id:47B179BF-C982-4BB1-AF4F-35E00B9D2750][Delegated Access for LLM Agents]] — the structure note that orders this cluster.
 - [[id:E21DFC83-9F3F-45BE-AD3F-48262126DFAC][Four-eyes framework]] — completes: the framework this page adds one condition to.

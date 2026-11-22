@@ -33,9 +33,9 @@ class agent_grant {
   account_id
   party_id
   agent_name
-  scope : read_only | read_write
+  role_id
   created_at
-  expires_at
+  not_after : at most 90 days
   revoked_at
   created_through : key | oauth
 }

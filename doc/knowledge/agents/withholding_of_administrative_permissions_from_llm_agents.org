@@ -1,0 +1,86 @@
+:PROPERTIES:
+:ID: 1679B2CE-05C2-4CFF-9A4B-47EC721CB10A
+:END:
+#+title: Withholding of administrative permissions from LLM agents
+#+description: The permissions IAM removes from every LLM agent's token whatever its role, and the checks that hold if the list is wrong.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:agents:security:permissions:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+
+* Summary
+
+Some permissions are never delegated to an LLM agent, whatever role its grant
+names and whatever its person holds: the administration of identity and
+access, the decisions of the approval queue, and every permission that mints
+or exchanges an identity. The claim of this page is that a role made for an
+agent is not enough to keep it out of these, because roles are written by
+people and a tenant administrator's =*= covers them, so IAM removes them from
+every agent's token by rule, and the handlers that own them refuse an agent
+even if the rule is wrong. It follows a security review of the design ([[id:6B455B15-0FDB-4E1E-A2A8-CEFC4C1D155C][Security review of delegated access for LLM agents]]).
+
+* Detail
+
+** What is withheld
+
+IAM withholds a permission code from an agent's token when it matches any of
+these rules. The rules are data held by IAM, and a test checks them against the
+permission catalogue, so a new code that falls under a rule is withheld without
+anybody deciding so.
+
+| Rule | Examples | Why |
+|------+----------+-----|
+| Every =installation::= code | =installation::deployment:read= | the deployment as a whole is outside any person's tenant |
+| Every =iam::= code that is not a read | =iam::accounts:create=, =iam::roles:assign=, =iam::accounts:reset_password=, =iam::sessions:end=, =iam::run_grants:revoke=, the agent grant and key operations | an agent never changes who may do what, or makes a grant of its own |
+| Every =inbox::= code that is not a read | =inbox::approvals:decide_operations=, =inbox::approvals:set_mode=, =inbox::approval_policies:write= | an agent never decides a request, and never changes the rules that hold its own writes ([[id:381D87BB-4E2D-47BA-8853-6132CF900305][Six-eyes approval of LLM agent writes]]) |
+| The writes on trade authorisation requests | =trading::trade_authorisation_requests:write= | an agent never authorises a trade, its own or another's |
+| Every code ending =:exchange=, =:mint=, =:impersonate=, =:enter_as_service= or =:provision= | =iam::run_grants:exchange=, =iam::storage_capabilities:mint=, =iam::tenants:impersonate= | each one creates an identity or a capability, which only IAM and services may do |
+
+=*= and =component::*= are expanded against the catalogue before the rules
+apply, so a tenant administrator's grant yields the administrator's codes less
+the withheld ones, never a wildcard ([[id:3CAA394F-E84C-3434-331B-6E664F7E84D2][Role-Based Access Control]]).
+
+** Three places it is enforced
+
+1. *At grant creation.* A grant whose role names a withheld permission is
+   refused, so a person sees at once that the role cannot be delegated.
+2. *At every exchange.* IAM removes the withheld codes from the token's
+   permissions after intersecting the role with the person's current
+   permissions ([[id:1162906F-BB72-486E-9A11-30D567C65F3E][Delegation tokens for LLM agents: subject and actor claims]]), so a role changed after the grant was made cannot widen
+   the agent.
+3. *In the handlers that own them.* IAM's write handlers, the approval queue's
+   decisions and trade authorisation refuse a token whose =act= names an agent,
+   whatever permissions it carries. This is the defence if the rules or the
+   catalogue are wrong.
+
+** Why a rule and not only a role
+
+A role is the right bound for what an agent may do for the work ([[id:A7E2942C-66AD-449C-B80B-CA789EBC34FA][Agent grants: delegated consent for LLM agents]]). It is
+not a safe bound for what an agent must never do, for two reasons. A role is
+written by a person, and may name a permission by accident or through a
+wildcard. And an agent's judgement is the model's: its errors are correlated,
+so it cannot be its own check ([[id:0D919421-2B73-4322-9F79-9FDA38A67EA1][Large language models]], /Correlated errors/). Administration and
+decisions are exactly the acts where a person's judgement is the control, so
+they are withheld outright rather than left to a role.
+
+** What is not decided here
+
+Raising an approval request when an agent writes is done by the service that
+owns the act. Whether that service raises it under its own identity or checks
+the caller's inbox permissions is confirmed when the six-eyes task is built; if
+it checks the caller's, the raise is allowed and only the decisions are
+withheld.
+
+* See also
+
+- [[id:47B179BF-C982-4BB1-AF4F-35E00B9D2750][Delegated Access for LLM Agents]] — the structure note that orders this cluster.
+- [[id:A7E2942C-66AD-449C-B80B-CA789EBC34FA][Agent grants: delegated consent for LLM agents]] — completes: the role bounds what an agent may do; this page bounds what it may never do.
+- [[id:1162906F-BB72-486E-9A11-30D567C65F3E][Delegation tokens for LLM agents: subject and actor claims]] — completes: the exchange applies these rules to every token.
+- [[id:381D87BB-4E2D-47BA-8853-6132CF900305][Six-eyes approval of LLM agent writes]] — answers: how an agent is kept from deciding its own request.
+- [[id:3CAA394F-E84C-3434-331B-6E664F7E84D2][Role-Based Access Control]] — completes: the roles these rules sit beside, and why wildcards are expanded.
+- [[id:6B455B15-0FDB-4E1E-A2A8-CEFC4C1D155C][Security review of delegated access for LLM agents]] — the review that called for this page.
+
+* Sources
+
+(None beyond the pages linked above.)

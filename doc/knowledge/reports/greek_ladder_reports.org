@@ -349,7 +349,7 @@ not arrive in the file its name suggests.
 |-------+-------+-------|
 | The sensitivity analytic type | =ores_reporting_analytic_types_tbl=, code =sensitivity= | Seeded, "First and second order sensitivities of the portfolio's value" |
 | The sensitivity document as a bindable kind | =ores_reporting_configuration_types_tbl=, code =sensitivity=, root =SensitivityAnalysis=, parameter =sensitivityConfigFile=, owner =ores.analytics= | Seeded, with the document transcribed in the ORE file library notes |
-| The file in the library | =ores_reporting_ore_files_tbl=, code =sensitivity=, with a name pattern that also covers the stress and XVA variants | Seeded, with a description of the shift blocks |
+| The file in the library | =ores_ore_files_tbl=, code =sensitivity=, with a name pattern that also covers the stress and XVA variants | Seeded, with a description of the shift blocks |
 | The schema | =external/ore/xsd/sensitivity.xsd=, seeded as =sensitivity_schema= | Vendored |
 | Worked configurations | =external/ore/examples/MarketRisk/Input/sensitivity.xml= and the two SensiSmile variants | Vendored |
 | The outputs | =sensitivity.csv=, =scenario.csv=, =parsensitivity.csv=, =jacobi.csv=, =jacobi_inverse.csv= | Catalogued and read by the store |

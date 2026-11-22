@@ -55,6 +55,9 @@ target_link_libraries(${lib_target_name}
         ores.logging.lib
         ores.workflow.api.lib
         ores.eventing.api.lib
-        ores.utility.lib)
+        ores.utility.lib
+    PRIVATE
+        faker-cxx::faker-cxx
+        libfort::fort)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

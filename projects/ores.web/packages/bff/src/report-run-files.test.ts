@@ -189,7 +189,7 @@ const ANSWERS: Readonly<Record<string, unknown>> = {
         ],
         total: 1,
     },
-    'reporting.v1.ore_files.list': {
+    'ore.v1.ore_files.list': {
         result: OK,
         files: [
             oreFile('master_input', 'Analytics', 'master_input', '^ore\\.xml$', {
@@ -208,7 +208,7 @@ const ANSWERS: Readonly<Record<string, unknown>> = {
         ],
         total: 4,
     },
-    'reporting.v1.ore_file_categories.list': {
+    'ore.v1.ore_file_categories.list': {
         result: OK,
         categories: [
             {
@@ -270,7 +270,7 @@ const ANSWERS: Readonly<Record<string, unknown>> = {
             recorded_at: '2026-10-23 07:00:01.000000Z',
         },
     },
-    'reporting.v1.ore_file_versions.list': {
+    'ore.v1.ore_file_versions.list': {
         result: OK,
         versions: [
             {
@@ -522,10 +522,10 @@ describe('the ORE file of each run file', () => {
     });
 
     it('leaves out an ORE file whose expression does not compile, and still names the others', async () => {
-        const catalogue = ANSWERS['reporting.v1.ore_files.list'] as { files: unknown[] };
+        const catalogue = ANSWERS['ore.v1.ore_files.list'] as { files: unknown[] };
         const response = await get(`/api/reporting/runs/${RUN}/files`, {
             ...ANSWERS,
-            'reporting.v1.ore_files.list': {
+            'ore.v1.ore_files.list': {
                 ...catalogue,
                 files: [oreFile('broken', 'Broken', 'valuation_report', '(['), ...catalogue.files],
             },
@@ -627,7 +627,7 @@ describe('the schema of an xml file', () => {
             '/api/reporting/ore-files/master_input_schema/schema?version=1.8.17.0',
             {
                 ...ANSWERS,
-                'reporting.v1.ore_file_versions.list': {
+                'ore.v1.ore_file_versions.list': {
                     result: OK,
                     versions: [
                         {

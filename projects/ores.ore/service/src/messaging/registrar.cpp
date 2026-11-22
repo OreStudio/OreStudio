@@ -18,11 +18,19 @@
  *
  */
 #include "ores.ore.service/messaging/registrar.hpp"
+#include "ores.history.core/messaging/registrar.hpp"
+#include "ores.history.core/service/dispatch_registry.hpp"
 #include "ores.logging/logger.hpp"
 #include "ores.ore.api/messaging/currency_config_protocol.hpp"
 #include "ores.ore.api/messaging/ore_import_protocol.hpp"
 #include "ores.ore.api/messaging/pricing_engines_protocol.hpp"
 #include "ores.ore.api/messaging/run_configuration_protocol.hpp"
+#include "ores.ore.core/messaging/ore_file_category_history_provider_registrar.hpp"
+#include "ores.ore.core/messaging/ore_file_category_registrar.hpp"
+#include "ores.ore.core/messaging/ore_file_history_provider_registrar.hpp"
+#include "ores.ore.core/messaging/ore_file_registrar.hpp"
+#include "ores.ore.core/messaging/ore_file_version_history_provider_registrar.hpp"
+#include "ores.ore.core/messaging/ore_file_version_registrar.hpp"
 #include "ores.ore.service/messaging/currency_config_handler.hpp"
 #include "ores.ore.service/messaging/ore_import_execute_handler.hpp"
 #include "ores.ore.service/messaging/ore_import_handler.hpp"
@@ -41,6 +49,13 @@ using namespace ores::logging;
 inline static std::string_view logger_name = "ores.ore.service.messaging.registrar";
 static auto& lg() {
     static auto instance = make_logger(logger_name);
+    return instance;
+}
+
+// The history providers live for the whole process, as the subscription that
+// serves them holds the registry by reference.
+ores::history::service::dispatch_registry& history_registry() {
+    static ores::history::service::dispatch_registry instance;
     return instance;
 }
 
@@ -94,6 +109,25 @@ registrar::register_handlers(ores::nats::service::client& nats,
         ores::ore::messaging::import_pricing_engines_request::nats_subject,
         qg,
         [peh](ores::nats::message msg) { peh->import_pricing_engines(std::move(msg)); }));
+
+    // ----------------------------------------------------------------
+    // The description of ORE (generated CRUD handlers): the files of an ORE
+    // run, their categories and their contents per release, and their history.
+    // ----------------------------------------------------------------
+    for (auto& sub : ore::messaging::register_ore_file_category_handlers(nats, ctx, signer))
+        subs.push_back(std::move(sub));
+    for (auto& sub : ore::messaging::register_ore_file_handlers(nats, ctx, signer))
+        subs.push_back(std::move(sub));
+    for (auto& sub : ore::messaging::register_ore_file_version_handlers(nats, ctx, signer))
+        subs.push_back(std::move(sub));
+    {
+        auto& hist_registry = history_registry();
+        ore::messaging::register_ore_file_category_history_provider(hist_registry);
+        ore::messaging::register_ore_file_history_provider(hist_registry);
+        ore::messaging::register_ore_file_version_history_provider(hist_registry);
+        subs.push_back(ores::history::messaging::register_history_handlers(
+            nats, hist_registry, "ore", qg, ctx, signer));
+    }
 
     auto rch =
         std::make_shared<run_configuration_handler>(nats, ctx, std::move(signer), outbound_nats);

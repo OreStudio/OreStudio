@@ -50,17 +50,17 @@ import {
     type ReportRunFileView,
     type ReportRunFilesView,
 } from '@ores/wire-protocol';
-import { subjects as categorySubjects } from '@ores/wire-protocol/generated/reporting/protocol/ore_file_category_protocol';
-import type { ListOreFileCategoriesResponse } from '@ores/wire-protocol/generated/reporting/protocol/ore_file_category_protocol';
-import { subjects as oreFileSubjects } from '@ores/wire-protocol/generated/reporting/protocol/ore_file_protocol';
-import type { ListOreFilesResponse } from '@ores/wire-protocol/generated/reporting/protocol/ore_file_protocol';
+import { subjects as categorySubjects } from '@ores/wire-protocol/generated/ore/protocol/ore_file_category_protocol';
+import type { ListOreFileCategoriesResponse } from '@ores/wire-protocol/generated/ore/protocol/ore_file_category_protocol';
+import { subjects as oreFileSubjects } from '@ores/wire-protocol/generated/ore/protocol/ore_file_protocol';
+import type { ListOreFilesResponse } from '@ores/wire-protocol/generated/ore/protocol/ore_file_protocol';
 import { subjects as fileTypeSubjects } from '@ores/wire-protocol/generated/reporting/protocol/file_type_protocol';
 import type { ListByOreFileCodeFileTypesResponse } from '@ores/wire-protocol/generated/reporting/protocol/file_type_protocol';
 import { invalidRequest, notFound, unexpectedReply } from './errors.js';
 import { readAll, text } from './refdata-calls.js';
 import { zipOf, type ZipEntry } from './zip.js';
-import { subjects as versionSubjects } from '@ores/wire-protocol/generated/reporting/protocol/ore_file_version_protocol';
-import type { ListOreFileVersionsResponse } from '@ores/wire-protocol/generated/reporting/protocol/ore_file_version_protocol';
+import { subjects as versionSubjects } from '@ores/wire-protocol/generated/ore/protocol/ore_file_version_protocol';
+import type { ListOreFileVersionsResponse } from '@ores/wire-protocol/generated/ore/protocol/ore_file_version_protocol';
 import { dispositionFor, downloadName, fetchStored } from './grid-downloads.js';
 import { readBatchId, readRun } from './grid-report-runs.js';
 import type { LiveSession } from './sessions.js';

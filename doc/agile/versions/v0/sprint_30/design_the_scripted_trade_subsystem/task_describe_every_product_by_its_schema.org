@@ -7,10 +7,10 @@
 #+level: s1
 #+filetags: :design_the_scripted_trade_subsystem:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/describe-every-product-by-its-schema
 #+pr:
-#+blocked_on:
-#+blocked_since:
+#+blocked_on: 0FD7D2A8-7A4A-4052-A4D5-6C8A01CAAA41
+#+blocked_since: 2026-11-22
 #+created: 2026-11-21
 #+updated: 2026-11-21
 #+environment: jolly_knuth
@@ -26,12 +26,12 @@ describe_product serves every product's schema: its fields, with type, list or s
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | BLOCKED                              |
 | Parent story | [[id:E6359881-7919-4BBC-9B9C-03A8EEDB8A03][Design the scripted trade subsystem]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-21                               |
+| Now          | Planned; analysed what exists. |
+| Waiting on   | Move the ORE metamodel into ores.ore. |
+| Next         | The move, then PR 1. |
+| Last touched | 2026-11-22                               |
 
 * Acceptance
 
@@ -44,9 +44,42 @@ describe_product serves every product's schema: its fields, with type, list or s
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Revised with the user on 2026-11-22, after the analysis in the notes below.
+
+- No parallel model. A native product's fields are =ore_parameter= rows: leaves
+  of =instruments.xsd=, keyed by schema name and XPath, with their documentation,
+  =introduced_in= and =removed_in=, and the value sets and vocabularies that state
+  the values they accept. A product is trading's =product_type=. The ORE release
+  is the one the metamodel already records: =ore_file_version.engine_version= for
+  a schema's text and the release range on each leaf.
+- The leaves are extracted at build time by the method that extracted the
+  conventions and the curve configuration: the trade classes' =fromXML= in ORE's
+  source gives the structure, the user guide the words, a curation file the
+  texts the guide lacks, and the release measurement the range; the generator's
+  =--check= fails when the committed seed differs.
+- The metamodel moves to =ores.ore= first, in [[id:0FD7D2A8-7A4A-4052-A4D5-6C8A01CAAA41][Move the ORE metamodel into ores.ore]], which blocks
+  this task.
+- =product_type= states the element each type is read under.
+- Each form states its product tag (scripted) or ORE pricing engine type
+  (native); =describe_product= takes an optional pricing configuration and, when
+  given one, states the model and engine it assigns. Cost is left to a later task.
+- =describe_product= is served by trading, which holds the leaves and their value
+  sets in an entity-mirror cache: the models declare =cached_by= trading, the
+  cache is filled from =ores.ore='s list operations and kept fresh by their change
+  events. Trading's C++ reads no table or function of =ores.ore=; see the notes.
+
+PRs, each ending in a check, once the move is merged:
+
+1. The element of each product type, and the =instruments.xsd= leaves of every
+   native product in the =ore.parameters= dataset, by the extraction method; a
+   test fails when a native product of the catalogue has no leaf.
+2. A script-only product's fields from its script's inputs, and the annotations
+   (labels, coded values, defaults, descriptions) as =ore_parameter= texts and
+   value sets where a leaf exists, and as data beside the inputs where none does.
+3. =describe_product= and =list_products= in the trading service, with the forms
+   and the engine of a stated pricing configuration.
+4. The ores.http routes and the BFF routes under =/api/trading/products=, with a
+   test of each.
 
 * Measurements
 
@@ -63,6 +96,88 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+** What exists, and how it fits
+
+The description of ORE is held by =ores.reporting=, its first consumer: the run
+configuration screens. =ore_parameter= began as their parameter definition and
+was renamed on 2026-10-22; =ore_file= followed on 2026-11-02. It now documents
+leaves of documents that analytics and refdata own, and =ores.ore= owns no table,
+by the rule that one component reads every ORE document and none stores XML.
+
+| Concept | Model | Holds today |
+|---------+-------+-------------|
+| ORE files and schemas | =ore_file=, =ore_file_category= | every file, =instruments_schema= and =trade_data_schema= among them |
+| ORE releases | =ore_file_version=, keyed by =engine_version= | the text of 24 files at 1.8.17.0; no table of releases |
+| fields | =ore_parameter=, a leaf by schema name and XPath | 2559 leaves of =ore.xsd=, =conventions.xsd= and =curveconfig.xsd=, with label, help, description, default, format, =introduced_in=, =removed_in= |
+| types | =ore_parameter_value_domain= | text, boolean, integer, decimal, date |
+| accepted values | =ore_parameter_value_set=, =_value=, =_catalogue= | enumerations, ranges, patterns and ORE Studio catalogues |
+| leaf to values | =ore_parameter_vocabulary= | 477 leaves of conventions and curve configuration |
+| leaf to column | =ore_element_map_column= | 479 links to refdata columns |
+| products | trading's =product_type= | the catalogue's 121 types, generated from it |
+
+The leaves were made by =projects/ores.sql/utility=: =extract_convention_terms.py=
+and =extract_curve_terms.py= read each class's =fromXML= in ORE's source,
+=extract_ore_guide.py= the guide, curation JSON the missing texts, row modules
+the rows, =measure_ore_parameter_releases.py= the first release, and
+=generate_ore_parameters_dataset.py= writes the seed, with =--check=. The value
+sets, the element map and its columns are written by compass's =ore_value_sets=
+codec from the value set curation.
+
+** Which component serves describe_product
+
+Who needs the schema, and when:
+
+| Consumer | Needs | When |
+|----------+-------+------|
+| booking (=book=) | the leaves and the script inputs, to validate terms | inside the booking transaction, in trading |
+| booking screen, shell | the whole schema, to draw and print it | on request |
+| synthetic generation | the whole schema, to draw terms | at generation |
+| import | the leaves | already holds them as the XSD bindings, in =ores.ore= |
+
+How components read another's reference data today:
+
+- refdata's write triggers read reporting's element map, vocabularies and
+  =ores_reporting_value_in_set_fn= in SQL, to validate a convention's terms in its
+  own transaction (=refdata_convention_terms_validate_create.sql=);
+- analytics' pricing pair settings name reporting's setting value sets;
+- trading's blotter read joins refdata's books and portfolios in SQL;
+- trading's booking rules ask refdata over the bus for a book;
+- the BFF composes the conventions screen from refdata's rows and reporting's
+  =ore_parameters.list=.
+
+The options:
+
+1. Trading serves it and reads the leaves through a SQL read function =ores.ore=
+   owns. One hop, no copy, and booking validates in its own transaction, as
+   refdata's triggers validate conventions. Trading's SQL depends on =ores.ore='s
+   read function rather than on its tables.
+2. Trading serves it and asks the ore service over the bus. No SQL coupling, but
+   booking depends on the ore service at run time and fetches static data on
+   every call unless it caches.
+3. The ore service serves it and asks trading for the script inputs and the
+   product types. Booking still needs the leaves in trading, so the dependency
+   stays and a second service enters the path.
+4. The BFF composes it, as the conventions screen does. Booking, the shell and
+   synthetic generation would each compose it again, and booking still needs the
+   leaves.
+5. The ore dataset is published into trading's tables. A copy of the leaves, which
+   is the parallel model this task must not make.
+
+Trading owns the product, the script inputs, the forms and the booking that
+validates against them, so it serves =describe_product=.
+
+The rule, from the user on 2026-11-22, rules out option 1: a service's C++ reads
+no other service's tables or functions; only SQL triggers and functions may. The
+leaves are static for a release, so asking =ores.ore= on every call would be
+waste. Trading therefore holds them in an entity-mirror cache, the standard
+mechanism ([[id:AA4A5326-FA02-42D7-ACE2-9B27B20B19C7][the story that introduced it]]): =ore_parameter= and the value sets
+it needs declare =cached_by= trading, the cache pages =ores.ore='s list operations
+at start and reloads a tenant's partition on their change events, and
+=describe_product= and the booking's validation read the cache. Until the cache
+is filled, a booking that needs a product's leaves is refused with a reason
+rather than booked on rules it has not read. The C++ reads that break the rule
+today are the task [[id:68EA32A5-733C-43C2-A757-30C6EEBECEEE][Read other services' data through event-fed caches]].
 
 Cut from [[id:290A1069-A1EE-4DD1-8D23-1C60F76F8949][Product Schemas for Native and Scripted Products]], which states the target this task builds to; the components it touches are [[id:4E135FB5-6E0A-45CC-A805-F5B70F29DDB4][Component Architecture of the Scripted Trade Subsystem]].
 

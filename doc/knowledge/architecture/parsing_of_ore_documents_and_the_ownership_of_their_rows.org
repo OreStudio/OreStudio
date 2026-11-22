@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :ore:xml:projection:architecture:
 #+created: 2026-10-30
-#+updated: 2026-10-31
+#+updated: 2026-11-22
 
 * Summary
 
@@ -125,6 +125,28 @@ run document from those rows.
 That is why the export can build a complete ORE input from rows: the run
 document's content is the bindings, and each bound configuration is fetched from
 the component that owns it.
+
+* The description of ORE is ores.ore's own
+
+The rows a document holds belong to the component that stores the document. The
+description of ORE itself does not: which files an ORE run reads and writes, the
+groups they fall in and the contents of each file as an ORE release ships it.
+=ores.ore= owns those rows, in =ores_ore_file_categories_tbl=,
+=ores_ore_files_tbl= and =ores_ore_file_versions_tbl=, and serves them under
+=ore.v1=. A component that needs them asks =ores.ore=; its C++ reads none of
+these tables.
+
+=ores.ore= stores no run document and no configuration document. The one kind of
+document text it holds is the text of ORE's own schemas, in =ore_file_version=,
+one row for each schema at each ORE release, because a release's schema is part
+of the description of ORE.
+
+The leaves of ORE's schemas, their value domains and value sets, and the map from
+a leaf to the column that stores it are still =ores.reporting='s; they move to
+=ores.ore= once compass's =ore_value_sets= codec takes their names from the
+models. Of the dependency claims above, =projects/ores.reporting/core/src/CMakeLists.txt=
+no longer holds: it links =ores.ore.core.lib=, under a =core_link_edges=
+exception.
 
 * See also
 

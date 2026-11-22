@@ -1,0 +1,92 @@
+:PROPERTIES:
+:ID: 7B2522D9-EB67-4225-B681-2E10902B44F7
+:END:
+#+title: ores.shell.ore
+#+description: The shell's ore adapter part. Holds the generated command units that project the ore domain onto the REPL menu.
+#+type: ores.codegen.component
+#+component_kind: adapter
+#+level: cross
+#+filetags: :shell:repl:ore:component:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+#+name: ore
+#+full_name: ores.shell.ore
+#+brief: Shell ore command units
+
+* Summary
+
+=ores.shell.ore= is the adapter part that projects the ore domain onto the
+shell's REPL menu. It holds one generated command unit per ore entity model: the
+ORE files, their categories and the versions of their contents, which
+=ores.ore= owns as the description of ORE itself.
+
+The part declares =#+component_kind: adapter=. Its =CMakeLists.txt= files are
+hand-authored, because the link libraries belong to the shell surface rather
+than to the domain, and codegen writes only the two =component_files.cmake=
+lists. A regeneration therefore never writes over the build.
+
+The units are output of the =ores.cpp.shell-command= facet. The facet writes
+here because the part is named after the domain the units project, which is the
+fractal naming rule in [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]].
+
+* Inputs
+
+- Free-form token vectors from the command layer, parsed by =parse_args=.
+- The logged-in NATS session, passed by reference into every helper.
+- The ore entity models under =projects/ores.ore/modeling/=.
+
+* Outputs
+
+- Command units under =src/app/commands/ore/= and
+  =include/ores.shell/app/commands/ore/=.
+- Literate recipes under =doc/recipes/shell/=, whose scripts tangle into
+  =projects/ores.shell/scripts/library/=.
+- NATS request messages to the ore service, one per command.
+- Formatted text output of query results to stdout.
+
+* Entry points
+
+- =include/ores.shell/app/commands/ore/= -- the generated unit headers.
+- =src/app/commands/ore/= -- the generated unit implementations.
+- =register_commands= on each unit -- what the host calls to install the
+  submenu below the shell's root menu.
+
+* Dependencies
+
+- =ores.shell.api= -- the command layer: =parse_args=, =request_helpers= and the
+  feedback helpers every unit uses.
+- =ores.ore.api= -- the domain types and the protocol messages the units send.
+
+* See also
+
+- [[id:0FD7D2A8-7A4A-4052-A4D5-6C8A01CAAA41][Move the ORE metamodel into ores.ore]] -- the work that created this part.
+- [[id:72ea75f9-c63d-4a0d-a7e8-0d72473e22d6][ores.shell.reporting]] -- the part these units moved from.
+
+* Diagram
+
+[[file:ores.shell.ore.png]]
+
+#+begin_src cmake :name extra_dependencies
+find_package(cli CONFIG REQUIRED)
+
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.shell.api.lib
+        ores.nats.lib
+        ores.logging.lib
+    PRIVATE
+        ores.ore.api.lib
+        ores.platform.lib
+        ores.utility.lib
+        cli::cli)
+#+end_src
+
+#+begin_src cmake :name extra_test_dependencies
+target_link_libraries(${tests_target_name}
+    PRIVATE
+        ${lib_target_name}
+        ores.testing.lib
+        Catch2::Catch2
+        ores.openssl_cleanup
+        Threads::Threads)
+#+end_src

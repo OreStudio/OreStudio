@@ -55,12 +55,12 @@ XSD_DIR = os.path.join(ROOT, "external", "ore", "xsd")
 GUIDE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "file_type_guide.json")
 SEED = os.path.join(ROOT, "projects", "ores.sql", "populate", "reporting",
                     "reporting_file_types_populate.sql")
-CATEGORY_SEED = os.path.join(ROOT, "projects", "ores.sql", "populate", "reporting",
-                             "reporting_ore_file_categories_populate.sql")
-ORE_FILE_SEED = os.path.join(ROOT, "projects", "ores.sql", "populate", "reporting",
-                             "reporting_ore_files_populate.sql")
-VERSION_SEED = os.path.join(ROOT, "projects", "ores.sql", "populate", "reporting",
-                            "reporting_ore_file_versions_populate.sql")
+CATEGORY_SEED = os.path.join(ROOT, "projects", "ores.sql", "populate", "ore",
+                             "ore_ore_file_categories_populate.sql")
+ORE_FILE_SEED = os.path.join(ROOT, "projects", "ores.sql", "populate", "ore",
+                             "ore_ore_files_populate.sql")
+VERSION_SEED = os.path.join(ROOT, "projects", "ores.sql", "populate", "ore",
+                            "ore_ore_file_versions_populate.sql")
 SCHEMA_DIR = os.path.join(ROOT, "external", "ore", "xsd")
 
 FILE_VALUE = re.compile(r"\.(xml|csv|txt|json|dat|gz)$")
@@ -555,7 +555,7 @@ def render_categories():
         "ORE File Categories",
         f"Seeds the {len(rows)} groups the files of an ORE run fall in, from\n"
         " * projects/ores.sql/utility/ore_files.py.",
-        "ores_reporting_ore_file_categories_tbl", "ORE file category",
+        "ores_ore_file_categories_tbl", "ORE file category",
         ("code", "name", "origin", "description", "display_order"), rows)
 
 
@@ -569,7 +569,7 @@ def render_ore_files():
         "ORE Files",
         f"Seeds the {len(rows)} files of an ORE run, as the ORE user guide identifies them,\n"
         " * from projects/ores.sql/utility/ore_files.py and ore_file_descriptions.py.",
-        "ores_reporting_ore_files_tbl", "ORE file", columns, rows)
+        "ores_ore_files_tbl", "ORE file", columns, rows)
 
 
 def render(documents, rows):
@@ -740,12 +740,12 @@ begin
         ) as t ({names})
     loop
         if not exists (
-            select 1 from ores_reporting_ore_file_versions_tbl
+            select 1 from ores_ore_file_versions_tbl
             where tenant_id = v_sys_tenant and ore_file_code = r.ore_file_code
               and engine_version = r.engine_version
               and valid_to = ores_utility_infinity_timestamp_fn()
         ) then
-            insert into ores_reporting_ore_file_versions_tbl (
+            insert into ores_ore_file_versions_tbl (
                 {names},
                 tenant_id, version, modified_by, change_reason_code, change_commentary
             ) values (

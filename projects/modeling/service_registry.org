@@ -459,6 +459,12 @@
 :depends_on:  ores.iam.service
 :END:
 
+** DML prefixes
+
+# The service owns the description of ORE: the files of an ORE run, their
+# categories and their contents per release.
+- ores_ore_
+
 ** Extra args
 
 - --work-dir ../var/ore-service/work

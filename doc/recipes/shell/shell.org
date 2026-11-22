@@ -2079,15 +2079,15 @@ tangled into the runnable script library
 
 * Ore File Categories
 
-- [[id:62E13E52-7696-52D1-8FCB-C69339DB81ED][How do I run the ore_file_categories commands from the shell?]]
+- [[id:AD6EE0CF-E439-5CEB-B5BC-5E35E0CA7159][How do I run the ore_file_categories commands from the shell?]]
 
 * Ore File Versions
 
-- [[id:B9B96BE3-0AA0-51A9-B012-95B65073FDF5][How do I run the ore_file_versions commands from the shell?]]
+- [[id:0D0B8D16-F053-5B5B-8D91-0D22CFFFF7A0][How do I run the ore_file_versions commands from the shell?]]
 
 * Ore Files
 
-- [[id:C9C72368-DD1B-52B7-8366-0224FA785031][How do I run the ore_files commands from the shell?]]
+- [[id:89161847-0ADA-591E-8900-E9C14DA786E8][How do I run the ore_files commands from the shell?]]
 
 * Trade Generation Trade Types
 

@@ -103,7 +103,13 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The missing-member check runs on every listing call; confirm no preview caller needs the lenient behaviour | `publish_service.cpp` | Accepted, comment only | Grepped the tree: the two publish verbs are the only callers. The preview stays in SQL, where `ores_dq_bundle_datasets_list_fn` and `ores_dq_bundle_preview_fn` report a gap as a metric. The header now says so. |
+| 2 | Add a test where a non-system tenant calls a platform bundle and expects the refusal, since the handler refusal has none | `publish_handler.hpp` | Accepted | New `messaging_publish_bundle_level_tests.cpp` drives the handler over NATS as the test tenant: it reads `world`'s level under RLS, is refused in words, is told when a bundle does not exist, and is not refused a tenant bundle. The dq core tests link `ores.service.lib` for it. |
+| 3 | Compare the caller's tenant as a uuid, not as text | `publish_handler.hpp` | Accepted | The constant is parsed once into a uuid and compared with the caller's tenant value. |
+| 4 | Search for stragglers of the changed upsert signature | all populate scripts | Declined, no change | The signature has twenty callers, all updated, and the recreate runs every populate script, which is what proves it. |
+| 5 | A database that predates the column needs a migration; state it explicitly if a recreate is intended | `ores.dq.dataset_bundle.org` | Accepted, doc | A recreate is intended and is the tree's rule: `component_clean_standard.org` states that the database is recreated from scratch, so there is no migration to protect. The model now says it where a reader of the table looks. |
+| 6 | Confirm the pgTAP file covers the no-session-tenant case the comment claims | `trading_basket_constituent_tenant_scope_test.sql` | Accepted | Two assertions added: with no session tenant a world code resolves and a tenant's code is refused. |
+| 7 | The retired in-process path should go in the follow-up | `publish_service.cpp` | Accepted, captured | Already recorded in capture `5C20BEF9`, which names deleting the table, its generated stack and the retired path as one of the two coherent answers. |
 
 * Result
 

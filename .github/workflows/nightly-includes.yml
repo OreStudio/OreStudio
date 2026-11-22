@@ -137,10 +137,9 @@ jobs:
             uses. Review and merge to keep the tree clean.
 
             Fixes to generated files should go into their codegen
-            templates instead. Hand-edited generated output fails the
-            Codegen drift check (codegen-drift.yml), which runs
-            check_component_drift.py over the components in its
-            drift-free registry. Reproduce locally:
+            templates instead. Hand-edited generated output fails
+            compass-ng's codegen codec in the compass check
+            (compass-check.yml). Reproduce locally:
 
             ```sh
             cmake --preset linux-clang-debug-ninja

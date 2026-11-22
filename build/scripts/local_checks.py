@@ -37,11 +37,11 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
-# The codegen scripts need pystache, faker and pytest, which CI installs from
-# projects/ores.codegen/requirements.txt. The checkout's own venv already has
-# them. The build/scripts checks are stdlib-only and run on any python3.
+# The ores.codegen scripts and tests need pystache, faker and pytest, which CI
+# installs from projects/ores.codegen/requirements.txt. The checkout's own venv
+# already has them. The build/scripts checks are stdlib-only and run on any
+# python3.
 SYSTEM_PY = "python3"
-CODEGEN_PY = "projects/ores.codegen/venv/bin/python"
 CODEGEN_TESTS_PY = "projects/ores.codegen/venv/bin/python"
 
 OUTPUT_DIR = REPO_ROOT / "build" / "output" / "local_checks"
@@ -380,28 +380,26 @@ CATALOGUE: tuple[Check, ...] = (
     Check(
         id="cmake-sources",
         title="Every component_files.cmake list matches the tree",
-        argv=(CODEGEN_PY, "projects/ores.codegen/scripts/regenerate_cmake_component_files.py", "--all", "--check"),
+        argv=("compass-ng", "check", "--codec", "component_files"),
         classes=("codegen", "modeling", "cpp", "sql", "services"),
         after=("component-drift",),
         phase=PREPARE,
-        fix="Run the same command with --all to regenerate, then commit.",
+        fix="Run ./compass.sh generate, then commit the lists it rewrites.",
     ),
     Check(
         id="component-drift",
         title="The components this branch changed match their models, rendered without writing",
-        argv=(CODEGEN_PY, "projects/ores.codegen/scripts/check_component_drift.py",
-              "--changed", "--base", "{base}"),
+        argv=("compass-ng", "check", "--codec", "codegen", "--ratchet", "{base}"),
         classes=("modeling", "codegen"),
         phase=PREPARE,
         timeout=1800,
-        fix="Run compass codegen regenerate for the component the report names."
-            " The check renders into a temporary root and writes nothing; if a"
-            " regeneration is needed, --write does it, and refuses on a dirty tree.",
+        fix="Run ./compass.sh generate, which writes only the files whose"
+            " content differs, then commit them.",
     ),
     Check(
         id="drift-sweep",
         title="A render of every catalogue component matches the tree",
-        argv=(CODEGEN_PY, "projects/ores.codegen/scripts/check_component_drift.py", "--sweep"),
+        argv=("compass-ng", "check", "--codec", "codegen"),
         classes=("modeling", "codegen"),
         timeout=1800,
     ),
@@ -714,7 +712,8 @@ def through_compass(selected: list[Check]) -> tuple[list[Check], list[Check]]:
     if not covered:
         return selected, []
     if shutil.which("compass-ng") is None:
-        print("⚠️  compass-ng is not on the PATH: the ported gates run as Python scripts")
+        print("⚠️  compass-ng is not on the PATH: the ported gates run one at a time,"
+              " and those that need compass-ng fail")
         return selected, []
     rest = [check for check in selected if check.id not in COMPASS_CODECS]
     return rest + [COMPASS_CHECK], covered

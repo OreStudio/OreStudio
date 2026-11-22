@@ -25,16 +25,12 @@ See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]
 variables and their semantics. This archetype adds one more:
 =files= (a list of paths, relative to =tests/=, of every =*.cpp= under it) --
 computed by a filesystem scan at render time
-(=projects/ores.codegen/src/codegen/core.py='s =_COMPONENT_FILES_TEMPLATES=
-branch), not sourced from the model like every other field.
+(compass's =component_files= codec), not sourced from the model like every other field.
 
-The archetype is =#+default: disabled=, so =compass codegen regenerate=
-never emits it and =regenerate_cmake_component_files.py= is its only author.
-The list is a scan of the render's own output directory, so a run that
-renders anywhere but the real tree cannot reproduce it:
-=check_component_drift.py --sweep= renders into a temporary root, and would
-read every list as emptied. One author per generated file is also why the
-gate that owns this file is =cmake-sources=.
+The archetype is =#+default: disabled=, so compass's =codegen= codec never
+emits it and its =component_files= codec is its only author. The list is a
+scan of the checkout, which is why one codec owns the file and the gate that
+checks it is =cmake-sources=.
 
 * Template
 
@@ -45,7 +41,7 @@ The full template source. Edit here and re-tangle with
 #+begin_src mustache :tangle cmake_component_files_tests.mustache
 {{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.cmake.component.files_tests.org. Edit the org source. }}
 {{{cmake_license}}}
-{{! Regenerate: projects/ores.codegen/scripts/regenerate_cmake_component_files.py --component <name> (or --all). Never hand-edit. }}
+{{! Regenerate: ./compass.sh generate, whose component_files codec writes every list. Never hand-edit. }}
 {{#component}}
 set(files
 {{#files}}

@@ -34,9 +34,7 @@ The full template source. Edit here and re-tangle with
 #   1. Add an entry to:
 #        projects/modeling/service_registry.org
 #   2. Run the generator:
-#        ./projects/ores.codegen/codegen.sh generate \
-#            --model projects/modeling/service_registry.org \
-#            --address ores.shell.service
+#        ./compass.sh generate
 #   3. Commit all generated files.
 #   4. Re-run compass db recreate to provision the new service in the database.
 #

@@ -1,9 +1,9 @@
-"""Tests for load_org_service_registry_model's merged DB-access +
-deployment aspect shape.
+"""Tests for the service registry reader: the DB-access and deployment
+aspects of projects/modeling/service_registry.org.
 
 Run::
 
-    python3 -m pytest projects/ores.codegen/tests/test_org_loader_service_registry.py
+    python3 -m pytest projects/ores.compass/tests/test_service_registry.py
 """
 import sys
 from pathlib import Path
@@ -11,17 +11,14 @@ from pathlib import Path
 import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-sys.path.insert(0, str(REPO_ROOT / "projects/ores.codegen/src"))
+sys.path.insert(0, str(REPO_ROOT / "projects/ores.compass/src"))
 
-from codegen.org_loader import load_org_service_registry_model  # noqa: E402
-
-MODEL_PATH = REPO_ROOT / "projects/modeling/service_registry.org"
+from service_registry import load_service_registry  # noqa: E402
 
 
 @pytest.fixture(scope="module")
 def services():
-    model = load_org_service_registry_model(MODEL_PATH)
-    return {s["name"]: s for s in model["service_registry"]["services"]}
+    return {s["name"]: s for s in load_service_registry(REPO_ROOT)}
 
 
 def test_every_entry_has_the_deployment_aspect(services):

@@ -15,13 +15,13 @@ sections *Creating a knowledge document* and *The house style*. Read them
 before writing. In short: search first and link instead of repeating;
 academic prose; every claim derived, cited or labelled unsupported, with
 academic papers preferred and private notes never cited; a title that reads
-like an academic paper title (a noun phrase, never a sentence); the file name
-is the title in snake case. Draw a PlantUML diagram, rendered to PNG and
-embedded with a caption, wherever a lifecycle, a component interaction or a
-structure is described. Keep the data source out of general pages: no
+like an academic paper title (a noun phrase, never a sentence); the file
+name is the title in snake case. Draw a PlantUML diagram, rendered to PNG
+and embedded with a caption, wherever a lifecycle, a component interaction
+or a structure is described. Keep the data source out of general pages: no
 "observed or simulated", no account of how values are generated; link to the
-synthetic generation page that owns those details instead. Review with the `compass-doc-review-academic`
-skill before committing.
+synthetic generation page that owns those details instead. Review with the
+`compass-doc-review-academic` skill before committing.
 
 **Code comments:** the `compass-code-review-comments` skill sets the rules for
 every comment in code we create or edit: use comments sparingly, remove

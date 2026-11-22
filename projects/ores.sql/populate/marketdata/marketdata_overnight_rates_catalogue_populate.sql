@@ -25,7 +25,7 @@
  * publisher, in its own notation, mapped to the fixing item of its index. The
  * item is the oresmd address that the index's built-in convention states, so a
  * public fixing and a synthetic feed of one index name the same item. The terms
- * of each publisher are in doc/knowledge/domain/synthetic_calibration_sources.org.
+ * of each publisher are in doc/knowledge/domain/free_public_sources_for_synthetic_price_calibration.org.
  * The ECB and the Bank of Canada are seeded by the official rates catalogue.
  *
  * Each publisher's adapter reads its series through a session and a feed, and the

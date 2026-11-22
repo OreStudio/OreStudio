@@ -82,7 +82,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A build script reads a renamed page by its old path | =build/scripts/generate_ore_trade_requirements.py= | Accept | =DOCUMENT= names =ore_trade_requirements_by_trade_type.org=; a search of the whole tree for every old file name with its extension found no other live path. |
+| 2 | Comments name the old calibration sources page | =marketdata_overnight_rates_catalogue_populate.sql=, =generate_official_catalogue.py= | Accept | Both name the renamed page; the SQL file is hand-written, not generated. |
+| 3 | Backlog and task files name old pages | the SWESTR inbox item, =task_bind-a-report-to-the-published-curve.org= | Accept in part | The inbox item and the task's pointer to its decision are updated; review tables in closed sprint tasks keep the names they recorded. |
+| 4 | Split the retitle from the new content | PR | Decline | The retitling applies the house style the same PR states, and both are documentation; splitting now adds a cycle for no change in content. |
+| 5 | Confirm the gate before merge | PR | Accept | Posted on the PR when the gate completes. |
+| 6 | An over-long line in CLAUDE.md | =CLAUDE.md= | Accept | The paragraph is rewrapped to 76 columns. |
 
 * Result
 

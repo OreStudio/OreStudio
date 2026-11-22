@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: 23D0536C-1854-4D2A-A287-621F86C2AD6E
+:END:
+#+title: Task: Serve the MCP transport on ores.http
+#+description: /mcp on ores.http serves MCP's Streamable HTTP transport with sessions, JSON-RPC through ORE's codec, initialize, ping, tools/list and tools/call.
+#+type: task
+#+level: s1
+#+filetags: :serve_mcp_from_ores_http:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:008127D7-B897-4CF7-854B-6DDFB89AC7F4][Serve ORE's API to LLM agents over MCP]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+ores.http serves MCP's Streamable HTTP transport at /mcp: POST, GET and DELETE, sessions by Mcp-Session-Id, JSON-RPC through ORE's codec, and the methods initialize, notifications/initialized, ping, tools/list and tools/call, written in ores.http with boost.taar as the reference. A request authenticates with an agent's key, and a missing or invalid one is answered with 401.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:008127D7-B897-4CF7-854B-6DDFB89AC7F4][Serve ORE's API to LLM agents over MCP]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-22                               |
+
+* Acceptance
+
+- /mcp answers POST, GET and DELETE as the Streamable HTTP transport specifies, with sessions by Mcp-Session-Id.
+- initialize, ping, tools/list and tools/call work, and the official MCP conformance runner passes for what is implemented.
+- A request without a valid agent key is refused with 401.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

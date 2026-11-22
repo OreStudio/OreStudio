@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :every_floating_index_has_a_curve_and_fixings:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/draw-only-the-indices-the-market-can-serve
+#+pr: 4996
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-21
@@ -30,7 +30,7 @@ config that can draw an index outside the list, before a provision does.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:0F936789-FEBE-4330-97B9-DFE0837E4466][Every index a generated trade floats on has a curve and fixings]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -69,6 +69,9 @@ task and name that file in the Command column.
 | Cross-currency foreign legs with no fixings | 11, one trade each, all ACCOHK | =evidence/fixing_gap_by_trade.sql=, readings in =evidence/fixing_gap_by_trade.txt= | c0f6ed8c38 |
 | Of those, currencies with no curve at all | 7: AOA, BWP, IDR, MYR, OMR, SAR, THB | =evidence/fixing_gap_by_trade.sql=, readings in =evidence/fixing_gap_by_trade.txt= | c0f6ed8c38 |
 | Rates configs refused by the provision | 2: ACCOUK (PKR KIBOR foreign leg), ACCOUS (FRA on an index that is not an Ibor) | =evidence/fixing_gap_by_trade.sql=, readings in =evidence/fixing_gap_by_trade.txt= | c0f6ed8c38 |
+| IR fixing addresses with no fixing, after the change | 0 of 18, on 1235 trades | =evidence/fixing_gap_by_trade.sql=, readings in =evidence/draw_only_served_indices.txt= | 70fae4dd51 |
+| Rates configs refused by the provision, after the change | 0: ACCOUK and ACCOUS each wrote 154 trades | provision log, readings in =evidence/draw_only_served_indices.txt= | 70fae4dd51 |
+| Served term indices no trade draws | 0 of 18 | readings in =evidence/draw_only_served_indices.txt= | 70fae4dd51 |
 
 * Notes
 
@@ -95,12 +98,17 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4996][#4996]] | [synthetic] Draw only the indices a curve serves |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Doc comments detached from their declarations | =trade_population_planner.cpp=, =ore_example_conventions.hpp= | Accept | Each comment is back above its own declaration; the predicate has one short comment. |
+| 2 | The served test is an exact string match | =trade_population_planner.cpp= | Decline | A trade stores the convention's address as it stands, and its fixings are looked up by that text, so the exact match is the honest test. The provision evidence checks that served indices are still drawn. |
+| 3 | The curve read is capped at the page size | =trading_trade_population_writer.cpp= | Decline | The same page of 10000 as every other read of the writer; a tenant sees about a hundred curve configs. |
+| 4 | An empty served set reads as a missing convention | =trade_population_planner.cpp= | Accept | Each refusal now says no convention names an index a curve serves. |
+| 5 | No test of the funding index path; no unknown family case | =trade_population_tests.cpp= | Accept in part | An equity swap test puts unserved conventions first and checks the funding leg is served. An unknown family is refused when the curve config is inserted, so it never reaches the set. |
+| 6 | Post the results before merge | PR | Accept | Posted on the PR. |
 
 * Result

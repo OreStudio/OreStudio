@@ -483,11 +483,8 @@ std::shared_ptr<ir_curve_feed> make_ir_curve_feed(
 
     // The curve also states the fixings of its own index, because a generated leg that has
     // already reset needs them and no publisher fixes these indices.
-    // The meeting-dated variant of an overnight curve is a shape of one curve's short end, not
-    // an index of its own, so the index's fixings come from the standard curve alone.
     if (cfg.tenor != "FOMC") {
-        if (const auto uri = index_fixing_uri(cfg.currency_code, cfg.index_family, cfg.tenor);
-            !uri) {
+        if (const auto uri = curve_fixing_uri(cfg); !uri) {
             ORES_LOG_SEV(ir_curve_feed_lg(), warn)
                 << "Curve " << cfg.source_name << " states no fixings: " << uri.error();
         } else if (const auto level = feed->index_rate(); !level) {

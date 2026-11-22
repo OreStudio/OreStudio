@@ -35,6 +35,7 @@
 #include <chrono>
 #include <cstdint>
 #include <optional>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -197,6 +198,16 @@ struct trade_generation_scope final {
     std::vector<std::string> inflation_index_codes;
     /// The LEIs the credit family draws its reference entities from.
     std::vector<std::string> credit_reference_entities;
+    /**
+     * @brief The fixing addresses the market serves, one per curve that
+     * states fixings.
+     *
+     * A floating leg is drawn only on an index in this set, because a trade on
+     * an index no curve serves has no fixings and cannot be valued. The
+     * conventions name indices of every currency ORE's examples know, many
+     * with no curve, so the set is what keeps a draw to the market there is.
+     */
+    std::set<std::string> served_fixing_uris;
     /**
      * @brief The tenant's conventions, which a trade builder reads the terms
      * it does not draw from.

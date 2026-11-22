@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :market_data:synthetic:surfaces:curves:architecture:
 #+created: 2026-11-13
-#+updated: 2026-11-13
+#+updated: 2026-11-22
 
 * Summary
 
@@ -52,6 +52,14 @@ A curve reaches a surface in five steps. Each step names the code that holds it.
    discount factor, from the spot date at one outwards. Dated, because the model
    counts its horizon in ticks and a surface's expiries are calendar tenors; the
    conversion is the publisher's, done once, and no reader repeats it.
+
+   The board holds one curve for each collection and currency, and only the
+   curve that discounts the currency writes it: a discount or self-discounting
+   curve on the overnight index. A currency has other curves -- IBOR projection
+   curves, the FOMC short end, another collection's demo curve -- and each of
+   them ends before a surface's longest expiry. When they shared the member,
+   whichever ticked last decided the board, and the surface refused every tick
+   whose expiry was past that curve's end.
 3. *The pair's market at an expiry.* A surface feed reads its pair's spot and the
    two currencies' boards and builds one market per expiry:
    =fx_market{spot, domestic_discount = P_quote, foreign_discount = P_base}=, the

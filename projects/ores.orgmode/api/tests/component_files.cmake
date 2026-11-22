@@ -20,6 +20,7 @@
 # Template: cmake_component_files_tests.mustache
 # To modify, update the template and regenerate.
 set(files
+    "index_operations_protocol_codec_roundtrip_tests.cpp"
     "knowledge_page_codec_roundtrip_tests.cpp"
     "knowledge_page_protocol_codec_roundtrip_tests.cpp"
     "main.cpp"

@@ -65,10 +65,15 @@ three plain tables in the system tenant, which every tenant reads.
    parses each with =ores.orgmode.parser=, flattens the heading tree into
    sections and links, and calls the function once. It is pure apart from
    the read and the call, so a test can run it on fixed pages.
-4. *Trigger.* The service runs the indexer at start, and again on the knowledge
-   pages' change notification, debounced, since a load changes up to every
-   page at once. An operation, =orgmode.v1.ops.reindex_knowledge_pages=, runs
-   it on demand without a reload.
+4. *Trigger.* The pages change only through a publish. The bootstrap
+   publishes them in SQL before the service starts, so the service rebuilds
+   the index when it starts. A later publish goes through the service's
+   publish step, which rebuilds the index after it changes pages and before it
+   reports the step complete. No change notification or debounce is needed.
+   An operation, =orgmode.v1.ops.reindex_knowledge_pages=, rebuilds it on
+   demand without a reload. It needs the installation permission
+   =installation::knowledge_index:rebuild=, which SuperAdmin holds and a
+   tenant administrator's =*= does not cover.
 5. *Prove.* After a recreate, the index holds one section per heading of every
    loaded page; a second run gives the same rows.
 

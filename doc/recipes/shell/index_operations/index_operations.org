@@ -1,0 +1,35 @@
+:PROPERTIES:
+:ID: A1C69627-AC93-5EA6-B1F7-70484AEDC1FA
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the index_operations commands from the shell?
+#+description: Every command the index_operations submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:index_operations:
+
+This file documents declared operations at the shell. Its one command is =ores-shell> index_operations reindex-knowledge-pages=, and the section below exports it as a script into =projects/ores.shell/scripts/library/=, which the shell can load.
+
+* Commands
+
+** =reindex-knowledge-pages=
+:PROPERTIES:
+:ID: FD81061E-5CEB-58A4-B797-D4D327224E03
+:END:
+
+Sends =reindex_knowledge_pages_request= and prints =reindex_knowledge_pages_response=, so the shape is the protocol's and the meaning is the service's. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+index_operations reindex-knowledge-pages
+#+end_example
+
+It is addressed at =orgmode.v1.ops.reindex_knowledge_pages=.
+
+#+name: index_operations-reindex-knowledge-pages
+#+begin_src ores-shell :tangle index_operations-reindex-knowledge-pages.ores :exports none
+index_operations reindex-knowledge-pages
+#+end_src
+

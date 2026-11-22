@@ -1,0 +1,82 @@
+:PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
+:ores.cpp.shell-command.enabled: true
+:ID: C48356A2-A5BE-4A66-90A9-DB823D827E3E
+:END:
+#+title: ores.orgmode.index_operations
+#+description: Codegen operation model for rebuilding the knowledge index on demand, without reloading the knowledge pages.
+#+type: ores.codegen.operation
+#+component: orgmode
+#+subcomponent: api
+#+entity_singular: index_operations
+#+namespace: ores::orgmode::messaging
+#+brief: The knowledge index's operations.
+#+filetags: :model:operation:orgmode:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+
+=ores.orgmode.service= rebuilds the knowledge index when it starts and after
+each publish of the knowledge pages. This operation rebuilds it on demand, from
+the pages already loaded. A rebuild replaces the whole index in one
+transaction, so running it again gives the same index.
+
+The index is the whole deployment's, not a tenant's, so the operation needs
+the installation permission =installation::knowledge_index:rebuild=, which a
+tenant administrator's =*= does not cover.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <cstdint>
+#include <string>
+#include <string_view>
+#+end_src
+
+* Messages
+
+** reindex_knowledge_pages_request
+:PROPERTIES:
+:subject: orgmode.v1.ops.reindex_knowledge_pages
+:response: reindex_knowledge_pages_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Rebuild the knowledge index from the loaded knowledge pages.
+ */
+#+end_src
+
+** reindex_knowledge_pages_response
+
+*** pages
+:PROPERTIES:
+:cpp_type: std::uint64_t
+:default: 0
+:END:
+
+*** sections
+:PROPERTIES:
+:cpp_type: std::uint64_t
+:default: 0
+:END:
+
+*** links
+:PROPERTIES:
+:cpp_type: std::uint64_t
+:default: 0
+:END:
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+* See also
+
+- [[id:8B46AA17-7FD1-4682-BC0B-13A89B9B56F1][Index the knowledge pages in ores.orgmode.service]] — the task that adds the index.

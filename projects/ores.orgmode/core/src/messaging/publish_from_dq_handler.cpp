@@ -22,6 +22,7 @@
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.dq.api/messaging/publish_from_dq_protocol.hpp"
 #include "ores.logging/logger.hpp"
+#include "ores.orgmode.core/service/knowledge_indexer.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
 #include "ores.utility/codec/json_codec.hpp"
 #include <cstdint>
@@ -109,6 +110,11 @@ void publish_from_dq_handler::handle(ores::nats::delivery delivery) {
                                  << " updated=" << result.records_updated
                                  << " skipped=" << result.records_skipped
                                  << " deleted=" << result.records_deleted;
+
+        // A publish that changed pages leaves the index describing the old
+        // ones, so rebuild it before reporting the step complete.
+        if (result.records_inserted + result.records_updated + result.records_deleted > 0)
+            service::knowledge_indexer(ctx_).reindex();
 
         wf->complete(ores::utility::codec::json::write(result));
         std::move(delivery).commit();

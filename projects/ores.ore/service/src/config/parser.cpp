@@ -65,7 +65,8 @@ void version(std::ostream& info) {
 }
 
 std::optional<options> parse_arguments(const std::vector<std::string>& arguments,
-                                       std::ostream& info) {
+                                       std::ostream& info,
+                                       const std::map<std::string, std::string>* environment) {
     using ores::service::config::standard_service_options;
 
     options_description own("Storage");
@@ -77,7 +78,10 @@ std::optional<options> parse_arguments(const std::vector<std::string>& arguments
         boost::program_options::value<std::string>()->default_value("../var/ore-service/work"),
         "Root directory for per-import working directories");
     const auto od(standard_service_options::make_options_description("ores.ore.service.log", own));
-    const auto vm(standard_service_options::parse(od, arguments, "ORE_SERVICE"));
+    // No environment means this process's; a stated one is all the caller allows.
+    const auto vm(environment == nullptr ?
+                      standard_service_options::parse(od, arguments, "ORE_SERVICE") :
+                      standard_service_options::parse(od, arguments, "ORE_SERVICE", *environment));
 
     if (standard_service_options::wants_help(vm)) {
         print_help(od, info);
@@ -99,16 +103,12 @@ std::optional<options> parse_arguments(const std::vector<std::string>& arguments
     return r;
 }
 
-}
-
-namespace ores::ore::service::config {
-
-std::optional<options> parser::parse(const std::vector<std::string>& arguments,
-                                     std::ostream& info,
-                                     std::ostream& err) const {
-
+std::optional<options> parse_or_report(const std::vector<std::string>& arguments,
+                                       std::ostream& info,
+                                       std::ostream& err,
+                                       const std::map<std::string, std::string>* environment) {
     try {
-        return parse_arguments(arguments, info);
+        return parse_arguments(arguments, info, environment);
     } catch (const parser_exception& e) {
         err << usage_error_msg << e.what() << std::endl << more_information << std::endl;
         BOOST_THROW_EXCEPTION(e);
@@ -116,6 +116,23 @@ std::optional<options> parser::parse(const std::vector<std::string>& arguments,
         err << usage_error_msg << e.what() << std::endl << more_information << std::endl;
         BOOST_THROW_EXCEPTION(parser_exception(e.what()));
     }
+}
+
+}
+
+namespace ores::ore::service::config {
+
+std::optional<options> parser::parse(const std::vector<std::string>& arguments,
+                                     std::ostream& info,
+                                     std::ostream& err) const {
+    return parse_or_report(arguments, info, err, nullptr);
+}
+
+std::optional<options> parser::parse(const std::vector<std::string>& arguments,
+                                     std::ostream& info,
+                                     std::ostream& err,
+                                     const std::map<std::string, std::string>& environment) const {
+    return parse_or_report(arguments, info, err, &environment);
 }
 
 }

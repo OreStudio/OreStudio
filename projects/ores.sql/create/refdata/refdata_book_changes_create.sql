@@ -25,7 +25,7 @@
  * Book Change Table
  *
  * Do not edit. Change ores.refdata.book and run
- * derive_pending_models.py.
+ * compass generate.
  */
 
 create table if not exists "ores_refdata_book_changes_tbl" (

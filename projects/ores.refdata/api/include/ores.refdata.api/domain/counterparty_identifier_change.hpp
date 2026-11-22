@@ -37,7 +37,7 @@ namespace ores::refdata::domain {
  * @brief One proposed write to a counterparty_identifier, held for its request.
  *
  * Do not edit. Change ores.refdata.counterparty_identifier and run
- * derive_pending_models.py.
+ * compass generate.
  */
 struct counterparty_identifier_change final {
     /**

@@ -25,7 +25,7 @@
  * Counterparty Identifier Change Table
  *
  * Do not edit. Change ores.refdata.counterparty_identifier and run
- * derive_pending_models.py.
+ * compass generate.
  */
 
 create table if not exists "ores_refdata_counterparty_identifier_changes_tbl" (

@@ -38,7 +38,7 @@ namespace ores::refdata::domain {
  * @brief One proposed write to a book, held for its request.
  *
  * Do not edit. Change ores.refdata.book and run
- * derive_pending_models.py.
+ * compass generate.
  */
 struct book_change final {
     /**

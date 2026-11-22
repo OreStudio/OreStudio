@@ -3,7 +3,7 @@
 :ID: AB2DD577-76F7-5CBE-9E13-CAB826E53771
 :END:
 #+title: ores.refdata.book_change
-#+description: GENERATED from ores.refdata.book by derive_pending_models.py. One proposed write to the book, held until its request is decided.
+#+description: GENERATED from ores.refdata.book by compass generate: pending_models. One proposed write to the book, held until its request is decided.
 #+type: ores.codegen.entity
 #+component: refdata
 #+filetags: :model:entity:refdata:pending:
@@ -15,7 +15,7 @@
 #+updated: 2026-10-10
 
 Do not edit. Change ores.refdata.book and run
-derive_pending_models.py.
+compass generate.
 
 * Flags
 :PROPERTIES:

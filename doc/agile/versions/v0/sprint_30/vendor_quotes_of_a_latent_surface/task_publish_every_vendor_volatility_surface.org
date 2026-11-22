@@ -72,9 +72,9 @@ task and name that file in the Command column.
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
 | Surfaces with vendor ticks in 8 minutes, before the fix | 0 of 14 | =compass sql -- -v since=... -f vol_pairs_since.sql= (ticks joined to tick coords, =instrument=fx_option=) | b878dc6782 |
-| Surfaces with vendor ticks in 8 minutes, after the fix | 14 of 14 | same | 33f1cae484 |
-| Vendor =fx_option= quotes on Acme Corporation Plc's quotes board, after the fix | 910 each for bloomberg, ice and tradeweb | =GET /api/marketdata/quotes?after=N=, paged | 33f1cae484 |
-| =ores.synthetic.api.tests= | 1069 test cases, 10049 assertions, all pass | =ores.synthetic.api.tests= | 7de97a2579 |
+| Surfaces with vendor ticks in 8 minutes, after the fix | 14 of 14 | same | f8918e50da |
+| Vendor =fx_option= quotes on Acme Corporation Plc's quotes board, after the fix | 910 each for bloomberg, ice and tradeweb | =GET /api/marketdata/quotes?after=N=, paged | f8918e50da |
+| =ores.synthetic.api.tests= | 1069 test cases, 10049 assertions, all pass | =ores.synthetic.api.tests= | b3d23d5e41 |
 
 * Notes
 
@@ -110,9 +110,9 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-| 1 | The predicate's comment still said one curve per currency | =ir_curve_template_resolver.hpp= | accept | Fixed in e8eea0c55b |
-| 2 | Changed lines not clang-formatted | five files | accept | Fixed in ec9a3ea168 |
-| 3 | =fx_vol_surface_feed= over its 20-field ceiling | =fx_vol_surface_feed.hpp= | accept | The three board members are one value, 7de97a2579 |
+| 1 | The predicate's comment still said one curve per currency | =ir_curve_template_resolver.hpp= | accept | Fixed in 3c52f2d6ce |
+| 2 | Changed lines not clang-formatted | five files | accept | Fixed in 8789467685 |
+| 3 | =fx_vol_surface_feed= over its 20-field ceiling | =fx_vol_surface_feed.hpp= | accept | The three board members are one value, b3d23d5e41 |
 | 4 | Misspell check | changed paths | accept | Clean, exit 0 |
 
 * Result

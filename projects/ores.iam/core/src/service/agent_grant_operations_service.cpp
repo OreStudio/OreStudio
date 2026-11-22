@@ -90,6 +90,30 @@ std::optional<boost::uuids::uuid> parse_uuid(const std::string& text) {
     }
 }
 
+/*
+ * An agent's session ends with its key, because a revoked key never exchanges
+ * again and so would leave the session open for ever.
+ */
+void end_agent_session_row(const ores::database::context& ctx,
+                           const std::string& session_id,
+                           std::chrono::system_clock::time_point now) {
+    const auto id = parse_uuid(session_id);
+    if (!id)
+        return;
+    repository::session_repository sessions;
+    const auto open = sessions.read(ctx, *id);
+    if (open && !open->end_time)
+        sessions.end_session(
+            ctx, open->id, open->start_time, now, open->bytes_sent, open->bytes_received);
+}
+
+void end_agent_key_session(const ores::database::context& ctx,
+                           const std::string& key_id,
+                           std::chrono::system_clock::time_point now) {
+    if (const auto last = repository::agent_token_issue_log(ctx).last_issue(key_id))
+        end_agent_session_row(ctx, last->session_id, now);
+}
+
 std::vector<std::string> codes_of(const std::vector<domain::permission>& permissions) {
     std::vector<std::string> out;
     out.reserve(permissions.size());
@@ -293,6 +317,7 @@ messaging::revoke_agent_grant_response agent_grant_operations_service::revoke_ag
             k.change_reason_code = std::string(update);
             k.change_commentary = "Revoked with its grant: " + reason;
             keys.save_key(k);
+            end_agent_key_session(grant_ctx, boost::uuids::to_string(k.id), now);
         }
     grant->revoked_at = now;
     grant->change_reason_code = std::string(update);
@@ -335,7 +360,23 @@ messaging::revoke_agent_key_response agent_grant_operations_service::revoke_agen
     key->change_commentary =
         "Revoked: " + (request.reason.empty() ? std::string("revoked") : request.reason);
     agent_key_service(ctx_).save_key(*key);
+    end_agent_key_session(ctx_, boost::uuids::to_string(key->id), key->revoked_at);
     ORES_LOG_SEV(lg(), info) << "Agent key " << key->id << " revoked by " << ctx_.actor();
+    return r;
+}
+
+messaging::revoke_agent_key_response
+agent_grant_operations_service::end_agent_session(const std::string& session_id) {
+    using response = messaging::revoke_agent_key_response;
+    const auto key_id = repository::agent_token_issue_log(ctx_).key_of_session(session_id);
+    if (!key_id)
+        return refuse_agent_request<response>("No agent key opened session " + session_id + ".");
+    messaging::revoke_agent_key_request request;
+    request.key_id = *key_id;
+    request.reason = "Its session " + session_id + " was ended.";
+    auto r = revoke_agent_key(request);
+    if (r.success)
+        end_agent_session_row(ctx_, session_id, std::chrono::system_clock::now());
     return r;
 }
 

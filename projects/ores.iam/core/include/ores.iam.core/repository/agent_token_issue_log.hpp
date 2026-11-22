@@ -78,6 +78,11 @@ public:
 
     void record(const agent_token_issue_record& record);
 
+    /**
+     * @brief The key whose exchange opened a session, if an agent's key did.
+     */
+    [[nodiscard]] std::optional<std::string> key_of_session(const std::string& session_id) const;
+
     [[nodiscard]] std::optional<agent_key_last_issue> last_issue(const std::string& key_id) const;
 
 private:

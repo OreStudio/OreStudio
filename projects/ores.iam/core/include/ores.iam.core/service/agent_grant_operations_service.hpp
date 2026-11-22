@@ -80,6 +80,16 @@ public:
     messaging::revoke_agent_key_response
     revoke_agent_key(const messaging::revoke_agent_key_request& request);
 
+    /**
+     * @brief Ends an agent's session by revoking the key that opened it.
+     *
+     * Ending the session alone would not stop the agent, whose next exchange
+     * would open another, so the key is revoked under the same rule as
+     * revoke_agent_key: the grant's person, or a holder of the revoke
+     * permission. Revoking a key ends its open session, and this session too.
+     */
+    messaging::revoke_agent_key_response end_agent_session(const std::string& session_id);
+
     messaging::list_own_agent_grants_response
     list_own_agent_grants(const messaging::list_own_agent_grants_request& request);
 

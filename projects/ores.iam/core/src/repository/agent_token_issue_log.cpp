@@ -55,6 +55,20 @@ void agent_token_issue_log::record(const agent_token_issue_record& record) {
     agent_token_issue_repository().write(scope.ctx, row);
 }
 
+std::optional<std::string>
+agent_token_issue_log::key_of_session(const std::string& session_id) const {
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
+        ctx_,
+        "select key_id from ores_iam_agent_token_issues_tbl "
+        "where session_id = $1 and outcome = $2 order by issued_at limit 1",
+        {session_id, std::string(issued)},
+        lg(),
+        "Reading the agent key that opened a session");
+    if (rows.empty() || rows[0].empty() || !rows[0][0])
+        return std::nullopt;
+    return *rows[0][0];
+}
+
 std::optional<agent_key_last_issue>
 agent_token_issue_log::last_issue(const std::string& key_id) const {
     const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(

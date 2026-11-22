@@ -8,7 +8,7 @@
 #+filetags: :synthetic:web:vendor_quotes_of_a_latent_surface:sprint_30:v0:
 #+owner: marco
 #+branch: feature/start-and-stop-a-provider-simulated-source
-#+pr:
+#+pr: 5025
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-22
@@ -137,7 +137,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5025][#5025]] | [synthetic] Name a vol surface's upstreams and control a provider's simulated source |
 
 * Review
 

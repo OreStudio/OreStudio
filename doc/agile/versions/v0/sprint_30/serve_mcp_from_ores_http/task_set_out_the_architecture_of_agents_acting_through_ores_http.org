@@ -8,7 +8,7 @@
 #+filetags: :serve_mcp_from_ores_http:sprint_30:v0:
 #+owner: marco
 #+branch: feature/set-out-the-architecture-of-agents-acting-through-ores-http
-#+pr:
+#+pr: 5022
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-22
@@ -101,7 +101,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5022][#5022]] | [doc] Set out the architecture of agents acting through ores.http |
 
 * Review
 

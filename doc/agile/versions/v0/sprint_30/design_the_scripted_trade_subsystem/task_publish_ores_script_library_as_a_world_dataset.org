@@ -8,7 +8,7 @@
 #+filetags: :design_the_scripted_trade_subsystem:sprint_30:v0:
 #+owner: marco
 #+branch: feature/publish-ores-script-library-as-a-world-dataset
-#+pr: 5008
+#+pr: 5011
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-21
@@ -264,6 +264,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5011][#5011]] | [trading] Publish a tenant's own script through the trading service |
 | [[https://github.com/OreStudio/OreStudio/pull/5008][#5008]] | [ore] Write a run's script library from the versions its trades name |
 | [[https://github.com/OreStudio/OreStudio/pull/5001][#5001]] | [trading] Record the script a scripted trade was booked on |
 | [[https://github.com/OreStudio/OreStudio/pull/4994][#4994]] | [trading] Name the script version on every row of a script |

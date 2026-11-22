@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-21
-#+updated: 2026-11-21
+#+updated: 2026-11-22
 #+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,12 +26,12 @@ ores.orgmode.service runs the indexing step on the raw table's change notificati
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:05FE6068-3CBD-4B93-B6AE-47A5689F1FCB][Search the knowledge base from ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-21                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-22                               |
 
 * Acceptance
 
@@ -89,7 +89,14 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Index at service start | pages=273 sections=3113 links=2285 | =ores.orgmode.service= log, after =compass db recreate -y -k= and =compass services start= | c41c89c3ef |
+| Pages whose sections equal their heading lines plus one | 273 of 273; 3113 expected, 3113 indexed | =compass sql -f evidence/index_the_knowledge_pages_check.sql= | c41c89c3ef |
+| Sections with an empty search vector | 0 | same | c41c89c3ef |
+| Row fingerprints after the start, a service restart and a shell rebuild | sections =c88abd44902b8880d348eec45440b26e=, links =a382105d3b52574227b81c220d2b819a=, all three runs | same | c41c89c3ef |
+| Shell rebuild as =super_admin= | ={"pages":273,"sections":3113,"links":2285,"success":true}= | =index_operations reindex-knowledge-pages= | c41c89c3ef |
+| Shell rebuild as =tenant_admin@acme_corporation= | refused: =forbidden= | same | c41c89c3ef |
+| Replace function time | 1720 ms at the first start, 737 ms at a restart | slow-query WARN in the service log | c41c89c3ef |
+| Core tests | 8 =[knowledge_index]= cases; 5 of 5 orgmode suites pass | =compass test run -- -R orgmode= | 740f9bf93a |
 
 * Notes
 
@@ -117,3 +124,29 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The service builds the index from the 273 loaded pages when it starts, and
+rebuilds it after a publish that changes pages and on demand through
+=orgmode.v1.ops.reindex_knowledge_pages=.
+
+- SQL: three tables and =ores_orgmode_replace_knowledge_index_fn(jsonb)=, which
+  replaces them in one transaction, so a reader sees the old index or the new
+  one. The search vector weights the title A, the heading path B and the text
+  D, and a GIN index covers it.
+- Core: =build_knowledge_index= parses each page with =ores.orgmode.parser=
+  into one page row, one section per heading after section 0 (the page itself)
+  and one row per =id:= link. =knowledge_indexer= reads the pages and calls the
+  function once.
+- Messaging: the registrar rebuilds at start, the publish step rebuilds after
+  it changes pages, and =index_handler= serves the operation behind
+  =installation::knowledge_index:rebuild=, which SuperAdmin holds.
+- Shell: =index_operations reindex-knowledge-pages=.
+
+Acceptance, as measured above: every page holds one section per heading, and
+the start, a restart and a shell rebuild gave identical rows. The publish
+step's rebuild after a second load is not run end to end, because no shell
+command publishes one dataset; the step calls the same =knowledge_indexer=.
+
+The unity build caught the hand-written classes defining =lg()= in anonymous
+namespaces. They now declare class-scoped loggers, and [[id:B09EFEF3-9DCE-4703-A5E3-9D9ED52FD314][How a component
+declares its logger]] records the pattern.

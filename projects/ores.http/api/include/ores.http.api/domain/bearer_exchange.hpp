@@ -32,11 +32,13 @@ namespace ores::http::domain {
  *
  * A refused value is answered with 401 and counted as a failed credential; an
  * exchanged one is replaced by the token, which the gateway then verifies and
- * relays as it does any token. The gateway never signs: the token comes from
- * IAM.
+ * relays as it does any token. An exchange that could not be made, because IAM
+ * did not answer or is shedding load, is answered with 503 and is not counted
+ * against the caller, whose value may well be good. The gateway never signs:
+ * the token comes from IAM.
  */
 struct bearer_exchange final {
-    enum class outcome { refused, exchanged };
+    enum class outcome { refused, exchanged, unavailable };
     outcome result = outcome::refused;
     std::string token;
 };

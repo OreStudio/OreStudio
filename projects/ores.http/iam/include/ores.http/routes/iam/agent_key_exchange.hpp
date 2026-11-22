@@ -45,6 +45,12 @@ namespace ores::http::routes::iam {
  */
 class agent_key_cache final {
 public:
+    /**
+     * @brief A token is served while more than one part in this many of its
+     * life is left, so a busy key is exchanged again about every four minutes.
+     */
+    static constexpr int serve_while_one_in = 5;
+
     struct entry {
         std::string token;
         std::chrono::system_clock::time_point issued_at;

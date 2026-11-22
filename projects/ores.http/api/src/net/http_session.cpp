@@ -661,9 +661,20 @@ asio::awaitable<void> http_session::handle_request(domain::http_request domain_r
                 } catch (const std::exception& e) {
                     ORES_LOG_SEV(lg(), warn) << "A bearer exchange failed for " << matched->pattern
                                              << " from " << remote_address_ << ": " << e.what();
-                    exchanged = domain::bearer_exchange{};
+                    exchanged = domain::bearer_exchange{
+                        .result = domain::bearer_exchange::outcome::unavailable};
                 }
                 if (exchanged) {
+                    if (exchanged->result == domain::bearer_exchange::outcome::unavailable) {
+                        ORES_LOG_SEV(lg(), warn) << "A bearer exchange could not be made for "
+                                                 << matched->pattern << " from " << remote_address_;
+                        auto unavailable = domain::http_response::error(
+                            domain::http_status::service_unavailable,
+                            "The credential could not be checked now; retry shortly.");
+                        unavailable.set_header("Retry-After", "5");
+                        co_await write_response(unavailable, version, keep_alive, true);
+                        co_return;
+                    }
                     if (exchanged->result == domain::bearer_exchange::outcome::refused) {
                         ORES_LOG_SEV(lg(), warn) << "Refused a bearer exchange for "
                                                  << matched->pattern << " from " << remote_address_;

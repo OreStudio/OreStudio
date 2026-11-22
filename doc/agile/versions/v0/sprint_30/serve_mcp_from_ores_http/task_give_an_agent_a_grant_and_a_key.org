@@ -180,6 +180,14 @@ via its "Verifies task" field.
 | 15 | Self-review: ores.http clears its whole agent token cache on any grant or key event, creation included | =application.cpp= | Decline | Simpler than per-key eviction and correct; the cost is one extra exchange per active key after a change. |
 | 16 | Self-review: the withholding note's catalogue test, failing on a new write that matches no rule and no reviewed list, does not exist | withholding note | Open | The rules are tested on chosen codes; the catalogue test needs a reviewed list of the writes an agent may hold, whose scope is the owner's decision. |
 | 17 | Self-review: administrators list every grant through the generated reads, which no ores.web screen shows yet | acceptance | Open | The server side holds; the administrators' screen is not built. |
+| 18 | PR #5038: the per-key budget is spent before the secret check, so anyone who knows a key id can lock its agent out | =agent_grant_operations_service.cpp= | Accept | The budget is keyed by the key and the source address; the agent's own address keeps its budget. ores.http still limits failed credentials per address. |
+| 19 | PR #5038: an IAM outage or a tenant's load shedding answers =invalid key= and counts as a failed credential | =agent_key_exchange.cpp=, =http_session.cpp= | Accept | A third outcome, unavailable, answers 503 with =Retry-After= and is not counted; a test shows an exchange that cannot reach IAM is unavailable. |
+| 20 | PR #5038: revocation on the next call depends on the event reaching every ores.http | =agent_key_cache= | Accept, as a bound | The bound is stated in the token note: a missed event leaves at most the token's five minutes. Clearing the cache on a NATS reconnect needs a reconnect hook ores.nats does not offer callers; it is a follow-up. |
+| 21 | PR #5038: a key never used again leaves its cache entry | =agent_key_cache::put= | Accept | Each put sweeps expired entries; a test covers it. |
+| 22 | PR #5038: the five in =left * 5 <= life= is obscure | =agent_key_exchange= | Accept | Named =serve_while_one_in=. |
+| 23 | PR #5038: listing one's own grants stops at a thousand | =list_own_agent_grants= | Decline | A person with a thousand agent grants is not a case this page serves; paging is added when one is. |
+| 24 | PR #5038: revoking a key whose grant is gone reports the ownership rule, not the orphan | =revoke_agent_key= | Decline | The refusal is correct and fails safe; a key cannot outlive its grant, which is never deleted, only revoked. |
+| 25 | PR #5038: close Review 16 before merge or track it as a blocker | withholding note | Open | The owner's decision. |
 
 * Result
 

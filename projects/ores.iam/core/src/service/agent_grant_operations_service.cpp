@@ -466,8 +466,10 @@ messaging::exchange_agent_key_response agent_grant_operations_service::exchange_
         return refuse_key("", "", "", "", "", "key_unknown");
 
     // Budgets are spent only on a key that exists in a tenant that exists, so
-    // naming a tenant in bad keys costs nothing and locks no tenant out.
-    const auto per_key = limiters_->per_key.allow(key_text);
+    // naming a tenant in bad keys costs nothing and locks no tenant out. The
+    // budget is the key's from one address: a key's id is not a secret, so
+    // wrong secrets sent from elsewhere must not lock its agent out.
+    const auto per_key = limiters_->per_key.allow(key_text + "@" + request.client_address);
     if (!per_key.allowed)
         return refuse_key(tenant_text, "", "", key_text, "", "rate_limited");
     if (!agent_key_secret_matches(parts->secret, key->secret_hash))

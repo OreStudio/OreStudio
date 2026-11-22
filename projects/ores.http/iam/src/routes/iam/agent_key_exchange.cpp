@@ -38,7 +38,7 @@ std::optional<std::string> agent_key_cache::find(const std::string& key_hash,
         return std::nullopt;
     const auto life = it->second.expires_at - it->second.issued_at;
     const auto left = it->second.expires_at - now;
-    if (left * 5 <= life) {
+    if (left * agent_key_cache::serve_while_one_in <= life) {
         entries_.erase(it);
         return std::nullopt;
     }
@@ -47,6 +47,9 @@ std::optional<std::string> agent_key_cache::find(const std::string& key_hash,
 
 void agent_key_cache::put(const std::string& key_hash, entry e) {
     std::lock_guard lock(mutex_);
+    // A key that is never used again would otherwise keep its entry for ever.
+    std::erase_if(entries_,
+                  [now = e.issued_at](const auto& kept) { return kept.second.expires_at <= now; });
     entries_[key_hash] = std::move(e);
 }
 
@@ -80,12 +83,20 @@ agent_key_exchange::exchanger(ores::nats::service::nats_client& service,
             const auto wire = ores::nats::default_wire_codec().encode(request);
             const auto reply = service.authenticated_request(request_type::nats_subject,
                                                              std::span<const std::byte>(wire));
+            const auto unavailable =
+                bearer_exchange{.result = bearer_exchange::outcome::unavailable};
+            // A transport or authorisation error is the gateway's, not the key's.
             if (reply.headers.contains(std::string(ores::nats::headers::x_error)))
-                return bearer_exchange{};
+                return unavailable;
             const auto decoded =
                 ores::nats::default_wire_codec().decode<request_type::response_type>(reply.data);
-            if (!decoded || !decoded->success || decoded->token.empty())
-                return bearer_exchange{};
+            if (!decoded)
+                return unavailable;
+            if (!decoded->success)
+                return decoded->message.starts_with("[unavailable]") ? unavailable :
+                                                                       bearer_exchange{};
+            if (decoded->token.empty())
+                return unavailable;
             const auto expires_at =
                 std::chrono::system_clock::time_point(std::chrono::seconds(decoded->expires_at));
             cache->put(key_hash,
@@ -96,7 +107,7 @@ agent_key_exchange::exchanger(ores::nats::service::nats_client& service,
             using namespace ores::logging;
             // The key is never logged; the reason is.
             ORES_LOG_SEV(lg(), warn) << "An agent key exchange failed: " << e.what();
-            return bearer_exchange{};
+            return bearer_exchange{.result = bearer_exchange::outcome::unavailable};
         }
     };
 }

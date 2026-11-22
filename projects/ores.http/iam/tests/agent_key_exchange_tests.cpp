@@ -18,7 +18,9 @@
  *
  */
 #include "ores.http/routes/iam/agent_key_exchange.hpp"
+#include "ores.iam.api/domain/agent_key_format.hpp"
 #include "test_suite.hpp"
+#include <boost/uuid/random_generator.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <memory>
@@ -69,4 +71,31 @@ TEST_CASE("agent_key_exchange_leaves_a_value_that_is_not_a_key_to_the_verifier",
         agent_key_exchange::exchanger(unused, std::make_shared<agent_key_cache>());
     CHECK_FALSE(exchange("eyJhbGciOiJSUzI1NiJ9.e30.sig", "203.0.113.7"));
     CHECK_FALSE(exchange("", "203.0.113.7"));
+}
+
+TEST_CASE("agent_key_cache_drops_expired_entries_when_another_is_put", "[agent_key_exchange]") {
+    agent_key_cache cache;
+    cache.put("hash-1", five_minute_token("t1"));
+    // A put after the first token's expiry sweeps it, so an unused key leaves
+    // nothing behind.
+    cache.put("hash-2",
+              {.token = "t2",
+               .issued_at = agent_cache_start + 6min,
+               .expires_at = agent_cache_start + 11min});
+    CHECK_FALSE(cache.find("hash-1", agent_cache_start));
+    CHECK(cache.find("hash-2", agent_cache_start + 7min) == std::optional<std::string>("t2"));
+}
+
+TEST_CASE("agent_key_exchange_that_cannot_reach_iam_is_unavailable_not_refused",
+          "[agent_key_exchange]") {
+    // An unconnected client fails every request, as an IAM outage would.
+    ores::nats::service::nats_client unconnected;
+    const auto exchange =
+        agent_key_exchange::exchanger(unconnected, std::make_shared<agent_key_cache>());
+    boost::uuids::random_generator ids;
+    const auto key = ores::iam::domain::format_agent_key(
+        {.tenant_id = ids(), .key_id = ids(), .secret = std::string(64, 'a')});
+    const auto answer = exchange(key, "203.0.113.7");
+    REQUIRE(answer);
+    CHECK(answer->result == ores::http::domain::bearer_exchange::outcome::unavailable);
 }

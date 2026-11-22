@@ -62,6 +62,11 @@ const fr: SourceCatalogue = {
     },
 
     shell: {
+        api: {
+            lead: 'Toutes les routes de ce serveur, décrites à partir des routes elles-mêmes.',
+            open: 'Ouvrir dans un onglet',
+            frameTitle: "La référence de l'API",
+        },
         theme: {
             toLight: 'Passer à la palette claire',
             toDark: 'Passer à la palette sombre',
@@ -81,6 +86,7 @@ const fr: SourceCatalogue = {
             operations: 'Opérations',
             reporting: 'Rapports',
             development: 'Développement',
+            api: 'API',
             parties: 'Parties',
             rescue: "Récupération d'accès",
             audit: 'Connexions',
@@ -1462,18 +1468,12 @@ const fr: SourceCatalogue = {
     },
     development: {
         lead: "Le travail d'une équipe sur le produit, à commencer par les tests qu'un testeur peut lancer.",
-        api: {
-            lead: 'Chaque route que le serveur C++ sert, décrite à partir des routes elles-mêmes.',
-            open: 'Ouvrir dans un onglet',
-            frameTitle: "La référence de l'API",
-        },
         tabs: {
             label: 'Zones de développement',
             tests: 'Tests',
             board: 'Tableau',
             backlog: 'Backlog',
             charts: 'Graphiques',
-            api: 'API',
         },
         backlog: {
             buckets: {

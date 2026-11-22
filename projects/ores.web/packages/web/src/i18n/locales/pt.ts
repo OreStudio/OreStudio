@@ -67,6 +67,11 @@ const pt: SourceCatalogue = {
     },
 
     shell: {
+        api: {
+            lead: 'Todas as rotas deste servidor, descritas a partir das próprias rotas.',
+            open: 'Abrir num separador',
+            frameTitle: 'A referência da API',
+        },
         theme: {
             toLight: 'Mudar para a paleta clara',
             toDark: 'Mudar para a paleta escura',
@@ -86,6 +91,7 @@ const pt: SourceCatalogue = {
             operations: 'Operações',
             reporting: 'Relatórios',
             development: 'Desenvolvimento',
+            api: 'API',
             parties: 'Partes',
             rescue: 'Recuperação de acesso',
             audit: 'Entradas',
@@ -1453,18 +1459,12 @@ const pt: SourceCatalogue = {
     },
     development: {
         lead: 'O trabalho de uma equipa no produto, a começar pelos testes que um testador pode executar.',
-        api: {
-            lead: 'Cada rota que o servidor C++ serve, descrita a partir das próprias rotas.',
-            open: 'Abrir num separador',
-            frameTitle: 'A referência da API',
-        },
         tabs: {
             label: 'Áreas de desenvolvimento',
             tests: 'Testes',
             board: 'Quadro',
             backlog: 'Backlog',
             charts: 'Gráficos',
-            api: 'API',
         },
         backlog: {
             buckets: {

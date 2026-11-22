@@ -55,6 +55,7 @@ import { PublicShell } from './components/PublicShell.js';
 import { AuditPage } from './pages/AuditPage.js';
 import { HomePage } from './pages/HomePage.js';
 import { DevelopmentArea } from './development/DevelopmentArea.js';
+import { ApiReferencePage } from './pages/ApiReferencePage.js';
 import { DocPage } from './development/DocPage.js';
 import { ScenarioPage } from './development/ScenarioPage.js';
 import { OperationsArea } from './operations/OperationsArea.js';
@@ -531,6 +532,18 @@ export function AppRoutes({
              * may run test scenarios. The BFF answers not found when it has no
              * doc root, and the screen says so.
              */}
+            <Route
+                path="/api-reference"
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <ApiReferencePage />
+                    ),
+                    'workspace',
+                )}
+            />
             <Route
                 path="/development"
                 element={signedIn(

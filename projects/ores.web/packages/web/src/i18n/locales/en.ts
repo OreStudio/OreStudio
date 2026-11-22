@@ -68,6 +68,11 @@ export const en: SourceCatalogue = {
     },
 
     shell: {
+        api: {
+            lead: 'Every route this server answers, described from the routes themselves.',
+            open: 'Open in its own tab',
+            frameTitle: 'The API reference',
+        },
         theme: {
             toLight: 'Switch to the light palette',
             toDark: 'Switch to the dark palette',
@@ -87,6 +92,7 @@ export const en: SourceCatalogue = {
             operations: 'Operations',
             reporting: 'Reporting',
             development: 'Development',
+            api: 'API',
             parties: 'Parties',
             rescue: 'Rescue access',
             audit: 'Sign-ins',
@@ -1448,18 +1454,12 @@ export const en: SourceCatalogue = {
     },
     development: {
         lead: 'The work a team does on the product, starting with the tests a tester can run.',
-        api: {
-            lead: 'Every route the C++ server answers, described from the routes themselves.',
-            open: 'Open in its own tab',
-            frameTitle: 'The API reference',
-        },
         tabs: {
             label: 'Development areas',
             tests: 'Tests',
             board: 'Board',
             backlog: 'Backlog',
             charts: 'Charts',
-            api: 'API',
         },
         backlog: {
             buckets: {

@@ -91,6 +91,7 @@ export const MENU: readonly MenuItem[] = [
         ],
     },
     { nameKey: 'shell.menu.development', to: '/development' },
+    { nameKey: 'shell.menu.api', to: '/api-reference' },
     { nameKey: 'shell.menu.tenants', to: '/tenants', permission: DEPLOYMENT_READ },
 ];
 

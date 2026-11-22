@@ -433,9 +433,97 @@ std::string endpoint_registry::generate_swagger_ui_html(const std::string& spec_
     <style>
         body { margin: 0; padding: 0; }
         .topbar { display: none; }
+
+        /*
+         * The reader is a page of its own, so it cannot read the palette of the screen
+         * that framed it: the palette travels in the query and is written on the root
+         * here. The light palette is the reader's own; the dark one is stated over it.
+         */
+        :root[data-theme='dark'] {
+            color-scheme: dark;
+            --ore-page: #0e1014;
+            --ore-panel: #151a21;
+            --ore-panel-2: #11161c;
+            --ore-line: #2b333d;
+            --ore-ink: #dfe3e8;
+            --ore-ink-strong: #f0f3f6;
+            --ore-ink-muted: #aab4bf;
+            --ore-accent: #6cb6ff;
+            --ore-code: #0b0e12;
+        }
+        :root[data-theme='dark'] body,
+        :root[data-theme='dark'] .swagger-ui { background: var(--ore-page); color: var(--ore-ink); }
+        :root[data-theme='dark'] .swagger-ui .info .title,
+        :root[data-theme='dark'] .swagger-ui .info h1,
+        :root[data-theme='dark'] .swagger-ui .info h2,
+        :root[data-theme='dark'] .swagger-ui .info h3,
+        :root[data-theme='dark'] .swagger-ui .info h4,
+        :root[data-theme='dark'] .swagger-ui .opblock-tag,
+        :root[data-theme='dark'] .swagger-ui .model-title,
+        :root[data-theme='dark'] .swagger-ui label,
+        :root[data-theme='dark'] .swagger-ui .tab li { color: var(--ore-ink-strong); }
+        :root[data-theme='dark'] .swagger-ui .info .title small { background: var(--ore-panel); color: var(--ore-ink-muted); }
+        :root[data-theme='dark'] .swagger-ui .info .title small.version-stamp { background: var(--ore-panel); }
+        :root[data-theme='dark'] .swagger-ui a,
+        :root[data-theme='dark'] .swagger-ui .info a,
+        :root[data-theme='dark'] .swagger-ui .opblock-summary-path a { color: var(--ore-accent); }
+        :root[data-theme='dark'] .swagger-ui .scheme-container { background: var(--ore-page); box-shadow: none; border-bottom: 1px solid var(--ore-line); }
+        :root[data-theme='dark'] .swagger-ui .opblock-tag { border-bottom: 1px solid var(--ore-line); }
+        :root[data-theme='dark'] .swagger-ui .opblock { background: var(--ore-panel); border-color: var(--ore-line); box-shadow: none; }
+        :root[data-theme='dark'] .swagger-ui .opblock .opblock-summary { border-color: var(--ore-line); }
+        :root[data-theme='dark'] .swagger-ui .opblock .opblock-summary-description,
+        :root[data-theme='dark'] .swagger-ui .opblock-description-wrapper p,
+        :root[data-theme='dark'] .swagger-ui .parameter__name,
+        :root[data-theme='dark'] .swagger-ui .parameter__type,
+        :root[data-theme='dark'] .swagger-ui .response-col_status,
+        :root[data-theme='dark'] .swagger-ui .response-col_description,
+        :root[data-theme='dark'] .swagger-ui table thead tr td,
+        :root[data-theme='dark'] .swagger-ui table thead tr th,
+        :root[data-theme='dark'] .swagger-ui .markdown p,
+        :root[data-theme='dark'] .swagger-ui .renderedMarkdown p { color: var(--ore-ink-muted); }
+        :root[data-theme='dark'] .swagger-ui .opblock-body,
+        :root[data-theme='dark'] .swagger-ui .opblock-section,
+        :root[data-theme='dark'] .swagger-ui .opblock-section-header { background: var(--ore-panel-2); }
+        :root[data-theme='dark'] .swagger-ui .opblock-section-header { box-shadow: none; }
+        :root[data-theme='dark'] .swagger-ui .opblock-body pre.microlight,
+        :root[data-theme='dark'] .swagger-ui .highlight-code,
+        :root[data-theme='dark'] .swagger-ui .microlight,
+        :root[data-theme='dark'] .swagger-ui .model-example .tab { background: var(--ore-code) !important; color: var(--ore-ink); }
+        :root[data-theme='dark'] .swagger-ui .model-box,
+        :root[data-theme='dark'] .swagger-ui section.models,
+        :root[data-theme='dark'] .swagger-ui section.models .model-container { background: var(--ore-panel); border-color: var(--ore-line); }
+        :root[data-theme='dark'] .swagger-ui section.models .model-container:hover { background: var(--ore-panel-2); }
+        :root[data-theme='dark'] .swagger-ui input[type='text'],
+        :root[data-theme='dark'] .swagger-ui input[type='email'],
+        :root[data-theme='dark'] .swagger-ui input[type='password'],
+        :root[data-theme='dark'] .swagger-ui textarea,
+        :root[data-theme='dark'] .swagger-ui select { background: var(--ore-code); color: var(--ore-ink); border-color: var(--ore-line); }
+        :root[data-theme='dark'] .swagger-ui .btn { background: transparent; color: var(--ore-ink); border-color: var(--ore-line); }
+        :root[data-theme='dark'] .swagger-ui .btn.authorize { color: #4ade80; border-color: #4ade80; }
+        :root[data-theme='dark'] .swagger-ui .filter .operation-filter-input { background: var(--ore-code); color: var(--ore-ink); border-color: var(--ore-line); }
+        :root[data-theme='dark'] .swagger-ui .dialog-ux .modal-ux,
+        :root[data-theme='dark'] .swagger-ui .dialog-ux .modal-ux-content,
+        :root[data-theme='dark'] .swagger-ui .dialog-ux .modal-ux-header { background: var(--ore-panel); border-color: var(--ore-line); color: var(--ore-ink); }
+        :root[data-theme='dark'] .swagger-ui .dialog-ux .modal-ux-header h3 { color: var(--ore-ink-strong); }
+        :root[data-theme='dark'] .swagger-ui .dialog-ux .backdrop-ux { background: rgba(0, 0, 0, 0.6); }
+        :root[data-theme='dark'] .swagger-ui .loading-container .loading::after { color: var(--ore-ink); }
+        :root[data-theme='dark'] .swagger-ui .copy-to-clipboard { background: var(--ore-panel); }
     </style>
 </head>
 <body>
+    <script>
+        /*
+         * The palette the framing screen asked for, or the one the machine prefers. It is
+         * set before the reader draws, because a page that turns dark afterwards shows a
+         * white flash that reads as a fault.
+         */
+        (function () {
+            var asked = new URLSearchParams(window.location.search).get('theme');
+            var dark = asked === 'dark' ||
+                (asked !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+            document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+        })();
+    </script>
     <div id="swagger-ui"></div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.29.1/swagger-ui-bundle.js"
             integrity="sha512-iDdi6WwSTimAFh1NhPyFZpHJWr16m/PupHztElqQL+gQoQDavUATsP9hcvgs9Yci+EUA//WvZYZsCTDhRDKc3g=="

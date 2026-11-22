@@ -602,6 +602,7 @@ export const FOLDERS: readonly FolderDef[] = [
     { to: PATHS.operations, bodyKey: 'operations.hub.description', icon: 'server' },
     { to: PATHS.reporting, bodyKey: 'reporting.area.lead', icon: 'chart' },
     { to: '/development', bodyKey: 'development.lead', icon: 'apps' },
+    { to: '/api-reference', bodyKey: 'shell.api.lead', icon: 'server' },
     { to: '/tenants', bodyKey: 'home.system.tenantsLead', icon: 'party' },
 ];
 

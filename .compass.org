@@ -25,10 +25,10 @@ rule_table stay off, because ORE Studio has its own index and contract checks.
 | required_sections | no | |
 | tangle | yes | directory=projects/ores.codegen/library/templates |
 | tangle_check | yes | directory=projects/ores.codegen/library/templates |
-| codegen | yes | library=projects/ores.codegen/library year=2026 convention_component=refdata clang_format=clang-format clang_format_style=.clang-format prettier=projects/ores.web/node_modules/.bin/prettier,prettier prettier_style=.prettierrc.yaml |
-| ore_output_catalogue | yes | clang_format=clang-format |
+| codegen | yes | library=projects/ores.codegen/library product=ores year=2026 convention_component=refdata clang_format=clang-format clang_format_style=.clang-format prettier=projects/ores.web/node_modules/.bin/prettier,prettier prettier_style=.prettierrc.yaml |
+| ore_output_catalogue | yes | clang_format=clang-format page=34C68112-7A34-4557-835C-BDCAA7BB9C2A |
 | rule_table | no | |
-| component_files | yes | year=2026 |
+| component_files | yes | library=projects/ores.codegen/library year=2026 |
 | pending_models | yes | |
 | bff_list_requests | yes | |
 | core_link_edges | yes | |
@@ -67,29 +67,29 @@ rule_table stay off, because ORE Studio has its own index and contract checks.
 | ore_value_sets | yes | |
 | parameter_value_sets | yes | |
 | protocol_twins | yes | |
-| registry_exceptions | yes | |
-| route_inventory | yes | |
+| registry_exceptions | yes | standard=7B477025-132E-4B20-80B4-D8C9420880B8 |
+| route_inventory | yes | page=doc/knowledge/architecture/http_route_inventory.org |
 | script_library_seed | no | |
 | subject_conformance | yes | |
 | template_sections | yes | |
 | backlog_indexes | yes | |
-| component_docs | yes | |
+| component_docs | yes | product=ores exceptions=projects/ores.codegen/docs_exceptions.txt |
 | heading_numbers | yes | |
 | http_recipe_library | yes | |
 | lint | yes | |
 | no_pr_triggers | yes | |
 | org_links | yes | |
-| physical_inventory | yes | |
+| physical_inventory | yes | directory=projects/ores.codegen/library/templates product=ores |
 | prototypes | yes | |
 | recipe_inventories | yes | |
-| rule_identifiers | yes | |
+| rule_identifiers | yes | RS=2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D ES=BD492939-118E-4B55-AE5B-300F7A1C3B41 checklist=21DF0AEE-76FA-4C8B-9C59-A8A490809942 |
 | shell_recipe_library | yes | |
 | shell_recipe_provenance | yes | |
 | skill_catalogue | yes | |
 | skill_levels | yes | |
 | skill_namespace | yes | |
 | skill_type_tables | yes | |
-| trade_type_coverage | yes | |
+| trade_type_coverage | yes | page=CC7CC29C-9413-4DF3-BC32-D1C8A978D295 catalogue=A8E9807F-1BC8-4DA5-9A66-720D2444DA1B story=0CAC2F0E-69EC-4497-8587-4E0A6593BC7D |
 | rls_coverage | yes | |
 | single_writer | yes | |
 | xml_bindings | yes | clang_format=clang-format |

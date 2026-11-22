@@ -240,6 +240,25 @@ jobs:
             echo "PGUSER=postgres"
           } >> "$GITHUB_ENV"
 
+      - name: Install the pinned compass release
+        # compass env configure writes .env with compass-ng, so every job that
+        # configures an environment needs the build the pin names on PATH.
+        run: |
+          tag=$(sed -n 's/^release: *//p' build/scripts/compass_ng.pin)
+          if [ -z "$tag" ]; then
+              echo "build/scripts/compass_ng.pin names no release" >&2
+              exit 1
+          fi
+          asset="compass-${tag#v}-Linux-x86_64.tar.gz"
+          base="https://github.com/MASD-Project/compass/releases/download/${tag}"
+          cd "$RUNNER_TEMP"
+          curl -fsSLO "${base}/${asset}"
+          curl -fsSLO "${base}/${asset}.sha256"
+          sha256sum -c "${asset}.sha256"
+          tar -xzf "${asset}"
+          bin=$(find "$RUNNER_TEMP/${asset%.tar.gz}" -type f -path '*/bin/compass' -o -type f -name compass | head -1)
+          echo "$(dirname "$bin")" >> "$GITHUB_PATH"
+
       - name: Init environment
         env:
           ORES_DATABASE_NAME: ores_ci

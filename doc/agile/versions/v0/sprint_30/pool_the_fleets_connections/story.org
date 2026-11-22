@@ -29,9 +29,9 @@ them.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
-| Now           | Everything the story set out to do has shipped: the elastic pool, the pooler beside a shared fleet and on pauli, the settled statement question, CI on the pooled path, and the tests no longer reading a developer's .env. Two things keep it open: the four-lanes scenario has never been run, and the credential file is world-readable. |
+| Now           | Everything the story set out to do has shipped: the elastic pool, the pooler beside a shared fleet and on pauli, the settled statement question, CI on the pooled path, and the tests no longer reading a developer's .env. One thing keeps it open: the four-lanes scenario has never been run. The credential file is private as of #5014. |
 | Waiting on    | Nothing.                               |
-| Next          | Run [[id:36FDD33A-6406-4CF6-9687-807BF36A172E][Four lanes of a provisioning step meet no acquisition failure]] against the shipped pooler, then make the [[id:3470D321-8708-4819-8AD2-681FA2230A9F][credential file private]]. |
+| Next          | Run [[id:36FDD33A-6406-4CF6-9687-807BF36A172E][Four lanes of a provisioning step meet no acquisition failure]] against the shipped pooler, and the credential file is private as of #5014. |
 | Last touched  | 2026-11-21                               |
 
 * Acceptance
@@ -62,7 +62,7 @@ them.
 | [[id:24C47B49-2A5C-42D0-87C2-5E514D8BC9B3][Package the pooler for pauli]] | DONE | 2026-11-21 | 2026-11-22 | pauli runs the fleet as podman containers pulled from the registry, NATS among them. The pooler joins it: an image, a configuration, and the services' options pointing at it. |
 | [[id:83C4FD4E-888C-4C3F-BE3D-50136487B458][Prove the pooled path in CI]] | DONE | 2026-11-21 | 2026-11-21 | Developers keep a direct connection, so the pooled path is only proven if something runs it. One CI job runs the marketdata suite through a transaction pooler on every change. |
 | [[id:04CD1C47-0893-4D5F-B812-2DD1E907F921][Pass the environment to the option parser]] | DONE | 2026-11-22 | 2026-11-22 | Every defaults test hand-clears the environment variables the parser reads, one name at a time, so each new environment-read option breaks every defaults suite at gate time. Make the environment an explicit input to parse, so a defaults test passes nothing and an env-wins test states the value it expects. |
-| [[id:3470D321-8708-4819-8AD2-681FA2230A9F][Make the pooler's credential file private]] | BACKLOG | | | The pooler's user list is written 0644 inside a directory whose mode the deploy never sets, so every local user on the host can read every database password. The fix needs the uid the container drops to, read from the image. |
+| [[id:3470D321-8708-4819-8AD2-681FA2230A9F][Make the pooler's credential file private]] | DONE | 2026-11-22 | 2026-11-22 | The pooler's user list is written 0644 inside a directory whose mode the deploy never sets, so every local user on the host can read every database password. The fix needs the uid the container drops to, read from the image. |
 
 * Decisions
 

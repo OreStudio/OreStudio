@@ -591,10 +591,18 @@ def _transfer_runtime(project_root, host, remote_root, profile_path,
             check=True,
             env=pooler_env,
             stdout=subprocess.DEVNULL)
-        _ssh(host, f"mkdir -p {shlex.quote(remote_root)}/build/config/pooler",
+        # The directory carries the credential file, so scp's own modes are not
+        # enough: the copy is made private here, and the directory traversable
+        # but not listable. Read by the pooler and by root, and by nobody else.
+        pooler_dir = f"{remote_root}/build/config/pooler"
+        _ssh(host,
+             f"mkdir -p {shlex.quote(pooler_dir)} && chmod 711 {shlex.quote(pooler_dir)}",
              check=True)
         _scp(project_root, host, stage_pooler, f"{remote_root}/build/config/",
              recursive=True)
+        _ssh(host,
+             f"chmod 711 {shlex.quote(pooler_dir)} && chmod 600 {shlex.quote(pooler_dir)}/*",
+             check=True)
     _scp(project_root, host, profile_path, f"{remote_root}/docker/.env")
 
 

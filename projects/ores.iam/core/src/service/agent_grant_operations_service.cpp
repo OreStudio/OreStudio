@@ -153,9 +153,10 @@ std::string agent_grant_operations_service::mint_key(const ores::database::conte
     agent_key_service(grant_ctx).save_key(key);
     key_id = key.id;
 
+    // The key names the tenant it was saved in. A grant made in this request
+    // carries no tenant until the repository stamps one on the row.
     boost::uuids::uuid tenant{};
-    const auto tenant_text = grant.tenant_id.to_string();
-    if (const auto parsed = parse_uuid(tenant_text))
+    if (const auto parsed = parse_uuid(grant_ctx.tenant_id().to_string()))
         tenant = *parsed;
     return domain::format_agent_key({.tenant_id = tenant, .key_id = key.id, .secret = secret});
 }

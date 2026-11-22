@@ -4,6 +4,7 @@
 #+title: Index Credit Default Swap
 #+description: A credit default swap on an index of reference entities; ORE's IndexCreditDefaultSwap product.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:indexcds:
 #+created: 2026-09-06

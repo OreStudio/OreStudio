@@ -4,6 +4,7 @@
 #+title: An NDF pays a cash difference on its settlement date
 #+description: The fixing date sets the rate and the settlement date sets the cash flow, so discounting runs from the settlement date.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:fx:fx_forward:
 #+created: 2026-11-09

@@ -4,6 +4,7 @@
 #+title: Linked cash
 #+description: Cash that hangs off a parent trade: linked versus orphan cash, inclusion in the parent's mark-to-market until settlement, and drill-down from a balance to the trades behind it.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:domain:finance:trading:cash:
 #+created: 2026-10-02

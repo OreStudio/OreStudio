@@ -1,0 +1,83 @@
+:PROPERTIES:
+:ID: F55EBC5D-5A0B-433E-A6DC-858D82AE8020
+:END:
+#+title: ores.orgmode.core
+#+description: The knowledge base's tables: the knowledge pages published from DQ, their repository, and the search over them.
+#+type: ores.codegen.component
+#+level: cross
+#+filetags: :orgmode:knowledge:component:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+#+name: orgmode.core
+#+full_name: ores.orgmode.core
+#+brief: Knowledge pages tables and repository
+#+component_kind: core
+#+hidden_visibility: true
+
+* Diagram
+
+#+attr_html: :width 100% :alt ores.orgmode.core component diagram
+#+caption: ores.orgmode.core
+[[file:ores.orgmode.core.png][file:ores.orgmode.core.png]]
+
+* Summary
+
+=ores.orgmode.core= holds the knowledge base's tables and their code: the
+knowledge pages the DQ publication writes into the system tenant, their
+repository, service, history and handlers. Generated from
+=ores.orgmode.knowledge_page=. The indexing step and the search join it in the
+story's later tasks.
+
+* Inputs
+
+-
+
+* Outputs
+
+-
+
+* Entry points
+
+-
+
+* Dependencies
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.orgmode.api.lib
+        ores.nats.lib
+    PRIVATE
+        ores.dq.api.lib
+        ores.service.lib
+        # compass:except(core_link_edges/forbidden_edge) expires=2027-05-18 approver=marco reason=accepted until the edge is removed
+        ores.telemetry.core.lib
+        ores.utility.lib
+        ores.database.lib
+        ores.security.lib
+        # compass:except(core_link_edges/forbidden_edge) expires=2027-05-18 approver=marco reason=accepted until the edge is removed
+        ores.history.core.lib
+        faker-cxx::faker-cxx
+        libfort::fort
+        Boost::boost)
+#+end_src
+
+#+begin_src cmake :name extra_test_dependencies
+target_link_libraries(${tests_target_name}
+    PRIVATE
+        ${lib_target_name}
+        ores.telemetry.core.lib
+        ores.utility.lib
+        ores.logging.lib
+        ores.eventing.api.lib
+        ores.eventing.core.lib
+        ores.testing.lib
+        Catch2::Catch2
+        faker-cxx::faker-cxx
+        ores.openssl_cleanup
+        Threads::Threads)
+#+end_src
+
+* See also
+
+-

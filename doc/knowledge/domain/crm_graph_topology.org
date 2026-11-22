@@ -4,6 +4,7 @@
 #+title: CRM graph topology and spanning tree
 #+description: The CRM as a connected acyclic graph of currencies: vertices, edges, spanning tree (n-1 edges), adjacency matrix, edge weighting, slicing, and the directed-vs-undirected tension.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :marketdata:fx:crm:domain:
 #+created: 2026-06-28

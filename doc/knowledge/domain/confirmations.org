@@ -4,6 +4,7 @@
 #+title: Confirmations
 #+description: What a trade confirmation is, the internal and external version model, amendment classification, and the events that must be re-confirmed.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:domain:finance:trading:confirmations:versioning:
 #+created: 2026-09-11

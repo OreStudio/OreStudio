@@ -4,6 +4,7 @@
 #+title: Best Entry Option
 #+description: An option whose payoff uses the best observed entry level of the underlying; ORE's Best Entry Option product.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:bestentryoption:
 #+created: 2026-09-07

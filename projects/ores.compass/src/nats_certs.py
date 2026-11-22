@@ -89,10 +89,16 @@ def _local_ipv4_addresses() -> list[str]:
     return sorted(addrs)
 
 
-def generate(checkout_root: Path, *, force: bool = False, hostname: str = "localhost") -> None:
-    """Generate all NATS mTLS certificates under build/keys/nats/.
+def generate(checkout_root: Path, *, force: bool = False, hostname: str = "localhost",
+             server_only: bool = False) -> None:
+    """Generate the NATS mTLS certificates under build/keys/nats/.
 
     Idempotent: skips files that already exist unless *force* is True.
+
+    *server_only* rotates the broker certificate alone, signed by the CA that
+    is already there, and leaves every client certificate valid. That is what a
+    serving host whose address is not yet in the SAN list needs: the clients
+    keep trusting the CA, so only the broker restarts.
     """
     keys_dir = checkout_root / "build" / "keys" / "nats"
     keys_dir.mkdir(parents=True, exist_ok=True)
@@ -100,9 +106,16 @@ def generate(checkout_root: Path, *, force: bool = False, hostname: str = "local
     ca_key = keys_dir / "ca.key"
     ca_crt = keys_dir / "ca.crt"
 
+    if server_only and not ca_crt.is_file():
+        raise RuntimeError(
+            f"no CA at {ca_crt} to sign a new broker certificate with: run "
+            "compass nats certs first")
+
     # --- CA ---
     print("==> CA")
-    if not _skip(ca_key, force):
+    if server_only:
+        print(f"  (kept) {ca_crt}")
+    elif not _skip(ca_key, force):
         _openssl("ecparam", "-name", "prime256v1", "-genkey", "-noout",
                  "-out", str(ca_key))
         _openssl("req", "-new", "-x509",
@@ -117,7 +130,7 @@ def generate(checkout_root: Path, *, force: bool = False, hostname: str = "local
     server_key = keys_dir / "nats-server.key"
     server_crt = keys_dir / "nats-server.crt"
     server_csr = keys_dir / "nats-server.csr"
-    if not _skip(server_key, force):
+    if server_only or not _skip(server_key, force):
         _openssl("ecparam", "-name", "prime256v1", "-genkey", "-noout",
                  "-out", str(server_key))
         _openssl("req", "-new",
@@ -170,7 +183,9 @@ def generate(checkout_root: Path, *, force: bool = False, hostname: str = "local
 
     # --- Service client certificates ---
     print("==> Service client certificates")
-    for svc in _certificate_holders(checkout_root):
+    if server_only:
+        print("  (kept) every client certificate")
+    for svc in ([] if server_only else _certificate_holders(checkout_root)):
         svc_key = keys_dir / f"{svc}.key"
         svc_crt = keys_dir / f"{svc}.crt"
         svc_csr = keys_dir / f"{svc}.csr"
@@ -204,6 +219,10 @@ def run(argv, project_root: Path) -> int:
                         help="Overwrite existing certificates.")
     parser.add_argument("--hostname", default="localhost",
                         help="Extra hostname for the NATS server SAN (default: localhost).")
+    parser.add_argument("--server-only", action="store_true",
+                        help="Rotate the broker certificate alone, signed by the "
+                             "existing CA, so every client certificate stays valid.")
     args = parser.parse_args(argv)
-    generate(project_root, force=args.force, hostname=args.hostname)
+    generate(project_root, force=args.force, hostname=args.hostname,
+             server_only=args.server_only)
     return 0

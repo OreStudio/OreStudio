@@ -4,6 +4,7 @@
 #+title: Convertible Bond
 #+description: A bond that converts into a prespecified number of shares; ORE's ConvertibleBond product.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:convertiblebond:
 #+created: 2026-09-06

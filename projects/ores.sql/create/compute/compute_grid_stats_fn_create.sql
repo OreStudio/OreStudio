@@ -71,7 +71,13 @@ as $$
           )) as online_hosts
         from ores_compute_hosts_tbl h
         where p_fleet
-          and h.tenant_id = p_tenant_id
+          /*
+           * The machines belong to the installation and are system rows, so the
+           * fleet counts them whichever tenant asks. Counting p_tenant_id here
+           * counted nothing for a tenant, and the screen of a tenant then showed
+           * an installation with no machines.
+           */
+          and h.tenant_id = ores_utility_system_tenant_id_fn()
           and h.valid_to = ores_utility_infinity_timestamp_fn()
       ),
       result_stats as (

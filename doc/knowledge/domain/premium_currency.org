@@ -4,6 +4,7 @@
 #+title: Premium Currency
 #+description: The currency an option premium is paid in -- defaulted per currency pair, but overridable to a third currency outside the pair.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:currency:trading:
 #+created: 2026-07-14

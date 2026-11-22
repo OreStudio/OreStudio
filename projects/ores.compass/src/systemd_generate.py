@@ -966,8 +966,45 @@ WantedBy={target_name}
     return unit
 
 
-def render_quadlet_target(defs, env_name):
-    wants = [_quadlet_unit_basename("nats-server", env_name) + ".service"]
+def render_quadlet_pooler_unit(checkout_root, env_name, target_name):
+    """The transaction pooler as a Quadlet container, for a host that shares its
+    PostgreSQL between environments.
+
+    It mirrors the NATS unit: Network=host puts it on the host's loopback, where
+    the services reach it, and the configuration is the same generated file the
+    host unit uses, mounted read-only.
+    """
+    unit = UNIT_HEADER
+    unit += f"""
+[Unit]
+Description=PostgreSQL transaction pooler (environment {env_name}, Quadlet)
+PartOf={target_name}
+StartLimitIntervalSec=60
+StartLimitBurst=5
+
+[Container]
+Image=localhost/ores-pgbouncer:local
+ContainerName={_unit_basename("pooler", env_name)}
+Network=host
+EnvironmentFile={checkout_root}/docker/.env
+Volume={checkout_root}/build/config/pooler:/etc/pgbouncer:ro
+
+[Service]
+Restart=always
+RestartSec=2
+{FLEET_MEMORY_LIMITS}
+
+[Install]
+WantedBy={target_name}
+"""
+    return unit
+
+
+def render_quadlet_target(defs, env_name, pooler=False):
+    wants = []
+    if pooler:
+        wants.append(_quadlet_unit_basename("pooler", env_name) + ".service")
+    wants.append(_quadlet_unit_basename("nats-server", env_name) + ".service")
     for d in defs:
         if not d["enabled"]:
             continue
@@ -1028,6 +1065,14 @@ def cmd_quadlet(project_root: Path, env: dict, args) -> int:
     write(_quadlet_unit_basename("nats-server", env_name) + ".container",
           render_quadlet_nats_unit(checkout_root, env_name, target_name))
 
+    # A pooler is a deployment option: the unit exists only where the environment
+    # states one, as the systemd units do.
+    pooler = bool(env.get("ORES_DB_POOLER_PORT", "")) and \
+        env.get("ORES_DB_POOLER_ENABLED", "0") == "1"
+    if pooler:
+        write(_quadlet_unit_basename("pooler", env_name) + ".container",
+              render_quadlet_pooler_unit(checkout_root, env_name, target_name))
+
     log_level = service_log_level(env)
     for d in defs:
         deps_on = deps.get(d["service_name"], [])
@@ -1049,7 +1094,27 @@ def cmd_quadlet(project_root: Path, env: dict, args) -> int:
                                                  env_name, target_name,
                                                  log_level=log_level))
 
-    write(target_name, render_quadlet_target(defs, env_name))
+    # Every service unit waits for the pooler when the environment runs one. It is
+    # written here rather than in each renderer because the ordering is the same
+    # sentence for all of them, and a renderer that is added later cannot forget
+    # it. Requires=, not Wants=: a service whose database port is the pooler
+    # cannot answer its first request without one.
+    if pooler:
+        pooler_service = _quadlet_unit_basename("pooler", env_name) + ".service"
+        skip = {_quadlet_unit_basename("pooler", env_name) + ".container",
+                _quadlet_unit_basename("nats-server", env_name) + ".container"}
+        for name in list(written):
+            if not name.endswith(".container") or name in skip:
+                continue
+            path = out_dir / name
+            text = path.read_text()
+            text = text.replace(
+                f"PartOf={target_name}",
+                f"PartOf={target_name}\nAfter={pooler_service}\nRequires={pooler_service}",
+                1)
+            path.write_text(text)
+
+    write(target_name, render_quadlet_target(defs, env_name, pooler))
 
     print(f"Wrote {len(written)} Quadlet unit files to {out_dir}")
     print(f"Compiled services log at '{log_level}' "

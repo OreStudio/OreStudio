@@ -8,7 +8,7 @@
 #+filetags: :move_codegen_and_gates_to_compass_ng:sprint_30:v0:
 #+owner: marco
 #+branch: feature/delete-the-python-gates-compass-ng-replaced
-#+pr: 4995
+#+pr: 5000
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-17
@@ -180,6 +180,9 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5000][#5000]] | [compass] Route the Python generator's entry points to compass-ng |
+| [[https://github.com/OreStudio/OreStudio/pull/4999][#4999]] | [compass] Record the series identity's width and fix the orgmode diagram |
+| [[https://github.com/OreStudio/OreStudio/pull/4997][#4997]] | [compass] Adopt compass-ng v0.0.11 and own the route tables |
 | [[https://github.com/OreStudio/OreStudio/pull/4995][#4995]] | [compass] Adopt compass-ng v0.0.10 and delete three generator scripts |
 | [[https://github.com/OreStudio/OreStudio/pull/4991][#4991]] | [codegen] Move the tier 3 callers to compass-ng and delete 21 files |
 | [[https://github.com/OreStudio/OreStudio/pull/4986][#4986]] | [build] Delete the tier 2 Python gates |

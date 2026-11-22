@@ -4,6 +4,7 @@
 #+title: Risk Participation Agreement
 #+description: Credit protection on a counterparty's default on an underlying swap; ORE's RPA product.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:rpa:
 #+created: 2026-09-06

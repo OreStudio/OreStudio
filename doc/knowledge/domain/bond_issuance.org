@@ -4,6 +4,7 @@
 #+title: Bond Issuance
 #+description: Bond issuance creates the security behind every bond trade: one issue per ISIN with terms fixed for its life; ORE names the issue by SecurityId and reads its terms from reference data.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:bond:
 #+created: 2026-09-09

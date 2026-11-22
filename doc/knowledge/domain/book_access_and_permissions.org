@@ -4,6 +4,7 @@
 #+title: Book access and permissions
 #+description: The allowed-currency set that constrains what can be booked into a book, the fine-grained permission model books inherit down to every trade, and periodic access review.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:trading:book:finance:
 #+created: 2026-07-08

@@ -4,6 +4,7 @@
 #+title: FX Swap
 #+description: An exchange of two currencies at spot and at a forward date; ORE's FxSwap product.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:fxswap:
 #+created: 2026-09-06

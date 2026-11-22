@@ -4,6 +4,7 @@
 #+title: FX European Barrier Option
 #+description: An FX European barrier option; ORE's FxEuropeanBarrierOption product.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:fx_europeanbarrieroption:
 #+created: 2026-09-06

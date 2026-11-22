@@ -4,6 +4,7 @@
 #+title: Trade set membership
 #+description: How a context resolves the membership of a set: by derivation from trade attributes or from a recorded list, and how membership holds at a point in time.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:domain:finance:trading:trade_groups:
 #+created: 2026-10-07

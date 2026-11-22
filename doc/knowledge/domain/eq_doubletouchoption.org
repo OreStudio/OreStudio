@@ -4,6 +4,7 @@
 #+title: Equity Double Touch Option
 #+description: A cash-or-nothing double touch option on an equity; ORE's EquityDoubleTouchOption product.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:eq_doubletouchoption:
 #+created: 2026-09-06

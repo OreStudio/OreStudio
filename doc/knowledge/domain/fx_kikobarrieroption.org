@@ -4,6 +4,7 @@
 #+title: FX KIKO Barrier Option
 #+description: A knock-in knock-out FX barrier option; ORE's FxKIKOBarrierOption product.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:fx_kikobarrieroption:
 #+created: 2026-09-06

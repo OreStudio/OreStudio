@@ -4,6 +4,7 @@
 #+title: FX Digital Option
 #+description: An FX option paying a fixed amount when the rate settles; ORE's FxDigitalOption product.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:fx_digitaloption:
 #+created: 2026-09-06

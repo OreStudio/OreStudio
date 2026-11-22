@@ -4,6 +4,7 @@
 #+title: Market Data Requirements and Resolution
 #+description: Hub note for how a logical need for market data (a requirement) resolves into concrete items drawn from the market data universe: requirements, identifiers, the universe, configuration/resolution, dependency closure, snapshotting, and filtering.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:domain:structure_note:marketdata:requirements:resolution:
 #+created: 2026-07-23

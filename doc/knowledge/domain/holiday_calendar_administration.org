@@ -4,6 +4,7 @@
 #+title: Holiday Calendar Administration
 #+description: How a holiday calendar is managed as reference data: per-currency/country calendars, the Template/Instance recurrence pairing, disable vs remove, localisation, and trusted vs authorised external sourcing.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:domain:finance:calendar:refdata:ore:
 #+created: 2026-07-13

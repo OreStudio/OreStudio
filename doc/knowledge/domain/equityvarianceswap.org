@@ -4,6 +4,7 @@
 #+title: Equity Variance Swap
 #+description: A swap of realised equity variance against a volatility strike; ORE's EquityVarianceSwap product.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:equityvarianceswap:
 #+created: 2026-09-06

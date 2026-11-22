@@ -4,6 +4,7 @@
 #+title: An FX-implied curve is backed out from a discount curve and forward points
 #+description: Covered interest parity in reverse: a discount curve and outrights give an FX-implied curve in the other currency.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:fx:fx_forward:
 #+created: 2026-11-09

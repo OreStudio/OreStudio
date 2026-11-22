@@ -4,6 +4,7 @@
 #+title: FX spot date and settlement
 #+description: What an FX spot rate actually is: spot days, the spot date (T+2), and the max-of-two-currencies rule that the CRM depends on.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :marketdata:fx:crm:domain:
 #+created: 2026-06-28

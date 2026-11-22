@@ -4,6 +4,7 @@
 #+title: Equity Touch Option
 #+description: A cash-or-nothing one-touch option on an equity; ORE's EquityTouchOption product.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:eq_touchoption:
 #+created: 2026-09-06

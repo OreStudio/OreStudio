@@ -4,6 +4,7 @@
 #+title: Geometric Brownian Motion
 #+description: The multiplicative, log-normal price process behind gaussian_mixture_model_process — its SDE, why it never goes negative, its Gaussian-mixture generalisation, and the Black-Scholes-Merton lineage.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:domain:quantitative_finance:stochastic_processes:ore:
 #+created: 2026-07-16

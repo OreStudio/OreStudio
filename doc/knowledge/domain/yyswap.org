@@ -4,6 +4,7 @@
 #+title: Year-on-Year Inflation Swap
 #+description: An inflation swap whose leg pays the annual change of an inflation index; ORE's YY leg.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:yyswap:
 #+created: 2026-09-06

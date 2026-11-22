@@ -4,6 +4,7 @@
 #+title: Interest Rate Curve Families
 #+description: Hub note for how a currency's interest rate curves compose beyond a single curve: funding/projection families, multi-curve build order, storage grouping, the review UI, and onshore/offshore namespacing.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:domain:finance:rates:curves:ore:
 #+created: 2026-07-11

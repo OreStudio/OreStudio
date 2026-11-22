@@ -4,6 +4,7 @@
 #+title: Index Credit Default Swap Option
 #+description: An option to enter an index CDS at a strike; ORE's IndexCreditDefaultSwapOption product.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:indexcdsoption:
 #+created: 2026-09-06

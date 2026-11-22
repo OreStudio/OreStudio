@@ -141,7 +141,7 @@ a typecheck all missed; only a build and a test run found them.
 | Id  | Applies to | Item | Evidence |
 |-----+------------+------+----------|
 | S01 | Entity | Every verb of every entity and junction has a generated shell command unit and a test. The hand-written units the generation replaces are deleted. | Generated units; shell tests |
-| S02 | Entity | Every command has a generated literate recipe, and the recipe inventory lists them all. A destructive command is declared destructive in its model. | =regenerate_shell_recipe_inventory.py= |
+| S02 | Entity | Every command has a generated literate recipe, and the recipe inventory lists them all. A destructive command is declared destructive in its model. | =compass-ng check --codec recipe_inventories= |
 
 ** Structure and hygiene
 

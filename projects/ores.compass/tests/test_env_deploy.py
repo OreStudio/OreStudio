@@ -787,7 +787,7 @@ class TestComputeDeployEndToEnd:
         monkeypatch.setattr(env_deploy, "_version_tag",
                             lambda r: "0.0.25-abc")
         monkeypatch.setattr(image_build, "check_images_exist",
-                            lambda pr, role: True)
+                            lambda pr, role, tag=None: True)
         monkeypatch.setattr(
             env_deploy, "_ssh",
             lambda host, cmd, check=False, input_text=None, **kw:

@@ -4,6 +4,7 @@
 #+title: Zero Coupon Swap
 #+description: An interest rate swap whose zero-coupon leg pays one final amount at maturity; ORE's ZeroCouponSwap product.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:zerocouponswap:
 #+created: 2026-09-06

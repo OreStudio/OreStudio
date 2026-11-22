@@ -4,6 +4,7 @@
 #+title: Spot rate blending
 #+description: Combining spot FX rates from multiple external sources into one official rate, and why the practice is limited and situational.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :marketdata:fx:spot:blending:domain:
 #+created: 2026-06-29

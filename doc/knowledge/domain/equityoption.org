@@ -4,6 +4,7 @@
 #+title: Equity Option
 #+description: An option to buy or sell shares at a strike price; ORE's EquityOption product.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:equityoption:
 #+created: 2026-09-06

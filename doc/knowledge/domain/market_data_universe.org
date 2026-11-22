@@ -4,6 +4,7 @@
 #+title: Market Data Universe
 #+description: The global set of every market data item addressable in the system, and the set-notation vocabulary by which it and the valuation-scoped market data set derived from it are described.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:domain:marketdata:universe:
 #+created: 2026-07-23

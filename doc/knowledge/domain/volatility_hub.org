@@ -4,6 +4,7 @@
 #+title: Volatility
 #+description: Structure note for the volatility cluster: the statistical concept, the implied surface built from it, the no-arbitrage conditions it must satisfy, how it moves, and what is traded on it.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:domain:structure_note:volatility:
 #+created: 2026-09-10

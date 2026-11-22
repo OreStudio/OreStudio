@@ -4,6 +4,7 @@
 #+title: Accumulator
 #+description: A forward purchase of an asset in daily instalments within a price range; ORE's accumulator products.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:accumulator:
 #+created: 2026-09-07

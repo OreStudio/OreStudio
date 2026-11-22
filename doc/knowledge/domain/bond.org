@@ -4,6 +4,7 @@
 #+title: Bond
 #+description: A bond is a tradable debt instrument paying scheduled interest and principal; ORE's Bond product.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:bond:
 #+created: 2026-09-06

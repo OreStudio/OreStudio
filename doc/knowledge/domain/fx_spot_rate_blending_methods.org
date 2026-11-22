@@ -4,6 +4,7 @@
 #+title: FX spot rate blending methods
 #+description: The statistical and governed methods for combining multi-source spot rates: simple/weighted average, median/trimmed mean, and waterfall selection.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :marketdata:fx:spot:blending:domain:
 #+created: 2026-06-29

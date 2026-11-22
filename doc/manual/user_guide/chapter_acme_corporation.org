@@ -4,6 +4,7 @@
 #+title: Acme Corporation
 #+description: Acme Corporation, ORE Studio's realistic reference/demo entity: the holding-group structure, business units, portfolios, books, and staff, plus provisioning it from the shell or the Qt wizard.
 #+type: manual
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:manual:acme_corporation:refdata:user_guide:
 #+created: 2026-07-31

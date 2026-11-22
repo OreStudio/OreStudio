@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :search_the_knowledge_base:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/load-the-knowledge-pages
+#+pr: 4998
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-21
@@ -26,12 +26,12 @@ Declare on each page whether it is user-facing, with a tag or a keyword, and mar
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:05FE6068-3CBD-4B93-B6AE-47A5689F1FCB][Search the knowledge base from ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-21                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-22                               |
 
 * Acceptance
 
@@ -49,9 +49,41 @@ Declare on each page whether it is user-facing, with a tag or a keyword, and mar
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The pages reach PostgreSQL the way ORE's other system reference data does, as a
+DQ dataset published into the system tenant at bring-up, with one difference
+the product owner chose on 2026-11-21: the dataset's populate SQL is generated
+by the build and never committed. A committed seed would hold every page's
+text, a few megabytes, and every edit to a user-facing page would need it
+regenerated or its check would fail.
+
+1. *Declare.* A page opts in with =#+audience: user=; no keyword means not
+   user-facing. Mark the domain knowledge, the manual and the glossary. A check
+   refuses a malformed value.
+2. *Model.* A codegen entity, =ores.orgmode.knowledge_page=, in a new
+   =ores.orgmode.core=: org id as the key, the source path, the org text,
+   system-tenant rows every tenant reads (=rls_own_or_system_tenant_rows=), and
+   its DQ artefact table. A publish function copies the artefact rows into the
+   live table and closes the rows of pages no longer loaded, so a load replaces
+   the previous one. A dataset, =orgmode.knowledge_pages=, in the =system_core=
+   bundle.
+3. *Generate.* A generator reads every page that declares =#+audience: user=
+   and writes the dataset's populate SQL into =build/output=, listing every page
+   it writes. =compass db recreate= runs it and passes its path to the recreate
+   script as a psql variable, so the populate runs it with the rest.
+4. *Serve.* =ores.orgmode.service= joins, registered as in commits
+   =05e0419674= and =b0887787b9=, linking the new core.
+
+   The service serves the knowledge page's generated reads and the publish
+   step, =orgmode.v1.ops.publish_knowledge_pages_from_dq=, declared in
+   =ores.orgmode.publish_operations= and handled the way assets handles its own.
+   The bring-up publish does not need it: the bootstrap publishes the
+   =system_core= bundle in SQL. The step serves a later republication.
+5. *Read from the shell.* A new adapter part, =ores.shell.orgmode=, holds the
+   generated =knowledge_pages= menu. The entity is =client_read_only=, so the
+   menu lists and reads and never writes: the dataset is the table's only
+   writer.
+
+Measure: the number of pages declared, loaded and readable from a tenant.
 
 * Measurements
 
@@ -65,9 +97,17 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Pages declaring =#+audience: user= | 273 | =generate_knowledge_pages_dataset.py= | =b700b34819= |
+| Pages staged and published at recreate | 273 inserted | =compass db recreate -y -k= | =b700b34819= |
+| Pages a tenant reads (Acme admin, =knowledge_pages list=) | total 273 | =compass shell -f kp.ores= | =b700b34819= |
 
 * Notes
+
+- The =compass:except(sql_reachability/missing_include)= in
+  =projects/ores.sql/populate/orgmode/orgmode_populate.sql= excuses a false
+  positive: compass read the psql variable =:knowledge_pages_populate= as a
+  path. compass PR #160 fixes it. Delete the exception once the pinned
+  compass-ng carries #160; compass-85 will name the version.
 
 * Test Scenarios
 
@@ -84,7 +124,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4998][#4998]] | [orgmode] Load the knowledge pages into PostgreSQL and serve them |
 
 * Review
 
@@ -93,3 +133,26 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The knowledge base's pages reach PostgreSQL as org, unchanged, keyed by their
+org id.
+
+- 273 pages declare =#+audience: user=. A gate, =audience=, refuses a
+  malformed declaration.
+- The DQ dataset =orgmode.knowledge_pages=, in the =system_core= bundle, stages
+  them. Its populate SQL is generated by =compass db recreate= and never
+  committed. The generator lists every page it writes, and fails on a page
+  without an id or with a duplicate.
+- The bootstrap publishes them into the system tenant through
+  =ores_orgmode_publish_knowledge_pages_from_dq_fn=. A tenant reads them and
+  cannot write them: the entity is =client_read_only=, and its RLS admits the
+  system tenant's rows. Acme's administrator lists all 273 from the shell.
+- =ores.orgmode.service= is registered, with its database role, IAM role,
+  unit, image and certificate, and runs in the fleet. It serves the knowledge
+  page's reads and the publish step =orgmode.v1.ops.publish_knowledge_pages_from_dq=.
+- =ores.shell.orgmode= gives the shell a read-only =knowledge_pages= menu.
+
+Not proven: the publish step through the workflow. No shell command publishes
+one dataset, so only the SQL path the bootstrap runs was exercised. The local
+gate was not run green: the product owner chose to merge past it while main's
+pooler fixes land (story "Run the tests through the pooler").

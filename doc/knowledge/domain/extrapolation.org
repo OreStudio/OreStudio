@@ -4,6 +4,7 @@
 #+title: Extrapolation
 #+description: Why a term structure needs a defined policy before its first pillar and beyond its last, and why flattening, not extrapolating, is the default beyond the end.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:domain:finance:rates:curves:tenors:ore:
 #+created: 2026-07-12

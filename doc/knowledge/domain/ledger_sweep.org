@@ -4,6 +4,7 @@
 #+title: Ledger Sweep
 #+description: The daily, automated, accounting-layer FX Revaluation process that translates every ledger book's transactional-currency balances into its functional currency.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:trading:book:finance:currency:
 #+created: 2026-07-15

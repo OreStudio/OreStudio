@@ -4,6 +4,7 @@
 #+title: Wash books and risk routing
 #+description: How a Wash Book stays risk-neutral by immediately back-to-backing every client trade into a paired risk book, and how this fits the broader risk-routing/IDT mechanism.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:trading:book:finance:
 #+created: 2026-07-11

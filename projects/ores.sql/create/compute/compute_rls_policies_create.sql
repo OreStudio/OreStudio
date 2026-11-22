@@ -133,6 +133,9 @@ with check (
 -- -----------------------------------------------------------------------------
 -- Hosts
 -- -----------------------------------------------------------------------------
+-- The machines are the installation's and carry the system tenant, so the
+-- operator's own session reads them and no tenant does. Entry E3 of the
+-- exceptions register states what a tenant may read of the grid.
 alter table ores_compute_hosts_tbl enable row level security;
 
 drop policy if exists hosts_tenant_isolation_policy

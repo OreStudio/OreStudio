@@ -4,6 +4,7 @@
 #+title: Swaption
 #+description: An option to enter an interest rate swap; ORE's Swaption product.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:swaption:
 #+created: 2026-09-06

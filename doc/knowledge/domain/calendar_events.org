@@ -4,6 +4,7 @@
 #+title: Calendar Events
 #+description: Modelling a market event as a calendar entry anchored to a time point, its Template/Instance pairing, and where a source of real event data (central bank meeting calendars) can seed DQ test data.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:domain:finance:calendar:refdata:ore:
 #+created: 2026-07-13

@@ -73,6 +73,7 @@ target_link_libraries(${lib_target_name}
         ores.shell.variability.lib
         ores.shell.storage.lib
         ores.shell.inbox.lib
+        ores.shell.orgmode.lib
         ores.trading.api.lib
         ores.workflow.api.lib
         ores.logging.lib

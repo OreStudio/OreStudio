@@ -4,6 +4,7 @@
 #+title: Rainbow Options
 #+description: European options on the best or worst of a range of assets; ORE's Rainbow Options product family.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:rainbow_option:
 #+created: 2026-09-07

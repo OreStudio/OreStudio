@@ -4,6 +4,7 @@
 #+title: Book Currencies
 #+description: The set of currencies a book is permitted to trade in, and the distinct per-book Accounting Currency field used to store P&L adjustments.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:currency:trading:book:
 #+created: 2026-07-14

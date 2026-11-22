@@ -4,6 +4,7 @@
 #+title: Commodity Swap
 #+description: Floating commodity prices against a fixed price; ORE's CommoditySwap and basis swap forms.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:commodityswap:
 #+created: 2026-09-06

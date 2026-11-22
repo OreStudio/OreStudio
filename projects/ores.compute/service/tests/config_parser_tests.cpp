@@ -32,10 +32,15 @@ using namespace ores::compute::service::config;
 TEST_CASE("parse_defaults_returns_expected_values", "[config]") {
     auto lg(ores::logging::make_logger(test_suite));
     // Local (non-CI) ctest loads the whole .env into the test process,
-    // including the shared ORES_NATS_* vars the parser reads; clear them so
+    // including the shared ORES_NATS_* vars and the service's database host and
+    // port that the parser reads; clear them so
     // this test asserts the compiled-in defaults.
-    const ores::testing::scoped_environment_override env_guard(
-        {}, {"ORES_NATS_URL", "ORES_NATS_SUBJECT_PREFIX", "ORES_NATS_WIRE_FORMAT"});
+    const ores::testing::scoped_environment_override env_guard({},
+                                                               {"ORES_NATS_URL",
+                                                                "ORES_NATS_SUBJECT_PREFIX",
+                                                                "ORES_NATS_WIRE_FORMAT",
+                                                                "ORES_COMPUTE_SERVICE_DB_HOST",
+                                                                "ORES_COMPUTE_SERVICE_DB_PORT"});
 
     const std::vector<std::string> args;
     std::ostringstream info, err;

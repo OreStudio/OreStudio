@@ -4,6 +4,7 @@
 #+title: Equity Option Position
 #+description: A position in a single equity option or a weighted option basket; ORE's EquityOptionPosition product.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:equityoptionposition:
 #+created: 2026-09-06

@@ -4,6 +4,7 @@
 #+title: Commodity Variance Swap
 #+description: A swap on commodity volatility or variance; ORE's CommodityVarianceSwap product.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:commodityvarianceswap:
 #+created: 2026-09-06

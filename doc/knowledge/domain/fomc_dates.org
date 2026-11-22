@@ -4,6 +4,7 @@
 #+title: FOMC Dates
 #+description: The Federal Reserve's scheduled policy meeting dates, and their role as the short-end pillar schedule for SOFR OIS curve construction, distinct from the exchange-fixed IMM calendar.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:domain:finance:rates:curves:tenors:ore:
 #+created: 2026-07-22

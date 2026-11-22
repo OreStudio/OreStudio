@@ -4,6 +4,7 @@
 #+title: Business Centre
 #+description: The FpML-coded business centre: the holiday calendar and EOD-rates identifier a business unit or book carries, distinct from both a business unit's organisational hierarchy and a book's unrelated cost centre.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:rates:curves:tenors:trading:book:
 #+created: 2026-07-14

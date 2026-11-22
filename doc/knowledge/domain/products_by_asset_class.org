@@ -4,6 +4,7 @@
 #+title: ORE Products by Asset Class
 #+description: Entry page for the ORE product knowledge notes, grouped by asset class.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:products_by_asset_class:
 #+created: 2026-09-07

@@ -26,22 +26,14 @@ How do I add a new source file to a component?
    the component's =src/= or =tests/= directory as usual — nothing
    component-specific here.
 
-2. Regenerate that component's =component_files.cmake=:
+2. Regenerate the =component_files.cmake= lists:
 
    #+begin_src sh :results verbatim
-   python3 projects/ores.codegen/scripts/regenerate_cmake_component_files.py --component ores.assets.core
+   ./compass.sh generate
    #+end_src
 
-   Or every component at once:
-
-   #+begin_src sh :results verbatim
-   python3 projects/ores.codegen/scripts/regenerate_cmake_component_files.py --all
-   #+end_src
-
-   Each run is a full-file overwrite of =src/component_files.cmake=
-   (and =tests/component_files.cmake=) — safe and idempotent, never a
-   partial edit. =--component= takes the model's =#+full_name:=
-   (e.g. =ores.assets.core=), not the directory path.
+   compass-ng's =component_files= codec rewrites a whole list, never a
+   partial edit, and writes only the lists whose content differs.
 
 3. Never hand-edit =component_files.cmake= or add a =file(GLOB...)= back
    into =CMakeLists.txt= — the generated file is overwritten wholesale
@@ -52,26 +44,20 @@ How do I add a new source file to a component?
    commit) — exits non-zero if any component's list is stale:
 
    #+begin_src sh :results verbatim
-   python3 projects/ores.codegen/scripts/regenerate_cmake_component_files.py --all --check
+   ./compass.sh diff
    #+end_src
 
 * Script
 
-=projects/ores.codegen/scripts/regenerate_cmake_component_files.py= —
-renders the =ores.cmake.component.files_src=/=files_tests= codegen
+compass-ng's =component_files= codec, which renders the =ores.cmake.component.files_src=/=files_tests= codegen
 archetypes (=cmake_component_files_src.mustache=/
 =cmake_component_files_tests.mustache=) via the same
 =generate_from_model()= the rest of codegen uses. The file list itself
 is a directory scan injected into the render context at generation
-time (=core.py='s =_COMPONENT_FILES_TEMPLATES= branch), since a source
-list isn't data the component's own model carries.
+time, since a source list isn't data the component's own model carries.
+=projects/ores.codegen/scripts/regenerate_cmake_component_files.py= keeps
+only =--check=; without it, the script runs =compass-ng generate=.
 
-Deliberately *not* routed through =compass codegen regenerate=: that
-command regenerates every archetype in the =ores.cmake.component=
-facet for a component, including =CMakeLists.txt= itself — which
-carries hand-added =target_link_libraries= since its one-shot scaffold
-and would be silently clobbered by a full facet regenerate. This
-script only ever writes the two =component_files.cmake= outputs.
 
 * Tested by
 

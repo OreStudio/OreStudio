@@ -4,6 +4,7 @@
 #+title: Book and the ledger
 #+description: How a book connects to the general ledger: the legal-entity/business-unit/cost-centre hierarchy, ledger book mechanics and the ledger sweep, profit remittance and cash sweeping, and P&L attribution and reporting by book.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:trading:book:finance:
 #+created: 2026-07-08

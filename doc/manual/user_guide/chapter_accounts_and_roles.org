@@ -4,6 +4,7 @@
 #+title: Accounts and Roles
 #+description: Day-to-day account management in OreStudio: the Accounts window as system and tenant administrator, the account detail dialog and its tabs, creating accounts, and the role and permission model.
 #+type: manual
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:manual:accounts:roles:iam:user_guide:
 #+created: 2026-06-05

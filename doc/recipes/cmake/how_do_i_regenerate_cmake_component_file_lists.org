@@ -34,12 +34,8 @@ How do I regenerate CMake component file lists?
    ./compass.sh generate
    #+end_src
 
-   compass-ng writes every list byte-identical to the script, which stays
-   for a machine without compass-ng:
-
-   #+begin_src sh :results verbatim
-   python3 projects/ores.codegen/scripts/regenerate_cmake_component_files.py --all
-   #+end_src
+   compass-ng's =component_files= codec writes every list, and only the
+   lists whose content differs, so an unchanged list keeps its timestamp.
 
 2. Check what changed — if =git status= shows any
    =component_files.cmake= touched, that component gained/lost files
@@ -55,7 +51,7 @@ How do I regenerate CMake component file lists?
    exits non-zero if anything would change:
 
    #+begin_src sh :results verbatim
-   python3 projects/ores.codegen/scripts/regenerate_cmake_component_files.py --all --check
+   ./compass.sh diff
    #+end_src
 
 4. Symptom if you skip this after a rebase: a linker error naming a
@@ -67,8 +63,9 @@ How do I regenerate CMake component file lists?
 
 * Script
 
-=projects/ores.codegen/scripts/regenerate_cmake_component_files.py=
-— see
+compass-ng's =component_files= codec. The Python script
+=projects/ores.codegen/scripts/regenerate_cmake_component_files.py= keeps
+only =--check=; without it, the script runs =compass-ng generate=. See
 [[id:B8B13087-1F32-405D-8A7B-39648BA1106F][How do I add a new source file to a component?]]
 for how it's implemented (the =ores.cmake.component.files_src=/
 =files_tests= codegen archetypes).

@@ -4,6 +4,7 @@
 #+title: Markov Property
 #+description: What "no memory" means for a stochastic process — the next-state-depends-only-on-current-state property every process in this cluster inherits from the Wiener process, and why it is what makes exact tick-by-tick simulation possible.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:domain:quantitative_finance:stochastic_processes:ore:
 #+created: 2026-07-16

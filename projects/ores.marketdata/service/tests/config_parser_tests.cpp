@@ -34,7 +34,9 @@ TEST_CASE("parse_defaults_returns_expected_values", "[config]") {
         {"ORES_NATS_URL",
          "ORES_NATS_SUBJECT_PREFIX",
          "ORES_NATS_WIRE_FORMAT",
-         "ORES_MARKETDATA_SERVICE_HTTP_BASE_URL"});
+         "ORES_MARKETDATA_SERVICE_HTTP_BASE_URL",
+         "ORES_MARKETDATA_SERVICE_DB_HOST",
+         "ORES_MARKETDATA_SERVICE_DB_PORT"});
 
     std::ostringstream info, err;
     const auto result = parser{}.parse({}, info, err);

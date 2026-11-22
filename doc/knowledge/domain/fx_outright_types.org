@@ -4,6 +4,7 @@
 #+title: An outright settles before, on or after the spot date
 #+description: Value today, value tomorrow, spot and forward delivery, and where the regulatory line falls.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:fx:fx_forward:
 #+created: 2026-11-09

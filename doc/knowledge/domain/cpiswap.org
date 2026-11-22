@@ -4,6 +4,7 @@
 #+title: CPI Swap
 #+description: An inflation swap whose CPI-linked leg pays a real rate scaled by index changes.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:cpiswap:
 #+created: 2026-09-06

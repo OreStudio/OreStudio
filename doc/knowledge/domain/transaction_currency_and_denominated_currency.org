@@ -4,6 +4,7 @@
 #+title: Transaction Currency and Denominated Currency
 #+description: Finance's transaction currency, and the standard finance concept of denominated currency -- the currency in which a deal's cash flows or results are properly expressed before any aggregation takes place -- with a per-instrument-type determination rule.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:currency:trading:book:
 #+created: 2026-07-14

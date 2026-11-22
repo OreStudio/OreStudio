@@ -4,6 +4,7 @@
 #+title: Tenants
 #+description: Tenant management in OreStudio: the Tenants window, tenant types and lifecycle status, the detail dialog, and how tenant administration relates to the provisioning wizards.
 #+type: manual
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:manual:tenants:iam:user_guide:
 #+created: 2026-06-05

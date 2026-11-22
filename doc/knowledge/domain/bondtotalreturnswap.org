@@ -4,6 +4,7 @@
 #+title: Bond Total Return Swap
 #+description: A swap paying the total return of a bond against a funding leg; ORE's BondTRS product.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:bondtotalreturnswap:
 #+created: 2026-09-06

@@ -4,6 +4,7 @@
 #+title: Target Redemption Forward
 #+description: A forward series that redeems early at a target profit; ORE's TaRF product.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:tarf:
 #+created: 2026-09-07

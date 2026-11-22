@@ -4,6 +4,7 @@
 #+title: Kinds of Money
 #+description: The historical forms money has taken -- commodity, fiat, bank money, and cryptocurrency -- and the constructed nature of the value each carries.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:currency:
 #+created: 2026-07-14

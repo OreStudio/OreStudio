@@ -4,6 +4,7 @@
 #+title: Trade Population Weights
 #+description: A weighted distribution across the ORE product set, for generating realistic synthetic trade populations.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:synthetic:population:
 #+created: 2026-09-08

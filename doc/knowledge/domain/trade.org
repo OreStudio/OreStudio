@@ -4,6 +4,7 @@
 #+title: Trade
 #+description: Hub note for trades in ORE Studio's domain model: the entities a trade is built from, the three classifications it carries, the two lifecycles it runs, what it links to, and what it needs in order to be valued.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:domain:structure_note:trading:
 #+created: 2026-09-16

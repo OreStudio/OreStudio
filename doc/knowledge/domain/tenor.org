@@ -4,6 +4,7 @@
 #+title: Tenor
 #+description: What a tenor is: a symbolic label identifying a point in time relative to a horizon date, its standard short-end and period labels, and how the same label is interpreted differently by curve type.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:domain:finance:rates:curves:tenors:ore:
 #+created: 2026-07-12

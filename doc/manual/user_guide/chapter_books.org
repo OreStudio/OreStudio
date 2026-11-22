@@ -4,6 +4,7 @@
 #+title: Books
 #+description: Book management in OreStudio: what a trading book represents, the Qt UI, the flagged currency picker, the status lifecycle, and history and revert.
 #+type: manual
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:manual:books:trading:user_guide:
 #+created: 2026-07-08

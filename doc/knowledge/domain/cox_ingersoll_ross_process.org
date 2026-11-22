@@ -4,6 +4,7 @@
 #+title: Cox-Ingersoll-Ross (CIR) Process
 #+description: The non-negative short-rate model behind cox_ingersoll_ross_process — its sqrt(r) volatility term, the Feller condition, and why its exact transition is a Poisson mixture of chi-squared draws rather than a Gaussian update.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:domain:quantitative_finance:stochastic_processes:interest_rates:ore:
 #+created: 2026-07-16

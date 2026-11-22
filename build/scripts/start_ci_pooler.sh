@@ -54,10 +54,16 @@ if [ -z "${pgbouncer_bin}" ]; then
         fi
     done
 fi
-[ -n "${pgbouncer_bin}" ] || die "pgbouncer is not installed"
+# The binary is needed to run a pooler, not to write its configuration, so a
+# deploy machine that only generates a container configuration needs none.
 
 label="$(sed -n 's/^ORES_ENV_NAME=//p' "${env_file}" | head -1)"
 [ -n "${label}" ] || label="ci"
+# The port PostgreSQL listens on. A remote environment keeps its database off
+# the default, and the deploy passes that port in PGPORT when it generates this
+# configuration for the remote host.
+db_port="${PGPORT:-$(sed -n 's/^PGPORT=//p' "${env_file}" | head -1)}"
+db_port="${db_port:-5432}"
 out="${root}/build/pgbouncer"
 mkdir -p "${out}"
 
@@ -73,31 +79,68 @@ users() {
     done
 }
 
+# Writes the configuration. A host writes it under build/pgbouncer, log and all.
+# A container is given its own directory: there the log goes to stderr, which is
+# what podman captures, because a file inside the image is a file nobody reads.
 write_config() {
-    local port="$1"
-    users | sort -u > "${out}/${label}.users"
-    chmod 600 "${out}/${label}.users"
-    cat > "${out}/${label}.ini" <<EOF
+    local port="${1}"
+    local dir="${2:-${out}}"
+    local db_host_override="${3:-}"
+    local base="${label}"
+    mkdir -p "${dir}"
+    # A container is told where its configuration lives by the image, so it gets
+    # the name the entrypoint names. Its credential file is read by pgbouncer
+    # after it drops to its own user, so it must be readable by that user; the
+    # directory holding it is the deploy's, and that is what keeps it private.
+    local auth_path="${dir}/${label}.users"
+    if [ "${dir}" != "${out}" ]; then
+        base="pgbouncer"
+        # The image mounts the configuration here, so the file it reads names
+        # this path and not the one it was written to.
+        auth_path="/etc/pgbouncer/${base}.users"
+    fi
+    users | sort -u > "${dir}/${base}.users"
+    if [ "${dir}" != "${out}" ]; then
+        chmod 644 "${dir}/${base}.users"
+    else
+        chmod 600 "${dir}/${base}.users"
+    fi
+    local log_line="logfile = ${out}/${label}.log"
+    local pid_line="pidfile = ${dir}/${label}.pid"
+    local listen_addr="127.0.0.1"
+    local db_host="127.0.0.1"
+    if [ "${dir}" != "${out}" ]; then
+        # In a container, loopback is the container itself, so the pooler must
+        # listen on every interface for the fleet's containers to reach it, and
+        # the database is on the host that runs them.
+        log_line=""
+        # A container cannot write beside a mounted configuration.
+        pid_line=""
+        listen_addr="0.0.0.0"
+        db_host="${db_host_override:-host.containers.internal}"
+    fi
+    cat > "${dir}/${base}.ini" <<EOF
 [databases]
-* = host=127.0.0.1 port=5432
+* = host=${db_host} port=${db_port}
 
 [pgbouncer]
-listen_addr = 127.0.0.1
+listen_addr = ${listen_addr}
 listen_port = ${port}
 auth_type = plain
-auth_file = ${out}/${label}.users
+auth_file = ${auth_path}
 pool_mode = transaction
 max_prepared_statements = 200
 default_pool_size = 20
 max_db_connections = 100
 max_client_conn = 500
-logfile = ${out}/${label}.log
-pidfile = ${out}/${label}.pid
+${log_line}
+${pid_line}
 EOF
 }
 
 start() {
     local port="${1:-6432}"
+    [ -n "${pgbouncer_bin}" ] || die "pgbouncer is not installed"
     write_config "${port}"
     "${pgbouncer_bin}" -d "${out}/${label}.ini" || die "pgbouncer did not start"
     echo "${port}" > "${out}/${label}.port"
@@ -127,6 +170,13 @@ stop() {
 case "${1:-}" in
     start) start "${2:-6432}" ;;
     stop) stop ;;
-    print-config) write_config "${2:-6432}"; cat "${out}/${label}.ini" ;;
-    *) die "usage: $0 {start [port]|stop|print-config [port]}" ;;
+    print-config)
+        write_config "${2:-6432}" "${3:-}" "${4:-}"
+        if [ -n "${3:-}" ]; then
+            cat "${3}/pgbouncer.ini"
+        else
+            cat "${out}/${label}.ini"
+        fi
+        ;;
+    *) die "usage: $0 {start [port]|stop|print-config [port] [dir] [db-host]}" ;;
 esac

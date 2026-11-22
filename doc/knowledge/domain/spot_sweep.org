@@ -4,6 +4,7 @@
 #+title: Spot Sweep
 #+description: The front/middle-office process that periodically crystallises profit held in non-presentation currencies by aggregating and converting Sweepable books' cash balances into a Central Sweep Book.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:trading:book:finance:currency:
 #+created: 2026-07-15

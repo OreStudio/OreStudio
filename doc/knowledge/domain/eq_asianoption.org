@@ -4,6 +4,7 @@
 #+title: Equity Asian Option
 #+description: An Asian option on the average equity price; ORE's EquityAsianOption product.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:eq_asianoption:
 #+created: 2026-09-06

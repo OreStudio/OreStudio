@@ -8088,14 +8088,26 @@ def _codegen_src():
         sys.path.insert(0, src)
 
 
-def cmd_codegen(argv):
-    """compass codegen — generate or regenerate code from model files.
+CODEGEN_WRITE_VERBS = ("generate", "gen", "regenerate", "regen")
 
-    Calls codegen.generate.cmd_generate / cmd_regenerate directly; no
-    shell intermediary.  The base_dir is resolved to projects/ores.codegen.
+
+def cmd_codegen(argv):
+    """compass codegen — write generated code through compass-ng.
+
+    generate and regenerate, and entity generate, forward to compass-ng
+    generate, which writes only the files whose content differs; --dry-run
+    and --diff forward to compass-ng diff. The entity list, show, diff and
+    archetypes reports stay here, and write nothing.
     """
-    # Delegate entity sub-commands before argparse so positional args are not
-    # consumed by this parser.
+    verb = argv[1:2] if argv[:1] == ["entity"] else argv[:1]
+    if verb and verb[0] in CODEGEN_WRITE_VERBS:
+        preview = "--dry-run" in argv or "--diff" in argv
+        print("ℹ️  compass codegen writes through compass-ng: it generates "
+              "the whole tree and writes only the files whose content "
+              "differs, so --model, --address, --component and --entity no "
+              "longer narrow it.")
+        return cmd_compass_ng(["diff" if preview else "generate"])
+
     if argv and argv[0] == "entity":
         _codegen_src()
         try:
@@ -8106,57 +8118,10 @@ def cmd_codegen(argv):
         base_dir = PROJECT_ROOT / "projects" / "ores.codegen"
         return compass_codegen_entity.run(argv[1:], base_dir, PROJECT_ROOT)
 
-    import argparse as _ap
-
-    ap = _ap.ArgumentParser(
-        prog="compass codegen",
-        description="ORE Studio code generation (SQL, C++, TypeScript).",
-    )
-    ap.add_argument("-v", "--verbose", action="store_true", help="Enable debug logging")
-    sub = ap.add_subparsers(dest="subcmd", required=True)
-
-    gen_p = sub.add_parser("generate", aliases=["gen"],
-                            help="Generate from a single model file.")
-    gen_p.add_argument("--model", required=True, metavar="PATH",
-                       help="Path to the model file")
-    gen_p.add_argument("--address", required=True, metavar="ADDRESS",
-                       help="Physical-space address to generate (e.g. ores.sql.schema, ores.cpp.presentation)")
-    gen_p.add_argument("--dry-run", action="store_true",
-                       help="Print output paths without writing")
-
-    regen_p = sub.add_parser("regenerate", aliases=["regen"],
-                              help="Regenerate all models for a component.")
-    regen_scope = regen_p.add_mutually_exclusive_group(required=True)
-    regen_scope.add_argument("--component", metavar="NAME",
-                             help="Component to regenerate (e.g. refdata)")
-    regen_scope.add_argument("--all", action="store_true",
-                             help="Regenerate all components")
-    regen_p.add_argument("--address", required=True, metavar="ADDRESS",
-                         help="Physical-space address to generate (e.g. ores.sql.schema, ores.cpp.presentation)")
-    regen_p.add_argument("--entity", metavar="NAME[,NAME...]",
-                         help="Restrict --component to a comma-separated list of entity names "
-                              "(e.g. rounding_type,monetary_nature). Not valid with --all.")
-    regen_p.add_argument("--dry-run", action="store_true",
-                         help="Print output paths without writing")
-
-    args = ap.parse_args(argv)
-
-    _codegen_src()
-    try:
-        from codegen.generate import cmd_generate, cmd_regenerate  # noqa: PLC0415
-        from codegen.logging_config import configure  # noqa: PLC0415
-    except ImportError as exc:
-        print(f"❌ Cannot import ores.codegen ({exc}). "
-              f"Is the venv set up? Run: pip install -e projects/ores.codegen",
-              file=sys.stderr)
-        return 1
-
-    configure(verbose=args.verbose)
-    base_dir = PROJECT_ROOT / "projects" / "ores.codegen"
-
-    if args.subcmd in ("generate", "gen"):
-        return cmd_generate(args, base_dir)
-    return cmd_regenerate(args, base_dir)
+    print("usage: compass codegen generate|regenerate [--dry-run]\n"
+          "       compass codegen entity list|show|diff|archetypes ...",
+          file=sys.stderr)
+    return 0 if argv[:1] in (["-h"], ["--help"]) else 2
 
 
 def _adopt_transport_from_env_file(env_file: Path) -> None:

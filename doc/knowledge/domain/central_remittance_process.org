@@ -4,6 +4,7 @@
 #+title: Central remittance (profit remittance)
 #+description: How crystallised book-level profit is pulled up monthly via Profit Sell Down into a designated Central Remittance Book and periodically remitted to Group via real settled cash trades, distinct from EOM/Year End Cleardown.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:trading:book:finance:
 #+created: 2026-07-11

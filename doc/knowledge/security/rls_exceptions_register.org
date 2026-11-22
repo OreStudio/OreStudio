@@ -61,7 +61,7 @@ Open points for the review:
 | Why | A tenant needs the installation's capacity (hosts, online, idle) to read its own queue. The owner decided on 2026-10-13 that a summary of capacity is fine for a tenant. |
 | Exposes | The installation's host, online and idle counts to every tenant's session. |
 | Limits | The series read takes only the three host columns of the system rows. No machine, host name or hardware is read for a tenant, and the BFF reads no node series and no host list for a tenant. |
-| Evidence | PR #3214. A repository test reads the fleet through a tenant session. A BFF test checks that no node or host read happens for a tenant. |
+| Evidence | PR #3214. A repository test reads the fleet through a tenant session. A BFF test checks that no node or host read happens for a tenant. The node samples are written under the installation's tenant, so the fleet's liveness and its capacity come from the same rows: a sample recorded under the tenant whose work the wrapper ran was invisible to the fleet count, and the grid reported no node online while four ran work. |
 | Review | Pending |
 | Sign-off | Pending |
 

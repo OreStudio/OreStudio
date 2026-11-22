@@ -4,6 +4,7 @@
 #+title: Equity Forward
 #+description: An agreement to buy or sell shares at a future price; ORE's EquityForward product.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:equityforward:
 #+created: 2026-09-06

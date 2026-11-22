@@ -4,6 +4,7 @@
 #+title: Trade links
 #+description: What a link between trades is: the typed, directed relation, the roles its ends take, how links come into being, and the prior art behind the term.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:domain:finance:trading:trade_links:
 #+created: 2026-10-02

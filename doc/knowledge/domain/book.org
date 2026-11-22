@@ -4,6 +4,7 @@
 #+title: Book
 #+description: Hub note for the trading book: what a book is, its classification dimensions, the book/portfolio distinction, its lifecycle, and its connection to the general ledger.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:trading:book:finance:
 #+created: 2026-07-08

@@ -4,6 +4,7 @@
 #+title: Credit Default Swap
 #+description: A CDS trades protection on a reference entity's default; ORE's CreditDefaultSwap product.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:creditdefaultswap:
 #+created: 2026-09-06

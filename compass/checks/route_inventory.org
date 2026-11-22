@@ -1,0 +1,842 @@
+:PROPERTIES:
+:ID: D33DE3CB-ED6E-571A-8A92-3AE907EDF029
+:END:
+#+title: Check: HTTP route inventory
+#+description: The head, rules, exemptions, composed views, pairs and families compass-ng's route_inventory codec writes ORE Studio's HTTP route inventory from.
+#+type: check
+#+level: cross
+#+filetags: :compass:check:http:route:generator:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+#+options: prop:t
+
+This page gives the data of compass-ng's =route_inventory= codec, which writes
+ORE Studio's HTTP route inventory,
+=doc/knowledge/architecture/http_route_inventory.org=. The =* Definition= names
+the codec; each table below is data the codec reads, and the prose says what it
+is for. The tables were =HEADER= of =build/scripts/route_inventory.py=, the
+rules, exceptions and views of =build/scripts/route_classification.py= and the
+pairs and families of =build/scripts/route_pairing.py=; the code that finds the
+routes and applies the decisions is compass's.
+
+* Rule
+
+Every route the BFF and ores.http register is a row of the inventory, decided by
+the Exemptions and Rules tables, and every BFF route the Pairs or Families
+tables pair is counted as covered. =compass check= reports an inventory that
+differs from what the tables and the code generate, and =compass generate=
+writes it.
+
+* Why
+
+The classification work needs a list that cannot be short, so the routes are
+read from the code that registers them, never typed. What a route is cannot be
+read from the code: the design's four-way rule decides it, and the decisions are
+this page's tables, beside the reasons, so changing one is an edit here and a
+regeneration.
+
+* Definition
+:PROPERTIES:
+:CODEC: route_inventory
+:END:
+
+* Head
+
+The head of the inventory, one row per line, written before the sections compass
+derives. A row holds the line's text, and an empty row is an empty line.
+
+| line |
+|------|
+| \ |
+| #+title: The HTTP route inventory |
+| #+description: Every route the BFF and ores.http answer today, read from the code that registers them, decided against the design's four-way rule, with the published area map and the composed views' obligations. |
+| #+type: knowledge |
+| #+level: cross |
+| #+filetags: :knowledge:architecture:http: |
+| #+created: 2026-10-31 |
+| #+updated: 2026-10-31 |
+|  |
+| Every HTTP route either server answers, read from its own registration rather than |
+| typed by hand. The design's four-way rule (a resource, a composed view, a transport |
+| capability, or a rendering concern that is not an API) decides every row, and the |
+| =Kind=, =Area= and =Note= columns state that decision. |
+|  |
+| * How to regenerate |
+|  |
+| #+begin_src sh :results verbatim |
+| ./compass.sh generate |
+| #+end_src |
+|  |
+| The decisions are data in =compass/checks/route_inventory.org=: an ordered list of |
+| rules over the method and path, an exemption for a route no rule decides, and the |
+| owner, computation and cache policy each composed view owes. A regeneration rewrites |
+| every cell from them, so the table states the decisions and never holds a second copy |
+| of them. |
+|  |
+| Two sections are derived from the same decisions and appear before the table: the |
+| area map, which is the published namespace of design section 11.2 and the areas this |
+| table publishes beside it, and the composed views, whose owner column names the |
+| component that must answer each one after the port. |
+|  |
+| * How it is enforced |
+|  |
+| =compass check= fails when this page differs from what the tables of |
+| =compass/checks/route_inventory.org= and the code that registers the routes |
+| generate: a route either server adds, or a decision, pair or family that changes, is |
+| a finding until =./compass.sh generate= writes the page again. |
+|  |
+| * What it reads, and what it cannot |
+|  |
+| The BFF declares every route with a literal path beginning =/api/=, so a route is a |
+| call whose first argument is that literal. A path built from a template literal in |
+| these sources is a =Map= lookup and not a route; none registers a route that way |
+| today. |
+|  |
+| ores.http declares its routes with =router->get/post/put/patch/delete_/head=, and |
+| five of them state a path the code composes from a prefix constant; those rows name |
+| the variable and the line that declares it. |
+|  |
+| What neither shape covers is a route registered some other way: a generated route |
+| table (K1), or a loop that registers a family. When such a route appears, the answer |
+| is to teach this tool that shape, not to add a row by hand: the row would not be |
+| verified. |
+
+* Settings
+
+The kind and area the codec gives a meaning to, one row per setting. Every
+setting has a row.
+
+| setting | value |
+|---------+-------|
+| composed kind | composed view |
+| no area | (none) |
+
+- =composed kind= :: The kind of a composed view: the routes a rule or exemption
+  decides as it make the composed views section, each owing the obligations of
+  the Views table.
+- =no area= :: The area of a route that publishes none, written last in the area
+  map and the coverage; a BFF route nothing decides is counted under it.
+
+* Rules
+
+The decisions over a route's method and path, in order. A route an exemption
+does not decide is decided by the first rule whose =server= is empty or names
+the route's server and whose =pattern= accepts =METHOD /path=, the method in
+capitals: =exact= when the two are equal, =prefix= when the route starts with
+it, and =regex= when the pattern is found in it. The order carries meaning: a
+narrow judgement stands before the family rule it would otherwise be swallowed
+by. A route no rule decides is unclassified, and its kind and area are empty.
+
+The line between a resource and a composed view is the number of collections the
+answer weaves. One collection with its keys resolved is a resource; two or more
+independent collections woven into one answer are a view.
+
+| name | match | pattern | server | kind | area | note |
+|------+-------+---------+--------+------+------+------|
+| the adapters screen's route | exact | GET /api/marketdata/adapters | ores.http | resource | market-data | Every adapter the market data service tracks, with what it serves, what it was asked to serve, and the kind of source its feed reads, joined from the feeds and the sessions. |
+| the public rates' route | regex | ^(GET /api/marketdata/public-rates/fixings\vert{}POST /api/marketdata/public-rates(/\{code\})?/(accept\vert{}withdraw)-terms)$ | ores.http | resource | market-data | The fixings the store holds for up to a dozen series, oldest first, and the three answers a person gives to a publisher's terms: accept one at the version read, withdraw one, and accept many in one request. |
+| the ORE URI codec route | regex | ^(GET\vert{}POST) /api/oresmd | ores.http | transport capability | (none) | The codec's own table, the read of a URI into its parts, a batch of them, and the write of parts into a URI, at the addresses and in the shapes the BFF answered, storing nothing. |
+| a series' observations route | exact | GET /api/series/{id}/observations | ores.http | resource | market-data | One series' observations inside a window, oldest first, the count read as the cap on the answer, at the address and in the shape the BFF answered. |
+| the quotes view's routes | regex | ^GET /api/marketdata/quotes(/feeds\vert{}/history)?$ |  | resource | market-data | The feeds the caller may watch for display, the latest quote of each datum on them from the board each server fills by listening to every feed subject once, and one point of a provider's series over a span; every read asks the market data service which feeds the caller may watch. |
+| the vols-by-delta fit | exact | POST /api/marketdata/quotes/vols-by-delta |  | resource | market-data | Each source's quotes of one pair read as a smile, at ten, twenty-five and ten delta of every expiry the body names: the market data service fits each source in the pair's own convention on the party's published forwards, and stores nothing. |
+| the curves' route | regex | ^POST /api/curves/(series\vert{}series-by-id\vert{}series-list\vert{}slice\vert{}evolution\vert{}snapshot\vert{}manual-point(/clear)?\vert{}compute\vert{}fx-forward-ladder\vert{}published(/withdraw\vert{}-sets)?)$ | ores.http | resource | market-data | The curves at the address and in the shape the BFF answered: the series an identity names, the series a party sees, the URIs of the series a blueprint names, the object snapshotted and sliced and evolved, the points a recipe computes without storing them, the manual points a person keys and clears, the published sets a party holds, the FX forward ladder of one pair, and the withdrawal that takes a set out of use. |
+| the market data subscriptions' route | regex | ^(GET\vert{}POST\vert{}DELETE) /api/marketdata/(subscriptions\vert{}routes)(/\{(provider\vert{}publisher)\})?$ | ores.http | resource | market-data | The subscriptions and routes screens at the address and in the shape the BFF answered: every subscription and route the caller's party holds, the two creates that name a provider or a feed, and the removals that name the version they read. |
+| the blotter | exact | GET /api/blotter | ores.http | composed view | trading | One page of trades with the rail that groups them, answered by ores.trading from the summaries, the structures, the members, the books, the portfolios, the counterparties and the catalogues, every row read whole before the page is cut. |
+| the book tree | exact | GET /api/books/tree | ores.http | composed view | trading | Every portfolio and every book in one answer, two collection reads woven into the tree a person navigates. |
+| the image map | exact | GET /api/image-map | ores.http | composed view | assets | Which image every flagged record uses, answered by ores.http from four reference data lists and one image search, at the address and in the shape the BFF answered. |
+| the tenor catalogue | exact | GET /api/tenors/catalogue | ores.http | composed view | reference-data | The tenors in their own order with their conventions and schedules, answered by ores.http from three whole list reads at the address and in the shape the BFF answered. |
+| the deployment overview | exact | GET /api/overview | ores.http | composed view | tenancy | The system administrator's home answered by ores.http at the address and in the shape the BFF answered: the roster counted by status, the tenants that need the administrator, the first page and the newest setups. |
+| the bootstrap status | exact | GET /api/bootstrap | ores.http | composed view | tenancy | Whether the deployment still needs its first administrator, answered by ores.http at the address and in the shape the BFF answered, with the two first-run settings a failed read leaves false. |
+| the principal's ways to hold | exact | GET /api/me/ways-to-hold | ores.http | composed view | access | The roles the caller could ask for that would give a permission, answered by ores.http at the address and in the shape the BFF answered. |
+| the cookie credential | regex | ^(GET\vert{}POST\vert{}DELETE) /api/session(/party\vert{}/switch-party)?$ | bff | transport capability | auth | The browser's cookie credential: minted by the sign-in, read back, ended, and re-scoped to another party, and the session it wraps is the /api/v1/auth/sessions resource. |
+| the change stream | regex | ^(GET /api/events\vert{}POST /api/events/watch)$ | bff | transport capability | changes | The change stream a client subscribes to, and the watch set that says which subjects it wants; delivery of events, not a domain object. |
+| the browser's change stream route | regex | ^(GET /api/events\vert{}POST /api/events/watch)$ | ores.http | transport capability | changes | The change stream in the shape ores.web reads, carrying only the collections the session watches, and the route that replaces that watch set. |
+| the change stream route | exact | GET /api/v1/changes | ores.http | transport capability | changes | The change stream itself: a response whose body is written from the hub as changes happen, with a comment line keeping a quiet stream alive. |
+| the liveness endpoint | exact | GET /api/health | bff | transport capability | (none) | The liveness answer the deployment's probes read, beside the metrics endpoints the design puts in the server. |
+| the client's journal | exact | POST /api/client-log | bff | transport capability | operations | The browser's own trail written into the services' journal under the session's id; it carries log lines rather than a domain object. |
+| the served client's configuration | prefix | GET /api/site | bff | transport capability | (none) | What the served client needs to render itself, the environment and on the developer surface the host, port and namespace, which the design delivers with the bundle rather than as a resource. |
+| the liveness endpoint route | exact | GET /api/health | ores.http | transport capability | (none) | The liveness answer the BFF gave the deployment's probes, kept so a probe needs no change when the BFF goes. |
+| the client's journal route | exact | POST /api/client-log | ores.http | transport capability | operations | The browser's trail written into the server's journal under the session's id, as the BFF wrote it. |
+| the served client's configuration route | prefix | GET /api/site | ores.http | transport capability | (none) | What the served client needs to render itself, read from the site configuration the BFF read, and the deployment's plumbing where the developer surface is offered. |
+| the ORE URI codec | regex | ^(GET\vert{}POST) /api/oresmd | bff | transport capability | (none) | A codec for ORE URIs: the grammar lives in the server, and the route turns a URI into its parts or the parts into a URI, storing nothing. |
+| the bundle index | exact | GET / | ores.http | transport capability | (none) | The built browser bundle's index, served so a browser can start the application. |
+| the bundle and its shell | exact | GET /{path} | ores.http | transport capability | (none) | A file of the built bundle, or the application shell for a screen path, and an /api path is answered 404 so the shell never stands in for JSON. |
+| the bucket listing | exact | GET {bucket_pattern} | ores.http | transport capability | (none) | A page of the keys one bucket of the object store holds. |
+| the storage object | regex | ^(GET\vert{}HEAD\vert{}PUT\vert{}DELETE) \{object_pattern\}$ | ores.http | transport capability | (none) | One object of the object store, uploaded, downloaded, checked or removed by bucket and key. |
+| the API's own identity | exact | GET /api/v1/info | ores.http | transport capability | (none) | The name, version and running state the API states about itself, the readiness answer beside the metrics. |
+| the curve configurations | regex | ^(GET\vert{}PUT) /api/refdata/curve-configurations |  | resource | reference-data | The curve configurations a party holds: the collection with the count of curves and sections each names, one configuration drawn as the sections the schema declares with every entry's leaves, the words the contract gives each leaf and the values the value sets accept, and the write that changes the leaves it names. |
+| the refdata resource catalogue | exact | GET /api/refdata | bff | not an API | (none) | A catalogue of the resources a screen may read, each with its key fields, sortable fields, search flag, version flag and the write and delete permission names, which is a table description rather than a resource. |
+| the refdata generic router | regex | ^(GET\vert{}PUT\vert{}DELETE) /api/refdata/: | bff | not an API | (none) | The resource is a string in the URL, so the payload's shape changes with it and no client can be generated from it; the generated collection per resource already carries the same rows under a named entity. |
+| the refdata resource catalogue route | exact | GET /api/refdata | ores.http | not an API | (none) | The catalogue the BFF answered, built from each record unit's own entry, so the screens keep reading the resources they may name when the BFF goes. |
+| the refdata record routes | regex | ^(GET\vert{}PUT\vert{}DELETE) /api/refdata/[a-z-]+(/key/\{key\}\vert{}/by/\{parent\})?$ | ores.http | not an API | (none) | The generic router's addresses, one generated unit per resource in the BFF's shapes, kept so the screens work when the BFF goes; the published collection per resource is the API. |
+| the synthetic resource catalogue route | exact | GET /api/synthetic | ores.http | not an API | (none) | The catalogue the BFF answered, built from each record unit's own entry for the session, so the screens keep reading the resources they may name when the BFF goes. |
+| the synthetic folder tree | exact | GET /api/synthetic/feed-folders | ores.http | composed view | simulation | The folders and the feeds under each at any depth, answered by ores.http from one folder call at the address and in the shape the BFF answered. |
+| the market trace | exact | GET /api/synthetic/market-trace | ores.http | composed view | simulation | The scheduler's recent decisions and every running feed's law, answered by ores.http from one trace call at the address and in the shape the BFF answered. |
+| the calibration of an asset class | exact | GET /api/synthetic/calibration/{assetClass} | ores.http | composed view | simulation | The policy a class calibrates under and how every feed of it resolves, with the coverage counts, answered by ores.http at the address and in the shape the BFF answered; nothing starts. |
+| the synthetic record routes | regex | ^(GET\vert{}PUT\vert{}DELETE) /api/synthetic/[a-z-]+(/key/\{key\}\vert{}/by/\{parent\})?$ | ores.http | not an API | (none) | The generic router's addresses, one generated unit per resource in the BFF's shapes and two hand-written feed key reads, kept so the screens work when the BFF goes. |
+| the synthetic resource catalogue | exact | GET /api/synthetic | bff | not an API | (none) | A catalogue of the synthetic resources a screen may write, each with its key field, sortable fields, search flag, permission names and the reason it may be read only, which is a table description rather than a resource. |
+| the synthetic generic router | regex | ^(GET\vert{}PUT\vert{}DELETE) /api/synthetic/: | bff | not an API | (none) | The resource is a string in the URL, so the payload's shape changes with it and no client can be generated from it; the feeds' own routes name what they serve. |
+| the classification catalogue | exact | GET /api/classifications | bff | not an API | (none) | The lists a screen offers, each with the columns to draw and a row count read per list in twenty eight sequential calls, which describes a table rather than a resource. |
+| the classification display order | exact | PUT /api/classifications/:list/order | bff | not an API | (none) | Writes the display order of the rows that moved; order for display is a rendering concern the design keeps in the client. |
+| the classification label | exact | PUT /api/classifications/:list/rows/:code/label | bff | not an API | (none) | Attaches or removes a label code, and the handler states that a label is how a code is drawn rather than what it is. |
+| the classification list rows | regex | ^(GET\vert{}POST\vert{}PUT\vert{}DELETE) /api/classifications/: | bff | not an API | (none) | One code list is named by a string in the URL and reached through that one router, and each row arrives with a labelCode, the words a screen draws it with, and a displayOrder, the position the screen shows it in. |
+| the label catalogue | exact | GET /api/labels | bff | not an API | (none) | Every label and the labels each code domain uses: translated copy for display, which the design puts in the client. |
+| the classification catalogue route | exact | GET /api/classifications | ores.http | not an API | (none) | The catalogue the BFF answered, built from each list unit's own entry with its count, so the classification screen works when the BFF goes. |
+| the classification list routes | regex | ^(GET\vert{}POST\vert{}PUT\vert{}DELETE) /api/classifications/[a-z-]+(/rows(/\{code\}(/label)?)?\vert{}/order)?$ | ores.http | not an API | (none) | The classification router's addresses, one generated unit per code list in the BFF's shapes, kept so the screen works when the BFF goes. |
+| the label catalogue route | exact | GET /api/labels | ores.http | not an API | (none) | The label catalogue the BFF answered, kept so the screens draw their codes when the BFF goes. |
+| the history read route | exact | GET /api/history | ores.http | not an API | (none) | The one history read every history tab calls, kept so the tabs work when the BFF goes; the owning component answers on the subject the entity type names. |
+| the generic history read | exact | GET /api/history | bff | not an API | (none) | One history route for every entity type, named by an opaque entityType string, so the payload has no per-entity schema; ores.http already serves /versions for each versioned collection. |
+| a form's pick lists route | regex | ^GET /api/(books\vert{}conventions\vert{}counterparties\vert{}tenors)/pick-lists$ | ores.http | not an API | (none) | The option lists the BFF answered for each reference data form, keyed by the control's name, kept so the forms work when the BFF goes. |
+| a form's pick lists | regex | ^GET /api/(books\vert{}conventions\vert{}counterparties\vert{}tenors)/pick-lists$ | bff | not an API | (none) | The option lists one form's controls need, keyed by the control's own name and joined by nothing; each list is a collection a client reads at its own resource. |
+| an edit form's codes route | exact | GET /api/reporting/choices | ores.http | not an API | (none) | The codes the report edit form offers, kept so the form works when the BFF goes; they are the form's option set and not a resource. |
+| an edit form's codes | exact | GET /api/reporting/choices | bff | not an API | (none) | The codes the report edit form offers so a save is accepted rather than refused, which is the form's option set and not a resource. |
+| a template form's lookups | exact | GET /api/analytics/sensitivity-templates/choices | bff | not an API | (none) | The two lookups a template states, in the order the screen offers them, which is display order for a form. |
+| a template form's lookups | exact | GET /api/analytics/sensitivity-templates/choices | ores.http | not an API | (none) | The two lookups a template states, read from their own tables and answered by ores.http at the address the BFF answered. |
+| the pricing engine vocabulary | exact | GET /api/reporting/pricing-engines/vocabulary |  | not an API | (none) | Fifteen lookup collections read at once and keyed by the names the editor's controls use, so a client that wants one of them reads that collection instead. |
+| the request story | exact | GET /api/requests/{id}/story | ores.http | composed view | workflow | One request's whole story answered by ores.http at the address and in the shape the BFF answered: its own versions, the answers given on it, the roles it asked for and what became of them, and the notices the reader was given, ordered as one stream and each source read under its owner's permission. |
+| the request story | exact | GET /api/requests/{id}/changes | ores.http | composed view | workflow | What one request proposes, answered by ores.http at the address and in the shape the BFF answered: the request is read first because its kind decides where its lines are kept, and then the component that owns the kind states them beside the value in force. |
+| one subject's story | exact | GET /api/timeline | ores.http | composed view | workflow | One person's, party's or request's story answered by ores.http at the address and in the shape the BFF answered: a request wraps the stream the inbox already serves, a person and a party compose every source their owner gates, and a source that refuses travels as a gap rather than as a hole in the answer. |
+| the request story | regex | ^GET /api/requests/:id/(story\vert{}changes)$ | bff | composed view | workflow | One request's whole story woven from every row any component wrote for it, the request's versions, the answers given on it, the roles it asked for and the notices, or the change lines of its kind beside the live record's values. |
+| the request checks | exact | GET /api/requests/{id}/checks | ores.http | composed view | workflow | What running a request's lines through the real write now says, answered by ores.http at the address and in the shape the BFF answered: the kind's own component runs its lines again without applying them, and the parts the policy names travel beside the refusal of each line. |
+| the request checks | exact | GET /api/requests/:id/checks | bff | composed view | workflow | Runs a request's proposed lines through the real write and answers what it says now, weaving the request with the record as it stands. |
+| the approval inbox | exact | GET /api/requests | ores.http | composed view | workflow | The requests this person may decide answered by ores.http at the address and in the shape the BFF answered: the queue read the inbox service picks, each row with the roles it asks for, the latest thing said about it and the trades it is about, and the answered tail beside the open queue. |
+| the approval inbox | exact | GET /api/requests | bff | composed view | workflow | The requests this person may decide, gathered from every kind into one queue with each kind's subject, which is the approval inbox the design names. |
+| the authorisation queue | exact | GET /api/queue/authorisations | bff | composed view | operations | The authorisation requests this person may decide with the deal each one names as it looks now, the open requests and the answered tail in one answer. |
+| the grid summary | exact | GET /api/operations/grid | bff | composed view | grid | The compute grid as one answer: the stored summary, the host registry with its hardware rows and the service roster, three reads so a node carries the name a person reads and the runner that serves it. |
+| the grid series | exact | GET /api/operations/grid/series | bff | composed view | grid | The grid counters per bucket and one row of buckets per node on one time axis, two reads joined onto the host registry. |
+| the grid usage | exact | GET /api/operations/grid/usage | bff | composed view | grid | Who uses the grid, the results grouped by tenant or by party with each group's share, the results read and the party names beside them. |
+| the grid summary | exact | GET /api/operations/grid | ores.http | composed view | grid | The grid summary answered by ores.http at the address and in the shape the BFF answered: the newest stored sample, each node with the name of its machine and its hardware, and the runner that serves it, kept for the interval a page asks again. |
+| the grid series | exact | GET /api/operations/grid/series | ores.http | composed view | grid | The grid series answered by ores.http at the address and in the shape the BFF answered: the counters per bucket, and for an operator one row of buckets per node joined onto the host registry, kept for the interval a page asks again. |
+| the grid usage | exact | GET /api/operations/grid/usage | ores.http | composed view | grid | The grid usage answered by ores.http at the address and in the shape the BFF answered: a group for each tenant, read by entering each in turn, or for each of the caller's parties, with each group's share and a tenant that could not be read carried as unavailable. |
+| the message bus | exact | GET /api/operations/bus | bff | composed view | operations | The NATS server samples over a window and one row per stream, a second read for each named stream, because no operation lists the streams. |
+| the message bus | exact | GET /api/operations/bus | ores.http | composed view | operations | The message bus answered by ores.http at the address and in the shape the BFF answered: the NATS server samples over a window, whole and newest first, and the newest sample of each stream the installation creates, kept for the interval a page asks again. |
+| the run's progress | regex | ^GET /api/workflow/: | bff | composed view | workflow | A run's progress as a rail renders it: the run's status, the step executing and one summary per step, three reads, so a page follows the run rather than the engine's events. |
+| the run's progress | exact | GET /api/workflow/{instanceId} | ores.http | composed view | workflow | A run's progress answered by ores.http at the address and in the shape the BFF answered: the run's status, the step it is executing and one summary per step, from the one read the engine already answers in that shape, kept for the interval a page asks again. |
+| the run's retry | prefix | POST /api/workflow/ | bff | resource | workflow | A command on one run: retrying a run that stopped asks the engine to start it again, and answers the run rather than a collection the client reads. |
+| the run's retry route | exact | POST /api/workflow/{instanceId}/retry | ores.http | resource | workflow | One run resumed at the address and in the shape the BFF answered: the step the page chose, or the step the run stopped at, and the engine's own answer saying which step it re-dispatched or why it refused. |
+| the tenor catalogue | exact | GET /api/tenors/catalogue | bff | composed view | reference-data | The tenors with their conventions and their schedules in one answer, three collection reads, because a tenor is meaningless without the rules that resolve it. |
+| the market data catalogue | exact | GET /api/marketdata/catalogue | bff | composed view | market-data | The providers and the feeds that serve them in one answer, two collection reads, so a subscription or a route can name a feed by id. |
+| the market data catalogue | exact | GET /api/marketdata/catalogue | ores.http | composed view | market-data | The providers and the feeds that serve them answered by ores.http at the address and in the shape the BFF answered: every provider by its code, and every feed by the publisher it belongs to, its default first and then by name. |
+| the public publishers | exact | GET /api/marketdata/public-rates | bff | composed view | market-data | Every public publisher with its terms, its feeds with their suppliers and asset classes, and the fixing series it fills, six collections read together. |
+| the public rates coverage | exact | GET /api/marketdata/public-rates/coverage | bff | composed view | market-data | The first and last date and the count of every series a public publisher fills, computed from the public catalogue and its fixings. |
+| the public rates file | exact | GET /api/marketdata/public-rates/fixings.csv | bff | composed view | market-data | One publisher's fixings as a CSV file over a date range, the catalogue read to find the publisher's series and their fixings read after. |
+| the public publishers | exact | GET /api/marketdata/public-rates | ores.http | composed view | market-data | The public publishers answered by ores.http at the address and in the shape the BFF answered: each publisher that states a terms page, with its feeds, the supplier behind each session, the asset classes its scopes name, and the series it fills as pairs. |
+| the public rates coverage | exact | GET /api/marketdata/public-rates/coverage | ores.http | composed view | market-data | The public rates coverage answered by ores.http at the address and in the shape the BFF answered: each public series' first date, last date and count, with a series that holds no value left out. |
+| the public rates file | exact | GET /api/marketdata/public-rates/fixings.csv | ores.http | composed view | market-data | One public publisher's fixings as a file, answered by ores.http at the address and in the shape the BFF answered: the publisher's series, filtered by the range and the item the query names, written as CSV with the count of rows it carries. |
+| the connectivity catalogue | exact | GET /api/marketdata/connectivity | bff | composed view | market-data | The publishers, suppliers, adapters, sessions, feeds, scopes and routes the Connectivity screen draws, seven collection reads in one answer. |
+| the connectivity catalogue | exact | GET /api/marketdata/connectivity | ores.http | composed view | market-data | The connectivity catalogue answered by ores.http at the address and in the shape the BFF answered: the publishers and their suppliers, the adapters with their comma lists as lists and their configuration schema as fields, the sessions with their settings as a document, and the feeds with the scopes and routes each carries. |
+| the identity shape fields | regex | ^GET /api/marketdata/(series-identity-shape-fields\vert{}series-classification-rules)$ | bff | composed view | market-data | What the oresmd editor reads to mark a URL's fields: each field a family requires or forbids, joined from the identity shapes and their entries, and the classification rules that name a URL's family. The shapes themselves are records. |
+| an item's fixing series | exact | GET /api/marketdata/fixing-series | bff | composed view | market-data | One item named by its oresmd URI: its series, the feeds and sessions that brought its values, and the fixings written against it. |
+| an item's fixing series | exact | GET /api/marketdata/fixing-series | ores.http | composed view | market-data | One item's fixing series answered by ores.http at the address and in the shape the BFF answered: the series its oresmd URI names, its fixings oldest first, its publisher, and the feeds that carry it with the supplier behind each session. |
+| the report health | exact | GET /api/reporting/report-health |  | resource | reporting | A party's report definitions counted by the health word each carries, one read whose counts and total the service derives, so the answer states what it counted and derives nothing. |
+| an ORE schema's contents | regex | ^GET /api/reporting/ore-files/[^/]+/schema$ |  | composed view | reporting | One schema of one engine version: the file catalogue names the schema and the stored versions supply its contents, so two collections are joined to answer. |
+| the engine's documented groups | exact | GET /api/reporting/engine-settings/documentation |  | resource | reporting | One collection, the parameter groups read from the store and returned with what each group means; the documentation screen reads it and no collection is joined onto it. |
+| the synthetic folder tree | exact | GET /api/synthetic/feed-folders | bff | composed view | simulation | The folders and the feeds under each at any depth, two collections woven, with the count of each kind so no screen reads the feeds. |
+| a reference data collection | regex | ^GET /api/v1/reference-data/\w | ores.http | resource | reference-data | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
+| a reference data collection writes | regex | ^(POST\vert{}PUT\vert{}DELETE) /api/v1/reference-data/\w | ores.http | resource | reference-data | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
+| a synthetic collection | regex | ^GET /api/v1/simulation/\w | ores.http | resource | simulation | A generated synthetic collection, answering under the published simulation area: the list, one row by key, its versions, and the bulk get. |
+| a synthetic collection writes | regex | ^(POST\vert{}PUT\vert{}DELETE) /api/v1/simulation/\w | ores.http | resource | simulation | A generated write of a synthetic collection: create, replace, remove, or one of the bulk put and delete calls. |
+| a market data collection | regex | ^GET /api/v1/market-data/\w | ores.http | resource | market-data | A generated market data collection, answering under the published market data area: the list, one row by key, its versions, and the bulk get. |
+| a market data collection writes | regex | ^(POST\vert{}PUT\vert{}DELETE) /api/v1/market-data/\w | ores.http | resource | market-data | A generated write of a market data collection: create, replace, remove, or one of the bulk put and delete calls. |
+| the ORE currency document | regex | ^(GET\vert{}POST) /api/refdata/currencies/ore- | bff | resource | reference-data | The standard import and export pair, the document the ORE service writes, the change a file would make and the write, exchanged whole rather than row by row. |
+| a calendar's business days | exact | GET /api/refdata/calendars/:code/days | bff | resource | reference-data | The materialised days of one calendar in one year, one page of a derived collection. |
+| a calendar rebuild | exact | POST /api/refdata/calendars/:code/rebuild | bff | resource | reference-data | Builds the materialised days of one calendar to the end of a year, a write to one calendar's derived rows. |
+| the counterparty collection | regex | ^(GET\vert{}PUT) /api/counterparties | bff | resource | reference-data | The counterparty collection: a page, one record with its identifiers, the children of a parent, the composite write, and the visibility and business centre writes. |
+| the convention families | regex | ^(GET\vert{}PUT) /api/conventions/ | bff | resource | reference-data | The convention families with their parts: the families, one family's rows, one document's terms, and the write of a family the journey draws. |
+| the tenor rules | regex | ^(GET\vert{}PUT\vert{}POST\vert{}DELETE) /api/tenors/(conventions\vert{}tenors\vert{}preview-resolution\vert{}resolve) | bff | resource | reference-data | A tenor's conventions and the resolution rows hanging off them: one convention's set, the write of a tenor, a convention or a resolution row, and the resolution of a drafted rule. |
+| the change reasons | exact | GET /api/change-reasons | bff | resource | reference-data | The reasons a write may carry, a deployment-specific code list the server holds rather than the client. |
+| a curve's values | regex | ^POST /api/curves/(series\vert{}series-by-id\vert{}series-list\vert{}slice\vert{}evolution\vert{}snapshot\vert{}manual-point) | bff | resource | market-data | The values of one curve series, read by id or by list, sliced, evolved and snapshotted, with the manual points a person adds or clears. |
+| the computed curve | exact | POST /api/curves/compute | bff | resource | market-data | Computes a curve's points from a bootstrap configuration and stores nothing, a derived read of the curve the configuration describes. |
+| the FX forward ladder | exact | POST /api/curves/fx-forward-ladder | bff | resource | market-data | One currency pair's forward ladder at one as-of, one service read that stores nothing and names the missing input when it refuses. |
+| the four market-data desk reads | regex | ^POST /api/market/(instruments\vert{}rate-ladder\vert{}fx-montage\vert{}curve-analytics)$ | bff | resource | market-data | The four reads the desk screens ask: the session party's instrument catalogue, one currency's rate ladder, one base currency's FX montage and one curve's analytics, each a service read that stores nothing and names what it refused. |
+| the published curves | prefix | POST /api/curves/published | bff | resource | market-data | The published curve as a thing: the set in use, the sets a party holds, and the withdrawal that takes one out of use with the reason it names. |
+| a series' observations | exact | GET /api/series/:id/observations | bff | resource | market-data | One series' observations inside a window, oldest first, the count read as the cap on the answer. |
+| the market data subscriptions | regex | ^(GET\vert{}POST\vert{}DELETE) /api/marketdata/(subscriptions\vert{}routes) | bff | resource | market-data | A subscription or a route the session party holds, with the feed that serves it, read as a page and written or removed one at a time. |
+| the market data adapters | exact | GET /api/marketdata/adapters | bff | resource | market-data | Every adapter the service tracks, with what it serves, what it was asked to serve and the counts of the last demand it answered. |
+| the public fixings | exact | GET /api/marketdata/public-rates/fixings | bff | resource | market-data | The fixings of up to a dozen series in one read, oldest first, by series. |
+| the draft reasons | exact | GET /api/draft-reasons | bff | resource | trading | The reasons a trade may be captured as a draft with, a tenant-wide code list the booking form offers. |
+| the blotter | exact | GET /api/blotter | bff | composed view | trading | One page of trades with the rail that groups them: books, portfolios, structures and structure members, counterparties, trade types, instrument codes and asset classes, eight collection reads before the page. |
+| the book tree | exact | GET /api/books/tree | bff | composed view | trading | Every portfolio and every book in one answer, two collection reads woven into the tree a person navigates. |
+| one book's page | exact | GET /api/books/:id | bff | resource | trading | One book with the portfolio it sits in, the portfolio read by id so the page shows a name rather than a key; one collection with its key resolved is a resource and not a view. |
+| a portfolio's rights | exact | GET /api/books/portfolios/:id/rights | bff | resource | trading | The rights granted on one portfolio, with the tenant's accounts read beside them so each right names the account that holds it; one collection with its key resolved is a resource and not a view. |
+| the book and portfolio writes | regex | ^PUT /api/books/(books\vert{}portfolios)$ | bff | resource | trading | One book or one portfolio written against the version the screen read. |
+| the trade collection | regex | ^(GET\vert{}POST) /api/trades | bff | resource | trading | The trade collection: a page, one trade, one version of it, the booking write, the links a person records and the form's securities and identifier schemes. |
+| the trade link types | exact | GET /api/trade-link-types | bff | resource | trading | The link types a person can record between trades, a lookup the server holds. |
+| the book change proposal | prefix | POST /api/book-changes | bff | resource | trading | A proposal of writes to a book: the preview runs them through the real service and writes nothing, and the write raises one request holding them. |
+| the structure collection | regex | ^(GET\vert{}POST\vert{}DELETE) /api/structures | bff | resource | trading | The structure collection: the tree flattened for reading, one structure with its legs, the leg candidates, and the leg writes that take a trade out of a container. |
+| the ungrouped trades | exact | GET /api/ungrouped-trades | bff | resource | trading | The trades no structure holds, a filtered read of the trade collection. |
+| the structure kinds | exact | GET /api/structure-kinds | bff | resource | trading | The kinds a structure may be, a lookup the server holds. |
+| the report list's route | exact | GET /api/reporting/reports | ores.http | resource | reporting | One page of the report definitions the caller's parties own, each row the definition with its latest run, its health word, its problem counts, its next fire and the party's own name, so a cell that cannot be read says why. |
+| a report definition's route | regex | ^((GET /api/reporting/reports/(by-name/\{name\}\vert{}\{segment\}\vert{}\{id\}/configurations))\vert{}(PUT /api/reporting/reports/\{id\}))$ | ores.http | resource | reporting | One report definition at the address and in the shape the BFF answered: the id a name resolves to, the page an id or an older name opens with the choices a shared name offers, the configurations it binds, and the write that rebuilds the record from the fields the form shows. |
+| a run's files | regex | ^GET /api/reporting/runs/\{id\}/files(/(?P<file>\{file\})(/info)?)?$ | ores.http | composed view | reporting | One run's files: the tree the run hangs in, what each input package holds, the output files each accepted result's manifest names, and the bytes of whichever one the reader opened, so the screen reads one answer and not a walk of three services. |
+| the cuts | regex | ^((GET\vert{}POST) /api/reporting/cuts.*)$ | ores.http | composed view | reporting | The cuts a party holds and one cut's record: the body's facts, the state and the label the reporting service derives, the kind the body was taken under, the gaps the assembly could not fill, the runs that priced from it, and the hand take that assembles a body part by part and presses. |
+| the kinds of cut | regex | ^((GET\vert{}PUT\vert{}DELETE) /api/reporting/cut-kinds.*\vert{}GET /api/reporting/cut-kind-choices)$ | ores.http | resource | reporting | The kinds of cut a report may select: the collection, one kind with the cuts the party holds of it, a write or removal, and the lookups a kind's form offers. A kind is one collection with three keys resolved -- its family's name, its resolution rule's name and the approval kind that signs a cut of it, with the permission that decider needs -- so one answer states words where the row holds codes. |
+| a run's results | regex | ^GET /api/reporting/runs/\{id\}/results$ | ores.http | resource | reporting | One run's figures at the level the reader asks for: the result rows of the run, the bookings of its trades, and the counterparties, books and portfolios those ids name, rolled up to the trade, book or counterparty and stated against an earlier run when one is named. |
+| a report run's route | regex | ^GET /api/reporting/runs/\{id\}(/errors)?$ | ores.http | resource | reporting | One report run at the address and in the shape the BFF answered: what it is, the state it reached, the batch that ran it and its output, and the problems it recorded. |
+| a report's runs route | regex | ^((GET\vert{}POST) /api/reporting/reports/\{id\}/(run\vert{}runs))$ | ores.http | resource | reporting | One report's runs at the addresses and in the shapes the BFF answered: the start that answers the run it made, and the runs of a definition newest first with the state each reached. |
+| the report definitions | regex | ^GET /api/reporting/reports | bff | resource | reporting | The report definition collection: a page, one definition by id or by the name an older address saved, and the configurations it binds. |
+| a report definition write | exact | PUT /api/reporting/reports/:id | bff | resource | reporting | One report definition written against the version read. |
+| a report run | exact | POST /api/reporting/reports/:id/run | bff | resource | reporting | Starts a run of one definition and answers the run it created. |
+| the report schedule | regex | ^POST /api/reporting/reports/(un)?schedule$ |  | resource | reporting | Sets or clears the schedule of one or more definitions, and answers how many it changed, which it refused and why. |
+| the report runs | regex | ^GET /api/reporting/runs/: | bff | resource | reporting | One report run: its state, its results at the level the reader asked for, and its output archive as the run stored it. |
+| a report configuration | regex | ^GET /api/reporting/configurations/[^/]+$ |  | composed view | reporting | One configuration with what its five keys point at: the type names, the party names, its analytics, their analytic names and its market data bindings, five reads so the page shows names rather than ids. |
+| the engine settings | regex | ^(GET\vert{}POST\vert{}PUT\vert{}DELETE) /api/reporting/engine-settings |  | resource | reporting | The reporting engine configuration: the collection, one configuration, its history, and one group's write or proposal. |
+| the pricing engines | regex | ^(GET\vert{}POST\vert{}PUT\vert{}DELETE) /api/reporting/pricing-engines |  | resource | reporting | The pricing engine configuration: the collection and its party names, one configuration with its bound reports, its history, and its ORE document as a file. |
+| the kinds of cut | regex | ^(GET\vert{}PUT\vert{}DELETE) /api/reporting/cut-kinds | bff | composed view | reporting | The kinds of cut a report may select: the collection, one kind with the cuts the party holds of it, and a write or removal. A kind is one collection with three keys resolved — its family's name, its resolution rule's name and the approval kind that signs a cut of it, with the permission that decider needs — so one answer states words where the row holds codes. |
+| the lookups a cut kind names | exact | GET /api/reporting/cut-kind-choices | bff | composed view | reporting | The families, the resolution rules and the inbox's approval kinds, three collections read so a form offers what a save will accept. |
+| the hand take | exact | POST /api/reporting/cuts/take | bff | composed view | reporting | The body of a cut assembled part by part and taken, and the authorisation the take raises beside it: one call serves the flow's review and its press, so an assembly computed twice is not two rules. |
+| the cuts | regex | ^GET /api/reporting/cuts | bff | composed view | reporting | The cuts a party holds, and one cut's record: the body's facts, the state and the label the reporting service derives, the kind the body was taken under, the gaps the assembly could not fill and the runs that priced from it. |
+| the grid's jobs route | regex | ^GET /api/operations/grid/jobs/(batches\vert{}workunits\vert{}results)(/\{id\}(/workunits\vert{}/results)?)?$ | ores.http | resource | grid | The grid's jobs at the addresses and in the shapes the BFF answered: one page of the batches the session may see with the name of the run and the party that made each, one batch, the work units of one batch, one work unit, the runs of one work unit, one page of the runs that ended with an outcome, and one run. |
+| a grid artefact's route | regex | ^GET /api/operations/grid/jobs/(workunits/\{id\}/input\vert{}results/\{id\}/output)$ | ores.http | resource | grid | The input bundle of one work unit or the output of one run, at the addresses and in the shapes the BFF answered: the bytes the grid stored, read only after the record that names them is read on the caller's own token. |
+| a grid artefact | regex | ^GET /api/operations/grid/jobs/(workunits/:id/input\vert{}results/:id/output) | bff | resource | grid | The input bundle of one workunit or the output of one run, the bytes the grid stored. |
+| the grid batches | regex | ^GET /api/operations/grid/jobs/(batches\vert{}workunits) | bff | resource | grid | One page of the grid's batches, workunits or runs the session may see, newest first, with the name of the run and party that made each; one collection with its keys resolved is a resource and not a view. |
+| the report runs of one definition | exact | GET /api/reporting/reports/:id/runs | bff | resource | reporting | The runs one report definition produced, newest first, each with the state it reached; one collection filtered by its parent. |
+| one report run | exact | GET /api/operations/grid/report-runs/:id | bff | resource | grid | One report run with its health, the batch that carried it and the name of its definition resolved onto it; one collection with its keys resolved is a resource and not a view. |
+| a report run's errors | exact | GET /api/operations/grid/report-runs/:id/errors | bff | resource | grid | The error events one report run raised, with their total; one collection filtered by its parent. |
+| a QA step's images | regex | ^POST /api/qa/scenarios/:[^/]+/steps/:[^/]+/images$ | bff | resource | qa | An image a tester attaches to one step of a scenario, written into the scenario's own store and read back with it. |
+| the grid results | regex | ^GET /api/operations/grid/jobs/results | bff | resource | grid | One page of the runs that ended with an outcome, the answer to which of them failed, or one run by id. |
+| the grid app versions' route | regex | ^(GET\vert{}PUT) /api/operations/grid/app-versions/\{id\}(/release-note)?$ | ores.http | resource | grid | One build of the compute catalogue at the addresses and in the shapes the BFF answered: the build with the app it belongs to, the packages the wrapper downloads and the versions beside it, and the write that replaces its release note against the version the editor read. |
+| the grid app versions | regex | ^(GET\vert{}PUT) /api/operations/grid/app-versions | bff | resource | grid | One app version with its packages and the versions beside it, and the write that replaces its release note against the version read. |
+| the services roster | exact | GET /api/operations/services | bff | resource | operations | Every expected service instance with the age of its last report, read from the telemetry samples. |
+| the services roster's route | exact | GET /api/operations/services | ores.http | resource | operations | Every expected service instance at the address and in the shape the BFF answered, each with the age of its last report subtracted on the deployment's own clock, which is the clock the sample was stamped against. |
+| the telemetry logs | exact | GET /api/operations/logs | bff | resource | operations | One page of telemetry entries a filter selects, with the count of everything it matches. |
+| the telemetry logs' route | exact | GET /api/operations/logs | ores.http | resource | operations | One page of telemetry entries at the address and in the shape the BFF answered: the window from a range, the filters combined with and, and the page and its total. |
+| the system settings | exact | GET /api/v1/system-settings | ores.http | resource | operations | The deployment's system settings, the variability component's own collection. |
+| one request's route | exact | GET /api/requests/{id} | ores.http | resource | workflow | One request at the address and in the shape the BFF answered: what it asks for, what was decided about it, where each part it named stands, and the trades it is about with the identifier each is known by. |
+| one request | exact | GET /api/requests/:id | bff | resource | workflow | One request an identifier names, when the person may open it, which a queue read cannot answer because a notice is read after the request stopped waiting. |
+| a request decision's route | exact | POST /api/requests/{id}/decision | ores.http | resource | workflow | One request decided at the address and in the shape the BFF answered: approved, refused, held or resumed against the version read, with the part the decider answers for and the reason a hold names. |
+| a request decision | exact | POST /api/requests/:id/decision | bff | resource | workflow | Approves, refuses, holds or resumes one request against the version read. |
+| the approvals mode | exact | GET /api/approvals-mode | bff | resource | workflow | Whether auto-approval is on, its scope, and who set it, when and why, read from the one subject the inbox answers it on. |
+| the approvals mode route | exact | GET /api/approvals-mode | ores.http | resource | workflow | Whether the tenant enforces approvals at the address and in the shape the BFF answered: the mode read as whether it auto-approves, with its scope and the person who set it, when and why. |
+| the principal's requests route | regex | ^((GET\vert{}POST) /api/me/requests\vert{}DELETE /api/me/requests/\{id\})$ | ores.http | resource | workflow | The signed-in person's own requests at the addresses and in the shapes the BFF answered: the page they raised, newest first, each row with the roles it asks for and the latest thing said about it; the ask that raises one; and the withdrawal that carries the version the person saw. |
+| the principal's requests | regex | ^(GET\vert{}POST\vert{}DELETE) /api/me/requests | bff | resource | workflow | The signed-in person's own requests, raised, read and taken back, the withdrawal carrying the version the person saw. |
+| the principal's notifications' route | regex | ^(GET\vert{}POST) /api/me/notifications(/(unread-count\vert{}read\vert{}clear))?$ | ores.http | resource | workflow | The signed-in person's notices at the addresses and in the shapes the BFF answered: a page of them, or only the unread ones; how many are unread, for the bell; and the two writes that mark them read or clear them, an empty list naming every one they apply to. |
+| the principal's notifications | regex | ^(GET\vert{}POST) /api/me/notifications | bff | resource | workflow | The signed-in person's notifications, their unread count, and the reads that mark or clear them. |
+| the hold reasons | exact | GET /api/hold-reasons | bff | resource | workflow | The codes a decider may park a request with, a tenant-wide lookup that carries no personal data. |
+| the hold reasons' route | exact | GET /api/hold-reasons | ores.http | resource | workflow | The codes a decider may park a request with at the address and in the shape the BFF answered, and the kinds that allow a hold: a refused kind read costs the rules and not the reasons, because a panel that offers no hold asks for a grant. |
+| an access screen's route | regex | ^(GET\vert{}POST\vert{}PUT\vert{}DELETE) /api/(me\vert{}accounts\vert{}roles\vert{}permissions\vert{}reporting-tree)(/.*)?$ | ores.http | resource | access | An access screen's read or write at the address and in the shape the BFF answered, forwarded to IAM as the caller, kept so the screens work when the BFF goes. |
+| the counterparty screen's route | regex | ^(GET\vert{}PUT) /api/counterparties/(\{id\}(/(visibility\vert{}business-centres))?\vert{}children\vert{}composite)$ | ores.http | resource | reference-data | The counterparty onboarding screen's read or write at the address and in the shape the BFF answered: one record with its identifiers, the children of a page, the composite write, and the visibility and business centre writes. |
+| the conventions screen's route | regex | ^(GET /api/conventions/(families\vert{}\{family\})\vert{}GET /api/conventions/\{family\}/documents/\{id\}\vert{}PUT /api/conventions/\{family\}(/documents/\{id\}/terms)?)$ | ores.http | resource | reference-data | The conventions screen's read or write at the address and in the shape the BFF answered: each family with its count, one family's page, the write of a family whose terms the screen draws, and one convention's document with the terms the screen changes and writes. |
+| the tenors screen's route | regex | ^(POST /api/tenors/(preview-resolution\vert{}resolve\vert{}resolve-convention)\vert{}GET /api/tenors/conventions/\{code\}/resolutions\vert{}PUT /api/tenors/(tenors\vert{}conventions)\vert{}(PUT\vert{}DELETE) /api/tenors/conventions/\{code\}/resolutions/\{tenor\})$ | ores.http | resource | reference-data | The tenors screen's operation at the address and in the shape the BFF answered: the resolution of a drafted rule and of the stored rules, one convention's membership rows, and the writes of a tenor, a convention and a membership row. |
+| the calendar screen's business days route | regex | ^(GET /api/refdata/calendars/\{code\}/days\vert{}POST /api/refdata/calendars/\{code\}/rebuild)$ | ores.http | resource | reference-data | One calendar's built days in one year, and the build of its days to the end of a year, at the address and in the shape the BFF answered. |
+| the currencies' ORE document route | regex | ^(GET /api/refdata/currencies/ore-document\vert{}POST /api/refdata/currencies/ore-import(/preview)?)$ | ores.http | resource | reference-data | The currencies' ORE import and export: the document the ORE service writes, what a file would change, and the import, each answered with the service's own words. |
+| the change reasons a screen offers | exact | GET /api/change-reasons | ores.http | resource | reference-data | The reasons a screen offers for a write, read from the data quality service in the shape the BFF answered. |
+| the feed screen's operation | regex | ^(POST /api/synthetic/(feeds\vert{}folders)/\{id\}/(start\vert{}stop)\vert{}POST /api/synthetic/feed-selection/(start\vert{}stop)\vert{}GET /api/synthetic/folder-feeds)$ | ores.http | resource | simulation | The feed screen's operation at the address and in the shape the BFF answered: one feed or one folder's feeds started and stopped, a page of the feeds a filter matches with whether each runs, and the start and stop of a selection. |
+| the feed screens' live read | regex | ^GET /api/synthetic/(feeds/\{id\}/ticks\vert{}feed-raster)$ | ores.http | resource | simulation | One feed's newest ticks, and when each feed's ticks arrived in a window, read from the buffers the gateway fills by listening to the feeds a screen names. |
+| the synthetic screens' preview | regex | ^POST /api/synthetic/(simulate/(fx\vert{}ir)\vert{}convert/(fx\vert{}fx-simple\vert{}ir)\vert{}preview/ir-shape)$ | ores.http | resource | simulation | A preview the synthetic screens draw from the values on the screen and store nothing of: sample paths, the conversions between engines and the simple view, and the rate at each ladder row. |
+| the calibration screen's action | regex | ^(POST /api/synthetic/calibration/(\{assetClass\}/run\vert{}variance/\{id\}/review)\vert{}(PUT\vert{}DELETE) /api/synthetic/calibration/(\{assetClass\}/policy\vert{}feeds/\{id\}/pin))$ | ores.http | resource | simulation | The calibration screen's action at the address and in the shape the BFF answered: a class's calibration run and stored, a variance calibration reviewed, a class's policy stated or removed, and one feed's candidate pinned or cleared. |
+| the market regime screen's route | regex | ^((GET\vert{}POST) /api/synthetic/market-regime\vert{}PUT /api/synthetic/market-regime/settings\vert{}GET /api/synthetic/market-history)$ | ores.http | resource | simulation | The market-wide arrival factor at the address and in the shape the BFF answered: the regime in force, the switch that forces it, the settings that move it, and the tick counts of the last stretch of the run. |
+| the trade screens' read | regex | ^GET /api/trades(/\{id\}(/versions/\{version\})?)?$ | ores.http | resource | trading | The trade screens' reads at the address and in the shape the BFF answered: a page of the trade list enriched with what a person reads, one trade's page, and one trade at one version. |
+| the booking screens' route | regex | ^((GET\vert{}POST) /api/trades(/new\vert{}/\{id\}/links)?\vert{}GET /api/(draft-reasons\vert{}trade-link-types))$ | ores.http | resource | trading | The booking screens at the address and in the shape the BFF answered: what the form offers, the reasons a deal is a draft, the link types a person records, a link between two trades, and the booking write itself. |
+| the structure screens' route | regex | ^((GET\vert{}POST\vert{}DELETE) /api/structures(/\{key\}(/legs(/\{tradeId\})?\vert{}/leg-candidates)?)?\vert{}GET /api/(structure-kinds\vert{}ungrouped-trades))$ | ores.http | resource | trading | The structure screens at the address and in the shape the BFF answered: the kinds a grouping may choose, the trades no structure holds yet, the grouping write, the list as a tree flattened for reading, one structure's page with its tree and legs, the leg candidates, and the leg writes. |
+| the book screens' route | regex | ^((GET /api/books/(\{id\}\vert{}portfolios/\{id\}/rights)\vert{}(PUT) /api/books/(books\vert{}portfolios)\vert{}POST /api/book-changes(/preview)?))$ | ores.http | resource | trading | The book screens at the address and in the shape the BFF answered: one book with the portfolio it sits in, the rights at a portfolio node with the accounts that hold them, the book and portfolio writes, and the book change proposal's preview and raise. |
+| an image screen's route | regex | ^(GET /api/(images\vert{}images/\{id\}\vert{}image-upload-policy)\vert{}POST /api/images)$ | ores.http | resource | assets | An image screen's read or upload at the address and in the shape the BFF answered, forwarded to the assets service as the caller. |
+| the tenant roster's route | regex | ^(GET /api/(tenants\vert{}overview\vert{}tenants/\{code\})\vert{}DELETE /api/tenants/\{code\})$ | ores.http | resource | tenancy | The deployment's tenants as system administration reads them, each joined with the run that set it up, at the address and in the shape the BFF answered, refused without the deployment read. |
+| the browser's session route | regex | ^((GET\vert{}POST\vert{}DELETE) /api/session\vert{}POST /api/session/(party\vert{}switch-party))$ | ores.http | resource | auth | The browser's session at the address and in the shape the BFF answered: sign in, read, sign out, choose the party a login waits on, and move to another party. |
+| the account door's route | regex | ^(POST /api/(signup\vert{}account/password)\vert{}GET /api/password-policy)$ | ores.http | resource | auth | A registration, the rules a password must keep, and the signed-in account's own password change, at the address and in the shape the BFF answered; a registration shares the sign-in budget. |
+| a setup screen's route | regex | ^(GET /api/(bootstrap\vert{}tenant-setup\vert{}registration-policy)\vert{}POST /api/bootstrap/(administrator\vert{}complete))$ | ores.http | resource | tenancy | The deployment's setup state, the first administrator, the end of first-run setup, a tenant's own setup run and the registration policy, at the address and in the shape the BFF answered. |
+| a read inside a tenant | regex | ^GET /api/tenants/\{code\}/(parties\vert{}people\vert{}accounts/\{username\}/sign-ins\vert{}images/\{id\})$ | ores.http | resource | tenancy | One tenant's data read from system administration, inside the tenant for the read alone, at the address and in the shape the BFF answered. |
+| a provisioning journey's route | regex | ^(GET /api/seed-profiles\vert{}POST /api/provision-(tenant\vert{}party))$ | ores.http | resource | tenancy | The starting points a tenant is provisioned from and the two journeys that provision, at the address and in the shape the BFF answered, forwarded as the caller. |
+| a tenancy screen's route | regex | ^GET /api/(tenant-statuses\vert{}tenant-types\vert{}lei-entities\vert{}parties)$ | ores.http | resource | tenancy | A tenancy screen's catalogue or page at the address and in the shape the BFF answered, forwarded as the caller. |
+| the account collection | exact | GET /api/accounts | bff | resource | access | The tenant's accounts, one page, because the number of accounts a tenant holds is not a number a screen uses. |
+| one account | exact | GET /api/accounts/:username | bff | resource | access | One account by username, answered with nothing rather than a 404 when the row has gone since the list was read. |
+| an account's picture | exact | GET /api/accounts/:username/picture | bff | resource | access | The image one account uses, read by username because most places that name an account know a username rather than an image id. |
+| an account's profile | regex | ^PUT /api/accounts/:username/profile$ | bff | resource | access | One account's profile fields, written whole from a read taken inside the request. |
+| an account's sign ins | exact | GET /api/accounts/:username/sign-ins | bff | resource | auth | One account's sign-in state and its sessions, newest first. |
+| an account's roles | regex | ^(GET /api/accounts/:accountId/(access\vert{}permissions)\vert{}POST /api/accounts/:accountId/roles\vert{}DELETE /api/accounts/:accountId/roles/:roleId)$ | bff | resource | access | The roles one account holds, or the permissions those roles grant, and the writes that give a role for a reason or take it away. |
+| an account's lock | regex | ^POST /api/accounts/:accountId/(lock\vert{}unlock)$ | bff | resource | access | One account locked or unlocked, a lock refusing the next sign-in while leaving the sessions it already holds open. |
+| an account's reporting line | exact | PUT /api/accounts/:accountId/reporting-line | bff | resource | access | Sets or clears who one account reports to, and nothing else. |
+| an account's contact record | regex | ^(GET\vert{}PUT) /api/accounts/:accountId/contact-information$ | bff | resource | access | One account's contact record as an administrator reads or writes it, the write reusing the identifier of the account's current record. |
+| the role collection | regex | ^(GET\vert{}POST\vert{}PUT\vert{}DELETE) /api/roles | bff | resource | access | The tenant's roles: the collection, one page of it for the editor, one role's rename or removal, the permission set it grants and the people who hold it. |
+| the permission catalogue | exact | GET /api/permissions | bff | resource | access | Every permission the platform defines, the catalogue a role is described against. |
+| the reporting hierarchy | exact | GET /api/reporting-tree | bff | resource | access | The tenant's reporting shape in one read, or one account's branch of it. |
+| the principal's access | regex | ^GET /api/me/(access\vert{}permissions)$ | bff | resource | access | The roles the signed-in person holds with who gave each and why, or one page of what those roles let them do, the documented alias for the principal. |
+| the principal's ways to hold | exact | GET /api/me/ways-to-hold | bff | composed view | access | The roles the person could ask for that would give them a permission, weaving the role catalogue and what each role grants against the grants the person already has. |
+| the principal's own record | regex | ^PUT /api/me/(profile\vert{}contact-information)$ | bff | resource | access | The signed-in person's own profile or contact record, whose account the session names so the body carries no id. |
+| the principal's contact record | exact | GET /api/me/contact-information | bff | resource | access | The signed-in person's own contact record, answered with nothing when there is none yet because the first write creates it. |
+| the principal's default party | exact | POST /api/me/default-party | bff | resource | access | Sets or clears the party quick sign-in uses on the signed-in account. |
+| the generated account collection | prefix | GET /api/v1/access/accounts | ores.http | resource | access | The IAM account collection, generated with list, read by username, a version read and a bulk get. |
+| the account collection writes | regex | ^(POST\vert{}PUT\vert{}DELETE) /api/v1/access/accounts | ores.http | resource | access | A generated write of the IAM account collection: the delete, the bulk get, or a whole-record put. |
+| the generated permission collection | regex | ^(GET\vert{}POST\vert{}PUT\vert{}DELETE) /api/v1/access/permissions | ores.http | resource | access | The permission collection, generated with list, create, replace, remove, bulk get and put. |
+| the generated role collection | regex | ^(GET\vert{}POST\vert{}PUT\vert{}DELETE) /api/v1/access/roles/ | ores.http | resource | access | The role collection, generated with list, create, replace, remove, bulk get and put, and a version read. |
+| the role collection root | regex | ^(GET\vert{}POST\vert{}PUT\vert{}DELETE) /api/v1/access/roles$ | ores.http | resource | access | The role collection itself, read as a list and written one role at a time. |
+| a role's permission set | exact | POST /api/v1/iam/roles_permissions/put | ores.http | resource | access | Replaces the permissions one role grants with exactly the set sent. |
+| an access collection | regex | ^(GET\vert{}POST\vert{}PUT\vert{}DELETE) /api/v1/access/(?!accounts\vert{}permissions\vert{}roles\vert{}sessions)\w | ores.http | resource | access | A generated collection of the access area that is not one of the four the gateway served first: its rows, a row by key or by a lookup, and its writes. |
+| an auth collection | regex | ^(GET\vert{}POST\vert{}PUT\vert{}DELETE) /api/v1/auth/(?!sessions\vert{}login_info\vert{}account_credentials)\w | ores.http | resource | auth | A generated collection of the auth area beyond the door's own: its rows and its writes, published under the area rather than under the component's name. |
+| the account operations | regex | ^POST /api/v1/iam/ops/(update_account\vert{}lock_account\vert{}unlock_account)$ | ores.http | resource | access | An RPC-shaped write to one account: its fields, or the lock that refuses the next sign-in and leaves the open sessions alone. |
+| the role assignment operations | regex | ^POST /api/v1/iam/ops/(assign_role\vert{}revoke_role\vert{}get_account_roles\vert{}get_role_permissions)$ | ores.http | resource | access | The roles one account holds and the permissions one role grants, read or written through an RPC-shaped verb. |
+| a tenancy collection | regex | ^GET /api/v1/tenancy/\w | ores.http | resource | tenancy | A generated tenancy collection: the list, one row by key, its versions and the bulk get, published under the area a tenant's own rows answer on. |
+| a tenancy collection write | regex | ^(POST\vert{}PUT\vert{}DELETE) /api/v1/tenancy/\w | ores.http | resource | tenancy | A generated write of a tenancy collection: create, replace, remove, or one of the bulk put and delete calls. |
+| the bootstrap operations | regex | ^POST /api/v1/iam/ops/(bootstrap_status\vert{}create_initial_admin)$ | ores.http | resource | tenancy | The deployment's first-run state and the first administrator it creates, the pair that closes bootstrap mode. |
+| the auth session | regex | ^(GET\vert{}POST\vert{}DELETE) /api/v1/auth/sessions | ores.http | resource | auth | A session is a thing: signing in creates one and sets the cookie it rides in, signing out ends the caller's, and /me reads the identity it states. |
+| the generated session collection | prefix | GET /api/v1/access/sessions | ores.http | resource | auth | The session collection, generated with list, create, replace, remove, bulk get and put. |
+| the session collection writes | regex | ^(POST\vert{}PUT\vert{}DELETE) /api/v1/access/sessions | ores.http | resource | auth | A generated write of the session collection: create, replace, remove, or one of the bulk get, put and delete calls. |
+| the account credentials | prefix | GET /api/v1/auth/account_credentials | ores.http | resource | auth | The account credential collection and its by-account read, the rows that hold a password's hash and salt. |
+| the account credential writes | regex | ^(POST\vert{}PUT\vert{}DELETE) /api/v1/auth/account_credentials | ores.http | resource | auth | A generated write of the account credential collection, or its bulk get. |
+| the login records | prefix | GET /api/v1/auth/login_info | ores.http | resource | auth | The login record collection, generated with list, read and bulk get; a record is written by signing in and carries no credential column. |
+| the login record writes | regex | ^(POST\vert{}PUT\vert{}DELETE) /api/v1/auth/login_info | ores.http | resource | auth | A generated write of the login record collection, or its bulk get. |
+| the auth events | exact | POST /api/v1/iam/auth_events/list | ores.http | resource | auth | The tenant's authentication events, read through one POST that carries the filter. |
+| the sign-in opens a session | exact | POST /api/v1/iam/ops/login | ores.http | resource | auth | An RPC-shaped write that mints one session: the object is the session, and the verb in the path names the write. |
+| the sign-in ends a session | regex | ^POST /api/v1/iam/ops/(logout\vert{}end_session)$ | ores.http | resource | auth | An RPC-shaped write that ends one session, the caller's or the identifier's. |
+| the session reads | regex | ^POST /api/v1/iam/ops/(get_active_sessions\vert{}get_session_statistics)$ | ores.http | resource | auth | An RPC-shaped read of the session store: the sessions with no end time, or the per-day per-account roll-up of them. |
+| the credential writes | regex | ^POST /api/v1/iam/ops/(change_password\vert{}reset_password\vert{}update_my_email\vert{}signup)$ | ores.http | resource | auth | An RPC-shaped write to one credential or account: the caller's password or email, an administrator's reset, or the account a stranger registers. |
+| the login records read | regex | ^(GET\vert{}POST) /api/login-info | bff | resource | auth | The tenant's login records, one page or one account's record, the reads the audit screen uses to explain a locked account. |
+| the session reads and writes | regex | ^(GET /api/sessions\vert{}GET /api/sessions/active\vert{}POST /api/sessions/:sessionId/end)$ | bff | resource | auth | The tenant's sessions, one page or the open ones, and the write that ends one of them for an administrator. |
+| an auth screen's route | regex | ^(GET /api/(auth-events\vert{}session-statistics\vert{}login-info\vert{}sessions\vert{}sessions/active\vert{}login-info/\{accountId\})\vert{}POST /api/sessions/\{sessionId\}/end)$ | ores.http | resource | auth | An audit screen's read or an administrator's end of a session, at the address and in the shape the BFF answered, forwarded to IAM as the caller. |
+| the session statistics | exact | GET /api/session-statistics | bff | resource | auth | The tenant's session statistics, one row per day and account, newest day first, the audit screen's own collection. |
+| the tenant auth events | exact | GET /api/auth-events | bff | resource | auth | The tenant's authentication events, newest first, with the account filter the read takes though the screen does not offer it. |
+| the principal's sessions | exact | GET /api/me/sessions | bff | resource | auth | The signed-in person's own open sessions, a self read the server scopes to the caller. |
+| the password policy | exact | GET /api/password-policy | bff | resource | auth | The rules a password must satisfy, read from the validator that enforces them rather than copied into a screen. |
+| the password change | exact | POST /api/account/password | bff | resource | auth | Replaces the signed-in account's own password, the account named by the session so nobody else's is reachable. |
+| the registration | exact | POST /api/signup | bff | resource | auth | Registers one account against the tenant the address resolves to and answers its state rather than a session. |
+| the address lookup | regex | ^(GET /api/geo/country\vert{}POST /api/v1/iam/ops/lookup_country)$ |  | resource | auth | Resolves one address to a country against the tenant's published ranges, the read the sign-in audit uses to say where a session came from. |
+| inside one tenant | regex | ^GET /api/tenants/:code/(parties\vert{}people\vert{}accounts/:username/sign-ins\vert{}images/:id)$ | bff | resource | tenancy | A page of one tenant's parties, people or accounts and their sign-ins, read from inside the tenant rather than from the deployment. |
+| the tenant collection | regex | ^(GET\vert{}DELETE) /api/tenants | bff | resource | tenancy | The tenants this deployment holds: a page of the roster, one tenant with the run that set it up, and the removal that closes a tenant and keeps its data. |
+| the first administrator | exact | POST /api/bootstrap/administrator | bff | resource | tenancy | Creates the account that closes bootstrap mode, refused unless the deployment says it is still in bootstrap. |
+| the setup flag | exact | POST /api/bootstrap/complete | bff | resource | tenancy | Records that the first-run journey finished, one settings write for the tenant the session works in. |
+| the tenant setup run | exact | GET /api/tenant-setup | bff | resource | tenancy | The tenant administrator's own setup run, the session naming the tenant so the request carries nothing. |
+| the account operations | regex | ^POST /api/v1/iam/accounts/(put\vert{}delete)$ | ores.http | resource | access | An account write answered by a domain operation rather than by the generated collection, still addressed under the component until the operation routes move. |
+| the tenant lookups | regex | ^GET /api/tenant-(statuses\vert{}types)$ | bff | resource | tenancy | The tenant lifecycle statuses or tenant types, the deployment's own rows. The badge code each row carries is stored on the row and is not a rendering concern: the route returns the row, and a client decides how to paint it. |
+| the seed profiles | exact | GET /api/seed-profiles | bff | resource | tenancy | The starting points a new tenant may be provisioned from, each with the step kinds it orders and the parameters its form declares. |
+| the legal entities | exact | GET /api/lei-entities | bff | resource | tenancy | The root legal entities a tenant can be started from, matched and sized by the read because the deployment holds tens of thousands. |
+| the registration policy | exact | GET /api/registration-policy | bff | resource | tenancy | What the deployment offers somebody not in it yet: the switch, the destination and whether a registration can be used at once. |
+| the party provisioning | exact | POST /api/provision-party | bff | resource | tenancy | Adds one party to the tenant the caller works in and starts the run that brings it to life, the row first and the run after it. |
+| the tenant provisioning | exact | POST /api/provision-tenant | bff | resource | tenancy | Provisions one tenant from a starting point and answers the run that does the rest. |
+| the party collection | exact | GET /api/parties | bff | resource | tenancy | One page of the session's own tenant's parties, scoped by row-level security so the route names no tenant. |
+| the principal's parties | exact | GET /api/me/parties | bff | resource | tenancy | The parties the signed-in person works in, each named by the server because the association read carries an identifier alone. |
+| the market regime in force | exact | GET /api/synthetic/market-regime | bff | resource | simulation | The market state in force, the multiplier every feed is scaled by, and who holds the state. |
+| the market regime writes | regex | ^(POST /api/synthetic/market-regime\vert{}PUT /api/synthetic/market-regime/settings)$ | bff | resource | simulation | Forces the regime or hands it back to the chain, or sets how the market moves, the reply being the state after the write. |
+| the market trace | exact | GET /api/synthetic/market-trace | bff | composed view | simulation | The scheduler's recent decisions woven into one trail: every tick with the gap its law drew and the wall gap it took, every regime turn and pin, and every change of the feeds. |
+| the market history | exact | GET /api/synthetic/market-history | bff | resource | simulation | The ticks of the last hour folded by the second and by asset class, with the pace and active share of each slot, counts rather than ticks so the read costs the same at any tick rate. |
+| the feed raster | exact | GET /api/synthetic/feed-raster | bff | resource | simulation | The times of the ticks each feed published in the window, one row per feed, a stopped feed keeping its row so the picture shows that it is silent. |
+| the calibration of an asset class | exact | GET /api/synthetic/calibration/:assetClass | bff | composed view | simulation | The policy a class calibrates under and how every feed of it resolves, with the coverage counts; nothing starts. |
+| a calibration run of an asset class | exact | POST /api/synthetic/calibration/:assetClass/run | bff | resource | simulation | Calibrates every feed of a class, or the one feed named, and writes each moved level and deviation as a new version of the feed config. |
+| the review of a variance calibration | exact | POST /api/synthetic/calibration/variance/:id/review | bff | resource | simulation | Approves or rejects one proposed GJR-GARCH calibration with the reviewer's reason; approving supersedes the pair's earlier approval and older proposals and points the pair's feeds at it. |
+| the calibration policy of an asset class | regex | ^(PUT\vert{}DELETE) /api/synthetic/calibration/:assetClass/policy$ | bff | resource | simulation | States a class's policy and brings its provider order to the list given, or returns the class to automatic calibration; two collections written together. |
+| the pinned item of a feed | regex | ^(PUT\vert{}DELETE) /api/synthetic/calibration/feeds/:id/pin$ | bff | resource | simulation | Pins one candidate on a feed as the exception to its class policy, or clears the feed's own items so it follows the policy again. |
+| the terms of a public publisher | regex | ^POST /api/marketdata/public-rates/:code/(accept\vert{}withdraw)-terms$ | bff | resource | market-data | Records the acceptance of a publisher's terms as the service holds them, or withdraws it so the adapter no longer fetches the publisher. |
+| the terms of several public publishers | exact | POST /api/marketdata/public-rates/accept-terms | bff | resource | market-data | Accepts the terms of several publishers at the versions read, each as the single accept would, and answers every publisher's outcome. |
+| the synthetic feeds | regex | ^(GET\vert{}POST\vert{}DELETE) /api/synthetic/(synthetic\vert{}feeds\vert{}folder-feeds) | bff | resource | simulation | A page of feeds a filter matches, one feed's ticks, and the start and stop writes of a feed's run. |
+| the synthetic folders | regex | ^POST /api/synthetic/folders/: | bff | resource | simulation | Starts or stops every feed under one folder, its subtree included, and answers what started, what was already running and what was skipped. |
+| a feed selection | regex | ^POST /api/synthetic/feed-selection/ | bff | resource | simulation | Starts or stops the feeds a person picked, or the feeds a filter matches less those left out, the service finding them. |
+| the synthetic conversions | regex | ^POST /api/synthetic/(convert\vert{}simulate\vert{}preview)/ | bff | resource | simulation | A derived read of the synthetic service's own function: a mixture or engine parameter set converted between views, spot or short-rate paths sampled, or the rate at each ladder row, with nothing stored. |
+| the asset collections | regex | ^(GET\vert{}POST\vert{}PUT\vert{}DELETE) /api/v1/assets/ | ores.http | resource | assets | The image, tag and image tag collections, generated with list, create, replace, remove, bulk get and put, a read by parent, and a version read. |
+| the image catalogue | regex | ^(GET\vert{}POST) /api/images(/:id)?$ | bff | resource | assets | The tenant's image catalogue: a page of the chooser's rows, an upload that answers the identifier, and one image's bytes. |
+| the image upload policy | exact | GET /api/image-upload-policy | bff | resource | assets | The rule an uploaded image must satisfy, read from the validator that enforces it rather than copied into a picker. |
+| the image map | exact | GET /api/image-map | bff | composed view | assets | Which image every flagged record uses, weaving currencies, countries, calendars and business centres into one code to image map, five reads, with a calendar and a business centre falling back to their country's flag and a placeholder for a code that has none. |
+| the sensitivity templates | regex | ^(GET\vert{}POST\vert{}PUT\vert{}DELETE) /api/analytics/sensitivity-templates | bff | resource | analytics | A sensitivity template key: a page of the tenant's keys, one key, its history, and the create, correct and remove writes. |
+| the sensitivity templates | regex | ^(GET\vert{}POST\vert{}PUT\vert{}DELETE) /api/analytics/sensitivity-templates | ores.http | resource | analytics | A sensitivity template key, answered by ores.http at the address and in the shape the BFF answered: a page of the tenant's keys, the two lookups a key names, one key, its history, and the create, correct and remove writes. |
+| the sprint list | exact | GET /api/agile/sprints | bff | resource | agile | The sprints the file store states, the collection the board and the charts are read against. |
+| the sprint board | exact | GET /api/agile/board | bff | composed view | agile | One sprint's work items and the states they sit in, woven into the columns a person reads, from the sprint file and the story, task and capture documents under it. |
+| the sprint charts | exact | GET /api/agile/charts | bff | composed view | agile | One sprint's scope and the work remaining per day, computed from the sprint file and the state changes of the documents under it. |
+| the backlog | exact | GET /api/agile/backlog | bff | resource | agile | The stories no sprint holds, in the order the file store keeps them. |
+| the work trees | exact | GET /api/agile/trees | bff | resource | agile | The git work trees the agents work in, the source the board reads when it shows who holds what. |
+| an agile document | exact | GET /api/agile/docs/:id | bff | resource | agile | One sprint, story, task, capture or scenario document, by the identifier its file states. |
+| the scenarios | regex | ^GET /api/qa/scenarios | bff | resource | qa | The QA scenarios the store holds, one scenario by id, and the image kept beside one of its steps. |
+| a scenario run | exact | PUT /api/qa/scenarios/:id/run | bff | resource | qa | Runs one scenario and answers its verdict, the write that makes it a run rather than a document. |
+| a QA document | exact | GET /api/qa/docs/:id | bff | resource | qa | One document the scenario store holds, by its identifier. |
+
+* Exemptions
+
+The decision of one route that no rule decides, keyed by its server, its method
+as a request line writes it, and its path. An exemption wins over every rule.
+
+| server | method | path | name | kind | area | note |
+|--------+--------+------+------+------+------+------|
+| bff | GET | /api/overview | the deployment overview | composed view | tenancy | The system administrator's home: the tenant roster divided into in service, on evaluation and setting up, the first page of the roster and the newest setups, every count a separate list read that asks for its total. |
+| bff | GET | /api/bootstrap | the bootstrap status | composed view | tenancy | Whether the deployment still needs its first administrator, composed from the IAM account and tenant answer and a variability settings read; a failure of the second read still answers the first. |
+| bff | GET | /api/timeline | one subject's story | composed view | workflow | One person's, party's or request's story as one stream, each source gated by the permission its owner puts on it and a source that refuses becoming a gap in the answer. |
+
+* Views
+
+A composed view owes four things (design section 11.1): a name in domain
+language, a published schema, an owner, and a stated computation and cache
+policy. The name is the =name= of the rule or exemption that decides it; the
+schema follows from K1; this table holds the rest. The owner is the component
+that must answer the question after the port, which is not always the one that
+answers it today. A composed view with no row here owes nothing yet, and its
+cells in the inventory are empty.
+
+| view | owner | computation | cache policy |
+|------+-------+-------------+--------------|
+| the deployment overview | ores.iam | the tenant roster counted by status, its first page, and the newest setups, each count a separate list read | ETag on the whole view, revalidated at each read, because provisioning changes it |
+| the bootstrap status | ores.iam | the IAM account and tenant answer, plus a variability settings read that may fail without failing the answer | ETag on the whole view, revalidated at each read, because setup changes it |
+| one subject's story | ores.workflow | every component's rows for one subject, each source read under its owner's permission and a refused source reported as a gap | ETag on the whole view, stale after 30 s |
+| the request story | ores.workflow | the request's versions, the decisions taken on it, the roles it asked for and the notices, or the change lines of its kind beside the live record | ETag on the whole view, stale after 15 s |
+| the request checks | ores.workflow | each proposed line run through the real write against the record as it stands | ETag on the whole view, stale after 30 s |
+| the approval inbox | ores.workflow | every kind of request this person may decide, gathered into one queue with each kind's subject | ETag on the whole view, stale after 15 s |
+| the grid summary | ores.compute | the stored summary, the host registry with its hardware rows, and the service roster, three reads | ETag on the whole view, stale after 10 s |
+| the grid series | ores.compute | the counters per bucket joined to one row of buckets per node and the host registry, two reads | ETag on the whole view, stale after 10 s |
+| the grid usage | ores.compute | the results grouped by tenant or by party with each group's share, and the party names beside them | ETag on the whole view, stale after 30 s |
+| the message bus | ores.telemetry | the NATS server samples over a window, and one read per stream because no operation lists the streams | ETag on the whole view, stale after 10 s |
+| the run's progress | ores.workflow | the run's status, the step executing and one summary per step | ETag on the whole view, stale after 5 s |
+| the kinds of cut | ores.reporting | the cut kinds with their family and resolution rule names, the approval kinds the kinds point at, and one cut read for the counts, four reads | ETag on the whole view, stale after 60 s |
+| the lookups a cut kind names | ores.reporting | the cut families, the cut resolution rules and the inbox approval kinds, three collection reads | ETag on the whole view, stale after 5 min |
+| the hand take | ores.reporting | the body assembled from the trading, market data, compute and reporting reads, answered part by part with the gaps it could not fill, and the cut the press wrote with the approval request it raised | no cache: the call writes when it does not preview |
+| the cuts | ores.reporting | the cuts of the session's party with the derived state, label and run tally the reporting service answers, or one cut with its kind and the gaps the assembly could not fill | ETag on the whole view, stale after 15 s |
+| the tenor catalogue | ores.refdata | the tenors with their conventions and schedules, three collection reads | ETag on the whole view, revalidated at each read, because the tenors screen's writes change it |
+| the market data catalogue | ores.marketdata | the providers and the feeds that serve them, two collection reads | ETag on the whole view, stale after 5 min |
+| the public publishers | ores.marketdata | the providers, feeds, scopes, sessions, suppliers and market series read together and joined onto each publisher | ETag on the whole view, stale after 5 min |
+| the public rates coverage | ores.marketdata | the public catalogue and its fixings, reduced to each series' first date, last date and count | ETag on the whole view, stale after 5 min |
+| the public rates file | ores.marketdata | the public catalogue to find the publisher's series, then their fixings filtered to the range and item | no cache: a file is built per request |
+| the connectivity catalogue | ores.marketdata | seven collection reads in parallel, each parsed and sorted by name | ETag on the whole view, stale after 5 min |
+| an item's fixing series | ores.marketdata | the market series found by URI, with the providers, feeds, scopes, sessions and suppliers read beside it, then its fixings | ETag on the whole view, stale after 5 min |
+| the authorisation queue | ores.inbox | the request queue for this viewer, each open and answered request joined to the deal it names | no cache: the queue answers what this person may decide now |
+| a report configuration | ores.reporting | the configuration, the names of its type and parties, its analytics and their names, and its market data bindings, five reads | ETag on the whole view, stale after 60 s |
+| a run's files | ores.reporting | the run, the packages compute says it read and wrote, the entries storage says each input package holds, the files each accepted result's manifest names, and the ORE catalogue, so a read that fails leaves its part of the tree out | no cache: a run's files are read when a person opens the run, and the bytes of a file are served from the object as the socket asks for them |
+| an ORE schema's contents | ores.reporting | the catalogue entry that is a schema with this code, and its stored contents at the engine version asked for, two reads | no cache: the schema is read from the store per request |
+| the synthetic folder tree | ores.synthetic | the folders and the feeds under each, at any depth, with the count of each kind so no screen reads the feeds | ETag on the whole view, revalidated at each read, because folder writes change it |
+| the blotter | ores.trading | one page of trades with the rail that groups them: books, portfolios, structures, counterparties, trade types, instrument codes and asset classes, eight collection reads before the page | ETag on the whole view, stale after 30 s |
+| the book tree | ores.trading | every portfolio and every book, two collection reads woven into the tree | ETag on the whole view, stale after 60 s |
+| the principal's ways to hold | ores.iam | the role catalogue and what each role grants against the grants the person already holds | ETag on the whole view, revalidated at each read, because a grant changes it |
+| the calibration of an asset class | ores.synthetic | every feed of the class resolved as a start would, with its candidates and their reasons, under the class policy or the defaults; nothing starts | No cache: a resolution reads the newest fixings each time |
+| the market trace | ores.synthetic | the scheduler's recent decisions: every tick with the gap its law drew and the wall gap it took, every regime turn and pin, and every change of the feeds | ETag on the whole view, stale after 10 s |
+| the identity shape fields | ores.marketdata | the shapes and their entries read whole and joined one row per field with its family's parts, and the rules that give a series its subclass, three collection reads | No cache: an editor's save changes the shapes, so each read answers from the store as it stands |
+| the image map | ores.assets | which image every flagged record uses: currencies, countries, calendars and business centres in one code to image map, five reads, with a country fallback and a placeholder | ETag on the whole view, stale after 5 min |
+| the sprint board | no service, X1 decides | one sprint's work items and their states, read from the sprint file and the documents under it | ETag on the whole view, stale after 60 s |
+| the sprint charts | no service, X1 decides | one sprint's scope and the work remaining per day, computed from the sprint file and the state changes under it | ETag on the whole view, stale after 60 s |
+
+* Pairs
+
+Which C++ route answers each BFF route, each as a method and path written as the
+inventory prints it. A BFF route with neither a pair nor a family is an explicit
+gap, and the inventory prints =none= beside it. Pair a route only when the C++
+route clearly does the same thing; the two routes can use different verbs. A
+pair records the mapping and does not prove it.
+
+| BFF method | BFF path | C++ method | C++ path |
+|------------+----------+------------+----------|
+| GET | /api/accounts | GET | /api/accounts |
+| GET | /api/accounts/:username | GET | /api/accounts/{username} |
+| POST | /api/accounts/:accountId/lock | POST | /api/accounts/{accountId}/lock |
+| POST | /api/accounts/:accountId/unlock | POST | /api/accounts/{accountId}/unlock |
+| POST | /api/me/default-party | POST | /api/me/default-party |
+| PUT | /api/roles/:roleId | PUT | /api/roles/{roleId} |
+| POST | /api/roles/:roleId/permissions/changes | POST | /api/roles/{roleId}/permissions/changes |
+| PUT | /api/me/profile | PUT | /api/me/profile |
+| PUT | /api/accounts/:username/profile | PUT | /api/accounts/{username}/profile |
+| GET | /api/me/contact-information | GET | /api/me/contact-information |
+| PUT | /api/me/contact-information | PUT | /api/me/contact-information |
+| GET | /api/accounts/:accountId/contact-information | GET | /api/accounts/{accountId}/contact-information |
+| PUT | /api/accounts/:accountId/contact-information | PUT | /api/accounts/{accountId}/contact-information |
+| GET | /api/accounts/:username/picture | GET | /api/accounts/{username}/picture |
+| PUT | /api/accounts/:accountId/reporting-line | PUT | /api/accounts/{accountId}/reporting-line |
+| GET | /api/reporting-tree | GET | /api/reporting-tree |
+| GET | /api/me/ways-to-hold | GET | /api/me/ways-to-hold |
+| GET | /api/me/sessions | GET | /api/me/sessions |
+| GET | /api/accounts/:username/sign-ins | GET | /api/accounts/{username}/sign-ins |
+| GET | /api/images/:id | GET | /api/images/{id} |
+| GET | /api/image-upload-policy | GET | /api/image-upload-policy |
+| GET | /api/lei-entities | GET | /api/lei-entities |
+| GET | /api/me/access | GET | /api/me/access |
+| GET | /api/me/permissions | GET | /api/me/permissions |
+| GET | /api/accounts/:accountId/permissions | GET | /api/accounts/{accountId}/permissions |
+| GET | /api/roles/page | GET | /api/roles/page |
+| GET | /api/roles/:roleId/holders | GET | /api/roles/{roleId}/holders |
+| GET | /api/accounts/:accountId/access | GET | /api/accounts/{accountId}/access |
+| POST | /api/accounts/:accountId/roles | POST | /api/accounts/{accountId}/roles |
+| DELETE | /api/accounts/:accountId/roles/:roleId | DELETE | /api/accounts/{accountId}/roles/{roleId} |
+| GET | /api/permissions | GET | /api/permissions |
+| GET | /api/roles | GET | /api/roles |
+| POST | /api/roles | POST | /api/roles |
+| DELETE | /api/roles/:name | DELETE | /api/roles/{name} |
+| GET | /api/roles/:roleId/permissions | GET | /api/roles/{roleId}/permissions |
+| PUT | /api/roles/:roleId/permissions | PUT | /api/roles/{roleId}/permissions |
+| POST | /api/session | POST | /api/session |
+| POST | /api/session/party | POST | /api/session/party |
+| POST | /api/session/switch-party | POST | /api/session/switch-party |
+| DELETE | /api/session | DELETE | /api/session |
+| GET | /api/session | GET | /api/session |
+| GET | /api/login-info | GET | /api/login-info |
+| GET | /api/login-info/:accountId | GET | /api/login-info/{accountId} |
+| POST | /api/account/password | POST | /api/account/password |
+| GET | /api/password-policy | GET | /api/password-policy |
+| POST | /api/signup | POST | /api/signup |
+| GET | /api/sessions | GET | /api/sessions |
+| GET | /api/sessions/active | GET | /api/sessions/active |
+| POST | /api/sessions/:sessionId/end | POST | /api/sessions/{sessionId}/end |
+| GET | /api/session-statistics | GET | /api/session-statistics |
+| GET | /api/auth-events | GET | /api/auth-events |
+| GET | /api/geo/country | GET | /api/geo/country |
+| GET | /api/images | GET | /api/images |
+| POST | /api/images | POST | /api/images |
+| GET | /api/events | GET | /api/events |
+| POST | /api/events/watch | POST | /api/events/watch |
+| GET | /api/tenants | GET | /api/tenants |
+| GET | /api/overview | GET | /api/overview |
+| GET | /api/tenants/:code | GET | /api/tenants/{code} |
+| DELETE | /api/tenants/:code | DELETE | /api/tenants/{code} |
+| GET | /api/tenants/:code/parties | GET | /api/tenants/{code}/parties |
+| GET | /api/tenants/:code/people | GET | /api/tenants/{code}/people |
+| GET | /api/tenants/:code/accounts/:username/sign-ins | GET | /api/tenants/{code}/accounts/{username}/sign-ins |
+| GET | /api/tenants/:code/images/:id | GET | /api/tenants/{code}/images/{id} |
+| GET | /api/tenant-statuses | GET | /api/tenant-statuses |
+| GET | /api/tenant-types | GET | /api/tenant-types |
+| GET | /api/seed-profiles | GET | /api/seed-profiles |
+| POST | /api/provision-tenant | POST | /api/provision-tenant |
+| POST | /api/provision-party | POST | /api/provision-party |
+| GET | /api/bootstrap | GET | /api/bootstrap |
+| POST | /api/bootstrap/administrator | POST | /api/bootstrap/administrator |
+| POST | /api/bootstrap/complete | POST | /api/bootstrap/complete |
+| GET | /api/tenant-setup | GET | /api/tenant-setup |
+| GET | /api/registration-policy | GET | /api/registration-policy |
+| GET | /api/parties | GET | /api/parties |
+| GET | /api/me/parties | GET | /api/me/parties |
+| GET | /api/refdata | GET | /api/refdata |
+| GET | /api/synthetic | GET | /api/synthetic |
+| GET | /api/classifications | GET | /api/classifications |
+| GET | /api/labels | GET | /api/labels |
+| GET | /api/history | GET | /api/history |
+| GET | /api/health | GET | /api/health |
+| POST | /api/client-log | POST | /api/client-log |
+| GET | /api/site | GET | /api/site |
+| GET | /api/site/deployment | GET | /api/site/deployment |
+| GET | /api/books/pick-lists | GET | /api/books/pick-lists |
+| GET | /api/conventions/pick-lists | GET | /api/conventions/pick-lists |
+| GET | /api/counterparties/pick-lists | GET | /api/counterparties/pick-lists |
+| GET | /api/tenors/pick-lists | GET | /api/tenors/pick-lists |
+| GET | /api/counterparties | GET | /api/v1/reference-data/counterparties |
+| GET | /api/counterparties/:id | GET | /api/counterparties/{id} |
+| GET | /api/counterparties/children | GET | /api/counterparties/children |
+| PUT | /api/counterparties/composite | PUT | /api/counterparties/composite |
+| GET | /api/counterparties/:id/visibility | GET | /api/counterparties/{id}/visibility |
+| PUT | /api/counterparties/:id/visibility | PUT | /api/counterparties/{id}/visibility |
+| PUT | /api/counterparties/:id/business-centres | PUT | /api/counterparties/{id}/business-centres |
+| GET | /api/conventions/families | GET | /api/conventions/families |
+| GET | /api/conventions/:family | GET | /api/conventions/{family} |
+| PUT | /api/conventions/:family | PUT | /api/conventions/{family} |
+| POST | /api/tenors/preview-resolution | POST | /api/tenors/preview-resolution |
+| POST | /api/tenors/resolve | POST | /api/tenors/resolve |
+| POST | /api/tenors/resolve-convention | POST | /api/tenors/resolve-convention |
+| GET | /api/tenors/conventions/:code/resolutions | GET | /api/tenors/conventions/{code}/resolutions |
+| PUT | /api/tenors/tenors | PUT | /api/tenors/tenors |
+| PUT | /api/tenors/conventions | PUT | /api/tenors/conventions |
+| PUT | /api/tenors/conventions/:code/resolutions/:tenor | PUT | /api/tenors/conventions/{code}/resolutions/{tenor} |
+| DELETE | /api/tenors/conventions/:code/resolutions/:tenor | DELETE | /api/tenors/conventions/{code}/resolutions/{tenor} |
+| GET | /api/refdata/calendars/:code/days | GET | /api/refdata/calendars/{code}/days |
+| POST | /api/refdata/calendars/:code/rebuild | POST | /api/refdata/calendars/{code}/rebuild |
+| GET | /api/refdata/currencies/ore-document | GET | /api/refdata/currencies/ore-document |
+| POST | /api/refdata/currencies/ore-import/preview | POST | /api/refdata/currencies/ore-import/preview |
+| POST | /api/refdata/currencies/ore-import | POST | /api/refdata/currencies/ore-import |
+| GET | /api/change-reasons | GET | /api/change-reasons |
+| POST | /api/synthetic/feeds/:id/start | POST | /api/synthetic/feeds/{id}/start |
+| POST | /api/synthetic/feeds/:id/stop | POST | /api/synthetic/feeds/{id}/stop |
+| POST | /api/synthetic/folders/:id/start | POST | /api/synthetic/folders/{id}/start |
+| POST | /api/synthetic/folders/:id/stop | POST | /api/synthetic/folders/{id}/stop |
+| GET | /api/synthetic/folder-feeds | GET | /api/synthetic/folder-feeds |
+| POST | /api/synthetic/feed-selection/start | POST | /api/synthetic/feed-selection/start |
+| POST | /api/synthetic/feed-selection/stop | POST | /api/synthetic/feed-selection/stop |
+| GET | /api/synthetic/feeds/:id/ticks | GET | /api/synthetic/feeds/{id}/ticks |
+| GET | /api/synthetic/feed-raster | GET | /api/synthetic/feed-raster |
+| POST | /api/synthetic/simulate/fx | POST | /api/synthetic/simulate/fx |
+| POST | /api/synthetic/simulate/ir | POST | /api/synthetic/simulate/ir |
+| POST | /api/synthetic/convert/fx | POST | /api/synthetic/convert/fx |
+| POST | /api/synthetic/convert/fx-simple | POST | /api/synthetic/convert/fx-simple |
+| POST | /api/synthetic/convert/ir | POST | /api/synthetic/convert/ir |
+| POST | /api/synthetic/preview/ir-shape | POST | /api/synthetic/preview/ir-shape |
+| POST | /api/synthetic/calibration/:assetClass/run | POST | /api/synthetic/calibration/{assetClass}/run |
+| POST | /api/synthetic/calibration/variance/:id/review | POST | /api/synthetic/calibration/variance/{id}/review |
+| PUT | /api/synthetic/calibration/:assetClass/policy | PUT | /api/synthetic/calibration/{assetClass}/policy |
+| DELETE | /api/synthetic/calibration/:assetClass/policy | DELETE | /api/synthetic/calibration/{assetClass}/policy |
+| PUT | /api/synthetic/calibration/feeds/:id/pin | PUT | /api/synthetic/calibration/feeds/{id}/pin |
+| DELETE | /api/synthetic/calibration/feeds/:id/pin | DELETE | /api/synthetic/calibration/feeds/{id}/pin |
+| GET | /api/synthetic/market-regime | GET | /api/synthetic/market-regime |
+| POST | /api/synthetic/market-regime | POST | /api/synthetic/market-regime |
+| PUT | /api/synthetic/market-regime/settings | PUT | /api/synthetic/market-regime/settings |
+| GET | /api/synthetic/market-history | GET | /api/synthetic/market-history |
+| GET | /api/synthetic/feed-folders | GET | /api/synthetic/feed-folders |
+| GET | /api/synthetic/market-trace | GET | /api/synthetic/market-trace |
+| GET | /api/synthetic/calibration/:assetClass | GET | /api/synthetic/calibration/{assetClass} |
+| GET | /api/tenors/catalogue | GET | /api/tenors/catalogue |
+| GET | /api/image-map | GET | /api/image-map |
+| GET | /api/trades | GET | /api/trades |
+| GET | /api/trades/:id | GET | /api/trades/{id} |
+| GET | /api/trades/:id/versions/:version | GET | /api/trades/{id}/versions/{version} |
+| GET | /api/trades/new | GET | /api/trades/new |
+| POST | /api/trades | POST | /api/trades |
+| POST | /api/trades/:id/links | POST | /api/trades/{id}/links |
+| GET | /api/trade-link-types | GET | /api/trade-link-types |
+| GET | /api/draft-reasons | GET | /api/draft-reasons |
+| GET | /api/structure-kinds | GET | /api/structure-kinds |
+| GET | /api/ungrouped-trades | GET | /api/ungrouped-trades |
+| GET | /api/structures | GET | /api/structures |
+| POST | /api/structures | POST | /api/structures |
+| GET | /api/structures/:key | GET | /api/structures/{key} |
+| POST | /api/structures/:key/legs | POST | /api/structures/{key}/legs |
+| DELETE | /api/structures/:key/legs/:tradeId | DELETE | /api/structures/{key}/legs/{tradeId} |
+| GET | /api/structures/:key/leg-candidates | GET | /api/structures/{key}/leg-candidates |
+| GET | /api/books/:id | GET | /api/books/{id} |
+| GET | /api/books/portfolios/:id/rights | GET | /api/books/portfolios/{id}/rights |
+| PUT | /api/books/books | PUT | /api/books/books |
+| PUT | /api/books/portfolios | PUT | /api/books/portfolios |
+| POST | /api/book-changes/preview | POST | /api/book-changes/preview |
+| POST | /api/book-changes | POST | /api/book-changes |
+| GET | /api/blotter | GET | /api/blotter |
+| GET | /api/books/tree | GET | /api/books/tree |
+| GET | /api/reporting/choices | GET | /api/reporting/choices |
+| GET | /api/reporting/reports | GET | /api/reporting/reports |
+| GET | /api/reporting/runs/:id | GET | /api/reporting/runs/{id} |
+| GET | /api/reporting/runs/:id/errors | GET | /api/reporting/runs/{id}/errors |
+| POST | /api/reporting/reports/:id/run | POST | /api/reporting/reports/{id}/run |
+| GET | /api/reporting/reports/:id/runs | GET | /api/reporting/reports/{id}/runs |
+| GET | /api/reporting/reports/by-name/:name | GET | /api/reporting/reports/by-name/{name} |
+| GET | /api/reporting/reports/:segment | GET | /api/reporting/reports/{segment} |
+| GET | /api/reporting/reports/:id/configurations | GET | /api/reporting/reports/{id}/configurations |
+| PUT | /api/reporting/reports/:id | PUT | /api/reporting/reports/{id} |
+| GET | /api/reporting/configurations/:id | GET | /api/reporting/configurations/{id} |
+| GET | /api/reporting/cut-kind-choices | GET | /api/reporting/cut-kind-choices |
+| GET | /api/reporting/cut-kinds | GET | /api/reporting/cut-kinds |
+| GET | /api/reporting/cut-kinds/:code | GET | /api/reporting/cut-kinds/{code} |
+| PUT | /api/reporting/cut-kinds/:code | PUT | /api/reporting/cut-kinds/{code} |
+| DELETE | /api/reporting/cut-kinds/:code | DELETE | /api/reporting/cut-kinds/{code} |
+| GET | /api/reporting/cuts | GET | /api/reporting/cuts |
+| GET | /api/reporting/cuts/:id | GET | /api/reporting/cuts/{id} |
+| GET | /api/reporting/cuts/:id/runs | GET | /api/reporting/cuts/{id}/runs |
+| POST | /api/reporting/cuts/take | POST | /api/reporting/cuts/take |
+| GET | /api/reporting/engine-settings/documentation | GET | /api/reporting/engine-settings/documentation |
+| GET | /api/reporting/engine-settings | GET | /api/reporting/engine-settings |
+| GET | /api/reporting/engine-settings/:id | GET | /api/reporting/engine-settings/{id} |
+| GET | /api/reporting/engine-settings/:id/history | GET | /api/reporting/engine-settings/{id}/history |
+| POST | /api/reporting/engine-settings | POST | /api/reporting/engine-settings |
+| PUT | /api/reporting/engine-settings/:id | PUT | /api/reporting/engine-settings/{id} |
+| PUT | /api/reporting/engine-settings/:id/groups/:group | PUT | /api/reporting/engine-settings/{id}/groups/{group} |
+| DELETE | /api/reporting/engine-settings/:id | DELETE | /api/reporting/engine-settings/{id} |
+| POST | /api/reporting/pricing-engines | POST | /api/reporting/pricing-engines |
+| GET | /api/conventions/:family/documents/:id | GET | /api/conventions/{family}/documents/{id} |
+| PUT | /api/conventions/:family/documents/:id/terms | PUT | /api/conventions/{family}/documents/{id}/terms |
+| GET | /api/refdata/curve-configurations | GET | /api/refdata/curve-configurations |
+| GET | /api/refdata/curve-configurations/:id | GET | /api/refdata/curve-configurations/{id} |
+| PUT | /api/refdata/curve-configurations/:id | PUT | /api/refdata/curve-configurations/{id} |
+| GET | /api/reporting/ore-files/:code/schema | GET | /api/reporting/ore-files/{code}/schema |
+| POST | /api/reporting/pricing-engines/ore-import | POST | /api/reporting/pricing-engines/ore-import |
+| POST | /api/reporting/pricing-engines/ore-import/preview | POST | /api/reporting/pricing-engines/ore-import/preview |
+| PUT | /api/reporting/pricing-engines/:id | PUT | /api/reporting/pricing-engines/{id} |
+| DELETE | /api/reporting/pricing-engines/:id | DELETE | /api/reporting/pricing-engines/{id} |
+| GET | /api/reporting/pricing-engines | GET | /api/reporting/pricing-engines |
+| GET | /api/reporting/pricing-engines/:id | GET | /api/reporting/pricing-engines/{id} |
+| GET | /api/reporting/pricing-engines/vocabulary | GET | /api/reporting/pricing-engines/vocabulary |
+| GET | /api/reporting/pricing-engines/:id/history | GET | /api/reporting/pricing-engines/{id}/history |
+| GET | /api/reporting/pricing-engines/:id/ore-document | GET | /api/reporting/pricing-engines/{id}/ore-document |
+| GET | /api/reporting/report-health | GET | /api/reporting/report-health |
+| POST | /api/reporting/reports/schedule | POST | /api/reporting/reports/schedule |
+| POST | /api/reporting/reports/unschedule | POST | /api/reporting/reports/unschedule |
+| GET | /api/reporting/runs/:id/files | GET | /api/reporting/runs/{id}/files |
+| GET | /api/reporting/runs/:id/files/:file | GET | /api/reporting/runs/{id}/files/{file} |
+| GET | /api/reporting/runs/:id/files/:file/info | GET | /api/reporting/runs/{id}/files/{file}/info |
+| GET | /api/reporting/runs/:id/results | GET | /api/reporting/runs/{id}/results |
+| GET | /api/marketdata/adapters | GET | /api/marketdata/adapters |
+| GET | /api/oresmd/schema | GET | /api/oresmd/schema |
+| POST | /api/oresmd/parse | POST | /api/oresmd/parse |
+| POST | /api/oresmd/parse-many | POST | /api/oresmd/parse-many |
+| POST | /api/oresmd/compose | POST | /api/oresmd/compose |
+| GET | /api/series/:id/observations | GET | /api/series/{id}/observations |
+| POST | /api/curves/series | POST | /api/curves/series |
+| POST | /api/curves/series-by-id | POST | /api/curves/series-by-id |
+| POST | /api/curves/series-list | POST | /api/curves/series-list |
+| POST | /api/curves/compute | POST | /api/curves/compute |
+| POST | /api/curves/manual-point | POST | /api/curves/manual-point |
+| POST | /api/curves/manual-point/clear | POST | /api/curves/manual-point/clear |
+| POST | /api/curves/snapshot | POST | /api/curves/snapshot |
+| POST | /api/curves/slice | POST | /api/curves/slice |
+| POST | /api/curves/evolution | POST | /api/curves/evolution |
+| POST | /api/curves/published | POST | /api/curves/published |
+| POST | /api/curves/published-sets | POST | /api/curves/published-sets |
+| POST | /api/curves/fx-forward-ladder | POST | /api/curves/fx-forward-ladder |
+| POST | /api/curves/published/withdraw | POST | /api/curves/published/withdraw |
+| GET | /api/marketdata/catalogue | GET | /api/marketdata/catalogue |
+| GET | /api/marketdata/connectivity | GET | /api/marketdata/connectivity |
+| GET | /api/marketdata/fixing-series | GET | /api/marketdata/fixing-series |
+| GET | /api/marketdata/public-rates | GET | /api/marketdata/public-rates |
+| GET | /api/marketdata/public-rates/coverage | GET | /api/marketdata/public-rates/coverage |
+| GET | /api/marketdata/public-rates/fixings.csv | GET | /api/marketdata/public-rates/fixings.csv |
+| GET | /api/marketdata/subscriptions | GET | /api/marketdata/subscriptions |
+| POST | /api/marketdata/subscriptions | POST | /api/marketdata/subscriptions |
+| DELETE | /api/marketdata/subscriptions/:provider | DELETE | /api/marketdata/subscriptions/{provider} |
+| GET | /api/marketdata/public-rates/fixings | GET | /api/marketdata/public-rates/fixings |
+| POST | /api/marketdata/public-rates/:code/accept-terms | POST | /api/marketdata/public-rates/{code}/accept-terms |
+| POST | /api/marketdata/public-rates/:code/withdraw-terms | POST | /api/marketdata/public-rates/{code}/withdraw-terms |
+| POST | /api/marketdata/public-rates/accept-terms | POST | /api/marketdata/public-rates/accept-terms |
+| GET | /api/marketdata/routes | GET | /api/marketdata/routes |
+| POST | /api/marketdata/routes | POST | /api/marketdata/routes |
+| DELETE | /api/marketdata/routes/:publisher | DELETE | /api/marketdata/routes/{publisher} |
+| GET | /api/operations/grid/jobs/batches | GET | /api/operations/grid/jobs/batches |
+| GET | /api/operations/grid/jobs/batches/:id | GET | /api/operations/grid/jobs/batches/{id} |
+| GET | /api/operations/grid/jobs/batches/:id/workunits | GET | /api/operations/grid/jobs/batches/{id}/workunits |
+| GET | /api/operations/grid/jobs/workunits/:id | GET | /api/operations/grid/jobs/workunits/{id} |
+| GET | /api/operations/grid/jobs/workunits/:id/results | GET | /api/operations/grid/jobs/workunits/{id}/results |
+| GET | /api/operations/grid/jobs/results | GET | /api/operations/grid/jobs/results |
+| GET | /api/operations/grid/jobs/results/:id | GET | /api/operations/grid/jobs/results/{id} |
+| GET | /api/operations/grid/jobs/workunits/:id/input | GET | /api/operations/grid/jobs/workunits/{id}/input |
+| GET | /api/operations/grid/jobs/results/:id/output | GET | /api/operations/grid/jobs/results/{id}/output |
+| GET | /api/operations/grid/app-versions/:id | GET | /api/operations/grid/app-versions/{id} |
+| PUT | /api/operations/grid/app-versions/:id/release-note | PUT | /api/operations/grid/app-versions/{id}/release-note |
+| GET | /api/me/requests | GET | /api/me/requests |
+| POST | /api/me/requests | POST | /api/me/requests |
+| DELETE | /api/me/requests/:id | DELETE | /api/me/requests/{id} |
+| POST | /api/requests/:id/decision | POST | /api/requests/{id}/decision |
+| GET | /api/requests/:id | GET | /api/requests/{id} |
+| GET | /api/me/notifications | GET | /api/me/notifications |
+| GET | /api/me/notifications/unread-count | GET | /api/me/notifications/unread-count |
+| POST | /api/me/notifications/read | POST | /api/me/notifications/read |
+| POST | /api/me/notifications/clear | POST | /api/me/notifications/clear |
+| GET | /api/workflow/:instanceId | GET | /api/workflow/{instanceId} |
+| GET | /api/requests | GET | /api/requests |
+| GET | /api/requests/:id/story | GET | /api/requests/{id}/story |
+| GET | /api/timeline | GET | /api/timeline |
+| GET | /api/analytics/sensitivity-templates | GET | /api/analytics/sensitivity-templates |
+| GET | /api/analytics/sensitivity-templates/choices | GET | /api/analytics/sensitivity-templates/choices |
+| GET | /api/analytics/sensitivity-templates/:code | GET | /api/analytics/sensitivity-templates/{code} |
+| GET | /api/analytics/sensitivity-templates/:code/history | GET | /api/analytics/sensitivity-templates/{code}/history |
+| POST | /api/analytics/sensitivity-templates | POST | /api/analytics/sensitivity-templates |
+| PUT | /api/analytics/sensitivity-templates/:code | PUT | /api/analytics/sensitivity-templates/{code} |
+| DELETE | /api/analytics/sensitivity-templates/:code | DELETE | /api/analytics/sensitivity-templates/{code} |
+| GET | /api/requests/:id/changes | GET | /api/requests/{id}/changes |
+| GET | /api/requests/:id/checks | GET | /api/requests/{id}/checks |
+| POST | /api/workflow/:instanceId/retry | POST | /api/workflow/{instanceId}/retry |
+| GET | /api/approvals-mode | GET | /api/approvals-mode |
+| GET | /api/hold-reasons | GET | /api/hold-reasons |
+| GET | /api/operations/grid | GET | /api/operations/grid |
+| GET | /api/operations/grid/series | GET | /api/operations/grid/series |
+| GET | /api/operations/grid/usage | GET | /api/operations/grid/usage |
+| GET | /api/operations/services | GET | /api/operations/services |
+| GET | /api/operations/logs | GET | /api/operations/logs |
+| GET | /api/operations/bus | GET | /api/operations/bus |
+
+* Families
+
+A BFF route that serves many resources at one address, paired with the C++
+address that has ={resource}= in place of the resource. The =registry= is the
+TypeScript file whose =array= lists the resources, and =needs= says which of
+them must answer: =every= resource, those read by =one_key=, those read by a
+parent (=list_by=), or those the registry marks =writable=. The coverage counts
+the resources that must answer.
+
+| BFF method | BFF path | registry | array | C++ method | C++ path | needs |
+|------------+----------+----------+-------+------------+----------+-------|
+| GET | /api/refdata/:resource | projects/ores.web/packages/wire-protocol/src/records.ts | REFDATA_RECORDS | GET | /api/refdata/{resource} | every |
+| GET | /api/refdata/:resource/key/:key | projects/ores.web/packages/wire-protocol/src/records.ts | REFDATA_RECORDS | GET | /api/refdata/{resource}/key/{key} | one_key |
+| GET | /api/refdata/:resource/by/:parent | projects/ores.web/packages/wire-protocol/src/records.ts | REFDATA_RECORDS | GET | /api/refdata/{resource}/by/{parent} | list_by |
+| PUT | /api/refdata/:resource | projects/ores.web/packages/wire-protocol/src/records.ts | REFDATA_RECORDS | PUT | /api/refdata/{resource} | writable |
+| DELETE | /api/refdata/:resource | projects/ores.web/packages/wire-protocol/src/records.ts | REFDATA_RECORDS | DELETE | /api/refdata/{resource} | writable |
+| GET | /api/synthetic/:resource | projects/ores.web/packages/bff/src/synthetic.ts | SYNTHETIC_RECORDS | GET | /api/synthetic/{resource} | every |
+| GET | /api/synthetic/:resource/key/:key | projects/ores.web/packages/bff/src/synthetic.ts | SYNTHETIC_RECORDS | GET | /api/synthetic/{resource}/key/{key} | one_key |
+| GET | /api/synthetic/:resource/by/:parent | projects/ores.web/packages/bff/src/synthetic.ts | SYNTHETIC_RECORDS | GET | /api/synthetic/{resource}/by/{parent} | list_by |
+| PUT | /api/synthetic/:resource | projects/ores.web/packages/bff/src/synthetic.ts | SYNTHETIC_RECORDS | PUT | /api/synthetic/{resource} | writable |
+| DELETE | /api/synthetic/:resource | projects/ores.web/packages/bff/src/synthetic.ts | SYNTHETIC_RECORDS | DELETE | /api/synthetic/{resource} | writable |
+
+* Examples
+
+None here: the codec's cases are its tests, in compass's
+=codecs_route_inventory_tests.cpp=, which also write the inventory of a made-up
+project from a check document of its own.
+
+* Exceptions
+
+| path | line | rule | expires | approver | reason |
+|------+------+------+---------+----------+--------|
+
+* See also
+
+- =compass-ng='s =route_inventory= codec, in the compass repository.
+- =doc/knowledge/architecture/http_route_inventory.org=, the inventory
+  this page's tables write.

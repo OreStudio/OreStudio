@@ -4,6 +4,7 @@
 #+title: Curve Point Provenance
 #+description: What provenance and lineage mean for a market-data curve point specifically, why market data needs more than the standard reference-data provenance fields, and the fields that satisfy that need.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:domain:finance:rates:curves:tenors:ore:
 #+created: 2026-07-12

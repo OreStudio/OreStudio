@@ -4,6 +4,7 @@
 #+title: Countries
 #+description: Country management in OreStudio: ISO 3166-1, the Qt UI, history and revert, shell commands.
 #+type: manual
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:manual:countries:refdata:user_guide:
 #+created: 2026-06-29

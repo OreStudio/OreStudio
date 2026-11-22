@@ -4,6 +4,7 @@
 #+title: Forward Bond
 #+description: A forward contract to buy or sell an underlying bond at a future date; ORE's ForwardBond product.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:forwardbond:
 #+created: 2026-09-06

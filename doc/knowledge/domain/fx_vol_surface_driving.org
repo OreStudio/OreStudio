@@ -4,6 +4,7 @@
 #+title: Volatility surface driving
 #+description: The driver/derived (proxy) pattern applied to FX vol surfaces: deterministic spot vs correlation-driven vol, ATM/RR/STR parameterisation and conventions, correlation vs basis proxying, basis spreads, marks, tenor propagation and rebasing.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :marketdata:fx:volatility:crm:domain:
 #+created: 2026-06-28

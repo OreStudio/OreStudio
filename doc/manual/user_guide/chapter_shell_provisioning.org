@@ -4,6 +4,7 @@
 #+title: Provisioning from the Shell
 #+description: Provision a complete system from the command line: the provision commands, their supporting commands, and scripted provisioning with the ores-shell script library.
 #+type: manual
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:chapter:
 #+created: 2026-06-07

@@ -4,6 +4,7 @@
 #+title: Wiener Process
 #+description: What a Wiener process (standard Brownian motion) is, its defining properties, and why it is the source of randomness dW every stochastic process in this cluster is driven by.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:domain:quantitative_finance:stochastic_processes:ore:
 #+created: 2026-07-16

@@ -4,6 +4,7 @@
 #+title: Closing Rates Screen
 #+description: The screen letting Traders and Finance review and, if needed, override the End-of-Day revaluation rate used to convert positions into functional currency before EOD reports are generated.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:currency:trading:book:
 #+created: 2026-07-14

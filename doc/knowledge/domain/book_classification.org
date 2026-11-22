@@ -4,6 +4,7 @@
 #+title: Book classification
 #+description: The independent dimensions along which a book is classified: trading vs banking book, ledger vs source book, risk-bearing vs wash/reserve/write-off/funding books, and special-purpose books.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:trading:book:finance:
 #+created: 2026-07-08

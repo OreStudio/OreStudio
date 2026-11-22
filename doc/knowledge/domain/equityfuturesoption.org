@@ -4,6 +4,7 @@
 #+title: Equity Futures Option
 #+description: An option on an equity future contract; ORE's EquityFutureOption product.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:equityfuturesoption:
 #+created: 2026-09-06

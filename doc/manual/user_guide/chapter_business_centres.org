@@ -4,6 +4,7 @@
 #+title: Business Centres
 #+description: Business centre management in ORE Studio: the FpML standard, holiday calendar identification, the Qt UI, history and revert, shell and CLI commands.
 #+type: manual
+#+audience: user
 #+level: cross
 #+filetags: :knowledge:manual:business-centres:refdata:user_guide:
 #+created: 2026-07-14

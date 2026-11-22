@@ -4,6 +4,7 @@
 #+title: Equity Cliquet Option
 #+description: A series of forward-start equity options with local and global caps; ORE's EquityCliquetOption product.
 #+type: knowledge
+#+audience: user
 #+level: cross
 #+filetags: :domain:finance:equitycliquetoption:
 #+created: 2026-09-06

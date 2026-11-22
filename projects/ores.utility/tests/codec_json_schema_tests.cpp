@@ -110,7 +110,8 @@ TEST_CASE("a named type is written once and referred to", "[codec][json][schema]
           std::string::npos);
 }
 
-TEST_CASE("a type that holds itself refers to itself rather than expanding", "[codec][json][schema]") {
+TEST_CASE("a type that holds itself refers to itself rather than expanding",
+          "[codec][json][schema]") {
     const auto schema = ores::utility::codec::json_schema<schema_example::example_tree>();
 
     CHECK(schema.find(R"("#/$defs/schema_example.example_tree")") != std::string::npos);

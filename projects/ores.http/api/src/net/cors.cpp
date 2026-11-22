@@ -84,7 +84,7 @@ bool admitted(const http_server_options& options, std::string_view origin) {
 }
 
 std::vector<std::pair<std::string, std::string>> cors_headers(const http_server_options& options,
-                                                             std::string_view origin) {
+                                                              std::string_view origin) {
     if (!admitted(options, origin))
         return {};
     std::vector<std::pair<std::string, std::string>> out;

@@ -26,8 +26,8 @@
 #include <cstdint>
 #include <magic_enum/magic_enum.hpp>
 #include <map>
-#include <set>
 #include <optional>
+#include <set>
 #include <string>
 #include <string_view>
 #include <tuple>
@@ -93,8 +93,8 @@ constexpr std::string_view stated_name() {
         return {};
     const auto first = at + 4;
     const auto last = signature.find_first_of("];", first);
-    return signature.substr(first, (last == std::string_view::npos ? signature.size() : last) -
-                                       first);
+    return signature.substr(first,
+                            (last == std::string_view::npos ? signature.size() : last) - first);
 }
 
 /**
@@ -173,7 +173,7 @@ void write_schema(json_value out, definitions& defs) {
     } else if constexpr (is_map<value_type>::value) {
         out.set("type", "object");
         write_schema<typename value_type::mapped_type>(out.add_object("additionalProperties"),
-                                                      defs);
+                                                       defs);
     } else if constexpr (std::is_same_v<value_type, bool>) {
         out.set("type", "boolean");
     } else if constexpr (std::is_integral_v<value_type>) {

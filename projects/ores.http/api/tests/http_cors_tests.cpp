@@ -85,9 +85,8 @@ TEST_CASE("a_listed_origin_is_echoed_and_may_carry_a_session", "[http_api][cors]
     auto lg(make_logger(test_suite));
     ORES_LOG_SEV(lg, info) << "Testing that a listed origin is echoed with credentials";
 
-    const auto headers =
-        cors_headers(listing("http://localhost:20401, http://localhost:20402"),
-                     "http://localhost:20402");
+    const auto headers = cors_headers(listing("http://localhost:20401, http://localhost:20402"),
+                                      "http://localhost:20402");
 
     REQUIRE(header_of(headers, "Access-Control-Allow-Origin") == "http://localhost:20402");
     REQUIRE(header_of(headers, "Access-Control-Allow-Credentials") == "true");
@@ -131,8 +130,7 @@ TEST_CASE("a_preflight_states_what_the_client_may_send", "[http_api][cors]") {
     const auto headers =
         cors_preflight_headers(listing("http://localhost:20402"), "http://localhost:20402");
 
-    REQUIRE(header_of(headers, "Access-Control-Allow-Methods").find("PATCH") !=
-            std::string::npos);
+    REQUIRE(header_of(headers, "Access-Control-Allow-Methods").find("PATCH") != std::string::npos);
     REQUIRE(header_of(headers, "Access-Control-Allow-Headers").find("X-Ores-Request") !=
             std::string::npos);
     REQUIRE(header_of(headers, "Access-Control-Max-Age") == "86400");
@@ -143,8 +141,8 @@ TEST_CASE("a_preflight_from_an_unlisted_origin_states_no_allowance", "[http_api]
     auto lg(make_logger(test_suite));
     ORES_LOG_SEV(lg, info) << "Testing that an unlisted origin earns no preflight allowance";
 
-    REQUIRE(cors_preflight_headers(listing("http://localhost:20402"), "http://evil.example")
-                .empty());
+    REQUIRE(
+        cors_preflight_headers(listing("http://localhost:20402"), "http://evil.example").empty());
 }
 
 namespace {
@@ -250,8 +248,8 @@ TEST_CASE("a_missing_route_carries_what_a_browser_needs_to_read_it", "[http_api]
     REQUIRE(missing->result_int() == 404);
     REQUIRE(answer_header(*missing, "Access-Control-Allow-Origin") == origin_of_browser);
     REQUIRE(answer_header(*missing, "Access-Control-Allow-Credentials") == std::string("true"));
-    REQUIRE(answer_header(*missing, "Access-Control-Expose-Headers")
-                ->find("X-Request-Id") != std::string::npos);
+    REQUIRE(answer_header(*missing, "Access-Control-Expose-Headers")->find("X-Request-Id") !=
+            std::string::npos);
 
     // A person quotes this id from the refusal, and the session's lines hold it.
     const auto quoted = answer_header(*missing, "x-request-id");
@@ -260,8 +258,8 @@ TEST_CASE("a_missing_route_carries_what_a_browser_needs_to_read_it", "[http_api]
 
     REQUIRE(preflight.has_value());
     REQUIRE(preflight->result_int() == 204);
-    REQUIRE(answer_header(*preflight, "Access-Control-Allow-Headers")
-                ->find("X-Ores-Request") != std::string::npos);
+    REQUIRE(answer_header(*preflight, "Access-Control-Allow-Headers")->find("X-Ores-Request") !=
+            std::string::npos);
 }
 
 /**

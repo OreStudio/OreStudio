@@ -86,16 +86,14 @@ options_description make_options_description() {
         "max-connections,m",
         value<std::uint32_t>()->default_value(100),
         "Maximum number of concurrent connections. Defaults to 100.")(
-        "disable-cors",
-        "Disable CORS support. Enabled by default.")(
+        "disable-cors", "Disable CORS support. Enabled by default.")(
         "cors-origins",
         value<std::string>()->default_value("*"),
         "Origins a browser may call from, comma separated. '*' answers any origin "
         "without credentials; naming origins allows credentials to those only. "
-        "Defaults to '*'.")(
-        "identifier,i",
-        value<std::string>()->default_value("ores-http-server-v1"),
-        "Server identifier for responses.")(
+        "Defaults to '*'.")("identifier,i",
+                            value<std::string>()->default_value("ores-http-server-v1"),
+                            "Server identifier for responses.")(
         "worker-threads",
         value<std::uint32_t>()->default_value(0),
         "Threads that run a route handler. Defaults to 0, which selects eight.")(

@@ -630,7 +630,10 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
         if (request.method === 'OPTIONS') {
             reply
                 .header('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS')
-                .header('Access-Control-Allow-Headers', 'Content-Type,Authorization,X-Ores-Request');
+                .header(
+                    'Access-Control-Allow-Headers',
+                    'Content-Type,Authorization,X-Ores-Request',
+                );
             await reply.status(204).send();
         }
     });

@@ -578,8 +578,8 @@ asio::awaitable<void> http_session::handle_request(domain::http_request domain_r
     if (options_.enable_cors && domain_req.method == domain::http_method::options) {
         domain::http_response cors_resp;
         cors_resp.status = domain::http_status::no_content;
-        for (const auto& [name, value] : cors_preflight_headers(options_,
-                                                               domain_req.get_header("Origin")))
+        for (const auto& [name, value] :
+             cors_preflight_headers(options_, domain_req.get_header("Origin")))
             cors_resp.set_header(name, value);
 
         co_await write_response(cors_resp, version, keep_alive, true);

@@ -48,7 +48,7 @@ namespace ores::http::net {
  */
 ORES_HTTP_API_EXPORT
 std::vector<std::pair<std::string, std::string>> cors_headers(const http_server_options& options,
-                                                             std::string_view origin);
+                                                              std::string_view origin);
 
 /** The same, with what a preflight also needs: the methods and the headers it may send. */
 ORES_HTTP_API_EXPORT

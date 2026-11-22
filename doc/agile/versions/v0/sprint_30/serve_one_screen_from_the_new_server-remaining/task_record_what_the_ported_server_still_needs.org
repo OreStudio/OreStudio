@@ -1,0 +1,143 @@
+:PROPERTIES:
+:ID: 5D617241-542B-436F-9E24-0E7D08695090
+:END:
+#+title: Task: Record what the ported server still has to answer
+#+description: The gateway answers every path the BFF answered, but a side-by-side probe of the two servers found behaviours that differ. The captures this story owns are promoted to tasks here, the ones the code already answers are removed, and the switch task's record is tidied.
+#+type: task
+#+level: s1
+#+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
+#+owner: marco
+#+branch: feature/record-what-the-ported-server-still-needs
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every behaviour of the BFF that the gateway does not yet reproduce is written
+down as a task on this story, so the rest of the port has an owner and nothing
+lives only in a session's memory.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                   |
+| Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-22                             |
+
+* Acceptance
+
+- A side-by-side probe of the gateway and the BFF states the status, headers and body of the same route on each, and every difference is a task.
+- Every open capture this story owns becomes a task, and its capture file is gone.
+- A capture whose subject the code already answers is removed, with the evidence named.
+- The switch task carries one Result heading, not two.
+- Every merged branch from this story is deleted, locally and on the remote.
+
+* Plan
+
+Four steps, in this order.
+
+1. Count the route pairs. The BFF's table is the route calls in
+   =server.ts=; the gateway's is every =router->get/post/put/patch/delete_=
+   call in =projects/ores.http= outside the tests. Parameters are normalised
+   before the two are compared, so =:accountId= and ={username}= are the same
+   position. The script is beside this task.
+2. Ask both servers the same questions. Health, an authenticated read, a
+   refusal, a path that is not there, a method a path does not take, a CORS
+   preflight from a listed origin and from a stranger, and a HEAD. Every
+   answer is in the probe transcript beside this task.
+3. Promote the captures. =compass capture promote= keeps each capture's UUID,
+   carries its body under =* Promoted from capture=, and removes the file, so
+   the traceability a capture had survives the promotion.
+4. Dispose and tidy. A capture whose subject the code already answers is
+   removed and the evidence is named here. The switch task's record is
+   corrected, and the branches this story merged are deleted.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| BFF route pairs | 80 | evidence/route_pair_census.py | 8b6ae77326 |
+| Gateway route pairs | 1121 | evidence/route_pair_census.py | 8b6ae77326 |
+| BFF pairs with no gateway twin | 0 | evidence/route_pair_census.py | 8b6ae77326 |
+| HEAD /api/health | 404 on the gateway, 200 on the BFF | evidence/ores_http_side_by_side_probe.txt | 633dd1617b |
+| Cache-Control on an /api/ answer | absent on the gateway, private, no-store on the BFF | evidence/ores_http_side_by_side_probe.txt | 633dd1617b |
+| Permission checks in the gateway outside the tests | 1 | grep over projects/ores.http for has_permission, tests excluded | 8b6ae77326 |
+
+* Notes
+
+The route pairs are counted by reading the two sources, not by asking the
+gateway for its document. The document's count is larger because an operation
+answers over more than one method, so the two numbers measure different things
+and only the pair census answers "is any BFF path unserved".
+
+The eleven rows the removed captures left in =inbox.org= were deleted by hand.
+=compass-ng generate= does not remove a row for a file that is gone, and
+=compass-ng diff= reports no difference against the table afterwards, so the
+table is not one the codec compares. Regenerate before editing it; if the rows
+come back, the codec owns them after all.
+
+What this task does not cover: the BFF's retirement, which is its own task on
+this story, and the volatility surfaces, which are being redesigned and no
+longer belong to this port.
+
+* Test Scenarios
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The gateway answers every path the BFF answered. The census over the two
+sources finds 80 BFF route pairs, 1121 gateway pairs, and no BFF pair without
+a gateway twin, so the port is complete at the level of addresses.
+
+Two behaviours differed and no capture held them, so they are tasks now:
+
+- [[id:FC74EFF3-6DE3-49D3-8A8B-EE0F39FA99C3][Answer HEAD wherever a GET is served]].
+- [[id:49ECC288-3655-4185-B93D-5643CE17B1D9][Keep an API answer out of a cache]].
+
+Eight captures became tasks on this story, each keeping its UUID and its body:
+the session refusal's error contract, the answer-shape sweep, mandatory
+authentication, the hand-written operation handlers, the public rates coverage,
+the bundle rebuilt under a running gateway, the upload over the message bus
+cap, and the generated recipes that send no body.
+
+Three captures were removed because the code already answers them, and the
+probe transcript states the answer for each: the empty query parameter (the
+message bus read now answers its own sentence), the calendar year read (365
+days of 2026, 1 January to 31 December), and the session door's missing
+verifier (sign-in answers an active session).
+
+The switch task carried two =* Result= headings; it carries one.
+
+The branch also carries one code change that is not part of this record: every
+generated unit states =TimeoutStartSec=300=, because a cold fleet start outlasts
+systemd's 90 second default and a killed start fails every dependent's first
+job with it. Main does not have it.

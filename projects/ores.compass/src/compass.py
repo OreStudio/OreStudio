@@ -8081,13 +8081,6 @@ def cmd_shell(argv):
 
 # --- Codegen pillar ---
 
-def _codegen_src():
-    """Add ores.codegen/src to sys.path so the codegen package is importable."""
-    src = str(PROJECT_ROOT / "projects" / "ores.codegen" / "src")
-    if src not in sys.path:
-        sys.path.insert(0, src)
-
-
 CODEGEN_WRITE_VERBS = ("generate", "gen", "regenerate", "regen")
 
 
@@ -8096,8 +8089,7 @@ def cmd_codegen(argv):
 
     generate and regenerate, and entity generate, forward to compass-ng
     generate, which writes only the files whose content differs; --dry-run
-    and --diff forward to compass-ng diff. The entity list, show, diff and
-    archetypes reports stay here, and write nothing.
+    and --diff forward to compass-ng diff.
     """
     verb = argv[1:2] if argv[:1] == ["entity"] else argv[:1]
     if verb and verb[0] in CODEGEN_WRITE_VERBS:
@@ -8108,18 +8100,7 @@ def cmd_codegen(argv):
               "longer narrow it.")
         return cmd_compass_ng(["diff" if preview else "generate"])
 
-    if argv and argv[0] == "entity":
-        _codegen_src()
-        try:
-            import compass_codegen_entity  # noqa: PLC0415
-        except ImportError as exc:
-            print(f"❌ Cannot load compass_codegen_entity ({exc}).", file=sys.stderr)
-            return 1
-        base_dir = PROJECT_ROOT / "projects" / "ores.codegen"
-        return compass_codegen_entity.run(argv[1:], base_dir, PROJECT_ROOT)
-
-    print("usage: compass codegen generate|regenerate [--dry-run]\n"
-          "       compass codegen entity list|show|diff|archetypes ...",
+    print("usage: compass codegen generate|regenerate [--dry-run]",
           file=sys.stderr)
     return 0 if argv[:1] in (["-h"], ["--help"]) else 2
 
@@ -8296,7 +8277,7 @@ def main():
         "  Provision: env, nats, db\n"
         "  Test:      test\n"
         "  Build:     build\n"
-        "  Codegen:   codegen generate | codegen regenerate | codegen entity\n"
+        "  Codegen:   codegen generate | codegen regenerate\n"
         "  compass-ng: generate | diff | hook | gc | config\n"
         "  Site:      site\n"
         "  Operate:   services, claude, open-as\n"

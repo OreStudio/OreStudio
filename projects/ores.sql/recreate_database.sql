@@ -127,7 +127,7 @@ alter  role :shell_user set search_path to public;
 
 -- Domain service users — generated from service registry model.
 -- To add a service: update projects/modeling/service_registry.org
--- and regenerate with: codegen.sh generate --model projects/modeling/service_registry.org --address ores.shell.service
+-- and regenerate with: ./compass.sh generate
 \i create/iam/service_users_create.sql
 
 -- The marketdata tick writer. It skips row-level security so that COPY can write the tick

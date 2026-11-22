@@ -8,7 +8,7 @@
 #+filetags: :ci:cdash:hotfix:keep_main_green:sprint_30:v0:
 #+owner: marco
 #+branch: hotfix/install-the-pinned-compass-in-ci
-#+pr:
+#+pr: 5032
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-22
@@ -99,7 +99,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5032][#5032]] | [ci] Install the pinned compass before the builds configure an environment |
 
 * Review
 

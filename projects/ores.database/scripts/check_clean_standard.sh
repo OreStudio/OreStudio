@@ -32,6 +32,7 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 COMPONENT_DIR="${REPO_ROOT}/projects/ores.database"
 CODEGEN="${REPO_ROOT}/projects/ores.codegen"
 PYTHON="${REPO_ROOT}/projects/ores.compass/venv/bin/python"
+COMPASS_NG="$(command -v compass-ng || true)"
 FAILURES=0
 CHECKS=0
 
@@ -106,14 +107,37 @@ else
     say FAIL P05 "raw subject strings found: $(echo "${subjects}" | head -1)"
 fi
 
+# Runs compass-ng's named codecs over the tree. With a filter, only the findings
+# whose path holds it count, so an item about this component ignores the rest.
+compass_gate() {
+    local item="$1" label="$2" filter="$3"
+    shift 3
+    if [[ -z "${COMPASS_NG}" ]]; then
+        say FAIL "${item}" "${label}: compass-ng is not on the PATH"
+        return
+    fi
+    local args=() codec
+    for codec in "$@"; do
+        args+=(--codec "${codec}")
+    done
+    local out rc findings
+    out="$(cd "${REPO_ROOT}" && timeout 900 "${COMPASS_NG}" check --no-blame "${args[@]}" 2>&1)"
+    rc=$?
+    findings="$(echo "${out}" | grep -E '^[^ ]+:[0-9]+:[0-9]+: ' | grep -v ': warning: ' || true)"
+    if [[ -n "${filter}" ]]; then
+        findings="$(echo "${findings}" | grep -F "${filter}" || true)"
+    fi
+    # Exit 2 is compass-ng failing to run, which no filter may hide.
+    if [[ ${rc} -ne 2 && -z "${findings}" ]]; then
+        say PASS "${item}" "${label}"
+    else
+        say FAIL "${item}" "${label}: $(echo "${findings:-${out}}" | head -1)"
+    fi
+}
+
 # --- 4. Generation -----------------------------------------------------------
 
-drift_out="$(timeout 900 "${PYTHON}" "${CODEGEN}/scripts/check_component_drift.py" --all --dry-run 2>&1)"
-if [[ $? -eq 0 ]]; then
-    say PASS G01 "check_component_drift.py --all --dry-run is clean"
-else
-    say FAIL G01 "check_component_drift.py --all --dry-run: $(echo "${drift_out}" | tail -1)"
-fi
+compass_gate G01 "compass-ng's codegen codec reports no drift" "" codegen
 
 generated_marker_dirs="$(grep -rl 'AUTO-GENERATED FILE' "${COMPONENT_DIR}/include" "${COMPONENT_DIR}/src" "${COMPONENT_DIR}/tests" "${COMPONENT_DIR}/modeling" 2>/dev/null || true)"
 if [[ -z "${generated_marker_dirs}" ]]; then
@@ -123,12 +147,8 @@ else
 fi
 
 if grep -q '^| database' "${CODEGEN}/library/component_catalogue.org"; then
-    cmake_out="$(timeout 600 "${PYTHON}" "${CODEGEN}/scripts/regenerate_cmake_component_files.py" --check --component ores.database 2>&1)"
-    if [[ $? -eq 0 ]]; then
-        say PASS G06 "regenerate_cmake_component_files.py --check --component ores.database is clean"
-    else
-        say FAIL G06 "regenerate_cmake_component_files.py --check --component ores.database: $(echo "${cmake_out}" | tail -1)"
-    fi
+    compass_gate G06 "compass-ng's component_files codec reports nothing for ores.database" \
+        "projects/ores.database/" component_files
 else
     say N/A G06 "the catalogue holds no database entry, so the CMake source-list generator does not own this component's lists"
 fi
@@ -212,37 +232,18 @@ else
     say FAIL H02 "commented-out code: $(echo "${commented}" | head -1)"
 fi
 
-docs_out="$(timeout 600 "${CODEGEN}/validate_docs.sh" 2>&1)"
-if echo "${docs_out}" | grep -q 'ores.database'; then
-    say FAIL H01 "validate_docs.sh reports the component: $(echo "${docs_out}" | grep 'ores.database' | head -1)"
-else
-    say PASS H01 "validate_docs.sh reports no ores.database violation"
-fi
+compass_gate H01 "compass-ng's component_docs codec reports no ores.database violation" \
+    "ores.database" component_docs
 
 # --- 8. Verification ---------------------------------------------------------
 
-model_gates="$(timeout 900 "${PYTHON}" "${CODEGEN}/scripts/check_model_drift.py" 2>&1)"
-if [[ $? -eq 0 ]]; then
-    say PASS V05 "check_model_drift.py is clean"
-else
-    say FAIL V05 "check_model_drift.py: $(echo "${model_gates}" | tail -1)"
-fi
+compass_gate V05 "compass-ng's model_rules codec is clean" "" model_rules
 
-for gate in check_protocol_twin_coverage check_handler_permissions check_populate_references check_route_auth_declarations; do
-    out="$(timeout 900 "${PYTHON}" "${CODEGEN}/scripts/${gate}.py" --all 2>&1)"
-    if [[ $? -eq 0 ]]; then
-        say PASS V05 "${gate}.py --all is clean"
-    else
-        say FAIL V05 "${gate}.py --all: $(echo "${out}" | tail -1)"
-    fi
+for codec in protocol_twins handler_permissions populate_refs route_auth; do
+    compass_gate V05 "compass-ng's ${codec} codec is clean" "" "${codec}"
 done
 
-recipe_out="$(timeout 600 "${PYTHON}" "${CODEGEN}/scripts/regenerate_shell_recipe_inventory.py" --check 2>&1)"
-if [[ $? -eq 0 ]]; then
-    say PASS V05 "regenerate_shell_recipe_inventory.py --check is clean"
-else
-    say FAIL V05 "regenerate_shell_recipe_inventory.py --check: $(echo "${recipe_out}" | tail -1)"
-fi
+compass_gate V05 "compass-ng's recipe_inventories codec is clean" "" recipe_inventories
 
 if grep -q '"database' "${CODEGEN}/scripts/component_registry.py"; then
     say PASS V06 "the registry lists the component"

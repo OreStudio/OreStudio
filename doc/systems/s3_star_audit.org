@@ -32,7 +32,7 @@ Catch what the inside layers cannot see from inside.
 - Every =.org= file under [[proj:doc][=doc/=]] (and =projects/.../modeling/= for
   component overviews).
 - The audit script outputs (currently
-  [[proj:projects/ores.codegen/validate_docs.sh][=projects/ores.codegen/validate_docs.sh=]]).
+  =compass-ng check --codec component_docs=).
 
 * Outputs
 
@@ -50,7 +50,7 @@ Before acting, load:
    legal states given their transition history.
 3. [[id:46DFE47F-967B-4C24-95BF-3E21F97CFD20][Agile process]] — especially the heartbeat rule (=STARTED= /
    =BLOCKED= staleness threshold).
-4. [[proj:projects/ores.codegen/validate_docs.py][=projects/ores.codegen/validate_docs.py=]] — the existing automated
+4. compass-ng's =component_docs= codec — the existing automated
    checks; extend or run as-is.
 
 * Skills
@@ -72,7 +72,7 @@ audit work:
 The audit scripts are not yet wrapped as recipes (they live as
 shell scripts plus a Python module). The relevant entry points:
 
-- [[proj:projects/ores.codegen/validate_docs.sh][=projects/ores.codegen/validate_docs.sh=]] — runs the component
+- =compass-ng check --codec component_docs= — runs the component
   validator.
 - =python3 projects/ores.codegen/scripts/regenerate_backlog_indexes.py --check=
   — verifies the backlog indexes are not stale.

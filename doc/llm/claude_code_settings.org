@@ -264,7 +264,8 @@ cd /mnt/development/Development/OreStudio/ores_dev_brave_hopper && ./compass.sh 
 
 =codegen.sh= is the main entry point for C++ and SQL
 code generation via =ores.codegen= (=regenerate=, =generate=
-subcommands). =plantuml_er_generate.sh= produces PlantUML ER diagrams.
+subcommands). compass-ng's =er_diagram= codec writes the PlantUML ER
+diagrams on =./compass.sh generate=.
 
 The grant is per-script rather than per-directory for the same reason
 as SQL: a directory wildcard would permit running arbitrary scripts in
@@ -279,13 +280,10 @@ Common invocations:
 - =./projects/ores.codegen/codegen.sh regenerate --component refdata --address ores.cpp=
 - =projects/ores.codegen/codegen.sh regenerate --component refdata --address ores.cpp=
 - =projects/ores.codegen/codegen.sh generate --model path/to/model.json --address ores.cpp=
-- =projects/ores.codegen/plantuml_er_generate.sh -i doc/plans/foo.org=
 
 #+begin_src json :tangle no :noweb-ref perm-codegen
       "Bash(./projects/ores.codegen/codegen.sh *)",
-      "Bash(projects/ores.codegen/codegen.sh *)",
-      "Bash(./projects/ores.codegen/plantuml_er_generate.sh *)",
-      "Bash(projects/ores.codegen/plantuml_er_generate.sh *)"
+      "Bash(projects/ores.codegen/codegen.sh *)"
 #+end_src
 
 ** Test execution

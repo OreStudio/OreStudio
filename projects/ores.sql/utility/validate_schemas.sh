@@ -45,8 +45,14 @@ python3 "${CODEGEN_DIR}/src/plantuml_er_parse_sql.py" \
 # Hygiene the parser cannot see: an unterminated block comment (PostgreSQL
 # nests them, so an inner closer does not end the outer comment) and an index
 # a template emitted once per column. Both fail a database recreation rather
-# than this validation, which is why they are checked here.
-python3 "${SCRIPT_DIR}/check_sql_hygiene.py" "${SQL_DIR}"
+# than this validation, which is why they are checked here. compass-ng's
+# sql_hygiene codec checks them; the Compass check workflow runs it on every
+# push to main, so a host without compass-ng skips it here.
+if command -v compass-ng >/dev/null 2>&1; then
+    (cd "${SQL_DIR}/../.." && compass-ng check --no-blame --codec sql_hygiene)
+else
+    echo "compass-ng is not on the PATH; skipping the SQL hygiene check."
+fi
 
 echo ""
 echo "=== Validation Passed ==="

@@ -92,7 +92,6 @@ def test_a_model_change_runs_the_drift_checks():
     paths = ["projects/ores.refdata/modeling/ores.refdata.book.org"]
     chosen = select(paths)
     assert "component-drift" in chosen
-    assert "model-drift" in chosen
 
 
 def test_a_path_nobody_classified_asks_for_everything():
@@ -134,10 +133,10 @@ def test_a_forced_class_overrides_the_classification():
 
 
 def test_a_check_with_paths_only_runs_when_one_of_them_changed():
-    # The backlog indexes belong to the docs class, but only a backlog page
-    # changes them: another doc change must not run them.
-    assert "backlog-indexes" not in select(["doc/knowledge/architecture/x.org"])
-    assert "backlog-indexes" in select(["doc/agile/product_backlog/next/x.org"])
+    # The conventions dataset belongs to the sql class, but only a conventions
+    # file changes it: another SQL change must not run it.
+    assert "conventions-dataset" not in select(["projects/ores.sql/create/refdata/refdata_parties_create.sql"])
+    assert "conventions-dataset" in select(["projects/ores.seeder/datasets/conventions/conventions.tsv"])
 
 
 # -- the catalogue ----------------------------------------------------------
@@ -435,15 +434,15 @@ def _on_path(tmp_path, monkeypatch, with_compass):
 
 def test_compass_ng_answers_for_the_ported_gates_it_finds_on_the_path(tmp_path, monkeypatch):
     _on_path(tmp_path, monkeypatch, with_compass=True)
-    selected = [local_checks.CHECKS_BY_ID[i] for i in ("sql-hygiene", "route-auth", "boost-deps")]
+    selected = [local_checks.CHECKS_BY_ID[i] for i in ("cmake-sources", "lint", "boost-deps")]
     run, covered = local_checks.through_compass(selected)
     assert [c.id for c in run] == ["boost-deps", "compass-ng"]
-    assert [c.id for c in covered] == ["sql-hygiene", "route-auth"]
+    assert [c.id for c in covered] == ["cmake-sources", "lint"]
 
 
 def test_without_compass_ng_the_ported_gates_run_as_scripts(tmp_path, monkeypatch):
     _on_path(tmp_path, monkeypatch, with_compass=False)
-    selected = [local_checks.CHECKS_BY_ID[i] for i in ("sql-hygiene", "boost-deps")]
+    selected = [local_checks.CHECKS_BY_ID[i] for i in ("cmake-sources", "boost-deps")]
     assert local_checks.through_compass(selected) == (selected, [])
 
 
@@ -454,40 +453,40 @@ def _compass_result(tmp_path, output, status):
 
 
 def test_a_finding_fails_the_gate_its_codec_answers_for(tmp_path):
-    covered = [local_checks.CHECKS_BY_ID[i] for i in ("sql-hygiene", "route-auth")]
+    covered = [local_checks.CHECKS_BY_ID[i] for i in ("cmake-sources", "lint")]
     run = _compass_result(
         tmp_path,
         "$ compass-ng check\n\n"
-        "projects/ores.sql/create/a.sql:3:1: sql_hygiene/duplicate_index: index i is defined twice\n"
+        "projects/ores.x/src/component_files.cmake:3:1: component_files/drift: the list differs\n"
         "1 diagnostics (11000 documents)\n",
         "FAIL")
     by_id = {r.check.id: r for r in local_checks.expand_compass([run], covered)}
-    assert by_id["sql-hygiene"].failed
-    assert "duplicate_index" in by_id["sql-hygiene"].tail
-    assert by_id["route-auth"].status == "PASS"
+    assert by_id["cmake-sources"].failed
+    assert "component_files/drift" in by_id["cmake-sources"].tail
+    assert by_id["lint"].status == "PASS"
     assert by_id["compass-ng"].status == "PASS"
 
 
 def test_a_finding_no_selected_gate_claims_fails_compass_ng(tmp_path):
-    covered = [local_checks.CHECKS_BY_ID["sql-hygiene"]]
+    covered = [local_checks.CHECKS_BY_ID["cmake-sources"]]
     run = _compass_result(
         tmp_path,
         "projects/ores.x/core/src/CMakeLists.txt:7:1: core_link_edges/forbidden_edge: links a core\n"
         "1 diagnostics (11000 documents)\n",
         "FAIL")
     by_id = {r.check.id: r for r in local_checks.expand_compass([run], covered)}
-    assert by_id["sql-hygiene"].status == "PASS"
+    assert by_id["cmake-sources"].status == "PASS"
     assert by_id["compass-ng"].failed
     assert "core_link_edges" in by_id["compass-ng"].tail
 
 
 def test_compass_ng_failing_to_run_fails_every_gate_it_answers_for(tmp_path):
-    covered = [local_checks.CHECKS_BY_ID[i] for i in ("sql-hygiene", "route-auth")]
+    covered = [local_checks.CHECKS_BY_ID[i] for i in ("cmake-sources", "lint")]
     run = _compass_result(tmp_path, "compass: codegen: a model did not load\n", "FAIL")
     by_id = {r.check.id: r for r in local_checks.expand_compass([run], covered)}
     assert by_id["compass-ng"].failed
-    assert by_id["sql-hygiene"].failed
-    assert by_id["route-auth"].failed
+    assert by_id["cmake-sources"].failed
+    assert by_id["lint"].failed
 
 
 def test_every_gate_compass_ng_answers_for_is_in_the_catalogue():
@@ -495,18 +494,18 @@ def test_every_gate_compass_ng_answers_for_is_in_the_catalogue():
 
 
 def test_a_run_that_stops_after_some_findings_fails_every_gate(tmp_path):
-    covered = [local_checks.CHECKS_BY_ID[i] for i in ("sql-hygiene", "route-auth")]
+    covered = [local_checks.CHECKS_BY_ID[i] for i in ("cmake-sources", "lint")]
     run = _compass_result(
         tmp_path,
-        "projects/ores.sql/create/a.sql:3:1: sql_hygiene/duplicate_index: index i is defined twice\n"
+        "projects/ores.x/src/component_files.cmake:3:1: component_files/drift: the list differs\n"
         "compass: codegen: a model did not load\n",
         "FAIL")
     by_id = {r.check.id: r for r in local_checks.expand_compass([run], covered)}
-    assert by_id["route-auth"].failed
+    assert by_id["lint"].failed
 
 
 def test_a_codec_name_with_a_digit_is_read(tmp_path):
-    covered = [local_checks.CHECKS_BY_ID["sql-hygiene"]]
+    covered = [local_checks.CHECKS_BY_ID["cmake-sources"]]
     run = _compass_result(
         tmp_path,
         "projects/a.sql:1:1: sql2_hygiene/rule3: planted\n1 diagnostics (1 documents)\n",

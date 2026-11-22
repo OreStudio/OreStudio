@@ -382,7 +382,7 @@ when its type sheds fields; remove it when the type is at or under fifteen.
 | projects/ores.refdata/core/include/ores.refdata.core/repository/fx_option_convention_entity.hpp | fx_option_convention_entity | 19 |
 | projects/ores.refdata/core/include/ores.refdata.core/repository/fx_vol_surface_blueprint_entity.hpp | fx_vol_surface_blueprint_entity | 19 |
 | projects/ores.refdata/core/include/ores.refdata.core/repository/portfolio_entity.hpp | portfolio_entity | 19 |
-| projects/ores.reporting/api/include/ores.ore.api/domain/ore_file.hpp | ore_file | 19 |
+| projects/ores.ore/api/include/ores.ore.api/domain/ore_file.hpp | ore_file | 19 |
 | projects/ores.reporting/api/include/ores.reporting.api/messaging/report_cashflow_protocol.hpp | report_cashflow_write | 19 |
 | projects/ores.reporting/api/include/ores.reporting.api/messaging/report_operations_protocol.hpp | cut_row | 19 |
 | projects/ores.reporting/api/include/ores.reporting.api/messaging/report_operations_protocol.hpp | take_cut_response | 19 |

@@ -25,11 +25,7 @@ hide circle
 skinparam linetype ortho
 
 note as IndexNote
-<<<<<<< HEAD
-817 tables in 22 groups.
-=======
-814 tables in 21 groups.
->>>>>>> 88d03abf42 ([dq] Give the bundle its level and stop claiming a history it never kept)
+816 tables in 22 groups.
 Each group is drawn in its own file, named under its heading.
 Table naming: <component>_<entity>_tbl
 end note

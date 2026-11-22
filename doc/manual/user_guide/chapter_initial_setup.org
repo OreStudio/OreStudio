@@ -186,8 +186,8 @@ login dialog appears.
 The first time you log in as a tenant administrator, ORE Studio launches
 the *New Tenant Provisioner*. It seeds the tenant with reference data
 and, optionally, an initial party hierarchy. You can skip it with
-*Cancel* and set everything up by hand later from the Data Librarian and
-Parties windows.
+*Cancel* and set everything up later, once the tenant's reference data is
+published and its party hierarchy is in place.
 
 *** Welcome: Acme Corporation or Manual setup
 

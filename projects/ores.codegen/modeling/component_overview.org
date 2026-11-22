@@ -158,7 +158,6 @@ never writes over a hand-tuned CMakeLists. An undeclared kind selects
   codec renders this component's templates; =--scope <model>= limits a run
   to one model's outputs. The Python generator is deleted.
 - =src/doc_generate.py= — the org-document generator.
-- =src/fpml_parser.py= — FPML Genericode XML → JSON converter.
 - =src/images_generate_sql.py=, =src/lei_extract_subset.py= —
   specialised data importers.
 - =external/iso/iso_generate_metadata_sql.py= — the ISO importer, kept

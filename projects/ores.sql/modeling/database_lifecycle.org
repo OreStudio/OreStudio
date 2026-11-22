@@ -203,7 +203,11 @@ IP2Country      IP geolocation ranges               ores_dq_ip2country_artefact_
 #+end_example
 
 Artefact data is NOT live reference data. It must be *published* to production
-tables via the Data Librarian's "Publish Datasets" feature.
+tables by a publish function, which writes only the tables its own service owns.
+[[id:F19A6B98-1CAD-4206-913B-A4EAAED2DEAF][From an entity model to a published
+row]] states the mechanism, and
+[[id:7287B58F-964C-4D42-8EC4-6C5DA53EEE2D][Reference data classification by
+publication level]] states which bundle carries what.
 
 * Multi-Environment Architecture
 
@@ -539,6 +543,10 @@ When a new tenant is onboarded (via the SystemProvisionerWizard or the
    party_type='Internal', business_center_code='WRLD', root of party hierarchy)
 
 Reference data (currencies, countries, etc.) is NOT copied during provisioning.
-Tenants populate refdata via the Data Librarian's "Publish Datasets" feature.
+A tenant publishes the bundles it needs: the shell spells the verb =bundles
+publish <bundle>=, and a seed profile's =publish_bundle= step does the same
+during provisioning. The platform and world catalogues are not a tenant's to
+publish; the bring-up publishes them once into the system tenant, and every
+tenant reads them there.
 
 | Top: [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Documentation]] | Schema: [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ORE Studio SQL Schema]] | Skills: [[id:A08FC2A2-4E42-41EC-AC92-D1AF50DC61CB][SQL Schema Creator]] |

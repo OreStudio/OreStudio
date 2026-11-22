@@ -123,19 +123,28 @@ import {
 } from '@ores/wire-protocol/generated/synthetic/protocol/market_data_provider_protocol';
 import { subjects as marketdataOperationSubjects } from '@ores/wire-protocol/generated/marketdata/protocol/operations_protocol';
 import { HttpFailure, invalidRequest, notFound, notPermitted } from './errors.js';
+import { storeUuidSchema } from '@ores/contracts';
 import {
     NO_ORDER,
     PAGE,
-    idSchema,
     input,
     intentSchema,
     pageQuerySchema,
-    paramId,
     readAll,
     refusal,
     resultSchema,
     row,
 } from './refdata-calls.js';
+
+/**
+ * A synthetic row's id, in whatever nibbles the store wrote it: a row the DQ publish
+ * writes takes an id derived from its key, which names no UUID version.
+ */
+const idSchema = storeUuidSchema;
+
+function paramId(request: FastifyRequest): string {
+    return input(idSchema, (request.params as { id: string }).id);
+}
 import { TICK_CAPACITY, type FeedTickBuffers } from './feed-ticks.js';
 import type { LiveSession } from './sessions.js';
 

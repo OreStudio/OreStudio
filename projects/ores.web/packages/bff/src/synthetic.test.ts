@@ -399,6 +399,39 @@ describe('synthetic resource routes', () => {
         expect(calls[1]?.body).toMatchObject({ filter: { id_one_of: [COLLECTION_ID] } });
     });
 
+    it('reads a vol surface feed whose id the DQ publish derived, as a feed', async () => {
+        const derived = 'de1e72b7-bae2-c70f-99a0-5185e7dc1c12';
+        const { server, sessionId } = buildTestServer({
+            'synthetic.v1.fx_vol_surface_feeds.list': {
+                result: ok,
+                fx_vol_surface_feeds: [
+                    {
+                        id: derived,
+                        config_id: COLLECTION_ID,
+                        source_name: 'synthetic.bloomberg.vol.audusd',
+                    },
+                ],
+            },
+            'synthetic.v1.market_data_generation_configs.list': {
+                result: ok,
+                market_data_generation_configs: [{ id: COLLECTION_ID, provider_code: 'bloomberg' }],
+            },
+            'synthetic.v1.feed_configs.list': { success: true, running_feeds: [] },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            `/api/synthetic/fx-vol-surface-feeds/key/${derived}`,
+        );
+        expect(response.statusCode).toBe(200);
+        expect(response.json().row).toMatchObject({
+            id: derived,
+            provider_code: 'bloomberg',
+            running: false,
+        });
+    });
+
     it('names the fixing a feed run started from, with the provider and the times', async () => {
         const start = {
             from_fixing: true,

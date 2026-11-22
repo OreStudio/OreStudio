@@ -1,0 +1,92 @@
+:PROPERTIES:
+:ID: BC75AE1F-BD6B-46E0-BA50-794DBD35576E
+:END:
+#+title: Task: Start and stop a provider's simulated source from the Provider tab
+#+description: A control on the Provider tab that starts and stops a provider's simulated source, which the vol surface feeds run under.
+#+type: task
+#+level: s1
+#+filetags: :synthetic:web:vendor_quotes_of_a_latent_surface:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8EC92006-17BB-4575-BA13-2BE5ED5327C3][Build each party's volatility surfaces from vendor quotes of a latent surface]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+An operator starts and stops a provider's simulated source from the Provider tab of the synthetic screen. Today a simulated source runs whenever the catalogue serves its provider, and no screen controls it. A vol surface feed runs only while a source holds it, so its feed page shows the state and offers no Start or Stop. This control is the one place to start and stop it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:8EC92006-17BB-4575-BA13-2BE5ED5327C3][Build each party's volatility surfaces from vendor quotes of a latent surface]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-22                               |
+
+* Acceptance
+
+- The Provider tab shows each simulated source of the provider, with its state: running or stopped.
+- A person who holds the feeds run permission starts and stops a source from the tab.
+- A stopped source detaches from its shared surfaces; a surface no source holds stops, and its vol feed reads as stopped.
+- A start or stop goes through the BFF, with a test of the route and of the refusal without the permission.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+- The task comes from [[id:D9A61A85-F8E6-446C-B5D4-D5A1855DAAA5][Configure a vol surface feed on the synthetic screen]]. That task refuses a hand Start of a vol feed, because a run of its own is a second market beside the one the vendors quote.
+- No control of a simulated source exists today. The BFF has only =GET /api/marketdata/adapters=, and the Serving tag on the Provider tab only reads it.
+- Each adapter holds a shared surface under the name =<source_name>.<provider_code>= (=simulator_offers.hpp=). The surface stops when the last hold detaches (=shared_surfaces.hpp=).
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

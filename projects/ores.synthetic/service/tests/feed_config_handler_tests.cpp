@@ -692,7 +692,30 @@ TEST_CASE("feed_config_start_stops_and_lists_both_kinds_by_config_id",
     CHECK(f.fleet.running_count() == 0);
 }
 
-TEST_CASE("feed_config_starts_a_volatility_surface_by_config_id",
+TEST_CASE("feed_config_refuses_a_hand_start_of_a_volatility_surface",
+          "[feed_config_handler][integration]") {
+    config_fixture f;
+    const auto test_party = resolve_test_party(f.db);
+    const auto seeds = seed_configs(f.db, test_party);
+    const auto token = mint_token(f.db.tenant_id().to_string(),
+                                  test_party,
+                                  {"synthetic::fx_spot_generation_configs:read",
+                                   "synthetic::fx_vol_surface_feeds:read",
+                                   "synthetic::feeds:run"});
+
+    // A surface runs while a provider's simulated source holds it, so a hand start is refused
+    // and says why.
+    const auto surface_id = boost::uuids::to_string(seeds.surface_enabled_id);
+    const auto refused = send_request<start_feed_request, start_feed_response>(
+        f.nats, test_start_subject, token, start_feed_request{.config_id = surface_id});
+    CHECK_FALSE(refused.success);
+    CHECK(refused.message == "Feed " + surface_id +
+                                 " runs while a provider's simulated source holds it, so it is "
+                                 "not started by hand.");
+    CHECK(f.fleet.running_count() == 0);
+}
+
+TEST_CASE("a_volatility_surface_builds_from_its_rows_and_its_pair_convention",
           "[feed_config_handler][integration]") {
     config_fixture f;
     const auto test_party = resolve_test_party(f.db);
@@ -702,47 +725,35 @@ TEST_CASE("feed_config_starts_a_volatility_surface_by_config_id",
                               "TARGET",
                               std::chrono::year{2026} / std::chrono::January / 1,
                               std::chrono::year{2027} / std::chrono::December / 31);
-    const auto token = mint_token(f.db.tenant_id().to_string(),
-                                  test_party,
-                                  {"synthetic::fx_spot_generation_configs:read",
-                                   "synthetic::fx_vol_surface_feeds:read",
-                                   "synthetic::feeds:run"});
+    const auto surface_id = boost::uuids::to_string(seeds.surface_enabled_id);
+    const auto surface = [&f, &surface_id] {
+        for (const auto& target : f.registry.targets(f.db.context()))
+            if (target.row.candidate.feed_config_id == surface_id)
+                return target;
+        FAIL("the surface feed is not a start target");
+        return ores::synthetic::service::feed_start_target{};
+    };
 
     // A surface's quotes mean what its pair's convention says, so a pair with none is refused
     // and named rather than quoted in a convention nobody stated.
-    const auto unconventional = send_request<start_feed_request, start_feed_response>(
-        f.nats,
-        test_start_subject,
-        token,
-        start_feed_request{.config_id = boost::uuids::to_string(seeds.surface_enabled_id)});
-    CHECK_FALSE(unconventional.success);
-    INFO("refused with: " << unconventional.message);
-    CHECK(unconventional.message.find("has no FX option convention 'EUR-USD-FXOPTION'") !=
+    const auto unconventional = surface().row.candidate.build_input({});
+    CHECK_FALSE(unconventional.input.has_value());
+    CHECK(unconventional.skip_reason.find("has no FX option convention 'EUR-USD-FXOPTION'") !=
           std::string::npos);
-    CHECK(f.fleet.running_count() == 0);
 
     seed_fx_option_convention(f.db, test_party, "EUR-USD-FXOPTION");
 
     // The surface resolves its feed row, its expiry rows, its contributor rows and its pair's
-    // convention, and the factory builds it: a surface with no market still starts and
-    // publishes the level it was configured with.
-    const auto surface_start = send_request<start_feed_request, start_feed_response>(
-        f.nats,
-        test_start_subject,
-        token,
-        start_feed_request{.config_id = boost::uuids::to_string(seeds.surface_enabled_id)});
-    INFO(surface_start.message);
-    REQUIRE(surface_start.success);
-    CHECK(surface_start.message == "Feed started: " + seeds.surface_enabled_source);
-    CHECK(f.fleet.running_count() == 1);
-
-    const auto surface_stop = send_request<stop_feed_request, stop_feed_response>(
-        f.nats,
-        test_stop_subject,
-        token,
-        stop_feed_request{.config_id = boost::uuids::to_string(seeds.surface_enabled_id)});
-    REQUIRE(surface_stop.success);
-    CHECK(f.fleet.running_count() == 0);
+    // convention, and the factory builds it as an adapter's hold does.
+    const auto target = surface();
+    const auto outcome = target.row.candidate.build_input({});
+    INFO(outcome.skip_reason);
+    REQUIRE(outcome.input.has_value());
+    const ores::synthetic::feed::feed_build_context bctx{
+        .nats = f.nats, .auth_nats = f.auth_nats, .market = f.run.market_};
+    const auto built = f.registry.factory().make(target.row.kind->kind, bctx, *outcome.input);
+    REQUIRE(built != nullptr);
+    CHECK(built->source_name() == seeds.surface_enabled_source);
 }
 
 TEST_CASE("feed_config_reports_not_found_and_disabled_uniformly",

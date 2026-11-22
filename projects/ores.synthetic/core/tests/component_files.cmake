@@ -22,6 +22,7 @@
 set(files
     "calibration_fallback_eventing_integration_tests.cpp"
     "catalog_generator_service_tests.cpp"
+    "feed_listing_tests.cpp"
     "feeds_fomc_curve_resolution_tests.cpp"
     "folder_eventing_integration_tests.cpp"
     "fx_spot_fixing_item_eventing_integration_tests.cpp"

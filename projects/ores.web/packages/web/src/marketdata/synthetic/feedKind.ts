@@ -111,6 +111,11 @@ export interface FeedKind {
     readonly tabs: readonly FeedTab[];
     /** The tab a new feed opens on, where the person goes on. */
     readonly afterAdd: string;
+    /**
+     * The feed runs while a simulated source of its provider holds it, so the page shows its
+     * state and offers no Start or Stop.
+     */
+    readonly heldByProvider?: boolean;
 }
 
 /** The feed's page, for the kind. */

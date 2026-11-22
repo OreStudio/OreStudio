@@ -1,0 +1,210 @@
+:PROPERTIES:
+:ID: D9A61A85-F8E6-446C-B5D4-D5A1855DAAA5
+:END:
+#+title: Task: Configure a vol surface feed on the synthetic screen
+#+description: The synthetic screen's Provider tab lists FX spot and IR curve feeds but no vol surface feed, though the routes serve them; add the vol surface feed as a third kind in the FX and IR screen language, with its SSVI settings editable and gamma shown fixed at one half.
+#+type: task
+#+level: s1
+#+filetags: :vendor_quotes_of_a_latent_surface:sprint_30:v0:
+#+owner: marco
+#+branch: feature/configure-a-vol-surface-feed-on-the-synthetic-screen
+#+pr: 5018
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8EC92006-17BB-4575-BA13-2BE5ED5327C3][Build each party's volatility surfaces from vendor quotes of a latent surface]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A person who runs the synthetic market sees and changes how each FX
+volatility surface is generated, on the same screens as the FX spot and IR
+curve feeds. The Provider tab of =/market-data/synthetic= lists a
+provider's vol surface feeds beside its spot and curve feeds, and a vol
+surface feed has its own page: its pair, ticks and arrival, the SSVI
+start and dynamics, the correlations with spot, the expiry ladder and the
+contributors that quote it.
+
+Gamma, the SSVI power-law exponent, shows on the page as fixed at one half
+and cannot be edited. The generator's arbitrage bounds hold only at that
+value: with gamma at one half, condition 2 of Gatheral and Jacquier holds
+for every rho and condition 4 reduces to eta at most the square root of
+two, which is the bound the curvature driver keeps. Any other gamma makes
+both conditions depend on theta and rho expiry by expiry, so an edited
+gamma could make the generator publish an arbitrageable surface. See
+[[id:5910304A-FA45-461E-B2A2-8F24FA798769][SVI Volatility Parameterisation]] and
+[[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]].
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:8EC92006-17BB-4575-BA13-2BE5ED5327C3][Build each party's volatility surfaces from vendor quotes of a latent surface]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-22                               |
+
+* Acceptance
+
+- The Provider tab lists a provider's vol surface feeds, grouped and counted
+  as its FX spot and IR curve feeds are.
+- A vol surface feed reads as running while a provider's simulated source
+  holds its surface. Its page shows that state and offers no Start or Stop,
+  and the service refuses a hand start of it with the reason.
+- A vol surface feed's page follows the FX and IR feed pages: details,
+  calibration, its own tabs and history, with add, edit and revert.
+- A person edits the SSVI start (skew and curvature), the skew and curvature
+  dynamics, the three correlations, and each expiry's ATM vol and
+  forward-variance process, and the screen refuses a value outside its
+  bound before the save.
+- Gamma shows as fixed at one half, with the reason, and no form edits it.
+- The screens are in English, French and Portuguese, and tested.
+
+* Plan
+
+The vol surface feed is already a registered feed kind in the synthetic
+service (=feed_kind_registry.cpp=), so it starts and stops like the others,
+and the BFF and =ores.http= serve its records. Three things keep it off the
+screen:
+
+- The Provider tab's list is one SQL union of the FX spot and IR curve
+  tables (=feeds_query= in =feed_filter.cpp=), which the selection start
+  and stop also read. The folder counts in =feed_overview_handler.hpp=
+  name the same two tables.
+- The BFF gives the four vol resources no write schema, so it refuses
+  every write to them.
+- The web app has no feed kind for them: no path, no page, no words.
+
+The 14 live vol feeds each sit in a folder of the Bloomberg collection,
+with asset class =fx= and a =synthetic.= source name, so they fit the
+union as they stand.
+
+1. *List the vol feeds with the others.* Add the vol table to
+   =feeds_query= as a third branch, kind =fx_vol_surface=, labelled and
+   keyed by its pair, engine =ssvi=, and to the folder counts. A test of
+   =feeds_query= over a vol feed fails first.
+2. *Let the BFF write them.* Write schemas for =fx-vol-surface-feeds=,
+   =fx-vol-surface-feed-expiries=, =fx-vol-surface-feed-contributors= and
+   =fx-vol-contributors=, bounded as the tables' checks are. They stay
+   system owned, so only a system session writes them.
+3. *The vol feed kind in the web app*, in the FX and IR language: a
+   =FeedKind= in =volFeeds.tsx= at =/market-data/synthetic/vol=, its
+   page through =FeedPage=, =feedPageOf= and the engine tag taught the
+   kind, and the Add dialog offered it. Its tabs:
+   - *Surface*: the SSVI start (skew rho, curvature eta), gamma shown
+     fixed at one half with the reason, the skew and curvature dynamics
+     and the three correlations; the edit dialog edits all but gamma,
+     with the tables' bounds.
+   - *Expiries*: the ladder, as =PartsPanel= edits the IR template, with
+     each expiry's ATM vol and forward-variance reversion and
+     volatility. The feed already refuses a ladder whose total variance
+     does not rise.
+   - *Contributors*: which vendors quote the surface, and each one's
+     noise profile.
+   - *Arrivals*: the shared =ArrivalsTab=.
+4. *Words and tests*: English, French and Portuguese, and tests beside
+   the FX and IR ones.
+5. *Run state.* A vol surface runs while an adapter holds it, under its
+   feed's source name, but each hold runs under
+   =<source_name>.<provider_code>=, so the screens read every vol feed as
+   stopped. A hand start built a second, independent surface. So:
+   - =basic_shared_surfaces::held()= answers the held surfaces.
+     =generator_fleet::running_source_names()= adds their source names, which
+     the folder counts read, and =generator_fleet::running_feeds()= adds them
+     as feeds, which the BFF reads for each feed's =running=.
+   - =feed_kind::held_by_adapters= marks the vol kind, and
+     =feed_kind_registry::make_feed= refuses a feed of such a kind. The
+     single start and the bulk start both go through =make_feed=; the
+     adapters build their holds without it.
+   - =FeedKind.heldByProvider= hides Start and Stop on the vol feed page and
+     says why.
+   A control to start and stop a provider's simulated source is a separate
+   task: [[id:BC75AE1F-BD6B-46E0-BA50-794DBD35576E][Start and stop a provider's simulated source from the Provider tab]].
+
+Gamma stays a constant in the generator, so the page states it rather than
+reading a stored value.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Vol feeds in the Bloomberg FX folder list | 14 of 40 feeds | =check_vol_bff.py= (scratchpad) as =super_admin= against the live BFF | 91f09af3e5 |
+| Vol feeds that read as running while the adapters hold them | 14 of 14 | =try_vol_start.py= (scratchpad) as =super_admin= | 72d584d900 |
+| Hand start of a vol feed | 409, with the reason | =try_vol_start.py= (scratchpad) | 72d584d900 |
+| Fleet, surface and registry tests | 18 cases, 115 assertions pass | =ores.synthetic.service.tests "[shared_surfaces],[generator_fleet],[feed_kind_registry]"= | 72d584d900 |
+| BFF synthetic tests | 91 pass | =npx vitest run src/synthetic.test.ts= | b8e798efc7 |
+
+* Notes
+
+- The ids that the DQ publish derives are not RFC-versioned UUIDs (for
+  example =de1e72b7-bae2-c70f-...=), so =z.uuid()= refused them and no vol
+  feed page opened. The synthetic routes now parse ids with
+  =storeUuidSchema= from =@ores/contracts=.
+- A bulk start over a folder counts each vol feed as skipped, with the
+  refusal in the service log.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5018][#5018]] | [web] Configure a vol surface feed on the synthetic screen |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Local review: the id helpers sat between two import statements. | =bff/src/synthetic.ts= | Accept | Moved below the imports (b8e798efc7). |
+| 2 | Local review: the FX tally loop names its two tables again beside =feed_tables=. | =feed_overview_handler.hpp= | Decline | The FX tally needs the FX tables only; a second array for two names adds a layer for no gain. |
+| 3 | Misspell check over the changed files. | all | Clean | =misspell-fixer= exit 0. |
+| 4 | PR review: a held surface's name could appear twice in the running list. | =generator_fleet.hpp= | Decline | Holds run as =<source_name>.<provider_code>=, the surface as the feed's own name, and a hand start under that name is refused, so the names are distinct by construction. |
+| 5 | PR review: the surface accessors are called after =held()= drops the lock. | =shared_surfaces.hpp= | Decline | =source_name()= returns a member set in the constructor; the vol surface keeps the base =start_source()= and =vendor_watch_subjects()=, which return constants; the =shared_ptr= keeps it alive. |
+| 6 | PR review: ='ssvi'= and the pair label are literals in the vol branch. | =feed_filter.cpp= | No action | The reviewer confirms the columns match; =feed_listing_tests.cpp= covers the branch. |
+| 7 | PR review: the store id check applies to every synthetic route. | =bff/src/synthetic.ts= | Accept | Intended: DQ-derived ids name no UUID version. The PR description now says it applies to every synthetic route. |
+| 8 | PR review: assert a non-permitted session is refused a vol write. | =bff/src/synthetic.test.ts= | Already done | "refuses a tenant session a write to a vol surface feed" expects 403. |
+| 9 | PR review: =--keep-infra= with a named service is ignored. | =compass_services.py= | Decline | A named service stop never touches the pooler or NATS, which are not registry services, so the flag has no effect to warn about. |
+
+* Result
+
+The Provider tab lists each provider's vol surface feeds beside its spot
+and curve feeds, in the folder lists and the folder counts. A vol surface
+feed has its own page at =/market-data/synthetic/vol/<id>=, in the FX and
+IR language: Details, Calibration, Surface, Expiries, Contributors,
+Arrivals and History, with add, edit and revert. The Surface tab edits the
+SSVI start, the skew and curvature dynamics and the three correlations,
+each card with its own Edit, and the forms refuse values outside the
+tables' bounds. Gamma shows as fixed at one half with the reason, and no
+form edits it. The BFF writes the four vol resources for a system session
+only, and reads rows whose ids the DQ publish derived.
+
+A vol surface feed reads as running while a provider's simulated source
+holds it. Its page shows that state with no Start or Stop, and the service
+refuses a hand start with the reason. A control for the simulated source
+itself is the follow-on task
+[[id:BC75AE1F-BD6B-46E0-BA50-794DBD35576E][Start and stop a provider's simulated source from the Provider tab]].
+
+All acceptance items are met. The screens are in English, French and
+Portuguese.

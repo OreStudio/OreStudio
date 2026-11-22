@@ -153,7 +153,10 @@ function FeedBody({
                 own={
                     <>
                         <FeedStatus running={running} />
-                        {mayRun && (
+                        {kind.heldByProvider === true && (
+                            <span className="text-sm text-ink-muted">{t(`${words}.held`)}</span>
+                        )}
+                        {mayRun && kind.heldByProvider !== true && (
                             <span className="flex gap-2">
                                 <Button
                                     size="sm"

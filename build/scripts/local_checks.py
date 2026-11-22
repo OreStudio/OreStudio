@@ -561,11 +561,14 @@ CATALOGUE: tuple[Check, ...] = (
         # The rebuild terminates every connection and then counts what is left,
         # so a fleet that is still up reconnects inside the half second it waits
         # and the count refuses the rebuild. Stopping the fleet is what makes
-        # the check a statement about the schema rather than about timing.
+        # the check a statement about the schema rather than about timing. The
+        # pooler and nats-server stay up: the suites after this connect through
+        # them, and the recreate terminates the pooler's server connections.
         argv=(
             "bash",
             "-c",
-            "./compass.sh services stop || true; ./compass.sh db recreate -y -k",
+            "./compass.sh services stop --keep-infra || true;"
+            " ./compass.sh db recreate -y -k",
         ),
         classes=("cpp", "services", "sql"),
         phase=HEAVY,

@@ -72,6 +72,7 @@ export const PATHS = {
     calibration: '/market-data/calibration',
     fxFeed: '/market-data/synthetic/fx',
     irFeed: '/market-data/synthetic/ir',
+    volFeed: '/market-data/synthetic/vol',
     reporting: '/reporting',
     reports: '/reporting/reports',
     configurations: '/reporting/configurations',

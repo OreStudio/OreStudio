@@ -4539,6 +4539,9 @@ const fr: SourceCatalogue = {
                 runs: 'Runs',
                 cuts: 'Coupures',
                 entries: 'Entrées',
+                surface: 'Surface',
+                expiries: 'Échéances',
+                contributors: 'Contributeurs',
             },
         },
         fields: {
@@ -4653,6 +4656,34 @@ const fr: SourceCatalogue = {
             tenor_convention_code: 'Convention de tenor',
             split_tenor_code: 'Tenor de scission',
             curve_role_code: 'Rôle de courbe',
+            start_skew: 'Asymétrie initiale (ρ)',
+            start_curvature: 'Courbure initiale (η)',
+            skew_reversion: "Retour de l'asymétrie",
+            skew_volatility: "Volatilité de l'asymétrie",
+            curvature_reversion: 'Retour de la courbure',
+            curvature_volatility: 'Volatilité de la courbure',
+            spot_variance_correlation: 'Corrélation du spot et de la variance',
+            spot_skew_correlation: "Corrélation du spot et de l'asymétrie",
+            segment_correlation: 'Corrélation des segments',
+            atm_vol: 'Volatilité ATM',
+            variance_reversion: 'Retour de la variance',
+            variance_volatility: 'Volatilité de la variance',
+            contributor_id: 'Contributeur',
+            provider_code: 'Fournisseur',
+            noise: 'Bruit',
+            wing_widening: 'Élargissement des ailes',
+            expiry_widening: 'Élargissement par échéance',
+            quote_step: 'Pas de cotation',
+            missing_probability: "Probabilité d'absence",
+            stale_probability: 'Probabilité de cotation figée',
+            outlier_probability: 'Probabilité de valeur aberrante',
+            outlier_size: "Taille d'une valeur aberrante",
+            bias: 'Biais',
+            feed_id: 'Flux',
+            arrival_mode: 'Arrivée',
+            branching_ratio: 'Taux de ramification',
+            decay: 'Décroissance',
+            sensitivity: 'Sensibilité',
         },
         choices: {
             requirement: {
@@ -7156,6 +7187,69 @@ const fr: SourceCatalogue = {
             add: 'Ajouter une entrée de durée',
             one: 'Entrée de durée',
             remove: "Supprimer l'entrée de durée",
+        },
+        volFeeds: {
+            add: 'Nouvelle surface de volatilité',
+            addTitle: 'Nouvelle surface de volatilité',
+            engine: 'SSVI',
+            held: "Tourne tant qu'une source simulée d'un fournisseur la tient.",
+            samePair: 'Les devises de base et de cotation doivent être différentes.',
+            removeWarning:
+                "Le flux s'arrête s'il tourne. Ses échéances et ses liens vers les contributeurs sont supprimés d'abord, puis le flux. L'historique de chacun reste.",
+            help: {
+                ticks_per_hour:
+                    'Combien de surfaces le flux produit en une heure. 12 en fait une toutes les cinq minutes.',
+                arrival_mode:
+                    'Comment les ticks arrivent : à intervalle fixe, au hasard ou par grappes.',
+                branching_ratio:
+                    "Seule une arrivée par grappes l'utilise : combien de ticks un tick en entraîne, en dessous de un.",
+                decay: "Seule une arrivée par grappes l'utilise : la vitesse à laquelle une rafale s'éteint, en un par seconde.",
+                sensitivity:
+                    'La force avec laquelle un régime de marché fait bouger cette surface, un étant la moyenne.',
+                start_skew:
+                    'Le rho SSVI de départ de la surface, vers lequel elle revient, entre -1 et 1. Le change cote souvent une asymétrie négative.',
+                start_curvature:
+                    "L'eta SSVI de départ de la surface, vers lequel elle revient, au-dessus de 0 et en dessous de la racine carrée de 2 (1,4142). Il fixe la hauteur des ailes au-dessus de l'ATM.",
+                skew_reversion: "La vitesse à laquelle l'asymétrie revient à son départ, par an.",
+                skew_volatility:
+                    "L'ampleur des mouvements de l'asymétrie, par racine carrée d'année.",
+                curvature_reversion:
+                    'La vitesse à laquelle la courbure revient à son départ, par an.',
+                curvature_volatility:
+                    "L'ampleur des mouvements de la courbure, par racine carrée d'année.",
+                spot_variance_correlation:
+                    'Comment les variances à terme bougent avec le spot, entre -1 et 1.',
+                spot_skew_correlation: "Comment l'asymétrie bouge avec le spot, entre -1 et 1.",
+                segment_correlation:
+                    'À quel point des variances à terme voisines bougent ensemble, de 0 à juste en dessous de 1.',
+                enabled: "Un flux qui n'est pas activé ne peut pas démarrer.",
+                auto_start: 'Le flux démarre quand le service synthétique démarre.',
+            },
+            surface: {
+                lead: 'La surface SSVI que le flux fait évoluer : son départ, les mouvements de son asymétrie et de sa courbure, et leur corrélation avec le spot.',
+                running: "Le flux tourne. Une modification s'applique à son prochain démarrage.",
+                start: 'Départ',
+                dynamics: 'Dynamique',
+                correlations: 'Corrélations',
+                editTitle: '{part} : {pair}',
+                gamma: 'Gamma (γ)',
+                fixed: 'fixe',
+                gammaWhy:
+                    "Le générateur maintient gamma à un demi. À cette valeur, la surface est libre d'arbitrage papillon tant que la courbure reste sous la racine carrée de 2, et le générateur l'y maintient. Un autre gamma rend les conditions de non-arbitrage dépendantes de chaque échéance et de l'asymétrie : vous ne pouvez donc pas le modifier ici.",
+            },
+            expiries: {
+                lead: "Les échéances auxquelles la surface est cotée, chacune avec sa volatilité ATM et le mouvement de sa variance à terme. La variance totale ATM doit croître d'une échéance à la suivante. Sinon, le flux ne démarre pas.",
+                add: 'Ajouter une échéance',
+                one: 'Échéance',
+                remove: "Supprimer l'échéance",
+            },
+            contributors: {
+                lead: "Les fournisseurs qui cotent la surface. Chaque fournisseur ajoute son propre bruit aux cotations, et toutes les surfaces qu'il cote partagent ce profil de bruit.",
+                add: 'Ajouter un contributeur',
+                one: 'Contributeur',
+                remove: 'Retirer le contributeur',
+                noise: 'Profil de bruit : {provider}',
+            },
         },
         runs: {
             status: 'État',

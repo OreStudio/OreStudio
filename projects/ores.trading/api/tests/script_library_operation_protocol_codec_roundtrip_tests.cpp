@@ -46,3 +46,27 @@ TEST_CASE("ores::trading::messaging::export_script_library_response",
           "[codec][roundtrip][protocol]") {
     ores::testing::check_wire_roundtrip<ores::trading::messaging::export_script_library_response>();
 }
+
+TEST_CASE("ores::trading::messaging::published_result", "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::trading::messaging::published_result>();
+}
+
+TEST_CASE("ores::trading::messaging::published_calibration", "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::trading::messaging::published_calibration>();
+}
+
+TEST_CASE("ores::trading::messaging::published_variant", "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::trading::messaging::published_variant>();
+}
+
+TEST_CASE("ores::trading::messaging::script_diagnostic", "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::trading::messaging::script_diagnostic>();
+}
+
+TEST_CASE("ores::trading::messaging::publish_script_request", "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::trading::messaging::publish_script_request>();
+}
+
+TEST_CASE("ores::trading::messaging::publish_script_response", "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::trading::messaging::publish_script_response>();
+}

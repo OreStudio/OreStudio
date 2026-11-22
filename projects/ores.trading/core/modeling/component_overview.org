@@ -62,6 +62,7 @@ component also ships synthetic-data generators for test and development use.
 * Dependencies
 
 - =ores.trading.api= — shared domain types and NATS protocol schemas.
+- =ores.trading.scripting= — ORE's parser and the inputs a published script derives.
 - =ores.dq= — FSM infrastructure, ORM base classes, and data-quality checks.
 - =ores.iam.core= — identity and authorisation context.
 - =ores.refdata.core= — enumeration reference data (trade types, activity types).
@@ -110,6 +111,7 @@ target_link_libraries(${lib_target_name}
         # compass:except(core_link_edges/forbidden_edge) expires=2027-05-18 approver=marco reason=accepted until the edge is removed
         ores.history.core.lib
         ores.diff.lib
+        ores.trading.scripting.lib
         ores.utility.lib
         ores.security.lib
         faker-cxx::faker-cxx

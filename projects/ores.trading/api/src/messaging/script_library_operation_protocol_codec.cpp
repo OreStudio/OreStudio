@@ -98,4 +98,130 @@ wire_traits<ores::trading::messaging::export_script_library_response>::read_msgp
     return object::read_msgpack<ores::trading::messaging::export_script_library_response>(data);
 }
 
+std::string wire_traits<ores::trading::messaging::published_result>::write_json(
+    const ores::trading::messaging::published_result& v) {
+    return object::write_json(v);
+}
+
+ores::trading::messaging::published_result
+wire_traits<ores::trading::messaging::published_result>::read_json(std::string_view text) {
+    return object::read_json<ores::trading::messaging::published_result>(text);
+}
+
+std::string wire_traits<ores::trading::messaging::published_result>::write_msgpack(
+    const ores::trading::messaging::published_result& v) {
+    return object::write_msgpack(v);
+}
+
+ores::trading::messaging::published_result
+wire_traits<ores::trading::messaging::published_result>::read_msgpack(
+    std::span<const std::byte> data) {
+    return object::read_msgpack<ores::trading::messaging::published_result>(data);
+}
+
+std::string wire_traits<ores::trading::messaging::published_calibration>::write_json(
+    const ores::trading::messaging::published_calibration& v) {
+    return object::write_json(v);
+}
+
+ores::trading::messaging::published_calibration
+wire_traits<ores::trading::messaging::published_calibration>::read_json(std::string_view text) {
+    return object::read_json<ores::trading::messaging::published_calibration>(text);
+}
+
+std::string wire_traits<ores::trading::messaging::published_calibration>::write_msgpack(
+    const ores::trading::messaging::published_calibration& v) {
+    return object::write_msgpack(v);
+}
+
+ores::trading::messaging::published_calibration
+wire_traits<ores::trading::messaging::published_calibration>::read_msgpack(
+    std::span<const std::byte> data) {
+    return object::read_msgpack<ores::trading::messaging::published_calibration>(data);
+}
+
+std::string wire_traits<ores::trading::messaging::published_variant>::write_json(
+    const ores::trading::messaging::published_variant& v) {
+    return object::write_json(v);
+}
+
+ores::trading::messaging::published_variant
+wire_traits<ores::trading::messaging::published_variant>::read_json(std::string_view text) {
+    return object::read_json<ores::trading::messaging::published_variant>(text);
+}
+
+std::string wire_traits<ores::trading::messaging::published_variant>::write_msgpack(
+    const ores::trading::messaging::published_variant& v) {
+    return object::write_msgpack(v);
+}
+
+ores::trading::messaging::published_variant
+wire_traits<ores::trading::messaging::published_variant>::read_msgpack(
+    std::span<const std::byte> data) {
+    return object::read_msgpack<ores::trading::messaging::published_variant>(data);
+}
+
+std::string wire_traits<ores::trading::messaging::script_diagnostic>::write_json(
+    const ores::trading::messaging::script_diagnostic& v) {
+    return object::write_json(v);
+}
+
+ores::trading::messaging::script_diagnostic
+wire_traits<ores::trading::messaging::script_diagnostic>::read_json(std::string_view text) {
+    return object::read_json<ores::trading::messaging::script_diagnostic>(text);
+}
+
+std::string wire_traits<ores::trading::messaging::script_diagnostic>::write_msgpack(
+    const ores::trading::messaging::script_diagnostic& v) {
+    return object::write_msgpack(v);
+}
+
+ores::trading::messaging::script_diagnostic
+wire_traits<ores::trading::messaging::script_diagnostic>::read_msgpack(
+    std::span<const std::byte> data) {
+    return object::read_msgpack<ores::trading::messaging::script_diagnostic>(data);
+}
+
+std::string wire_traits<ores::trading::messaging::publish_script_request>::write_json(
+    const ores::trading::messaging::publish_script_request& v) {
+    return object::write_json(v);
+}
+
+ores::trading::messaging::publish_script_request
+wire_traits<ores::trading::messaging::publish_script_request>::read_json(std::string_view text) {
+    return object::read_json<ores::trading::messaging::publish_script_request>(text);
+}
+
+std::string wire_traits<ores::trading::messaging::publish_script_request>::write_msgpack(
+    const ores::trading::messaging::publish_script_request& v) {
+    return object::write_msgpack(v);
+}
+
+ores::trading::messaging::publish_script_request
+wire_traits<ores::trading::messaging::publish_script_request>::read_msgpack(
+    std::span<const std::byte> data) {
+    return object::read_msgpack<ores::trading::messaging::publish_script_request>(data);
+}
+
+std::string wire_traits<ores::trading::messaging::publish_script_response>::write_json(
+    const ores::trading::messaging::publish_script_response& v) {
+    return object::write_json(v);
+}
+
+ores::trading::messaging::publish_script_response
+wire_traits<ores::trading::messaging::publish_script_response>::read_json(std::string_view text) {
+    return object::read_json<ores::trading::messaging::publish_script_response>(text);
+}
+
+std::string wire_traits<ores::trading::messaging::publish_script_response>::write_msgpack(
+    const ores::trading::messaging::publish_script_response& v) {
+    return object::write_msgpack(v);
+}
+
+ores::trading::messaging::publish_script_response
+wire_traits<ores::trading::messaging::publish_script_response>::read_msgpack(
+    std::span<const std::byte> data) {
+    return object::read_msgpack<ores::trading::messaging::publish_script_response>(data);
+}
+
 }

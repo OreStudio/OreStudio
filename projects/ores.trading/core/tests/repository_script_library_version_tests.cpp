@@ -38,7 +38,10 @@ TEST_CASE("a stated version of a world script reads back as its script and the r
     ores::testing::scoped_database_helper h;
     const auto ctx = h.context();
 
-    const auto current = repository::script_repository().read_latest(ctx, "Accumulator01");
+    // The read returns the tenant's own script of the name beside the world's,
+    // and a test of the tenant's publish may have written one.
+    auto current = repository::script_repository().read_latest(ctx, "Accumulator01");
+    std::erase_if(current, [](const auto& s) { return !s.tenant_id.is_system(); });
     REQUIRE(current.size() == 1u);
     const auto version = current.front().version;
 

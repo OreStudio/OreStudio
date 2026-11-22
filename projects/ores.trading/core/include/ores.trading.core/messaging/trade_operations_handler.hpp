@@ -35,6 +35,7 @@
 #include "ores.trading.api/messaging/trade_operations_protocol.hpp"
 #include "ores.trading.core/repository/market_reference_repository.hpp"
 #include "ores.trading.core/repository/script_library_version_repository.hpp"
+#include "ores.trading.core/service/script_publish_service.hpp"
 #include "ores.trading.core/service/trade_export_service.hpp"
 #include "ores.trading.core/service/trade_operations_service.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
@@ -331,6 +332,40 @@ public:
             } else {
                 resp.message = "Invalid export_script_library_request.";
             }
+        } catch (const std::exception& e) {
+            ORES_LOG_SEV(trade_operations_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            resp.success = false;
+            resp.message = e.what();
+        }
+        reply(nats_, msg, resp);
+    }
+
+    /**
+     * @brief Serves trading.v1.ops.publish_script.
+     */
+    void publish_script(ores::nats::message msg) {
+        using ores::service::messaging::decode;
+        using ores::service::messaging::error_reply;
+        using ores::service::messaging::reply;
+        using namespace ores::logging;
+
+        ORES_LOG_SEV(trade_operations_handler_lg(), debug) << "Handling " << msg.subject;
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        if (!ores::service::messaging::has_permission(*ctx_expected, "trading::scripts:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        publish_script_response resp;
+        try {
+            if (auto req = decode<publish_script_request>(msg))
+                resp = service::script_publish_service(*ctx_expected).publish(*req);
+            else
+                resp.message = "Invalid publish_script_request.";
         } catch (const std::exception& e) {
             ORES_LOG_SEV(trade_operations_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();

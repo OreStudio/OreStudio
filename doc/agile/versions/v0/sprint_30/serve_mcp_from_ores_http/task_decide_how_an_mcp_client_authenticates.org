@@ -8,7 +8,7 @@
 #+filetags: :serve_mcp_from_ores_http:sprint_30:v0:
 #+owner: marco
 #+branch: feature/decide-how-an-mcp-client-authenticates
-#+pr:
+#+pr: 5021
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-21
@@ -140,7 +140,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5021][#5021]] | [agile] Decide how an MCP client signs in, and plan MCP |
 
 * Review
 

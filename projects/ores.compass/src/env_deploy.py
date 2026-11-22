@@ -56,6 +56,7 @@ import hashlib
 import os
 import re
 import shlex
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -568,32 +569,32 @@ def _transfer_runtime(project_root, host, remote_root, profile_path,
 
     # The pooler's configuration is generated for a container, not for the host:
     # it listens on the pod's interface and reaches the database on the host that
-    # runs the pod. One script generates both shapes.
-    stage_pooler = project_root / "build" / "docker-stage" / "pooler"
-    stage_pooler.mkdir(parents=True, exist_ok=True)
-    pooler_port = "6432"
-    env_file = project_root / ".env"
-    if env_file.is_file():
-        for line in env_file.read_text(encoding="utf-8").splitlines():
-            if line.startswith("ORES_DB_POOLER_PORT="):
-                pooler_port = line.split("=", 1)[1].strip() or pooler_port
-                break
-    # A remote environment keeps PostgreSQL off the default port, so the pooler
-    # is told the port the remote host listens on rather than this one's.
-    remote_db_port = _read_env(profile_path).get("PGPORT", "5432")
-    pooler_env = dict(os.environ, PGPORT=remote_db_port)
-    subprocess.run([
-        "bash", str(project_root / "build" / "scripts" / "start_ci_pooler.sh"),
-        # The quadlet unit runs the pooler with Network=host, so the database is
-        # on the container's own loopback rather than on a pod alias.
-        "print-config", str(pooler_port), str(stage_pooler), "127.0.0.1"],
-        check=True,
-        env=pooler_env,
-        stdout=subprocess.DEVNULL)
-    _ssh(host, f"mkdir -p {shlex.quote(remote_root)}/build/config/pooler",
-         check=True)
-    _scp(project_root, host, stage_pooler, f"{remote_root}/build/config/",
-         recursive=True)
+    # runs the pod. One script generates both shapes. A host that runs no pooler
+    # receives neither the configuration nor the credential file it carries.
+    if _pooler_enabled(project_root):
+        stage_pooler = project_root / "build" / "docker-stage" / "pooler"
+        # Written in full each run, but a file this run does not write would
+        # outlive the user it names, so the stage starts empty.
+        shutil.rmtree(stage_pooler, ignore_errors=True)
+        stage_pooler.mkdir(parents=True, exist_ok=True)
+        pooler_port = (_read_env(project_root / ".env").get("ORES_DB_POOLER_PORT")
+                       or "6432")
+        # A remote environment keeps PostgreSQL off the default port, so the
+        # pooler is told the port the remote host listens on, not this one's.
+        remote_db_port = _read_env(profile_path).get("PGPORT", "5432")
+        pooler_env = dict(os.environ, PGPORT=remote_db_port)
+        subprocess.run([
+            "bash", str(project_root / "build" / "scripts" / "start_ci_pooler.sh"),
+            # The quadlet unit runs the pooler with Network=host, so the database
+            # is on the container's own loopback rather than on a pod alias.
+            "print-config", str(pooler_port), str(stage_pooler), "127.0.0.1"],
+            check=True,
+            env=pooler_env,
+            stdout=subprocess.DEVNULL)
+        _ssh(host, f"mkdir -p {shlex.quote(remote_root)}/build/config/pooler",
+             check=True)
+        _scp(project_root, host, stage_pooler, f"{remote_root}/build/config/",
+             recursive=True)
     _scp(project_root, host, profile_path, f"{remote_root}/docker/.env")
 
 
@@ -913,9 +914,13 @@ def _cmd_deploy(argv, project_root):
     else:
         svc_images = [f"localhost/{s}:{tag}"
                       for s in _runtime_services(project_root)]
-        _stream_images(project_root, remote_host,
-                       [f"{IMAGE_BASE}:{tag}", f"{IMAGE_LIBS}:{tag}",
-                        *svc_images, f"{IMAGE_NATS}:{tag}"])
+        streamed = [f"{IMAGE_BASE}:{tag}", f"{IMAGE_LIBS}:{tag}",
+                    *svc_images, f"{IMAGE_NATS}:{tag}"]
+        # The stream path carries the same standalone images the pull path does,
+        # so a host that runs a pooler receives its image here too.
+        if _pooler_enabled(project_root):
+            streamed.append(f"{IMAGE_PGBOUNCER}:{tag}")
+        _stream_images(project_root, remote_host, streamed)
     _transfer_runtime(project_root, remote_host, remote_root,
                       profile_path, _label(profile_env, project_root))
     _deploy_runtime(project_root, remote_host, profile_env, remote_root, tag)

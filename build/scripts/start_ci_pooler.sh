@@ -54,7 +54,8 @@ if [ -z "${pgbouncer_bin}" ]; then
         fi
     done
 fi
-[ -n "${pgbouncer_bin}" ] || die "pgbouncer is not installed"
+# The binary is needed to run a pooler, not to write its configuration, so a
+# deploy machine that only generates a container configuration needs none.
 
 label="$(sed -n 's/^ORES_ENV_NAME=//p' "${env_file}" | head -1)"
 [ -n "${label}" ] || label="ci"
@@ -105,6 +106,7 @@ write_config() {
         chmod 600 "${dir}/${base}.users"
     fi
     local log_line="logfile = ${out}/${label}.log"
+    local pid_line="pidfile = ${dir}/${label}.pid"
     local listen_addr="127.0.0.1"
     local db_host="127.0.0.1"
     if [ "${dir}" != "${out}" ]; then
@@ -112,6 +114,8 @@ write_config() {
         # listen on every interface for the fleet's containers to reach it, and
         # the database is on the host that runs them.
         log_line=""
+        # A container cannot write beside a mounted configuration.
+        pid_line=""
         listen_addr="0.0.0.0"
         db_host="${db_host_override:-host.containers.internal}"
     fi
@@ -130,12 +134,13 @@ default_pool_size = 20
 max_db_connections = 100
 max_client_conn = 500
 ${log_line}
-$(if [ "${dir}" != "${out}" ]; then echo "# no pidfile: the container cannot write beside a mounted configuration"; else echo "pidfile = ${dir}/${label}.pid"; fi)
+${pid_line}
 EOF
 }
 
 start() {
     local port="${1:-6432}"
+    [ -n "${pgbouncer_bin}" ] || die "pgbouncer is not installed"
     write_config "${port}"
     "${pgbouncer_bin}" -d "${out}/${label}.ini" || die "pgbouncer did not start"
     echo "${port}" > "${out}/${label}.port"
@@ -173,5 +178,5 @@ case "${1:-}" in
             cat "${out}/${label}.ini"
         fi
         ;;
-    *) die "usage: $0 {start [port]|stop|print-config [port]}" ;;
+    *) die "usage: $0 {start [port]|stop|print-config [port] [dir] [db-host]}" ;;
 esac

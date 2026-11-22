@@ -30,7 +30,11 @@ FROM alpine:3.22
 
 # The package ships no user of its own, and pgbouncer refuses to run as root,
 # so the image makes the one its entrypoint drops to.
+# The version is stated in the build, not only in a comment: named prepared
+# statements in transaction mode need a floor, so an Alpine that ships below it
+# fails here rather than at the first query.
 RUN apk add --no-cache --no-progress pgbouncer && \
+    pgbouncer --version && \
     adduser -D -H -s /sbin/nologin -G nogroup pgbouncer && \
     mkdir -p /etc/pgbouncer
 

@@ -8,7 +8,7 @@
 #+filetags: :every_floating_index_has_a_curve_and_fixings:sprint_30:v0:
 #+owner: marco
 #+branch: feature/list-the-market-data-a-party-expects
-#+pr:
+#+pr: 5037
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-22
@@ -124,7 +124,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5037][#5037]] | [synthetic] Draw trades on the market data a party expects |
 
 * Review
 

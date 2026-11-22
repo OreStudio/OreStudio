@@ -99,11 +99,17 @@ rendered with =plantuml -tpng wireframe_reference_data_coverage.puml=.
 
 * Prototype
 
-None yet. It is drawn from this wireframe once the screen has an operation to
-read, and it lives at =doc/prototypes/dq/reference_data_coverage/= until it is
-accepted, when it becomes part of the design record as
+The prototype is at
+[[proj:doc/prototypes/dq/reference-data-coverage/][=doc/prototypes/dq/reference-data-coverage/=]]:
+the roster by level, the member table with its four reasons, and the preview, run
+and history panels behind their buttons. It draws mock data and every place where
+the server does not yet answer is marked on the page. Its design note is
+[[id:CB98437A-6293-4AC0-B68A-06D606FC9225][Reference data coverage prototype]],
+and the publish it hands to is drawn by
+[[id:495EFAFA-A5B3-4DE4-93DB-FDFA577E3790][Publish a bundle prototype]]. A
+prototype stays on main once accepted, as
 [[id:708C2462-C1F8-455B-B091-9D9690FEEAAB][Keep journey prototypes on main]]
-requires.
+requires; this one is not signed off yet.
 
 * Entities composed
 

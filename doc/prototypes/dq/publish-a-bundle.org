@@ -1,0 +1,101 @@
+:PROPERTIES:
+:ID: 495EFAFA-A5B3-4DE4-93DB-FDFA577E3790
+:END:
+#+title: Publish a bundle prototype
+#+description: The bundle publish as five steps: its contents in dependency order, the optional members and the mode, the preview, the run, and the receipt a run leaves.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:dq:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+
+| Item          | Where                                    |
+|---------------+------------------------------------------|
+| Prototype     | [[file:publish-a-bundle/][the prototype]] |
+| Gemini review | none                                     |
+| Group         | [[file:index.org][DQ prototypes]]                |
+
+* Summary
+
+This prototype argues that publishing a bundle is a run a person can read before
+it happens: the members in the order the dependency closure gives them, the
+optional ones that publish only when asked, the mode, and the counts each member
+would write. The screen is a rail of five steps rather than a dialog, because a
+run that halts half way has to be resumable by reading and not by remembering.
+It answers to
+[[id:5344ADC1-E729-4846-BE07-C6BC2169C4C9][Is my reference data complete?]],
+steps 4 and 5, and to the journey its group names *Publish a bundle*, which is
+not written yet.
+
+It is throwaway. It reads no server, opens with no build and no session, and
+draws mock data. The one thing it cannot draw — the preview counts the server
+computes and does not serve — is marked on every step.
+
+* Detail
+
+** What it argues
+
+- *The target is read, not chosen.* The level decides the tenant the run writes
+  into, so the screen states the target and does not offer it. A tenant that could
+  choose would be able to recreate the second copy the model forbids.
+- *Order is the closure's, and the person is told so.* The display order of the
+  bundle members breaks ties only. A screen that showed the display order as the
+  run order would teach the operator the wrong model of what a bundle is.
+- *Optional members are a decision, not a hidden default.* A large catalogue
+  never arrives with every small one, so the optionals are listed with what
+  skipping them means.
+- *The preview is the point of the rail.* Insert, update and skip per member,
+  before the run. A zero insert is evidence a catalogue agrees; a zero update is
+  not, because a function that rewrites its rows returns updates instead.
+- *The receipt is the whole record.* Nothing writes the run log, so the receipt
+  says so and names what does survive: the workflow instance and the provenance on
+  each published row.
+
+** The steps
+
+1. *Contents.* The members with their display order, the artefact type, whether
+   the member is always included, and its staged and published counts.
+2. *Options.* The bundle, the level and the target, read-only; the mode as three
+   choices; the optional members as checkboxes.
+3. *Preview.* Insert, update and skip per member under the chosen mode, with a
+   total for the run.
+4. *Run.* The workflow instance, the steps as they complete, and the halt — a
+   failed step does not undo the steps before it.
+5. *Receipt.* The four counts per member, and the sentence that no history row was
+   written.
+
+** States, by query string
+
+=?step=1|2|3|4|5=, =?optional=1=, =?mode=upsert|insert_only|replace_all=,
+=?fail=1=, =?gaps=0=.
+
+** What is fake
+
+The bundle and its four members, their counts, the workflow instance identifier,
+and the failure message of the halted step. The root-LEI parameter page is named —
+=lei.parties= carries the note that it needs one — and not drawn, because it is
+the one place a per-type parameter page still exists and it deserves its own
+question rather than a sixth step here. The four counts in the receipt are the
+shape the publish functions return; they are not read.
+
+** Where the code lives
+
+[[proj:doc/prototypes/dq/publish-a-bundle/][=doc/prototypes/dq/publish-a-bundle/=]]:
+=index.html=, =prototype.css=, =prototype.js=. It shares its stylesheet's tokens
+with the coverage prototype by copy, because a prototype is a page that stands
+alone.
+
+** Verdict
+
+The rail holds, and the preview is where the design earns its keep. Two things
+are left open: whether the preview belongs on the same page as the options — a
+person who changes the mode expects the counts to move, and the prototype reloads
+the page to show it — and whether the root-LEI page is a step of this rail or a
+dialog of its own. The run step is drawn as a list rather than a progress dialog,
+which is the claim that a halt must stay readable after the fact.
+
+* See also
+
+- [[file:index.org][DQ prototypes]] — the group this belongs to.
+- [[id:5344ADC1-E729-4846-BE07-C6BC2169C4C9][Is my reference data complete?]] — the journey whose steps 4 and 5 this draws.
+- [[id:F05B779F-769B-49D5-B369-D2AAC029B36D][DQ Bundle Publication Pipeline]] — the mechanism the rail draws.

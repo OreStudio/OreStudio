@@ -210,7 +210,15 @@ inline void derive_states(feed_graph& graph,
         resolve(resolve, i);
 }
 
-/** @brief The graph less one provider's nodes and every edge that touches one of them. */
+/** @brief The provider of the latent surfaces, which no tenant reads. */
+inline constexpr std::string_view latent_provider = "latent";
+
+/**
+ * @brief The graph less one provider's nodes and every edge that touches one of them.
+ *
+ * A node that stays may be starved by one that goes, as a vendor view is by its latent surface,
+ * so its cause and reason, which name the node that went, are said without the name.
+ */
 inline feed_graph without_provider(feed_graph graph, std::string_view provider_code) {
     std::set<std::string> gone;
     for (const auto& n : graph.nodes)
@@ -220,6 +228,11 @@ inline feed_graph without_provider(feed_graph graph, std::string_view provider_c
     std::erase_if(graph.edges, [&gone](const auto& e) {
         return gone.contains(e.node) || gone.contains(e.input);
     });
+    for (auto& n : graph.nodes)
+        if (gone.contains(n.cause)) {
+            n.cause.clear();
+            n.reason = "An input the installation keeps to itself does not run.";
+        }
     return graph;
 }
 

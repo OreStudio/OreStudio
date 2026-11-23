@@ -99,6 +99,15 @@ via its "Verifies task" field.
 | 1 | Local review: the Graph tab polls the graph every five seconds | feedNode.tsx | Accepted | As the source strip polls the sources; the read is the part around one node. |
 | 2 | Local review: a source and a vendor view have no page to link | feedNode.tsx | Accepted | They show as names; a view is stopped and started from its surface's page. |
 | 3 | Local review: the story's node-state table header read STARTED for Means | story.org | Accepted | Restored. |
+| 4 | PR review: the Messages tab reads every log for a feed with no name | feedNode.tsx | Accepted | The read waits for a name and the tab says the graph holds no such node; a test renders it. |
+| 5 | PR review: a tenant sees a hidden node's name in a cause | feed_graph.hpp | Accepted | A vendor view is starved by its latent surface, so the filter clears such a cause and says the reason without the name; a graph case checks it. The provider code is a named constant. |
+| 6 | PR review: no handler-level test of the tenant filter | simulated_source_handler.hpp | Declined | The handler answers on a reply subject, and these tests read effects, not replies; the filter's function has its own cases. |
+| 7 | PR review: a curve's page is chosen from its name | feedNode.tsx | Declined | The instrument segment is the signed-off naming scheme's contract. |
+| 8 | PR review: error lines look like info lines | feedNode.tsx | Accepted | error and fatal take the down tone. |
+| 9 | PR review: the 100-line cap is silent | feedNode.tsx | Accepted | The tab says when it shows only the latest messages. |
+| 10 | PR review: a stop or start refreshes only the graph | feedNode.tsx | Accepted | It refreshes the messages too. |
+| 11 | PR review: controls only on views in the tables | feedNode.tsx | Accepted | A comment says why: a node with a page is stopped there. |
+| 12 | PR review: the stop dialog reuses the amend reason domain | feedNode.tsx | Declined | The source stop uses the same domain. |
 
 * Result
 

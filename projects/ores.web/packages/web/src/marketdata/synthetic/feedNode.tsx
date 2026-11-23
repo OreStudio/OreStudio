@@ -94,7 +94,10 @@ function NodeControl({ node }: { readonly node: FeedGraphNode }): ReactNode {
     const [stopping, setStopping] = useState(false);
     const start = useMutation({
         mutationFn: () => api.startFeedNode(node.name),
-        onSuccess: () => void queries.invalidateQueries({ queryKey: ['feed-graph'] }),
+        onSuccess: () => {
+            void queries.invalidateQueries({ queryKey: ['feed-graph'] });
+            void queries.invalidateQueries({ queryKey: ['feed-messages'] });
+        },
     });
     if (!mayRun) return null;
     return (
@@ -135,6 +138,7 @@ function StopNodeDialog({
             }),
         onSuccess: () => {
             void queries.invalidateQueries({ queryKey: ['feed-graph'] });
+            void queries.invalidateQueries({ queryKey: ['feed-messages'] });
             onClose();
         },
     });
@@ -206,6 +210,7 @@ function Neighbours({
                                         )}
                                     </td>
                                     <td className="py-1 text-right">
+                                        {/* A neighbour that has its own page is stopped there; a vendor view has none, so its surface's page stops it. */}
                                         {node?.kind === 'view' && <NodeControl node={node} />}
                                     </td>
                                 </tr>
@@ -263,6 +268,14 @@ export function FeedGraphTab({ name }: { readonly name: string }): ReactNode {
     );
 }
 
+const LEVEL_TONE: Readonly<Record<string, 'warn' | 'down'>> = {
+    warn: 'warn',
+    error: 'down',
+    fatal: 'down',
+};
+
+const MESSAGES_SHOWN = 100;
+
 /** A node's messages over the last day, from telemetry, by the node's name. */
 export function FeedMessagesTab({ name }: { readonly name: string }): ReactNode {
     const { t } = useTranslation();
@@ -277,15 +290,22 @@ export function FeedMessagesTab({ name }: { readonly name: string }): ReactNode 
                 tag: name,
                 message: '',
                 offset: 0,
-                limit: 100,
+                limit: MESSAGES_SHOWN,
             }),
         refetchInterval: 5000,
+        enabled: name !== '',
     });
+    if (name === '') return <Notice tone="info">{t('marketdata.feedGraph.unknown')}</Notice>;
     if (logs.error !== null) return <Notice tone="error">{logs.error.message}</Notice>;
     const entries = logs.data?.entries ?? [];
     return (
         <div className="space-y-4">
             <p className="text-sm text-ink-muted">{t('marketdata.feedGraph.messagesLead')}</p>
+            {(logs.data?.total ?? 0) > entries.length && (
+                <p className="text-xs text-ink-muted">
+                    {t('marketdata.feedGraph.latestOnly', { count: entries.length })}
+                </p>
+            )}
             {logs.data !== undefined && entries.length === 0 ? (
                 <p className="text-sm text-ink-muted">{t('marketdata.feedGraph.noMessages')}</p>
             ) : (
@@ -297,7 +317,7 @@ export function FeedMessagesTab({ name }: { readonly name: string }): ReactNode 
                                     {logTime(entry.timestamp) ?? ''}
                                 </td>
                                 <td className="py-1 pr-2">
-                                    <Tag tone={entry.level === 'warn' ? 'warn' : 'muted'} small>
+                                    <Tag tone={LEVEL_TONE[entry.level] ?? 'muted'} small>
                                         {entry.level}
                                     </Tag>
                                 </td>

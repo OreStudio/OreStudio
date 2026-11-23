@@ -7338,6 +7338,7 @@ const fr: SourceCatalogue = {
             messagesLead:
                 'Les messages de ce nœud sur le dernier jour : ses changements d’état avec leurs raisons, et les diagnostics qu’il lève.',
             noMessages: 'Aucun message sur le dernier jour.',
+            latestOnly: 'Affichage des {count} messages les plus récents.',
         },
         volFeeds: {
             add: 'Nouvelle surface de volatilité',

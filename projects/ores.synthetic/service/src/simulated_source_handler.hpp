@@ -111,7 +111,7 @@ public:
             // A latent surface is the installation's own, under a provider no tenant reads, so a
             // tenant's read leaves out the latent provider's nodes and the edges that touch them.
             if (!feed_kind_registry::is_system_caller(*ctx_expected))
-                graph = without_provider(std::move(graph), "latent");
+                graph = without_provider(std::move(graph), latent_provider);
             ores::service::messaging::reply(
                 nats_,
                 msg,

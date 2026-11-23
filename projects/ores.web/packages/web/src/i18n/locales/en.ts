@@ -7229,6 +7229,7 @@ export const en: SourceCatalogue = {
             messagesLead:
                 "This node's messages over the last day: its state changes with their reasons, and the diagnostics it raises.",
             noMessages: 'No messages over the last day.',
+            latestOnly: 'Showing the latest {count} messages.',
         },
         volFeeds: {
             add: 'New vol surface',

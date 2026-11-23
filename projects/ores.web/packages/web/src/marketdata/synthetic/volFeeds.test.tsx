@@ -439,6 +439,17 @@ describe('the feed graph on a surface page', () => {
         expect(html).toContain('Read by');
     });
 
+    it('reads no log for a feed with no name, and says so', () => {
+        const html = render(`/market-data/synthetic/vol/${FEED_ID}?tab=messages`, (client) => {
+            writer(client);
+            client.setQueryData(['records', 'fx-vol-surface-feeds', 'key', FEED_ID], {
+                ...feed,
+                source_name: '',
+            });
+        });
+        expect(html).toContain('The feed graph holds no node of this name.');
+    });
+
     it('opens a node of the graph on its own page when it has one', () => {
         expect(nodePage({ kind: 'latent', name: latent, feed_config_id: 'x' })).toBe(
             '/market-data/synthetic/vol/x',

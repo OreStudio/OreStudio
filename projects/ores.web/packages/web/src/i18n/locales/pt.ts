@@ -7282,6 +7282,7 @@ const pt: SourceCatalogue = {
             messagesLead:
                 'As mensagens deste nó no último dia: as mudanças de estado com as suas razões, e os diagnósticos que levanta.',
             noMessages: 'Nenhuma mensagem no último dia.',
+            latestOnly: 'A mostrar as {count} mensagens mais recentes.',
         },
         volFeeds: {
             add: 'Nova superfície de volatilidade',

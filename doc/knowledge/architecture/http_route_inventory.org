@@ -1988,9 +1988,9 @@ against the answer the BFF gives.
 | resource | workflow | post | =/api/workflow/:instanceId/retry= | bff | projects/ores.web/packages/bff/src/server.ts:2685 | A command on one run: retrying a run that stopped asks the engine to start it again, and answers the run rather than a collection the client reads. |
 | composed view | workflow | get | =/api/workflow/{instanceId}= | ores.http | projects/ores.http/workflow/src/routes/workflow/progress_routes.cpp:67 | A run's progress answered by ores.http at the address and in the shape the BFF answered: the run's status, the step it is executing and one summary per step, from the one read the engine already answers in that shape, kept for the interval a page asks again. |
 | resource | workflow | post | =/api/workflow/{instanceId}/retry= | ores.http | projects/ores.http/workflow/src/routes/workflow/retry_routes.cpp:93 | One run resumed at the address and in the shape the BFF answered: the step the page chose, or the step the run stopped at, and the engine's own answer saying which step it re-dispatched or why it refused. |
-|  |  | delete | =/mcp= | ores.http | projects/ores.http/api/src/mcp/endpoint.cpp:319 |  |
-|  |  | get | =/mcp= | ores.http | projects/ores.http/api/src/mcp/endpoint.cpp:311 |  |
-|  |  | post | =/mcp= | ores.http | projects/ores.http/api/src/mcp/endpoint.cpp:303 |  |
+|  |  | delete | =/mcp= | ores.http | projects/ores.http/api/src/mcp/endpoint.cpp:339 |  |
+|  |  | get | =/mcp= | ores.http | projects/ores.http/api/src/mcp/endpoint.cpp:331 |  |
+|  |  | post | =/mcp= | ores.http | projects/ores.http/api/src/mcp/endpoint.cpp:323 |  |
 | transport capability | (none) | get | =/{path}= | ores.http | projects/ores.http/core/src/routes/web_bundle_routes.cpp:104 | A file of the built bundle, or the application shell for a screen path, and an /api path is answered 404 so the shell never stands in for JSON. |
 | transport capability | (none) | get | ={bucket_pattern}= | ores.http | projects/ores.http/core/src/routes/storage_routes.cpp:299 | path composed from bucket_pattern (declared at 236). A page of the keys one bucket of the object store holds. |
 | transport capability | (none) | delete | ={object_pattern}= | ores.http | projects/ores.http/core/src/routes/storage_routes.cpp:288 | path composed from object_pattern (declared at 234). One object of the object store, uploaded, downloaded, checked or removed by bucket and key. |

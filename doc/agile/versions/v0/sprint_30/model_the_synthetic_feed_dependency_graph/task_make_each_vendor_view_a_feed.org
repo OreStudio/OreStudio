@@ -8,7 +8,7 @@
 #+filetags: :model_the_synthetic_feed_dependency_graph:sprint_30:v0:
 #+owner: marco
 #+branch: feature/make-each-vendor-view-a-feed
-#+pr: 5074
+#+pr: 5078
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-23
@@ -117,6 +117,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5078][#5078]] | [inbox] Capture the official rate adapters going stale together |
 | [[https://github.com/OreStudio/OreStudio/pull/5074][#5074]] | [synthetic] Make each vendor's view of a latent surface a feed |
 
 * Review

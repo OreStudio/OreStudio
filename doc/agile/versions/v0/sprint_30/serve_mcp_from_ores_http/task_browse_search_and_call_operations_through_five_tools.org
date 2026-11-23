@@ -8,7 +8,7 @@
 #+filetags: :serve_mcp_from_ores_http:sprint_30:v0:
 #+owner: marco
 #+branch: feature/browse-search-and-call-operations-through-five-tools
-#+pr:
+#+pr: 5077
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-22
@@ -99,7 +99,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5077][#5077]] | [http] Browse, search and call ORE's operations through five MCP tools |
 
 * Review
 

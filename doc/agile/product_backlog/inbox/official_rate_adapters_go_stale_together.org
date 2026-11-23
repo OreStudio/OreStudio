@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: AFC18D89-D13F-4F50-8802-34A6D0C14EAD
+:END:
+#+title: Official rate adapters go stale together
+#+description: Every official rate adapter misses its heartbeat at the same moments, about fifteen times an hour, so the dashboard reports demanded ids not served while the adapters still run.
+#+type: capture
+#+level: cross
+#+filetags: :marketdata:official:adapters:heartbeat:
+#+created: 2026-11-23
+#+updated: 2026-11-23
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The market data service marks every official rate adapter stale at the same
+moment, about fifteen times an hour, and each recovers seconds later. In
+environment =eager_maxwell= on 2026-11-23, over one hour of
+=ores.marketdata.service=, =rba-aonia= went stale 16 times and =nyfed-sofr=,
+=ecb-frankfurter=, =imf-frankfurter=, =mas-sora=, =norgesbank-nowa=,
+=riksbank-swestr= and =tcmb-frankfurter= 15 times each, every adapter at the
+same timestamps, such as 21:40:32. Each stale is followed by the adapters
+announcing again: =ecb-estr= announced 38 times since its service started at
+15:39. While they are stale, the dashboard reports the demanded ids as not
+served (153 at one reading), although nothing is wrong with the rates.
+
+* Why
+
+An operator reads a warning that is false most of the time, and a real outage
+of an official source looks the same as the flapping.
+
+Hypothesis, not yet proved: the cause is the adapter's single loop
+(=official_adapter::loop= in =projects/ores.marketdata/official/src/app/official_adapter.cpp=).
+Each pass sends every source's heartbeat, then lets one source read its
+publisher through a blocking =refresh=. One read that takes longer than the
+supervisor's 15-second timeout (=adapter_registry::default_heartbeat_timeout=)
+holds back every heartbeat at once. That fits all the adapters going stale
+together. The service's NATS log supports it but does not prove it: it is
+silent from 21:40:04 to 21:42:34. The log does not say which publisher read
+was slow, because a refresh logs only what it sent.
+
+To settle it: log each refresh's duration with its source, then line the slow
+reads up with the stale timestamps. If they match, beat from a thread of its
+own, or read the publishers off the loop, so a slow read never delays a
+heartbeat.
+
+* References
+
+- =projects/ores.marketdata/official/src/app/official_adapter.cpp=: =serve= and =loop=.
+- =projects/ores.marketdata/service/include/ores.marketdata.service/app/adapter_registry.hpp=: the 15-second timeout.
+- =projects/ores.marketdata/service/src/app/adapter_supervisor.cpp=: the stale warning.
+
+* See also
+
+- [[id:8DE041AE-95E6-40CE-9B62-2CE3BA77838A][Model the synthetic feeds as a dependency graph]]: the testing in which it was seen.

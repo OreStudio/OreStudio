@@ -23,6 +23,7 @@
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.eventing.api/service/event_bus.hpp"
 #include "ores.eventing.core/service/postgres_event_source.hpp"
+#include "ores.http.api/mcp/endpoint.hpp"
 #include "ores.http.api/net/http_server.hpp"
 #include "ores.http.core/routes/change_reason_routes.hpp"
 #include "ores.http.core/routes/change_routes.hpp"
@@ -34,6 +35,7 @@
 #include "ores.http.core/stream/change_feed.hpp"
 #include "ores.http.core/stream/change_ticker.hpp"
 #include "ores.http.server/app/agent_writes.hpp"
+#include "ores.http.server/app/catalogue_tools.hpp"
 #include "ores.http.server/messaging/registrar.hpp"
 #include "ores.http/routes/analytics/analytics_routes.hpp"
 #include "ores.http/routes/assets/assets_routes.hpp"
@@ -171,7 +173,8 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
     ORES_LOG_SEV(lg(), info) << "Registering API routes...";
 
     auto api_info_builder =
-        router->get("/api/v1/info").catalogue("get_info", "operations", "info", false)
+        router->get("/api/v1/info")
+            .catalogue("get_info", "operations", "info", false)
             .summary("API Information")
             .description("Returns information about the API")
             .tags({"info"})
@@ -323,6 +326,15 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
                 << "No browser bundle at " << cfg.web_dir << "; the server serves no application";
         }
     }
+
+    // An LLM agent reaches ORE's operations through MCP, with its own key.
+    mcp::register_routes(
+        std::make_shared<const mcp::endpoint>(
+            std::make_shared<const catalogue_tools>(),
+            mcp::endpoint_options{.server_version = std::string(service_version),
+                                  .instructions = "Walk ORE's operations from list_areas."}),
+        router,
+        registry);
 
     // Every route states its place in the catalogue an LLM agent walks, so the
     // catalogue is complete by construction: a server with one that does not

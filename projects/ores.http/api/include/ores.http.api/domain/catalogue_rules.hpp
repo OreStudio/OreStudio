@@ -23,6 +23,7 @@
 #include "ores.http.api/domain/http_request.hpp"
 #include "ores.http.api/domain/route.hpp"
 #include "ores.http.api/export.hpp"
+#include <span>
 #include <string>
 #include <string_view>
 
@@ -33,6 +34,12 @@ namespace ores::http::domain {
  * itself when the table names none.
  */
 ORES_HTTP_API_EXPORT std::string area_of_component(std::string_view component);
+
+/**
+ * @brief The published areas, as design section 11.2 names them: the first
+ * step an agent takes into the catalogue.
+ */
+ORES_HTTP_API_EXPORT std::span<const std::string_view> published_areas();
 
 /**
  * @brief Whether an area is one of the published areas.

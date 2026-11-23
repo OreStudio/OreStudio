@@ -27,22 +27,22 @@ namespace ores::http::domain {
 namespace {
 
 /// The published areas, as design section 11.2 names them.
-constexpr auto published_areas = std::to_array<std::string_view>({"access",
-                                                                  "agile",
-                                                                  "analytics",
-                                                                  "assets",
-                                                                  "auth",
-                                                                  "changes",
-                                                                  "grid",
-                                                                  "market-data",
-                                                                  "operations",
-                                                                  "qa",
-                                                                  "reference-data",
-                                                                  "reporting",
-                                                                  "simulation",
-                                                                  "tenancy",
-                                                                  "trading",
-                                                                  "workflow"});
+constexpr auto areas = std::to_array<std::string_view>({"access",
+                                                        "agile",
+                                                        "analytics",
+                                                        "assets",
+                                                        "auth",
+                                                        "changes",
+                                                        "grid",
+                                                        "market-data",
+                                                        "operations",
+                                                        "qa",
+                                                        "reference-data",
+                                                        "reporting",
+                                                        "simulation",
+                                                        "tenancy",
+                                                        "trading",
+                                                        "workflow"});
 
 /// The segment of a pattern after /api/v1/, or empty.
 std::string_view first_api_segment(std::string_view pattern) {
@@ -55,8 +55,12 @@ std::string_view first_api_segment(std::string_view pattern) {
 
 }
 
+std::span<const std::string_view> published_areas() {
+    return areas;
+}
+
 bool is_published_area(std::string_view area) {
-    return std::ranges::find(published_areas, area) != published_areas.end();
+    return std::ranges::find(areas, area) != areas.end();
 }
 
 bool may_declare_read(const route_catalogue& catalogue) {

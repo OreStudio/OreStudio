@@ -26,11 +26,11 @@ The system tenant sees the latent provider, described, on the dashboard and the 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:8DE041AE-95E6-40CE-9B62-2CE3BA77838A][Model the synthetic feeds as a dependency graph: upstreams, latent surfaces and vendor views]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-23                               |
 
 * Acceptance
@@ -42,9 +42,16 @@ The system tenant sees the latent provider, described, on the dashboard and the 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Fixes the owner found testing the merged story, each live-checked as it
+landed, in one PR.
+
+1. The tabs hid a provider their catalogue lacks; that catalogue is the
+   synthetic provider list, which held no =latent=, so the system tenant lost
+   it too. Hide the system's own providers by the session's tenant instead.
+2. Seed =latent= in the synthetic provider list, so it has a description.
+3. A provider with no source of its own cannot hand-start its feeds: stop and
+   start them as graph nodes, with one reason.
+4. Style the Graph tab's links, and link views and sources too.
 
 * Measurements
 
@@ -58,7 +65,8 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Web tests | 2671 pass, the whole web package | =npx vitest run= in packages/web | 5632070ab6 |
+| Live, Latent for super_admin | the Provider tab's combo box lists Latent with its 14 surfaces; the provider list holds latent with its description | the owner's session; =GET /api/synthetic/providers= | 5632070ab6 |
 
 * Notes
 
@@ -83,6 +91,16 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: the providers to hide are a fixed set | providers.ts | Accepted | One system provider exists; the market data catalogue's kind is the server's rule, and the web mirrors it for its own list. |
+| 2 | Local review: a view links to its surface, not a page of its own | feedNode.tsx | Accepted | Until the next task gives a view its page. |
 
 * Result
+
+The system tenant sees the Latent provider, with its description, on the
+dashboard and the Provider tab, and a tenant does not. Its Start and Stop stop
+and start its 14 surfaces as graph nodes, with one reason. Every neighbour on
+a Graph tab is a styled link: a feed to its page, a view to its surface's Graph
+tab, a source to its provider.
+
+Testing also showed a vendor's view is a feed and must be one: the next task
+makes each view a feed of its vendor's collection, with its own page.

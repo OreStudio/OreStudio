@@ -8,7 +8,7 @@
 #+filetags: :serve_mcp_from_ores_http:sprint_30:v0:
 #+owner: marco
 #+branch: feature/serve-the-mcp-transport-on-ores-http
-#+pr:
+#+pr: 5069
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-22
@@ -94,7 +94,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5069][#5069]] | [http] Serve MCP's Streamable HTTP transport at /mcp |
 
 * Review
 

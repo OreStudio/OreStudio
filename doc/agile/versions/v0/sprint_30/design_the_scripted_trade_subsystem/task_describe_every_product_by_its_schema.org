@@ -8,7 +8,7 @@
 #+filetags: :design_the_scripted_trade_subsystem:sprint_30:v0:
 #+owner: marco
 #+branch: feature/describe-every-product-by-its-schema
-#+pr: 5050
+#+pr: 5060
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-21
@@ -302,6 +302,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5060][#5060]] | [agile] Close the product schema task, and move the engine to its own task |
 | [[https://github.com/OreStudio/OreStudio/pull/5050][#5050]] | [http] Serve a product's description and the product list over HTTP |
 | [[https://github.com/OreStudio/OreStudio/pull/5048][#5048]] | [trading] Describe a product and list the products that can be described |
 | [[https://github.com/OreStudio/OreStudio/pull/5046][#5046]] | [ore] Serve the ore parameter cache from ores.ore.client |

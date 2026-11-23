@@ -8,7 +8,7 @@
 #+filetags: :design_the_scripted_trade_subsystem:sprint_30:v0:
 #+owner: marco
 #+branch: feature/book-a-product-in-either-form
-#+pr:
+#+pr: 5062
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-21
@@ -97,7 +97,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5062][#5062]] | [trading] Validate a script against a trade's variables |
 
 * Review
 

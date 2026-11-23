@@ -322,40 +322,49 @@ void sensitivity_template_routes::register_routes(
         registry->register_route(built);
     };
 
-    add(router->get("/api/analytics/sensitivity-templates").catalogue("web_get_analytics_sensitivity_templates", "analytics", "sensitivity_templates", false), [&session](const http_request& req) {
-        return forwarding::guarded<messaging::list_sensitivity_templates_request>([&] {
-            rr::refuse_unknown_params(req, {"offset", "limit", "search", "sort", "descending"});
-            const auto page = read_page_query(req);
-            if (!page)
-                return rr::refused(http_status::bad_request,
-                                   "invalid-request",
-                                   "A page of keys names an offset, a limit of 1 to 1000, a "
-                                   "search, and an order by code.");
-            const auto known = read_choices(req, session);
-            messaging::list_sensitivity_templates_request msg;
-            msg.offset = page->offset;
-            msg.limit = page->limit;
-            msg.order.field = page->sort;
-            msg.order.descending = page->descending;
-            msg.filter.emplace();
-            msg.filter->search =
-                page->search.empty() ? std::nullopt : std::optional<std::string>(page->search);
-            const auto reply = forwarding::forward(req, session, msg);
-            rr::require_ok(reply.result);
+    add(router->get("/api/analytics/sensitivity-templates")
+            .catalogue("web_get_analytics_sensitivity_templates",
+                       "analytics",
+                       "sensitivity_templates",
+                       false),
+        [&session](const http_request& req) {
+            return forwarding::guarded<messaging::list_sensitivity_templates_request>([&] {
+                rr::refuse_unknown_params(req, {"offset", "limit", "search", "sort", "descending"});
+                const auto page = read_page_query(req);
+                if (!page)
+                    return rr::refused(http_status::bad_request,
+                                       "invalid-request",
+                                       "A page of keys names an offset, a limit of 1 to 1000, a "
+                                       "search, and an order by code.");
+                const auto known = read_choices(req, session);
+                messaging::list_sensitivity_templates_request msg;
+                msg.offset = page->offset;
+                msg.limit = page->limit;
+                msg.order.field = page->sort;
+                msg.order.descending = page->descending;
+                msg.filter.emplace();
+                msg.filter->search =
+                    page->search.empty() ? std::nullopt : std::optional<std::string>(page->search);
+                const auto reply = forwarding::forward(req, session, msg);
+                rr::require_ok(reply.result);
 
-            std::vector<std::string> rows;
-            rows.reserve(reply.templates.size());
-            for (const auto& stored : reply.templates)
-                rows.push_back(template_json(stored, known));
-            return ores::http::net::view_answer(
-                req,
-                "{\"rows\":" + rr::array_of(rows) + ",\"total\":" + std::to_string(reply.total) +
-                    "}",
-                ores::http::net::view_cache_policy::fresh_for(page_stale_after));
+                std::vector<std::string> rows;
+                rows.reserve(reply.templates.size());
+                for (const auto& stored : reply.templates)
+                    rows.push_back(template_json(stored, known));
+                return ores::http::net::view_answer(
+                    req,
+                    "{\"rows\":" + rr::array_of(rows) +
+                        ",\"total\":" + std::to_string(reply.total) + "}",
+                    ores::http::net::view_cache_policy::fresh_for(page_stale_after));
+            });
         });
-    });
 
-    add(router->get("/api/analytics/sensitivity-templates/choices").catalogue("web_get_analytics_sensitivity_templates_choices", "analytics", "sensitivity_templates", false),
+    add(router->get("/api/analytics/sensitivity-templates/choices")
+            .catalogue("web_get_analytics_sensitivity_templates_choices",
+                       "analytics",
+                       "sensitivity_templates",
+                       false),
         [&session](const http_request& req) {
             return forwarding::guarded<messaging::list_sensitivity_methods_request>([&] {
                 rr::refuse_unknown_params(req, {});
@@ -380,7 +389,11 @@ void sensitivity_template_routes::register_routes(
             });
         });
 
-    add(router->get("/api/analytics/sensitivity-templates/{code}").catalogue("web_get_analytics_sensitivity_templates_code", "analytics", "sensitivity_templates", false),
+    add(router->get("/api/analytics/sensitivity-templates/{code}")
+            .catalogue("web_get_analytics_sensitivity_templates_code",
+                       "analytics",
+                       "sensitivity_templates",
+                       false),
         [&session](const http_request& req) {
             return forwarding::guarded<messaging::get_sensitivity_template_request>([&] {
                 rr::refuse_unknown_params(req, {});
@@ -391,7 +404,11 @@ void sensitivity_template_routes::register_routes(
             });
         });
 
-    add(router->get("/api/analytics/sensitivity-templates/{code}/history").catalogue("web_get_analytics_sensitivity_templates_code_history", "analytics", "sensitivity_templates", false),
+    add(router->get("/api/analytics/sensitivity-templates/{code}/history")
+            .catalogue("web_get_analytics_sensitivity_templates_code_history",
+                       "analytics",
+                       "sensitivity_templates",
+                       false),
         [&session](const http_request& req) {
             // The history step names its own subject, so there is no request type
             // for guard to log a failure against; this route states its failure
@@ -435,36 +452,52 @@ void sensitivity_template_routes::register_routes(
             }
         });
 
-    add(router->post("/api/analytics/sensitivity-templates").catalogue("web_post_analytics_sensitivity_templates", "analytics", "sensitivity_templates", true), [&session](const http_request& req) {
-        return forwarding::guarded<messaging::put_sensitivity_template_request>([&] {
-            const auto body = rr::body_of<create_body>(
-                req,
-                {"code", "methodCode", "assetClassCode", "description", "reasonCode", "commentary"},
-                std::string(body_refused));
-            const auto code = code_from(body.code);
-            const auto known = read_choices(req, session);
-            std::string method_code;
-            std::string asset_class_code;
-            pair_of(known,
-                    rr::trimmed(body.methodCode),
-                    body.assetClassCode,
-                    method_code,
-                    asset_class_code);
+    add(router->post("/api/analytics/sensitivity-templates")
+            .catalogue("web_post_analytics_sensitivity_templates",
+                       "analytics",
+                       "sensitivity_templates",
+                       true)
+            .body<create_body>(),
+        [&session](const http_request& req) {
+            return forwarding::guarded<messaging::put_sensitivity_template_request>([&] {
+                const auto body = rr::body_of<create_body>(req,
+                                                           {"code",
+                                                            "methodCode",
+                                                            "assetClassCode",
+                                                            "description",
+                                                            "reasonCode",
+                                                            "commentary"},
+                                                           std::string(body_refused));
+                const auto code = code_from(body.code);
+                const auto known = read_choices(req, session);
+                std::string method_code;
+                std::string asset_class_code;
+                pair_of(known,
+                        rr::trimmed(body.methodCode),
+                        body.assetClassCode,
+                        method_code,
+                        asset_class_code);
 
-            messaging::put_sensitivity_template_request msg;
-            msg.change.write = {code, method_code, asset_class_code, body.description};
-            msg.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
-            msg.intent = {rr::trimmed(body.reasonCode), body.commentary};
-            const auto reply = forwarding::forward(req, session, msg);
-            rr::require_ok(reply.result);
-            const auto written = reply.sensitivity_template ?
-                                     template_json(*reply.sensitivity_template, known) :
-                                     read_one(req, session, code, known);
-            return http_response::json("{\"template\":" + written + "}", http_status::created);
+                messaging::put_sensitivity_template_request msg;
+                msg.change.write = {code, method_code, asset_class_code, body.description};
+                msg.change.precondition.kind =
+                    ores::utility::domain::precondition_kind::must_not_exist;
+                msg.intent = {rr::trimmed(body.reasonCode), body.commentary};
+                const auto reply = forwarding::forward(req, session, msg);
+                rr::require_ok(reply.result);
+                const auto written = reply.sensitivity_template ?
+                                         template_json(*reply.sensitivity_template, known) :
+                                         read_one(req, session, code, known);
+                return http_response::json("{\"template\":" + written + "}", http_status::created);
+            });
         });
-    });
 
-    add(router->put("/api/analytics/sensitivity-templates/{code}").catalogue("web_put_analytics_sensitivity_templates_code", "analytics", "sensitivity_templates", true),
+    add(router->put("/api/analytics/sensitivity-templates/{code}")
+            .catalogue("web_put_analytics_sensitivity_templates_code",
+                       "analytics",
+                       "sensitivity_templates",
+                       true)
+            .body<update_body>(),
         [&session](const http_request& req) {
             return forwarding::guarded<messaging::put_sensitivity_template_request>([&] {
                 const auto code = code_of(req);
@@ -500,7 +533,11 @@ void sensitivity_template_routes::register_routes(
             });
         });
 
-    add(router->delete_("/api/analytics/sensitivity-templates/{code}").catalogue("web_delete_analytics_sensitivity_templates_code", "analytics", "sensitivity_templates", true),
+    add(router->delete_("/api/analytics/sensitivity-templates/{code}")
+            .catalogue("web_delete_analytics_sensitivity_templates_code",
+                       "analytics",
+                       "sensitivity_templates",
+                       true),
         [&session](const http_request& req) {
             return forwarding::guarded<messaging::delete_sensitivity_template_request>([&] {
                 const auto code = code_of(req);

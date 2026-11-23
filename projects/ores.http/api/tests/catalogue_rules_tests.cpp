@@ -109,11 +109,13 @@ TEST_CASE("the_router_refuses_a_write_declared_out_of_the_hold", "[catalogue]") 
     };
     r.add_route(r.post("/mark")
                     .catalogue("web_post_mark", "workflow", "marks", false)
+                    .no_body()
                     .auth_optional()
                     .handler(handler)
                     .build());
     r.add_route(r.post("/bulk")
                     .catalogue("get_many_marks", "workflow", "marks", false)
+                    .no_body()
                     .auth_optional()
                     .handler(handler)
                     .build());
@@ -133,4 +135,32 @@ TEST_CASE("the_router_refuses_a_write_declared_out_of_the_hold", "[catalogue]") 
     CHECK(refused[0].starts_with("POST /mark declares that it does not write"));
     CHECK(refused[1] == "GET /no-entity");
     CHECK(refused[2].find("not a published one") != std::string::npos);
+}
+
+TEST_CASE("the_router_refuses_a_body_route_that_states_no_input", "[catalogue]") {
+    ores::http::net::router r;
+    const auto handler = [](const http_request&) -> boost::asio::awaitable<http_response> {
+        co_return http_response::json("{}");
+    };
+    r.add_route(r.post("/silent")
+                    .catalogue("web_post_silent", "workflow", "silents", true)
+                    .auth_optional()
+                    .handler(handler)
+                    .build());
+    r.add_route(r.post("/empty")
+                    .catalogue("web_post_empty", "workflow", "empties", true)
+                    .no_body()
+                    .auth_optional()
+                    .handler(handler)
+                    .build());
+    r.add_route(r.put("/document")
+                    .catalogue("web_put_document", "workflow", "documents", true)
+                    .json_body()
+                    .auth_optional()
+                    .handler(handler)
+                    .build());
+
+    const auto refused = r.uncatalogued();
+    REQUIRE(refused.size() == 1);
+    CHECK(refused[0] == "POST /silent declares neither its typed body nor that it takes none");
 }

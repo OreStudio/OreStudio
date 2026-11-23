@@ -305,6 +305,7 @@ void regulatory_book_type_classification_routes::register_routes(
             .description("A code already in the list is refused rather than replaced.")
             .tags({"refdata"})
             .entity_catalogue("refdata", "regulatory_book_type", "screen_create")
+            .body<cr::write_body>()
             .auth_required()
             .handler([&session](const http_request& req) { return handle_create(req, session); });
     const auto create_built = create_route.build();
@@ -317,6 +318,7 @@ void regulatory_book_type_classification_routes::register_routes(
             .description("A correction of the version read.")
             .tags({"refdata"})
             .entity_catalogue("refdata", "regulatory_book_type", "screen_update")
+            .body<cr::write_body>()
             .auth_required()
             .handler([&session](const http_request& req) { return handle_update(req, session); });
     const auto update_built = update_route.build();
@@ -329,6 +331,7 @@ void regulatory_book_type_classification_routes::register_routes(
             .description("The rows that moved, each with its version, in one call.")
             .tags({"refdata"})
             .entity_catalogue("refdata", "regulatory_book_type", "screen_order")
+            .body<cr::order_body>()
             .auth_required()
             .handler([&session](const http_request& req) { return handle_order(req, session); });
     const auto order_built = order_route.build();
@@ -353,6 +356,7 @@ void regulatory_book_type_classification_routes::register_routes(
             .description("Maps the row's code to a badge, or removes the mapping.")
             .tags({"refdata"})
             .entity_catalogue("refdata", "regulatory_book_type", "screen_label")
+            .body<cr::label_body>()
             .auth_required()
             .handler([&session](const http_request& req) { return handle_label(req, session); });
     const auto label_built = label_route.build();

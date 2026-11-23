@@ -346,7 +346,11 @@ void engine_settings_routes::register_documentation_route(
     ores::nats::service::nats_client& session) {
     using forwarding::guarded;
     const auto built =
-        router->get("/api/reporting/engine-settings/documentation").catalogue("web_get_reporting_engine_settings_documentation", "reporting", "documentation", false)
+        router->get("/api/reporting/engine-settings/documentation")
+            .catalogue("web_get_reporting_engine_settings_documentation",
+                       "reporting",
+                       "documentation",
+                       false)
             .summary("What each engine setting means and which values it accepts")
             .description("The groups of settings the data states, with each setting's "
                          "documentation and the value set that states what it may hold, so "
@@ -379,7 +383,8 @@ void engine_settings_routes::register_read_routes(
         registry->register_route(built);
     };
 
-    add(router->get("/api/reporting/engine-settings").catalogue("web_get_reporting_engine_settings", "reporting", "engine_settings", false)
+    add(router->get("/api/reporting/engine-settings")
+            .catalogue("web_get_reporting_engine_settings", "reporting", "engine_settings", false)
             .summary("The engine settings a party holds")
             .description("One row per configuration: the party that holds it, the version, "
                          "how many groups hold a part of the whole, the threads the execution "
@@ -399,7 +404,9 @@ void engine_settings_routes::register_read_routes(
                 });
             }));
 
-    add(router->get("/api/reporting/engine-settings/{id}").catalogue("web_get_reporting_engine_settings_id", "reporting", "engine_settings", false)
+    add(router->get("/api/reporting/engine-settings/{id}")
+            .catalogue(
+                "web_get_reporting_engine_settings_id", "reporting", "engine_settings", false)
             .summary("One configuration with its groups and their parts")
             .description("The configuration, each group with the values its part holds or null "
                          "when the group has no row, and the reports that bind it.")
@@ -417,7 +424,11 @@ void engine_settings_routes::register_read_routes(
                 });
             }));
 
-    add(router->get("/api/reporting/engine-settings/{id}/history").catalogue("web_get_reporting_engine_settings_id_history", "reporting", "engine_settings", false)
+    add(router->get("/api/reporting/engine-settings/{id}/history")
+            .catalogue("web_get_reporting_engine_settings_id_history",
+                       "reporting",
+                       "engine_settings",
+                       false)
             .summary("Every version of one configuration and of its parts")
             .description("The central row's versions and every part's versions in one list, "
                          "newest first, each with the values it held and the reason it carries.")
@@ -810,7 +821,9 @@ void engine_settings_routes::register_write_routes(
         registry->register_route(built);
     };
 
-    add(router->post("/api/reporting/engine-settings").catalogue("web_post_reporting_engine_settings", "reporting", "engine_settings", true)
+    add(router->post("/api/reporting/engine-settings")
+            .catalogue("web_post_reporting_engine_settings", "reporting", "engine_settings", true)
+            .body<engine_create_body>()
             .summary("Create a configuration and the reporting header a report binds it through")
             .description("The configuration a report binds is written first and the central row "
                          "second, and a refused central write removes it again, so a "
@@ -853,7 +866,9 @@ void engine_settings_routes::register_write_routes(
                 });
             }));
 
-    add(router->put("/api/reporting/engine-settings/{id}").catalogue("web_put_reporting_engine_settings_id", "reporting", "engine_settings", true)
+    add(router->put("/api/reporting/engine-settings/{id}")
+            .catalogue("web_put_reporting_engine_settings_id", "reporting", "engine_settings", true)
+            .body<engine_update_body>()
             .summary("Change the name and the description against the version read")
             .description("The party and the configuration the record fills travel from the record "
                          "just read, so a rename cannot move a configuration to another party.")
@@ -884,7 +899,12 @@ void engine_settings_routes::register_write_routes(
                 });
             }));
 
-    add(router->put("/api/reporting/engine-settings/{id}/groups/{group}").catalogue("web_put_reporting_engine_settings_id_groups_group", "reporting", "engine_settings", true)
+    add(router->put("/api/reporting/engine-settings/{id}/groups/{group}")
+            .catalogue("web_put_reporting_engine_settings_id_groups_group",
+                       "reporting",
+                       "engine_settings",
+                       true)
+            .body<engine_create_body>()
             .summary("Write one group, or propose the write")
             .description("A group whose settings change the numbers a run computes, on a "
                          "configuration a report binds, is a proposal: nothing in force moves and "
@@ -954,7 +974,9 @@ void engine_settings_routes::register_write_routes(
                 });
             }));
 
-    add(router->delete_("/api/reporting/engine-settings/{id}").catalogue("web_delete_reporting_engine_settings_id", "reporting", "engine_settings", true)
+    add(router->delete_("/api/reporting/engine-settings/{id}")
+            .catalogue(
+                "web_delete_reporting_engine_settings_id", "reporting", "engine_settings", true)
             .summary("Remove a configuration that no report binds")
             .description("A report that binds the configuration refuses the removal with 409. "
                          "Otherwise the parts go first, then the central row, then the header the "

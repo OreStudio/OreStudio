@@ -125,6 +125,20 @@ std::logic_error undeclared_auth(const domain::http_method method, const std::st
 
 // route_builder implementation
 
+route_builder& route_builder::json_body() {
+    domain::request_body_schema schema;
+    schema.content_type = "application/json";
+    schema.required = true;
+    schema.json_schema = R"({"type":"object"})";
+    body_schema_ = schema;
+    return *this;
+}
+
+route_builder& route_builder::no_body() {
+    catalogue_.takes_no_body = true;
+    return *this;
+}
+
 route_builder& route_builder::place(domain::route_catalogue placed) {
     // The place replaces the catalogue's first four values and keeps the
     // documentation, whichever was stated first.
@@ -359,6 +373,11 @@ std::vector<std::string> router::uncatalogued() const {
         const bool changes = route.method != domain::http_method::get &&
                              route.method != domain::http_method::head &&
                              route.method != domain::http_method::options;
+        const bool carries_body = route.method == domain::http_method::post ||
+                                  route.method == domain::http_method::put ||
+                                  route.method == domain::http_method::patch;
+        if (carries_body && !route.body_schema && !route.sink && !route.catalogue.takes_no_body)
+            out.push_back(name + " declares neither its typed body nor that it takes none");
         if (changes && !route.catalogue.writes && !domain::may_declare_read(route.catalogue))
             out.push_back(name + " declares that it does not write, and its tool " +
                           route.catalogue.tool + " is neither a bulk get nor a read");

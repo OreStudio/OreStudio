@@ -24,6 +24,8 @@
 #include "ores.http.api/export.hpp"
 #include "ores.logging/logger.hpp"
 #include "ores.utility/codec/json_schema.hpp"
+#include "ores.utility/codec/struct_codec.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include <cstdint>
 #include <functional>
@@ -34,6 +36,19 @@
 #include <vector>
 
 namespace ores::http::net {
+
+/**
+ * @brief Writes an example in the codec's form for its type: through its wire
+ * traits where it has them, else through the fields it states, which is how a
+ * route's own body type reaches the wire.
+ */
+template <typename T>
+std::string example_json_of(const T& value) {
+    if constexpr (requires { ores::utility::codec::wire_traits<T>::write_json(value); })
+        return ores::utility::codec::wire_traits<T>::write_json(value);
+    else
+        return ores::utility::codec::object::write_json(value);
+}
 
 /**
  * @brief Route builder for fluent route registration.
@@ -113,6 +128,17 @@ public:
     route_builder& catalogue(std::string tool, std::string area, std::string entity, bool writes);
 
     /**
+     * @brief States that a route whose method could carry a body takes none.
+     */
+    route_builder& no_body();
+
+    /**
+     * @brief States that a route takes a JSON object whose shape no one type
+     * fixes, such as a document whose members depend on its family.
+     */
+    route_builder& json_body();
+
+    /**
      * @brief Takes a place in the catalogue, keeping the route's documentation.
      */
     route_builder& place(domain::route_catalogue placed);
@@ -163,8 +189,7 @@ public:
         schema.json_schema = ores::utility::codec::json_schema<T>();
 
         if (example_generator) {
-            schema.example_json =
-                ores::utility::codec::wire_traits<T>::write_json(example_generator());
+            schema.example_json = example_json_of<T>(example_generator());
         }
 
         body_schema_ = schema;
@@ -195,8 +220,7 @@ public:
         schema.json_schema = ores::utility::codec::json_schema<T>();
 
         if (example_generator) {
-            schema.example_json =
-                ores::utility::codec::wire_traits<T>::write_json(example_generator());
+            schema.example_json = example_json_of<T>(example_generator());
         }
 
         success_response_schema_ = schema;
@@ -292,8 +316,10 @@ public:
      * cannot accept, as its method and pattern and why: it declares none, its
      * area is not a published one, it shares its tool, or it changes something
      * by its method while declaring that it does not write and is neither a
-     * bulk get nor an operation named for reading. The server refuses to start
-     * with one, so a write cannot be declared out of the six-eyes hold.
+     * bulk get nor an operation named for reading, or it is a POST, PUT or
+     * PATCH that declares neither its typed body, a stream, nor that it takes none. The
+     * server refuses to start with one, so a write cannot be declared out of
+     * the six-eyes hold and every tool states its input.
      */
     [[nodiscard]] std::vector<std::string> uncatalogued() const;
 

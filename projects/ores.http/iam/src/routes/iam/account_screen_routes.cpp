@@ -211,7 +211,8 @@ void account_screen_routes::register_routes(
             });
         });
 
-    add(router->get("/api/accounts/{username}").catalogue("web_get_accounts_username", "access", "accounts", false),
+    add(router->get("/api/accounts/{username}")
+            .catalogue("web_get_accounts_username", "access", "accounts", false),
         "Read one account by username",
         [&session](const http_request& req) {
             const auto username = req.get_path_param("username");
@@ -236,7 +237,9 @@ void account_screen_routes::register_routes(
             });
         });
 
-    add(router->post("/api/me/default-party").catalogue("web_post_me_default_party", "access", "default_party", true),
+    add(router->post("/api/me/default-party")
+            .catalogue("web_post_me_default_party", "access", "default_party", true)
+            .body<default_party_body>(),
         "Set or clear the party quick sign-in uses",
         [&session](const http_request& req) {
             const auto body = json::read_expected<default_party_body>(req.body);
@@ -254,7 +257,8 @@ void account_screen_routes::register_routes(
             });
         });
 
-    add(router->get("/api/accounts/{username}/picture").catalogue("web_get_accounts_username_picture", "access", "accounts", false),
+    add(router->get("/api/accounts/{username}/picture")
+            .catalogue("web_get_accounts_username_picture", "access", "accounts", false),
         "Read the picture of one account",
         [&session](const http_request& req) {
             const auto username = req.get_path_param("username");
@@ -276,7 +280,9 @@ void account_screen_routes::register_routes(
             });
         });
 
-    add(router->put("/api/accounts/{accountId}/reporting-line").catalogue("web_put_accounts_accountid_reporting_line", "access", "accounts", true),
+    add(router->put("/api/accounts/{accountId}/reporting-line")
+            .catalogue("web_put_accounts_accountid_reporting_line", "access", "accounts", true)
+            .body<reporting_line_body>(),
         "Set or clear who one account reports to",
         [&session](const http_request& req) {
             const auto body = json::read_expected<reporting_line_body>(req.body);
@@ -303,7 +309,8 @@ void account_screen_routes::register_routes(
             });
         });
 
-    add(router->get("/api/reporting-tree").catalogue("web_get_reporting_tree", "access", "reporting_tree", false),
+    add(router->get("/api/reporting-tree")
+            .catalogue("web_get_reporting_tree", "access", "reporting_tree", false),
         "Read the tenant's reporting shape, or one account's branch of it",
         [&session](const http_request& req) {
             return guarded<messaging::get_reporting_tree_request>([&] {

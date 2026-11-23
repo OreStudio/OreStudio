@@ -191,7 +191,8 @@ void public_rate_routes::register_routes(
         registry->register_route(built);
     };
 
-    add(router->get("/api/marketdata/public-rates/fixings").catalogue("web_get_marketdata_public_rates_fixings", "market-data", "fixings", false)
+    add(router->get("/api/marketdata/public-rates/fixings")
+            .catalogue("web_get_marketdata_public_rates_fixings", "market-data", "fixings", false)
             .summary("The fixings of up to a dozen series, oldest first")
             .description("A screen names the series it draws by their ids. Each series is "
                          "stated with its own list, empty when the store holds no fixing for "
@@ -212,7 +213,12 @@ void public_rate_routes::register_routes(
                 });
             }));
 
-    add(router->post("/api/marketdata/public-rates/{code}/accept-terms").catalogue("web_post_marketdata_public_rates_code_accept_terms", "market-data", "public_rates", true)
+    add(router->post("/api/marketdata/public-rates/{code}/accept-terms")
+            .catalogue("web_post_marketdata_public_rates_code_accept_terms",
+                       "market-data",
+                       "public_rates",
+                       true)
+            .body<terms_accept>()
             .summary("Accept one publisher's terms at the version the person read")
             .description("The service refuses when the publisher changed in between, so a "
                          "person accepts the terms they read and no others.")
@@ -233,7 +239,12 @@ void public_rate_routes::register_routes(
                 });
             }));
 
-    add(router->post("/api/marketdata/public-rates/{code}/withdraw-terms").catalogue("web_post_marketdata_public_rates_code_withdraw_terms", "market-data", "public_rates", true)
+    add(router->post("/api/marketdata/public-rates/{code}/withdraw-terms")
+            .catalogue("web_post_marketdata_public_rates_code_withdraw_terms",
+                       "market-data",
+                       "public_rates",
+                       true)
+            .body<terms_accept>()
             .summary("Withdraw a publisher's acceptance, so its adapter no longer fetches it")
             .description("A person who declines a publisher, or changes their mind, withdraws "
                          "the acceptance. The service clears the record of who accepted and "
@@ -249,7 +260,12 @@ void public_rate_routes::register_routes(
                 });
             }));
 
-    add(router->post("/api/marketdata/public-rates/accept-terms").catalogue("web_post_marketdata_public_rates_accept_terms", "market-data", "accept_terms", true)
+    add(router->post("/api/marketdata/public-rates/accept-terms")
+            .catalogue("web_post_marketdata_public_rates_accept_terms",
+                       "market-data",
+                       "accept_terms",
+                       true)
+            .body<terms_accept_many>()
             .summary("Accept the terms of several publishers, each at the version read")
             .description("Each publisher is accepted as the single accept would accept it, and "
                          "one refusal does not stop the rest, so the answer is every publisher's "

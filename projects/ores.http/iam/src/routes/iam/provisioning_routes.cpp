@@ -199,7 +199,8 @@ void provisioning_routes::register_routes(
         registry->register_route(built);
     };
 
-    add(router->get("/api/seed-profiles").catalogue("web_get_seed_profiles", "tenancy", "seed_profiles", false),
+    add(router->get("/api/seed-profiles")
+            .catalogue("web_get_seed_profiles", "tenancy", "seed_profiles", false),
         "Read the starting points a tenant is provisioned from",
         [&session](const http_request& req) {
             return ores::http::forwarding::guarded<messaging::list_seed_profiles_request>([&] {
@@ -226,7 +227,9 @@ void provisioning_routes::register_routes(
             });
         });
 
-    add(router->post("/api/provision-tenant").catalogue("web_post_provision_tenant", "tenancy", "provision_tenant", true),
+    add(router->post("/api/provision-tenant")
+            .catalogue("web_post_provision_tenant", "tenancy", "provision_tenant", true)
+            .body<messaging::provision_tenant_command>(),
         "Provision a tenant from a starting point",
         [&session](const http_request& req) {
             const auto command = read_tenant_command(req.body);
@@ -246,7 +249,9 @@ void provisioning_routes::register_routes(
             });
         });
 
-    add(router->post("/api/provision-party").catalogue("web_post_provision_party", "tenancy", "provision_party", true),
+    add(router->post("/api/provision-party")
+            .catalogue("web_post_provision_party", "tenancy", "provision_party", true)
+            .body<provision_party_body>(),
         "Add a party to the caller's tenant and start the run that brings it to life",
         [&session](const http_request& req) {
             const auto body = json::read_expected<provision_party_body>(req.body);

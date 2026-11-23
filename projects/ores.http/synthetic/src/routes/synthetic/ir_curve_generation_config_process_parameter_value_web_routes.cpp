@@ -464,6 +464,7 @@ void ir_curve_generation_config_process_parameter_value_web_routes::register_rou
             .tags({"synthetic"})
             .entity_catalogue(
                 "synthetic", "ir_curve_generation_config_process_parameter_value", "screen_put")
+            .body<ir_curve_generation_config_process_parameter_value_web_save_body>()
             .auth_required()
             .handler([&session](const http_request& req) { return handle_put(req, session); });
     const auto put_built = put_route.build();

@@ -364,6 +364,7 @@ void folder_web_routes::register_routes(
             .description("A new row with no version, else a correction of the version read.")
             .tags({"synthetic"})
             .entity_catalogue("synthetic", "folder", "screen_put")
+            .body<folder_web_save_body>()
             .auth_required()
             .handler([&session](const http_request& req) { return handle_put(req, session); });
     const auto put_built = put_route.build();

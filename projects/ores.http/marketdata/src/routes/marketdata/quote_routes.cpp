@@ -157,7 +157,8 @@ void quote_routes::register_routes(std::shared_ptr<ores::http::net::router> rout
         registry->register_route(built);
     };
 
-    add(router->get("/api/marketdata/quotes/feeds").catalogue("web_get_marketdata_quotes_feeds", "market-data", "feeds", false)
+    add(router->get("/api/marketdata/quotes/feeds")
+            .catalogue("web_get_marketdata_quotes_feeds", "market-data", "feeds", false)
             .summary("The feeds the caller may watch, with the source and the last tick of each")
             .description("The feeds come from the market data service's answer for the caller, "
                          "for display; the source name and the last tick come from the board.")
@@ -184,7 +185,8 @@ void quote_routes::register_routes(std::shared_ptr<ores::http::net::router> rout
                 });
             }));
 
-    add(router->get("/api/marketdata/quotes").catalogue("web_get_marketdata_quotes", "market-data", "quotes", false)
+    add(router->get("/api/marketdata/quotes")
+            .catalogue("web_get_marketdata_quotes", "market-data", "quotes", false)
             .summary("The latest quote of each datum the caller may watch")
             .description("Every quote of the caller's feeds that arrived after the board "
                          "sequence ?after= states, oldest first, and the sequence now. The first "
@@ -215,7 +217,8 @@ void quote_routes::register_routes(std::shared_ptr<ores::http::net::router> rout
                 });
             }));
 
-    add(router->get("/api/marketdata/quotes/history").catalogue("web_get_marketdata_quotes_history", "market-data", "history", false)
+    add(router->get("/api/marketdata/quotes/history")
+            .catalogue("web_get_marketdata_quotes_history", "market-data", "history", false)
             .summary("One provider's series over a span, for display")
             .description("The ticks of the series ?series= names, or of its one point ?point=, "
                          "from ?provider=, from ?from= to ?to= or now, read through the caller's "
@@ -240,7 +243,10 @@ void quote_routes::register_routes(std::shared_ptr<ores::http::net::router> rout
                 });
             }));
 
-    add(router->post("/api/marketdata/quotes/vols-by-delta").catalogue("web_post_marketdata_quotes_vols_by_delta", "market-data", "vols_by_delta", true)
+    add(router->post("/api/marketdata/quotes/vols-by-delta")
+            .catalogue(
+                "web_post_marketdata_quotes_vols_by_delta", "market-data", "vols_by_delta", true)
+            .body<fit_body>()
             .summary("Sources' quotes of an FX volatility surface, read as smiles by delta")
             .description("The body names the pair and each source's quotes: its expiries, its "
                          "labels such as ATM, 25RR and 10BF, and its volatilities. The market "

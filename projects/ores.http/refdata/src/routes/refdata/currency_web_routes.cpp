@@ -330,6 +330,7 @@ void currency_web_routes::register_routes(
             .description("A new row with no version, else a correction of the version read.")
             .tags({"refdata"})
             .entity_catalogue("refdata", "currency", "screen_put")
+            .body<currency_web_write_body>()
             .auth_required()
             .handler([&session](const http_request& req) { return handle_put(req, session); });
     const auto put_built = put_route.build();

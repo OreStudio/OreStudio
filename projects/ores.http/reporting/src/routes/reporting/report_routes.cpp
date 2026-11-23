@@ -114,7 +114,7 @@ bool has_text(const std::string& text) {
 /// The party a row names, or nothing when the read that names parties failed.
 std::string party_field(const std::optional<std::vector<report_routes::party_name>>& parties,
                         const boost::uuids::uuid& id,
-                        std::string report_routes::party_name::*member) {
+                        std::string report_routes::party_name::* member) {
     if (!parties)
         return std::string();
     for (const auto& party : *parties)
@@ -587,7 +587,8 @@ void report_routes::register_routes(
         registry->register_route(built);
     };
 
-    add(router->get("/api/reporting/reports").catalogue("web_get_reporting_reports", "reporting", "reports", false)
+    add(router->get("/api/reporting/reports")
+            .catalogue("web_get_reporting_reports", "reporting", "reports", false)
             .summary("One page of the reports a party runs, one row per definition")
             .description("The row is the definition; the latest run, its health, its problem "
                          "counts, its next fire and the party's own name are decorations read "
@@ -660,7 +661,8 @@ void report_routes::register_routes(
                 });
             }));
 
-    add(router->get("/api/reporting/reports/by-name/{name}").catalogue("web_get_reporting_reports_by_name_name", "reporting", "by_name", false)
+    add(router->get("/api/reporting/reports/by-name/{name}")
+            .catalogue("web_get_reporting_reports_by_name_name", "reporting", "by_name", false)
             .summary("The id of the one definition that carries a name")
             .description("The cheap lookup behind an address an older page saved. A name the "
                          "caller's parties share is refused with the choices, so a shared name is "
@@ -681,7 +683,8 @@ void report_routes::register_routes(
                 });
             }));
 
-    add(router->get("/api/reporting/reports/{segment}").catalogue("web_get_reporting_reports_segment", "reporting", "reports", false)
+    add(router->get("/api/reporting/reports/{segment}")
+            .catalogue("web_get_reporting_reports_segment", "reporting", "reports", false)
             .summary("One definition's page, by the id or the name the address carries")
             .description("An id opens that record. Anything else is the name an older address "
                          "saved: a name one definition carries answers with that record, and a "
@@ -710,7 +713,8 @@ void report_routes::register_routes(
                 });
             }));
 
-    add(router->get("/api/reporting/reports/{id}/configurations").catalogue("web_get_reporting_reports_id_configurations", "reporting", "reports", false)
+    add(router->get("/api/reporting/reports/{id}/configurations")
+            .catalogue("web_get_reporting_reports_id_configurations", "reporting", "reports", false)
             .summary("The configurations one definition binds, in the order of their kinds")
             .description("Each binding states its kind's own name and the configuration's name, "
                          "so the page lists them and links to each. An account that may not read "
@@ -802,7 +806,9 @@ void report_routes::register_routes(
                 });
             }));
 
-    add(router->put("/api/reporting/reports/{id}").catalogue("web_put_reporting_reports_id", "reporting", "reports", true)
+    add(router->put("/api/reporting/reports/{id}")
+            .catalogue("web_put_reporting_reports_id", "reporting", "reports", true)
+            .body<edit_body>()
             .summary("Write one report definition against the version it was read at")
             .description("The form offers ten fields and the record holds more, so the write is "
                          "assembled from the definition just read and only the offered fields are "

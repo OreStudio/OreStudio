@@ -99,6 +99,11 @@ struct route_catalogue final {
     std::string area;
     std::string entity;
     bool writes = false;
+    /**
+     * @brief True when a route whose method could carry a body takes none, so
+     * the catalogue states that its tool needs no input rather than not knowing.
+     */
+    bool takes_no_body = false;
     std::string summary;
     std::string description;
     std::vector<std::string> tags;

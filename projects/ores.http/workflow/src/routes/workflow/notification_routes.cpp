@@ -200,6 +200,7 @@ void notification_routes::register_routes(
 
     add(router->post("/api/me/notifications/read")
             .catalogue("web_post_me_notifications_read", "workflow", "notifications", true)
+            .no_body()
             .summary("Mark notices read, or every unread one when the list is empty")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<inbox_messaging::mark_notifications_read_request>([&] {
@@ -215,6 +216,7 @@ void notification_routes::register_routes(
 
     add(router->post("/api/me/notifications/clear")
             .catalogue("web_post_me_notifications_clear", "workflow", "clear", true)
+            .no_body()
             .summary("Clear notices, or every read one when the list is empty")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<inbox_messaging::clear_notifications_request>([&] {

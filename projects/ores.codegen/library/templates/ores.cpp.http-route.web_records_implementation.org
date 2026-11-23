@@ -537,6 +537,12 @@ void {{unit}}_routes::register_routes(
                    .description("A new row with no version, else a correction of the version read.")
                    .tags({"{{component}}"})
                    .entity_catalogue("{{component}}", "{{entity_singular}}", "screen_put")
+{{^writes_many}}
+                   .body<{{unit}}_write_body>()
+{{/writes_many}}
+{{#writes_many}}
+                   .body<{{unit}}_save_body>()
+{{/writes_many}}
                    .auth_required()
                    .handler([&session](const http_request& req) { return handle_put(req, session); });
     const auto put_built = put_route.build();

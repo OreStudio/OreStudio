@@ -50,6 +50,16 @@ describe('the providers of the collections', () => {
             'Bloomberg Extra',
         ]);
     });
+
+    it('leaves out a provider the session cannot read, such as the system provider latent', () => {
+        const latent = collection('l', 'Latent', 'latent');
+        const facts = new Map([
+            ['bloomberg', { name: 'Bloomberg', kind: 'data_vendor', description: '' }],
+            ['ore', { name: 'ORE', kind: 'reference', description: '' }],
+        ]);
+        const entries = providersOf([samples, bloomberg, latent], facts);
+        expect(entries.map((entry) => entry.code)).toEqual(['bloomberg', 'ore']);
+    });
 });
 
 describe('the trail of a feed', () => {

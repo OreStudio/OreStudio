@@ -1511,7 +1511,7 @@ describe('synthetic writes', () => {
         config_id: OTHER,
         base_currency_code: 'EUR',
         quote_currency_code: 'USD',
-        source_name: 'synthetic.bloomberg.vol.eurusd',
+        source_name: 'synthetic.latent.fx.fx_vol_surface.eurusd',
         ticks_per_hour: 12,
         enabled: true,
         auto_start: true,
@@ -1532,6 +1532,8 @@ describe('synthetic writes', () => {
         start_curvature: 0.8,
         spot_oresmd_uri: 'oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD',
         spot_provider_code: 'bloomberg',
+        base_curve_name: 'synthetic.bloomberg.ir.yield_curve.estr.eur',
+        quote_curve_name: 'synthetic.bloomberg.ir.yield_curve.sofr.usd',
     };
 
     it('saves a vol surface feed from a system session', async () => {

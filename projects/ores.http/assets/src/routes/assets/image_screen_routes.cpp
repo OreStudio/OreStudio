@@ -160,7 +160,8 @@ void image_screen_routes::register_routes(
         registry->register_route(built);
     };
 
-    add(router->get("/api/image-map").catalogue("web_get_image_map", "assets", "image_map", false)
+    add(router->get("/api/image-map")
+            .catalogue("web_get_image_map", "assets", "image_map", false)
             .description("A composed view owned by the assets service: which image every "
                          "currency, country, calendar and business centre uses, by its code, "
                          "and the placeholder for a code with none. Four whole reference data "
@@ -262,7 +263,8 @@ void image_screen_routes::register_routes(
             });
         });
 
-    add(router->get("/api/image-upload-policy").catalogue("web_get_image_upload_policy", "assets", "image_upload_policy", false),
+    add(router->get("/api/image-upload-policy")
+            .catalogue("web_get_image_upload_policy", "assets", "image_upload_policy", false),
         "Read the policy an image upload must meet",
         [&session](const http_request& req) {
             return guarded<messaging::get_image_upload_policy_request>([&] {
@@ -277,7 +279,10 @@ void image_screen_routes::register_routes(
             });
         });
 
-    add(router->post("/api/images").catalogue("web_post_images", "assets", "images", true).max_body(upload_body_bytes),
+    add(router->post("/api/images")
+            .catalogue("web_post_images", "assets", "images", true)
+            .body<upload_body>()
+            .max_body(upload_body_bytes),
         "Upload an image",
         [&session](const http_request& req) {
             const auto image = read_upload(req.body);

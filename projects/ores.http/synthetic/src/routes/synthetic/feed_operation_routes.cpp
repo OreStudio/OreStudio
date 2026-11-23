@@ -248,7 +248,9 @@ void feed_operation_routes::register_routes(
         registry->register_route(built);
     };
 
-    add(router->post("/api/synthetic/feeds/{id}/start").catalogue("web_post_synthetic_feeds_id_start", "simulation", "feeds", true)
+    add(router->post("/api/synthetic/feeds/{id}/start")
+            .catalogue("web_post_synthetic_feeds_id_start", "simulation", "feeds", true)
+            .body<feed_operation::selection_body>()
             .summary("Start one feed")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<synthetic_messaging::start_feed_request>([&] {
@@ -260,7 +262,9 @@ void feed_operation_routes::register_routes(
                 });
             }));
 
-    add(router->post("/api/synthetic/feeds/{id}/stop").catalogue("web_post_synthetic_feeds_id_stop", "simulation", "feeds", true)
+    add(router->post("/api/synthetic/feeds/{id}/stop")
+            .catalogue("web_post_synthetic_feeds_id_stop", "simulation", "feeds", true)
+            .body<feed_operation::selection_body>()
             .summary("Stop one feed")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<synthetic_messaging::stop_feed_request>([&] {
@@ -272,7 +276,9 @@ void feed_operation_routes::register_routes(
                 });
             }));
 
-    add(router->get("/api/synthetic/simulated-sources").catalogue("web_get_synthetic_simulated_sources", "simulation", "simulated_sources", false)
+    add(router->get("/api/synthetic/simulated-sources")
+            .catalogue(
+                "web_get_synthetic_simulated_sources", "simulation", "simulated_sources", false)
             .summary("List the simulated sources, with what each runs and holds")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<synthetic_messaging::list_simulated_sources_request>([&] {
@@ -286,7 +292,8 @@ void feed_operation_routes::register_routes(
                 });
             }));
 
-    add(router->get("/api/synthetic/feed-graph").catalogue("web_get_synthetic_feed_graph", "simulation", "feed_graph", false)
+    add(router->get("/api/synthetic/feed-graph")
+            .catalogue("web_get_synthetic_feed_graph", "simulation", "feed_graph", false)
             .summary("Read the synthetic feed graph, or the part around one node, with its states; "
                      "an unknown node answers an empty graph")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
@@ -305,7 +312,9 @@ void feed_operation_routes::register_routes(
                 });
             }));
 
-    add(router->post("/api/synthetic/feed-nodes/{name}/stop").catalogue("web_post_synthetic_feed_nodes_name_stop", "simulation", "feed_nodes", true)
+    add(router->post("/api/synthetic/feed-nodes/{name}/stop")
+            .catalogue("web_post_synthetic_feed_nodes_name_stop", "simulation", "feed_nodes", true)
+            .body<feed_operation::stop_body>()
             .summary(
                 "Stop a feed node, a simulated source or a vendor view, until someone starts it")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
@@ -327,7 +336,9 @@ void feed_operation_routes::register_routes(
                 });
             }));
 
-    add(router->post("/api/synthetic/feed-nodes/{name}/start").catalogue("web_post_synthetic_feed_nodes_name_start", "simulation", "feed_nodes", true)
+    add(router->post("/api/synthetic/feed-nodes/{name}/start")
+            .catalogue("web_post_synthetic_feed_nodes_name_start", "simulation", "feed_nodes", true)
+            .body<feed_operation::selection_body>()
             .summary("Start a stopped feed node again")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<synthetic_messaging::start_feed_node_request>([&] {
@@ -339,7 +350,9 @@ void feed_operation_routes::register_routes(
                 });
             }));
 
-    add(router->post("/api/synthetic/folders/{id}/start").catalogue("web_post_synthetic_folders_id_start", "simulation", "folders", true)
+    add(router->post("/api/synthetic/folders/{id}/start")
+            .catalogue("web_post_synthetic_folders_id_start", "simulation", "folders", true)
+            .body<feed_operation::selection_body>()
             .summary("Start every feed under a folder, its subtree included")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<marketdata_messaging::start_feeds_under_folder_request>([&] {
@@ -356,7 +369,9 @@ void feed_operation_routes::register_routes(
                 });
             }));
 
-    add(router->post("/api/synthetic/folders/{id}/stop").catalogue("web_post_synthetic_folders_id_stop", "simulation", "folders", true)
+    add(router->post("/api/synthetic/folders/{id}/stop")
+            .catalogue("web_post_synthetic_folders_id_stop", "simulation", "folders", true)
+            .body<feed_operation::selection_body>()
             .summary("Stop every feed under a folder, its subtree included")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<marketdata_messaging::stop_feeds_under_folder_request>([&] {
@@ -371,7 +386,8 @@ void feed_operation_routes::register_routes(
                 });
             }));
 
-    add(router->get("/api/synthetic/feed-folders").catalogue("web_get_synthetic_feed_folders", "simulation", "feed_folders", false)
+    add(router->get("/api/synthetic/feed-folders")
+            .catalogue("web_get_synthetic_feed_folders", "simulation", "feed_folders", false)
             .summary("The synthetic folder tree")
             .description("A composed view owned by the synthetic service: the children of one "
                          "folder, or the roots, with the feeds under each at any depth and how "
@@ -400,7 +416,8 @@ void feed_operation_routes::register_routes(
                 });
             }));
 
-    add(router->get("/api/synthetic/folder-feeds").catalogue("web_get_synthetic_folder_feeds", "simulation", "folder_feeds", false)
+    add(router->get("/api/synthetic/folder-feeds")
+            .catalogue("web_get_synthetic_folder_feeds", "simulation", "folder_feeds", false)
             .summary("Read a page of the feeds a filter matches, with whether each runs")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<synthetic_messaging::list_folder_feeds_request>([&] {
@@ -458,7 +475,9 @@ void feed_operation_routes::register_routes(
                 });
             }));
 
-    add(router->post("/api/synthetic/feed-selection/start").catalogue("web_post_synthetic_feed_selection_start", "simulation", "start", true)
+    add(router->post("/api/synthetic/feed-selection/start")
+            .catalogue("web_post_synthetic_feed_selection_start", "simulation", "start", true)
+            .body<feed_operation::selection_body>()
             .summary("Start the picked feeds, or the feeds a filter matches less those left out")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<synthetic_messaging::start_selected_feeds_request>([&] {
@@ -475,7 +494,9 @@ void feed_operation_routes::register_routes(
                 });
             }));
 
-    add(router->post("/api/synthetic/feed-selection/stop").catalogue("web_post_synthetic_feed_selection_stop", "simulation", "stop", true)
+    add(router->post("/api/synthetic/feed-selection/stop")
+            .catalogue("web_post_synthetic_feed_selection_stop", "simulation", "stop", true)
+            .body<feed_operation::selection_body>()
             .summary("Stop the picked feeds, or the feeds a filter matches less those left out")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<synthetic_messaging::stop_selected_feeds_request>([&] {

@@ -143,7 +143,8 @@ void oresmd_routes::register_routes(
         registry->register_route(built);
     };
 
-    add(router->get("/api/oresmd/schema").catalogue("web_get_oresmd_schema", "market-data", "schema", false)
+    add(router->get("/api/oresmd/schema")
+            .catalogue("web_get_oresmd_schema", "market-data", "schema", false)
             .summary("What an ORE URI may hold")
             .description("Every instrument type with its fields, the quotes and the index "
                          "families the codec holds, which an editor reads once and keeps for the "
@@ -163,7 +164,9 @@ void oresmd_routes::register_routes(
                 });
             }));
 
-    add(router->post("/api/oresmd/parse").catalogue("web_post_oresmd_parse", "market-data", "parse", true)
+    add(router->post("/api/oresmd/parse")
+            .catalogue("web_post_oresmd_parse", "market-data", "parse", true)
+            .body<parse_body>()
             .summary("Read one ORE URI into its parts")
             .description("The codec's reader is strict, so a URI that is not in its own "
                          "spelling is refused with the rule that failed, and the answer says so "
@@ -178,7 +181,9 @@ void oresmd_routes::register_routes(
                 });
             }));
 
-    add(router->post("/api/oresmd/parse-many").catalogue("web_post_oresmd_parse_many", "market-data", "parse_many", true)
+    add(router->post("/api/oresmd/parse-many")
+            .catalogue("web_post_oresmd_parse_many", "market-data", "parse_many", true)
+            .body<parse_many_body>()
             .summary("Read many ORE URIs into their parts, in the order asked")
             .description("One call per URI on the service and one answer to the browser, "
                          "because a list of rows names a URI each and a page would otherwise cost "
@@ -200,7 +205,9 @@ void oresmd_routes::register_routes(
                 });
             }));
 
-    add(router->post("/api/oresmd/compose").catalogue("web_post_oresmd_compose", "market-data", "compose", true)
+    add(router->post("/api/oresmd/compose")
+            .catalogue("web_post_oresmd_compose", "market-data", "compose", true)
+            .body<compose_body>()
             .summary("Write the parts of an ORE URI into a URI")
             .description("The browser states the structure and the codec decides whether the "
                          "parts make a URI, so a refusal is the codec's words and not a fault.")

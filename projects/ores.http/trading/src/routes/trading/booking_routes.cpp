@@ -29,11 +29,14 @@
 #include "ores.trading.api/messaging/bond_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/bond_issue_protocol.hpp"
 #include "ores.trading.api/messaging/draft_reason_protocol.hpp"
+#include "ores.trading.api/messaging/script_library_operation_protocol.hpp"
+#include "ores.trading.api/messaging/scripted_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/trade_id_type_protocol.hpp"
 #include "ores.trading.api/messaging/trade_identifier_protocol.hpp"
 #include "ores.trading.api/messaging/trade_link_protocol.hpp"
 #include "ores.trading.api/messaging/trade_link_type_protocol.hpp"
 #include "ores.trading.api/messaging/trade_operations_protocol.hpp"
+#include "ores.trading.api/messaging/trade_product_protocol.hpp"
 #include "ores.trading.api/messaging/trade_state_protocol.hpp"
 #include "ores.utility/codec/json_codec.hpp"
 #include "ores.utility/decimal/decimal.hpp"
@@ -266,6 +269,188 @@ trading_messaging::put_trade_link_request link_of(const http_request& req) {
     return msg;
 }
 
+/**
+ * @brief The request that books a new trade: its anchor, its booking and the
+ * activity that books it, as every booking route states them.
+ *
+ * A draft is a deal the desk captured and did not conclude. It writes the same
+ * anchor and booking as a live trade; the activity differs, stating a transition
+ * that stops at draft, and the reason it waits on.
+ */
+trading_messaging::book_trade_request header_of(const boost::uuids::uuid& trade_id,
+                                                const boost::uuids::uuid& party_id,
+                                                const boost::uuids::uuid& book_id,
+                                                const boost::uuids::uuid& counterparty_id,
+                                                const std::chrono::year_month_day& trade_date,
+                                                const std::optional<std::string>& draft_reason,
+                                                std::string trade_type) {
+    const auto now = std::chrono::system_clock::now();
+
+    trading_domain::trade anchor;
+    anchor.version = 0;
+    anchor.tenant_id = ores::utility::uuid::tenant_id::system();
+    anchor.id = trade_id;
+    anchor.party_id = party_id;
+    anchor.counterparty_id = counterparty_id;
+    anchor.trade_type = std::move(trade_type);
+    anchor.counterparty_scope = trading_domain::counterparty_scope::external;
+    anchor.booking_nature = trading_domain::booking_nature::actual;
+    anchor.entry_channel = trading_domain::entry_channel::manual;
+    anchor.origin = trading_domain::origin::api;
+    anchor.origin_reference.clear();
+    anchor.external_version = 0;
+    anchor.draft_reason_code = draft_reason.value_or(std::string());
+    anchor.change_reason_code = std::string(booking_reason);
+    anchor.recorded_at = now;
+
+    trading_domain::trade_booking booking;
+    booking.version = 0;
+    booking.tenant_id = ores::utility::uuid::tenant_id::system();
+    booking.trade_id = trade_id;
+    booking.trade_activity_id = stated_by_the_service();
+    booking.book_id = book_id;
+    booking.trade_date = trade_date;
+    booking.execution_timestamp = now;
+    booking.change_reason_code = std::string(booking_reason);
+    booking.recorded_at = now;
+
+    trading_messaging::book_trade_request msg;
+    msg.anchor = std::move(anchor);
+    msg.booking = std::move(booking);
+    msg.activity_type_code = draft_reason ? std::string(draft_capture) : std::string(new_booking);
+    msg.draft_reason_code = draft_reason.value_or(std::string());
+    return msg;
+}
+
+/// One variable a trade states for its script.
+struct variable_body final {
+    std::string name;
+    std::string type;
+    bool isArray = false;
+    std::vector<std::string> values;
+};
+
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<variable_body>) {
+    using ores::utility::codec::field;
+    return ::ores::utility::codec::field_list{field{"name", &variable_body::name},
+                                              field{"type", &variable_body::type},
+                                              field{"isArray", &variable_body::isArray},
+                                              field{"values", &variable_body::values}};
+}
+
+/// A script and the variables a trade states for it, for its validation.
+struct script_body final {
+    std::string scriptName;
+    int scriptVersion = 0;
+    std::string code;
+    std::vector<variable_body> variables;
+};
+
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<script_body>) {
+    using ores::utility::codec::field;
+    return ::ores::utility::codec::field_list{field{"scriptName", &script_body::scriptName},
+                                              field{"scriptVersion", &script_body::scriptVersion},
+                                              field{"code", &script_body::code},
+                                              field{"variables", &script_body::variables}};
+}
+
+/// A scripted trade the desk states: the trade, the script and its variables.
+struct scripted_body final {
+    std::string bookId;
+    std::string counterpartyId;
+    std::string tradeDate;
+    std::optional<std::string> draftReasonCode;
+    std::string scriptName;
+    int scriptVersion = 0;
+    std::string code;
+    std::string npvVariable;
+    std::vector<variable_body> variables;
+    std::string productCode;
+};
+
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<scripted_body>) {
+    using ores::utility::codec::field;
+    return ::ores::utility::codec::field_list{
+        field{"bookId", &scripted_body::bookId},
+        field{"counterpartyId", &scripted_body::counterpartyId},
+        field{"tradeDate", &scripted_body::tradeDate},
+        field{"draftReasonCode", &scripted_body::draftReasonCode},
+        field{"scriptName", &scripted_body::scriptName},
+        field{"scriptVersion", &scripted_body::scriptVersion},
+        field{"code", &scripted_body::code},
+        field{"npvVariable", &scripted_body::npvVariable},
+        field{"variables", &scripted_body::variables},
+        field{"productCode", &scripted_body::productCode}};
+}
+
+/// A product type the desk books in a form, from its native rows.
+struct product_body final {
+    std::string bookId;
+    std::string counterpartyId;
+    std::string tradeDate;
+    std::optional<std::string> draftReasonCode;
+    std::string productCode;
+    std::string form;
+    std::string scriptName;
+    trading_domain::instrument_batch instruments;
+};
+
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<product_body>) {
+    using ores::utility::codec::field;
+    return ::ores::utility::codec::field_list{
+        field{"bookId", &product_body::bookId},
+        field{"counterpartyId", &product_body::counterpartyId},
+        field{"tradeDate", &product_body::tradeDate},
+        field{"draftReasonCode", &product_body::draftReasonCode},
+        field{"productCode", &product_body::productCode},
+        field{"form", &product_body::form},
+        field{"scriptName", &product_body::scriptName},
+        field{"instruments", &product_body::instruments}};
+}
+
+/// The variables of a body as the wire states them.
+std::vector<trading_messaging::script_variable_value>
+wire_variables(const std::vector<variable_body>& variables) {
+    std::vector<trading_messaging::script_variable_value> out;
+    out.reserve(variables.size());
+    for (const auto& v : variables)
+        out.push_back({.name = v.name, .type = v.type, .is_array = v.isArray, .values = v.values});
+    return out;
+}
+
+/// A draft's reason as a body states it, refused by the sentence when it is empty or long.
+std::optional<std::string> draft_reason_of(const std::optional<std::string>& stated,
+                                           const std::string& sentence) {
+    if (!stated)
+        return std::nullopt;
+    const auto reason = rr::trimmed(*stated);
+    if (reason.empty() || rr::characters_of(reason) > 64)
+        rr::invalid(sentence);
+    return reason;
+}
+
+/**
+ * The answer to a refused scripted or product booking: a script that fails its
+ * validation is unprocessable and carries its findings, a script, product or
+ * form that does not exist is not found, and the rest as any refused booking.
+ */
+http_response refused_booking(const ores::utility::domain::result& result,
+                              const std::vector<trading_messaging::script_diagnostic>& found) {
+    if (result.code == "script_invalid")
+        return http_response::json(
+            "{\"code\":\"invalid-request\",\"message\":" + json::write(result.message) +
+                ",\"diagnostics\":" + booking_routes::diagnostics_json(found) + "}",
+            http_status::unprocessable_content);
+    if (result.code == "script_not_found" || result.code == "product_unknown" ||
+        result.code == "form_not_offered")
+        return http_response::api_error(http_status::not_found, "not-found", result.message);
+    // A caller passes only a refused result, so require_ok throws; the return
+    // states a gateway failure should a result ever arrive refused as ok.
+    rr::require_ok(result);
+    return http_response::api_error(
+        http_status::bad_gateway, "upstream-unavailable", result.message);
+}
+
 /// A booking a body states: the booking write, and the identifier and
 /// instrument writes that follow it, each carrying its own facts.
 struct stated_booking final {
@@ -311,43 +496,13 @@ booking_of(const http_request& req, const boost::uuids::uuid& trade_id, const st
         draft_reason = reason;
     }
 
-    const auto now = std::chrono::system_clock::now();
-    const auto party_id = uuid_of(party, sentence);
-
-    trading_domain::trade anchor;
-    anchor.version = 0;
-    anchor.tenant_id = ores::utility::uuid::tenant_id::system();
-    anchor.id = trade_id;
-    anchor.party_id = party_id;
-    anchor.counterparty_id = counterparty_id;
-    anchor.trade_type = std::string(booked_trade_type);
-    anchor.counterparty_scope = trading_domain::counterparty_scope::external;
-    anchor.booking_nature = trading_domain::booking_nature::actual;
-    anchor.entry_channel = trading_domain::entry_channel::manual;
-    anchor.origin = trading_domain::origin::api;
-    anchor.origin_reference.clear();
-    anchor.external_version = 0;
-    anchor.draft_reason_code = draft_reason.value_or(std::string());
-    anchor.change_reason_code = std::string(booking_reason);
-    anchor.recorded_at = now;
-
-    trading_domain::trade_booking booking;
-    booking.version = 0;
-    booking.tenant_id = ores::utility::uuid::tenant_id::system();
-    booking.trade_id = trade_id;
-    booking.trade_activity_id = stated_by_the_service();
-    booking.book_id = book_id;
-    booking.trade_date = trade_date;
-    booking.execution_timestamp = now;
-    booking.change_reason_code = std::string(booking_reason);
-    booking.recorded_at = now;
-
-    trading_messaging::book_trade_request msg;
-    msg.anchor = std::move(anchor);
-    msg.booking = std::move(booking);
-    msg.activity_type_code = draft_reason ? std::string(draft_capture) : std::string(new_booking);
-    msg.draft_reason_code = draft_reason.value_or(std::string());
-    msg.identifiers = {};
+    auto msg = header_of(trade_id,
+                         uuid_of(party, sentence),
+                         book_id,
+                         counterparty_id,
+                         trade_date,
+                         draft_reason,
+                         std::string(booked_trade_type));
     msg.instruments = trading_domain::instrument_batch{};
     msg.product_code = std::string(booked_trade_type);
     msg.booking_form = "native";
@@ -403,6 +558,30 @@ booking_routes::newest_activity(const std::vector<trading_domain::trade_state>& 
     if (newest == nullptr || newest->trade_activity_id.is_nil())
         return std::nullopt;
     return newest->trade_activity_id;
+}
+
+std::string
+booking_routes::diagnostics_json(const std::vector<trading_messaging::script_diagnostic>& found) {
+    std::vector<std::string> out;
+    for (const auto& d : found)
+        out.push_back("{\"purpose\":" + json::write(d.purpose) +
+                      ",\"severity\":" + json::write(d.severity) +
+                      ",\"code\":" + json::write(d.code) + ",\"line\":" + json::write(d.line) +
+                      ",\"column\":" + (d.column ? json::write(*d.column) : std::string("null")) +
+                      ",\"message\":" + json::write(d.message) +
+                      ",\"subject\":" + json::write(d.subject) + "}");
+    return rr::array_of(out);
+}
+
+std::string booking_routes::form_json(const boost::uuids::uuid& trade_id,
+                                      const std::string& product_code,
+                                      const std::string& form,
+                                      const std::string& script_name,
+                                      std::optional<int> script_version) {
+    return "{\"tradeId\":" + json::write(trade_id) +
+           ",\"productCode\":" + json::write(product_code) + ",\"form\":" + json::write(form) +
+           ",\"scriptName\":" + json::write(script_name) + ",\"scriptVersion\":" +
+           (script_version ? json::write(*script_version) : std::string("null")) + "}";
 }
 
 void booking_routes::register_routes(
@@ -568,6 +747,195 @@ void booking_routes::register_routes(
 
                     return http_response::json("{\"id\":" + json::write(trade_id) + "}",
                                                http_status::created);
+                });
+            }));
+
+    add(router->post("/api/trading/booking/validate-script")
+            .summary("Validate a script against a trade's variables")
+            .description("Parses a library script, as the caller's tenant resolves its name and "
+                         "version, or an inline script, with ORE's grammar, and checks the "
+                         "variables against its inputs. Books nothing.")
+            .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
+                co_return guarded<trading_messaging::validate_script_request>([&] {
+                    const std::string sentence =
+                        "A validation states a script by name or by code, and its variables.";
+                    const auto body = rr::lenient_body_of<script_body>(
+                        req, {"scriptName", "scriptVersion", "code", "variables"}, sentence);
+                    trading_messaging::validate_script_request msg;
+                    msg.script_name = rr::trimmed(body.scriptName);
+                    msg.script_version = body.scriptVersion;
+                    msg.code = body.code;
+                    msg.variables = wire_variables(body.variables);
+                    const auto resp = forwarding::forward(req, session, msg);
+                    if (resp.code == "script_not_found")
+                        return http_response::api_error(
+                            http_status::not_found, "not-found", resp.message);
+                    if (resp.code == "request_invalid")
+                        rr::invalid(resp.message);
+                    if (!resp.success)
+                        return http_response::api_error(
+                            http_status::bad_gateway, "upstream-unavailable", resp.message);
+                    return http_response::json(
+                        "{\"isValid\":" + json::write(resp.is_valid) +
+                        ",\"message\":" + json::write(resp.message) +
+                        ",\"diagnostics\":" + diagnostics_json(resp.diagnostics) + "}");
+                });
+            }));
+
+    add(router->post("/api/trading/booking/scripted")
+            .summary("Book a scripted trade")
+            .description("A library script by name and version, or an inline script, on the "
+                         "variables the trade states. A script that fails its validation is "
+                         "refused with every finding.")
+            .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
+                co_return guarded<trading_messaging::book_scripted_request>([&] {
+                    const std::string sentence =
+                        "A scripted booking states a book, a counterparty, a trade date, a "
+                        "script and its variables.";
+                    const auto body = rr::lenient_body_of<scripted_body>(req,
+                                                                         {"bookId",
+                                                                          "counterpartyId",
+                                                                          "tradeDate",
+                                                                          "draftReasonCode",
+                                                                          "scriptName",
+                                                                          "scriptVersion",
+                                                                          "code",
+                                                                          "npvVariable",
+                                                                          "variables",
+                                                                          "productCode"},
+                                                                         sentence);
+                    const auto party = party_of(req);
+                    if (!party)
+                        rr::invalid("A booking is made by a party, and this session works for "
+                                    "none.");
+                    const auto trade_id = boost::uuids::random_generator()();
+                    const auto header = header_of(trade_id,
+                                                  uuid_of(*party, sentence),
+                                                  uuid_of(body.bookId, sentence),
+                                                  uuid_of(body.counterpartyId, sentence),
+                                                  date_of(body.tradeDate, sentence),
+                                                  draft_reason_of(body.draftReasonCode, sentence),
+                                                  "ScriptedTrade");
+                    trading_messaging::book_scripted_request msg;
+                    msg.anchor = header.anchor;
+                    msg.booking = header.booking;
+                    msg.activity_type_code = header.activity_type_code;
+                    msg.draft_reason_code = header.draft_reason_code;
+                    msg.script_name = rr::trimmed(body.scriptName);
+                    msg.script_version = body.scriptVersion;
+                    msg.code = body.code;
+                    msg.npv_variable = body.npvVariable;
+                    msg.variables = wire_variables(body.variables);
+                    msg.product_code = rr::trimmed(body.productCode);
+                    const auto resp = forwarding::forward(req, session, msg);
+                    if (resp.result.outcome != ores::utility::domain::outcome::ok)
+                        return refused_booking(resp.result, resp.diagnostics);
+                    return http_response::json(
+                        "{\"id\":" + json::write(trade_id) + ",\"activityId\":" +
+                            (resp.activity_id ? json::write(*resp.activity_id) :
+                                                std::string("null")) +
+                            "}",
+                        http_status::created);
+                });
+            }));
+
+    add(router->post("/api/trading/booking/product")
+            .summary("Book a product type in a form")
+            .description("The product's native rows, booked as its own element or as the "
+                         "ScriptedTrade its twin recipe, or a carried script's, reads over them.")
+            .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
+                co_return guarded<trading_messaging::book_product_request>([&] {
+                    const std::string sentence =
+                        "A product booking states a book, a counterparty, a trade date, a "
+                        "product type, a form and the product's rows.";
+                    const auto body = rr::lenient_body_of<product_body>(req,
+                                                                        {"bookId",
+                                                                         "counterpartyId",
+                                                                         "tradeDate",
+                                                                         "draftReasonCode",
+                                                                         "productCode",
+                                                                         "form",
+                                                                         "scriptName",
+                                                                         "instruments"},
+                                                                        sentence);
+                    const auto product_code = rr::trimmed(body.productCode);
+                    if (product_code.empty() || (body.form != "native" && body.form != "scripted"))
+                        rr::invalid(sentence);
+                    const auto party = party_of(req);
+                    if (!party)
+                        rr::invalid("A booking is made by a party, and this session works for "
+                                    "none.");
+                    const auto trade_id = boost::uuids::random_generator()();
+                    const auto header = header_of(trade_id,
+                                                  uuid_of(*party, sentence),
+                                                  uuid_of(body.bookId, sentence),
+                                                  uuid_of(body.counterpartyId, sentence),
+                                                  date_of(body.tradeDate, sentence),
+                                                  draft_reason_of(body.draftReasonCode, sentence),
+                                                  product_code);
+                    trading_messaging::book_product_request msg;
+                    msg.anchor = header.anchor;
+                    msg.booking = header.booking;
+                    msg.activity_type_code = header.activity_type_code;
+                    msg.draft_reason_code = header.draft_reason_code;
+                    msg.product_code = product_code;
+                    msg.booking_form = body.form;
+                    msg.script_name = rr::trimmed(body.scriptName);
+                    msg.instruments = body.instruments;
+                    const auto resp = forwarding::forward(req, session, msg);
+                    if (resp.result.outcome != ores::utility::domain::outcome::ok)
+                        return refused_booking(resp.result, {});
+                    return http_response::json(
+                        "{\"id\":" + json::write(trade_id) + ",\"activityId\":" +
+                            (resp.activity_id ? json::write(*resp.activity_id) :
+                                                std::string("null")) +
+                            "}",
+                        http_status::created);
+                });
+            }));
+
+    add(router->get("/api/trading/booking/{tradeId}/form")
+            .summary("The form a trade was booked in")
+            .description("The product the trade was booked as and its form, and for a scripted "
+                         "trade the script and the version the store pinned, so a screen "
+                         "reopens the trade as it was booked.")
+            .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
+                co_return guarded<trading_messaging::get_trade_product_request>([&] {
+                    const std::string sentence = "A trade is addressed by its id.";
+                    const auto trade_id = uuid_of(req.get_path_param("tradeId"), sentence);
+                    trading_messaging::get_trade_product_request product_msg;
+                    product_msg.key.trade_id = trade_id;
+                    const auto product = forwarding::forward(req, session, product_msg);
+                    if (product.result.outcome != ores::utility::domain::outcome::missing)
+                        rr::require_ok(product.result);
+                    if (!product.trade_product)
+                        return http_response::api_error(
+                            http_status::not_found,
+                            "not-found",
+                            "Trade " + boost::uuids::to_string(trade_id) +
+                                " records no product it was booked as.");
+                    std::string script_name;
+                    std::optional<int> script_version;
+                    if (product.trade_product->booking_form == "scripted") {
+                        trading_messaging::get_scripted_instrument_request scripted_msg;
+                        scripted_msg.key.trade_id = trade_id;
+                        const auto scripted = forwarding::forward(req, session, scripted_msg);
+                        if (scripted.result.outcome != ores::utility::domain::outcome::missing)
+                            rr::require_ok(scripted.result);
+                        if (!scripted.scripted_instrument)
+                            rr::refuse(http_status::bad_gateway,
+                                       "upstream-unavailable",
+                                       "Trade " + boost::uuids::to_string(trade_id) +
+                                           " was booked scripted, and the trading service "
+                                           "holds no script for it.");
+                        script_name = scripted.scripted_instrument->script_name;
+                        script_version = scripted.scripted_instrument->script_version;
+                    }
+                    return http_response::json(form_json(trade_id,
+                                                         product.trade_product->product_code,
+                                                         product.trade_product->booking_form,
+                                                         script_name,
+                                                         script_version));
                 });
             }));
 }

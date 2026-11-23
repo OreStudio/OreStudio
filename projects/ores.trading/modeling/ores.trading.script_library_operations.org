@@ -604,6 +604,17 @@ generates no service handler.
  */
 #+end_src
 
+*** code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Why the validation did not run, as a caller branches on it: script_not_found, request_invalid or internal; empty when it ran.
+ */
+#+end_src
+
 *** is_valid
 :PROPERTIES:
 :cpp_type: bool

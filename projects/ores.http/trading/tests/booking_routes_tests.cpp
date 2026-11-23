@@ -243,3 +243,70 @@ TEST_CASE("booking_refuses_a_malformed_request", "[booking]") {
     CHECK(booking_trade_status(booking_signed_in(booking_request_body)) ==
           http_status::bad_gateway);
 }
+
+TEST_CASE("scripted_booking_states_each_finding_by_line_or_by_variable", "[booking]") {
+    auto lg(make_logger(test_suite));
+    ORES_LOG_SEV(lg, info) << "Testing the findings a screen reads";
+
+    ores::trading::messaging::script_diagnostic located;
+    located.purpose = "default";
+    located.severity = "error";
+    located.code = "SCR1001";
+    located.line = 3;
+    located.column = 7;
+    located.message = "expected ;";
+    ores::trading::messaging::script_diagnostic about;
+    about.severity = "error";
+    about.code = "SCR2001";
+    about.message = "missing";
+    about.subject = "Notional";
+
+    CHECK(booking_routes::diagnostics_json({located, about}) ==
+          R"([{"purpose":"default","severity":"error","code":"SCR1001","line":3,"column":7,)"
+          R"("message":"expected ;","subject":""},)"
+          R"({"purpose":"","severity":"error","code":"SCR2001","line":0,"column":null,)"
+          R"("message":"missing","subject":"Notional"}])");
+}
+
+TEST_CASE("scripted_booking_states_the_form_a_trade_reopens_in", "[booking]") {
+    auto lg(make_logger(test_suite));
+    ORES_LOG_SEV(lg, info) << "Testing the form a trade reopens in";
+
+    const auto id = boost::uuids::string_generator()("00000000-0000-0000-0000-0000000000a1");
+    CHECK(
+        booking_routes::form_json(id, "EquityBasketOption", "scripted", "VanillaBasketOption", 3) ==
+        R"({"tradeId":"00000000-0000-0000-0000-0000000000a1","productCode":"EquityBasketOption",)"
+        R"("form":"scripted","scriptName":"VanillaBasketOption","scriptVersion":3})");
+    CHECK(booking_routes::form_json(id, "Swap", "native", "", std::nullopt)
+              .ends_with(R"("scriptName":"","scriptVersion":null})"));
+}
+
+TEST_CASE("scripted_booking_refuses_a_malformed_body_before_asking_the_service", "[booking]") {
+    auto lg(make_logger(test_suite));
+    ORES_LOG_SEV(lg, info) << "Testing the scripted and product booking refusals";
+
+    CHECK(answer_at<booking_routes>(http_method::post,
+                                    "/api/trading/booking/scripted",
+                                    booking_signed_in(R"({"bookId":"not-a-uuid"})"),
+                                    "/api/trading/booking/scripted")
+              .status == http_status::bad_request);
+    CHECK(answer_at<booking_routes>(http_method::post,
+                                    "/api/trading/booking/scripted",
+                                    booking_signed_in(R"({"unknownMember":1})"),
+                                    "/api/trading/booking/scripted")
+              .status == http_status::bad_request);
+    CHECK(answer_at<booking_routes>(
+              http_method::post,
+              "/api/trading/booking/product",
+              booking_signed_in(
+                  R"({"bookId":"00000000-0000-0000-0000-0000000000b1",)"
+                  R"("counterpartyId":"00000000-0000-0000-0000-0000000000c1",)"
+                  R"("tradeDate":"2026-11-23","productCode":"Swap","form":"spreadsheet"})"),
+              "/api/trading/booking/product")
+              .status == http_status::bad_request);
+    CHECK(answer_at<booking_routes>(http_method::get,
+                                    "/api/trading/booking/not-a-uuid/form",
+                                    http_request{},
+                                    "/api/trading/booking/{tradeId}/form")
+              .status == http_status::bad_request);
+}

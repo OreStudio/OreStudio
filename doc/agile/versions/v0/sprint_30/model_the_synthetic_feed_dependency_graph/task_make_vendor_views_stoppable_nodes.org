@@ -117,6 +117,14 @@ via its "Verifies task" field.
 | 2 | Local review: =reapply= may run beside an =apply= from a demand message | generator_runner.hpp | Accepted | Both take the runner's own lock for the running set, as two demand messages already do; the last demand is kept under its own lock. |
 | 3 | Local review: no unit test of the offers' view filter | simulator_offers.hpp | Declined | Building a surface's offers needs the registry and the database; the live holds count proves it. |
 | 4 | Misspell check over the changed files | - | Clean | =misspell-fixer= exit 0. |
+| 5 | PR review: a source name and a view name could clash | simulated_source_handler.hpp | Accepted | The comment now states the requirement and why it holds: a source is a catalogue name such as bloomberg-a, a view carries the synthetic mark and dotted segments. |
+| 6 | PR review: the row and the live state may disagree on a failure | simulated_source_handler.hpp | Declined | A stop writes the row first and deletes it if the node does not stop; a start resumes first and stops again if the row cannot go, so the two agree whichever step fails. |
+| 7 | PR review: reapply may race an apply | generator_runner.hpp | Accepted | apply holds the runner's lock for the running set; the last demand is now recorded under that lock too, so the demand kept is the last one applied. |
+| 8 | PR review: reapply before any demand | generator_runner.hpp | Declined | Manual runs survive any demand, and before a demand no demanded generator exists, so an empty re-apply changes nothing. |
+| 9 | PR review: view() reads the registry each call | application.cpp | Declined | A stop or start is a rare operator act; a cache would need invalidating on every feed edit. |
+| 10 | PR review: no unit test of the offers' view filter | simulator_offers.hpp | Declined | As row 3; proven live. |
+| 11 | PR review: removed routes may have callers | - | Accepted | A search of the tree finds no caller of the old routes or verbs outside this task's own page. |
+| 12 | PR review: no migration of stopped rows | create scripts | Declined | The project recreates its databases from the create scripts. |
 
 * Result
 

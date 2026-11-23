@@ -145,15 +145,17 @@ public:
     demand_outcome apply(const std::vector<ores::marketdata::messaging::vendor_id>& demand) {
         using ores::marketdata::messaging::rejected_id;
         using ores::marketdata::messaging::vendor_id;
-        {
-            std::lock_guard lock(demand_mu_);
-            last_demand_ = demand;
-        }
 
         const auto offers = index_offers();
         demand_outcome out;
         std::vector<running_generator> dropped;
         std::unique_lock lock(mu_);
+        // Recorded under the lock that orders the applies, so the last demand kept is the last
+        // one applied.
+        {
+            std::lock_guard demand_lock(demand_mu_);
+            last_demand_ = demand;
+        }
         std::set<key> wanted;
         std::set<std::string> wanted_feeds;
         // A feed that cannot be built is not built again for its other ids in this set.

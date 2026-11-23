@@ -208,7 +208,9 @@ private:
     };
 
     // A name is a source's when the service serves a source of that name, and a view's when a
-    // contributor of a latent surface quotes it; the two kinds of name never meet.
+    // contributor of a latent surface quotes it. The two kinds of name never meet, and must not:
+    // a source is a catalogue name such as bloomberg-a, and a view carries the synthetic mark and
+    // the scheme's dotted segments, so one name always names one node.
     std::optional<node> find_node(const std::string& name) const {
         const auto all = sources_.sources();
         const auto found = std::ranges::find(

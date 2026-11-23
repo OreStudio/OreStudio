@@ -26,11 +26,11 @@ A person sees Bloomberg's AUD/USD vol quotes as a feed of Bloomberg: listed and 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:8DE041AE-95E6-40CE-9B62-2CE3BA77838A][Model the synthetic feeds as a dependency graph: upstreams, latent surfaces and vendor views]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-23                               |
 
 * Acceptance
@@ -92,7 +92,13 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Views per vendor collection (Bloomberg, ICE, Tradeweb, Uniform demo) | 14 each, all foldered | =synthetic_feed_names_test.sql= and a count over =ores_synthetic_fx_vol_views_tbl= by collection | 189433cb06 |
+| Feed graph nodes, live, system tenant | 196, all running | =GET /api/synthetic/feed-graph= | a97551b07a |
+| Bloomberg folder feeds | 69: 26 FX spot, 29 IR curve, 14 views | =GET= the folder feeds of Bloomberg's collection | a97551b07a |
+| Web tests | 2671 passed | =npx vitest run= in =packages/web= | a97551b07a |
+| BFF tests | 1346 passed | =npx vitest run= in =packages/bff= | a97551b07a |
+| Synthetic suites | 5 of 5 passed | =compass test run -- -R synthetic= | 189433cb06 |
+| SQL tests, synthetic, marketdata and IAM | 30 files passed | =pg_prove= over those files | 189433cb06 |
 
 * Notes
 
@@ -117,6 +123,32 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: the journal reads the market time under the scheduler's lock, and a surface raises from inside its tick; could that deadlock? | =service/src/app/application.cpp= | No change | =tick_scheduler::fire= releases its lock before it runs a tick, so the read takes a free lock. |
+| 2 | Local review: the journal captures the run market by reference; does the market outlive it? | =service/src/app/application.cpp= | No change | The journal and every holder of it are created after the market in the same scope, so they end first. |
+| 3 | Local review: misspell check | the changed trees | No change | =misspell-fixer= found nothing. |
 
 * Result
+
+A vendor's view of a latent surface is now a feed of the vendor's collection,
+=fx_vol_view=, named =synthetic.<vendor>.fx.fx_option.<pair>=, filed in an FX
+volatility folder of that collection. It references the latent surface it reads
+and the vendor's shared noise profile. The publish writes one view for each
+surface and contributor; the registry, the offers and the graph read view rows,
+and the graph's view node carries the view's own id. The Provider tab lists and
+counts views under their vendor. A view has its own page whose calibration tab
+says plainly that it is the vendor's noise over the surface, linking both
+inputs, with Graph, Messages, History, and Stop and Start. The surface's
+Contributors tab is now a read-only Views list.
+
+The node messages now have one architecture. The surface's diagnostics
+interface became =node_journal= (=say=, =raise=, =clear=), the one place every
+part of the service reports a node's events, with telemetry its one
+implementation. The runner says why each run starts and stops, and each entry
+carries the market's operational time. The design page states the rule that
+keeps the journal apart from the scheduler trace: what a person reads goes in
+the journal, what a chart plots goes in the trace.
+
+Live, on a recreated database: Bloomberg lists 14 views; a view's log shows its
+run started by demand; a stop by hand releases the run and records who stopped
+it and why; a start runs it again, and the log shows each step with its market
+time.

@@ -150,6 +150,7 @@ messaging::describe_product_response describe_product(const std::string& code,
     if (pt == catalogue.product_types.end()) {
         const auto* script = script_named(catalogue, code);
         if (script == nullptr) {
+            out.refusal_code = "not_found";
             out.message = "No product type or library script is named " + code + ".";
             return out;
         }
@@ -164,6 +165,7 @@ messaging::describe_product_response describe_product(const std::string& code,
     out.fields = fields_of(code, fields, missing);
     if (!missing.empty()) {
         out.fields.clear();
+        out.refusal_code = "not_describable";
         out.message = "The fields of the product type " + code + " name the schema type " +
                       missing.front() + ", which the trading service's cache of ores.ore's "
                       "parameters holds no fields for.";
@@ -182,6 +184,7 @@ messaging::describe_product_response describe_product(const std::string& code,
             add_scripted_form(out, catalogue, *script);
 
     if (out.forms.empty()) {
+        out.refusal_code = "not_describable";
         out.message = pt->instrument_table.empty()
                           ? "ORE has no trade builder for the product type " + code +
                                 ": the catalogue routes it to no instrument table, so it is "

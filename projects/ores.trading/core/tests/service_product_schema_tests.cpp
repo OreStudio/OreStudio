@@ -196,10 +196,12 @@ TEST_CASE("a product with nothing to describe is refused, naming it", "[product_
 
     const auto unknown = service::describe_product("Nothing", catalogue, swap_fields());
     CHECK_FALSE(unknown.success);
+    CHECK(unknown.refusal_code == "not_found");
     CHECK(unknown.message.find("Nothing") != std::string::npos);
 
     const auto empty = service::describe_product("Cdo", catalogue, swap_fields());
     CHECK_FALSE(empty.success);
+    CHECK(empty.refusal_code == "not_describable");
     CHECK(empty.message.find("Cdo") != std::string::npos);
     CHECK(empty.message.find("no element in ORE's schema") != std::string::npos);
     CHECK(empty.forms.empty());
@@ -215,6 +217,7 @@ TEST_CASE("a product whose fields name a type the cache holds nothing for is ref
     const auto out = service::describe_product("Swap", catalogue, fields);
 
     CHECK_FALSE(out.success);
+    CHECK(out.refusal_code == "not_describable");
     CHECK(out.fields.empty());
     CHECK(out.message.find("legData") != std::string::npos);
 }

@@ -330,6 +330,12 @@ via its "Verifies task" field.
 | 5048.4 | a type no cache entry describes is dropped silently | product_schema_service.cpp | accept | the product is refused, naming the type; the check caught list:string being taken for a type, which is fixed |
 | 5048.5 | the element row is assumed to be the first match | product_schema_service.cpp | accept | commented: the seed writes one trade row per trade type |
 | 5048.6 | comment the tenant preference; pin the unbuildable refusal | product_schema_service.cpp, service_product_schema_tests.cpp | accept | commented, and a test pins the text |
+| 5050.1 | the list maps a failure to 500 on ores.http and unexpectedReply on the BFF | none | no change | unexpectedReply is a 502; both answer a fault with a 5xx |
+| 5050.2 | every describe failure is a 404, so a fault reads as an unknown product | product_schema_operations, product_routes.cpp, products.ts | accept | the response states a refusal_code: not_found is a 404, not_describable a 422, and a fault, which states none, a 5xx; live, both servers answer 200, 422 and 404 alike |
+| 5050.3 | the servers fill defaults differently | none | no change | the live comparison of the answers is equal byte for byte |
+| 5050.4 | a free-form code | none | no change | trimmed and 1 to 128 characters; it only travels in a NATS message |
+| 5050.5 | the two field lists could drift | none | no change | each server's test pins its shape; a shared contract test is wider than this route |
+| 5050.6 | the role grant on existing databases | none | no change | ores_iam_role_permissions_assign_fn is an upsert, and the grant was applied to the running database with it |
 
 * Result
 

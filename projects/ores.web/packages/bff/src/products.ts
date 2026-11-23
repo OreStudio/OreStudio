@@ -22,7 +22,7 @@
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import { subjects } from '@ores/wire-protocol/generated/trading/protocol/product_schema_operation_protocol';
-import { notFound, unexpectedReply } from './errors.js';
+import { HttpFailure, notFound, unexpectedReply } from './errors.js';
 import { text } from './refdata-calls.js';
 import type { LiveSession } from './sessions.js';
 
@@ -44,6 +44,7 @@ const listReply = z.looseObject({
 const describeReply = z.looseObject({
     success: z.boolean().default(false),
     message: z.string().default(''),
+    refusal_code: z.string().default(''),
     product: record.default({}),
     element: z.string().default(''),
     fields: z.array(record).default([]),
@@ -51,6 +52,11 @@ const describeReply = z.looseObject({
     codes: z.array(record).default([]),
     forms: z.array(record).default([]),
 });
+
+/** A product that exists and has no fields to describe: the request names it, and it cannot be drawn. */
+function notDescribable(message: string): HttpFailure {
+    return new HttpFailure(422, { code: 'invalid-request', message });
+}
 
 const codeParams = z.object({ code: z.string().trim().min(1).max(128) });
 
@@ -87,8 +93,14 @@ export function registerProductRoutes(
             { code },
             describeReply,
         );
+        if (reply.refusal_code === 'not_found') {
+            throw notFound(reply.message);
+        }
+        if (reply.refusal_code === 'not_describable') {
+            throw notDescribable(reply.message);
+        }
         if (!reply.success) {
-            throw notFound(reply.message === '' ? `No product is named ${code}.` : reply.message);
+            throw unexpectedReply(reply.message);
         }
         return {
             product: summary(reply.product),

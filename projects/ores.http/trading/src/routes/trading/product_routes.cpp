@@ -32,6 +32,7 @@ namespace {
 
 using ores::http::domain::http_request;
 using ores::http::domain::http_response;
+using ores::http::domain::http_status;
 namespace json = ores::utility::codec::json;
 namespace rr = ores::http::net::record_routes;
 namespace schema = ores::trading::messaging;
@@ -121,15 +122,20 @@ void product_routes::register_routes(
             .summary("One product's fields and forms")
             .description("The fields of the product's element and of every schema type they "
                          "reach, the inputs and codes of the scripts its forms run, and the "
-                         "forms. A product the trading service cannot describe is not found, "
-                         "with the service's reason.")
+                         "forms. A code no product has is not found; a product with no fields to "
+                         "describe is unprocessable; both state the service's reason.")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<schema::describe_product_request>([&] {
                     schema::describe_product_request msg;
                     msg.code = code_of(req);
                     const auto resp = forwarding::forward(req, session, msg);
-                    if (!resp.success)
+                    if (resp.refusal_code == "not_found")
                         return http_response::not_found(resp.message);
+                    if (resp.refusal_code == "not_describable")
+                        return http_response::error(http_status::unprocessable_content,
+                                                    resp.message);
+                    if (!resp.success)
+                        return http_response::internal_error(resp.message);
                     return http_response::json(describe_json(resp));
                 });
             }));

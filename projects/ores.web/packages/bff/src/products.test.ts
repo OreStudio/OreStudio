@@ -144,6 +144,30 @@ describe('GET /api/trading/products', () => {
 });
 
 describe('GET /api/trading/products/:code', () => {
+    it('answers a code no product has with a 404, and a service fault with a 5xx', async () => {
+        const { server, cookies } = buildTestServer({
+            [DESCRIBE]: { success: false, refusal_code: 'not_found', message: 'No product.' },
+        });
+        const missing = await server.inject({
+            method: 'GET',
+            url: '/api/trading/products/Nothing',
+            cookies,
+        });
+        await server.close();
+        expect(missing.statusCode).toBe(404);
+
+        const faulty = buildTestServer({
+            [DESCRIBE]: { success: false, refusal_code: '', message: 'It logged the reason.' },
+        });
+        const fault = await faulty.server.inject({
+            method: 'GET',
+            url: '/api/trading/products/Swap',
+            cookies: faulty.cookies,
+        });
+        await faulty.server.close();
+        expect(fault.statusCode).toBeGreaterThanOrEqual(500);
+    });
+
     it('describes a product: its fields, the inputs and codes of its scripts, and its forms', async () => {
         const { server, cookies, calls } = buildTestServer({
             [DESCRIBE]: {
@@ -221,11 +245,11 @@ describe('GET /api/trading/products/:code', () => {
         expect(body.forms.map((f: { kind: string }) => f.kind)).toEqual(['native', 'scripted']);
     });
 
-    it('answers a product the service cannot describe with a 404 that states its reason', async () => {
+    it('answers a product with nothing to describe with a 422 that states its reason', async () => {
         const reason =
             'ORE has no trade builder for the product type CommodityPairwiseVarianceSwap.';
         const { server, cookies } = buildTestServer({
-            [DESCRIBE]: { success: false, message: reason },
+            [DESCRIBE]: { success: false, refusal_code: 'not_describable', message: reason },
         });
 
         const response = await server.inject({
@@ -235,7 +259,7 @@ describe('GET /api/trading/products/:code', () => {
         });
         await server.close();
 
-        expect(response.statusCode).toBe(404);
+        expect(response.statusCode).toBe(422);
         expect(response.json().message).toBe(reason);
     });
 });

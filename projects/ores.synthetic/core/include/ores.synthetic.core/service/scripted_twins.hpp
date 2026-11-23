@@ -32,21 +32,6 @@
 namespace ores::synthetic::service {
 
 /**
- * @brief The values a recipe source names in a native trade's rows, as text.
- *
- * A source is =product.<column>= for a column of the row whose trade type is
- * the native one, =<rows>[<role>].<column>= for a column of the rows under a
- * role, =<rows>.<column>= for a column of every row of the array, or a quoted
- * literal; =a or b= takes =b= when =a= names no value, and =a and b= lists the
- * values of =a= then those of =b=. A row's columns are found
- * by the names its wire fields state, so no source needs code of its own.
- */
-ORES_SYNTHETIC_CORE_EXPORT std::vector<std::string>
-twin_source_values(const ores::trading::domain::instrument_batch& batch,
-                   std::string_view trade_type_code,
-                   std::string_view source);
-
-/**
  * @brief The id of the twin of the native trade @p native of type @p trade_type.
  *
  * A name-based id over the native trade's id and type, so no other trade draws
@@ -67,7 +52,8 @@ ORES_SYNTHETIC_CORE_EXPORT boost::uuids::uuid carried_id_for(const boost::uuids:
 /**
  * @brief The generic ScriptedTrade twin of a native slot, on the same terms.
  *
- * Nothing when the slot's type has no recipe. The twin is a slot of its own,
+ * Nothing when the slot's type has no recipe. The recipe is read by
+ * ores.trading.api's scripted_forms_of. The twin is a slot of its own,
  * with an id derived from the native trade's, whose rows the scripted trade
  * builder states from the recipe read over the native rows.
  */

@@ -8,7 +8,7 @@
 #+filetags: :design_the_scripted_trade_subsystem:sprint_30:v0:
 #+owner: marco
 #+branch: feature/book-a-product-in-either-form
-#+pr: 5062
+#+pr: 5063
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-21
@@ -97,6 +97,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5063][#5063]] | [trading] Move the twin recipe evaluator into ores.trading.api |
 | [[https://github.com/OreStudio/OreStudio/pull/5062][#5062]] | [trading] Validate a script against a trade's variables |
 
 * Review
@@ -110,6 +111,10 @@ via its "Verifies task" field.
 | 5062.5 | the reply for a script with no variant | the operations model | accept | success's comment states when the validation does not run |
 | 5062.6 | include order and a long line | script_validation_service.cpp | accept | clang-formatted |
 | 5062.7 | tests of different findings on one variable and of an empty inline script | none | no change | the key's message part is what keeps two findings apart, and an empty script is ORE's parse, which the parse tests own |
+| 5063.1 | instrument_batch.hpp may be forward-declarable | none | no change | the ratchet's forward-declaration rule passes the header |
+| 5063.2 | a namespace alias left from the move | scripted_twins.cpp | accept | removed |
+| 5063.3 | an include out of order in the synthetic tests | trade_population_tests.cpp | accept | moved beside the other ores.trading.api includes |
+| 5063.4 | a builder exception of another type would escape the conversion | none | no change | the builder returns std::expected, and the evaluator raises scripted_twin_error on its refusal |
 
 * Result
 

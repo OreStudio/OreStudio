@@ -111,3 +111,29 @@ class TestWebEnvironmentBinding:
         ])
         assert env_init._resolve_web_env_id(
             tmp_path, 20205, "ores.dev.swift_curie", "swift_curie") is None
+
+
+class TestPoolerDeclaration:
+    """The environment states where the services dial the database.
+
+    CI starts PostgreSQL directly and runs no pooler, so it passes
+    --no-pooler and every service port becomes PGPORT's. A machine that keeps
+    the format's default gets the pooler's port instead. Without either flag
+    the format decides, which is how an existing .env keeps its choice."""
+
+    def test_no_pooler_sends_the_services_to_postgres(self):
+        assert env_init._declared_vars(None, None, False) == [
+            "--var", "ORES_DB_POOLER_ENABLED=0"]
+
+    def test_pooler_sends_the_services_to_the_pooler(self):
+        assert env_init._declared_vars(None, None, True) == [
+            "--var", "ORES_DB_POOLER_ENABLED=1"]
+
+    def test_an_unstated_pooler_declares_nothing(self):
+        assert env_init._declared_vars(None, None, None) == []
+
+    def test_the_declarations_do_not_crowd_each_other_out(self):
+        assert env_init._declared_vars("ccache", False, False) == [
+            "--var", "ORES_COMPILER_CACHE=ccache",
+            "--var", "ORES_USE_BUSCTL=0",
+            "--var", "ORES_DB_POOLER_ENABLED=0"]

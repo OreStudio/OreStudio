@@ -18,7 +18,7 @@
  *
  *
  */
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import { useState, type ReactNode } from 'react';
 import { Link } from 'react-router';
 import { useHeld } from '../../access/holds.js';
@@ -31,6 +31,8 @@ import { Card } from '../../ui/Card.js';
 import { Button, Dialog, Notice, Tag } from '../../ui/Primitives.js';
 import { PATHS } from '../../shell/paths.js';
 import { feedPageOf } from './feedTree.js';
+import { FOLDERS_KEY } from './useCollections.js';
+import { HELD_KEY } from './useProviderFeeds.js';
 
 const graphKey = (node: string): readonly unknown[] => ['feed-graph', node];
 
@@ -58,7 +60,8 @@ export function nodePage(
     if (node.kind === 'view') {
         const surface = graph?.edges.find((e) => e.node === node.name && e.role === 'surface');
         const latent = graph?.nodes.find((n) => n.name === surface?.input);
-        return latent === undefined ? undefined : `${nodePage(latent)}?tab=graph`;
+        const page = latent === undefined ? undefined : nodePage(latent);
+        return page === undefined ? undefined : `${page}?tab=graph`;
     }
     if (node.feed_config_id === '') return undefined;
     if (node.kind === 'latent')
@@ -101,6 +104,25 @@ export function NodeState({ state }: { readonly state: string }): ReactNode {
     return <Tag tone={TONE[state] ?? 'muted'}>{t(`marketdata.feedGraph.state.${state}`)}</Tag>;
 }
 
+/**
+ * Waits for every one of several node stops or starts, so a failure stops none of the others
+ * from landing, and fails with how many failed and the first reason.
+ */
+async function settleAll(calls: readonly Promise<void>[]): Promise<void> {
+    const settled = await Promise.allSettled(calls);
+    const failed = settled.filter((one) => one.status === 'rejected');
+    if (failed.length === 0) return;
+    const first = failed[0] as PromiseRejectedResult;
+    const reason = first.reason instanceof Error ? first.reason.message : String(first.reason);
+    throw new Error(`${failed.length} of ${settled.length} failed: ${reason}`);
+}
+
+/** Reads again what a node stop or start changes: the graph, the messages and the feed lists. */
+function refreshNodes(queries: QueryClient): void {
+    for (const queryKey of [['feed-graph'], ['feed-messages'], FOLDERS_KEY, HELD_KEY])
+        void queries.invalidateQueries({ queryKey });
+}
+
 /** Stop or start one node, with the person's reason for a stop. */
 function NodeControl({ node }: { readonly node: FeedGraphNode }): ReactNode {
     const { t } = useTranslation();
@@ -109,10 +131,7 @@ function NodeControl({ node }: { readonly node: FeedGraphNode }): ReactNode {
     const [stopping, setStopping] = useState(false);
     const start = useMutation({
         mutationFn: () => api.startFeedNode(node.name),
-        onSuccess: () => {
-            void queries.invalidateQueries({ queryKey: ['feed-graph'] });
-            void queries.invalidateQueries({ queryKey: ['feed-messages'] });
-        },
+        onSettled: () => refreshNodes(queries),
     });
     if (!mayRun) return null;
     return (
@@ -155,7 +174,7 @@ function StopNodeDialog({
     const missing = reason.needsCommentary && commentary.trim() === '';
     const stop = useMutation({
         mutationFn: () =>
-            Promise.all(
+            settleAll(
                 names.map((name) =>
                     api.stopFeedNode(name, {
                         reason_code: reason.code,
@@ -163,10 +182,8 @@ function StopNodeDialog({
                     }),
                 ),
             ),
-        onSuccess: () => {
-            void queries.invalidateQueries();
-            onClose();
-        },
+        onSettled: () => refreshNodes(queries),
+        onSuccess: () => onClose(),
     });
     return (
         <Dialog
@@ -221,8 +238,8 @@ export function ProviderNodeControl({
     const stopped = nodes.filter((n) => n.state === 'stopped').map((n) => n.name);
     const others = nodes.filter((n) => n.state !== 'stopped').map((n) => n.name);
     const start = useMutation({
-        mutationFn: () => Promise.all(stopped.map((one) => api.startFeedNode(one))),
-        onSuccess: () => void queries.invalidateQueries(),
+        mutationFn: () => settleAll(stopped.map((one) => api.startFeedNode(one))),
+        onSettled: () => refreshNodes(queries),
     });
     if (!mayRun || nodes.length === 0) return null;
     return (

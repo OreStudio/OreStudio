@@ -34,7 +34,8 @@ const SYSTEM_PROVIDERS: ReadonlySet<string> = new Set(['latent']);
 
 /**
  * The providers a session does not see: the system's own, such as latent, for any session but
- * the system tenant's. The market data catalogue hides them from a tenant the same way.
+ * the system tenant's. The server is the authority: the market data catalogue and the graph read
+ * hide them from a tenant; this keeps the synthetic screens from offering what they hide.
  */
 export function useHiddenProviders(): ReadonlySet<string> {
     return useSessionTenantId() === SYSTEM_TENANT_ID ? new Set() : SYSTEM_PROVIDERS;

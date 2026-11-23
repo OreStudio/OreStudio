@@ -161,7 +161,7 @@ export function ProviderTab(): ReactNode {
                         <span className="ml-auto flex items-center gap-2">
                             {/* A provider with no source of its own, such as latent, is held by the
                                 vendors' sources: its feeds stop and start as nodes of the graph. */}
-                            {source === undefined && (
+                            {sources !== undefined && source === undefined && (
                                 <ProviderNodeControl
                                     provider={entry.code}
                                     name={providerName(entry.code, facts)}

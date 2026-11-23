@@ -102,7 +102,7 @@ begin
          'Simulates Tradeweb dealer composite prices for rates, credit and money markets.',
          8),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), 'latent', 0, 'Latent', 'reference',
-         'The latent FX volatility surfaces every vendor quotes with noise of its own: no vendor''s market. The vendors'' sources hold them, so they run while a vendor quotes them.',
+         'The latent FX volatility surfaces, which no vendor publishes as its own. Each vendor quotes them with noise of its own, and the vendors'' sources hold them.',
          9);
 end $$;
 

@@ -325,4 +325,6 @@ guide's words: one row for each field of each schema type, 2929 in all, and
 the data element of each trade type as a field of its trade,
 =/Trade[TradeType='Swap']/SwapData=. PR 2 is in: the codes of the library's
 coded script inputs are data, the entity =script_input_code=, published with their
-script. The =describe_product= operation and its HTTP and BFF routes follow.
+script. PR 3 is in: trading serves =describe_product= and =list_products= from its
+own rows and =ores.ore.client='s cache, which now holds the parameters for both
+services. The HTTP and BFF routes follow.

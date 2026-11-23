@@ -276,7 +276,7 @@ void app_version_routes::register_routes(
         registry->register_route(built);
     };
 
-    add(router->get("/api/operations/grid/app-versions/{id}")
+    add(router->get("/api/operations/grid/app-versions/{id}").catalogue("web_get_operations_grid_app_versions_id", "grid", "app_versions", false)
             .summary("One build of the catalogue, with its note, its packages and its siblings")
             .description("The app the build belongs to, the packages the wrapper downloads and "
                          "the other versions of the app, newest first, and whether the caller "
@@ -291,7 +291,7 @@ void app_version_routes::register_routes(
                 });
             }));
 
-    add(router->put("/api/operations/grid/app-versions/{id}/release-note")
+    add(router->put("/api/operations/grid/app-versions/{id}/release-note").catalogue("web_put_operations_grid_app_versions_id_release_note", "grid", "app_versions", true)
             .summary("Replace one build's release note, against the version the editor read")
             .description("The row is read again here, because the write replaces it whole. The "
                          "version the body states is the guard: a note edited since is refused "

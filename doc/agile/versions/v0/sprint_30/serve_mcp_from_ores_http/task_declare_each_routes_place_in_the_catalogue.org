@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :serve_mcp_from_ores_http:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/declare-each-routes-place-in-the-catalogue
+#+pr: 5055
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-22
@@ -26,24 +26,30 @@ Every route of ores.http declares a stable tool name, the area and entity it bel
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:008127D7-B897-4CF7-854B-6DDFB89AC7F4][Serve ORE's API to LLM agents over MCP]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-22                               |
 
 * Acceptance
 
 - Every served route declares its tool name, area, entity and whether it writes.
-- Every route that takes a body declares its typed body schema.
+- Every route that takes a body declares its typed body schema: moved to [[id:84655C5D-C156-42B4-A6EA-9BD42B6590B1][Declare a typed body on every hand-written route]].
 - A gate refuses a route that lacks any of these, and the OpenAPI document gains the same metadata.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Two pull requests. The first declares every route's tool, area, entity and
+whether it writes: a =route_catalogue= on the route, grouping its
+documentation so the route narrows from 17 fields to 15; one rule in
+=ores.http.api= for generated routes, called from the four route templates; a
+rerunnable codemod for the 321 hand-written routes, reading each area from the
+route inventory; a router report the server refuses to start with; and the
+OpenAPI fields. The six-eyes hold reads the declaration instead of guessing
+from names. The typed bodies of the 116 hand-written routes that take one
+moved to a task of their own, so this one closes on what it delivered.
 
 * Measurements
 
@@ -76,12 +82,29 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5055][#5055]] | [http] Declare every route's place in the operation catalogue |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | PR #5055: the hold trusts writes=false, so a mis-declared write route skips six eyes | router gate | Accept, differently | The startup gate refuses a non-GET route declared not to write unless it is a bulk get or an operation named for reading; the list held one real mistake, POST /api/me/notifications/read, now a write. Holding every non-GET would hold POST reads again. |
+| 2 | PR #5055: misplaced doc comments | =route.hpp=, =router.hpp= | Accept | Moved. |
+| 3 | PR #5055: hard-coded array sizes | =catalogue_rules.cpp= | Accept | =std::to_array=. |
+| 4 | PR #5055: an unknown component's area passes the gate | router gate | Accept | The gate refuses an area that is not published. |
+| 5 | PR #5055: duplicated carry-over in the two builder methods | =router.cpp= | Accept | One =place= helper keeps the documentation whichever comes first. |
+| 6 | PR #5055: untested head, delete, search, lookup, unknown area, missing entity | tests | Accept | Covered. |
+| 7 | PR #5055: include order | =router.cpp= | Accept | Sorted. |
 
 * Result
+
+Every ores.http route declares a stable tool name, its published area, its
+entity and whether it writes, in a =route_catalogue= that also holds its
+documentation, so the route narrows to 15 fields. Generated routes take theirs
+from their model through one rule; the hand-written routes state theirs, those
+of the web application with =web_= tools, so all 1145 tools are unique. The
+server refuses to start while a route is undeclared, names an unpublished area,
+shares a tool, or changes something by its method while declaring that it does
+not write and is neither a bulk get nor an operation named for reading. The
+OpenAPI document carries each declaration, and the six-eyes hold reads it. The
+typed bodies are the task Declare a typed body on every hand-written route.

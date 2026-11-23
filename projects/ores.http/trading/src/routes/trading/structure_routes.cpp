@@ -597,7 +597,7 @@ void structure_routes::register_routes(
         registry->register_route(built);
     };
 
-    add(router->get("/api/structure-kinds")
+    add(router->get("/api/structure-kinds").catalogue("web_get_structure_kinds", "trading", "structure_kinds", false)
             .summary("The kinds a grouping may choose, and how each confirms")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<trading_messaging::list_structure_kinds_request>([&] {
@@ -618,7 +618,7 @@ void structure_routes::register_routes(
                 });
             }));
 
-    add(router->get("/api/ungrouped-trades")
+    add(router->get("/api/ungrouped-trades").catalogue("web_get_ungrouped_trades", "trading", "ungrouped_trades", false)
             .summary("The trades no structure has grouped yet, as the picker shows them")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<trading_messaging::list_trade_summaries_request>([&] {
@@ -651,7 +651,7 @@ void structure_routes::register_routes(
                 });
             }));
 
-    add(router->post("/api/structures")
+    add(router->post("/api/structures").catalogue("web_post_structures", "trading", "structures", true)
             .summary("Group trades into a structure")
             .description("One operation, not a loop: the completion writes the structure, its "
                          "members and takes every leg live in one transaction, so a refusal "
@@ -766,7 +766,7 @@ void structure_routes::register_routes(
                 });
             }));
 
-    add(router->get("/api/structures")
+    add(router->get("/api/structures").catalogue("web_get_structures", "trading", "structures", false)
             .summary("One page of the structures a tenant holds, as a tree flattened for reading")
             .description("A root row, then its children indented under it. Each row states what "
                          "it holds: the trades inside it and the structures under it. A search "
@@ -992,7 +992,7 @@ void structure_routes::register_routes(
                 });
             }));
 
-    add(router->get("/api/structures/{key}")
+    add(router->get("/api/structures/{key}").catalogue("web_get_structures_key", "trading", "structures", false)
             .summary("One structure's page: the tree it sits in, its legs and its party")
             .description("The key is the reference the desk knows or the deal's id, so a link "
                          "can carry the reference a person reads. The party is read from the "
@@ -1111,7 +1111,7 @@ void structure_routes::register_routes(
                 });
             }));
 
-    add(router->delete_("/api/structures/{key}/legs/{tradeId}")
+    add(router->delete_("/api/structures/{key}/legs/{tradeId}").catalogue("web_delete_structures_key_legs_tradeid", "trading", "structures", true)
             .summary("Take a trade out of a structure")
             .description("The leg is removed, not the trade: the trade stays booked and becomes "
                          "groupable again. The key is the trade and the trade alone, so the route "
@@ -1147,7 +1147,7 @@ void structure_routes::register_routes(
                 });
             }));
 
-    add(router->get("/api/structures/{key}/leg-candidates")
+    add(router->get("/api/structures/{key}/leg-candidates").catalogue("web_get_structures_key_leg_candidates", "trading", "structures", false)
             .summary("The trades the structure may take as a leg")
             .description("Every trade no structure holds yet, newest first.")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
@@ -1170,7 +1170,7 @@ void structure_routes::register_routes(
                 });
             }));
 
-    add(router->post("/api/structures/{key}/legs")
+    add(router->post("/api/structures/{key}/legs").catalogue("web_post_structures_key_legs", "trading", "structures", true)
             .summary("Put a trade into a structure as a leg")
             .description("A trade is a leg of one structure at a time, which the store states by "
                          "keying members on the trade. The route checks it so the screen is told "

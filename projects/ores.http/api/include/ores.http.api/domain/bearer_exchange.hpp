@@ -82,9 +82,10 @@ using exchanged_call_recorder = std::function<void(const exchanged_call& call)>;
  * @brief Holds a write made with an exchanged bearer value, such as an LLM
  * agent's, instead of running it.
  *
- * Answers the response the caller gets when the write is held, or refused
- * because it could not be; answers nothing when the write is exempt and runs as
- * any other. The route is the matched pattern. It may call other services, so
+ * Asked only of a route whose catalogue declares that it writes. Answers the
+ * response the caller gets when the write is held, or refused because it could
+ * not be; answers nothing when the write is exempt and runs as any other. The
+ * route is the matched pattern. It may call other services, so
  * the gateway runs it on its worker pool.
  */
 using exchanged_write_holder =

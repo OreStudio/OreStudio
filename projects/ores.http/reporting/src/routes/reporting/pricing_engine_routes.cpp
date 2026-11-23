@@ -177,7 +177,7 @@ void pricing_engine_routes::register_read_routes(
         registry->register_route(built);
     };
 
-    add(router->get("/api/reporting/pricing-engines")
+    add(router->get("/api/reporting/pricing-engines").catalogue("web_get_reporting_pricing_engines", "reporting", "pricing_engines", false)
             .summary("The pricing engine configurations a party holds")
             .description("One row per configuration: the party that holds it, the version, the "
                          "variant, and how many products and parameters its document holds.")
@@ -196,7 +196,7 @@ void pricing_engine_routes::register_read_routes(
                     });
             }));
 
-    add(router->get("/api/reporting/pricing-engines/{id}")
+    add(router->get("/api/reporting/pricing-engines/{id}").catalogue("web_get_reporting_pricing_engines_id", "reporting", "pricing_engines", false)
             .summary("One pricing engine document and the reports that bind it")
             .description("The configuration, its products and its parameters as one document, "
                          "and the reports that bind it through its reporting configuration.")
@@ -217,7 +217,7 @@ void pricing_engine_routes::register_read_routes(
                     });
             }));
 
-    add(router->get("/api/reporting/pricing-engines/{id}/history")
+    add(router->get("/api/reporting/pricing-engines/{id}/history").catalogue("web_get_reporting_pricing_engines_id_history", "reporting", "pricing_engines", false)
             .summary("Every version of a pricing engine document")
             .description("The versions of the configuration, of every product it holds and of "
                          "every parameter, newest first within each record, so one save reads as "
@@ -236,7 +236,7 @@ void pricing_engine_routes::register_read_routes(
                     });
             }));
 
-    add(router->get("/api/reporting/pricing-engines/{id}/ore-document")
+    add(router->get("/api/reporting/pricing-engines/{id}/ore-document").catalogue("web_get_reporting_pricing_engines_id_ore_document", "reporting", "pricing_engines", false)
             .summary("The ORE document of one pricing engine configuration")
             .description("The ORE service writes the file and names it, and this route offers it "
                          "to the browser under that name. The service reads the document by the "

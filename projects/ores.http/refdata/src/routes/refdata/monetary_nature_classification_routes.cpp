@@ -288,6 +288,7 @@ void monetary_nature_classification_routes::register_routes(
             .summary("List the monetary-nature rows for the classification screen")
             .description("Every row, each with its label.")
             .tags({"refdata"})
+            .entity_catalogue("refdata", "monetary_nature", "screen_list")
             .auth_required()
             .handler([&session](const http_request& req) { return handle_list(req, session); });
     const auto list_built = list_route.build();
@@ -299,6 +300,7 @@ void monetary_nature_classification_routes::register_routes(
             .summary("Add one monetary-nature row")
             .description("A code already in the list is refused rather than replaced.")
             .tags({"refdata"})
+            .entity_catalogue("refdata", "monetary_nature", "screen_create")
             .auth_required()
             .handler([&session](const http_request& req) { return handle_create(req, session); });
     const auto create_built = create_route.build();
@@ -310,6 +312,7 @@ void monetary_nature_classification_routes::register_routes(
             .summary("Correct one monetary-nature row")
             .description("A correction of the version read.")
             .tags({"refdata"})
+            .entity_catalogue("refdata", "monetary_nature", "screen_update")
             .auth_required()
             .handler([&session](const http_request& req) { return handle_update(req, session); });
     const auto update_built = update_route.build();
@@ -321,6 +324,7 @@ void monetary_nature_classification_routes::register_routes(
             .summary("Reorder the monetary-nature rows")
             .description("The rows that moved, each with its version, in one call.")
             .tags({"refdata"})
+            .entity_catalogue("refdata", "monetary_nature", "screen_order")
             .auth_required()
             .handler([&session](const http_request& req) { return handle_order(req, session); });
     const auto order_built = order_route.build();
@@ -332,6 +336,7 @@ void monetary_nature_classification_routes::register_routes(
             .summary("Remove one monetary-nature row")
             .description("Its versions stay in the history.")
             .tags({"refdata"})
+            .entity_catalogue("refdata", "monetary_nature", "screen_delete")
             .auth_required()
             .handler([&session](const http_request& req) { return handle_delete(req, session); });
     const auto delete_built = delete_route.build();
@@ -343,6 +348,7 @@ void monetary_nature_classification_routes::register_routes(
             .summary("Label one monetary-nature row")
             .description("Maps the row's code to a badge, or removes the mapping.")
             .tags({"refdata"})
+            .entity_catalogue("refdata", "monetary_nature", "screen_label")
             .auth_required()
             .handler([&session](const http_request& req) { return handle_label(req, session); });
     const auto label_built = label_route.build();

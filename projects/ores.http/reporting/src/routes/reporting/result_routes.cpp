@@ -495,7 +495,7 @@ void result_routes::register_routes(
         registry->register_route(built);
     };
 
-    add(router->get("/api/reporting/runs/{id}/results")
+    add(router->get("/api/reporting/runs/{id}/results").catalogue("web_get_reporting_runs_id_results", "reporting", "runs", false)
             .summary("The figures one report run produced, at the level the reader asks for")
             .description("Trade, book or counterparty: the run's figures rolled up to the level, "
                          "with each row's share of the run and, when an earlier run is named, what "

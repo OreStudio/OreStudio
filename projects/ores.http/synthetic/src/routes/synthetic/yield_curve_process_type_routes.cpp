@@ -343,6 +343,7 @@ void yield_curve_process_type_routes::register_routes(
             .summary("List yield curve process types")
             .description("Forwards to the synthetic.v1.yield_curve_process_types.list operation.")
             .tags({"synthetic"})
+            .entity_catalogue("synthetic", "yield_curve_process_types", "list")
             .auth_required()
             .query_param("offset", "integer", "", false, "Rows to skip")
             .query_param("limit", "integer", "", false, "Rows to return")
@@ -364,6 +365,7 @@ void yield_curve_process_type_routes::register_routes(
             .summary("Get one yield curve process type")
             .description("Forwards to the synthetic.v1.yield_curve_process_types.get operation.")
             .tags({"synthetic"})
+            .entity_catalogue("synthetic", "yield_curve_process_types", "get")
             .auth_required()
             .response<messaging::get_yield_curve_process_type_response>()
             .handler([&session](const http_request& req) { return handle_get(req, session); });
@@ -377,6 +379,7 @@ void yield_curve_process_type_routes::register_routes(
             .description(
                 "Forwards to the synthetic.v1.yield_curve_process_types.get_many operation.")
             .tags({"synthetic"})
+            .entity_catalogue("synthetic", "yield_curve_process_types", "get_many")
             .auth_required()
             .body<messaging::get_many_yield_curve_process_types_request>()
             .response<messaging::get_many_yield_curve_process_types_response>()
@@ -390,6 +393,7 @@ void yield_curve_process_type_routes::register_routes(
             .summary("Create one yield curve process type")
             .description("Forwards to the synthetic.v1.yield_curve_process_types.put operation.")
             .tags({"synthetic"})
+            .entity_catalogue("synthetic", "yield_curve_process_types", "add")
             .auth_required()
             .body<messaging::put_yield_curve_process_type_request>()
             .response<messaging::put_yield_curve_process_type_response>()
@@ -403,6 +407,7 @@ void yield_curve_process_type_routes::register_routes(
             .summary("Replace one yield curve process type")
             .description("Forwards to the synthetic.v1.yield_curve_process_types.put operation.")
             .tags({"synthetic"})
+            .entity_catalogue("synthetic", "yield_curve_process_types", "set")
             .auth_required()
             .query_param("version", "integer", "", false, "Version")
             .body<messaging::put_yield_curve_process_type_request>()
@@ -418,6 +423,7 @@ void yield_curve_process_type_routes::register_routes(
             .description(
                 "Forwards to the synthetic.v1.yield_curve_process_types.put_many operation.")
             .tags({"synthetic"})
+            .entity_catalogue("synthetic", "yield_curve_process_types", "put_many")
             .auth_required()
             .body<messaging::put_many_yield_curve_process_types_request>()
             .response<messaging::put_many_yield_curve_process_types_response>()
@@ -431,6 +437,7 @@ void yield_curve_process_type_routes::register_routes(
             .summary("Delete one yield curve process type")
             .description("Forwards to the synthetic.v1.yield_curve_process_types.delete operation.")
             .tags({"synthetic"})
+            .entity_catalogue("synthetic", "yield_curve_process_types", "delete")
             .auth_required()
             .query_param("reason", "string", "", true, "Change reason code")
             .query_param("commentary", "string", "", true, "Commentary")
@@ -447,6 +454,7 @@ void yield_curve_process_type_routes::register_routes(
             .description(
                 "Forwards to the synthetic.v1.yield_curve_process_types.delete_many operation.")
             .tags({"synthetic"})
+            .entity_catalogue("synthetic", "yield_curve_process_types", "delete_many")
             .auth_required()
             .body<messaging::delete_many_yield_curve_process_types_request>()
             .response<messaging::delete_many_yield_curve_process_types_response>()
@@ -462,6 +470,7 @@ void yield_curve_process_type_routes::register_routes(
             .description(
                 "Forwards to the synthetic.v1.yield_curve_process_types_versions.list operation.")
             .tags({"synthetic"})
+            .entity_catalogue("synthetic", "yield_curve_process_types", "versions")
             .auth_required()
             .query_param("offset", "integer", "", false, "Rows to skip")
             .query_param("limit", "integer", "", false, "Rows to return")
@@ -479,6 +488,7 @@ void yield_curve_process_type_routes::register_routes(
             .description(
                 "Forwards to the synthetic.v1.yield_curve_process_types_versions.get operation.")
             .tags({"synthetic"})
+            .entity_catalogue("synthetic", "yield_curve_process_types", "version")
             .auth_required()
             .response<messaging::get_yield_curve_process_type_version_response>()
             .handler([&session](const http_request& req) { return handle_version(req, session); });

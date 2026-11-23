@@ -247,7 +247,7 @@ void history_routes::register_routes(
     std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
     nats_client& session) {
     auto history_route =
-        router->get("/api/history")
+        router->get("/api/history").catalogue("web_get_history", "operations", "history", false)
             .summary("Read the versions of one record")
             .description("Every version, newest first, with its fields and what changed in it.")
             .tags({"history"})

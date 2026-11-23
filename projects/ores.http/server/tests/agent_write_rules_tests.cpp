@@ -24,19 +24,6 @@
 using namespace ores::http::server::app;
 using ores::http::domain::http_response;
 
-TEST_CASE("an_operation_that_lists_gets_or_finds_only_reads", "[agent_writes]") {
-    CHECK(agent_call_only_reads("/api/v1/iam/ops/list_own_agent_activity"));
-    CHECK(agent_call_only_reads("/api/v1/iam/ops/get_agent_held_write"));
-    CHECK(agent_call_only_reads("/api/v1/refdata/ops/find_parties"));
-    CHECK_FALSE(agent_call_only_reads("/api/v1/iam/agent_grants/put"));
-    CHECK_FALSE(agent_call_only_reads("/api/v1/iam/ops/create_agent_key"));
-}
-
-TEST_CASE("an_operation_that_reads_and_then_makes_writes", "[agent_writes]") {
-    CHECK_FALSE(agent_call_only_reads("/api/v1/refdata/ops/get_or_create_party"));
-    CHECK_FALSE(agent_call_only_reads("/api/v1/refdata/ops/find_or_create_book"));
-}
-
 TEST_CASE("a_token_of_reads_alone_can_write_nothing", "[agent_writes]") {
     CHECK_FALSE(agent_token_can_write({"refdata::currencies:read", "iam::accounts:lookup"}));
     CHECK_FALSE(agent_token_can_write({}));

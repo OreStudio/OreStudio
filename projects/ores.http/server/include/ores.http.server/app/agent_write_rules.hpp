@@ -31,24 +31,6 @@
 namespace ores::http::server::app {
 
 /**
- * Whether a call that is not a GET only reads. An operation route is a POST
- * whatever it does, and names what it does: an operation that lists, gets,
- * reads, finds, searches or looks up changes nothing, unless it also makes,
- * as get_or_create does. The route catalogue's
- * declaration of whether each route writes will replace this.
- */
-inline bool agent_call_only_reads(const std::string& route) {
-    const auto last = route.substr(route.find_last_of('/') + 1);
-    // An operation that reads and then makes, such as get_or_create, writes.
-    if (last.find("_or_") != std::string::npos)
-        return false;
-    for (const std::string_view verb : {"list_", "get_", "read_", "find_", "search_", "lookup_"})
-        if (last.starts_with(verb))
-            return true;
-    return false;
-}
-
-/**
  * Whether a token can write at all: its permissions are the codes the exchange
  * put in its roles claim, and a token whose every code reads can write nothing.
  */

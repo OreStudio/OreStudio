@@ -86,6 +86,7 @@ void http_server::setup_builtin_routes() {
      */
     auto health_builder =
         router_->get("/health")
+            .catalogue("health", "operations", "server", false)
             .summary("Health check")
             .description("Reports whether this server can serve an authenticated caller")
             .tags({"system"})
@@ -108,6 +109,7 @@ void http_server::setup_builtin_routes() {
      */
     auto metrics_builder =
         router_->get("/metrics")
+            .catalogue("metrics", "operations", "server", false)
             .summary("Server metrics")
             .description("The counters this server keeps, in the text exposition format")
             .tags({"system"})
@@ -124,6 +126,7 @@ void http_server::setup_builtin_routes() {
     // OpenAPI spec endpoint
     auto openapi_builder =
         router_->get("/openapi.json")
+            .catalogue("openapi", "operations", "server", false)
             .summary("OpenAPI specification")
             .description("Returns the OpenAPI 3.0 JSON specification")
             .tags({"system"})
@@ -137,6 +140,7 @@ void http_server::setup_builtin_routes() {
     // Swagger UI endpoint
     auto swagger_builder =
         router_->get("/swagger")
+            .catalogue("swagger", "operations", "server", false)
             .summary("Swagger UI")
             .description("Interactive API documentation")
             .tags({"system"})

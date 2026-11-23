@@ -88,6 +88,7 @@ void session_statistics_operations_routes::register_routes(
             .summary("Get session statistics")
             .description("Forwards to the iam.v1.ops.get_session_statistics operation.")
             .tags({"iam"})
+            .operation_catalogue("iam", "session_statistics_operations", "get_session_statistics")
             .auth_required()
             .body<messaging::get_session_statistics_request>()
             .response<messaging::get_session_statistics_response>()

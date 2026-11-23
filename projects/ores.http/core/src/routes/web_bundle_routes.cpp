@@ -89,7 +89,7 @@ void web_bundle_routes::register_routes(std::shared_ptr<web_bundle_routes> self,
      * carries the whole path. A screen path with four segments has to reach the
      * application shell, so the pattern may not stop at the first slash.
      */
-    router->add_route(router->get("/")
+    router->add_route(router->get("/").catalogue("web_get", "operations", "core", false)
                           .summary("The application")
                           .description("The built browser bundle's index")
                           .tags({"web"})
@@ -101,7 +101,7 @@ void web_bundle_routes::register_routes(std::shared_ptr<web_bundle_routes> self,
                           .build());
 
     router->add_route(
-        router->get("/{path}")
+        router->get("/{path}").catalogue("web_get_path", "operations", "core", false)
             .summary("The application, and what it was built from")
             .description("A file of the built bundle, or the application shell for a screen path")
             .tags({"web"})

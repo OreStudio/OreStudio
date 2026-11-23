@@ -416,7 +416,7 @@ void trade_read_routes::register_routes(
         registry->register_route(built);
     };
 
-    add(router->get("/api/trades")
+    add(router->get("/api/trades").catalogue("web_get_trades", "trading", "trades", false)
             .summary("Read one page of the trade list, enriched with what a person reads")
             .description("One page of the trade summary read model, with its total, ordered and "
                          "filtered by the service. Each row carries the identifier a desk "
@@ -431,7 +431,7 @@ void trade_read_routes::register_routes(
                 });
             }));
 
-    add(router->get("/api/trades/{id}")
+    add(router->get("/api/trades/{id}").catalogue("web_get_trades_id", "trading", "trades", false)
             .summary("Read one trade's page")
             .description("The trade's summary, identifiers, party roles, booking, instrument "
                          "terms, links at both ends with the other trade's identifier, the "
@@ -564,7 +564,7 @@ void trade_read_routes::register_routes(
                 });
             }));
 
-    add(router->get("/api/trades/{id}/versions/{version}")
+    add(router->get("/api/trades/{id}/versions/{version}").catalogue("web_get_trades_id_versions_version", "trading", "trades", false)
             .summary("Read one trade as it stood at one version")
             .description("A version the trade never had answers a null trade, because it is an "
                          "answer to the question rather than a refusal of it.")

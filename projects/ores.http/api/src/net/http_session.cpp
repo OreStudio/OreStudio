@@ -874,7 +874,7 @@ asio::awaitable<void> http_session::handle_request(domain::http_request domain_r
              * is held for its person instead of running, unless it is exempt.
              */
             std::optional<domain::http_response> held;
-            if (bearer_was_exchanged && credentials_.hold && changes_something(domain_req.method))
+            if (bearer_was_exchanged && credentials_.hold && matched->catalogue.writes)
                 held = workers_ != nullptr ? co_await workers_->run(run_write_hold{
                                                  credentials_.hold, domain_req, matched->pattern}) :
                                              credentials_.hold(domain_req, matched->pattern);

@@ -132,6 +132,7 @@ void {{entity_singular}}_routes::register_routes(
                                     .summary("{{summary}}")
                                     .description("{{description}}")
                                     .tags({"{{component}}"})
+                                    .operation_catalogue("{{component}}", "{{entity_singular}}", "{{identifier}}")
 {{#requires_session}}
                                     .auth_required()
 {{/requires_session}}

@@ -88,6 +88,7 @@ void auth_event_operations_routes::register_routes(
             .summary("List auth events")
             .description("Forwards to the iam.v1.auth_events.list operation.")
             .tags({"iam"})
+            .operation_catalogue("iam", "auth_event_operations", "list_auth_events")
             .auth_required()
             .body<messaging::list_auth_events_request>()
             .response<messaging::list_auth_events_response>()

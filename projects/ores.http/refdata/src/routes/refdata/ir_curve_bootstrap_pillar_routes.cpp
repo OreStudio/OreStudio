@@ -362,6 +362,7 @@ void ir_curve_bootstrap_pillar_routes::register_routes(
             .summary("List ir curve bootstrap pillars")
             .description("Forwards to the refdata.v1.ir_curve_bootstrap_pillars.list operation.")
             .tags({"refdata"})
+            .entity_catalogue("refdata", "ir_curve_bootstrap_pillars", "list")
             .auth_required()
             .query_param("offset", "integer", "", false, "Rows to skip")
             .query_param("limit", "integer", "", false, "Rows to return")
@@ -393,6 +394,7 @@ void ir_curve_bootstrap_pillar_routes::register_routes(
             .summary("Get one ir curve bootstrap pillar")
             .description("Forwards to the refdata.v1.ir_curve_bootstrap_pillars.get operation.")
             .tags({"refdata"})
+            .entity_catalogue("refdata", "ir_curve_bootstrap_pillars", "get")
             .auth_required()
             .response<messaging::get_ir_curve_bootstrap_pillar_response>()
             .handler([&session](const http_request& req) { return handle_get(req, session); });
@@ -406,6 +408,7 @@ void ir_curve_bootstrap_pillar_routes::register_routes(
             .description(
                 "Forwards to the refdata.v1.ir_curve_bootstrap_pillars.get_many operation.")
             .tags({"refdata"})
+            .entity_catalogue("refdata", "ir_curve_bootstrap_pillars", "get_many")
             .auth_required()
             .body<messaging::get_many_ir_curve_bootstrap_pillars_request>()
             .response<messaging::get_many_ir_curve_bootstrap_pillars_response>()
@@ -419,6 +422,7 @@ void ir_curve_bootstrap_pillar_routes::register_routes(
             .summary("Create one ir curve bootstrap pillar")
             .description("Forwards to the refdata.v1.ir_curve_bootstrap_pillars.put operation.")
             .tags({"refdata"})
+            .entity_catalogue("refdata", "ir_curve_bootstrap_pillars", "add")
             .auth_required()
             .body<messaging::put_ir_curve_bootstrap_pillar_request>()
             .response<messaging::put_ir_curve_bootstrap_pillar_response>()
@@ -432,6 +436,7 @@ void ir_curve_bootstrap_pillar_routes::register_routes(
             .summary("Replace one ir curve bootstrap pillar")
             .description("Forwards to the refdata.v1.ir_curve_bootstrap_pillars.put operation.")
             .tags({"refdata"})
+            .entity_catalogue("refdata", "ir_curve_bootstrap_pillars", "set")
             .auth_required()
             .query_param("version", "integer", "", false, "Version")
             .body<messaging::put_ir_curve_bootstrap_pillar_request>()
@@ -447,6 +452,7 @@ void ir_curve_bootstrap_pillar_routes::register_routes(
             .description(
                 "Forwards to the refdata.v1.ir_curve_bootstrap_pillars.put_many operation.")
             .tags({"refdata"})
+            .entity_catalogue("refdata", "ir_curve_bootstrap_pillars", "put_many")
             .auth_required()
             .body<messaging::put_many_ir_curve_bootstrap_pillars_request>()
             .response<messaging::put_many_ir_curve_bootstrap_pillars_response>()
@@ -460,6 +466,7 @@ void ir_curve_bootstrap_pillar_routes::register_routes(
             .summary("Delete one ir curve bootstrap pillar")
             .description("Forwards to the refdata.v1.ir_curve_bootstrap_pillars.delete operation.")
             .tags({"refdata"})
+            .entity_catalogue("refdata", "ir_curve_bootstrap_pillars", "delete")
             .auth_required()
             .query_param("reason", "string", "", true, "Change reason code")
             .query_param("commentary", "string", "", true, "Commentary")
@@ -476,6 +483,7 @@ void ir_curve_bootstrap_pillar_routes::register_routes(
             .description(
                 "Forwards to the refdata.v1.ir_curve_bootstrap_pillars.delete_many operation.")
             .tags({"refdata"})
+            .entity_catalogue("refdata", "ir_curve_bootstrap_pillars", "delete_many")
             .auth_required()
             .body<messaging::delete_many_ir_curve_bootstrap_pillars_request>()
             .response<messaging::delete_many_ir_curve_bootstrap_pillars_response>()
@@ -491,6 +499,7 @@ void ir_curve_bootstrap_pillar_routes::register_routes(
             .description(
                 "Forwards to the refdata.v1.ir_curve_bootstrap_pillars_versions.list operation.")
             .tags({"refdata"})
+            .entity_catalogue("refdata", "ir_curve_bootstrap_pillars", "versions")
             .auth_required()
             .query_param("offset", "integer", "", false, "Rows to skip")
             .query_param("limit", "integer", "", false, "Rows to return")
@@ -508,6 +517,7 @@ void ir_curve_bootstrap_pillar_routes::register_routes(
             .description(
                 "Forwards to the refdata.v1.ir_curve_bootstrap_pillars_versions.get operation.")
             .tags({"refdata"})
+            .entity_catalogue("refdata", "ir_curve_bootstrap_pillars", "version")
             .auth_required()
             .response<messaging::get_ir_curve_bootstrap_pillar_version_response>()
             .handler([&session](const http_request& req) { return handle_version(req, session); });

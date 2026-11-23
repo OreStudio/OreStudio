@@ -87,6 +87,7 @@ void geo_operations_routes::register_routes(
             .summary("Lookup country")
             .description("Forwards to the iam.v1.ops.lookup_country operation.")
             .tags({"iam"})
+            .operation_catalogue("iam", "geo_operations", "lookup_country")
             .auth_required()
             .body<messaging::lookup_country_request>()
             .response<messaging::lookup_country_response>()

@@ -395,6 +395,7 @@ void ir_curve_bootstrap_config_routes::register_routes(
             .summary("List ir curve bootstrap configs")
             .description("Forwards to the refdata.v1.ir_curve_bootstrap_configs.list operation.")
             .tags({"refdata"})
+            .entity_catalogue("refdata", "ir_curve_bootstrap_configs", "list")
             .auth_required()
             .query_param("offset", "integer", "", false, "Rows to skip")
             .query_param("limit", "integer", "", false, "Rows to return")
@@ -445,6 +446,7 @@ void ir_curve_bootstrap_config_routes::register_routes(
             .summary("Get one ir curve bootstrap config")
             .description("Forwards to the refdata.v1.ir_curve_bootstrap_configs.get operation.")
             .tags({"refdata"})
+            .entity_catalogue("refdata", "ir_curve_bootstrap_configs", "get")
             .auth_required()
             .response<messaging::get_ir_curve_bootstrap_config_response>()
             .handler([&session](const http_request& req) { return handle_get(req, session); });
@@ -458,6 +460,7 @@ void ir_curve_bootstrap_config_routes::register_routes(
             .description(
                 "Forwards to the refdata.v1.ir_curve_bootstrap_configs.get_many operation.")
             .tags({"refdata"})
+            .entity_catalogue("refdata", "ir_curve_bootstrap_configs", "get_many")
             .auth_required()
             .body<messaging::get_many_ir_curve_bootstrap_configs_request>()
             .response<messaging::get_many_ir_curve_bootstrap_configs_response>()
@@ -471,6 +474,7 @@ void ir_curve_bootstrap_config_routes::register_routes(
             .summary("Create one ir curve bootstrap config")
             .description("Forwards to the refdata.v1.ir_curve_bootstrap_configs.put operation.")
             .tags({"refdata"})
+            .entity_catalogue("refdata", "ir_curve_bootstrap_configs", "add")
             .auth_required()
             .body<messaging::put_ir_curve_bootstrap_config_request>()
             .response<messaging::put_ir_curve_bootstrap_config_response>()
@@ -484,6 +488,7 @@ void ir_curve_bootstrap_config_routes::register_routes(
             .summary("Replace one ir curve bootstrap config")
             .description("Forwards to the refdata.v1.ir_curve_bootstrap_configs.put operation.")
             .tags({"refdata"})
+            .entity_catalogue("refdata", "ir_curve_bootstrap_configs", "set")
             .auth_required()
             .query_param("version", "integer", "", false, "Version")
             .body<messaging::put_ir_curve_bootstrap_config_request>()
@@ -499,6 +504,7 @@ void ir_curve_bootstrap_config_routes::register_routes(
             .description(
                 "Forwards to the refdata.v1.ir_curve_bootstrap_configs.put_many operation.")
             .tags({"refdata"})
+            .entity_catalogue("refdata", "ir_curve_bootstrap_configs", "put_many")
             .auth_required()
             .body<messaging::put_many_ir_curve_bootstrap_configs_request>()
             .response<messaging::put_many_ir_curve_bootstrap_configs_response>()
@@ -512,6 +518,7 @@ void ir_curve_bootstrap_config_routes::register_routes(
             .summary("Delete one ir curve bootstrap config")
             .description("Forwards to the refdata.v1.ir_curve_bootstrap_configs.delete operation.")
             .tags({"refdata"})
+            .entity_catalogue("refdata", "ir_curve_bootstrap_configs", "delete")
             .auth_required()
             .query_param("reason", "string", "", true, "Change reason code")
             .query_param("commentary", "string", "", true, "Commentary")
@@ -528,6 +535,7 @@ void ir_curve_bootstrap_config_routes::register_routes(
             .description(
                 "Forwards to the refdata.v1.ir_curve_bootstrap_configs.delete_many operation.")
             .tags({"refdata"})
+            .entity_catalogue("refdata", "ir_curve_bootstrap_configs", "delete_many")
             .auth_required()
             .body<messaging::delete_many_ir_curve_bootstrap_configs_request>()
             .response<messaging::delete_many_ir_curve_bootstrap_configs_response>()
@@ -543,6 +551,7 @@ void ir_curve_bootstrap_config_routes::register_routes(
             .description(
                 "Forwards to the refdata.v1.ir_curve_bootstrap_configs_versions.list operation.")
             .tags({"refdata"})
+            .entity_catalogue("refdata", "ir_curve_bootstrap_configs", "versions")
             .auth_required()
             .query_param("offset", "integer", "", false, "Rows to skip")
             .query_param("limit", "integer", "", false, "Rows to return")
@@ -560,6 +569,7 @@ void ir_curve_bootstrap_config_routes::register_routes(
             .description(
                 "Forwards to the refdata.v1.ir_curve_bootstrap_configs_versions.get operation.")
             .tags({"refdata"})
+            .entity_catalogue("refdata", "ir_curve_bootstrap_configs", "version")
             .auth_required()
             .response<messaging::get_ir_curve_bootstrap_config_version_response>()
             .handler([&session](const http_request& req) { return handle_version(req, session); });

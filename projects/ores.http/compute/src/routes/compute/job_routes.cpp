@@ -141,7 +141,7 @@ void job_routes::register_routes(std::shared_ptr<ores::http::net::router> router
         registry->register_route(built);
     };
 
-    add(router->get("/api/operations/grid/jobs/batches")
+    add(router->get("/api/operations/grid/jobs/batches").catalogue("web_get_operations_grid_jobs_batches", "grid", "batches", false)
             .summary("One page of the grid's batches, newest first")
             .description("Each row names the report run and the party that made the batch where "
                          "the caller may read them, and falls back on the reference otherwise.")
@@ -170,7 +170,7 @@ void job_routes::register_routes(std::shared_ptr<ores::http::net::router> router
                 });
             }));
 
-    add(router->get("/api/operations/grid/jobs/batches/{id}")
+    add(router->get("/api/operations/grid/jobs/batches/{id}").catalogue("web_get_operations_grid_jobs_batches_id", "grid", "batches", false)
             .summary("One batch, with the run and the party that made it")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<compute_messaging::list_batches_request>([&] {
@@ -189,7 +189,7 @@ void job_routes::register_routes(std::shared_ptr<ores::http::net::router> router
                 });
             }));
 
-    add(router->get("/api/operations/grid/jobs/batches/{id}/workunits")
+    add(router->get("/api/operations/grid/jobs/batches/{id}/workunits").catalogue("web_get_operations_grid_jobs_batches_id_workunits", "grid", "batches", false)
             .summary("One page of the work units of one batch")
             .query_param("offset", "integer", "int32", false, "How many work units to skip")
             .query_param("limit", "integer", "int32", false, "How many work units to return")
@@ -213,7 +213,7 @@ void job_routes::register_routes(std::shared_ptr<ores::http::net::router> router
                 });
             }));
 
-    add(router->get("/api/operations/grid/jobs/workunits/{id}")
+    add(router->get("/api/operations/grid/jobs/workunits/{id}").catalogue("web_get_operations_grid_jobs_workunits_id", "grid", "workunits", false)
             .summary("One work unit: the batch it belongs to and the build it runs")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<compute_messaging::get_workunit_request>([&] {
@@ -232,7 +232,7 @@ void job_routes::register_routes(std::shared_ptr<ores::http::net::router> router
                 });
             }));
 
-    add(router->get("/api/operations/grid/jobs/workunits/{id}/results")
+    add(router->get("/api/operations/grid/jobs/workunits/{id}/results").catalogue("web_get_operations_grid_jobs_workunits_id_results", "grid", "workunits", false)
             .summary("One page of the runs of one work unit")
             .description("A run in flight has no node and no output yet, and states null for "
                          "both.")
@@ -259,7 +259,7 @@ void job_routes::register_routes(std::shared_ptr<ores::http::net::router> router
                 });
             }));
 
-    add(router->get("/api/operations/grid/jobs/results")
+    add(router->get("/api/operations/grid/jobs/results").catalogue("web_get_operations_grid_jobs_results", "grid", "results", false)
             .summary("One page of the runs that ended with an outcome, newest first")
             .description("The answer to which of the runs failed: 1 is Success, 3 is "
                          "ClientError, 4 is NoReply, and 0 is a run with no outcome yet.")
@@ -290,7 +290,7 @@ void job_routes::register_routes(std::shared_ptr<ores::http::net::router> router
                 });
             }));
 
-    add(router->get("/api/operations/grid/jobs/results/{id}")
+    add(router->get("/api/operations/grid/jobs/results/{id}").catalogue("web_get_operations_grid_jobs_results_id", "grid", "results", false)
             .summary("One run: its state, its outcome, its node and its output")
             .description("The node is stated only where the caller may read it, and host_hidden "
                          "says the caller may not.")

@@ -105,7 +105,7 @@ void product_routes::register_routes(
         registry->register_route(built);
     };
 
-    add(router->get("/api/trading/products")
+    add(router->get("/api/trading/products").catalogue("web_get_trading_products", "trading", "products", false)
             .summary("The products a screen can book")
             .description("Every product type, then every library script no product type "
                          "twins, each by its code, name and construction.")
@@ -118,7 +118,7 @@ void product_routes::register_routes(
                 });
             }));
 
-    add(router->get("/api/trading/products/{code}")
+    add(router->get("/api/trading/products/{code}").catalogue("web_get_trading_products_code", "trading", "products", false)
             .summary("One product's fields and forms")
             .description("The fields of the product's element and of every schema type they "
                          "reach, the inputs and codes of the scripts its forms run, and the "

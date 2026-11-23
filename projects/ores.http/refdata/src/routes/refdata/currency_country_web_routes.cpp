@@ -318,6 +318,7 @@ void currency_country_web_routes::register_routes(
             .summary("List currency-countries for a screen")
             .description("One page with its total, or every row when no limit is named.")
             .tags({"refdata"})
+            .entity_catalogue("refdata", "currency_country", "screen_list")
             .auth_required()
             .handler([&session](const http_request& req) { return handle_list(req, session); });
     const auto list_built = list_route.build();
@@ -329,6 +330,7 @@ void currency_country_web_routes::register_routes(
             .summary("List one parent's currency-countries for a screen")
             .description("Every row of one parent.")
             .tags({"refdata"})
+            .entity_catalogue("refdata", "currency_country", "screen_list_by")
             .auth_required()
             .handler([&session](const http_request& req) { return handle_by(req, session); });
     const auto by_built = by_route.build();
@@ -340,6 +342,7 @@ void currency_country_web_routes::register_routes(
             .summary("Write one currency-countries record for a screen")
             .description("A new row with no version, else a correction of the version read.")
             .tags({"refdata"})
+            .entity_catalogue("refdata", "currency_country", "screen_put")
             .auth_required()
             .handler([&session](const http_request& req) { return handle_put(req, session); });
     const auto put_built = put_route.build();
@@ -351,6 +354,7 @@ void currency_country_web_routes::register_routes(
             .summary("Remove one currency-countries record for a screen")
             .description("Removes the row the body's key names.")
             .tags({"refdata"})
+            .entity_catalogue("refdata", "currency_country", "screen_delete")
             .auth_required()
             .handler([&session](const http_request& req) { return handle_delete(req, session); });
     const auto remove_built = remove_route.build();

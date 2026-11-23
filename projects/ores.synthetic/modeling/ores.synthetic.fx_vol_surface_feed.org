@@ -403,6 +403,37 @@ collection is this provider's and whose URI is that one.
 std::string("bloomberg")
 #+end_src
 
+** base_curve_name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:no_generator_suffix: true
+:END:
+
+The source name of the discounting curve of the base currency, the foreign side
+of the pair's forward: an edge of the feed graph, stored so the surface reads
+the curve it names rather than one a rule finds.
+
+#+begin_src cpp :name generator
+std::string("synthetic.bloomberg.ir.yield_curve.estr.eur")
+#+end_src
+
+** quote_curve_name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:no_generator_suffix: true
+:END:
+
+The source name of the discounting curve of the quote currency, the domestic
+side of the pair's forward.
+
+#+begin_src cpp :name generator
+std::string("synthetic.bloomberg.ir.yield_curve.sofr.usd")
+#+end_src
+
 * Artefact columns
 :PROPERTIES:
 :key: id
@@ -518,6 +549,26 @@ import carries the row's own id, which its expiries and contributor links name.
 :type: double precision
 :END:
 
+** spot_oresmd_uri
+:PROPERTIES:
+:type: text
+:END:
+
+** spot_provider_code
+:PROPERTIES:
+:type: text
+:END:
+
+** base_curve_name
+:PROPERTIES:
+:type: text
+:END:
+
+** quote_curve_name
+:PROPERTIES:
+:type: text
+:END:
+
 * Artefact indexes
 
 ** base_currency_code
@@ -558,6 +609,8 @@ import carries the row's own id, which its expiries and contributor links name.
 | "start_skew" > -1 and "start_skew" < 1 |
 | "start_curvature" > 0 and "start_curvature" < 1.4142135623730951 |
 | "spot_oresmd_uri" like 'oresmd://fx/%' |
+| "base_curve_name" like 'synthetic.%' |
+| "quote_curve_name" like 'synthetic.%' |
 
 * Foreign keys
 

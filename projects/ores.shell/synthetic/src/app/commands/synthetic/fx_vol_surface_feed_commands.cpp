@@ -144,7 +144,7 @@ void fx_vol_surface_feed_commands::register_commands(cli::Menu& root_menu, nats_
         "<decay> <sensitivity> <skew_reversion> <skew_volatility> <curvature_reversion> "
         "<curvature_volatility> <spot_variance_correlation> <spot_skew_correlation> "
         "<segment_correlation> <start_skew> <start_curvature> <spot_oresmd_uri> "
-        "<spot_provider_code> <reason> <commentary>");
+        "<spot_provider_code> <base_curve_name> <quote_curve_name> <reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -156,7 +156,8 @@ void fx_vol_surface_feed_commands::register_commands(cli::Menu& root_menu, nats_
         "<branching_ratio> <decay> <sensitivity> <skew_reversion> <skew_volatility> "
         "<curvature_reversion> <curvature_volatility> <spot_variance_correlation> "
         "<spot_skew_correlation> <segment_correlation> <start_skew> <start_curvature> "
-        "<spot_oresmd_uri> <spot_provider_code> <reason> <commentary> [--version <n>]");
+        "<spot_oresmd_uri> <spot_provider_code> <base_curve_name> <quote_curve_name> <reason> "
+        "<commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -168,7 +169,8 @@ void fx_vol_surface_feed_commands::register_commands(cli::Menu& root_menu, nats_
         "<arrival_mode> <branching_ratio> <decay> <sensitivity> <skew_reversion> <skew_volatility> "
         "<curvature_reversion> <curvature_volatility> <spot_variance_correlation> "
         "<spot_skew_correlation> <segment_correlation> <start_skew> <start_curvature> "
-        "<spot_oresmd_uri> <spot_provider_code> <reason> <commentary>");
+        "<spot_oresmd_uri> <spot_provider_code> <base_curve_name> <quote_curve_name> <reason> "
+        "<commentary>");
 
     menu->Insert(
         "delete",
@@ -369,8 +371,8 @@ void fx_vol_surface_feed_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 24 + 2) {
-            fail(out) << "Expected " << (24 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 26 + 2) {
+            fail(out) << "Expected " << (26 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -429,6 +431,10 @@ void fx_vol_surface_feed_commands::process_add(std::ostream& out,
             req.change.write.spot_oresmd_uri, parsed->positionals[next++], "spot_oresmd_uri");
         fx_vol_surface_feed_read_token(
             req.change.write.spot_provider_code, parsed->positionals[next++], "spot_provider_code");
+        fx_vol_surface_feed_read_token(
+            req.change.write.base_curve_name, parsed->positionals[next++], "base_curve_name");
+        fx_vol_surface_feed_read_token(
+            req.change.write.quote_curve_name, parsed->positionals[next++], "quote_curve_name");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -473,8 +479,8 @@ void fx_vol_surface_feed_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 25 + 2) {
-            fail(out) << "Expected " << (25 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 27 + 2) {
+            fail(out) << "Expected " << (27 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -533,6 +539,10 @@ void fx_vol_surface_feed_commands::process_set(std::ostream& out,
             req.change.write.spot_oresmd_uri, parsed->positionals[next++], "spot_oresmd_uri");
         fx_vol_surface_feed_read_token(
             req.change.write.spot_provider_code, parsed->positionals[next++], "spot_provider_code");
+        fx_vol_surface_feed_read_token(
+            req.change.write.base_curve_name, parsed->positionals[next++], "base_curve_name");
+        fx_vol_surface_feed_read_token(
+            req.change.write.quote_curve_name, parsed->positionals[next++], "quote_curve_name");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -589,8 +599,8 @@ void fx_vol_surface_feed_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 25 + 2) {
-            fail(out) << "Expected " << (change_count * 25 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 27 + 2) {
+            fail(out) << "Expected " << (change_count * 27 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -651,6 +661,10 @@ void fx_vol_surface_feed_commands::process_put_many(std::ostream& out,
                 change.write.spot_oresmd_uri, parsed->positionals[next++], "spot_oresmd_uri");
             fx_vol_surface_feed_read_token(
                 change.write.spot_provider_code, parsed->positionals[next++], "spot_provider_code");
+            fx_vol_surface_feed_read_token(
+                change.write.base_curve_name, parsed->positionals[next++], "base_curve_name");
+            fx_vol_surface_feed_read_token(
+                change.write.quote_curve_name, parsed->positionals[next++], "quote_curve_name");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }

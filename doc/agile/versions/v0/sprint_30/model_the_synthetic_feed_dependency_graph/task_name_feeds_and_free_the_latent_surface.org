@@ -1,0 +1,154 @@
+:PROPERTIES:
+:ID: B7B370E1-1C20-4474-8C0F-4160ADE6AACD
+:END:
+#+title: Task: Rename the synthetic feeds by the scheme and give the latent surfaces their own collection
+#+description: Every synthetic feed takes its name from the signed-off scheme, the latent vol surfaces move out of the Bloomberg collection into a provider-less latent collection, and a surface's two discounting curves become stored edges.
+#+type: task
+#+level: s1
+#+filetags: :synthetic:naming:graph:model_the_synthetic_feed_dependency_graph:sprint_30:v0:
+#+owner: marco
+#+branch: feature/name-feeds-and-free-the-latent-surface
+#+pr: 5047
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8DE041AE-95E6-40CE-9B62-2CE3BA77838A][Model the synthetic feeds as a dependency graph: upstreams, latent surfaces and vendor views]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every synthetic feed is named by the signed-off scheme, wherever a name is made: the publish, the screens' Add dialogs and the adapters' holds. The latent vol surfaces leave the Bloomberg collection for a latent collection of their own, seeded by their own dataset, and each names its spot and its two discounting curves as stored edges, so no edge is found by a rule.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                 |
+| Parent story | [[id:8DE041AE-95E6-40CE-9B62-2CE3BA77838A][Model the synthetic feeds as a dependency graph: upstreams, latent surfaces and vendor views]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-22                               |
+
+* Acceptance
+
+- Every seeded feed carries its scheme name, and a test refuses two feeds that derive one name.
+- A vendor's quotes of a surface run under the vendor's own fx_option name.
+- The latent surfaces are in a latent collection under the system provider =latent=, seeded by synthetic.feeds.latent; no tenant reads that provider, and the Provider tab lists it for a system session only.
+- A surface stores its base and quote discounting curves by name, a curve publishes to the board under its own name, and the surface reads the curves it names.
+- The vol ticks still publish live for every pair, and the Calibration tab links the stored curves.
+
+* Plan
+
+One PR, by the owner's choice, in slices that each end in a check.
+
+1. *A system provider.* The provider's kind gains =system=: a provider no
+   tenant or party sees. The provider table's shared read admits a system
+   tenant row only when its kind is not =system=, through a new optional model
+   flag, =rls_shared_read_condition=, that the RLS template appends to the
+   system-tenant clause (an entity without the flag generates byte-identical
+   SQL). The provider validation runs as the table's owner, so a subscription
+   to a =system= provider is refused explicitly. The =latent= provider is
+   seeded with kind =system=. Tests: a tenant reads no =latent= provider; the
+   system tenant reads it; a tenant's subscription to it is refused.
+2. *The latent collection.* A dataset =synthetic.feeds.latent= seeds the vol
+   surfaces, their expiries, contributors and links, which leave the Bloomberg
+   dataset. Its feeds name the =latent= provider, so the publish makes a
+   =latent= collection as it makes any other. The artefact carries the spot
+   pair and the two curve names, since the collection no longer gives them.
+3. *Curve edges as columns.* The surface gains =base_curve_name= and
+   =quote_curve_name=, the scheme names of its discounting curves. A curve
+   publishes to the board under its own name, as a spot does, and the surface
+   reads the curves it names; the rule that searched the collection goes. The
+   wide type ceilings of the surface's three types rise by two, as with the
+   spot pair.
+4. *Names.* The publish derives every feed's name by the scheme; the vendor
+   views run under =synthetic.<provider>.fx.fx_option.<pair>=; the screens' Add
+   dialogs default to the scheme. A test refuses two seeded feeds that derive
+   one name.
+5. *Screens.* The vol feed's Calibration tab links the stored curves; the
+   Provider tab lists the =latent= provider for a system session only.
+6. *Proof.* Rebuild, recreate, provision; check live that every pair's vol
+   ticks publish, that the names are the scheme's, that a tenant sees no
+   =latent= provider, and that the Calibration tab links resolve, on the BFF
+   and on ores.http.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Latent surfaces staged and published | 14, provider =latent= | psql count of the latent dataset's surface artefacts and the surface table | b7c1bc77cf |
+| SQL tests, synthetic and market data | 21 files, 184 tests, all pass | =pg_prove test/synthetic_*_test.sql test/marketdata_*_test.sql= | b7c1bc77cf |
+| C++ synthetic suites | 5 of 5 pass (api, core, service, shell, http) | =compass test run -- -R synthetic= | b7c1bc77cf |
+| Web tests | 510 pass (marketdata); BFF 1340 pass | =npx vitest run packages/web/src/marketdata=, =npx vitest run packages/bff= | b7c1bc77cf |
+| Live vol quotes | bloomberg-a, ice-a and tradeweb-a each publish points for all 14 pairs | grep of the ingress subjects in =ores.synthetic.service.0.log= after =compass services start= | b7c1bc77cf |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5047][#5047]] | [synthetic] Name feeds by the scheme and free the latent surface |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Local review: a tenant still reads the system Latent collection and its surfaces | synthetic_rls_policies_create.sql | Declined | The service's tenant runs read them to build the vendor views; the screens task owns what a party sees of the graph. The provider lists already hide =latent=. |
+| 2 | Local review: the Arrivals save completes with an empty source | volFeeds.tsx | Declined | An edit carries the feed's stored name, so the source is never read there. |
+| 3 | Local review: the SQL, web and C++ name builders could drift | feedNames.ts, synthetic_feed_names_create.sql, fx_vol_surface_feed.cpp | Accepted | Each twin is pinned by a test of the same example name in its own suite. |
+| 4 | Misspell check over the 65 changed files | - | Clean | =misspell-fixer= exit 0. |
+| 5 | PR review: a dangling curve name may solve against unset discounts | fx_vol_surface_feed.cpp | Declined | An unpublished board member makes the tick return =no market: curve:...=, which feeds_fx_vol_surface_feed_tests checks; the SQL names test now checks both curve edges name a feed. |
+| 6 | PR review: the C++, SQL and TS name builders can drift | synthetic_feed_names_test.sql | Accepted | The SQL test now pins =synthetic.bloomberg.fx.fx_option.audusd=, the example the C++ test pins; the TS tests pin the other three. |
+| 7 | PR review: no migration for existing databases | create scripts | Declined | The project recreates its databases from the create scripts; no migration path exists or is planned. |
+| 8 | PR review: tenants still read the Latent surfaces | story.org | Accepted | Recorded on the story's screens task. |
+| 9 | PR review: stale header comment in the latent populate | synthetic_feeds_latent_populate.sql | Accepted | Says the Bloomberg dataset's spots. |
+| 10 | PR review: ASCII lowering in the C++ twin | fx_vol_surface_feed.cpp | Accepted | Covered by the shared example of row 6; codes are ASCII. |
+
+* Result
+
+Every synthetic feed takes its name from the scheme, derived in one place for
+each kind: four SQL functions the publish calls, their web twins in
+=feedNames.ts= for the Add dialogs, and =fx_option_view_name= in C++ for the
+vendor views. A test refuses two feeds that derive one name and checks that
+every name has the scheme's shape.
+
+The latent surfaces live in their own dataset, =synthetic.feeds.latent=, under
+the provider =latent=, of a new kind =system=. Row security hides a system
+provider from every tenant but the system tenant, and the provider validation
+refuses a tenant row that names one; both come from a new optional model flag,
+=rls_shared_read_condition=, so no other table's SQL changed. The Provider and
+Dashboard tabs list only the providers a session can read.
+
+Each surface stores its spot and its two discounting curves by name. A curve
+writes the run's board under its own name, and the surface reads the names it
+stores, so the rule that searched the collection is gone. Live, the three
+vendors quote every one of the 14 surfaces.
+
+The system =Latent= collection and its surfaces stay readable by tenants,
+because the service's tenant runs read them to build the vendor views; hiding
+them is left to the screens task of the story, which owns what a party sees of
+the graph.

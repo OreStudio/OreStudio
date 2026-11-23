@@ -44,6 +44,7 @@ import { FeedStatus, RunOutcomeText, useFeedRuns } from './feedRuns.js';
 import { FeedRunTab } from './feedStart.js';
 import { FeedHistory, type FeedPart } from './FeedHistory.js';
 import type { FeedKind } from './feedKind.js';
+import { useSourceOf } from './feedNames.js';
 import { folderChain } from './feedTree.js';
 import { useSyntheticStep } from './syntheticTrail.js';
 
@@ -119,6 +120,9 @@ function FeedBody({
     const may = useRecordPermissions(kind.resource);
     const mayRun = useHeld()(PERMISSION.feedsRun);
     const check = kind.useCheck();
+    const sourceOf = useSourceOf();
+    const complete = (write: Readonly<Record<string, unknown>>): Record<string, unknown> =>
+        kind.complete(write, sourceOf(show(write['config_id'])));
     const parts = useFeedParts(kind, id);
     // The kind of a page never changes, so this hook runs or does not on every render alike.
     const related = kind.useRelated?.(feed) ?? [];
@@ -217,7 +221,7 @@ function FeedBody({
                     parts={[...parts, ...related]}
                     feedSpecs={kind.fields}
                     feedResource={kind.resource}
-                    complete={kind.complete}
+                    complete={complete}
                     keep={['id', ...kind.kept]}
                     mayWrite={may.write}
                 />
@@ -235,7 +239,7 @@ function FeedBody({
                             .map((spec) => spec.field),
                         ...kind.kept,
                     ]}
-                    complete={kind.complete}
+                    complete={complete}
                     check={check}
                     onClose={() => setEditing(false)}
                 />

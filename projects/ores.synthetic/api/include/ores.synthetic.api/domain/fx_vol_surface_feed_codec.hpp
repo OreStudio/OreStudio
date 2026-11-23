@@ -76,6 +76,8 @@ namespace ores::synthetic::domain {
         utility::codec::field{"start_curvature", &fx_vol_surface_feed::start_curvature},
         utility::codec::field{"spot_oresmd_uri", &fx_vol_surface_feed::spot_oresmd_uri},
         utility::codec::field{"spot_provider_code", &fx_vol_surface_feed::spot_provider_code},
+        utility::codec::field{"base_curve_name", &fx_vol_surface_feed::base_curve_name},
+        utility::codec::field{"quote_curve_name", &fx_vol_surface_feed::quote_curve_name},
         utility::codec::field{"modified_by", &fx_vol_surface_feed::modified_by},
         utility::codec::field{"performed_by", &fx_vol_surface_feed::performed_by},
         utility::codec::field{"change_reason_code", &fx_vol_surface_feed::change_reason_code},

@@ -67,6 +67,8 @@ create table if not exists "ores_synthetic_fx_vol_surface_feeds_tbl" (
     "start_curvature" double precision not null,
     "spot_oresmd_uri" text not null,
     "spot_provider_code" text not null,
+    "base_curve_name" text not null,
+    "quote_curve_name" text not null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -97,7 +99,9 @@ create table if not exists "ores_synthetic_fx_vol_surface_feeds_tbl" (
     check ("segment_correlation" >= 0 and "segment_correlation" < 1),
     check ("start_skew" > -1 and "start_skew" < 1),
     check ("start_curvature" > 0 and "start_curvature" < 1.4142135623730951),
-    check ("spot_oresmd_uri" like 'oresmd://fx/%')
+    check ("spot_oresmd_uri" like 'oresmd://fx/%'),
+    check ("base_curve_name" like 'synthetic.%'),
+    check ("quote_curve_name" like 'synthetic.%')
 );
 
 -- Composite natural key: unique combination for active records

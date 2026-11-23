@@ -979,13 +979,15 @@ begin
     if not exists (
         select 1 from {{domain_entity.sql_name_base}}_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
-          and {{domain_entity.primary_key.column}} = p_value
+          and {{domain_entity.primary_key.column}} = p_value{{#domain_entity.sql.rls_shared_read_condition}}
+          and (p_tenant_id = ores_utility_system_tenant_id_fn() or ({{{domain_entity.sql.rls_shared_read_condition}}})){{/domain_entity.sql.rls_shared_read_condition}}
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         raise exception 'Invalid {{domain_entity.entity_singular}}: %. Must be one of: %', p_value, (
             select string_agg({{domain_entity.primary_key.column}}::text, ', ' order by {{domain_entity.validation_fn.order_by}})
             from {{domain_entity.sql_name_base}}_tbl
-            where tenant_id = ores_utility_system_tenant_id_fn()
+            where tenant_id = ores_utility_system_tenant_id_fn(){{#domain_entity.sql.rls_shared_read_condition}}
+              and (p_tenant_id = ores_utility_system_tenant_id_fn() or ({{{domain_entity.sql.rls_shared_read_condition}}})){{/domain_entity.sql.rls_shared_read_condition}}
               and valid_to = ores_utility_infinity_timestamp_fn()
         ) using errcode = '23503';
     end if;
@@ -1204,7 +1206,8 @@ create policy {{domain_entity.rls_table_base}}_tbl_shared_reference_read_policy
 on {{domain_entity.sql_name_base}}_tbl
 for select using (
     tenant_id = ores_iam_current_tenant_id_fn()
-    or tenant_id = ores_utility_system_tenant_id_fn()
+    or tenant_id = ores_utility_system_tenant_id_fn(){{#domain_entity.sql.rls_shared_read_condition}}
+       and ({{{domain_entity.sql.rls_shared_read_condition}}}){{/domain_entity.sql.rls_shared_read_condition}}
 );
 {{/domain_entity.sql.rls_own_or_system_tenant_rows}}
 {{#domain_entity.sql.rls_service_read_role}}

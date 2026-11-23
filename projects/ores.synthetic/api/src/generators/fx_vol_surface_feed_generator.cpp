@@ -75,6 +75,8 @@ generate_synthetic_fx_vol_surface_feed(utility::generation::generation_context& 
     r.spot_oresmd_uri =
         std::string("oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD");
     r.spot_provider_code = std::string("bloomberg");
+    r.base_curve_name = std::string("synthetic.bloomberg.ir.yield_curve.estr.eur");
+    r.quote_curve_name = std::string("synthetic.bloomberg.ir.yield_curve.sofr.usd");
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

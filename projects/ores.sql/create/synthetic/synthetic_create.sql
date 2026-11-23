@@ -88,4 +88,5 @@
 \ir ./synthetic_feed_placement_create.sql
 
 -- Publish-from-DQ
+\ir ./synthetic_feed_names_create.sql
 \ir ./synthetic_publish_from_dq_create.sql

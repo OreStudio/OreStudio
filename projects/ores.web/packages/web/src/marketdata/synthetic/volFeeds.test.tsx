@@ -35,7 +35,6 @@ import {
     completeVolFeed,
     tenorDays,
     upstreamsOf,
-    volSource,
 } from './volFeeds.js';
 
 const FEED_ID = '77777777-7777-4777-8777-777777777777';
@@ -88,7 +87,7 @@ const feed: RecordRow = {
     config_id: '88888888-8888-4888-8888-888888888888',
     base_currency_code: 'EUR',
     quote_currency_code: 'USD',
-    source_name: 'synthetic.bloomberg.vol.eurusd',
+    source_name: 'synthetic.latent.fx.fx_vol_surface.eurusd',
     ticks_per_hour: 12,
     enabled: true,
     auto_start: true,
@@ -109,6 +108,8 @@ const feed: RecordRow = {
     start_curvature: 0.8,
     spot_oresmd_uri: 'oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD',
     spot_provider_code: 'bloomberg',
+    base_curve_name: 'synthetic.eur-discount',
+    quote_curve_name: 'synthetic.usd-discount',
     provider_code: 'bloomberg',
 };
 
@@ -210,7 +211,7 @@ const writer = (client: QueryClient): void => {
 describe('the vol surface feed screens', () => {
     it('shows a surface feed with the tabs of the FX and IR feeds and its own', () => {
         const html = render(`/market-data/synthetic/vol/${FEED_ID}`, writer);
-        expect(html).toContain('synthetic.bloomberg.vol.eurusd');
+        expect(html).toContain('synthetic.latent.fx.fx_vol_surface.eurusd');
         expect(html).toContain('SSVI');
         for (const tab of ['Surface', 'Expiries', 'Contributors', 'Arrivals', 'History']) {
             expect(html).toContain(`>${tab}<`);
@@ -260,7 +261,7 @@ describe('the vol surface feed screens', () => {
     });
 
     it('never writes the gamma that the start card edit dialog shows', () => {
-        const write = completeVolFeed({ ...feed, gamma: '0.5' });
+        const write = completeVolFeed({ ...feed, gamma: '0.5' }, 'latent');
         expect(write).not.toHaveProperty('gamma');
     });
 
@@ -323,16 +324,19 @@ describe('what a vol surface reads', () => {
         expect(spot?.row?.['id']).toBe('spot-bbg');
     });
 
-    it("names each currency's discounting curve in the surface's own collection", () => {
+    it('names the two discounting curves the surface stores, not ones a rule finds', () => {
         const [, base, quote] = upstreamsOf(feed, spots, collections, curves);
         expect(base?.row?.['id']).toBe('eur-discount');
         expect(quote?.row?.['id']).toBe('usd-discount');
     });
 
     it('fills the spot URI from the pair when the person leaves it blank', () => {
-        const write = completeVolFeed({ base_currency_code: 'EUR', quote_currency_code: 'USD' });
+        const write = completeVolFeed(
+            { base_currency_code: 'EUR', quote_currency_code: 'USD' },
+            'latent',
+        );
         expect(write['spot_oresmd_uri']).toBe(SPOT_URI);
-        const kept = completeVolFeed({ ...feed, spot_oresmd_uri: 'oresmd://fx/X' });
+        const kept = completeVolFeed({ ...feed, spot_oresmd_uri: 'oresmd://fx/X' }, 'latent');
         expect(kept['spot_oresmd_uri']).toBe('oresmd://fx/X');
     });
 
@@ -396,14 +400,19 @@ describe('a vol surface feed among the other feeds', () => {
         );
     });
 
-    it('names a new surface apart from its pair spot feed', () => {
-        expect(volSource('', 'EUR', 'USD')).toBe('synthetic.vol.eurusd');
-        expect(volSource('bloomberg.vol.eurusd', 'EUR', 'USD')).toBe(
-            'synthetic.bloomberg.vol.eurusd',
-        );
+    it('names a new surface by the scheme, under its collection source', () => {
         expect(
-            completeVolFeed({ base_currency_code: 'GBP', quote_currency_code: 'USD' }),
-        ).toMatchObject({ source_name: 'synthetic.vol.gbpusd', asset_class_code: 'fx' });
+            completeVolFeed({ base_currency_code: 'GBP', quote_currency_code: 'USD' }, 'latent'),
+        ).toMatchObject({
+            source_name: 'synthetic.latent.fx.fx_vol_surface.gbpusd',
+            asset_class_code: 'fx',
+        });
+        expect(
+            completeVolFeed(
+                { base_currency_code: 'GBP', quote_currency_code: 'USD', source_name: 'desk.vol' },
+                'latent',
+            ),
+        ).toMatchObject({ source_name: 'synthetic.desk.vol' });
     });
 
     it('refuses a surface value outside the bound its table checks, before the save', () => {

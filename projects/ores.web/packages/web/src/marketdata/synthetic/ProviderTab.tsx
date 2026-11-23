@@ -70,7 +70,7 @@ export function ProviderTab(): ReactNode {
     const { collections, loaded, error } = useCollections();
     const facts = useProviderFacts();
     const sources = useSources();
-    const providers = providersOf(collections);
+    const providers = providersOf(collections, facts);
     const chosen = params.get('provider') ?? '';
     const entry: ProviderEntry | undefined =
         providers.find((one) => one.code === chosen) ?? providers[0];

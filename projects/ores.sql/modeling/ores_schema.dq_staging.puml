@@ -2153,6 +2153,10 @@ package "dq_staging" #F3E5F5 {
         * segment_correlation : double
         * start_skew : double
         * start_curvature : double
+        * spot_oresmd_uri : text
+        * spot_provider_code : text
+        * base_curve_name : text
+        * quote_curve_name : text
     }
 
     note right of ores_dq_fx_vol_surface_feeds_artefact_tbl

@@ -92,7 +92,8 @@ public:
      * <branching_ratio> <decay> <sensitivity> <skew_reversion> <skew_volatility>
      * <curvature_reversion> <curvature_volatility> <spot_variance_correlation>
      * <spot_skew_correlation> <segment_correlation> <start_skew> <start_curvature>
-     * <spot_oresmd_uri> <spot_provider_code> <reason> <commentary>
+     * <spot_oresmd_uri> <spot_provider_code> <base_curve_name> <quote_curve_name> <reason>
+     * <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -104,7 +105,8 @@ public:
      * <branching_ratio> <decay> <sensitivity> <skew_reversion> <skew_volatility>
      * <curvature_reversion> <curvature_volatility> <spot_variance_correlation>
      * <spot_skew_correlation> <segment_correlation> <start_skew> <start_curvature>
-     * <spot_oresmd_uri> <spot_provider_code> <reason> <commentary> [--version <n>]
+     * <spot_oresmd_uri> <spot_provider_code> <base_curve_name> <quote_curve_name> <reason>
+     * <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -116,7 +118,8 @@ public:
      * <arrival_mode> <branching_ratio> <decay> <sensitivity> <skew_reversion> <skew_volatility>
      * <curvature_reversion> <curvature_volatility> <spot_variance_correlation>
      * <spot_skew_correlation> <segment_correlation> <start_skew> <start_curvature>
-     * <spot_oresmd_uri> <spot_provider_code> <reason> <commentary>
+     * <spot_oresmd_uri> <spot_provider_code> <base_curve_name> <quote_curve_name> <reason>
+     * <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

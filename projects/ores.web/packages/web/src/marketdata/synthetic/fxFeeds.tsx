@@ -27,6 +27,7 @@ import { OresmdUrl } from '../../oresmd/OresmdUrl.js';
 import { show, type FieldSpec, type FieldValues } from '../../refdata/records.js';
 import { syntheticStore } from '../../refdata/store.js';
 import { FeedPage } from './FeedScreens.js';
+import { fxSpotName } from './feedNames.js';
 import { feedPath, type FeedKind } from './feedKind.js';
 import { COMPONENTS, MixturePanel } from './MixturePanel.js';
 import { ArrivalsTab } from './ArrivalsPanel.js';
@@ -229,12 +230,11 @@ function pairOf(feed: Readonly<Record<string, unknown>>): string {
 export const SYNTHETIC_MARK = 'synthetic.';
 
 /**
- * A feed's source name: the pair under the synthetic mark when none is given,
- * and the given name under the mark when it lacks it. The table refuses a
- * source name without it.
+ * A feed's source name: the scheme's name when none is given, and the given name under the
+ * synthetic mark when it lacks it. The table refuses a source name without it.
  */
-export function syntheticSource(given: string, base: string, quote: string): string {
-    const name = given.trim() === '' ? `${base}${quote}`.toLowerCase() : given.trim();
+export function syntheticSource(given: string, scheme: string): string {
+    const name = given.trim() === '' ? scheme : given.trim();
     return name.startsWith(SYNTHETIC_MARK) ? name : `${SYNTHETIC_MARK}${name}`;
 }
 
@@ -242,13 +242,16 @@ export function syntheticSource(given: string, base: string, quote: string): str
  * The fields that follow from the others: the oresmd URI from the pair, and a
  * source name under the synthetic mark, from the pair when none is given.
  */
-export function completeFeed(write: Readonly<Record<string, unknown>>): Record<string, unknown> {
+export function completeFeed(
+    write: Readonly<Record<string, unknown>>,
+    source: string,
+): Record<string, unknown> {
     const base = show(write['base_currency_code']);
     const quote = show(write['quote_currency_code']);
     return {
         ...write,
         oresmd_uri: `oresmd://fx/${base}?type=quote&instrument=fx_spot&quote=rate&ccy=${quote}`,
-        source_name: syntheticSource(show(write['source_name']), base, quote),
+        source_name: syntheticSource(show(write['source_name']), fxSpotName(source, base, quote)),
     };
 }
 

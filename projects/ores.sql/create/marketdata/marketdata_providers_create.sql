@@ -66,7 +66,7 @@ create table if not exists "ores_marketdata_providers_tbl" (
     check ("valid_from" < "valid_to"),
     check ("code" <> ''),
     check ("code" ~ '^[a-z][a-z0-9_-]*$'),
-    check ("kind" in ('data_vendor', 'exchange', 'broker', 'reference')),
+    check ("kind" in ('data_vendor', 'exchange', 'broker', 'reference', 'system')),
     check ("name" <> ''),
     check ("terms_accepted_digest" = '' or (coalesce("terms_accepted_by", '') <> '' and "terms_accepted_at" is not null))
 );
@@ -215,12 +215,14 @@ begin
         select 1 from ores_marketdata_providers_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
           and code = p_value
+          and (p_tenant_id = ores_utility_system_tenant_id_fn() or (kind <> 'system'))
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         raise exception 'Invalid provider: %. Must be one of: %', p_value, (
             select string_agg(code::text, ', ' order by display_order)
             from ores_marketdata_providers_tbl
             where tenant_id = ores_utility_system_tenant_id_fn()
+              and (p_tenant_id = ores_utility_system_tenant_id_fn() or (kind <> 'system'))
               and valid_to = ores_utility_infinity_timestamp_fn()
         ) using errcode = '23503';
     end if;
@@ -260,4 +262,5 @@ on ores_marketdata_providers_tbl
 for select using (
     tenant_id = ores_iam_current_tenant_id_fn()
     or tenant_id = ores_utility_system_tenant_id_fn()
+       and (kind <> 'system')
 );

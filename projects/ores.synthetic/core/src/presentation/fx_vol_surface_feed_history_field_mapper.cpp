@@ -71,6 +71,8 @@ render_fx_vol_surface_feed_fields(const domain::fx_vol_surface_feed& v) {
     fields.push_back({.name = "Start Curvature", .value = std::to_string(v.start_curvature)});
     fields.push_back({.name = "Spot Oresmd Uri", .value = v.spot_oresmd_uri});
     fields.push_back({.name = "Spot Provider Code", .value = v.spot_provider_code});
+    fields.push_back({.name = "Base Curve Name", .value = v.base_curve_name});
+    fields.push_back({.name = "Quote Curve Name", .value = v.quote_curve_name});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

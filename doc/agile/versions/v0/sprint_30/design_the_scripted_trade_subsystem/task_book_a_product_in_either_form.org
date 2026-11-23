@@ -26,11 +26,11 @@ The trading service books a product in any form it offers, and a free-form scrip
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:E6359881-7919-4BBC-9B9C-03A8EEDB8A03][Design the scripted trade subsystem]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-21                               |
 
 * Acceptance
@@ -149,8 +149,27 @@ via its "Verifies task" field.
 
 * Result
 
-In progress: PR 1 is in. =trading.v1.ops.validate_script= parses a library
-script, as the caller's tenant resolves its name and version, or an inline
-script, and checks a trade's variables against its inputs, with structured
-findings by line and column or by variable. The twin recipe evaluator's move,
-the trade's product and form, =book_scripted=, =book= and the routes follow.
+The trading service books a product in any form it offers, and a free-form
+scripted trade, through one set of operations, and both servers serve them:
+
+- =validate_script= parses a library script, as the caller's tenant resolves its
+  name and version, or an inline script, with ORE's grammar, and checks the
+  trade's variables, with findings located by line and column or by variable
+  (PR #5062);
+- the twin recipe evaluator lives in =ores.trading.api= (PR #5063);
+- a trade records the product it was booked as and its form, in a
+  =trade_product= row of its own (PR #5068);
+- =book_scripted= books a library script by version or an inline script, refused
+  with every finding when the validation holds an error; warnings alone book; an
+  inline script needs the permission to write scripts (PR #5070);
+- =book_product= books a product type in its native form, or in its scripted
+  form through its twin recipe (PR #5071);
+- =ores.http= and the BFF serve the operations under =/api/trading/booking=, and
+  the form a trade was booked in, with the script version the store pinned (this
+  PR).
+
+One acceptance line is met in part, as decided with the user on 2026-11-23: the
+terms of =book_product= are the product's native rows, checked to route to the
+trade type and to state the script's inputs, not validated field by field
+against the schema, whose enumerations hold their values only as text. PR #5072
+repaired the web packages #5070 left unbuilt.

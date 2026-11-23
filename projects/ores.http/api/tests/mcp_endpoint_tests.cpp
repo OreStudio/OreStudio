@@ -51,7 +51,7 @@ public:
     }
 
     boost::asio::awaitable<std::optional<tool_result>>
-    call(const http_request&, std::string_view name, const json_value& arguments) const override {
+    call(const http_request&, std::string_view name, json_value arguments) const override {
         if (name == "fail")
             throw std::runtime_error("broken");
         if (name != "echo")

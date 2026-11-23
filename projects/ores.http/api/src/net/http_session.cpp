@@ -86,27 +86,6 @@ std::string forwarded_for_of(const boost::beast::http::fields& fields) {
     return out;
 }
 
-/// The method as a recorded call names it.
-std::string_view recorded_method_name(domain::http_method method) {
-    switch (method) {
-        case domain::http_method::get:
-            return "GET";
-        case domain::http_method::post:
-            return "POST";
-        case domain::http_method::put:
-            return "PUT";
-        case domain::http_method::patch:
-            return "PATCH";
-        case domain::http_method::delete_:
-            return "DELETE";
-        case domain::http_method::head:
-            return "HEAD";
-        case domain::http_method::options:
-            return "OPTIONS";
-    }
-    return "UNKNOWN";
-}
-
 /// Methods that change something, and so need proof of intent.
 bool changes_something(domain::http_method method) {
     switch (method) {
@@ -910,7 +889,7 @@ asio::awaitable<void> http_session::handle_request(domain::http_request domain_r
     if (bearer_was_exchanged && credentials_.record && domain_req.authenticated_user) {
         const domain::exchanged_call call{
             .claims = *domain_req.authenticated_user,
-            .method = std::string(recorded_method_name(domain_req.method)),
+            .method = std::string(domain::method_name(domain_req.method)),
             .route = matched->pattern,
             .status = static_cast<int>(response.status),
             .duration = std::chrono::duration_cast<std::chrono::milliseconds>(

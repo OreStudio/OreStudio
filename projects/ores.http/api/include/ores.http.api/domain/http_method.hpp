@@ -21,6 +21,7 @@
 #define ORES_HTTP_DOMAIN_HTTP_METHOD_HPP
 
 #include <cstdint>
+#include <string_view>
 
 namespace ores::http::domain {
 
@@ -28,6 +29,29 @@ namespace ores::http::domain {
  * @brief HTTP methods supported by the server.
  */
 enum class http_method : std::uint8_t { get, post, put, patch, delete_, head, options };
+
+/**
+ * @brief The method as a caller of the API spells it.
+ */
+inline std::string_view method_name(http_method method) {
+    switch (method) {
+        case http_method::get:
+            return "GET";
+        case http_method::post:
+            return "POST";
+        case http_method::put:
+            return "PUT";
+        case http_method::patch:
+            return "PATCH";
+        case http_method::delete_:
+            return "DELETE";
+        case http_method::head:
+            return "HEAD";
+        case http_method::options:
+            return "OPTIONS";
+    }
+    return "UNKNOWN";
+}
 
 }
 

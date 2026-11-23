@@ -119,6 +119,13 @@ struct feed_kind_candidate final {
      * points. Other kinds leave both empty.
      */
     std::vector<ores::marketdata::vendor::fx_option_quote> option_points;
+    /**
+     * @brief The address of the fixings a curve states its index's rate for, or nothing.
+     *
+     * The simulated fixing publisher fixes the index from that rate. Other kinds, and a
+     * meeting-dated curve, leave it empty.
+     */
+    std::optional<std::string> fixing_item;
     std::map<std::string, std::string> contributor_providers;
 
     /**

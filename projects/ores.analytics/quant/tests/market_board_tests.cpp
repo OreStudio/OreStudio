@@ -199,3 +199,20 @@ TEST_CASE("adding a member leaves the ones before it where they were", "[market_
     REQUIRE(view.points.size() == 3);
     CHECK(view.points.front().date == board_spot_date);
 }
+
+TEST_CASE("an index rate publishes its rate and reads it back", "[market_board]") {
+    market_board board;
+    const auto id = board.member_of(market_member_kind::index_rate,
+                                    "oresmd://ir/USD?type=fixing&index=ibor&name=SOFR");
+    const auto spot = board.member_of(market_member_kind::spot, "EURUSD");
+    const auto at = board_clock::time_point(std::chrono::seconds(3'000));
+
+    board.publish_rate(id, 0.0431, at);
+    const auto view = board.view(id);
+    CHECK(view.kind == market_member_kind::index_rate);
+    CHECK(view.published);
+    CHECK(view.published_at == at);
+    CHECK(view.spot == Catch::Approx(0.0431).epsilon(1e-15));
+    CHECK_THROWS_AS(board.publish_rate(spot, 0.04, at), std::invalid_argument);
+    CHECK_THROWS_AS(board.publish_spot(id, 0.04, at), std::invalid_argument);
+}

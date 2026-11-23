@@ -189,6 +189,9 @@ std::string ir_curve_feed::tick(const ores::analytics::quant::service::tick_cont
         append_curve_points(board_spot_date_, entries_, *process_, board_points_);
         market_.values().publish_curve(*board_member_, board_spot_date_, board_points_, now);
     }
+    if (index_rate_member_)
+        if (const auto rate = index_rate())
+            market_.values().publish_rate(*index_rate_member_, *rate, now);
 
     for (std::size_t i = 0; i < entries_.size(); ++i) {
         const auto& e = entries_[i];
@@ -250,12 +253,9 @@ std::optional<double> ir_curve_feed::index_rate() const {
     return std::nullopt;
 }
 
-void ir_curve_feed::plan_fixings(std::string index_uri,
-                                 double level,
-                                 std::chrono::year_month_day as_of,
-                                 std::uint64_t run_seed) {
-    fixings_ = fixing_plan{
-        .index_uri = std::move(index_uri), .level = level, .as_of = as_of, .run_seed = run_seed};
+void ir_curve_feed::state_index_rate(const std::string& index_uri) {
+    index_rate_member_ = market_.values().member_of(
+        ores::analytics::quant::domain::market_member_kind::index_rate, index_uri);
 }
 
 const std::string& ir_curve_feed::published_subject() const {
@@ -486,19 +486,14 @@ std::shared_ptr<ir_curve_feed> make_ir_curve_feed(
         refctx.spot);
     feed->record_start_source(std::move(record));
 
-    // The curve also states the fixings of its own index, because a generated leg that has
-    // already reset needs them and no publisher fixes these indices.
+    // The curve states the rate of its own index on the board, where the simulated fixing
+    // publisher fixes the index from it. A meeting-dated curve states none.
     if (cfg.tenor != "FOMC") {
-        if (const auto uri = curve_fixing_uri(cfg); !uri) {
+        if (const auto uri = curve_fixing_uri(cfg); !uri)
             ORES_LOG_SEV(ir_curve_feed_lg(), warn)
-                << "Curve " << cfg.source_name << " states no fixings: " << uri.error();
-        } else if (const auto level = feed->index_rate(); !level) {
-            ORES_LOG_SEV(ir_curve_feed_lg(), info)
-                << "Curve " << cfg.source_name << " states no fixings of '" << *uri
-                << "': it has no deposit at the index tenor";
-        } else {
-            feed->plan_fixings(*uri, *level, refctx.spot, market.loop().run_seed());
-        }
+                << "Curve " << cfg.source_name << " states no index rate: " << uri.error();
+        else
+            feed->state_index_rate(*uri);
     }
     return feed;
 }

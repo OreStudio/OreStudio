@@ -21,7 +21,7 @@
 #include "../derived_fx_vol_adapter.hpp"
 #include "../feed_kind_registry.hpp"
 #include "../feed_node_journal.hpp"
-#include "../fixing_history_writer.hpp"
+#include "../fixing_inputs.hpp"
 #include "../generator_fleet.hpp"
 #include "../generator_runner.hpp"
 #include "../registrar.hpp"
@@ -109,8 +109,8 @@ make_adapters(const std::vector<ores::marketdata::domain::feed>& sources,
               const feed_kind_registry& registry,
               const ores::synthetic::feed::feed_build_context& build,
               const std::shared_ptr<ores::synthetic::feed::fault_state>& faults,
-              const generator_runner::started_hook& started,
-              const node_halted_fn& node_halted) {
+              const node_halted_fn& node_halted,
+              const fixing_offer_inputs* fixings) {
     std::vector<simulated_adapter> out;
     for (const auto& source : sources) {
         if (source.session_code != "synthetic-local")
@@ -126,12 +126,12 @@ make_adapters(const std::vector<ores::marketdata::domain::feed>& sources,
              surfaces = &generators.surfaces(),
              name = source.name,
              provider = source.publisher_code,
-             node_halted] {
+             node_halted,
+             fixings] {
                 return system_generator_offers(
-                    registry, ctx, build, name, provider, faults, surfaces, node_halted);
+                    registry, ctx, build, name, provider, faults, surfaces, node_halted, fixings);
             },
-            &generators.running_names(),
-            started);
+            &generators.running_names());
         one.adapter = std::make_unique<simulator_adapter>(nats,
                                                           *one.runner,
                                                           source.name,
@@ -172,7 +172,6 @@ public:
         , build_(build)
         , faults_(std::move(faults))
         , journal_(std::move(journal))
-        , fixings_(db_ctx, svc_nats)
         , worker_([this](ores::platform::concurrency::stop_token stop) { run(stop); }) {}
 
     ~adapter_fleet() override {
@@ -416,15 +415,8 @@ private:
     // Builds and starts every adapter before any is kept, so a failed start leaves none running.
     // A source an operator stopped is built and kept, but not started.
     void start_all(const std::vector<ores::marketdata::domain::feed>& sources) {
-        // A curve that states the fixings of its own index hands them to the writer, which keeps
-        // them in the market beside whatever a publisher fixes for the same index.
-        const auto started = [writer = &fixings_](const ores::marketdata::domain::i_feed& feed) {
-            const auto* curve = dynamic_cast<const ores::synthetic::feed::ir_curve_feed*>(&feed);
-            if (curve == nullptr)
-                return;
-            if (const auto& plan = curve->fixings_plan(); plan)
-                writer->enqueue(*plan);
-        };
+        // The simulated fixing publisher reads each pair's cut and the days the market holds.
+        fixing_inputs_ = read_fixing_offer_inputs(db_ctx_, svc_nats_);
         {
             const std::lock_guard lock(nodes_mu_);
             stopped_nodes_ = stopped_rows(false);
@@ -432,15 +424,16 @@ private:
         // Seeded before the adapters are built, so no halted node is offered even once; the
         // sources' own stops join once the adapters are in.
         halt_what_the_stops_starve();
-        auto built = make_adapters(sources,
-                                   db_ctx_,
-                                   nats_,
-                                   generators_,
-                                   registry_,
-                                   build_,
-                                   faults_,
-                                   started,
-                                   [this](const std::string& name) { return node_halted(name); });
+        auto built = make_adapters(
+            sources,
+            db_ctx_,
+            nats_,
+            generators_,
+            registry_,
+            build_,
+            faults_,
+            [this](const std::string& name) { return node_halted(name); },
+            &fixing_inputs_);
         const auto stopped = stopped_rows(true);
         std::size_t attempted = 0;
         try {
@@ -528,8 +521,8 @@ private:
     const ores::synthetic::feed::feed_build_context& build_;
     std::shared_ptr<ores::synthetic::feed::fault_state> faults_;
     std::shared_ptr<feed_node_journal> journal_;
-    /// The fixings the curves state, written beside whatever a publisher fixes for the index.
-    fixing_history_writer fixings_;
+    /// What the simulated fixing publisher's offers read: each pair's cut and the held days.
+    fixing_offer_inputs fixing_inputs_;
     // Guards the adapters against an operator's stop or start while the worker builds them.
     mutable std::mutex mu_;
     std::vector<simulated_adapter> adapters_;
@@ -658,8 +651,10 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     // The run's one market: its loop decides when every feed ticks, its noise is the
     // correlation between them, and its values are what they publish for each other. The
     // aggregate owns all three, so the driver hook it installs points at what it outlives.
+    // The board holds a curve for each currency, a spot for each pair and the rate of each
+    // index a curve fixes, so it is sized past the default.
     ores::analytics::quant::service::run_market run_market_of_the_run(
-        run_clock, market, cfg.run_seed);
+        run_clock, market, cfg.run_seed, 512);
     auto& scheduler = run_market_of_the_run.loop();
     scheduler.set_hooks([](std::uint64_t, const std::string&) {},
                         [](const std::exception& ex) {

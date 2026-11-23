@@ -28,7 +28,8 @@ The DQ reads the screens need answer on ores.http, so a DQ screen runs on the su
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:7D2BBBBC-36A3-4BFB-9673-0F9005991D94][Take the DQ pipeline end to end, from a seeded artefact table to a published system]] |
-| Now          | Clocked on. There is no DQ part on ores.http, and the BFF is not served. |
+| Now          | The part exists and its four route units are generated: the facet is on the dataset, dataset bundle, bundle member and artefact type models, the aggregate is hand-written, and the server registers it. The build is running and has not been called green. |
+| Waiting on   | Nothing. The route-area rule and the part's diagram are next. |
 | Waiting on   | Nothing.                               |
 | Next         | The DQ reads the coverage screen needs, on ores.http. |
 | Last touched | 2026-11-22                               |

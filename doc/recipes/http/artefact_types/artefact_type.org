@@ -1,0 +1,244 @@
+:PROPERTIES:
+:ID: 91845E51-131E-5C5A-89A3-1261457C1A17
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: http_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I call the artefact_types endpoints over HTTP?
+#+description: Every endpoint the artefact_types resource answers over HTTP, with the request each one exports into the gateway's recipe library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:http:artefact_types:
+
+This file documents the artefact_types resource over HTTP, one section per endpoint. Every section exports its own Hurl file into =projects/ores.http/scripts/library/=. Running a file sends that one request, so a failure names the endpoint it came from.
+
+* Endpoints
+
+** =GET /api/v1/dq/artefact_types=
+:PROPERTIES:
+:ID: 2B3F19CF-EFBD-555D-A62D-BAE234C19357
+:END:
+
+List artefact types. It needs a session.
+
+It forwards to =dq.v1.artefact_types.list=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/dq/artefact_types
+#+end_example
+
+#+name: artefact_types-list
+#+begin_src hurl :tangle artefact_types-list.hurl :exports none
+GET {{base_url}}/api/v1/dq/artefact_types
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/dq/artefact_types/__none__=
+:PROPERTIES:
+:ID: 0F3E497B-B86A-5BD5-AECD-700D35EF1571
+:END:
+
+Get one artefact type. It needs a session.
+
+It forwards to =dq.v1.artefact_types.get=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/dq/artefact_types/__none__
+#+end_example
+
+#+name: artefact_types-get
+#+begin_src hurl :tangle artefact_types-get.hurl :exports none
+GET {{base_url}}/api/v1/dq/artefact_types/__none__
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/dq/artefact_types/get-many=
+:PROPERTIES:
+:ID: 911F3C0D-2B87-5FC6-AA85-50F18EFDA274
+:END:
+
+Get many artefact types. It needs a session.
+
+It forwards to =dq.v1.artefact_types.get_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/dq/artefact_types/get-many
+#+end_example
+
+#+name: artefact_types-get-many
+#+begin_src hurl :tangle artefact_types-get-many.hurl :exports none
+POST {{base_url}}/api/v1/dq/artefact_types/get-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/dq/artefact_types=
+:PROPERTIES:
+:ID: 88062174-60AF-5F40-94BA-8DAAF2153368
+:END:
+
+Create one artefact type. It needs a session.
+
+It forwards to =dq.v1.artefact_types.put=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/dq/artefact_types
+#+end_example
+
+#+name: artefact_types-add
+#+begin_src hurl :tangle artefact_types-add.hurl :exports none
+POST {{base_url}}/api/v1/dq/artefact_types
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =PUT /api/v1/dq/artefact_types=
+:PROPERTIES:
+:ID: D1B9689A-311B-57AD-95EF-9D7895BF33D4
+:END:
+
+Replace one artefact type. It needs a session.
+
+It forwards to =dq.v1.artefact_types.put=.
+
+The request is:
+
+#+begin_example
+PUT /api/v1/dq/artefact_types
+#+end_example
+
+#+name: artefact_types-set
+#+begin_src hurl :tangle artefact_types-set.hurl :exports none
+PUT {{base_url}}/api/v1/dq/artefact_types
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/dq/artefact_types/put-many=
+:PROPERTIES:
+:ID: A3E0F8B5-EFC0-5D1E-A43E-804F04BC1414
+:END:
+
+Write many artefact types. It needs a session.
+
+It forwards to =dq.v1.artefact_types.put_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/dq/artefact_types/put-many
+#+end_example
+
+#+name: artefact_types-put-many
+#+begin_src hurl :tangle artefact_types-put-many.hurl :exports none
+POST {{base_url}}/api/v1/dq/artefact_types/put-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =DELETE /api/v1/dq/artefact_types/__none__=
+:PROPERTIES:
+:ID: 7F0EB796-6809-597D-B7B9-1688633378A8
+:END:
+
+Delete one artefact type. It needs a session.
+
+It forwards to =dq.v1.artefact_types.delete=.
+
+The request is:
+
+#+begin_example
+DELETE /api/v1/dq/artefact_types/__none__
+#+end_example
+
+#+name: artefact_types-delete
+#+begin_src hurl :tangle artefact_types-delete.hurl :exports none
+DELETE {{base_url}}/api/v1/dq/artefact_types/__none__
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/dq/artefact_types/delete-many=
+:PROPERTIES:
+:ID: 47F12C78-D2D2-5229-AEF9-B1BC1D77A4E3
+:END:
+
+Delete many artefact types. It needs a session.
+
+It forwards to =dq.v1.artefact_types.delete_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/dq/artefact_types/delete-many
+#+end_example
+
+#+name: artefact_types-delete-many
+#+begin_src hurl :tangle artefact_types-delete-many.hurl :exports none
+POST {{base_url}}/api/v1/dq/artefact_types/delete-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/dq/artefact_types/__none__/versions=
+:PROPERTIES:
+:ID: 7DCDBC30-0993-534A-B384-2E04C6AB9D69
+:END:
+
+List the recorded versions of one artefact type. It needs a session.
+
+It forwards to =dq.v1.artefact_types_versions.list=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/dq/artefact_types/__none__/versions
+#+end_example
+
+#+name: artefact_types-versions
+#+begin_src hurl :tangle artefact_types-versions.hurl :exports none
+GET {{base_url}}/api/v1/dq/artefact_types/__none__/versions
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/dq/artefact_types/__none__/versions/0=
+:PROPERTIES:
+:ID: 34781021-709B-5BFC-9B10-14CC86063761
+:END:
+
+Get one recorded version of one artefact type. It needs a session.
+
+It forwards to =dq.v1.artefact_types_versions.get=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/dq/artefact_types/__none__/versions/0
+#+end_example
+
+#+name: artefact_types-version
+#+begin_src hurl :tangle artefact_types-version.hurl :exports none
+GET {{base_url}}/api/v1/dq/artefact_types/__none__/versions/0
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+

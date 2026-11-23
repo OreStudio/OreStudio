@@ -8,7 +8,7 @@
 #+filetags: :every_floating_index_has_a_curve_and_fixings:sprint_30:v0:
 #+owner: marco
 #+branch: feature/add-a-time-of-day-column-type
-#+pr:
+#+pr: 5052
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-22
@@ -109,7 +109,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5052][#5052]] | [refdata] Hold the fixing sources and their cuts, with a time-of-day column type |
 
 * Review
 

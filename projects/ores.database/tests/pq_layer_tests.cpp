@@ -736,3 +736,11 @@ TEST_CASE("a time with a fraction of a second is not a time of day", "[pq]") {
     const auto bytes = std::as_bytes(std::span(half_past_noon.data(), half_past_noon.size()));
     CHECK_THROWS(codec<ores::platform::time::time_of_day>::decode(bytes));
 }
+
+TEST_CASE("a server time of 24:00:00 is not a time of day", "[pq]") {
+    std::string midnight_at_the_end;
+    wire::put_u64(midnight_at_the_end, 86'400'000'000);
+    const auto bytes =
+        std::as_bytes(std::span(midnight_at_the_end.data(), midnight_at_the_end.size()));
+    CHECK_THROWS(codec<ores::platform::time::time_of_day>::decode(bytes));
+}

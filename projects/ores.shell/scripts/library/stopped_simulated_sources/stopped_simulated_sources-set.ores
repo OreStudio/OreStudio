@@ -1,6 +1,0 @@
-# =set=
-#
-# GENERATED from doc/recipes/shell/stopped_simulated_sources/stopped_simulated_source.org — do not edit by hand.
-# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
-#
-stopped_simulated_sources set __none__ __none__ system.new_record generated_script

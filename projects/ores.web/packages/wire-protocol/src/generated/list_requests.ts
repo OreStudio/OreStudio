@@ -5459,12 +5459,12 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: [],
         rows: ['sources'],
     },
-    'synthetic.v1.stopped_simulated_sources.list': {
+    'synthetic.v1.stopped_feed_nodes.list': {
         asOf: true,
-        filter: ['source_name_one_of'],
-        rows: ['stopped_sources'],
+        filter: ['node_name_one_of'],
+        rows: ['stopped_nodes'],
     },
-    'synthetic.v1.stopped_simulated_sources_versions.list': {
+    'synthetic.v1.stopped_feed_nodes_versions.list': {
         asOf: false,
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],

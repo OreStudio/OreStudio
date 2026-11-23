@@ -1,0 +1,6 @@
+# =version=
+#
+# GENERATED from doc/recipes/shell/stopped_feed_nodes/stopped_feed_node.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+stopped_feed_nodes version __none__ --version 1

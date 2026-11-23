@@ -60,8 +60,8 @@
 #include "ores.synthetic.core/messaging/market_data_provider_history_provider_registrar.hpp"
 #include "ores.synthetic.core/messaging/market_data_provider_registrar.hpp"
 #include "ores.synthetic.core/messaging/publish_from_dq_handler.hpp"
-#include "ores.synthetic.core/messaging/stopped_simulated_source_history_provider_registrar.hpp"
-#include "ores.synthetic.core/messaging/stopped_simulated_source_registrar.hpp"
+#include "ores.synthetic.core/messaging/stopped_feed_node_history_provider_registrar.hpp"
+#include "ores.synthetic.core/messaging/stopped_feed_node_registrar.hpp"
 #include "ores.synthetic.core/messaging/trade_generation_book_registrar.hpp"
 #include "ores.synthetic.core/messaging/trade_generation_config_registrar.hpp"
 #include "ores.synthetic.core/messaging/trade_generation_counterparty_registrar.hpp"
@@ -156,7 +156,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
             subs.end(), std::make_move_iterator(s.begin()), std::make_move_iterator(s.end()));
     }
     {
-        auto s = register_stopped_simulated_source_handlers(nats, ctx, verifier);
+        auto s = register_stopped_feed_node_handlers(nats, ctx, verifier);
         subs.insert(
             subs.end(), std::make_move_iterator(s.begin()), std::make_move_iterator(s.end()));
     }
@@ -307,7 +307,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
         register_fx_vol_surface_feed_history_provider(hist_registry);
         register_fx_vol_surface_feed_expiry_history_provider(hist_registry);
         register_fx_vol_surface_feed_contributor_history_provider(hist_registry);
-        register_stopped_simulated_source_history_provider(hist_registry);
+        register_stopped_feed_node_history_provider(hist_registry);
         register_yield_curve_process_parameter_definition_history_provider(hist_registry);
         register_yield_curve_process_type_history_provider(hist_registry);
         register_ir_curve_index_family_history_provider(hist_registry);

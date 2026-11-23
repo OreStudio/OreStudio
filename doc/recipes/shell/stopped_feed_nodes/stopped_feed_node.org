@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 0FC4AB32-3FB2-56D4-A88D-451A9F5D5BA2
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the stopped_feed_nodes commands from the shell?
+#+description: Every command the stopped_feed_nodes submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:stopped_feed_nodes:
+
+This file documents the stopped_feed_nodes resource at the shell, one section per command. Every command is a subcommand of =stopped_feed_nodes=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 82FA599F-2C16-53FB-95E2-3ABC5757E5FD
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+stopped_feed_nodes list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =synthetic.v1.stopped_feed_nodes.list=.
+
+#+name: stopped_feed_nodes-list
+#+begin_src ores-shell :tangle stopped_feed_nodes-list.ores :exports none
+stopped_feed_nodes list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: C0155FA3-E2AA-5F10-97E8-5FE62884CC5C
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+stopped_feed_nodes get <node_name>
+#+end_example
+
+It is addressed at =synthetic.v1.stopped_feed_nodes.get=.
+
+#+name: stopped_feed_nodes-get
+#+begin_src ores-shell :tangle stopped_feed_nodes-get.ores :exports none
+stopped_feed_nodes get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: C19BFF66-EE79-5DED-B2BA-560B0F07D4FE
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+stopped_feed_nodes get-many <node_name>
+#+end_example
+
+It is addressed at =synthetic.v1.stopped_feed_nodes.get_many=.
+
+#+name: stopped_feed_nodes-get-many
+#+begin_src ores-shell :tangle stopped_feed_nodes-get-many.ores :exports none
+stopped_feed_nodes get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 157370B5-185B-567D-816B-A68E29ECEE67
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+stopped_feed_nodes add <node_name> <kind> <provider_code> <reason> <commentary>
+#+end_example
+
+It is addressed at =synthetic.v1.stopped_feed_nodes.put=.
+
+#+name: stopped_feed_nodes-add
+#+begin_src ores-shell :tangle stopped_feed_nodes-add.ores :exports none
+stopped_feed_nodes add __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 193D86D6-BAD0-5074-9FA3-3C605042A3E0
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+stopped_feed_nodes set <node_name> <kind> <provider_code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =synthetic.v1.stopped_feed_nodes.put=.
+
+#+name: stopped_feed_nodes-set
+#+begin_src ores-shell :tangle stopped_feed_nodes-set.ores :exports none
+stopped_feed_nodes set __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 431745A8-B041-53E5-B672-587F573BF088
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+stopped_feed_nodes put-many --count <n> <node_name> <kind> <provider_code> <reason> <commentary>
+#+end_example
+
+It is addressed at =synthetic.v1.stopped_feed_nodes.put_many=.
+
+#+name: stopped_feed_nodes-put-many
+#+begin_src ores-shell :tangle stopped_feed_nodes-put-many.ores :exports none
+stopped_feed_nodes put-many --count 1 __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: D83D3C3D-7B8D-5DE3-9478-8ADABFDAAD41
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+stopped_feed_nodes delete <node_name> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =synthetic.v1.stopped_feed_nodes.delete=.
+
+#+name: stopped_feed_nodes-delete
+#+begin_src ores-shell :tangle stopped_feed_nodes-delete.ores :exports none
+stopped_feed_nodes delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 832BB411-93D4-5344-BC6F-46692F46C3F2
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+stopped_feed_nodes delete-many <node_name> <reason> <commentary>
+#+end_example
+
+It is addressed at =synthetic.v1.stopped_feed_nodes.delete_many=.
+
+#+name: stopped_feed_nodes-delete-many
+#+begin_src ores-shell :tangle stopped_feed_nodes-delete-many.ores :exports none
+stopped_feed_nodes delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 1115EA9D-4767-5079-91E6-900B462EC5C3
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+stopped_feed_nodes versions <node_name> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =synthetic.v1.stopped_feed_nodes_versions.list=.
+
+#+name: stopped_feed_nodes-versions
+#+begin_src ores-shell :tangle stopped_feed_nodes-versions.ores :exports none
+stopped_feed_nodes versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 1EC18859-9036-5F94-A776-C211DDAAFE45
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+stopped_feed_nodes version <node_name> --version <n>
+#+end_example
+
+It is addressed at =synthetic.v1.stopped_feed_nodes_versions.get=.
+
+#+name: stopped_feed_nodes-version
+#+begin_src ores-shell :tangle stopped_feed_nodes-version.ores :exports none
+stopped_feed_nodes version __none__ --version 1
+#+end_src
+

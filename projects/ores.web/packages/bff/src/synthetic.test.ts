@@ -1919,7 +1919,7 @@ describe('synthetic operations', () => {
 
     it('stops a simulated source with the reason the person gave', async () => {
         const { server, sessionId, calls } = buildTestServer({
-            'synthetic.v1.ops.stop_simulated_source': {
+            'synthetic.v1.ops.stop_feed_node': {
                 success: true,
                 message: 'Stopped bloomberg-a',
             },
@@ -1928,12 +1928,12 @@ describe('synthetic operations', () => {
             server,
             sessionId,
             'POST',
-            '/api/synthetic/simulated-sources/bloomberg-a/stop',
+            '/api/synthetic/feed-nodes/bloomberg-a/stop',
             { reason_code: 'common.other', commentary: 'Quiet the vendor for a demo.' },
         );
         expect(response.statusCode).toBe(200);
         expect(calls[0]?.body).toEqual({
-            source_name: 'bloomberg-a',
+            node_name: 'bloomberg-a',
             reason_code: 'common.other',
             commentary: 'Quiet the vendor for a demo.',
         });
@@ -1945,16 +1945,34 @@ describe('synthetic operations', () => {
             server,
             sessionId,
             'POST',
-            '/api/synthetic/simulated-sources/bloomberg-a/stop',
+            '/api/synthetic/feed-nodes/bloomberg-a/stop',
             {},
         );
         expect(response.statusCode).toBe(400);
         expect(calls).toHaveLength(0);
     });
 
+    it('stops a vendor view by its name', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'synthetic.v1.ops.stop_feed_node': {
+                success: true,
+                message: 'Stopped synthetic.ice.fx.fx_option.audusd',
+            },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'POST',
+            '/api/synthetic/feed-nodes/synthetic.ice.fx.fx_option.audusd/stop',
+            { reason_code: 'common.other', commentary: 'Quiet one vendor.' },
+        );
+        expect(response.statusCode).toBe(200);
+        expect(calls[0]?.body).toMatchObject({ node_name: 'synthetic.ice.fx.fx_option.audusd' });
+    });
+
     it('starts a stopped simulated source', async () => {
         const { server, sessionId, calls } = buildTestServer({
-            'synthetic.v1.ops.start_simulated_source': {
+            'synthetic.v1.ops.start_feed_node': {
                 success: true,
                 message: 'Started bloomberg-a',
             },
@@ -1963,10 +1981,10 @@ describe('synthetic operations', () => {
             server,
             sessionId,
             'POST',
-            '/api/synthetic/simulated-sources/bloomberg-a/start',
+            '/api/synthetic/feed-nodes/bloomberg-a/start',
         );
         expect(response.statusCode).toBe(200);
-        expect(calls[0]?.body).toEqual({ source_name: 'bloomberg-a' });
+        expect(calls[0]?.body).toEqual({ node_name: 'bloomberg-a' });
     });
 
     it('starts a folder and reports the counts by kind', async () => {

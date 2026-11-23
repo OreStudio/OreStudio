@@ -302,92 +302,89 @@ wire_traits<ores::synthetic::messaging::list_simulated_sources_response>::read_m
     return object::read_msgpack<ores::synthetic::messaging::list_simulated_sources_response>(data);
 }
 
-std::string wire_traits<ores::synthetic::messaging::stop_simulated_source_request>::write_json(
-    const ores::synthetic::messaging::stop_simulated_source_request& v) {
+std::string wire_traits<ores::synthetic::messaging::stop_feed_node_request>::write_json(
+    const ores::synthetic::messaging::stop_feed_node_request& v) {
     return object::write_json(v);
 }
 
-ores::synthetic::messaging::stop_simulated_source_request
-wire_traits<ores::synthetic::messaging::stop_simulated_source_request>::read_json(
-    std::string_view text) {
-    return object::read_json<ores::synthetic::messaging::stop_simulated_source_request>(text);
+ores::synthetic::messaging::stop_feed_node_request
+wire_traits<ores::synthetic::messaging::stop_feed_node_request>::read_json(std::string_view text) {
+    return object::read_json<ores::synthetic::messaging::stop_feed_node_request>(text);
 }
 
-std::string wire_traits<ores::synthetic::messaging::stop_simulated_source_request>::write_msgpack(
-    const ores::synthetic::messaging::stop_simulated_source_request& v) {
+std::string wire_traits<ores::synthetic::messaging::stop_feed_node_request>::write_msgpack(
+    const ores::synthetic::messaging::stop_feed_node_request& v) {
     return object::write_msgpack(v);
 }
 
-ores::synthetic::messaging::stop_simulated_source_request
-wire_traits<ores::synthetic::messaging::stop_simulated_source_request>::read_msgpack(
+ores::synthetic::messaging::stop_feed_node_request
+wire_traits<ores::synthetic::messaging::stop_feed_node_request>::read_msgpack(
     std::span<const std::byte> data) {
-    return object::read_msgpack<ores::synthetic::messaging::stop_simulated_source_request>(data);
+    return object::read_msgpack<ores::synthetic::messaging::stop_feed_node_request>(data);
 }
 
-std::string wire_traits<ores::synthetic::messaging::stop_simulated_source_response>::write_json(
-    const ores::synthetic::messaging::stop_simulated_source_response& v) {
+std::string wire_traits<ores::synthetic::messaging::stop_feed_node_response>::write_json(
+    const ores::synthetic::messaging::stop_feed_node_response& v) {
     return object::write_json(v);
 }
 
-ores::synthetic::messaging::stop_simulated_source_response
-wire_traits<ores::synthetic::messaging::stop_simulated_source_response>::read_json(
-    std::string_view text) {
-    return object::read_json<ores::synthetic::messaging::stop_simulated_source_response>(text);
+ores::synthetic::messaging::stop_feed_node_response
+wire_traits<ores::synthetic::messaging::stop_feed_node_response>::read_json(std::string_view text) {
+    return object::read_json<ores::synthetic::messaging::stop_feed_node_response>(text);
 }
 
-std::string wire_traits<ores::synthetic::messaging::stop_simulated_source_response>::write_msgpack(
-    const ores::synthetic::messaging::stop_simulated_source_response& v) {
+std::string wire_traits<ores::synthetic::messaging::stop_feed_node_response>::write_msgpack(
+    const ores::synthetic::messaging::stop_feed_node_response& v) {
     return object::write_msgpack(v);
 }
 
-ores::synthetic::messaging::stop_simulated_source_response
-wire_traits<ores::synthetic::messaging::stop_simulated_source_response>::read_msgpack(
+ores::synthetic::messaging::stop_feed_node_response
+wire_traits<ores::synthetic::messaging::stop_feed_node_response>::read_msgpack(
     std::span<const std::byte> data) {
-    return object::read_msgpack<ores::synthetic::messaging::stop_simulated_source_response>(data);
+    return object::read_msgpack<ores::synthetic::messaging::stop_feed_node_response>(data);
 }
 
-std::string wire_traits<ores::synthetic::messaging::start_simulated_source_request>::write_json(
-    const ores::synthetic::messaging::start_simulated_source_request& v) {
+std::string wire_traits<ores::synthetic::messaging::start_feed_node_request>::write_json(
+    const ores::synthetic::messaging::start_feed_node_request& v) {
     return object::write_json(v);
 }
 
-ores::synthetic::messaging::start_simulated_source_request
-wire_traits<ores::synthetic::messaging::start_simulated_source_request>::read_json(
-    std::string_view text) {
-    return object::read_json<ores::synthetic::messaging::start_simulated_source_request>(text);
+ores::synthetic::messaging::start_feed_node_request
+wire_traits<ores::synthetic::messaging::start_feed_node_request>::read_json(std::string_view text) {
+    return object::read_json<ores::synthetic::messaging::start_feed_node_request>(text);
 }
 
-std::string wire_traits<ores::synthetic::messaging::start_simulated_source_request>::write_msgpack(
-    const ores::synthetic::messaging::start_simulated_source_request& v) {
+std::string wire_traits<ores::synthetic::messaging::start_feed_node_request>::write_msgpack(
+    const ores::synthetic::messaging::start_feed_node_request& v) {
     return object::write_msgpack(v);
 }
 
-ores::synthetic::messaging::start_simulated_source_request
-wire_traits<ores::synthetic::messaging::start_simulated_source_request>::read_msgpack(
+ores::synthetic::messaging::start_feed_node_request
+wire_traits<ores::synthetic::messaging::start_feed_node_request>::read_msgpack(
     std::span<const std::byte> data) {
-    return object::read_msgpack<ores::synthetic::messaging::start_simulated_source_request>(data);
+    return object::read_msgpack<ores::synthetic::messaging::start_feed_node_request>(data);
 }
 
-std::string wire_traits<ores::synthetic::messaging::start_simulated_source_response>::write_json(
-    const ores::synthetic::messaging::start_simulated_source_response& v) {
+std::string wire_traits<ores::synthetic::messaging::start_feed_node_response>::write_json(
+    const ores::synthetic::messaging::start_feed_node_response& v) {
     return object::write_json(v);
 }
 
-ores::synthetic::messaging::start_simulated_source_response
-wire_traits<ores::synthetic::messaging::start_simulated_source_response>::read_json(
+ores::synthetic::messaging::start_feed_node_response
+wire_traits<ores::synthetic::messaging::start_feed_node_response>::read_json(
     std::string_view text) {
-    return object::read_json<ores::synthetic::messaging::start_simulated_source_response>(text);
+    return object::read_json<ores::synthetic::messaging::start_feed_node_response>(text);
 }
 
-std::string wire_traits<ores::synthetic::messaging::start_simulated_source_response>::write_msgpack(
-    const ores::synthetic::messaging::start_simulated_source_response& v) {
+std::string wire_traits<ores::synthetic::messaging::start_feed_node_response>::write_msgpack(
+    const ores::synthetic::messaging::start_feed_node_response& v) {
     return object::write_msgpack(v);
 }
 
-ores::synthetic::messaging::start_simulated_source_response
-wire_traits<ores::synthetic::messaging::start_simulated_source_response>::read_msgpack(
+ores::synthetic::messaging::start_feed_node_response
+wire_traits<ores::synthetic::messaging::start_feed_node_response>::read_msgpack(
     std::span<const std::byte> data) {
-    return object::read_msgpack<ores::synthetic::messaging::start_simulated_source_response>(data);
+    return object::read_msgpack<ores::synthetic::messaging::start_feed_node_response>(data);
 }
 
 std::string wire_traits<ores::synthetic::messaging::calibration_policy_summary>::write_json(

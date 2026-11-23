@@ -51,8 +51,8 @@
 \ir ./synthetic_fx_vol_surface_feed_expiries_notify_trigger_create.sql
 \ir ./synthetic_fx_vol_surface_feed_contributors_create.sql
 \ir ./synthetic_fx_vol_surface_feed_contributors_notify_trigger_create.sql
-\ir ./synthetic_stopped_simulated_sources_create.sql
-\ir ./synthetic_stopped_simulated_sources_notify_trigger_create.sql
+\ir ./synthetic_stopped_feed_nodes_create.sql
+\ir ./synthetic_stopped_feed_nodes_notify_trigger_create.sql
 
 -- IR curve generation: yield_curve_process_types and ir_curve_index_families
 -- before the config that validates against them; parameter definitions after the process types

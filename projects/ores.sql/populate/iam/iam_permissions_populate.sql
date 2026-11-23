@@ -1948,9 +1948,9 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_vol_contributors:read',   'View FX volatility contributors');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_vol_contributors:write',  'Create and modify FX volatility contributors');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_vol_contributors:delete', 'Delete FX volatility contributors');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::stopped_simulated_sources:read',   'View the simulated sources an operator stopped');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::stopped_simulated_sources:write',  'Record a stopped simulated source');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::stopped_simulated_sources:delete', 'Remove a stopped simulated source');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::stopped_feed_nodes:read',   'View the feed nodes an operator stopped');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::stopped_feed_nodes:write',  'Record a stopped feed node');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::stopped_feed_nodes:delete', 'Remove a stopped feed node');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_vol_surface_feeds:read',   'View FX volatility surface feeds');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_vol_surface_feeds:write',  'Create and modify FX volatility surface feeds');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_vol_surface_feeds:delete', 'Delete FX volatility surface feeds');

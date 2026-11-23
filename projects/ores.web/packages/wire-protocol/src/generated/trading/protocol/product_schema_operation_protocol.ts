@@ -134,6 +134,10 @@ export interface DescribeProductResponse {
      */
     message: string;
     /**
+     * @brief Why the product was not described, when it was refused: not_found for a code no product type or script has, not_describable for a product that has no fields to describe. Empty when the service failed rather than refused, so a caller tells a refusal from a fault.
+     */
+    refusal_code: string;
+    /**
      * @brief The product described.
      */
     product: ProductSummary;

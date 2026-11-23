@@ -22,6 +22,7 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/logger.hpp"
+#include "ores.trading.api/messaging/script_library_operation_protocol.hpp"
 #include "ores.trading.api/messaging/trade_operations_protocol.hpp"
 #include "ores.trading.core/export.hpp"
 #include "ores.trading.core/service/book_rules_port.hpp"

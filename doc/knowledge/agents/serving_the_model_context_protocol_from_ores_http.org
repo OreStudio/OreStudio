@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:agents:mcp:http:
 #+created: 2026-11-22
-#+updated: 2026-11-22
+#+updated: 2026-11-23
 
 This page states the target design. It does not describe what is built.
 
@@ -26,13 +26,22 @@ stack ([[id:FC0847D1-9F09-42EF-A4BD-D5E3C34398EA][How ores.http serves MCP]]).
 ** What it serves
 
 One endpoint answers three methods (Model Context Protocol, 2025a). =POST=
-carries one JSON-RPC 2.0 message and is answered with JSON or with a stream of
-events; =GET= may open a stream from server to client; =DELETE= ends a
-session. =initialize= issues an =Mcp-Session-Id=, which every later request
-carries; a request without one, other than =initialize=, is answered with 400,
-and one for an ended session with 404. The methods served are =initialize=,
+carries one JSON-RPC 2.0 message and is answered with JSON; =GET= is answered
+with 405, which the transport permits of a server that sends nothing unasked;
+=DELETE= ends a session. =initialize= issues an =Mcp-Session-Id=, which every
+later request carries; a request without one, other than =initialize=, is
+answered with 400, and one for an ended session with 404. A session is bound
+to the person and agent that opened it, so an identifier another agent learns
+names no session for it. The methods served are =initialize=,
 =notifications/initialized=, =ping=, =tools/list= and =tools/call=; resources,
 prompts and the other optional capabilities wait until a client needs them.
+
+The routes at =/mcp= are declared to the catalogue as a transport: they change
+nothing themselves, so the gateway holds no write against =/mcp=, and each
+call a tool makes is held and recorded as the route it reaches. A request that
+names an =Origin= other than this machine's, or one the deployment lists, is
+refused, which the transport requires against DNS rebinding (Model Context
+Protocol, 2025a).
 
 ** What it reuses
 

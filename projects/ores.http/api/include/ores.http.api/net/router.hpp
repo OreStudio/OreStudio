@@ -142,6 +142,12 @@ public:
     route_builder& json_body();
 
     /**
+     * @brief States that the route is a transport that carries calls to other
+     * routes, so it does not write whatever its method.
+     */
+    route_builder& transport();
+
+    /**
      * @brief Takes a place in the catalogue, keeping the route's documentation.
      */
     route_builder& place(domain::route_catalogue placed);
@@ -324,8 +330,8 @@ public:
      * - Its area is not a published area.
      * - It shares its tool with another route.
      * - Its method changes something, it declares that it does not write, and
-     *   it is not a bulk get or an operation named for reading. This keeps
-     *   every write inside the six-eyes hold.
+     *   it is not a bulk get, an operation named for reading or a transport.
+     *   This keeps every write inside the six-eyes hold.
      * - Its method can carry a body (POST, PUT, PATCH or DELETE), and it
      *   declares no typed body, no stream and no empty body. This makes every
      *   tool state its input.

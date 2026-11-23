@@ -29,6 +29,9 @@
 #include "ores.trading.api/domain/script_codec.hpp"
 #include "ores.trading.api/domain/script_result_codec.hpp"
 #include "ores.trading.api/domain/script_variant_codec.hpp"
+#include "ores.trading.api/domain/trade_booking_codec.hpp"
+#include "ores.trading.api/domain/trade_codec.hpp"
+#include "ores.trading.api/domain/trade_identifier_codec.hpp"
 #include "ores.trading.api/messaging/script_library_operation_protocol.hpp"
 #include "ores.utility/domain/protocol_codec.hpp"
 #include <catch2/catch_test_macros.hpp>
@@ -73,6 +76,14 @@ TEST_CASE("ores::trading::messaging::validate_script_request", "[codec][roundtri
 
 TEST_CASE("ores::trading::messaging::validate_script_response", "[codec][roundtrip][protocol]") {
     ores::testing::check_wire_roundtrip<ores::trading::messaging::validate_script_response>();
+}
+
+TEST_CASE("ores::trading::messaging::book_scripted_request", "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::trading::messaging::book_scripted_request>();
+}
+
+TEST_CASE("ores::trading::messaging::book_scripted_response", "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::trading::messaging::book_scripted_response>();
 }
 
 TEST_CASE("ores::trading::messaging::publish_script_request", "[codec][roundtrip][protocol]") {

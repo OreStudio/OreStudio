@@ -28,6 +28,9 @@
 #include "ores.trading.api/domain/script_codec.hpp"
 #include "ores.trading.api/domain/script_result_codec.hpp"
 #include "ores.trading.api/domain/script_variant_codec.hpp"
+#include "ores.trading.api/domain/trade_booking_codec.hpp"
+#include "ores.trading.api/domain/trade_codec.hpp"
+#include "ores.trading.api/domain/trade_identifier_codec.hpp"
 #include "ores.trading.api/messaging/script_library_operation_protocol.hpp"
 #include "ores.utility/codec/struct_codec.hpp"
 #include "ores.utility/domain/protocol_codec.hpp"
@@ -243,6 +246,48 @@ ores::trading::messaging::validate_script_response
 wire_traits<ores::trading::messaging::validate_script_response>::read_msgpack(
     std::span<const std::byte> data) {
     return object::read_msgpack<ores::trading::messaging::validate_script_response>(data);
+}
+
+std::string wire_traits<ores::trading::messaging::book_scripted_request>::write_json(
+    const ores::trading::messaging::book_scripted_request& v) {
+    return object::write_json(v);
+}
+
+ores::trading::messaging::book_scripted_request
+wire_traits<ores::trading::messaging::book_scripted_request>::read_json(std::string_view text) {
+    return object::read_json<ores::trading::messaging::book_scripted_request>(text);
+}
+
+std::string wire_traits<ores::trading::messaging::book_scripted_request>::write_msgpack(
+    const ores::trading::messaging::book_scripted_request& v) {
+    return object::write_msgpack(v);
+}
+
+ores::trading::messaging::book_scripted_request
+wire_traits<ores::trading::messaging::book_scripted_request>::read_msgpack(
+    std::span<const std::byte> data) {
+    return object::read_msgpack<ores::trading::messaging::book_scripted_request>(data);
+}
+
+std::string wire_traits<ores::trading::messaging::book_scripted_response>::write_json(
+    const ores::trading::messaging::book_scripted_response& v) {
+    return object::write_json(v);
+}
+
+ores::trading::messaging::book_scripted_response
+wire_traits<ores::trading::messaging::book_scripted_response>::read_json(std::string_view text) {
+    return object::read_json<ores::trading::messaging::book_scripted_response>(text);
+}
+
+std::string wire_traits<ores::trading::messaging::book_scripted_response>::write_msgpack(
+    const ores::trading::messaging::book_scripted_response& v) {
+    return object::write_msgpack(v);
+}
+
+ores::trading::messaging::book_scripted_response
+wire_traits<ores::trading::messaging::book_scripted_response>::read_msgpack(
+    std::span<const std::byte> data) {
+    return object::read_msgpack<ores::trading::messaging::book_scripted_response>(data);
 }
 
 std::string wire_traits<ores::trading::messaging::publish_script_request>::write_json(

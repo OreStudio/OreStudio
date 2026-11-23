@@ -22,7 +22,6 @@
 set(files
     "app/agent_writes.cpp"
     "app/application.cpp"
-    "app/catalogue_tools.cpp"
     "app/host.cpp"
     "config/options.cpp"
     "config/parser.cpp"
@@ -35,7 +34,6 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.server/app/agent_write_rules.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.server/app/agent_writes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.server/app/application.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.server/app/catalogue_tools.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.server/app/host.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.server/config/options.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.server/config/parser.hpp"

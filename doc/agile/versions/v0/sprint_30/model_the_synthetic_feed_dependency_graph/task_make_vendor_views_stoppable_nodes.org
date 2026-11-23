@@ -8,7 +8,7 @@
 #+filetags: :model_the_synthetic_feed_dependency_graph:sprint_30:v0:
 #+owner: marco
 #+branch: feature/make-vendor-views-stoppable-nodes
-#+pr:
+#+pr: 5053
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-23
@@ -107,7 +107,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5053][#5053]] | [synthetic] Stop and start a vendor view as a feed node |
 
 * Review
 

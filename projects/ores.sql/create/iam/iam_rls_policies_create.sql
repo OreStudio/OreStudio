@@ -469,6 +469,21 @@ with check (
     tenant_id = ores_iam_current_tenant_id_fn()::text
 );
 
+-- The writes LLM agents made, held until their people approve them, written by
+-- ores.http in the write's tenant.
+alter table ores_iam_agent_held_writes_tbl enable row level security;
+
+drop policy if exists agent_held_writes_tenant_isolation_policy
+    on ores_iam_agent_held_writes_tbl;
+
+create policy agent_held_writes_tenant_isolation_policy on ores_iam_agent_held_writes_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()::text
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()::text
+);
+
 -- -----------------------------------------------------------------------------
 -- Seed profiles and their parts
 -- -----------------------------------------------------------------------------

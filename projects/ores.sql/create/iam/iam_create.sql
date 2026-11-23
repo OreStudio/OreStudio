@@ -96,6 +96,7 @@
 \ir ./iam_run_token_issues_create.sql
 \ir ./iam_agent_token_issues_create.sql
 \ir ./iam_agent_calls_create.sql
+\ir ./iam_agent_held_writes_create.sql
 
 -- Account-party association (depends on accounts and refdata.parties)
 \ir ./iam_account_party_create.sql

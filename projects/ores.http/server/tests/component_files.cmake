@@ -20,5 +20,6 @@
 # Template: cmake_component_files_tests.mustache
 # To modify, update the template and regenerate.
 set(files
+    "agent_write_rules_tests.cpp"
     "main.cpp"
 )

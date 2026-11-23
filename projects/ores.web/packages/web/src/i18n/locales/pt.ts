@@ -269,6 +269,20 @@ const pt: SourceCatalogue = {
         outsideView: 'Alguém fora da sua vista',
     },
     inbox: {
+        agentWrite: {
+            lead: '{agent}, um agente LLM que age por si, pede para fazer esta escrita. Aprová-la faz a escrita em seu nome; depois precisa da aprovação que a sua própria escrita exigiria.',
+            agent: 'Agente',
+            call: 'Chamada',
+            state: 'Estado',
+            outcome: 'O que a escrita respondeu',
+            approve: 'Aprovar e fazer a escrita',
+            states: {
+                held: 'À sua espera',
+                applying: 'A ser feita',
+                applied: 'Feita',
+                failed: 'Não pôde ser feita',
+            },
+        },
         autoApproval: {
             tenant: 'o inquilino não exige aprovações',
             noticeTenant:
@@ -292,6 +306,7 @@ const pt: SourceCatalogue = {
         },
         kind: {
             'iam.role_grant': 'Pedido de papel',
+            'iam.write_by_agent': 'Escrita de um agente LLM',
             'refdata.book_change': 'Alteração de livro',
             'marketdata.curve_publish': 'Publicação de curva',
             'reporting.engine_settings_change': 'Alteração das definições de execução do motor',

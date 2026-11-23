@@ -33,6 +33,7 @@
 #include "ores.http.core/routes/web_bundle_routes.hpp"
 #include "ores.http.core/stream/change_feed.hpp"
 #include "ores.http.core/stream/change_ticker.hpp"
+#include "ores.http.server/app/agent_writes.hpp"
 #include "ores.http.server/messaging/registrar.hpp"
 #include "ores.http/routes/analytics/analytics_routes.hpp"
 #include "ores.http/routes/assets/assets_routes.hpp"
@@ -244,6 +245,12 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
     auto agent_keys = std::make_shared<http::routes::iam::agent_key_cache>();
     server.set_bearer_exchanger(
         http::routes::iam::agent_key_exchange::exchanger(service_nats, agent_keys));
+    // An agent's write is held for its person, unless a policy exempts it,
+    // and replayed when they approve it.
+    server.set_exchanged_write_holder(
+        ores::http::server::app::agent_writes::holder(ctx, service_nats));
+    // Made after the server and the client its replays use, so it stops first.
+    ores::http::server::app::agent_write_replays agent_replays(ctx, service_nats, server);
     // Every call an agent makes is logged for its person, reads as well as
     // writes, from the token's own claims: never the request or the answer.
     server.set_exchanged_call_recorder([ctx](const http::domain::exchanged_call& call) {
@@ -328,7 +335,7 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
         io_ctx,
         nats,
         service_name,
-        [&http_base_url, &server, feed, agent_keys](auto& n, auto verifier) {
+        [&http_base_url, &server, feed, agent_keys, &agent_replays](auto& n, auto verifier) {
             if (!verifier)
                 throw std::runtime_error(
                     "JWT verifier is required to register HTTP server handlers.");
@@ -338,6 +345,12 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
                 std::make_shared<ores::security::jwt::jwt_authenticator>(*verifier));
             auto subs = ores::http::server::messaging::registrar::register_handlers(
                 n, std::move(*verifier), http_base_url, feed);
+            // One replica takes each approval, so no two replay one write.
+            subs.push_back(n.queue_subscribe("inbox.v1.events.approval_requests.>",
+                                             "ores.http.server.agent_writes",
+                                             [&agent_replays](ores::nats::message msg) {
+                                                 agent_replays.on_request_event(msg);
+                                             }));
             // A revoked grant or key must stop its agent at the next call, so
             // every change to either clears the agent token cache.
             for (const auto* subject :

@@ -38,6 +38,7 @@
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/steady_timer.hpp>
 #include <atomic>
+#include <future>
 #include <memory>
 
 namespace ores::http::net {
@@ -86,6 +87,24 @@ public:
     void set_exchanged_call_recorder(domain::exchanged_call_recorder recorder) {
         credentials_.record = std::move(recorder);
     }
+
+    /**
+     * @brief Sets what holds a write made with an exchanged bearer value.
+     */
+    void set_exchanged_write_holder(domain::exchanged_write_holder holder) {
+        credentials_.hold = std::move(holder);
+    }
+
+    /**
+     * @brief Runs one call through the routes in this process and answers its
+     * response, as an approved agent write is replayed.
+     *
+     * The request carries the claims its token was verified to, and the token
+     * itself, so the route forwards it as it forwards any caller's. It runs on
+     * the server's executor; the caller waits on the future from another
+     * thread.
+     */
+    std::future<domain::http_response> run_in_process(domain::http_request req);
 
     /// How this deployment names and protects the cookie a session rides in.
     void set_cookie_settings(domain::cookie_settings settings) {

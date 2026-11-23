@@ -22,6 +22,8 @@
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
 #include <boost/asio/use_awaitable.hpp>
+#include <boost/asio/use_future.hpp>
+#include <boost/url/parse.hpp>
 #include <chrono>
 #include <stdexcept>
 #include <string>
@@ -298,6 +300,27 @@ void http_server::stop() {
 
     ORES_LOG_SEV(lg(), info) << "HTTP server stop initiated, " << "waiting for "
                              << active_connections_.load() << " active connections";
+}
+
+std::future<domain::http_response> http_server::run_in_process(domain::http_request req) {
+    const auto query = req.target.find('?');
+    const auto path = req.target.substr(0, query);
+    auto route = router_->match(req.method, path, req.path_params);
+    if (!route) {
+        std::promise<domain::http_response> none;
+        none.set_value(domain::http_response::not_found("No route answers " + path));
+        return none.get_future();
+    }
+    if (auto parsed = boost::urls::parse_uri_reference(req.target); parsed)
+        for (const auto& param : parsed->params())
+            if (!param.key.empty())
+                req.query_params.emplace(std::string(param.key), std::string(param.value));
+
+    return boost::asio::co_spawn(
+        io_ctx_,
+        [handler = route->handler, req = std::move(req)]() mutable
+            -> boost::asio::awaitable<domain::http_response> { co_return co_await handler(req); },
+        boost::asio::use_future);
 }
 
 }

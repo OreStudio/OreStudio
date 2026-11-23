@@ -7,9 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:agents:approvals:four_eyes:
 #+created: 2026-11-22
-#+updated: 2026-11-22
-
-This page states the target design. It does not describe what is built.
+#+updated: 2026-11-23
 
 * Summary
 
@@ -26,29 +24,53 @@ of Saltzer and Schroeder (1975), applied once more for the agent.
 
 ** The hold
 
-Every write made with an agent's token is held unless a rule exempts it. The
-approval policy of the [[id:E21DFC83-9F3F-45BE-AD3F-48262126DFAC][Four-eyes framework]] says which acts are gated and which part
-decides each; it gains one condition, /made by an agent/, so that a rule can
-gate an act only when an agent makes it, or exempt it. Without a rule, an
-agent's write is held. Reads are never held. A write the token's permissions do
-not cover, such as any write under a read-only role, is refused by the owning
-service's own permission check before any request is raised, as it is for any
-caller ([[id:A7E2942C-66AD-449C-B80B-CA789EBC34FA][Agent grants: delegated consent for LLM agents]]).
+Every write made with an agent's token is held unless a rule exempts it, and
+reads are never held. The hold is the gateway's: every call an agent makes
+passes ores.http, so ores.http holds the call itself, its method, its address
+and its body, rather than a typed pending row of each entity the agent might
+write. It raises an approval request of the kind =iam.write_by_agent= with the
+agent's own token, so the request names the person as its asker and carries the
+agent's stamp ([[id:2D36D474-2CF9-4498-AF49-818CEF080B98][Auditing of LLM agent actions]]), and answers the agent 202 with the request: over MCP
+the held write is an answer, not an error, so the agent can tell its person
+what waits. A write the token's permissions do not cover, such as any write
+under a read-only role, is not held but refused by the owning service when the
+approved call runs, as it is for any caller ([[id:A7E2942C-66AD-449C-B80B-CA789EBC34FA][Agent grants: delegated consent for LLM agents]]).
 
-The request is an ordinary [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] in the one queue of [[id:EE61043C-CBCE-44B5-85E9-A3E433FBA3EF][ores.inbox]]. Its first
-part is the agent's person; its later parts are those the policy names for the
-act. The agent can never decide a part: a model checking its own work is a weak
-check, because the check shares the priors that produced the error
-([[id:0D919421-2B73-4322-9F79-9FDA38A67EA1][Large language models]], /Correlated errors/). This is enforced twice: no
-agent's token holds a decide permission, and the queue refuses a decision from
-a token whose =act= names an agent ([[id:1679B2CE-05C2-4CFF-9A4B-47EC721CB10A][Withholding of administrative permissions from LLM agents]]). The person decides only the first.
-The later parts are decided by someone else, or closed by a rule exactly as for
-the person's own write (see /What a rule cannot close/ below). When no rule
-closes a later part and nobody else holds the right to decide it, the request
-stays pending, and the review panel says that it has no eligible approver: such
-a tenant cannot complete that kind of agent write until it has a second person
-or a rule. Over MCP the held write is an answer, not an error: =call_operation=
-returns the request, so the agent can tell its person what waits.
+A rule exempts an act from the hold. The approval policy of the [[id:E21DFC83-9F3F-45BE-AD3F-48262126DFAC][Four-eyes framework]]
+gains the condition /made by an agent/ as a row whose entity is =agent_write=,
+whose operation is the method and whose field is the route, naming the part
+=none=, which nobody decides: an agent's call to that route then runs as any
+other. Without a rule, an agent's write is held.
+
+The request is an ordinary [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] in the one queue of [[id:EE61043C-CBCE-44B5-85E9-A3E433FBA3EF][ores.inbox]], and its
+one decider is the agent's person. Everywhere else the person who asked never
+decides; here the asker is the person and the request is theirs alone to
+decide, which the queue shows to them only and a rule on the decisions table
+enforces. Only an agent's token can raise the kind, so a person cannot raise
+one to approve themselves. The agent can never decide: a model checking its own
+work is a weak check, because the check shares the priors that produced the
+error ([[id:0D919421-2B73-4322-9F79-9FDA38A67EA1][Large language models]], /Correlated errors/). This is enforced twice: every
+service refuses a withheld permission, decisions included, to a token whose
+=act= names an agent, and the queue refuses that token's decision outright
+([[id:1679B2CE-05C2-4CFF-9A4B-47EC721CB10A][Withholding of administrative permissions from LLM agents]]). An agent that tries to decide is itself making a write, which
+the gateway holds like any other.
+
+** The replay, and the second pair
+
+When the person approves, ores.http replays the held call through its own
+routes, as the person with the agent as actor, under a token IAM issues for that
+request alone after checking the grant and the person again. The replay then
+meets exactly the controls the person's own write would meet, which is where
+the further approval comes from. A gated entity's write raises its own request,
+of its own kind, decided by the parts its policy names under the rule that the
+person who asked never decides; since the replayed request is the person's, its
+deciders are others. A write that needs no approval of its own is done. The
+outcome is kept with the held call, and a replay the service refuses marks the
+request as failed to apply, with the service's own reason.
+
+When no rule closes a later part and nobody else holds the right to decide it,
+that request stays pending. The review panel does not yet say that it has no
+eligible approver.
 
 #+caption: An agent's write: refused by the service when the token's permissions do not cover it, otherwise held as an approval request that the agent's person approves and then a second approver approves before the change applies.
 #+attr_html: :width 100%
@@ -61,23 +83,20 @@ Source: [[./agent_write_six_eyes.puml][=agent_write_six_eyes.puml=]]. Regenerate
 
 A trade already passes a second pair of eyes after it is booked: it goes live
 and unauthorised, and Operations authorises it ([[id:A9E9D1EF-5879-4488-87C8-BDD914C3B502][Operational Authorisation]], [[id:E509AFFC-3924-428E-B504-96D68BF5568A][Trade booking]]). An
-agent's booking uses that control rather than a second queue. The trade goes
-live and unauthorised as every trade does, and its operational authorisation
-request names one more part, the agent's person, before Operations. Operational
-authorisation is metadata on the trade and moves no version, so the trade's
-lifecycle is unchanged, and an unauthorised trade's contribution to risk and
-P&L follows the same rule whoever booked it.
+agent's booking uses that control rather than a second queue, and the hold
+puts the person in front of it: the booking is held until the agent's person
+approves it, and only its replay books the trade, live and unauthorised as
+every trade is. Its operational authorisation request is then the person's, so
+Operations decides it and the person cannot, and the queue refuses the agent
+outright. So no trade an agent asked for is live before its person has looked
+at it, and none is authorised by the person or the agent.
 
-The difference is accountability. A trader's own booking is the act of a
-person who answers for it; an agent's booking is live before any person has
-looked at it. Three rules bound that. A grant whose role does not hold the
-booking permission cannot book: trading's own permission check refuses it. The trade carries its
-acting agent ([[id:2D36D474-2CF9-4498-AF49-818CEF080B98][Auditing of LLM agent actions]]), so the blotter, the authorisation queue and the
-risk and P&L views can show the trades an agent booked that nobody has yet
-authorised, and filter them out. And the person's part comes first, so
-Operations never authorises a booking its person has not confirmed.
+A grant whose role does not hold the booking permission cannot book: trading's
+own permission check refuses the replay. The trade carries its acting agent
+([[id:2D36D474-2CF9-4498-AF49-818CEF080B98][Auditing of LLM agent actions]]), so the blotter, the authorisation queue and the risk and P&L views can
+show the trades an agent asked for.
 
-#+caption: An agent's booking goes live and unauthorised, and its operational authorisation waits for the agent's person and then for Operations.
+#+caption: An agent's booking is held for its person, then booked live and unauthorised, and its operational authorisation waits for Operations.
 #+attr_html: :width 100%
 [[proj:doc/knowledge/agents/agent_trade_booking.png]]
 

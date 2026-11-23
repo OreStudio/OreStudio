@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 3B52FC43-5839-4418-A533-C8F64F1644CD
+:END:
+#+title: Deleting a currency through DELETE /api/v1/reference-data/cu…
+#+description: Deleting a currency through DELETE /api/v1/reference-data/currencies/{iso_code} with the version the tenant just read is refused as a version conflict whose own message says the versions match: 'The currency for iso_code is at version 1, and this write states version 1.' Seen in the agent six-eyes end-to-end run on a freshly provisioned Acme tenant, for a person's own delete as well as an agent's replayed one. currency_service::delete_currency gets remove_status::conflicting from the repository and then reads the live row for the message; the row read and the row the removal addresses look like different rows, perhaps the system tenant's shared currency against the tenant's own. Either a tenant may not delete a shared currency, and the refusal should say so, or the removal addresses the wrong row.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-11-23
+#+updated: 2026-11-23
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

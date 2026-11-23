@@ -267,6 +267,20 @@ const fr: SourceCatalogue = {
         outsideView: 'Une personne hors de votre périmètre',
     },
     inbox: {
+        agentWrite: {
+            lead: '{agent}, un agent LLM qui agit pour vous, demande à faire cette écriture. L’approuver la fait en votre nom ; elle demande ensuite l’approbation qu’exigerait votre propre écriture.',
+            agent: 'Agent',
+            call: 'Appel',
+            state: 'État',
+            outcome: 'Ce que l’écriture a répondu',
+            approve: 'Approuver et faire l’écriture',
+            states: {
+                held: 'En attente de vous',
+                applying: 'En cours',
+                applied: 'Faite',
+                failed: 'N’a pas pu être faite',
+            },
+        },
         autoApproval: {
             tenant: "le locataire n'impose pas les approbations",
             noticeTenant:
@@ -290,6 +304,7 @@ const fr: SourceCatalogue = {
         },
         kind: {
             'iam.role_grant': 'Demande de rôle',
+            'iam.write_by_agent': 'Écriture d’un agent LLM',
             'refdata.book_change': 'Modification de livre',
             'marketdata.curve_publish': 'Publication de courbe',
             'reporting.engine_settings_change': "Modification des réglages d'exécution du moteur",

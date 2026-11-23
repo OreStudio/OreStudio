@@ -279,3 +279,22 @@ TEST_CASE("caller_token_names_the_caller_a_forwarded_message_speaks_for", "[hand
     anonymous.headers[authorization] = "Basic abc";
     CHECK(caller_token(anonymous).empty());
 }
+
+TEST_CASE("has_permission refuses a withheld code to an agent, whatever its token carries",
+          "[handler_helpers]") {
+    ores::testing::database_helper h;
+    const auto person = h.context().with_roles({"*", "inbox::approvals:decide_finance"});
+    const auto agent = person.with_delegated_actor(std::string("agent:1234"));
+    const auto service = person.with_delegated_actor(std::string("ReportingService"));
+
+    // The agent keeps the domain write and the read its token carries.
+    REQUIRE(has_permission(agent, "refdata::currencies:write"));
+    REQUIRE(has_permission(agent, "iam::accounts:read"));
+    // It never administers access, decides a request or authorises.
+    REQUIRE_FALSE(has_permission(agent, "iam::accounts:create"));
+    REQUIRE_FALSE(has_permission(agent, "inbox::approvals:decide_finance"));
+    REQUIRE_FALSE(has_permission(agent, "trading::trade_authorisation_requests:write"));
+    // The person and a run token's service keep every one of them.
+    REQUIRE(has_permission(person, "iam::accounts:create"));
+    REQUIRE(has_permission(service, "inbox::approvals:decide_finance"));
+}

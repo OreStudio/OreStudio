@@ -27,6 +27,7 @@
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.security/authorization/agent_withholding.hpp"
 #include "ores.security/authorization/grants.hpp"
 #include "ores.service/error_code.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
@@ -343,6 +344,12 @@ inline boost::uuids::uuid session_party(const ores::database::context& ctx, std:
  */
 inline bool has_permission(const ores::database::context& ctx,
                            std::string_view required_permission) {
+    // A permission withheld from LLM agents is refused to a token whose act
+    // names one, whatever the token carries: IAM never puts one in, and this
+    // is the defence if it ever did.
+    if (ctx.acts_for_agent() &&
+        ores::security::authorization::is_withheld_from_agents(required_permission))
+        return false;
     const auto& granted = ctx.roles();
     if (!granted)
         return true;

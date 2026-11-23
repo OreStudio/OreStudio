@@ -153,6 +153,7 @@ TENANT_002 ores_iam_auth_events_tbl
 TENANT_002 ores_iam_run_token_issues_tbl
 TENANT_002 ores_iam_agent_token_issues_tbl
 TENANT_002 ores_iam_agent_calls_tbl
+TENANT_002 ores_iam_agent_held_writes_tbl
 TENANT_002 ores_telemetry_logs_tbl
 TENANT_002 ores_compute_grid_samples_tbl
 TENANT_002 ores_compute_node_samples_tbl
@@ -512,6 +513,11 @@ RLS_002 ores_iam_agent_token_issues_tbl
 # party_id records which party the agent acted in, not a data-isolation
 # boundary, and only ores.http writes it, in the call's own tenant.
 RLS_002 ores_iam_agent_calls_tbl
+
+# IAM agent held writes — an LLM agent's write, held as the call until its
+# person approves; party_id records which party the agent acted in, and only
+# ores.http writes it, in the write's own tenant.
+RLS_002 ores_iam_agent_held_writes_tbl
 
 # MQ messages and archive — access is controlled by queue ownership (which
 # queue a message belongs to), not by party_id. Custom queue-based policies

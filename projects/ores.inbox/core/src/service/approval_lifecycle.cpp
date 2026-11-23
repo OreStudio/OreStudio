@@ -110,7 +110,11 @@ const std::string decidable_requests_query =
                 " from ores_inbox_approval_requests_tbl r"
                 " where r.valid_to = ores_utility_infinity_timestamp_fn()"
                 " and r.state_code = any(string_to_array($1::text, ','))"
-                " and r.requested_by <> $2::uuid"
+                // An agent's write is its person's to decide, and theirs
+                // alone; any other request is never its asker's, a request a
+                // replayed agent write raises included.
+                " and (case when r.kind_code = 'iam.write_by_agent' then r.requested_by = $2::uuid"
+                "      else r.requested_by <> $2::uuid end)"
                 " and ((r.kind_code = any(string_to_array($3::text, ','))"
                 "       and not exists (select 1 from (") +
     std::string(request_parts_query) +
@@ -799,7 +803,8 @@ approval_lifecycle::recently_answered(const decidable_scope& scope,
         "          and d.decision_code in ('approve', 'refuse')"
         "          and d.valid_to = ores_utility_infinity_timestamp_fn()))"
         " and r.state_code <> all(string_to_array($2::text, ','))"
-        " and r.requested_by <> $3::uuid"
+        " and (case when r.kind_code = 'iam.write_by_agent' then r.requested_by = $3::uuid"
+        "      else r.requested_by <> $3::uuid end)"
         " and r.valid_from >= clock_timestamp() - make_interval(secs => $4::double precision)"
         " order by r.valid_from desc"
         " limit $5::int",

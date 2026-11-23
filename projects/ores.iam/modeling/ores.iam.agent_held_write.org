@@ -1,0 +1,231 @@
+:PROPERTIES:
+:ID: 20DF5A39-56C8-41E5-B177-C53B1D9B0021
+:ores.cpp.wire-codec.enabled: true
+:END:
+#+title: ores.iam.agent_held_write
+#+description: Codegen entity model for the iam agent_held_writes table, one write an LLM agent made, held until its person approves it.
+#+type: ores.codegen.entity
+#+component: iam
+#+filetags: :model:entity:iam:agents:
+#+entity_singular: agent_held_write
+#+entity_plural: agent_held_writes
+#+entity_title: Agent Held Write
+#+brief: One write an LLM agent made through ores.http, held as the call itself until its person approves the approval request it raised.
+#+created: 2026-11-23
+#+updated: 2026-11-23
+
+A row is the pending change of an =iam.write_by_agent= approval request: the call
+an agent made, kept as it was made, so that the approval replays it as the
+person with the agent as actor. The replay then meets the controls the person's
+own write would meet, which is the rest of the six eyes. The row's state says
+whether the call waits, is being replayed, or has been applied or failed.
+
+The table holds one row per request and is rewritten in place as its state
+moves, so the model states =:current_state:=. Its =tenant_id= is a text column
+isolated by a policy in =iam_rls_policies_create.sql=, and only ores.http writes
+it, in the write's own tenant.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     iam
+:has_tenant_id: false
+:subcomponent:  api
+:END:
+
+* Columns
+
+** request_id
+:PROPERTIES:
+:type:            text
+:cpp_type:        std::string
+:primary_key:     true
+:skip_uuid_check: true
+:END:
+
+The approval request that holds the write, a uuid in its text form.
+
+** held_at
+:PROPERTIES:
+:type:     timestamp with time zone
+:cpp_type: std::chrono::system_clock::time_point
+:nullable: false
+:END:
+
+When ores.http held the write.
+
+** tenant_id
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:default:  ''
+:END:
+
+The tenant the write acts in.
+
+** party_id
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:default:  ''
+:END:
+
+The party the write acts in.
+
+** grant_id
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:default:  ''
+:END:
+
+The agent grant the write was made under.
+
+** grantor_account_id
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:default:  ''
+:END:
+
+The person the agent acts for, who decides the request.
+
+** method
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:default:  ''
+:END:
+
+The HTTP method.
+
+** route
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:default:  ''
+:END:
+
+The route's pattern, as the review panel names the act.
+
+** target
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:default:  ''
+:END:
+
+The address the agent called, values included, which the replay calls again.
+
+** content_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:default:  ''
+:END:
+
+The body's media type.
+
+** body
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:default:  ''
+:END:
+
+The body the agent sent, which the replay sends again. A key is never in it: the agent sends its key as a header.
+
+** state
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:default:  ''
+:END:
+
+held, until the request is decided; applying, while ores.http replays it; applied or failed after.
+
+** outcome
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:default:  ''
+:END:
+
+What the replay answered, for the person and the review panel.
+
+** status
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  0
+:END:
+
+The HTTP status the replay answered with, or zero before it ran.
+
+* C++
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: ahw
+:END:
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:                   ores_iam_agent_held_writes_tbl
+:current_state:               true
+:no_audit_columns:            true
+:suppress_nk_index:           true
+:END:
+
+** Indexes
+
+| name         | columns                          | unique | current_only | where_extra |
+|--------------+----------------------------------+--------+--------------+-------------|
+| grantor_held | grantor_account_id, held_at desc | false  | false        |             |
+
+* Physical space
+
+The table is internal, so only the data layer and the SQL schema are generated.
+
+| Address                             | Enabled |
+|-------------------------------------+---------|
+| ores.cpp.service                    | false   |
+| ores.cpp.protocol                   | false   |
+| ores.cpp.nats-handler               | false   |
+| ores.cpp.nats-sub-registrar         | false   |
+| ores.cpp.nats-event-registrar       | false   |
+| ores.cpp.nats-eventing              | false   |
+| ores.cpp.nats-event-cache           | false   |
+| ores.cpp.history-provider-registrar | false   |
+| ores.cpp.presentation               | false   |
+| ores.cpp.eventing-integration-test  | false   |
+| ores.cpp.shell-command              | false   |
+| ores.sql.schema.notify_trigger      | false   |
+| ores.sql.schema.notify_trigger_drop | false   |
+| ores.ts.protocol                    | false   |
+
+* See also
+
+- [[id:BD9653B7-C92B-4A71-9B5D-7ADB4EBCB94F][ores.iam]] — component group overview.

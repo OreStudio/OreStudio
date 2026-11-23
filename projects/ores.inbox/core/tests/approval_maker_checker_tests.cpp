@@ -182,3 +182,33 @@ TEST_CASE("a_kind_that_names_no_raise_permission_keeps_the_rule_it_had",
     CHECK(as_member.may_raise(*kind));
     CHECK_FALSE(as_member.may_decide(*kind));
 }
+
+TEST_CASE("an_agents_write_is_its_persons_to_decide_and_theirs_alone",
+          "[approval][maker_checker][agents]") {
+    ores::testing::scoped_database_helper h;
+    const auto person = seed_account(h);
+    const auto stranger = seed_account(h);
+
+    approval_lifecycle trusted(acting(h));
+    const auto kind = trusted.kind("iam.write_by_agent");
+    REQUIRE(kind);
+    const auto raised = trusted.raise(*kind, "An LLM agent asks to POST /currencies.", person.id);
+    const auto id = boost::uuids::to_string(raised.id);
+
+    // Anyone else, whatever they hold, is refused; the request still waits.
+    approval_lifecycle as_stranger(holding(h, {"iam::agent_grants:create", "*"}));
+    CHECK_THROWS(as_stranger.decide(id, raised.version, "approve", stranger.id, ""));
+    CHECK(trusted.request(id)->state_code == "waiting");
+
+    // The queue offers it to the person and to nobody else.
+    approval_lifecycle as_person(holding(h, {"iam::agent_grants:create"}));
+    const auto mine = as_person.queue(as_person.decidable_by_role(), person.id, 0, 500);
+    CHECK(std::ranges::any_of(mine.requests, [&](const auto& r) { return r.id == raised.id; }));
+    const auto theirs = as_stranger.queue(as_stranger.decidable_by_role(), stranger.id, 0, 500);
+    CHECK_FALSE(
+        std::ranges::any_of(theirs.requests, [&](const auto& r) { return r.id == raised.id; }));
+
+    // The person decides it.
+    (void)as_person.decide(id, raised.version, "approve", person.id, "");
+    CHECK(trusted.request(id)->state_code == "approved");
+}

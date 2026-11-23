@@ -269,6 +269,20 @@ export const en: SourceCatalogue = {
         outsideView: 'Someone outside your view',
     },
     inbox: {
+        agentWrite: {
+            lead: '{agent}, an LLM agent acting for you, asks to make this write. Approving it makes the write as you; it then needs whatever approval your own write would.',
+            agent: 'Agent',
+            call: 'Call',
+            state: 'State',
+            outcome: 'What the write answered',
+            approve: 'Approve and make the write',
+            states: {
+                held: 'Waiting for you',
+                applying: 'Being made',
+                applied: 'Made',
+                failed: 'Could not be made',
+            },
+        },
         autoApproval: {
             tenant: 'the tenant does not enforce approvals',
             noticeTenant:
@@ -292,6 +306,7 @@ export const en: SourceCatalogue = {
         },
         kind: {
             'iam.role_grant': 'Role request',
+            'iam.write_by_agent': 'Write by an LLM agent',
             'refdata.book_change': 'Book change',
             'marketdata.curve_publish': 'Curve publish',
             'reporting.engine_settings_change': 'Engine run settings change',

@@ -121,6 +121,13 @@ public:
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_list_own_agent_activity(const ores::http::domain::http_request& req,
                                    ores::nats::service::nats_client& session);
+
+    /**
+     * @brief POST /api/v1/iam/ops/get_agent_held_write — Get agent held write.
+     */
+    static boost::asio::awaitable<ores::http::domain::http_response>
+    handle_get_agent_held_write(const ores::http::domain::http_request& req,
+                                ores::nats::service::nats_client& session);
 };
 
 }

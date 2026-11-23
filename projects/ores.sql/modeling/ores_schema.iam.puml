@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: iam
-Tables: 29
+Tables: 30
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -427,6 +427,40 @@ package "iam" #E8F4FD {
     revoke operations, which take the person's own session:
     :client_read_only: removes the generic write verbs from the wire and keeps
     the repository writable for those operations.
+    end note
+
+    entity ores_iam_agent_held_writes_tbl  #F7E5FF {
+        * request_id : text <<PK, FK>>
+        --
+        * held_at : timestamptz
+        * tenant_id : text <<FK>>
+        * party_id : text <<FK>>
+        * grant_id : text <<FK>>
+        * grantor_account_id : text <<FK>>
+        * method : text
+        * route : text
+        * target : text
+        * content_type : text
+        * body : text
+        * state : text
+        * outcome : text
+        * status : integer
+    }
+
+    note right of ores_iam_agent_held_writes_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Agent Held Write Table
+    A row is the pending change of an iam.write_by_agent approval request: the call
+    an agent made, kept as it was made, so that the approval replays it as the
+    person with the agent as actor. The replay then meets the controls the person's
+    own write would meet, which is the rest of the six eyes. The row's state says
+    whether the call waits, is being replayed, or has been applied or failed.
+    The table holds one row per request and is rewritten in place as its state
+    moves, so the model states :current_state:. Its tenant_id is a text column
+    isolated by a policy in iam_rls_policies_create.sql, and only ores.http writes
+    it, in the write's own tenant.
     end note
 
     entity ores_iam_agent_keys_tbl <<temporal>> #C6F0D8 {

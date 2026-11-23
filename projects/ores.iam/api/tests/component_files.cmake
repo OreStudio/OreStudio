@@ -39,6 +39,7 @@ set(files
     "agent_grant_codec_roundtrip_tests.cpp"
     "agent_grant_operations_protocol_codec_roundtrip_tests.cpp"
     "agent_grant_protocol_codec_roundtrip_tests.cpp"
+    "agent_held_write_codec_roundtrip_tests.cpp"
     "agent_key_codec_roundtrip_tests.cpp"
     "agent_key_format_tests.cpp"
     "agent_key_protocol_codec_roundtrip_tests.cpp"

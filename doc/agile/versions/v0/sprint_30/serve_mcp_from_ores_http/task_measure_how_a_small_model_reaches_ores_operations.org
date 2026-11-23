@@ -8,7 +8,7 @@
 #+filetags: :serve_mcp_from_ores_http:sprint_30:v0:
 #+owner: marco
 #+branch: feature/measure-how-a-small-model-reaches-ores-operations
-#+pr:
+#+pr: 5081
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-22
@@ -89,7 +89,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5081][#5081]] | [http] Measure how a small model reaches ORE's operations |
 
 * Review
 

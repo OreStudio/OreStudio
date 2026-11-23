@@ -8,7 +8,7 @@
 #+filetags: :every_floating_index_has_a_curve_and_fixings:sprint_30:v0:
 #+owner: marco
 #+branch: feature/plan-trades-on-the-expected-market-data-and-report-them
-#+pr:
+#+pr: 5076
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-22
@@ -112,7 +112,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5076][#5076]] | [synthetic] Plan trades on the market data a party expects |
 
 * Review
 

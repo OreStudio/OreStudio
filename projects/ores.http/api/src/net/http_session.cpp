@@ -38,6 +38,13 @@ using namespace ores::logging;
 
 namespace {
 
+/**
+ * @brief What an API answer says when it states no cache rule of its own.
+ *
+ * A browser may not hold it, and no intermediary may serve it to anybody else.
+ */
+constexpr std::string_view no_store_answer = "private, no-store";
+
 /// The request target without its query string, which is what a route matches.
 std::string route_path(std::string_view target) {
     const auto query = target.find('?');
@@ -269,6 +276,13 @@ asio::awaitable<void> http_session::run() {
             const auto keep_alive = parser.get().keep_alive();
             const auto subject = std::string(parser.get().target());
 
+            /*
+             * Worked out before the first refusal this request may earn, and from the
+             * target the BFF read: an API answer may hold a person's rows or a refusal
+             * that names why, and neither may come back out of a cache later.
+             */
+            uncacheable_answer_ = subject.starts_with("/api/");
+
             ORES_LOG_SEV(lg(), debug) << "Received request: " << parser.get().method_string() << " "
                                       << subject << " from " << remote_address_;
 
@@ -423,6 +437,7 @@ asio::awaitable<void> http_session::refuse(unsigned version,
     // The request that would earn them was never read, so no origin is stated.
     cors_headers_.clear();
     request_id_.clear();
+    uncacheable_answer_ = false;
     auto response = domain::http_response::error(status, std::string(reason));
     co_await write_response(response, version, false, true);
 }
@@ -971,6 +986,9 @@ http::response<http::string_body> http_session::convert_response(const domain::h
     if (!request_id_.empty()) {
         result.set("x-request-id", request_id_);
     }
+    if (uncacheable_answer_ && result.base().count(http::field::cache_control) == 0) {
+        result.set(http::field::cache_control, no_store_answer);
+    }
 
     return result;
 }
@@ -1043,6 +1061,8 @@ asio::awaitable<void> http_session::write_response(const domain::http_response& 
         head.set(name, value);
     if (!request_id_.empty())
         head.set("x-request-id", request_id_);
+    if (uncacheable_answer_ && head.base().count(http::field::cache_control) == 0)
+        head.set(http::field::cache_control, no_store_answer);
 
     const auto declared =
         resp.body_stream != nullptr ? resp.body_stream->size() : resp.body_awaitable->size();

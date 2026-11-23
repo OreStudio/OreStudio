@@ -162,6 +162,16 @@ private:
     /// The id this session quotes for the request it is serving, on every answer.
     std::string request_id_;
 
+    /**
+     * @brief Whether this request's answers must state that they are not storable.
+     *
+     * An API answer may carry a person's rows or a refusal that says why, so the BFF
+     * stamped every =/api/= answer that set no cache rule of its own with
+     * =private, no-store=. Set once from the request target, like the headers above,
+     * so a refusal and a served answer both carry it.
+     */
+    bool uncacheable_answer_{false};
+
 
     /**
      * @brief Writes a response, from its bytes or in chunks from its source.

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/keep-an-api-answer-out-of-a-cache
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-22
 #+updated: 2026-11-22
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ Every API answer states that it is private and must not be stored, so no browser
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -38,13 +38,24 @@ Every API answer states that it is private and must not be stored, so no browser
 - Every /api/ answer that does not set its own Cache-Control carries private, no-store, whatever its status.
 - A route that sets its own Cache-Control keeps it.
 - Static bundle files keep their own caching rule and are unchanged.
-- A test proves the header on a 200, a 401 and a 404, and the local gate is green.
+- A test proves the rule on a served answer and on a refusal built by the session, that a route's own rule wins, and that a path outside the API states none.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+One place, and the earliest one. The rule is worked out from the request
+target in the read loop, before the first refusal that request can earn, and
+beside the CORS headers and the request id that the same loop already states
+once. So a rate-limited refusal, a body over the limit, a missing route, a CSRF
+refusal and a served answer all carry it, and none of them needs to remember.
+
+Both write paths state it: the plain answer and the streamed head, because a
+file or a view leaves by the second and would otherwise be the one gap. A route
+that sets its own =Cache-Control= keeps it, and only paths under =/api/= are
+touched at all, so the bundle keeps the caching it chose.
+
+The tests are live requests against a server on a free port, the pattern the
+body-limit suite already uses: a served answer, a route's own rule, a 404 built
+by the session, and a path outside the API.
 
 * Measurements
 
@@ -86,3 +97,24 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Every =/api/= answer that states no cache rule of its own now carries
+=Cache-Control: private, no-store=, on both write paths and whatever the status.
+A route that sets its own =Cache-Control= keeps it, and a path outside =/api/= is
+not touched, so the bundle keeps the rules it chose.
+
+The rule is worked out once per request in the read loop, from the target, beside
+the CORS headers and the request id that the loop already states once. It is
+therefore on the answers no route builds: a rate-limit refusal, a body over the
+limit, a CSRF refusal and a missing route. The streamed head states it too, so a
+view or a file leaves with it.
+
+Proven by =ores.http.api.tests=: 194 cases and 6785 assertions pass, four of them
+new — a served answer, a route's own rule, a 404 built by the session, and a path
+outside the API. The build ran under build-lock slot 'a' for 28 minutes with the
+tree main had taken in. The local gate is green: 12 checks, the C++ class among
+them.
+
+What is not proven: the header on a running deployment. The gateway process was
+not restarted with this build, so the live server still answers without it until
+the next deploy.

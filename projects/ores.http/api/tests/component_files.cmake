@@ -24,6 +24,7 @@ set(files
     "classification_routes_tests.cpp"
     "client_address_tests.cpp"
     "endpoint_registry_tests.cpp"
+    "http_answer_cache_tests.cpp"
     "http_body_limit_tests.cpp"
     "http_cors_tests.cpp"
     "http_info_protocol_codec_roundtrip_tests.cpp"

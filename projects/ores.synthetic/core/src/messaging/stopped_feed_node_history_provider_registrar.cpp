@@ -25,6 +25,7 @@
 #include "ores.synthetic.core/messaging/stopped_feed_node_history_provider_registrar.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.history.api/service/version_builder.hpp"
+#include "ores.history.core/service/acting_agents.hpp"
 #include "ores.history.core/service/dispatch_registry.hpp"
 #include "ores.synthetic.core/presentation/stopped_feed_node_history_field_mapper.hpp"
 #include "ores.synthetic.core/service/stopped_feed_node_service.hpp"
@@ -45,8 +46,19 @@ void register_stopped_feed_node_history_provider(
                                                         scoped_ctx.actor());
             service::stopped_feed_node_service svc(sys_ctx);
             auto versions = svc.get_stopped_node_history(entity_id);
-            return ores::history::service::build_entity_history_versions(
+            auto history = ores::history::service::build_entity_history_versions(
                 versions, presentation::render_stopped_feed_node_fields);
+            // The versions an LLM agent wrote carry the agent, read from the
+            // rows' own stamp.
+            if (!versions.empty())
+                ores::history::service::mark_acting_agents(
+                    sys_ctx,
+                    {.table = "ores_synthetic_stopped_feed_nodes_tbl",
+                     .key_column = "node_name",
+                     .key_is_uuid = false},
+                    versions.front().node_name,
+                    history);
+            return history;
         });
 }
 

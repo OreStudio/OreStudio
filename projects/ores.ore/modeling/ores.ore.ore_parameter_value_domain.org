@@ -65,7 +65,9 @@ The human-readable name of the domain.
 :END:
 
 How a value in this domain is stored: text, numeric, integer, boolean,
-date, uuid or list.
+date, uuid, list or record. A record is an element whose fields are those of
+the schema type that referenced_entity names; a list repeats the type or the
+value domain that referenced_entity names.
 
 ** referenced_entity
 :PROPERTIES:

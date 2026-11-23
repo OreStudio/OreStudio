@@ -8,7 +8,7 @@
 #+filetags: :design_the_scripted_trade_subsystem:sprint_30:v0:
 #+owner: marco
 #+branch: feature/describe-every-product-by-its-schema
-#+pr:
+#+pr: 5040
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-21
@@ -59,7 +59,11 @@ Revised with the user on 2026-11-22, after the analysis in the notes below.
   =--check= fails when the committed seed differs.
 - The metamodel moves to =ores.ore= first, in [[id:0FD7D2A8-7A4A-4052-A4D5-6C8A01CAAA41][Move the ORE metamodel into ores.ore]], which blocks
   this task.
-- =product_type= states the element each type is read under.
+- The element each trade type is read under is a fact of ORE's schema, so =ores.ore=
+  states it: the trade's data element is a field of the trade of its type,
+  =/Trade[TradeType='Swap']/SwapData=. =product_type= needs no element column;
+  its seed is written by compass's catalogue loader, which a new column would
+  have had to change (decided in PR 1).
 - Each form states its product tag (scripted) or ORE pricing engine type
   (native); =describe_product= takes an optional pricing configuration and, when
   given one, states the model and engine it assigns. Cost is left to a later task.
@@ -70,7 +74,7 @@ Revised with the user on 2026-11-22, after the analysis in the notes below.
 
 PRs, each ending in a check, once the move is merged:
 
-1. The element of each product type, and the =instruments.xsd= leaves of every
+1. The element of each trade type, and the =instruments.xsd= leaves of every
    native product in the =ore.parameters= dataset, by the extraction method; a
    test fails when a native product of the catalogue has no leaf.
 2. A script-only product's fields from its script's inputs, and the annotations
@@ -93,9 +97,39 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Products of the catalogue given an element of the vendored schema | 119; 2 have none (CommodityPairwiseVarianceSwap, CommodityWindowBarrierOption) | =python3 projects/ores.sql/utility/extract_instrument_terms.py= | PR 1 |
+| Schema types and fields reachable from those elements | 441 types, 2929 fields; 330 fields described by the guide | =python3 projects/ores.sql/utility/extract_instrument_terms.py= | PR 1 |
+| Rows of the =ore.parameters= seed | 5602, from 2559 | =python3 projects/ores.sql/utility/generate_ore_parameters_dataset.py= | PR 1 |
+| Leaf rows if every product's paths were expanded instead | 11626 | a walk of =instrument_terms.json= from each product's element, before the substitution groups were read | PR 1 |
 
 * Notes
+
+** PR 1: the fields of the native products
+
+The structure comes from the vendored schemas under =external/ore/xsd=, not from
+the trade classes' =fromXML=. The schemas are the release that =ore_file_version=
+records (1.8.17.0), they state a field's type, whether it must be present and
+whether it repeats, and they are parsed by a standard library; a regex over
+=fromXML= would state less and break more often. The guide gives the words, as it
+does for the conventions and the curves.
+
+A row is a field of a schema type, not a leaf of a document. Expanding every
+product's paths gives 11626 leaf rows, because a type such as =legData= is read
+under many products; describing each type once gives 2929. The trade's data
+elements are fields of the trade of their type, so a product is read from
+=/Trade[TradeType='Swap']/SwapData= down.
+A field whose value is a type names it through a value domain, =record:legData=
+or =list:legData=, whose storage kind is =record= or =list= and whose referenced
+entity is the type; those columns already existed and needed no change.
+
+A field the guide does not describe is still written, because a form needs every
+field; its text says the guide does not describe it, and the generator prints
+the count. The XSD reads three constructs that a naive walk misses: a choice
+(=swaptionData= offers two orders of the same fields, and a field is required
+only when every alternative requires it), an abstract element and its
+substitution group (=legDataType= stands for =FixedLegData= and the other legs),
+and a reference to a global element.
+
 
 ** What exists, and how it fits
 
@@ -196,12 +230,24 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5040][#5040]] | [ore] Describe the fields of every native product in the ore parameters |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 5040.1 | guide text of a shared type came from the alphabetically first node | extract_instrument_terms.py | accept | the type's own node wins, guide_node records the node used, and the 14 fields two nodes describe differently are printed |
+| 5040.2 | the help of 89% of the rows was the undocumented filler | instrument_parameter_rows.py | accept | an undocumented field's help is its format sentence; its description still says the guide does not describe it |
+| 5040.3 | introduced_in is "1.8.17.0 or earlier" | none | no change | the curve parameters state the same convention, "1.8.0.7 or earlier" |
+| 5040.4 | an inline type named like a named type would drop fields silently | extract_instrument_terms.py | accept | the extractor refuses the clash |
+| 5040.5 | the catalogue is parsed by column position; the convention extractor is not in the check | extract_instrument_terms.py, local_checks.py | accept | the header row is checked; extract_convention_terms.py joins the check's paths |
+| 5040.6 | post the synthetic rebuild's result | none | no change | rebuilt; the service starts and runs, so the bad_alloc was the stale binary |
 
 * Result
+
+In progress: PR 1 is in. Every native product of the catalogue has its fields
+in the =ore.parameters= dataset, read from the vendored ORE schemas with the
+guide's words: one row for each field of each schema type, 2929 in all, and
+the data element of each trade type as a field of its trade,
+=/Trade[TradeType='Swap']/SwapData=. The script-only products' fields, the
+=describe_product= operation and its HTTP and BFF routes follow in PRs 2 to 4.

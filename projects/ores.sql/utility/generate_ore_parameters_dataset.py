@@ -42,6 +42,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import analytic_parameter_rows  # noqa: E402
 import convention_parameter_rows  # noqa: E402
 import curve_parameter_rows  # noqa: E402
+import instrument_parameter_rows  # noqa: E402
 import pricing_parameter_rows  # noqa: E402
 import block_parameter_rows  # noqa: E402
 import setup_parameter_rows  # noqa: E402
@@ -51,13 +52,17 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..")
 SEED = os.path.join(ROOT, "projects", "ores.sql", "populate", "ore",
                     "ore_ore_parameters_artefact_populate.sql")
 
-VALUE_DOMAINS = (
-    ("string", "Text", "string"),
-    ("boolean", "Boolean", "boolean"),
-    ("integer", "Integer", "integer"),
-    ("double", "Decimal", "double"),
-    ("date", "Date", "date"),
+LEAF_VALUE_DOMAINS = (
+    ("string", "Text", "string", ""),
+    ("boolean", "Boolean", "boolean", ""),
+    ("integer", "Integer", "integer", ""),
+    ("double", "Decimal", "double", ""),
+    ("date", "Date", "date", ""),
 )
+
+
+def value_domains():
+    return list(LEAF_VALUE_DOMAINS) + instrument_parameter_rows.value_domains()
 
 SQL_HEADER = """/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
@@ -158,11 +163,12 @@ PARAMETER_COLUMNS = (
 def rows():
     out = (setup_parameter_rows.rows() + block_parameter_rows.rows()
            + analytic_parameter_rows.rows() + pricing_parameter_rows.rows()
-           + convention_parameter_rows.rows() + curve_parameter_rows.rows())
+           + convention_parameter_rows.rows() + curve_parameter_rows.rows()
+           + instrument_parameter_rows.rows())
     ids = [parameter_id(r) for r in out]
     if len(set(ids)) != len(ids):
         raise ValueError("two parameters document the same leaf")
-    unknown = {r["domain"] for r in out} - {code for code, _, _ in VALUE_DOMAINS}
+    unknown = {r["domain"] for r in out} - {domain[0] for domain in value_domains()}
     if unknown:
         raise ValueError(f"no value domain for {sorted(unknown)}")
     return out
@@ -174,14 +180,15 @@ def missing():
             + analytic_parameter_rows.missing(analytic_parameter_rows.rows())
             + pricing_parameter_rows.missing(pricing_parameter_rows.rows())
             + convention_parameter_rows.missing(convention_parameter_rows.rows())
-            + curve_parameter_rows.missing(curve_parameter_rows.rows()))
+            + curve_parameter_rows.missing(curve_parameter_rows.rows())
+            + instrument_parameter_rows.missing(instrument_parameter_rows.rows()))
 
 
 def render(all_rows):
     domain_rows = ",\n".join(
         f"        (v_dataset_id, ores_utility_system_tenant_id_fn(), {sql_text(code)}, 0, "
-        f"{sql_text(name)}, {sql_text(kind)}, '')"
-        for code, name, kind in VALUE_DOMAINS)
+        f"{sql_text(name)}, {sql_text(kind)}, {sql_text(entity)})"
+        for code, name, kind, entity in value_domains())
     parameter_rows = ",\n".join(artefact_row(r) for r in all_rows)
     return (SQL_HEADER
             + DATASET.format(
@@ -221,6 +228,10 @@ def main():
     curve_gaps = curve_parameter_rows.undocumented()
     print(f"{len(curve_gaps)} curve configuration leaves have no text yet and are not written, "
           f"for example {', '.join(curve_gaps[:3])}.", file=sys.stderr)
+    instrument_gaps = instrument_parameter_rows.undocumented()
+    print(f"{len(instrument_gaps)} instrument fields have no text in the guide and are written "
+          f"with a text that says so, for example {', '.join(instrument_gaps[:3])}.",
+          file=sys.stderr)
     content = render(all_rows)
     if args.check:
         current = ""

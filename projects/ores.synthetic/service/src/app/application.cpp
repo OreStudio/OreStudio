@@ -110,7 +110,7 @@ make_adapters(const std::vector<ores::marketdata::domain::feed>& sources,
               const ores::synthetic::feed::feed_build_context& build,
               const std::shared_ptr<ores::synthetic::feed::fault_state>& faults,
               const generator_runner::started_hook& started,
-              const node_stopped_fn& node_stopped) {
+              const node_halted_fn& node_halted) {
     std::vector<simulated_adapter> out;
     for (const auto& source : sources) {
         if (source.session_code != "synthetic-local")
@@ -126,9 +126,9 @@ make_adapters(const std::vector<ores::marketdata::domain::feed>& sources,
              surfaces = &generators.surfaces(),
              name = source.name,
              provider = source.publisher_code,
-             node_stopped] {
+             node_halted] {
                 return system_generator_offers(
-                    registry, ctx, build, name, provider, faults, surfaces, node_stopped);
+                    registry, ctx, build, name, provider, faults, surfaces, node_halted);
             },
             &generators.running_names(),
             started);
@@ -214,6 +214,8 @@ public:
     bool stop(const std::string& source_name) override {
         const auto before = graph({});
         const auto done = stop_source(source_name);
+        if (done)
+            halt_what_the_stops_starve();
         journal_->say_changes(before, graph({}));
         return done;
     }
@@ -221,6 +223,8 @@ public:
     bool start(const std::string& source_name) override {
         const auto before = graph({});
         const auto done = start_source(source_name);
+        if (done)
+            halt_what_the_stops_starve();
         journal_->say_changes(before, graph({}));
         return done;
     }
@@ -317,9 +321,6 @@ private:
         return *found;
     }
 
-    // A node is withheld by the offers it makes, so every running adapter re-applies its demand:
-    // a stopped node's runs stop at once, and a started one's resume at once. A stopped upstream
-    // starves the surfaces that read it through the market they share.
     bool set_node(const std::string& name, bool stopped) {
         const auto found = graph_node(name);
         if (!found)
@@ -331,18 +332,53 @@ private:
             else
                 stopped_nodes_.erase(name);
         }
-        const std::lock_guard lock(mu_);
-        for (auto& one : adapters_)
-            if (!one.stopped)
-                one.runner->reapply();
+        halt_what_the_stops_starve();
         ORES_LOG_SEV(lg(), info) << "Feed node " << name << " (" << found->kind << ")"
                                  << (stopped ? " stopped" : " started");
         return true;
     }
 
+    // The offers withhold every node the operators' stops leave not running, the stopped nodes
+    // and every node they starve, so a surface whose curve stopped stops too rather than run on
+    // the curve's last value. A diagnostic halts nothing: a surface withheld for failing would
+    // never run again to clear it. Every running adapter then re-applies its demand, so the halts
+    // land at once and lift at once.
+    void halt_what_the_stops_starve() {
+        auto whole = build_graph();
+        std::set<std::string> stopped;
+        {
+            const std::lock_guard lock(nodes_mu_);
+            stopped = stopped_nodes_;
+        }
+        {
+            const std::lock_guard lock(mu_);
+            for (const auto& one : adapters_)
+                if (one.stopped)
+                    stopped.insert(one.name);
+        }
+        derive_states(whole, stopped);
+        std::set<std::string> halted;
+        for (const auto& n : whole.nodes)
+            if (n.state != node_state::running)
+                halted.insert(n.name);
+        {
+            const std::lock_guard lock(nodes_mu_);
+            halted_ = std::move(halted);
+        }
+        const std::lock_guard lock(mu_);
+        for (auto& one : adapters_)
+            if (!one.stopped)
+                one.runner->reapply();
+    }
+
     [[nodiscard]] bool node_stopped(const std::string& name) const {
         const std::lock_guard lock(nodes_mu_);
         return stopped_nodes_.contains(name);
+    }
+
+    [[nodiscard]] bool node_halted(const std::string& name) const {
+        const std::lock_guard lock(nodes_mu_);
+        return halted_.contains(name);
     }
 
     simulated_adapter* find(const std::string& source_name) {
@@ -357,7 +393,7 @@ private:
         for (const auto& row :
              ores::synthetic::repository::stopped_feed_node_repository().read_latest(sys_ctx))
             out.emplace(row.node_name,
-                        "Stopped by " + row.performed_by + " (" + row.change_reason_code + ")" +
+                        "Stopped by " + row.modified_by + " (" + row.change_reason_code + ")" +
                             (row.change_commentary.empty() ? std::string(".") :
                                                              ": " + row.change_commentary));
         return out;
@@ -399,7 +435,7 @@ private:
                                    build_,
                                    faults_,
                                    started,
-                                   [this](const std::string& name) { return node_stopped(name); });
+                                   [this](const std::string& name) { return node_halted(name); });
         const auto stopped = stopped_rows(true);
         std::size_t attempted = 0;
         try {
@@ -431,6 +467,8 @@ private:
         }
         for (auto& one : adapters_)
             generators_.attach(*one.runner);
+        // The stops an operator left read back from the table halt what they starve.
+        halt_what_the_stops_starve();
         // A derived source serves what the store already holds, so it runs beside the
         // simulator on the same catalogue: one for each feed of its session.
         for (const auto& source : sources) {
@@ -492,6 +530,7 @@ private:
     std::vector<simulated_adapter> adapters_;
     mutable std::mutex nodes_mu_;
     std::set<std::string> stopped_nodes_;
+    std::set<std::string> halted_;
     ores::platform::concurrency::jthread worker_;
 };
 

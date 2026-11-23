@@ -31,6 +31,7 @@
 #include <chrono>
 #include <cmath>
 #include <cstddef>
+#include <memory>
 #include <string>
 #include <thread>
 #include <vector>
@@ -251,6 +252,18 @@ TEST_CASE("each contributor of a surface is its own stream", "[fx_vol_surface_fe
     CHECK(moved);
 }
 
+// The diagnostics a surface raises and clears, as said.
+struct recorded_diagnostics final : ores::synthetic::feed::node_diagnostics {
+    void raise(const std::string& node, const std::string& message) override {
+        raised.push_back(node + "|" + message);
+    }
+    void clear(const std::string& node) override {
+        cleared.push_back(node);
+    }
+    std::vector<std::string> raised;
+    std::vector<std::string> cleared;
+};
+
 TEST_CASE("a tick whose run has not published what the surface reads says which and sends nothing",
           "[fx_vol_surface_feed]") {
     // The gates are the sentences an operator greps for, so they are asserted through the tick
@@ -273,10 +286,18 @@ TEST_CASE("a tick whose run has not published what the surface reads says which 
     const auto tick = [&] {
         return feed.tick({.elapsed_seconds = 1.0, .observed_at = at, .drivers = drivers});
     };
+    const auto said = std::make_shared<recorded_diagnostics>();
+    feed.set_diagnostics(said);
 
     CHECK(tick() ==
           "no market: curve:" + curve_member_code("synthetic.test.ir.yield_curve.ois.eur"));
+    CHECK(tick() ==
+          "no market: curve:" + curve_member_code("synthetic.test.ir.yield_curve.ois.eur"));
     CHECK(feed.publish_count() == 0);
+    // A reason that does not change is raised once, under the surface's name.
+    REQUIRE(said->raised.size() == 1);
+    CHECK(said->raised.front() == "synthetic.fx_vol.eurusd|no market: curve:" +
+                                      curve_member_code("synthetic.test.ir.yield_curve.ois.eur"));
 
     // The gate refuses before it reads a curve, so two stated points are all these need.
     const auto flat = [](double factor) {
@@ -298,6 +319,8 @@ TEST_CASE("a tick whose run has not published what the surface reads says which 
     market.values().publish_curve(usd_id, std::chrono::year_month_day{}, flat(0.99), at);
     CHECK(tick() == "no market: spot:synthetic.test.spot.eurusd");
     CHECK(feed.publish_count() == 0);
+    CHECK(said->raised.size() == 3);
+    CHECK(said->cleared.empty());
 
     // With all three published the gate stops refusing, so the next thing a tick would do is
     // send; the board read is what a test can follow without a broker, and the round trip does.

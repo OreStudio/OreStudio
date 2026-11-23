@@ -1,4 +1,4 @@
--- The interest rate fixing addresses no fixing answers, by trade type, party and source column.
+-- The interest rate and FX fixing addresses no fixing answers, and where the fixings came from.
 select set_config('app.current_tenant_id',
                   (select id::text from ores_iam_tenants_tbl
                    where code = 'acme_corporation' and valid_to = ores_utility_infinity_timestamp_fn()),
@@ -20,7 +20,7 @@ from ores_trading_market_references_fn(current_setting('app.current_tenant_id'):
 create temp table empty_ir as
 select distinct r.oresmd_uri
 from refs r
-where r.oresmd_uri like 'oresmd://ir/%type=fixing%'
+where (r.oresmd_uri like 'oresmd://ir/%type=fixing%' or r.oresmd_uri like 'oresmd://fx/%type=fixing%')
   and not exists (select 1
                   from ores_marketdata_market_series_tbl s
                   join ores_marketdata_market_fixings_tbl f
@@ -30,7 +30,14 @@ where r.oresmd_uri like 'oresmd://ir/%type=fixing%'
 
 select (select count(*) from all_trades) as trades,
        (select count(distinct oresmd_uri) from refs where oresmd_uri like 'oresmd://ir/%type=fixing%') as ir_fixing_addresses,
-       (select count(*) from empty_ir) as empty_ir_fixing_addresses;
+       (select count(distinct oresmd_uri) from refs where oresmd_uri like 'oresmd://fx/%type=fixing%') as fx_fixing_addresses,
+       (select count(*) from empty_ir) as empty_fixing_addresses;
+
+select f.source, count(*) as fixings, count(distinct s.oresmd_uri) as items
+from ores_marketdata_market_fixings_tbl f
+join ores_marketdata_market_series_tbl s on s.id = f.series_id and s.valid_to = ores_utility_infinity_timestamp_fn()
+where f.valid_to = ores_utility_infinity_timestamp_fn()
+group by 1 order by 1;
 
 select e.oresmd_uri, t.trade_type, t.party, t.centre, r.source, count(distinct t.id) as trades
 from empty_ir e

@@ -13,7 +13,7 @@
       <TriggerPrice>0.7096</TriggerPrice>
       <Underlying>
         <Type>FX</Type>
-        <Name>TR20H-EUR-USD</Name>
+        <Name>WMR1000NYC-EUR-USD</Name>
       </Underlying>
       <ExpiryDate>2026-12-02</ExpiryDate>
       <SettlementDate>2026-12-02</SettlementDate>
@@ -44,7 +44,7 @@
       <TriggerPrice>0.7075</TriggerPrice>
       <Underlying>
         <Type>FX</Type>
-        <Name>TR20H-EUR-USD</Name>
+        <Name>WMR1000NYC-EUR-USD</Name>
       </Underlying>
       <ExpiryDate>2032-10-02</ExpiryDate>
       <SettlementDate>2032-10-02</SettlementDate>

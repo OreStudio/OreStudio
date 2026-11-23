@@ -5,8 +5,8 @@
     <FxPairwiseVarianceSwapData>
       <LongShort>Long</LongShort>
       <Underlyings>
-        <Value>FX-TR20H-EUR-USD</Value>
-        <Value>FX-TR20H-GBP-USD</Value>
+        <Value>FX-WMR1000NYC-EUR-USD</Value>
+        <Value>FX-WMR1000NYC-GBP-USD</Value>
       </Underlyings>
       <UnderlyingStrikes>
         <Value>0.2</Value>
@@ -37,8 +37,8 @@
     <FxPairwiseVarianceSwapData>
       <LongShort>Short</LongShort>
       <Underlyings>
-        <Value>FX-TR20H-EUR-USD</Value>
-        <Value>FX-TR20H-GBP-USD</Value>
+        <Value>FX-WMR1000NYC-EUR-USD</Value>
+        <Value>FX-WMR1000NYC-GBP-USD</Value>
       </Underlyings>
       <UnderlyingStrikes>
         <Value>0.2</Value>

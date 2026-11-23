@@ -30,6 +30,7 @@
 #include "ores.refdata.api/messaging/counterparty_protocol.hpp"
 #include "ores.refdata.api/messaging/currency_pair_protocol.hpp"
 #include "ores.refdata.api/messaging/curve_definition_protocol.hpp"
+#include "ores.refdata.api/messaging/cut_code_protocol.hpp"
 #include "ores.refdata.api/messaging/equity_underlying_protocol.hpp"
 #include "ores.refdata.api/messaging/floating_index_type_protocol.hpp"
 #include "ores.refdata.api/messaging/ibor_index_convention_protocol.hpp"
@@ -63,6 +64,7 @@
 #include <array>
 #include <chrono>
 #include <format>
+#include <map>
 #include <optional>
 #include <set>
 #include <string>
@@ -300,10 +302,27 @@ trading_trade_population_writer::resolve_scope(const boost::uuids::uuid& config_
     const auto prices = [&](const std::string& currency) {
         return priced.empty() || priced.contains(currency);
     };
-    for (const auto& pair : pairs)
-        if (prices(pair.base_currency) && prices(pair.quote_currency))
-            scope.currency_pairs.push_back(domain::currency_pair_reference{
-                .base = pair.base_currency, .quote = pair.quote_currency});
+    /*
+     * An FX trade observes the fixing of its pair's default cut, so a pair
+     * whose cut names no fixing source is left out: a trade on it would
+     * observe a fixing nothing publishes.
+     */
+    ores::refdata::messaging::list_cut_codes_request cut_req;
+    cut_req.limit = page;
+    std::map<std::string, std::string> cut_sources;
+    for (const auto& cut : read(cut_req).cuts)
+        cut_sources.emplace(cut.code, cut.fixing_source_code);
+    for (const auto& pair : pairs) {
+        if (!prices(pair.base_currency) || !prices(pair.quote_currency) || !pair.default_cut_code)
+            continue;
+        const auto source = cut_sources.find(*pair.default_cut_code);
+        if (source == cut_sources.end())
+            continue;
+        scope.currency_pairs.push_back(
+            domain::currency_pair_reference{.base = pair.base_currency,
+                                            .quote = pair.quote_currency,
+                                            .fixing_source = source->second});
+    }
 
     /*
      * An equity trade names an underlying from the tenant's equity catalogue,
@@ -400,6 +419,18 @@ trading_trade_population_writer::resolve_scope(const boost::uuids::uuid& config_
         req.limit = page;
         generators.spots = whole(read(req).fx_spot_generation_configs, "spot configs");
     }
+    /*
+     * An FX trade observes the fixing of its pair, and the simulator fixes a
+     * pair from the spot a spot config quotes. A pair no spot config quotes,
+     * such as a cross no vendor collection carries, has no fixing anyone
+     * publishes, so it is left out of the FX draw.
+     */
+    std::erase_if(scope.currency_pairs, [&generators](const domain::currency_pair_reference& pair) {
+        return std::ranges::none_of(generators.spots, [&pair](const auto& spot) {
+            return spot.enabled && spot.base_currency_code == pair.base &&
+                   spot.quote_currency_code == pair.quote;
+        });
+    });
     {
         synthetic::list_fx_vol_surface_feeds_request req;
         req.limit = page;

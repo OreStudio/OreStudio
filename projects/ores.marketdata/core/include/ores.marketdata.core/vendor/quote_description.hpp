@@ -91,13 +91,27 @@ struct fx_option_quote final {
 };
 
 /**
+ * @brief One fixing of an index, as a provider's id describes it.
+ *
+ * The item is the fixing's oresmd address, such as
+ * oresmd://ir/USD?type=fixing&index=ibor&name=SOFR, which names the index by its market name.
+ * A fixing is a durable fact: the value of the index on one date.
+ */
+struct index_fixing final {
+    std::string item;
+
+    bool operator==(const index_fixing&) const = default;
+};
+
+/**
  * @brief What a vendor id says about the quote it names, in no provider's words.
  *
- * The spot quote of a currency pair, one pillar of an interest rate curve, and one point of an
- * FX volatility surface are described today. Another instrument is a further alternative, and
- * each notation then reads and writes it or refuses it.
+ * The spot quote of a currency pair, one pillar of an interest rate curve, one point of an
+ * FX volatility surface and one fixing of an index are described today. Another instrument is a
+ * further alternative, and each notation then reads and writes it or refuses it.
  */
-using quote_description = std::variant<fx_spot_quote, ir_curve_pillar, fx_option_quote>;
+using quote_description =
+    std::variant<fx_spot_quote, ir_curve_pillar, fx_option_quote, index_fixing>;
 
 }
 

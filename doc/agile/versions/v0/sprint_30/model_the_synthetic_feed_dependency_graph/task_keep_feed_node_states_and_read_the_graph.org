@@ -8,7 +8,7 @@
 #+filetags: :model_the_synthetic_feed_dependency_graph:sprint_30:v0:
 #+owner: marco
 #+branch: feature/keep-feed-node-states-and-read-the-graph
-#+pr:
+#+pr: 5056
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-23
@@ -106,7 +106,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5056][#5056]] | [synthetic] Derive every feed node's state and read the feed graph |
 
 * Review
 

@@ -217,6 +217,19 @@ evidence. The engine a pricing configuration assigns a form's product tag is
 not in the response yet: the configuration is analytics' data, and reading it
 needs its own cache.
 
+** PR 4: the routes
+
+=ores.http= and the BFF serve =GET /api/trading/products= and
+=GET /api/trading/products/{code}=, each naming every field it answers, so a screen
+reads one shape from either server; a product the service cannot describe is a
+404 with the service's reason. Against the running fleet the two servers'
+answers are equal byte for byte: the list of 159 products, Swap's 400 fields over
+88 schema types, and Accumulator01's 15 inputs, 6 codes and scripted form.
+
+The live check found that the trading service's role could not list =ores.ore='s
+parameters: =TradingService= now holds =ore::ore_parameters:read=, as
+=ReportingService= does. The route inventory classifies and pairs the two routes.
+
 ** Which component serves describe_product
 
 Who needs the schema, and when:
@@ -327,4 +340,7 @@ the data element of each trade type as a field of its trade,
 coded script inputs are data, the entity =script_input_code=, published with their
 script. PR 3 is in: trading serves =describe_product= and =list_products= from its
 own rows and =ores.ore.client='s cache, which now holds the parameters for both
-services. The HTTP and BFF routes follow.
+services. PR 4 is in: =ores.http= and the BFF serve =GET /api/trading/products= and
+=GET /api/trading/products/{code}=, and give the same answers byte for byte. What
+remains is the engine of each form: the engine a pricing configuration assigns
+the form's product tag, which is analytics' data.

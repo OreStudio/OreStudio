@@ -23,6 +23,7 @@ set(files
     "book_routes_tests.cpp"
     "booking_routes_tests.cpp"
     "main.cpp"
+    "product_routes_tests.cpp"
     "structure_routes_tests.cpp"
     "trade_read_routes_tests.cpp"
     "trading_view_routes_tests.cpp"

@@ -114,7 +114,7 @@ void pricing_engine_import::register_routes(
         registry->register_route(built);
     };
 
-    add(router->post("/api/reporting/pricing-engines/ore-import/preview")
+    add(router->post("/api/reporting/pricing-engines/ore-import/preview").catalogue("web_post_reporting_pricing_engines_ore_import_preview", "reporting", "preview", true)
             .summary("What importing an ORE pricing engines document would change")
             .description("The ORE service parses the file and says what importing it would do. "
                          "Nothing is written, and the answer is the service's own words, a "
@@ -134,7 +134,7 @@ void pricing_engine_import::register_routes(
                 });
             }));
 
-    add(router->post("/api/reporting/pricing-engines/ore-import")
+    add(router->post("/api/reporting/pricing-engines/ore-import").catalogue("web_post_reporting_pricing_engines_ore_import", "reporting", "ore_import", true)
             .summary("Import an ORE pricing engines document")
             .description("The ORE service writes the document through the save the screen itself "
                          "uses, so the validation and the history are the screen's, and answers "

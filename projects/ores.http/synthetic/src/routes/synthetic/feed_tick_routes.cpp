@@ -137,7 +137,7 @@ void feed_tick_routes::register_routes(
         registry->register_route(built);
     };
 
-    add(router->get("/api/synthetic/feeds/{id}/ticks")
+    add(router->get("/api/synthetic/feeds/{id}/ticks").catalogue("web_get_synthetic_feeds_id_ticks", "simulation", "feeds", false)
             .summary("Read one feed's newest ticks, oldest first")
             .description("The feed is read as the session first, so a feed the session cannot "
                          "see has no ticks to show. The resource names the feed's kind. The "
@@ -186,7 +186,7 @@ void feed_tick_routes::register_routes(
                     });
             }));
 
-    add(router->get("/api/synthetic/feed-raster")
+    add(router->get("/api/synthetic/feed-raster").catalogue("web_get_synthetic_feed_raster", "simulation", "feed_raster", false)
             .summary("Read when each feed's ticks arrived in a window, the feeds that run first")
             .description("A stopped feed keeps its row with no ticks, so a reader sees that it "
                          "is silent. The read listens to the feeds that run and stops listening "

@@ -409,6 +409,7 @@ void fx_vol_surface_feed_contributor_web_routes::register_routes(
             .summary("List fx-vol-surface-feed-contributors for a screen")
             .description("One page with its total, or every row when no limit is named.")
             .tags({"synthetic"})
+            .entity_catalogue("synthetic", "fx_vol_surface_feed_contributor", "screen_list")
             .auth_required()
             .handler([&session](const http_request& req) { return handle_list(req, session); });
     const auto list_built = list_route.build();
@@ -420,6 +421,7 @@ void fx_vol_surface_feed_contributor_web_routes::register_routes(
             .summary("Read one fx-vol-surface-feed-contributors record for a screen")
             .description("One row, named by its key.")
             .tags({"synthetic"})
+            .entity_catalogue("synthetic", "fx_vol_surface_feed_contributor", "screen_get")
             .auth_required()
             .handler([&session](const http_request& req) { return handle_key(req, session); });
     const auto key_built = key_route.build();
@@ -431,6 +433,7 @@ void fx_vol_surface_feed_contributor_web_routes::register_routes(
             .summary("List one parent's fx-vol-surface-feed-contributors for a screen")
             .description("Every row of one parent.")
             .tags({"synthetic"})
+            .entity_catalogue("synthetic", "fx_vol_surface_feed_contributor", "screen_list_by")
             .auth_required()
             .handler([&session](const http_request& req) { return handle_by(req, session); });
     const auto by_built = by_route.build();
@@ -442,6 +445,7 @@ void fx_vol_surface_feed_contributor_web_routes::register_routes(
             .summary("Write one fx-vol-surface-feed-contributors record for a screen")
             .description("A new row with no version, else a correction of the version read.")
             .tags({"synthetic"})
+            .entity_catalogue("synthetic", "fx_vol_surface_feed_contributor", "screen_put")
             .auth_required()
             .handler([&session](const http_request& req) { return handle_put(req, session); });
     const auto put_built = put_route.build();
@@ -453,6 +457,7 @@ void fx_vol_surface_feed_contributor_web_routes::register_routes(
             .summary("Remove one fx-vol-surface-feed-contributors record for a screen")
             .description("Removes the row the body's key names.")
             .tags({"synthetic"})
+            .entity_catalogue("synthetic", "fx_vol_surface_feed_contributor", "screen_delete")
             .auth_required()
             .handler([&session](const http_request& req) { return handle_delete(req, session); });
     const auto remove_built = remove_route.build();

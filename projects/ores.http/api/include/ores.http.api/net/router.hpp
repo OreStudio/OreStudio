@@ -107,6 +107,30 @@ public:
     route_builder& tags(std::vector<std::string> t);
 
     /**
+     * @brief The route's place in the operation catalogue: its stable tool
+     * name, its published area, its entity and whether it writes.
+     */
+    route_builder& catalogue(std::string tool, std::string area, std::string entity, bool writes);
+
+    /**
+     * @brief Takes a place in the catalogue, keeping the route's documentation.
+     */
+    route_builder& place(domain::route_catalogue placed);
+
+    /**
+     * @brief A generated entity route's place, from its model.
+     */
+    route_builder& entity_catalogue(std::string_view component,
+                                    std::string_view entity,
+                                    std::string_view identifier);
+
+    /**
+     * @brief A generated operation route's place, from its model.
+     */
+    route_builder&
+    operation_catalogue(std::string_view component, std::string_view entity, std::string_view name);
+
+    /**
      * @brief Adds a query parameter for OpenAPI documentation.
      */
     route_builder& query_param(const std::string& name,
@@ -194,9 +218,7 @@ private:
     bool requires_auth_ = false;
     bool auth_declared_ = false;
     std::vector<std::string> required_roles_;
-    std::string summary_;
-    std::string description_;
-    std::vector<std::string> tags_;
+    domain::route_catalogue catalogue_;
     std::vector<domain::query_param> query_params_;
     std::uint64_t max_body_size_ = 0;
     std::string rate_policy_;
@@ -264,6 +286,16 @@ public:
     match(domain::http_method method,
           const std::string& path,
           std::unordered_map<std::string, std::string>& path_params) const;
+
+    /**
+     * @brief Every registered route whose place in the catalogue the server
+     * cannot accept, as its method and pattern and why: it declares none, its
+     * area is not a published one, it shares its tool, or it changes something
+     * by its method while declaring that it does not write and is neither a
+     * bulk get nor an operation named for reading. The server refuses to start
+     * with one, so a write cannot be declared out of the six-eyes hold.
+     */
+    [[nodiscard]] std::vector<std::string> uncatalogued() const;
 
     /**
      * @brief Returns all registered routes (for OpenAPI generation).

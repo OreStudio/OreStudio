@@ -276,7 +276,7 @@ void site_routes::register_routes(std::shared_ptr<ores::http::net::router> route
                                   std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
                                   std::optional<loaded_site> site) {
     const auto health =
-        router->get("/api/health")
+        router->get("/api/health").catalogue("web_get_health", "operations", "health", false)
             .summary("Answer that the server is alive")
             .tags({"site"})
             .auth_optional()
@@ -287,7 +287,7 @@ void site_routes::register_routes(std::shared_ptr<ores::http::net::router> route
     router->add_route(health);
     registry->register_route(health);
     const auto client_log =
-        router->post("/api/client-log")
+        router->post("/api/client-log").catalogue("web_post_client_log", "operations", "client_log", true)
             .summary("Write the browser's trail into the journal")
             .tags({"site"})
             .auth_required()
@@ -301,7 +301,7 @@ void site_routes::register_routes(std::shared_ptr<ores::http::net::router> route
         return;
     const auto shared = std::make_shared<const loaded_site>(std::move(*site));
     const auto site_read =
-        router->get("/api/site")
+        router->get("/api/site").catalogue("web_get_site", "operations", "site", false)
             .summary("Read what the client needs to render itself")
             .tags({"site"})
             .auth_optional()
@@ -312,7 +312,7 @@ void site_routes::register_routes(std::shared_ptr<ores::http::net::router> route
     router->add_route(site_read);
     registry->register_route(site_read);
     const auto deployment_read =
-        router->get("/api/site/deployment")
+        router->get("/api/site/deployment").catalogue("web_get_site_deployment", "operations", "deployment", false)
             .summary("Read the deployment's plumbing, where the developer surface is offered")
             .tags({"site"})
             .auth_optional()

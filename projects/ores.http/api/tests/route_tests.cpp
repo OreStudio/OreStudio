@@ -147,9 +147,9 @@ TEST_CASE("route_default_construction", "[route]") {
     CHECK_FALSE(sut.requires_auth);
     CHECK_FALSE(sut.auth_declared);
     CHECK(sut.required_roles.empty());
-    CHECK(sut.summary.empty());
-    CHECK(sut.description.empty());
-    CHECK(sut.tags.empty());
+    CHECK(sut.catalogue.summary.empty());
+    CHECK(sut.catalogue.description.empty());
+    CHECK(sut.catalogue.tags.empty());
     CHECK(sut.query_params.empty());
     CHECK_FALSE(sut.body_schema.has_value());
     CHECK_FALSE(sut.success_response_schema.has_value());

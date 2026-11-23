@@ -84,7 +84,7 @@ void adapter_routes::register_routes(
         registry->register_route(built);
     };
 
-    add(router->get("/api/marketdata/adapters")
+    add(router->get("/api/marketdata/adapters").catalogue("web_get_marketdata_adapters", "market-data", "adapters", false)
             .summary("Every adapter the service tracks, with the kind of source it reads")
             .description("The status names one adapter per feed and says nothing about the "
                          "source. The catalogue does: a feed names its session, and the session's "

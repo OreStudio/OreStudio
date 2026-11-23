@@ -242,6 +242,7 @@ void storage_routes::register_routes(
     // /api/v1/storage/{bucket} also matches a path with a slash: registration
     // order is what keeps the longer pattern in front.
     router->add_route(router->put(object_pattern)
+                          .catalogue("put_storage_object", "operations", "storage_objects", true)
                           .summary("Upload storage object")
                           .description("Upload an object into the named bucket under the given key")
                           .tags({"storage"})
@@ -259,6 +260,7 @@ void storage_routes::register_routes(
                           .build());
 
     router->add_route(router->get(object_pattern)
+                          .catalogue("get_storage_object", "operations", "storage_objects", false)
                           .summary("Download storage object")
                           .description("Download an object from the named bucket by key, or one "
                                        "file out of the package it holds. A Range asks for part "
@@ -274,6 +276,7 @@ void storage_routes::register_routes(
                           .build());
 
     router->add_route(router->head(object_pattern)
+                          .catalogue("head_storage_object", "operations", "storage_objects", false)
                           .summary("Check storage object")
                           .description("Report whether an object exists and how large it is, "
                                        "without transferring it")
@@ -283,6 +286,7 @@ void storage_routes::register_routes(
                           .build());
 
     router->add_route(router->delete_(object_pattern)
+                          .catalogue("delete_storage_object", "operations", "storage_objects", true)
                           .summary("Delete storage object")
                           .description("Delete an object from the named bucket by key")
                           .tags({"storage"})
@@ -292,6 +296,7 @@ void storage_routes::register_routes(
 
     router->add_route(
         router->get(bucket_pattern)
+            .catalogue("list_storage_objects", "operations", "storage_objects", false)
             .summary("List storage objects")
             .description("List a page of the objects in a bucket, filtered by "
                          "key prefix")

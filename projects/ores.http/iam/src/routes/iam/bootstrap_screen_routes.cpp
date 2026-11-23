@@ -133,7 +133,7 @@ void bootstrap_screen_routes::register_routes(
     const auto cookie = cookie_;
 
     const auto status =
-        router->get("/api/bootstrap")
+        router->get("/api/bootstrap").catalogue("web_get_bootstrap", "tenancy", "bootstrap", false)
             .summary("The bootstrap status")
             .description("A composed view owned by the IAM service: whether the deployment "
                          "still needs its first administrator and has a tenant, from the IAM "
@@ -167,7 +167,7 @@ void bootstrap_screen_routes::register_routes(
     registry->register_route(status);
 
     const auto administrator =
-        router->post("/api/bootstrap/administrator")
+        router->post("/api/bootstrap/administrator").catalogue("web_post_bootstrap_administrator", "tenancy", "administrator", true)
             .summary("Create the first administrator, which ends bootstrap mode")
             .tags({"setup"})
             .auth_optional()
@@ -211,7 +211,7 @@ void bootstrap_screen_routes::register_routes(
     registry->register_route(administrator);
 
     const auto complete =
-        router->post("/api/bootstrap/complete")
+        router->post("/api/bootstrap/complete").catalogue("web_post_bootstrap_complete", "tenancy", "complete", true)
             .summary("Record that the first-run journey finished")
             .tags({"setup"})
             .auth_required()
@@ -228,7 +228,7 @@ void bootstrap_screen_routes::register_routes(
     registry->register_route(complete);
 
     const auto setup_run =
-        router->get("/api/tenant-setup")
+        router->get("/api/tenant-setup").catalogue("web_get_tenant_setup", "tenancy", "tenant_setup", false)
             .summary("Read the caller's tenant's own setup run")
             .tags({"setup"})
             .auth_required()
@@ -252,7 +252,7 @@ void bootstrap_screen_routes::register_routes(
     registry->register_route(setup_run);
 
     const auto policy =
-        router->get("/api/registration-policy")
+        router->get("/api/registration-policy").catalogue("web_get_registration_policy", "tenancy", "registration_policy", false)
             .summary("Read what the deployment offers somebody not in it yet")
             .tags({"setup"})
             .auth_optional()

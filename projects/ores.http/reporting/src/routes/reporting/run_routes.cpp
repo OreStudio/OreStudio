@@ -345,7 +345,7 @@ void run_routes::register_routes(std::shared_ptr<ores::http::net::router> router
         registry->register_route(built);
     };
 
-    add(router->post("/api/reporting/reports/{id}/run")
+    add(router->post("/api/reporting/reports/{id}/run").catalogue("web_post_reporting_reports_id_run", "reporting", "reports", true)
             .summary("Start a run of one report definition and answer the run it made")
             .description("The run is the service's production run of the definition, for the "
                          "caller's own tenant, and the answer names it so the page can follow it.")
@@ -367,7 +367,7 @@ void run_routes::register_routes(std::shared_ptr<ores::http::net::router> router
                 });
             }));
 
-    add(router->get("/api/reporting/reports/{id}/runs")
+    add(router->get("/api/reporting/reports/{id}/runs").catalogue("web_get_reporting_reports_id_runs", "reporting", "reports", false)
             .summary("The runs of one report, newest first, with the state each reached")
             .description("A run whose state cannot be read is still a run the person made, so "
                          "the state is left out rather than the page.")
@@ -385,7 +385,7 @@ void run_routes::register_routes(std::shared_ptr<ores::http::net::router> router
                 });
             }));
 
-    add(router->get("/api/reporting/runs/{id}")
+    add(router->get("/api/reporting/runs/{id}").catalogue("web_get_reporting_runs_id", "reporting", "runs", false)
             .summary("One report run: what it is, the state it reached, its batch and its output")
             .description("The definition that raised it, the batch that ran it and the state it "
                          "reached are read beside the run, and each one that cannot be read is "
@@ -416,7 +416,7 @@ void run_routes::register_routes(std::shared_ptr<ores::http::net::router> router
                 });
             }));
 
-    add(router->get("/api/reporting/runs/{id}/errors")
+    add(router->get("/api/reporting/runs/{id}/errors").catalogue("web_get_reporting_runs_id_errors", "reporting", "runs", false)
             .summary("The problems one run recorded, one row each")
             .description("A row names the one thing a problem is about: the curve a curve failure "
                          "names, and otherwise the record the engine named.")

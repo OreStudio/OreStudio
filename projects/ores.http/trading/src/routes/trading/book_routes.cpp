@@ -351,7 +351,7 @@ void book_routes::register_routes(std::shared_ptr<ores::http::net::router> route
         registry->register_route(built);
     };
 
-    add(router->get("/api/books/{id}")
+    add(router->get("/api/books/{id}").catalogue("web_get_books_id", "trading", "books", false)
             .summary("One book and the portfolio it sits in")
             .description("A book names a portfolio by id and no more, so the portfolio's name is "
                          "read by key here rather than left for the screen to look up.")
@@ -376,7 +376,7 @@ void book_routes::register_routes(std::shared_ptr<ores::http::net::router> route
                 });
             }));
 
-    add(router->get("/api/books/portfolios/{id}/rights")
+    add(router->get("/api/books/portfolios/{id}/rights").catalogue("web_get_books_portfolios_id_rights", "trading", "portfolios", false)
             .summary("The rights at one portfolio node, and the accounts that hold them")
             .description("The rights are read only. The server addresses a right by its code "
                          "alone, so a grant of a code another account already holds would collide; "
@@ -394,7 +394,7 @@ void book_routes::register_routes(std::shared_ptr<ores::http::net::router> route
                     });
             }));
 
-    add(router->put("/api/books/books")
+    add(router->put("/api/books/books").catalogue("web_put_books_books", "trading", "books", true)
             .summary("Write one book")
             .description("The row and the version the person read. No version claims the row is "
                          "new; a version claims the row is still the one read.")
@@ -419,7 +419,7 @@ void book_routes::register_routes(std::shared_ptr<ores::http::net::router> route
                 });
             }));
 
-    add(router->put("/api/books/portfolios")
+    add(router->put("/api/books/portfolios").catalogue("web_put_books_portfolios", "trading", "portfolios", true)
             .summary("Write one portfolio")
             .description("The row and the version the person read, as a book's write states them.")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
@@ -445,7 +445,7 @@ void book_routes::register_routes(std::shared_ptr<ores::http::net::router> route
                 });
             }));
 
-    add(router->post("/api/book-changes/preview")
+    add(router->post("/api/book-changes/preview").catalogue("web_post_book_changes_preview", "trading", "preview", true)
             .summary("Run the proposed writes through the real service and write nothing")
             .description("Every refusal the write would give comes back at once, and the parts "
                          "the policy needs for the lines together. An empty list of parts says "
@@ -465,7 +465,7 @@ void book_routes::register_routes(std::shared_ptr<ores::http::net::router> route
                 });
             }));
 
-    add(router->post("/api/book-changes")
+    add(router->post("/api/book-changes").catalogue("web_post_book_changes", "trading", "book_changes", true)
             .summary("Raise one request that holds the proposed writes")
             .description("A refusal of the lines, or of a proposal that needs no request, is an "
                          "answer with the reason and no request id, because the maker has "

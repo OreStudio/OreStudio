@@ -44,7 +44,7 @@ void variability_routes::register_routes(
     ORES_LOG_SEV(lg(), info) << "Registering Variability routes";
 
     auto list_settings =
-        router->get("/api/v1/system-settings")
+        router->get("/api/v1/system-settings").catalogue("get_system_settings", "operations", "system_settings", false)
             .summary("List system settings")
             .description("Retrieve all system settings")
             .tags({"system-settings"})

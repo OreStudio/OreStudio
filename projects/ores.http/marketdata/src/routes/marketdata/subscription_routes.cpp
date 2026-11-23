@@ -203,7 +203,7 @@ void subscription_routes::register_routes(
         registry->register_route(built);
     };
 
-    add(router->get("/api/marketdata/subscriptions")
+    add(router->get("/api/marketdata/subscriptions").catalogue("web_get_marketdata_subscriptions", "market-data", "subscriptions", false)
             .summary("Every subscription the caller may read")
             .description("A subscription is the party's entitlement to one provider's feeds, "
                          "with the three rights the vendor licences name. The party is the "
@@ -215,7 +215,7 @@ void subscription_routes::register_routes(
                 });
             }));
 
-    add(router->get("/api/marketdata/routes")
+    add(router->get("/api/marketdata/routes").catalogue("web_get_marketdata_routes", "market-data", "routes", false)
             .summary("Every route the caller may read")
             .description("A route names the one feed that serves the party for a publisher. The "
                          "feed travels by its id, and the catalogue names it.")
@@ -226,7 +226,7 @@ void subscription_routes::register_routes(
                 });
             }));
 
-    add(router->post("/api/marketdata/subscriptions")
+    add(router->post("/api/marketdata/subscriptions").catalogue("web_post_marketdata_subscriptions", "market-data", "subscriptions", true)
             .summary("Add a subscription for the party the caller acts in")
             .description("A subscription holds at least one right: to display, to use without "
                          "displaying, or to compute new values from the data.")
@@ -256,7 +256,7 @@ void subscription_routes::register_routes(
                 });
             }));
 
-    add(router->delete_("/api/marketdata/subscriptions/{provider}")
+    add(router->delete_("/api/marketdata/subscriptions/{provider}").catalogue("web_delete_marketdata_subscriptions_provider", "market-data", "subscriptions", true)
             .summary("Remove the caller party's subscription to one provider")
             .description("The removal names the version the subscription was read at, so a "
                          "subscription another person changed is not removed unseen.")
@@ -280,7 +280,7 @@ void subscription_routes::register_routes(
                 });
             }));
 
-    add(router->post("/api/marketdata/routes")
+    add(router->post("/api/marketdata/routes").catalogue("web_post_marketdata_routes", "market-data", "routes", true)
             .summary("Add a route for the party the caller acts in")
             .description("The route names the publisher and the feed that serves it. The "
                          "service checks the feed belongs to that publisher and that the party "
@@ -306,7 +306,7 @@ void subscription_routes::register_routes(
                 });
             }));
 
-    add(router->delete_("/api/marketdata/routes/{publisher}")
+    add(router->delete_("/api/marketdata/routes/{publisher}").catalogue("web_delete_marketdata_routes_publisher", "market-data", "routes", true)
             .summary("Remove the caller party's route for one publisher")
             .description("The removal names the version the route was read at, so a route "
                          "another person changed is not removed unseen.")

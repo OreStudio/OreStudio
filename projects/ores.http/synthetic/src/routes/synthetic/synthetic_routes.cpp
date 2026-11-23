@@ -136,7 +136,7 @@ void synthetic_routes::register_routes(
 
     // The screens read which resources they may name, and whether this session
     // may write each, from one catalogue.
-    auto catalogue = router->get("/api/synthetic")
+    auto catalogue = router->get("/api/synthetic").catalogue("web_get_synthetic", "simulation", "synthetic", false)
                          .summary("List the synthetic resources a screen may name")
                          .description("Each resource's key, key field, whether this session may "
                                       "write it and why not, search, sortable fields and "

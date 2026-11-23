@@ -380,6 +380,7 @@ void account_contact_information_routes::register_routes(
             .summary("List account contact informations")
             .description("Forwards to the iam.v1.account_contact_informations.list operation.")
             .tags({"iam"})
+            .entity_catalogue("iam", "account_contact_informations", "list")
             .auth_required()
             .query_param("offset", "integer", "", false, "Rows to skip")
             .query_param("limit", "integer", "", false, "Rows to return")
@@ -407,6 +408,7 @@ void account_contact_information_routes::register_routes(
             .summary("Get one account contact information")
             .description("Forwards to the iam.v1.account_contact_informations.get operation.")
             .tags({"iam"})
+            .entity_catalogue("iam", "account_contact_informations", "get")
             .auth_required()
             .response<messaging::get_account_contact_information_response>()
             .handler([&session](const http_request& req) { return handle_get(req, session); });
@@ -419,6 +421,7 @@ void account_contact_information_routes::register_routes(
             .summary("Get many account contact informations")
             .description("Forwards to the iam.v1.account_contact_informations.get_many operation.")
             .tags({"iam"})
+            .entity_catalogue("iam", "account_contact_informations", "get_many")
             .auth_required()
             .body<messaging::get_many_account_contact_informations_request>()
             .response<messaging::get_many_account_contact_informations_response>()
@@ -432,6 +435,7 @@ void account_contact_information_routes::register_routes(
             .summary("Create one account contact information")
             .description("Forwards to the iam.v1.account_contact_informations.put operation.")
             .tags({"iam"})
+            .entity_catalogue("iam", "account_contact_informations", "add")
             .auth_required()
             .body<messaging::put_account_contact_information_request>()
             .response<messaging::put_account_contact_information_response>()
@@ -445,6 +449,7 @@ void account_contact_information_routes::register_routes(
             .summary("Replace one account contact information")
             .description("Forwards to the iam.v1.account_contact_informations.put operation.")
             .tags({"iam"})
+            .entity_catalogue("iam", "account_contact_informations", "set")
             .auth_required()
             .query_param("version", "integer", "", false, "Version")
             .body<messaging::put_account_contact_information_request>()
@@ -459,6 +464,7 @@ void account_contact_information_routes::register_routes(
             .summary("Write many account contact informations")
             .description("Forwards to the iam.v1.account_contact_informations.put_many operation.")
             .tags({"iam"})
+            .entity_catalogue("iam", "account_contact_informations", "put_many")
             .auth_required()
             .body<messaging::put_many_account_contact_informations_request>()
             .response<messaging::put_many_account_contact_informations_response>()
@@ -472,6 +478,7 @@ void account_contact_information_routes::register_routes(
             .summary("Delete one account contact information")
             .description("Forwards to the iam.v1.account_contact_informations.delete operation.")
             .tags({"iam"})
+            .entity_catalogue("iam", "account_contact_informations", "delete")
             .auth_required()
             .query_param("reason", "string", "", true, "Change reason code")
             .query_param("commentary", "string", "", true, "Commentary")
@@ -488,6 +495,7 @@ void account_contact_information_routes::register_routes(
             .description(
                 "Forwards to the iam.v1.account_contact_informations.delete_many operation.")
             .tags({"iam"})
+            .entity_catalogue("iam", "account_contact_informations", "delete_many")
             .auth_required()
             .body<messaging::delete_many_account_contact_informations_request>()
             .response<messaging::delete_many_account_contact_informations_response>()
@@ -503,6 +511,7 @@ void account_contact_information_routes::register_routes(
             .description(
                 "Forwards to the iam.v1.account_contact_informations.list_by_account_id operation.")
             .tags({"iam"})
+            .entity_catalogue("iam", "account_contact_informations", "by_account_id")
             .auth_required()
             .query_param("offset", "integer", "", false, "Rows to skip")
             .query_param("limit", "integer", "", false, "Rows to return")
@@ -522,6 +531,7 @@ void account_contact_information_routes::register_routes(
             .description(
                 "Forwards to the iam.v1.account_contact_informations_versions.list operation.")
             .tags({"iam"})
+            .entity_catalogue("iam", "account_contact_informations", "versions")
             .auth_required()
             .query_param("offset", "integer", "", false, "Rows to skip")
             .query_param("limit", "integer", "", false, "Rows to return")
@@ -539,6 +549,7 @@ void account_contact_information_routes::register_routes(
             .description(
                 "Forwards to the iam.v1.account_contact_informations_versions.get operation.")
             .tags({"iam"})
+            .entity_catalogue("iam", "account_contact_informations", "version")
             .auth_required()
             .response<messaging::get_account_contact_information_version_response>()
             .handler([&session](const http_request& req) { return handle_version(req, session); });

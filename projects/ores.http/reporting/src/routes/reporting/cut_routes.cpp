@@ -327,7 +327,7 @@ void cut_routes::register_routes(std::shared_ptr<ores::http::net::router> router
         registry->register_route(built);
     };
 
-    add(router->get("/api/reporting/cuts")
+    add(router->get("/api/reporting/cuts").catalogue("web_get_reporting_cuts", "reporting", "cuts", false)
             .summary("The cuts the party holds, newest instant first")
             .description("Each row beside the state and the label the reporting service derives, "
                          "the acts that made it and the runs that priced from it.")
@@ -362,7 +362,7 @@ void cut_routes::register_routes(std::shared_ptr<ores::http::net::router> router
                 });
             }));
 
-    add(router->get("/api/reporting/cuts/{id}/runs")
+    add(router->get("/api/reporting/cuts/{id}/runs").catalogue("web_get_reporting_cuts_id_runs", "reporting", "cuts", false)
             .summary("The runs that priced from one cut, newest start first")
             .description("A run records the cut it resolved its report's selection to, so the "
                          "tab reads the runs by that column and their states beside them.")
@@ -376,7 +376,7 @@ void cut_routes::register_routes(std::shared_ptr<ores::http::net::router> router
                 });
             }));
 
-    add(router->get("/api/reporting/cuts/{id}")
+    add(router->get("/api/reporting/cuts/{id}").catalogue("web_get_reporting_cuts_id", "reporting", "cuts", false)
             .summary("One cut's record: its body, the acts that made it and the gaps it stands on")
             .description("The body, the state and label the service derives, the kind it was "
                          "taken under, the gaps the assembly could not fill and the runs that "
@@ -435,7 +435,7 @@ void cut_routes::register_routes(std::shared_ptr<ores::http::net::router> router
                 });
             }));
 
-    add(router->post("/api/reporting/cuts/take")
+    add(router->post("/api/reporting/cuts/take").catalogue("web_post_reporting_cuts_take", "reporting", "take", true)
             .summary("Assemble a body part by part, and press to take it")
             .description("One route serves the floor's assembly and its press, because an "
                          "assembly computed by a second path is a preview of that path. A gap is "

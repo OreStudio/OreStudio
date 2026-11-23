@@ -81,7 +81,7 @@ void auth_session_routes::register_routes(
      * session is reachable with whatever the caller still holds, so an expired
      * session can still be cleared.
      */
-    auto sign_in_route = router->post("/api/v1/auth/sessions")
+    auto sign_in_route = router->post("/api/v1/auth/sessions").catalogue("post_auth_sessions", "auth", "sessions", true)
                              .summary("Sign in")
                              .description("Opens a session and sets the cookie it rides in")
                              .tags({"auth"})
@@ -92,7 +92,7 @@ void auth_session_routes::register_routes(
     router->add_route(sign_in_built);
     registry->register_route(sign_in_built);
 
-    auto sign_out_route = router->delete_("/api/v1/auth/sessions")
+    auto sign_out_route = router->delete_("/api/v1/auth/sessions").catalogue("delete_auth_sessions", "auth", "sessions", true)
                               .summary("Sign out")
                               .description("Ends the caller's session and clears the cookie")
                               .tags({"auth"})
@@ -103,7 +103,7 @@ void auth_session_routes::register_routes(
     registry->register_route(sign_out_built);
 
     auto me_route =
-        router->get("/api/v1/auth/sessions/me")
+        router->get("/api/v1/auth/sessions/me").catalogue("get_auth_sessions_me", "auth", "sessions", false)
             .summary("Who am I")
             .description("The caller's identity, as the session or token states it")
             .tags({"auth"})

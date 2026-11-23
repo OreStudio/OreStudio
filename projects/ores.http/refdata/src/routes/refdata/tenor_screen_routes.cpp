@@ -129,7 +129,7 @@ void tenor_screen_routes::register_routes(
         registry->register_route(built);
     };
 
-    add(router->get("/api/tenors/catalogue")
+    add(router->get("/api/tenors/catalogue").catalogue("web_get_tenors_catalogue", "reference-data", "catalogue", false)
             .summary("The tenor catalogue")
             .description("A composed view owned by the reference data service: every tenor in "
                          "its own order, with every convention and every schedule, three whole "
@@ -160,7 +160,7 @@ void tenor_screen_routes::register_routes(
                 });
             }));
 
-    add(router->post("/api/tenors/preview-resolution")
+    add(router->post("/api/tenors/preview-resolution").catalogue("web_post_tenors_preview_resolution", "reference-data", "preview_resolution", true)
             .summary("Resolve a drafted tenor rule to a date before it is written")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<messaging::preview_tenor_resolution_request>([&] {
@@ -171,7 +171,7 @@ void tenor_screen_routes::register_routes(
                 });
             }));
 
-    add(router->post("/api/tenors/resolve")
+    add(router->post("/api/tenors/resolve").catalogue("web_post_tenors_resolve", "reference-data", "resolve", true)
             .summary("Resolve a stored tenor under a stored convention to a date")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<messaging::resolve_tenor_request>([&] {
@@ -185,7 +185,7 @@ void tenor_screen_routes::register_routes(
                 });
             }));
 
-    add(router->post("/api/tenors/resolve-convention")
+    add(router->post("/api/tenors/resolve-convention").catalogue("web_post_tenors_resolve_convention", "reference-data", "resolve_convention", true)
             .summary("Resolve every tenor of a stored convention to a date")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<messaging::resolve_convention_request>([&] {
@@ -197,7 +197,7 @@ void tenor_screen_routes::register_routes(
                 });
             }));
 
-    add(router->get("/api/tenors/conventions/{code}/resolutions")
+    add(router->get("/api/tenors/conventions/{code}/resolutions").catalogue("web_get_tenors_conventions_code_resolutions", "reference-data", "conventions", false)
             .summary("Read the tenors one convention resolves, with each tenor's rule")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<
@@ -215,7 +215,7 @@ void tenor_screen_routes::register_routes(
                 });
             }));
 
-    add(router->put("/api/tenors/tenors")
+    add(router->put("/api/tenors/tenors").catalogue("web_put_tenors_tenors", "reference-data", "tenors", true)
             .summary("Write a tenor")
             .description("Answers 200 with the service's result whatever its outcome.")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
@@ -227,7 +227,7 @@ void tenor_screen_routes::register_routes(
                 });
             }));
 
-    add(router->put("/api/tenors/conventions")
+    add(router->put("/api/tenors/conventions").catalogue("web_put_tenors_conventions", "reference-data", "conventions", true)
             .summary("Write a tenor convention")
             .description("Answers 200 with the service's result whatever its outcome.")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
@@ -241,7 +241,7 @@ void tenor_screen_routes::register_routes(
                 });
             }));
 
-    add(router->put("/api/tenors/conventions/{code}/resolutions/{tenor}")
+    add(router->put("/api/tenors/conventions/{code}/resolutions/{tenor}").catalogue("web_put_tenors_conventions_code_resolutions_tenor", "reference-data", "conventions", true)
             .summary("Write the rule one convention resolves one tenor by")
             .description("Answers 200 with the service's result whatever its outcome. The "
                          "convention and tenor are the ones the address names.")
@@ -262,7 +262,7 @@ void tenor_screen_routes::register_routes(
                 });
             }));
 
-    add(router->delete_("/api/tenors/conventions/{code}/resolutions/{tenor}")
+    add(router->delete_("/api/tenors/conventions/{code}/resolutions/{tenor}").catalogue("web_delete_tenors_conventions_code_resolutions_tenor", "reference-data", "conventions", true)
             .summary("Remove the rule one convention resolves one tenor by")
             .description("Answers 200 with the service's result whatever its outcome.")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {

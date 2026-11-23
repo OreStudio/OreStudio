@@ -332,7 +332,7 @@ void browser_session_routes::register_routes(
     std::shared_ptr<http::net::router> router,
     std::shared_ptr<http::openapi::endpoint_registry> registry) {
     const auto sign_in_route =
-        router->post("/api/session")
+        router->post("/api/session").catalogue("web_post_session", "auth", "session", true)
             .summary("Sign in and hold the session in a cookie")
             .tags({"auth"})
             .auth_optional()
@@ -345,7 +345,7 @@ void browser_session_routes::register_routes(
     registry->register_route(sign_in_route);
 
     const auto read_route =
-        router->get("/api/session")
+        router->get("/api/session").catalogue("web_get_session", "auth", "session", false)
             .summary("Read the browser's session")
             .tags({"auth"})
             .auth_optional()
@@ -357,7 +357,7 @@ void browser_session_routes::register_routes(
     registry->register_route(read_route);
 
     const auto sign_out_route =
-        router->delete_("/api/session")
+        router->delete_("/api/session").catalogue("web_delete_session", "auth", "session", true)
             .summary("Sign out and clear the cookie")
             .tags({"auth"})
             .auth_optional()
@@ -369,7 +369,7 @@ void browser_session_routes::register_routes(
     registry->register_route(sign_out_route);
 
     const auto party_route =
-        router->post("/api/session/party")
+        router->post("/api/session/party").catalogue("web_post_session_party", "auth", "party", true)
             .summary("Choose the party a login waits on")
             .tags({"auth"})
             .auth_required()
@@ -381,7 +381,7 @@ void browser_session_routes::register_routes(
     registry->register_route(party_route);
 
     const auto switch_route =
-        router->post("/api/session/switch-party")
+        router->post("/api/session/switch-party").catalogue("web_post_session_switch_party", "auth", "switch_party", true)
             .summary("Move the session to another of the account's parties")
             .tags({"auth"})
             .auth_required()
@@ -393,7 +393,7 @@ void browser_session_routes::register_routes(
     registry->register_route(switch_route);
 
     const auto password_route =
-        router->post("/api/account/password")
+        router->post("/api/account/password").catalogue("web_post_account_password", "auth", "password", true)
             .summary("Change the signed-in account's own password")
             .tags({"auth"})
             .auth_required()

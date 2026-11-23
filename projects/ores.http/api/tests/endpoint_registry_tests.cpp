@@ -34,8 +34,8 @@ ores::http::domain::route make_test_route(ores::http::domain::http_method method
     ores::http::domain::route r;
     r.method = method;
     r.pattern = pattern;
-    r.summary = summary;
-    r.description = description;
+    r.catalogue.summary = summary;
+    r.catalogue.description = description;
     r.requires_auth = requires_auth;
     return r;
 }
@@ -268,7 +268,7 @@ TEST_CASE("endpoint_registry_includes_tags", "[endpoint_registry]") {
     route r;
     r.method = http_method::get;
     r.pattern = "/users";
-    r.tags = {"Users", "Admin"};
+    r.catalogue.tags = {"Users", "Admin"};
     registry.register_route(r);
 
     auto json = registry.generate_openapi_json();
@@ -374,9 +374,9 @@ TEST_CASE("endpoint_registry_groups_operations_by_an_area_it_describes", "[endpo
 
     endpoint_registry registry;
     auto first = make_test_route(http_method::get, "/api/quotes", "The quotes");
-    first.tags = {"marketdata"};
+    first.catalogue.tags = {"marketdata"};
     auto second = make_test_route(http_method::get, "/api/quotes/feeds", "The feeds");
-    second.tags = {"market-data"};
+    second.catalogue.tags = {"market-data"};
     registry.register_route(first);
     registry.register_route(second);
 

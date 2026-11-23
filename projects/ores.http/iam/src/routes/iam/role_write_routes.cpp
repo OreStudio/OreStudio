@@ -293,7 +293,7 @@ void role_write_routes::register_routes(
         registry->register_route(built);
     };
 
-    add(router->post("/api/accounts/{accountId}/roles"),
+    add(router->post("/api/accounts/{accountId}/roles").catalogue("web_post_accounts_accountid_roles", "access", "accounts", true),
         "Give a role to an account, for a reason",
         [&session](const http_request& req) {
             const auto account = req.get_path_param("accountId");
@@ -313,7 +313,7 @@ void role_write_routes::register_routes(
             });
         });
 
-    add(router->delete_("/api/accounts/{accountId}/roles/{roleId}"),
+    add(router->delete_("/api/accounts/{accountId}/roles/{roleId}").catalogue("web_delete_accounts_accountid_roles_roleid", "access", "accounts", true),
         "Take a role away from an account",
         [&session](const http_request& req) {
             const auto account = req.get_path_param("accountId");
@@ -330,19 +330,19 @@ void role_write_routes::register_routes(
             });
         });
 
-    add(router->post("/api/accounts/{accountId}/lock"),
+    add(router->post("/api/accounts/{accountId}/lock").catalogue("web_post_accounts_accountid_lock", "access", "accounts", true),
         "Lock one account",
         [&session](const http_request& req) {
             return set_locked<messaging::lock_account_request>(req, session);
         });
 
-    add(router->post("/api/accounts/{accountId}/unlock"),
+    add(router->post("/api/accounts/{accountId}/unlock").catalogue("web_post_accounts_accountid_unlock", "access", "accounts", true),
         "Unlock one account",
         [&session](const http_request& req) {
             return set_locked<messaging::unlock_account_request>(req, session);
         });
 
-    add(router->get("/api/roles"),
+    add(router->get("/api/roles").catalogue("web_get_roles", "access", "roles", false),
         "Read the tenant's roles with the permissions each grants",
         [&session](const http_request& req) {
             return guarded<messaging::list_roles_request>([&] {
@@ -351,7 +351,7 @@ void role_write_routes::register_routes(
             });
         });
 
-    add(router->get("/api/permissions"),
+    add(router->get("/api/permissions").catalogue("web_get_permissions", "access", "permissions", false),
         "Read every permission the platform defines",
         [&session](const http_request& req) {
             return guarded<messaging::list_permissions_request>([&] {
@@ -363,7 +363,7 @@ void role_write_routes::register_routes(
             });
         });
 
-    add(router->post("/api/roles"), "Make a role", [&session](const http_request& req) {
+    add(router->post("/api/roles").catalogue("web_post_roles", "access", "roles", true), "Make a role", [&session](const http_request& req) {
         const auto role = read_new_role(req.body);
         if (!role)
             return refused(http_status::bad_request, "invalid-request", "A role needs a name.");
@@ -379,7 +379,7 @@ void role_write_routes::register_routes(
         });
     });
 
-    add(router->put("/api/roles/{roleId}"), "Edit a role", [&session](const http_request& req) {
+    add(router->put("/api/roles/{roleId}").catalogue("web_put_roles_roleid", "access", "roles", true), "Edit a role", [&session](const http_request& req) {
         const auto id = req.get_path_param("roleId");
         const auto role = read_edited_role(req.body);
         if (!rr::is_uuid(id) || !role)
@@ -399,7 +399,7 @@ void role_write_routes::register_routes(
         });
     });
 
-    add(router->delete_("/api/roles/{name}"), "Remove a role", [&session](const http_request& req) {
+    add(router->delete_("/api/roles/{name}").catalogue("web_delete_roles_name", "access", "roles", true), "Remove a role", [&session](const http_request& req) {
         return guarded<messaging::delete_role_request>([&] {
             messaging::delete_role_request remove;
             remove.removal.key = messaging::role_key{req.get_path_param("name")};
@@ -408,7 +408,7 @@ void role_write_routes::register_routes(
         });
     });
 
-    add(router->put("/api/roles/{roleId}/permissions"),
+    add(router->put("/api/roles/{roleId}/permissions").catalogue("web_put_roles_roleid_permissions", "access", "roles", true),
         "Write every permission a role grants",
         [&session](const http_request& req) {
             const auto id = req.get_path_param("roleId");
@@ -422,7 +422,7 @@ void role_write_routes::register_routes(
             });
         });
 
-    add(router->post("/api/roles/{roleId}/permissions/changes"),
+    add(router->post("/api/roles/{roleId}/permissions/changes").catalogue("web_post_roles_roleid_permissions_changes", "access", "roles", true),
         "Add and remove permissions from a role",
         [&session](const http_request& req) {
             const auto id = req.get_path_param("roleId");
@@ -443,7 +443,7 @@ void role_write_routes::register_routes(
             });
         });
 
-    add(router->get("/api/me/ways-to-hold")
+    add(router->get("/api/me/ways-to-hold").catalogue("web_get_me_ways_to_hold", "access", "ways_to_hold", false)
             .description("A composed view owned by the IAM service: the roles of the catalogue "
                          "that grant the permission and the caller does not hold yet. Two "
                          "reads, the caller's roles and the catalogue with what each grants. A "

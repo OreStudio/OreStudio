@@ -64,7 +64,7 @@ void progress_routes::register_routes(
         registry->register_route(built);
     };
 
-    add(router->get("/api/workflow/{instanceId}")
+    add(router->get("/api/workflow/{instanceId}").catalogue("web_get_workflow_instanceid", "workflow", "workflow", false)
             .summary("A run's progress, as a journey's rail renders it")
             .description("A composed view owned by ores.workflow, answered from one read: the "
                          "run's status, the step it is executing and one summary per step, so a "

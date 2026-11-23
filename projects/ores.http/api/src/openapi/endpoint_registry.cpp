@@ -271,7 +271,7 @@ std::string endpoint_registry::generate_openapi_json() const {
      */
     std::set<std::string> observed;
     for (const auto& route : routes_)
-        for (const auto& tag : route.tags)
+        for (const auto& tag : route.catalogue.tags)
             observed.insert(canonical_tag(tag));
     auto tags_array = root.add_array("tags");
     for (const auto& detail : tag_details) {
@@ -293,19 +293,28 @@ std::string endpoint_registry::generate_openapi_json() const {
         auto operation_document = json_document::make_object();
         auto operation = operation_document.root();
 
-        if (!route.tags.empty()) {
+        // The catalogue an LLM agent walks reads these: the stable name, the
+        // published area and entity, and whether the operation writes.
+        if (route.catalogue.declared()) {
+            operation.set("operationId", route.catalogue.tool);
+            operation.set("x-ores-area", route.catalogue.area);
+            operation.set("x-ores-entity", route.catalogue.entity);
+            operation.set("x-ores-writes", route.catalogue.writes);
+        }
+
+        if (!route.catalogue.tags.empty()) {
             auto tags = operation.add_array("tags");
-            for (const auto& tag : route.tags) {
+            for (const auto& tag : route.catalogue.tags) {
                 tags.push(canonical_tag(tag));
             }
         }
 
-        if (!route.summary.empty()) {
-            operation.set("summary", route.summary);
+        if (!route.catalogue.summary.empty()) {
+            operation.set("summary", route.catalogue.summary);
         }
 
-        if (!route.description.empty()) {
-            operation.set("description", route.description);
+        if (!route.catalogue.description.empty()) {
+            operation.set("description", route.catalogue.description);
         }
 
         // Parameters (path + query)

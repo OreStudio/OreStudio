@@ -210,8 +210,6 @@ agent_writes::holder(ores::database::context ctx, ores::nats::service::nats_clie
             ores::utility::uuid::tenant_id::from_string(claims.tenant_id.value_or(""));
         if (!tenant)
             return http_response::forbidden("An agent write needs its agent's tenant.");
-        if (agent_call_only_reads(route))
-            return std::nullopt;
         // A token that can write nothing, such as a read-only role's, is
         // refused before any request is raised: its person would approve a
         // write the service then refuses.

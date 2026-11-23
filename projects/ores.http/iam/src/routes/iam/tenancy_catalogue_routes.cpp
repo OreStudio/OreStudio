@@ -133,7 +133,7 @@ void tenancy_catalogue_routes::register_routes(
         registry->register_route(built);
     };
 
-    add(router->get("/api/tenant-statuses"),
+    add(router->get("/api/tenant-statuses").catalogue("web_get_tenant_statuses", "tenancy", "tenant_statuses", false),
         "Read the tenant statuses with their badges",
         [&session](const http_request& req) {
             return guarded<ores::iam::messaging::list_tenant_statuses_request>([&] {
@@ -143,7 +143,7 @@ void tenancy_catalogue_routes::register_routes(
             });
         });
 
-    add(router->get("/api/tenant-types"),
+    add(router->get("/api/tenant-types").catalogue("web_get_tenant_types", "tenancy", "tenant_types", false),
         "Read the tenant types with their badges",
         [&session](const http_request& req) {
             return guarded<ores::iam::messaging::list_tenant_types_request>([&] {
@@ -153,7 +153,7 @@ void tenancy_catalogue_routes::register_routes(
             });
         });
 
-    add(router->get("/api/lei-entities"),
+    add(router->get("/api/lei-entities").catalogue("web_get_lei_entities", "tenancy", "lei_entities", false),
         "Search the legal entities a tenant may start from",
         [&session](const http_request& req) {
             ores::dq::messaging::search_lei_entities_request search;

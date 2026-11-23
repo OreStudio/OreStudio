@@ -376,6 +376,7 @@ void variance_calibration_input_web_routes::register_routes(
             .summary("List variance-calibration-inputs for a screen")
             .description("One page with its total, or every row when no limit is named.")
             .tags({"synthetic"})
+            .entity_catalogue("synthetic", "variance_calibration_input", "screen_list")
             .auth_required()
             .handler([&session](const http_request& req) { return handle_list(req, session); });
     const auto list_built = list_route.build();
@@ -387,6 +388,7 @@ void variance_calibration_input_web_routes::register_routes(
             .summary("Read one variance-calibration-inputs record for a screen")
             .description("One row, named by its key.")
             .tags({"synthetic"})
+            .entity_catalogue("synthetic", "variance_calibration_input", "screen_get")
             .auth_required()
             .handler([&session](const http_request& req) { return handle_key(req, session); });
     const auto key_built = key_route.build();
@@ -398,6 +400,7 @@ void variance_calibration_input_web_routes::register_routes(
             .summary("Write one variance-calibration-inputs record for a screen")
             .description("A new row with no version, else a correction of the version read.")
             .tags({"synthetic"})
+            .entity_catalogue("synthetic", "variance_calibration_input", "screen_put")
             .auth_required()
             .handler([&session](const http_request& req) { return handle_put(req, session); });
     const auto put_built = put_route.build();
@@ -409,6 +412,7 @@ void variance_calibration_input_web_routes::register_routes(
             .summary("Remove one variance-calibration-inputs record for a screen")
             .description("Removes the row the body's key names.")
             .tags({"synthetic"})
+            .entity_catalogue("synthetic", "variance_calibration_input", "screen_delete")
             .auth_required()
             .handler([&session](const http_request& req) { return handle_delete(req, session); });
     const auto remove_built = remove_route.build();

@@ -341,6 +341,7 @@ void ir_curve_bootstrap_config_web_routes::register_routes(
             .summary("List ir-curve-bootstrap-configs for a screen")
             .description("One page with its total, or every row when no limit is named.")
             .tags({"refdata"})
+            .entity_catalogue("refdata", "ir_curve_bootstrap_config", "screen_list")
             .auth_required()
             .handler([&session](const http_request& req) { return handle_list(req, session); });
     const auto list_built = list_route.build();
@@ -352,6 +353,7 @@ void ir_curve_bootstrap_config_web_routes::register_routes(
             .summary("Read one ir-curve-bootstrap-configs record for a screen")
             .description("One row, named by its key.")
             .tags({"refdata"})
+            .entity_catalogue("refdata", "ir_curve_bootstrap_config", "screen_get")
             .auth_required()
             .handler([&session](const http_request& req) { return handle_key(req, session); });
     const auto key_built = key_route.build();
@@ -363,6 +365,7 @@ void ir_curve_bootstrap_config_web_routes::register_routes(
             .summary("Write one ir-curve-bootstrap-configs record for a screen")
             .description("A new row with no version, else a correction of the version read.")
             .tags({"refdata"})
+            .entity_catalogue("refdata", "ir_curve_bootstrap_config", "screen_put")
             .auth_required()
             .handler([&session](const http_request& req) { return handle_put(req, session); });
     const auto put_built = put_route.build();
@@ -374,6 +377,7 @@ void ir_curve_bootstrap_config_web_routes::register_routes(
             .summary("Remove one ir-curve-bootstrap-configs record for a screen")
             .description("Removes the row the body's key names.")
             .tags({"refdata"})
+            .entity_catalogue("refdata", "ir_curve_bootstrap_config", "screen_delete")
             .auth_required()
             .handler([&session](const http_request& req) { return handle_delete(req, session); });
     const auto remove_built = remove_route.build();

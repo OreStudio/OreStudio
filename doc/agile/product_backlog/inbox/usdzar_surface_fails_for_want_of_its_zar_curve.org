@@ -1,0 +1,37 @@
+:PROPERTIES:
+:ID: 3506D7BB-B130-4ACC-A1FA-720ED0BB0E1A
+:END:
+#+title: The USD/ZAR latent surface fails for want of its ZAR curve on the board
+#+description: The feed graph shows synthetic.latent.fx.fx_vol_surface.usdzar failing with no market: curve:synthetic.bloomberg.ir.yield_curve.zaronia.zar, and its four views starved on it, while the ZAR curve node reads as running. A curve writes the run's board only while some adapter runs it, so a curve no tenant demands leaves a surface that names it without its discounts.
+#+type: capture
+#+level: cross
+#+filetags: :synthetic:graph:vol:
+#+created: 2026-11-23
+#+updated: 2026-11-23
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The feed graph shows =synthetic.latent.fx.fx_vol_surface.usdzar= failing with
+=no market: curve:synthetic.bloomberg.ir.yield_curve.zaronia.zar=, and its four
+vendor views starved on it, while the ZAR curve's node reads as running. Seen
+live on 2026-11-23 after a provision of Acme. A curve writes the run's board
+only while an adapter runs it, so a curve no tenant demands leaves a surface
+that names it without its discounts; the graph's running state for an
+upstream is the rule's, not a run's. Settle whether a curve a surface names
+should run whenever the surface does, and whether an upstream's state should
+say that nothing runs it.
+
+* Why
+
+A vendor's vol quotes of USD/ZAR stop for a reason no operator chose, and the
+graph says the curve runs.
+
+* References
+
+- The diagnostics task that surfaced it: [[id:5BFB956B-47EB-4D03-869E-87AC59DE1441][Log each feed node's messages and mark a node that fails]].
+
+* See also
+
+- [[id:2376A086-4C3C-4D61-92E5-29B122DB6A41][Synthetic feed graph]].

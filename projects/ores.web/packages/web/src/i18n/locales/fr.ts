@@ -4640,6 +4640,8 @@ const fr: SourceCatalogue = {
                 expiries: 'Échéances',
                 contributors: 'Contributeurs',
                 surfaces: 'Surfaces',
+                graph: 'Graphe',
+                messages: 'Messages',
             },
         },
         fields: {
@@ -7301,6 +7303,42 @@ const fr: SourceCatalogue = {
             add: 'Ajouter une entrée de durée',
             one: 'Entrée de durée',
             remove: "Supprimer l'entrée de durée",
+        },
+        feedGraph: {
+            lead: 'La place de ce flux dans le graphe des flux synthétiques : son état, ce qu’il lit et ce qui le lit.',
+            state: {
+                running: 'En cours',
+                stopped: 'Arrêté',
+                starved: 'Privé d’entrée',
+                failing: 'En échec',
+            },
+            kind: {
+                source: 'Source',
+                upstream: 'Amont',
+                latent: 'Surface latente',
+                view: 'Vue du fournisseur',
+            },
+            role: {
+                source: 'Source',
+                spot: 'Spot',
+                base_curve: 'Courbe de base',
+                quote_curve: 'Courbe de cotation',
+                surface: 'Surface',
+            },
+            causedBy: 'Causé par',
+            reads: 'Lit',
+            readBy: 'Lu par',
+            nothing: 'Rien.',
+            stop: 'Arrêter le nœud',
+            start: 'Démarrer le nœud',
+            stopTitle: 'Arrêter {node} ?',
+            stopEffect:
+                'Ses offres sont retenues, et chaque nœud en aval s’arrête et dit pourquoi. Il reste arrêté après un redémarrage, jusqu’à ce que quelqu’un le démarre.',
+            unknown: 'Le graphe des flux ne contient aucun nœud de ce nom.',
+            messagesLead:
+                'Les messages de ce nœud sur le dernier jour : ses changements d’état avec leurs raisons, et les diagnostics qu’il lève.',
+            noMessages: 'Aucun message sur le dernier jour.',
+            latestOnly: 'Affichage des {count} messages les plus récents.',
         },
         volFeeds: {
             add: 'Nouvelle surface de volatilité',

@@ -458,6 +458,25 @@ export interface LogsQuery {
     readonly limit: number;
 }
 
+/** One node of the synthetic feed graph, with the state the service derives for it. */
+export const feedGraphNodeSchema = z.object({
+    name: z.string(),
+    kind: z.string(),
+    provider_code: z.string().default(''),
+    feed_config_id: z.string().default(''),
+    state: z.string(),
+    reason: z.string().default(''),
+    cause: z.string().default(''),
+});
+export type FeedGraphNode = z.infer<typeof feedGraphNodeSchema>;
+
+/** The synthetic feed graph, or the part of it around one node. */
+export const feedGraphSchema = z.object({
+    nodes: z.array(feedGraphNodeSchema).default([]),
+    edges: z.array(z.object({ node: z.string(), input: z.string(), role: z.string() })).default([]),
+});
+export type FeedGraph = z.infer<typeof feedGraphSchema>;
+
 /** Which page of a person's permissions is asked for. An empty area is the first they hold. */
 export interface PermissionPageQuery {
     readonly area: string;
@@ -2753,6 +2772,19 @@ export const api = {
         return z
             .object({ sources: z.array(simulatedSourceSchema) })
             .parse(await request('/api/synthetic/simulated-sources', { method: 'GET' })).sources;
+    },
+
+    /**
+     * The synthetic feed graph around one node: the node, every node it reads and every node that
+     * reads it, each with its state, and the edges among them. Empty when the graph holds no node
+     * of that name.
+     */
+    async feedGraph(node: string): Promise<FeedGraph> {
+        return feedGraphSchema.parse(
+            await request(`/api/synthetic/feed-graph?node=${encodeURIComponent(node)}`, {
+                method: 'GET',
+            }),
+        );
     },
 
     /**

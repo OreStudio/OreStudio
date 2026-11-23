@@ -240,3 +240,23 @@ TEST_CASE("the journal says a diagnostic once raised, its clearing, and each sta
     REQUIRE(said.size() == 1);
     CHECK(said[0].starts_with(ice_view + "|warn|Now stopped"));
 }
+
+TEST_CASE("a graph less the latent provider holds no latent node and no edge to one",
+          "[feed_graph]") {
+    const auto g = ores::synthetic::service::without_provider(audusd(), "latent");
+    CHECK(std::ranges::none_of(g.nodes, [](const auto& n) { return n.name == latent; }));
+    CHECK(std::ranges::none_of(
+        g.edges, [](const auto& e) { return e.node == latent || e.input == latent; }));
+    CHECK(std::ranges::any_of(g.nodes, [](const auto& n) { return n.name == ice_view; }));
+}
+
+TEST_CASE("a view starved by its latent surface does not name it to a tenant", "[feed_graph]") {
+    auto g = audusd();
+    derive_states(g, {latent});
+    const auto shown = ores::synthetic::service::without_provider(std::move(g), "latent");
+    const auto view = std::ranges::find(shown.nodes, ice_view, &feed_graph_node::name);
+    REQUIRE(view != shown.nodes.end());
+    CHECK(view->state == "starved");
+    CHECK(view->cause.empty());
+    CHECK(view->reason.find(latent) == std::string::npos);
+}

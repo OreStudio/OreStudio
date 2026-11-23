@@ -82,11 +82,12 @@ export function AgentGrantsAdminPage(): ReactNode {
         try {
             await work();
             setFailure('');
-            await grants.refetch();
         } catch (error) {
             setFailure(error instanceof Error ? error.message : t('agentGrantsAdmin.revokeFailed'));
+        } finally {
+            setBusy(false);
         }
-        setBusy(false);
+        await grants.refetch();
     };
 
     return (

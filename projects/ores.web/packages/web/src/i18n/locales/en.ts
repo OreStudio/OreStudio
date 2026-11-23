@@ -674,6 +674,8 @@ export const en: SourceCatalogue = {
             end: 'End session',
             ending: 'Ending…',
             ended: 'Session ended. The open sessions were read again.',
+            grantFilter: 'Showing the sessions of agent grant {grant} only.',
+            grantFilterClear: 'Show every session',
             endAgent:
                 'Ending an agent’s session also revokes the key that opened it. The agent’s next call is refused at once, or within five minutes at most; it needs a new key to resume. Continue?',
             holder: 'Show',

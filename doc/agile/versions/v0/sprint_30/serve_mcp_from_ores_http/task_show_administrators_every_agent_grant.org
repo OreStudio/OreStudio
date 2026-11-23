@@ -91,7 +91,14 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | PR #5041: the list stops silently at a thousand grants | =list_every_agent_grant= | Accept | Grants and keys are read in pages until the store runs out. |
+| 2 | PR #5041: one key query per grant | =list_every_agent_grant= | Accept | One paged read of keys, kept to the listed grants. |
+| 3 | PR #5041: does the trail record who revoked | revoke | No change | The revoked row's =modified_by= is the administrator. |
+| 4 | PR #5041: reset busy in a finally | =AgentGrantsAdminPage.tsx= | Accept | Done; the refetch runs after. |
+| 5 | PR #5041: raw ids without the account read | =AgentGrantsAdminPage.tsx= | No change | The intended fallback. |
+| 6 | PR #5041: the sessions filter by grant is invisible | =AuditPage.tsx= | Accept | A notice names the grant and offers to show every session. |
+| 7 | PR #5041: no test past a thousand rows | tests | Decline | A paging loop over a thousand rows costs a slow database fixture for little risk. |
+| 8 | PR #5041: the handler is named list_all | handler | Accept | Renamed list_every. |
 
 * Result
 

@@ -38,7 +38,7 @@ import { Avatar, imageUrl } from '../ui/Images.js';
 import { Timeline, kindTone } from '../timeline/Timeline.js';
 import type { Timeline as TimelineStream } from '@ores/wire-protocol/browser';
 import { AreaTrail } from '../shell/AreaTrail.js';
-import { rescuePath } from '../shell/paths.js';
+import { PATHS, rescuePath } from '../shell/paths.js';
 import { AccountLockBadge } from '../ui/AccountLockBadge.js';
 import { RefreshNow } from '../ui/RefreshButton.js';
 import { Button, LinkButton, Notice, PageHeader, Select, Tag, cx } from '../ui/Primitives.js';
@@ -1041,6 +1041,14 @@ export function AuditPage(): ReactNode {
                 }
             />
             <FilterBar filter={filter} onChange={setFilter} />
+            {grant !== '' && (
+                <Notice tone="info">
+                    {t('auditSignIns.sessions.grantFilter', { grant })}{' '}
+                    <Link className="text-accent" to={PATHS.signIns}>
+                        {t('auditSignIns.sessions.grantFilterClear')}
+                    </Link>
+                </Notice>
+            )}
             {bar}
             {tab === 'sessions' && (
                 <SessionsPanel

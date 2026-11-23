@@ -81,9 +81,10 @@ public:
             std::move(msg), [](auto& svc, const auto& req) { return svc.revoke_agent_key(req); });
     }
 
-    void list_all(ores::nats::message msg) {
-        handle<list_every_agent_grant_request>(
-            std::move(msg), [](auto& svc, const auto& req) { return svc.list_every_agent_grant(req); });
+    void list_every(ores::nats::message msg) {
+        handle<list_every_agent_grant_request>(std::move(msg), [](auto& svc, const auto& req) {
+            return svc.list_every_agent_grant(req);
+        });
     }
 
     void list_own(ores::nats::message msg) {

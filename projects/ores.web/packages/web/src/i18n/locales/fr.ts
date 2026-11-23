@@ -673,6 +673,8 @@ const fr: SourceCatalogue = {
             end: 'Terminer la session',
             ending: 'Fin en cours…',
             ended: 'Session terminée. Les sessions ouvertes ont été relues.',
+            grantFilter: 'Seules les sessions de l’autorisation d’agent {grant} sont affichées.',
+            grantFilterClear: 'Afficher toutes les sessions',
             endAgent:
                 'Terminer la session d’un agent révoque aussi la clé qui l’a ouverte. Le prochain appel de l’agent est refusé aussitôt, ou au plus tard dans cinq minutes ; il lui faut une nouvelle clé pour reprendre. Continuer ?',
             holder: 'Afficher',

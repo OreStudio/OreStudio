@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 4408C5FA-8B6C-4FB3-B87A-11EFDE5150D6
+:END:
+#+title: A held LLM agent write is claimed (state applying) before or…
+#+description: A held LLM agent write is claimed (state applying) before ores.http replays it and finished (applied or failed) after. If ores.http stops between the two, the row stays applying, its approval request stays approved, and nothing applies or fails it: the person sees an approved write that never happened. A sweep should mark a write that has been applying for longer than a replay can take as failed, with the reason interrupted, and fail its request, never replay it again, since the replay may have applied before the crash. The rows are per tenant behind row-level security, so the sweep needs a tenant-crossing read the gateway does not have today. Raised by the review of PR 5054.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-11-23
+#+updated: 2026-11-23
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

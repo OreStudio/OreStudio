@@ -31,6 +31,7 @@ set(files
 
 # The headers are listed for the install and IDE targets.
 set(HEADERS
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.server/app/agent_write_rules.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.server/app/agent_writes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.server/app/application.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.server/app/host.hpp"

@@ -20,6 +20,7 @@
 #include "ores.http.server/app/agent_writes.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.http.nats/forwarding.hpp"
+#include "ores.http.server/app/agent_write_rules.hpp"
 #include "ores.iam.api/domain/agent_held_write.hpp"
 #include "ores.iam.api/messaging/agent_grant_operations_protocol.hpp"
 #include "ores.iam.core/repository/agent_held_write_store.hpp"
@@ -37,7 +38,6 @@
 #include <exception>
 #include <span>
 #include <string_view>
-#include <thread>
 
 namespace ores::http::server::app {
 
@@ -82,55 +82,6 @@ std::optional<http_method> agent_write_method_of(const std::string& text) {
     return std::nullopt;
 }
 
-/**
- * Whether a replayed call did what it asked. A route answers its service's own
- * result in the body, so a 200 can carry a refusal: the body's success or
- * outcome decides, and its message is the reason a refusal gives.
- */
-bool agent_write_applied(const http_response& answer, std::string& why) {
-    if (static_cast<int>(answer.status) >= 400) {
-        why = answer.body;
-        return false;
-    }
-    boost::system::error_code ec;
-    const auto value = boost::json::parse(answer.body, ec);
-    if (ec || !value.is_object())
-        return true;
-    const auto& body = value.as_object();
-    const auto message_of = [](const boost::json::object& o) {
-        const auto* m = o.if_contains("message");
-        return m && m->is_string() ? std::string(m->as_string()) : std::string();
-    };
-    if (const auto* ok = body.if_contains("success"); ok && ok->is_bool() && !ok->as_bool()) {
-        why = message_of(body);
-        return false;
-    }
-    if (const auto* result = body.if_contains("result"); result && result->is_object()) {
-        const auto& r = result->as_object();
-        if (const auto* outcome = r.if_contains("outcome");
-            outcome && outcome->is_string() && outcome->as_string() != "ok") {
-            why = message_of(r);
-            if (why.empty())
-                why = std::string(outcome->as_string());
-            return false;
-        }
-    }
-    return true;
-}
-
-/**
- * Whether a call that is not a GET only reads. An operation route is a POST
- * whatever it does, and names what it does: an operation that lists, gets,
- * reads, finds, searches or looks up changes nothing. The route catalogue's
- * declaration of whether each route writes will replace this.
- */
-bool agent_call_only_reads(const std::string& route) {
-    const auto last = route.substr(route.find_last_of('/') + 1);
-    for (const std::string_view verb : {"list_", "get_", "read_", "find_", "search_", "lookup_"})
-        if (last.starts_with(verb))
-            return true;
-    return false;
-}
 
 void fail_agent_write(const ores::database::context& tctx,
                       const std::string& request_id,
@@ -183,9 +134,19 @@ void replay_agent_write(const std::string& tenant_text,
     std::string token;
     try {
         const auto wire = ores::nats::default_wire_codec().encode(ask);
-        const auto reply = service.authenticated_request(
-            ores::iam::messaging::issue_agent_replay_token_request::nats_subject,
-            std::span<const std::byte>(wire));
+        // One retry: a request lost in transit is not a refusal.
+        const auto ask_iam = [&] {
+            return service.authenticated_request(
+                ores::iam::messaging::issue_agent_replay_token_request::nats_subject,
+                std::span<const std::byte>(wire));
+        };
+        auto reply = [&] {
+            try {
+                return ask_iam();
+            } catch (const std::exception&) {
+                return ask_iam();
+            }
+        }();
         const auto answer =
             ores::nats::default_wire_codec()
                 .decode<ores::iam::messaging::issue_agent_replay_token_response>(reply.data);
@@ -254,10 +215,7 @@ agent_writes::holder(ores::database::context ctx, ores::nats::service::nats_clie
         // A token that can write nothing, such as a read-only role's, is
         // refused before any request is raised: its person would approve a
         // write the service then refuses.
-        const auto writes = std::ranges::any_of(claims.roles, [](const std::string& code) {
-            return !ores::security::authorization::is_read_permission(code);
-        });
-        if (!writes)
+        if (!agent_token_can_write(claims.roles))
             return http_response::forbidden("The agent's grant allows no write.");
         const auto tctx = ctx.with_tenant(*tenant, claims.username.value_or(""));
         const auto method = agent_write_method(req.method);
@@ -321,10 +279,24 @@ agent_writes::holder(ores::database::context ctx, ores::nats::service::nats_clie
     };
 }
 
-void agent_writes::on_request_event(const ores::nats::message& msg,
-                                    ores::database::context ctx,
-                                    ores::nats::service::nats_client& service,
-                                    ores::http::net::http_server& server) {
+agent_write_replays::agent_write_replays(ores::database::context ctx,
+                                         ores::nats::service::nats_client& service,
+                                         ores::http::net::http_server& server)
+    : ctx_(std::move(ctx))
+    , service_(service)
+    , server_(server)
+    , worker_([this] { run(); }) {}
+
+agent_write_replays::~agent_write_replays() {
+    {
+        std::lock_guard lock(mutex_);
+        stopping_ = true;
+    }
+    ready_.notify_all();
+    worker_.join();
+}
+
+void agent_write_replays::on_request_event(const ores::nats::message& msg) {
     const auto tenant = msg.headers.find(std::string(ores::nats::headers::x_tenant_id));
     if (tenant == msg.headers.end())
         return;
@@ -333,20 +305,31 @@ void agent_writes::on_request_event(const ores::nats::message& msg,
             msg.data);
     if (!event)
         return;
-    // The replay forwards over NATS and waits for its own answer, so it runs off
-    // the thread that delivered the event.
-    std::thread([tenant_text = tenant->second,
-                 request_id = boost::uuids::to_string(event->key.id),
-                 ctx = std::move(ctx),
-                 &service,
-                 &server]() {
+    {
+        std::lock_guard lock(mutex_);
+        pending_.emplace_back(tenant->second, boost::uuids::to_string(event->key.id));
+    }
+    ready_.notify_one();
+}
+
+void agent_write_replays::run() {
+    for (;;) {
+        std::pair<std::string, std::string> next;
+        {
+            std::unique_lock lock(mutex_);
+            ready_.wait(lock, [this] { return stopping_ || !pending_.empty(); });
+            if (stopping_)
+                return;
+            next = std::move(pending_.front());
+            pending_.pop_front();
+        }
         try {
-            replay_agent_write(tenant_text, request_id, ctx, service, server);
+            replay_agent_write(next.first, next.second, ctx_, service_, server_);
         } catch (const std::exception& e) {
             ORES_LOG_SEV(agent_writes_lg(), error)
-                << "Replaying agent write " << request_id << " failed: " << e.what();
+                << "Replaying agent write " << next.second << " failed: " << e.what();
         }
-    }).detach();
+    }
 }
 
 }

@@ -249,6 +249,8 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
     // and replayed when they approve it.
     server.set_exchanged_write_holder(
         ores::http::server::app::agent_writes::holder(ctx, service_nats));
+    // Made after the server and the client its replays use, so it stops first.
+    ores::http::server::app::agent_write_replays agent_replays(ctx, service_nats, server);
     // Every call an agent makes is logged for its person, reads as well as
     // writes, from the token's own claims: never the request or the answer.
     server.set_exchanged_call_recorder([ctx](const http::domain::exchanged_call& call) {
@@ -333,7 +335,7 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
         io_ctx,
         nats,
         service_name,
-        [&http_base_url, &server, feed, agent_keys, ctx, &service_nats](auto& n, auto verifier) {
+        [&http_base_url, &server, feed, agent_keys, &agent_replays](auto& n, auto verifier) {
             if (!verifier)
                 throw std::runtime_error(
                     "JWT verifier is required to register HTTP server handlers.");
@@ -344,13 +346,11 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
             auto subs = ores::http::server::messaging::registrar::register_handlers(
                 n, std::move(*verifier), http_base_url, feed);
             // One replica takes each approval, so no two replay one write.
-            subs.push_back(
-                n.queue_subscribe("inbox.v1.events.approval_requests.>",
-                                  "ores.http.server.agent_writes",
-                                  [ctx, &service_nats, &server](ores::nats::message msg) {
-                                      ores::http::server::app::agent_writes::on_request_event(
-                                          msg, ctx, service_nats, server);
-                                  }));
+            subs.push_back(n.queue_subscribe("inbox.v1.events.approval_requests.>",
+                                             "ores.http.server.agent_writes",
+                                             [&agent_replays](ores::nats::message msg) {
+                                                 agent_replays.on_request_event(msg);
+                                             }));
             // A revoked grant or key must stop its agent at the next call, so
             // every change to either clears the agent token cache.
             for (const auto* subject :

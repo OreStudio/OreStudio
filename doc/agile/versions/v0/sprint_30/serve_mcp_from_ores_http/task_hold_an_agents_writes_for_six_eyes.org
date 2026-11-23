@@ -121,6 +121,14 @@ via its "Verifies task" field.
 | 6 | Self-review: the generated decision test always takes the first seeded kind | kind code | Accept | The kind is =iam.write_by_agent=, which sorts after the role request. |
 | 7 | Self-review: the review panel does not say that a later part has no eligible approver | review panel | Open | Stated on the design page. |
 | 8 | Self-review: a tenant's currency delete at the version it read is refused | main | Capture | =a_tenant_cannot_delete_a_currency_at_the_version_it_read=, a defect of main the replay reproduced. |
+| 9 | PR #5054: a verb prefix such as get_or_create would bypass the hold | =agent_write_rules.hpp= | Accept | A name containing =_or_= writes; the rules moved to a header with unit tests. |
+| 10 | PR #5054: the exemption matches a route against the policy as text | holder | No change | Both are the route's pattern. |
+| 11 | PR #5054: the detached replay thread outlives the server | =agent_write_replays= | Accept | One worker thread the application owns, joined before the server and the client go. |
+| 12 | PR #5054: a crash between claim and finish leaves a write applying | store | Capture | =sweep_agent_writes_left_applying_by_a_crash=: the sweep needs a tenant-crossing read. |
+| 13 | PR #5054: a transient failure to get the replay token is permanent | replay | Accept | One retry. |
+| 14 | PR #5054: an unbounded reason is stored | store | No change | The store cuts it to 500 characters. |
+| 15 | PR #5054: an unparseable 2xx counts as applied | replay | No change | As the review allows: a route that answers no result states none. |
+| 16 | PR #5054: the read-only check reads role codes | holder | No change | The roles claim holds the token's permission codes; a unit test shows a read-only token refused. |
 
 * Result
 

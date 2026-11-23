@@ -55,7 +55,10 @@ Six PRs, each ending in a check:
    and column or by variable, and warnings alone are valid.
 2. The twin recipe evaluator moves from the synthetic generator into
    =ores.trading.api=.
-3. A trade records its product and the form it was booked in.
+3. A trade records its product and the form it was booked in, in a
+   =trade_product= row of its own: the anchor is at its ceiling of fields, and
+   neither fact follows from the trade (=VanillaBasketOption= is the scripted
+   form of three basket options).
 4. =book_scripted=: a library script by version or an inline script, refused
    with the validation's findings when they hold an error.
 5. =book=: a product, its terms and a form, validated against

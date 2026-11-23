@@ -405,6 +405,8 @@ set(files
     "trade_party_role_protocol_codec_roundtrip_tests.cpp"
     "trade_portfolio_codec_roundtrip_tests.cpp"
     "trade_portfolio_protocol_codec_roundtrip_tests.cpp"
+    "trade_product_codec_roundtrip_tests.cpp"
+    "trade_product_protocol_codec_roundtrip_tests.cpp"
     "trade_protocol_codec_roundtrip_tests.cpp"
     "trade_state_codec_roundtrip_tests.cpp"
     "trade_state_protocol_codec_roundtrip_tests.cpp"

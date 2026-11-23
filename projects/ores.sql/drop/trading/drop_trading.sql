@@ -38,6 +38,8 @@
 \ir ./trading_trade_party_roles_notify_trigger_drop.sql
 \ir ./trading_trade_party_roles_drop.sql
 
+\ir ./trading_trade_products_notify_trigger_drop.sql
+\ir ./trading_trade_products_drop.sql
 \ir ./trading_trade_identifiers_notify_trigger_drop.sql
 \ir ./trading_trade_identifiers_drop.sql
 

@@ -512,6 +512,8 @@
 -- Trade identifiers, party roles and additional fields (depend on the trade)
 \ir ./trading_trade_identifiers_create.sql
 \ir ./trading_trade_identifiers_notify_trigger_create.sql
+\ir ./trading_trade_products_create.sql
+\ir ./trading_trade_products_notify_trigger_create.sql
 
 \ir ./trading_trade_party_roles_create.sql
 \ir ./trading_trade_party_roles_notify_trigger_create.sql

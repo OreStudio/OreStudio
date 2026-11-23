@@ -33,6 +33,7 @@
 #include "ores.synthetic.api/domain/yield_curve_process_parameter_mapping.hpp"
 #include "ores.synthetic.api/feeds/derived_fx_vol.hpp"
 #include "ores.synthetic.api/feeds/feed_factory.hpp"
+#include "ores.synthetic.api/feeds/generator_outputs.hpp"
 #include "ores.synthetic.api/feeds/ir_curve_template_resolver.hpp"
 #include "ores.synthetic.api/messaging/ir_curve_operations_protocol.hpp"
 #include "ores.synthetic.api/messaging/simulate_fx_spot_paths_protocol.hpp"
@@ -870,7 +871,8 @@ feed_kind make_fx_vol_surface_kind() {
                  * two currencies' curves from the run's values on every tick, and solves each
                  * expiry against the forward they imply.
                  */
-                in.deltas = {0.25, 0.10};
+                in.deltas.assign(feed::fx_vol_surface_deltas.begin(),
+                                 feed::fx_vol_surface_deltas.end());
                 return {.input = feed::feed_build_input{std::move(in)}, .skip_reason = {}};
             };
             out.push_back(std::move(c));

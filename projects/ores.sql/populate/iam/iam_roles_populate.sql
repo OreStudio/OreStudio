@@ -1206,6 +1206,9 @@ BEGIN
     -- observations and the fixing as the service, since no run token stands in for a person.
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'SyntheticService', 'marketdata::feeds:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'SyntheticService', 'marketdata::market_series:read');
+    -- A trade population is drawn on the market data its party is configured to receive, which
+    -- the service reads as the demand of the party's routes.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'SyntheticService', 'marketdata::routes:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'SyntheticService', 'marketdata::market_observations:read');
     -- A feed whose price source is "fixing" reads the latest public fixing, which is a tick
     -- class of its own on a table of its own, so the read is granted by its own name.

@@ -75,16 +75,6 @@ ORES_SYNTHETIC_API_EXPORT std::expected<std::string, std::string>
 curve_fixing_uri(const domain::ir_curve_generation_config& curve);
 
 /**
- * @brief The fixing addresses a set of curves serves.
- *
- * One address per curve that states fixings, as =curve_fixing_uri= gives it. A
- * trade that floats on an index outside this set has no fixings, so a generator
- * draws only indices inside it.
- */
-ORES_SYNTHETIC_API_EXPORT std::set<std::string>
-served_fixing_uris(const std::vector<domain::ir_curve_generation_config>& curves);
-
-/**
  * @brief How a history's days move away from the level the curve states.
  *
  * The daily spread is in rate terms, so a 2 basis point spread moves a 5% rate and a

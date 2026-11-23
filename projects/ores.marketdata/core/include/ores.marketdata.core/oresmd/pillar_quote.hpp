@@ -82,6 +82,17 @@ ORES_MARKETDATA_CORE_EXPORT std::string pillar_term_text(const std::string& star
                                                          std::chrono::year_month_day end_date);
 
 /**
+ * @brief Whether a pillar's quote depends on the dates its tenors resolve to.
+ *
+ * A spot pillar that names its end, or a pillar whose ends are both periods,
+ * names the same quote on every day. A spot pillar with no end, a
+ * meeting-dated pillar, or one whose end is a date names a quote only once its
+ * dates are resolved, as pillar_term_text() and the start slot read them.
+ */
+ORES_MARKETDATA_CORE_EXPORT bool pillar_quote_needs_dates(const std::string& start_tenor_code,
+                                                          const std::string& end_tenor_code);
+
+/**
  * @brief The market datum a pillar's quote is, built from the market data model.
  *
  * An interest-rate swap rate quoted in @p quote 's currency, starting at the

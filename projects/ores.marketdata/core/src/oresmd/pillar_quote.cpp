@@ -59,6 +59,13 @@ std::string start_slot_text(const pillar_quote& quote) {
 
 }
 
+bool pillar_quote_needs_dates(const std::string& start_tenor_code,
+                              const std::string& end_tenor_code) {
+    if (start_tenor_code == "SPOT")
+        return end_tenor_code.empty();
+    return !(named_as_a_period(start_tenor_code) && named_as_a_period(end_tenor_code));
+}
+
 std::string pillar_term_text(const std::string& start_tenor_code,
                              const std::string& end_tenor_code,
                              std::chrono::year_month_day start_date,

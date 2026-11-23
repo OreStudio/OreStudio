@@ -26,11 +26,11 @@ A person diagnosing a quiet surface reads its own log: the state changes with wh
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:8DE041AE-95E6-40CE-9B62-2CE3BA77838A][Model the synthetic feeds as a dependency graph: upstreams, latent surfaces and vendor views]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-23                               |
 
 * Acceptance
@@ -79,7 +79,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| C++ synthetic suites | 5 of 5 pass, with 14 feed graph cases and the surface's raise case | =compass test run -- -R synthetic= | d9669bd81d |
+| Live, a curve stop | the curve's log: "Now stopped: Stopped by super_admin (common.other): ..."; the AUD/USD surface's: "Now starved: ... aonia.aud is stopped: ..."; the ICE view's: "Now starved: ... surface is starved: ..." | =POST /api/synthetic/feed-nodes/synthetic.bloomberg.ir.yield_curve.aonia.aud/stop=, then =GET /api/operations/logs?range=1h&tag=NODE= | d9669bd81d |
+| Live, the halt | with the curve stopped, every vendor holds 13 surfaces, a restart included; 14 at once after the start, and the surface's log says "Running." | =GET /api/synthetic/simulated-sources= | d9669bd81d |
 
 * Notes
 
@@ -104,6 +106,30 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: the stop reason named the service's database role | application.cpp | Accepted | It names the row's =modified_by=, the operator. |
+| 2 | Local review: starved nodes kept publishing on a stopped input's last value | application.cpp, simulator_offers.hpp | Accepted | The offers withhold every halted node; see the Result. |
+| 3 | Local review: each stop or start derives the graph twice and once more to halt | application.cpp | Accepted | A stop is a rare operator act; the graph is 196 nodes. |
 
 * Result
+
+Each feed node keeps a message log in telemetry, tagged with its name, read
+through the existing =GET /api/operations/logs?tag== on the BFF and
+=ores.http=: the check the design asked for holds, and no new store or route
+was needed. A latent surface raises its refusal through a =node_diagnostics=
+interface when the reason changes, and clears it when it publishes again; the
+service's journal keeps each node's diagnostic and publishes each raise and
+clear. The graph's rule gains =failing=, after =stopped= and =starved=, and a
+failing node starves the nodes below it. A stop or start says, to each node
+whose state it changes, the new state and its reason, and a stopped node's
+reason names the operator and their reason, from its stored row.
+
+The live check found that the board keeps a stopped curve's last value, so a
+surface the graph called starved went on publishing on it. The fleet now
+withholds every node the operators' stops leave not running, the stopped and
+the starved alike, so a stop upstream stops what is below it, as the story
+requires; a diagnostic halts nothing, because a surface withheld for failing
+could never run again to clear it.
+
+A live =no market= diagnostic needs a surface that runs without an input, which
+the halt now prevents for a stopped input; the raise path is proven by the
+surface's own test instead, which sees one raise for each change of reason.

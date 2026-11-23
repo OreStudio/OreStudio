@@ -59,6 +59,7 @@
 #include "ores.trading.core/repository/instrument_option_repository.hpp"
 #include "ores.trading.core/repository/rate_instrument_repository.hpp"
 #include "ores.trading.core/repository/script_input_repository.hpp"
+#include "ores.trading.core/repository/scripted_instrument_repository.hpp"
 #include "ores.trading.core/repository/structure_member_repository.hpp"
 #include "ores.trading.core/repository/structure_repository.hpp"
 #include "ores.trading.core/repository/swap_leg_repository.hpp"
@@ -71,6 +72,7 @@
 #include "ores.trading.core/repository/trade_state_repository.hpp"
 #include "ores.trading.core/repository/trade_summary_repository.hpp"
 #include "ores.trading.core/service/operational_authorisation_service.hpp"
+#include "ores.trading.core/service/script_publish_service.hpp"
 #include "ores.trading.core/service/trade_export_service.hpp"
 #include "ores.trading.core/service/trade_operations_service.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
@@ -1364,8 +1366,8 @@ ores::trading::messaging::book_scripted_request book_scripted_inline_request(fix
 }
 
 /// The products the store records for a trade.
-std::vector<ores::trading::domain::trade_product> book_scripted_products_of(
-    fixture& f, const boost::uuids::uuid& trade_id) {
+std::vector<ores::trading::domain::trade_product>
+book_scripted_products_of(fixture& f, const boost::uuids::uuid& trade_id) {
     return ores::trading::repository::trade_product_repository().read_latest(
         f.ctx, boost::uuids::to_string(trade_id));
 }
@@ -1438,4 +1440,46 @@ TEST_CASE("book_trade records the product a caller states, and refuses a form th
     odd.booking_form = "spreadsheet";
     CHECK(trade_operations_service(f.ctx, every_book_open).book_trade(odd, {}).result.code ==
           "booking_form_invalid");
+}
+
+TEST_CASE("a tenant's library script is booked by name, current or pinned at a stated version",
+          "[service][book_scripted]") {
+    fixture f;
+    const std::string code = "Option = PAY(Notional * 3, Expiry, Expiry, PayCcy);";
+    ores::trading::messaging::publish_script_request publish;
+    publish.name = "TenantPayoff";
+    publish.description = "A tenant's payoff";
+    ores::trading::messaging::published_variant variant;
+    variant.purpose = "default";
+    variant.code = code;
+    variant.npv_variable = "Option";
+    variant.results.push_back({.variable = "Notional", .rename = std::nullopt});
+    publish.variants.push_back(variant);
+    const auto published = ores::trading::service::script_publish_service(f.ctx).publish(publish);
+    REQUIRE(published.success);
+
+    auto current = book_scripted_inline_request(f);
+    current.code.clear();
+    current.script_name = "TenantPayoff";
+    current.product_code = "EquityOption";
+    const auto booked = trade_operations_service(f.ctx, every_book_open).book_scripted(current, {});
+    INFO(booked.result.code << ": " << booked.result.message);
+    REQUIRE(booked.result.outcome == outcome::ok);
+    const auto products = book_scripted_products_of(f, current.anchor.id);
+    REQUIRE(products.size() == 1u);
+    CHECK(products[0].product_code == "EquityOption");
+
+    auto pinned = book_scripted_inline_request(f);
+    pinned.code.clear();
+    pinned.script_name = "TenantPayoff";
+    pinned.script_version = published.version;
+    REQUIRE(
+        trade_operations_service(f.ctx, every_book_open).book_scripted(pinned, {}).result.outcome ==
+        outcome::ok);
+    const auto instruments =
+        ores::trading::repository::scripted_instrument_repository().read_latest(
+            f.ctx, boost::uuids::to_string(pinned.anchor.id));
+    REQUIRE(instruments.size() == 1u);
+    CHECK(instruments[0].script_version == published.version);
+    CHECK(instruments[0].script_body.empty());
 }

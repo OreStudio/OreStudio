@@ -282,6 +282,8 @@ private:
     /// Why the last tick published nothing, or empty when it published. Only the tick reads it.
     std::string refusal_;
     std::shared_ptr<node_diagnostics> diagnostics_;
+    bool published_once_ = false;
+    bool cleared_after_refusal_ = false;
     /// The adapters attached, each with the contributor it serves and that contributor's targets.
     struct sink final {
         std::string contributor;

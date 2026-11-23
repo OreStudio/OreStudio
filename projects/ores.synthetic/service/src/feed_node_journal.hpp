@@ -49,7 +49,10 @@ public:
     void raise(const std::string& node, const std::string& message) override {
         {
             const std::lock_guard lock(mu_);
-            diagnostics_[node] = message;
+            auto& held = diagnostics_[node];
+            if (held == message)
+                return;
+            held = message;
         }
         publish_(node, "warn", "Failing: " + message);
     }

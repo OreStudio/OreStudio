@@ -371,6 +371,8 @@ private:
                 one.runner->reapply();
     }
 
+    // Stopped is what an operator stopped; halted is that and every node it starves, which the
+    // offers withhold.
     [[nodiscard]] bool node_stopped(const std::string& name) const {
         const std::lock_guard lock(nodes_mu_);
         return stopped_nodes_.contains(name);
@@ -427,6 +429,9 @@ private:
             const std::lock_guard lock(nodes_mu_);
             stopped_nodes_ = stopped_rows(false);
         }
+        // Seeded before the adapters are built, so no halted node is offered even once; the
+        // sources' own stops join once the adapters are in.
+        halt_what_the_stops_starve();
         auto built = make_adapters(sources,
                                    db_ctx_,
                                    nats_,

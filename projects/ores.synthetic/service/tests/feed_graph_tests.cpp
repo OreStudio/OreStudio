@@ -222,6 +222,7 @@ TEST_CASE("the journal says a diagnostic once raised, its clearing, and each sta
             said.push_back(node + "|" + std::string(level) + "|" + message);
         });
     journal.raise(latent, "no market: curve:USD");
+    journal.raise(latent, "no market: curve:USD");
     CHECK(journal.diagnostics().at(latent) == "no market: curve:USD");
     journal.clear(latent);
     journal.clear(latent);

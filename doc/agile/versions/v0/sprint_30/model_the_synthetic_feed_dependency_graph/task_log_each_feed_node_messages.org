@@ -109,6 +109,13 @@ via its "Verifies task" field.
 | 1 | Local review: the stop reason named the service's database role | application.cpp | Accepted | It names the row's =modified_by=, the operator. |
 | 2 | Local review: starved nodes kept publishing on a stopped input's last value | application.cpp, simulator_offers.hpp | Accepted | The offers withhold every halted node; see the Result. |
 | 3 | Local review: each stop or start derives the graph twice and once more to halt | application.cpp | Accepted | A stop is a rare operator act; the graph is 196 nodes. |
+| 4 | PR review: a diagnostic outlives the surface that raised it | fx_vol_surface_feed.cpp | Accepted | A surface's first tick that publishes clears too, so one built again after a halt clears what an earlier build raised; the contributor test checks it. |
+| 5 | PR review: a recurring refusal publishes a duplicate | feed_node_journal.hpp | Accepted | The journal publishes a raise only when the message changes; the journal test raises twice. |
+| 6 | PR review: a failure's starves are not said to the nodes below | feed_node_journal.hpp | Declined | Saying them needs a graph derivation on every refusal, inside a tick; the failing node's own log says the cause, and the graph read shows the starves. |
+| 7 | PR review: the graph reads the stop rows on each read | application.cpp | Declined | One small table, read per operator read. |
+| 8 | PR review: concurrent stops may log each other's changes | application.cpp | Accepted as is | A log of state changes tolerates it, as the review says. |
+| 9 | PR review: a halted node may be offered once at start | application.cpp | Accepted | The halts are seeded from the stored rows before the adapters are built. |
+| 10 | PR review: stopped and halted read alike | application.cpp | Accepted | A comment says how they differ. |
 
 * Result
 

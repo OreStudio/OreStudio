@@ -8,7 +8,7 @@
 #+filetags: :model_the_synthetic_feed_dependency_graph:sprint_30:v0:
 #+owner: marco
 #+branch: fix/show-the-latent-provider-to-the-system-tenant
-#+pr:
+#+pr: 5064
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-23
@@ -85,7 +85,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5064][#5064]] | [web] Show the latent provider to the system tenant and run its feeds as nodes |
 
 * Review
 

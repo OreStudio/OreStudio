@@ -24,6 +24,8 @@
 #include "ores.http.api/export.hpp"
 #include "ores.logging/logger.hpp"
 #include "ores.utility/codec/json_schema.hpp"
+#include "ores.utility/codec/struct_codec.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include <cstdint>
 #include <functional>
@@ -34,6 +36,22 @@
 #include <vector>
 
 namespace ores::http::net {
+
+/**
+ * @brief Writes an example in the codec's form for its type: through its wire
+ * traits where it has them, else through the fields it states, which is how a
+ * route's own body type reaches the wire.
+ */
+template <typename T>
+std::string example_json_of(const T& value) {
+    if constexpr (requires { ores::utility::codec::wire_traits<T>::write_json(value); }) {
+        return ores::utility::codec::wire_traits<T>::write_json(value);
+    } else {
+        static_assert(ores::utility::codec::states_wire_form<T>,
+                      "A route's body or response type needs wire traits or wire_fields.");
+        return ores::utility::codec::object::write_json(value);
+    }
+}
 
 /**
  * @brief Route builder for fluent route registration.
@@ -113,6 +131,17 @@ public:
     route_builder& catalogue(std::string tool, std::string area, std::string entity, bool writes);
 
     /**
+     * @brief States that a route whose method could carry a body takes none.
+     */
+    route_builder& no_body();
+
+    /**
+     * @brief States that a route takes a JSON object whose shape no one type
+     * fixes, such as a document whose members depend on its family.
+     */
+    route_builder& json_body();
+
+    /**
      * @brief Takes a place in the catalogue, keeping the route's documentation.
      */
     route_builder& place(domain::route_catalogue placed);
@@ -163,8 +192,7 @@ public:
         schema.json_schema = ores::utility::codec::json_schema<T>();
 
         if (example_generator) {
-            schema.example_json =
-                ores::utility::codec::wire_traits<T>::write_json(example_generator());
+            schema.example_json = example_json_of<T>(example_generator());
         }
 
         body_schema_ = schema;
@@ -195,8 +223,7 @@ public:
         schema.json_schema = ores::utility::codec::json_schema<T>();
 
         if (example_generator) {
-            schema.example_json =
-                ores::utility::codec::wire_traits<T>::write_json(example_generator());
+            schema.example_json = example_json_of<T>(example_generator());
         }
 
         success_response_schema_ = schema;
@@ -288,12 +315,21 @@ public:
           std::unordered_map<std::string, std::string>& path_params) const;
 
     /**
-     * @brief Every registered route whose place in the catalogue the server
-     * cannot accept, as its method and pattern and why: it declares none, its
-     * area is not a published one, it shares its tool, or it changes something
-     * by its method while declaring that it does not write and is neither a
-     * bulk get nor an operation named for reading. The server refuses to start
-     * with one, so a write cannot be declared out of the six-eyes hold.
+     * @brief Every registered route the catalogue cannot accept, with the
+     * reason. The server refuses to start with one.
+     *
+     * The router refuses a route for one of these reasons:
+     *
+     * - It declares no place in the catalogue.
+     * - Its area is not a published area.
+     * - It shares its tool with another route.
+     * - Its method changes something, it declares that it does not write, and
+     *   it is not a bulk get or an operation named for reading. This keeps
+     *   every write inside the six-eyes hold.
+     * - Its method can carry a body (POST, PUT, PATCH or DELETE), and it
+     *   declares no typed body, no stream and no empty body. This makes every
+     *   tool state its input.
+     * - It declares an empty body together with a typed body or a stream.
      */
     [[nodiscard]] std::vector<std::string> uncatalogued() const;
 

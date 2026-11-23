@@ -441,6 +441,11 @@ void {{entity_singular}}_routes::register_routes(
 {{#has_body}}
                                     .body<messaging::{{request}}>()
 {{/has_body}}
+{{^has_body}}
+{{#is_delete}}
+                                    .no_body()
+{{/is_delete}}
+{{/has_body}}
                                     .response<messaging::{{response_type}}>()
                                     .handler([&session](const http_request& req) {
                                         return handle_{{identifier}}(req, session);

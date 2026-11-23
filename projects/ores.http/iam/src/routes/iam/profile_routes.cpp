@@ -126,7 +126,9 @@ void profile_routes::register_routes(
         registry->register_route(built);
     };
 
-    add(router->put("/api/me/profile").catalogue("web_put_me_profile", "access", "profile", true),
+    add(router->put("/api/me/profile")
+            .catalogue("web_put_me_profile", "access", "profile", true)
+            .body<profile_body>(),
         "Write the caller's own profile",
         [&session](const http_request& req) {
             const auto profile = read_profile(req.body);
@@ -154,7 +156,9 @@ void profile_routes::register_routes(
             });
         });
 
-    add(router->put("/api/accounts/{username}/profile").catalogue("web_put_accounts_username_profile", "access", "accounts", true),
+    add(router->put("/api/accounts/{username}/profile")
+            .catalogue("web_put_accounts_username_profile", "access", "accounts", true)
+            .body<profile_body>(),
         "Write one account's profile, as an administrator",
         [&session](const http_request& req) {
             const auto profile = read_profile(req.body);
@@ -192,7 +196,8 @@ void profile_routes::register_routes(
             });
         });
 
-    add(router->get("/api/me/contact-information").catalogue("web_get_me_contact_information", "access", "contact_information", false),
+    add(router->get("/api/me/contact-information")
+            .catalogue("web_get_me_contact_information", "access", "contact_information", false),
         "Read the caller's own contact record",
         [&session](const http_request& req) {
             return guarded<messaging::get_my_account_contact_information_request>([&] {
@@ -206,7 +211,9 @@ void profile_routes::register_routes(
             });
         });
 
-    add(router->put("/api/me/contact-information").catalogue("web_put_me_contact_information", "access", "contact_information", true),
+    add(router->put("/api/me/contact-information")
+            .catalogue("web_put_me_contact_information", "access", "contact_information", true)
+            .body<contact_body>(),
         "Write the caller's own contact record",
         [&session](const http_request& req) {
             const auto contact = read_contact(req.body);
@@ -232,7 +239,9 @@ void profile_routes::register_routes(
             });
         });
 
-    add(router->get("/api/accounts/{accountId}/contact-information").catalogue("web_get_accounts_accountid_contact_information", "access", "accounts", false),
+    add(router->get("/api/accounts/{accountId}/contact-information")
+            .catalogue(
+                "web_get_accounts_accountid_contact_information", "access", "accounts", false),
         "Read one account's contact record, as an administrator",
         [&session](const http_request& req) {
             const auto account = req.get_path_param("accountId");
@@ -246,7 +255,9 @@ void profile_routes::register_routes(
             });
         });
 
-    add(router->put("/api/accounts/{accountId}/contact-information").catalogue("web_put_accounts_accountid_contact_information", "access", "accounts", true),
+    add(router->put("/api/accounts/{accountId}/contact-information")
+            .catalogue("web_put_accounts_accountid_contact_information", "access", "accounts", true)
+            .body<contact_body>(),
         "Write one account's contact record, as an administrator",
         [&session](const http_request& req) {
             const auto account = req.get_path_param("accountId");

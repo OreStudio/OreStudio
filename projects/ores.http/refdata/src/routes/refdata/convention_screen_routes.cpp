@@ -949,7 +949,8 @@ void convention_screen_routes::register_routes(
         registry->register_route(built);
     };
 
-    add(router->get("/api/conventions/families").catalogue("web_get_conventions_families", "reference-data", "families", false)
+    add(router->get("/api/conventions/families")
+            .catalogue("web_get_conventions_families", "reference-data", "families", false)
             .summary("List every convention family with its row count and asset class")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<messaging::list_convention_kinds_request>([&] {
@@ -995,7 +996,9 @@ void convention_screen_routes::register_routes(
                 });
             }));
 
-    add(router->get("/api/conventions/{family}/documents/{id}").catalogue("web_get_conventions_family_documents_id", "reference-data", "conventions", false)
+    add(router->get("/api/conventions/{family}/documents/{id}")
+            .catalogue(
+                "web_get_conventions_family_documents_id", "reference-data", "conventions", false)
             .summary("Read one convention with the terms the screen draws")
             .description("One family's convention, found by the family the address names: its "
                          "kind, the party that holds it, and its terms, each with the value it "
@@ -1080,7 +1083,12 @@ void convention_screen_routes::register_routes(
                 });
             }));
 
-    add(router->put("/api/conventions/{family}/documents/{id}/terms").catalogue("web_put_conventions_family_documents_id_terms", "reference-data", "conventions", true)
+    add(router->put("/api/conventions/{family}/documents/{id}/terms")
+            .catalogue("web_put_conventions_family_documents_id_terms",
+                       "reference-data",
+                       "conventions",
+                       true)
+            .json_body()
             .summary("Change the terms of one convention from its record page")
             .description("Answers 200 with the service's result whatever its outcome, so read "
                          "result.outcome rather than the status; a stale version is the service's "
@@ -1103,7 +1111,8 @@ void convention_screen_routes::register_routes(
                 });
             }));
 
-    add(router->get("/api/conventions/{family}").catalogue("web_get_conventions_family", "reference-data", "conventions", false)
+    add(router->get("/api/conventions/{family}")
+            .catalogue("web_get_conventions_family", "reference-data", "conventions", false)
             .summary("Read one page of a convention family's rows")
             .query_param("offset", "integer", "", false, "Rows to skip", "0")
             .query_param("limit", "integer", "", false, "Rows to read, 1 to 500", "500")
@@ -1120,7 +1129,9 @@ void convention_screen_routes::register_routes(
                 });
             }));
 
-    add(router->put("/api/conventions/{family}").catalogue("web_put_conventions_family", "reference-data", "conventions", true)
+    add(router->put("/api/conventions/{family}")
+            .catalogue("web_put_conventions_family", "reference-data", "conventions", true)
+            .json_body()
             .summary("Write one convention of a family whose terms the screen draws")
             .description("Answers 200 with the service's result whatever its outcome, so read "
                          "result.outcome rather than the status. A family whose terms the screen "

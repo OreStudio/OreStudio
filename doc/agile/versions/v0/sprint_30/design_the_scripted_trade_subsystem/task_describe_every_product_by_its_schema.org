@@ -8,11 +8,11 @@
 #+filetags: :design_the_scripted_trade_subsystem:sprint_30:v0:
 #+owner: marco
 #+branch: feature/describe-every-product-by-its-schema
-#+pr: 5050
+#+pr: 5060
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-21
-#+updated: 2026-11-21
+#+updated: 2026-11-23
 #+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -20,24 +20,24 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-describe_product serves every product's schema: its fields, with type, list or scalar, accepted values and description, and its forms, with the script and engine of each; a script-only product's fields are its script's inputs, and annotations are held as data.
+describe_product serves every product's schema: its fields, with type, list or scalar, accepted values and description, and its forms, with the script and product tag of each; a script-only product's fields are its script's inputs, and annotations are held as data.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:E6359881-7919-4BBC-9B9C-03A8EEDB8A03][Design the scripted trade subsystem]] |
-| Now          | Planned; analysed what exists. |
+| Now          | Nothing. |
 | Waiting on   | Nothing. |
-| Next         | PR 1. |
-| Last touched | 2026-11-22                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-23                               |
 
 * Acceptance
 
 - every product of the catalogue and every script with no element of its own has a schema
 - labels, coded values, defaults and descriptions are annotations held as data
-- each form states the script it runs and the engine its product tag prices with
+- each form states the script it runs and its product tag; the engine it prices with moved to [[id:8E44EA16-D191-4092-9EB7-EA6C4D9811FA][State the engine a pricing configuration gives a trade]], because ORE chooses it from a booked trade's terms
 - a test fails when a product has no schema
 - ores.http serves a product's schema and the list of products as JSON routes over the trading service's operation
 - the BFF serves the same under /api/trading/products, with a unit test of each route
@@ -64,7 +64,7 @@ Revised with the user on 2026-11-22, after the analysis in the notes below.
   =/Trade[TradeType='Swap']/SwapData=. =product_type= needs no element column;
   its seed is written by compass's catalogue loader, which a new column would
   have had to change (decided in PR 1).
-- Each form states its product tag (scripted) or ORE pricing engine type
+- (Superseded: the engine moved to its own task, see the Result.) Each form states its product tag (scripted) or ORE pricing engine type
   (native); =describe_product= takes an optional pricing configuration and, when
   given one, states the model and engine it assigns. Cost is left to a later task.
 - =describe_product= is served by trading, which holds the leaves and their value
@@ -81,7 +81,8 @@ PRs, each ending in a check, once the move is merged:
    (labels, coded values, defaults, descriptions) as =ore_parameter= texts and
    value sets where a leaf exists, and as data beside the inputs where none does.
 3. =describe_product= and =list_products= in the trading service, with the forms
-   and the engine of a stated pricing configuration.
+   and the engine of a stated pricing configuration (the engine moved to its own
+   task; see the Result).
 4. The ores.http routes and the BFF routes under =/api/trading/products=, with a
    test of each.
 
@@ -302,6 +303,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5060][#5060]] | [agile] Close the product schema task, and move the engine to its own task |
 | [[https://github.com/OreStudio/OreStudio/pull/5050][#5050]] | [http] Serve a product's description and the product list over HTTP |
 | [[https://github.com/OreStudio/OreStudio/pull/5048][#5048]] | [trading] Describe a product and list the products that can be described |
 | [[https://github.com/OreStudio/OreStudio/pull/5046][#5046]] | [ore] Serve the ore parameter cache from ores.ore.client |
@@ -339,15 +341,26 @@ via its "Verifies task" field.
 
 * Result
 
-In progress: PR 1 is in. Every native product of the catalogue has its fields
-in the =ore.parameters= dataset, read from the vendored ORE schemas with the
-guide's words: one row for each field of each schema type, 2929 in all, and
-the data element of each trade type as a field of its trade,
-=/Trade[TradeType='Swap']/SwapData=. PR 2 is in: the codes of the library's
-coded script inputs are data, the entity =script_input_code=, published with their
-script. PR 3 is in: trading serves =describe_product= and =list_products= from its
-own rows and =ores.ore.client='s cache, which now holds the parameters for both
-services. PR 4 is in: =ores.http= and the BFF serve =GET /api/trading/products= and
-=GET /api/trading/products/{code}=, and give the same answers byte for byte. What
-remains is the engine of each form: the engine a pricing configuration assigns
-the form's product tag, which is analytics' data.
+describe_product serves every product's schema, through ores.http and the BFF
+under =/api/trading/products=:
+
+- every native product's fields, read from the vendored ORE schemas with the
+  guide's words, one row for each field of each schema type, 2929 in all, held in
+  =ore.parameters= by =ores.ore= (PR #5040);
+- a script-only product's fields as its script's inputs, and the codes of coded
+  inputs as data, =script_input_code= (PR #5044);
+- the parameter cache in =ores.ore.client=, shared by reporting and trading, so
+  trading reads no table of =ores.ore= (PR #5046);
+- =describe_product= and =list_products=, with each form's script and product
+  tag, refusing an unknown code and a product with nothing to describe (PR #5048);
+- the routes, whose answers are equal byte for byte on both servers (PR #5050).
+
+A test over the seeded catalogue fails when a product cannot be described; only
+=CommodityPairwiseVarianceSwap=, which ORE cannot build, is refused, with that
+reason.
+
+One acceptance line moved: "each form states ... the engine its product tag
+prices with". ORE chooses the engine from a booked trade's terms (a swaption's
+exercise, a script tag resolved with the trade's asset class), so it is not a
+fact of a product; it is now [[id:8E44EA16-D191-4092-9EB7-EA6C4D9811FA][State the engine a pricing configuration gives a trade]],
+with the evidence. The form states the script and product tag it is fixed by.

@@ -23,6 +23,7 @@
 #include "ores.database/repository/unit_of_work.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.trading.api/builders/scripted_builders.hpp"
+#include "ores.trading.api/builders/scripted_twins.hpp"
 #include "ores.trading.api/domain/bond_instrument_rows.hpp"
 #include "ores.trading.api/domain/instrument_batch_mapper.hpp"
 #include "ores.trading.api/domain/trade_type_routing.hpp"
@@ -567,6 +568,79 @@ trade_operations_service::book_scripted(const messaging::book_scripted_request& 
                            inline_script                 ? booking.anchor.trade_type :
                                                            request.script_name;
     booking.booking_form = "scripted";
+
+    const auto booked = book_trade(booking, actor_token);
+    response.result = booked.result;
+    response.activity_id = booked.activity_id;
+    return response;
+}
+
+messaging::book_product_response
+trade_operations_service::book_product(const messaging::book_product_request& request,
+                                       std::string_view actor_token) {
+    using ores::utility::domain::outcome;
+    namespace tb = ores::trading::builders;
+
+    messaging::book_product_response response;
+    const auto refuse = [&](std::string code, std::string message) {
+        response.result.outcome = outcome::failed;
+        response.result.code = std::move(code);
+        response.result.message = std::move(message);
+        return response;
+    };
+
+    messaging::book_trade_request booking;
+    booking.anchor = request.anchor;
+    booking.booking = request.booking;
+    booking.activity_type_code = request.activity_type_code;
+    booking.draft_reason_code = request.draft_reason_code;
+    booking.identifiers = request.identifiers;
+    booking.product_code = request.product_code;
+    booking.booking_form = request.booking_form;
+
+    if (request.booking_form == "native") {
+        if (repository::product_type_repository().read_latest(ctx_, request.product_code).empty())
+            return refuse("product_unknown",
+                          "No product type is named " + request.product_code +
+                              "; a script-only product is booked with book_scripted.");
+        // A type no table holds names every routed array with rows, so an empty
+        // list means the request states no instrument header at all.
+        if (service::misrouted_arrays(request.instruments, std::string_view{}).empty())
+            return refuse("terms_missing",
+                          "The " + request.product_code +
+                              " is booked from its terms, and the request "
+                              "states no row of its element.");
+        booking.anchor.trade_type = request.product_code;
+        booking.instruments = request.instruments;
+    } else if (request.booking_form == "scripted") {
+        std::vector<tb::scripted_form> forms;
+        try {
+            forms = tb::scripted_forms_of(request.instruments, request.product_code);
+        } catch (const tb::scripted_twin_error& e) {
+            return refuse("terms_unreadable",
+                          "The terms of the " + request.product_code +
+                              " do not state its scripted form: " + e.what());
+        }
+        const auto chosen = std::ranges::find_if(forms, [&](const auto& f) {
+            return request.script_name.empty() ? f.twin : f.script_name == request.script_name;
+        });
+        if (chosen == forms.end()) {
+            std::string message = "The product " + request.product_code + " has no scripted form";
+            if (!request.script_name.empty())
+                message += " over " + request.script_name;
+            else if (!forms.empty())
+                message += " of its own; name one of the scripts it carries";
+            return refuse("form_not_offered", message + ".");
+        }
+        // The forms are this call's own, so the chosen one's rows are moved.
+        booking.anchor.trade_type = std::string(tb::scripted_trade_builder::trade_type);
+        domain::append_instrument(booking.instruments,
+                                  domain::trade_instrument{std::move(chosen->data)});
+    } else {
+        return refuse("booking_form_invalid",
+                      "A product is booked in its native or its scripted form, not '" +
+                          request.booking_form + "'.");
+    }
 
     const auto booked = book_trade(booking, actor_token);
     response.result = booked.result;

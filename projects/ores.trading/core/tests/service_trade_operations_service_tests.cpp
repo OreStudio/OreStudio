@@ -22,6 +22,7 @@
 #include "ores.iam.core/repository/account_repository.hpp"
 #include "ores.inbox.core/repository/approval_request_repository.hpp"
 #include "ores.logging/logger.hpp"
+#include "ores.marketdata.api/datum/market_index.hpp"
 #include "ores.refdata.api/generators/book_generator.hpp"
 #include "ores.refdata.api/generators/currency_generator.hpp"
 #include "ores.refdata.api/generators/party_generator.hpp"
@@ -32,7 +33,9 @@
 #include "ores.refdata.core/repository/portfolio_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
+#include "ores.trading.api/builders/basket_option_builders.hpp"
 #include "ores.trading.api/domain/fx_variance_swap_instrument.hpp"
+#include "ores.trading.api/domain/instrument_batch_mapper.hpp"
 #include "ores.trading.api/domain/instrument_underlying.hpp"
 #include "ores.trading.api/domain/origin.hpp"
 #include "ores.trading.api/domain/scripted_instrument.hpp"
@@ -75,6 +78,7 @@
 #include "ores.trading.core/service/script_publish_service.hpp"
 #include "ores.trading.core/service/trade_export_service.hpp"
 #include "ores.trading.core/service/trade_operations_service.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -1502,4 +1506,130 @@ TEST_CASE("a booking states a known product with a single-valued variable and a 
     auto doubled = book_scripted_inline_request(f);
     doubled.variables[0].values.push_back("2000");
     CHECK(svc.book_scripted(doubled, {}).result.code == "variable_not_single");
+}
+
+namespace {
+
+/// An equity basket option's native rows, as its own builder states them.
+ores::trading::domain::instrument_batch book_product_basket_rows() {
+    namespace tb = ores::trading::builders;
+    namespace md = ores::marketdata::datum;
+    const auto amount = [](const char* text) {
+        return *ores::utility::decimal::decimal::from_string(text);
+    };
+    const auto equity = [](const char* code) {
+        return *md::market_reference::of(
+            *md::market_index::make(md::index_family::equity, code, {}));
+    };
+    using namespace std::chrono;
+    const tb::basket_option_terms terms{
+        .currency = std::string("USD"),
+        .notional = amount("1"),
+        .strike = amount("20000"),
+        .members =
+            std::vector<tb::basket_option_member>{
+                {.underlying = equity(".SPX"), .currency = std::nullopt, .weight = amount("1")},
+                {.underlying = equity(".NDX"), .currency = std::nullopt, .weight = amount("0.5")}},
+        .payoff_type = std::string("Vanilla"),
+        .kind = tb::option_kind::call,
+        .position = tb::option_position::long_option,
+        .expiry = 2027y / 1 / 5,
+        .settlement = 2027y / 1 / 7};
+    auto built = tb::basket_option_builder<tb::basket_product::equity_basket>(terms).build();
+    REQUIRE(built.has_value());
+    ores::trading::domain::instrument_batch batch;
+    ores::trading::domain::append_instrument(batch,
+                                             ores::trading::domain::trade_instrument{*built});
+    return batch;
+}
+
+ores::trading::messaging::book_product_request
+book_product_request_of(fixture& f, std::string form, std::string script = {}) {
+    const auto base = f.request();
+    ores::trading::messaging::book_product_request r;
+    r.anchor = base.anchor;
+    r.booking = base.booking;
+    r.activity_type_code = base.activity_type_code;
+    r.product_code = "EquityBasketOption";
+    r.booking_form = std::move(form);
+    r.script_name = std::move(script);
+    r.instruments = book_product_basket_rows();
+    return r;
+}
+
+std::string book_product_trade_type(fixture& f, const boost::uuids::uuid& id) {
+    const auto rows = ores::trading::repository::trade_repository().read_latest(
+        f.ctx, boost::uuids::to_string(id));
+    return rows.empty() ? std::string{} : rows.front().trade_type;
+}
+
+}
+
+TEST_CASE("a product booked in its native form is its own element and records the form",
+          "[service][book_product]") {
+    fixture f;
+    const auto req = book_product_request_of(f, "native");
+
+    const auto response = trade_operations_service(f.ctx, every_book_open).book_product(req, {});
+
+    INFO(response.result.code << ": " << response.result.message);
+    REQUIRE(response.result.outcome == outcome::ok);
+    CHECK(book_product_trade_type(f, req.anchor.id) == "EquityBasketOption");
+    const auto products = book_scripted_products_of(f, req.anchor.id);
+    REQUIRE(products.size() == 1u);
+    CHECK(products[0].product_code == "EquityBasketOption");
+    CHECK(products[0].booking_form == "native");
+}
+
+TEST_CASE("a product booked in its scripted form is the ScriptedTrade its twin recipe reads",
+          "[service][book_product]") {
+    fixture f;
+    const auto req = book_product_request_of(f, "scripted");
+
+    const auto response = trade_operations_service(f.ctx, every_book_open).book_product(req, {});
+
+    INFO(response.result.code << ": " << response.result.message);
+    REQUIRE(response.result.outcome == outcome::ok);
+    CHECK(book_product_trade_type(f, req.anchor.id) == "ScriptedTrade");
+    const auto scripted = ores::trading::repository::scripted_instrument_repository().read_latest(
+        f.ctx, boost::uuids::to_string(req.anchor.id));
+    REQUIRE(scripted.size() == 1u);
+    CHECK(scripted[0].script_name == "VanillaBasketOption");
+    const auto products = book_scripted_products_of(f, req.anchor.id);
+    REQUIRE(products.size() == 1u);
+    CHECK(products[0].product_code == "EquityBasketOption");
+    CHECK(products[0].booking_form == "scripted");
+}
+
+TEST_CASE("a scripted form the product does not carry is refused by name",
+          "[service][book_product]") {
+    fixture f;
+    const auto req = book_product_request_of(f, "scripted", "Autocallable_01");
+
+    const auto response = trade_operations_service(f.ctx, every_book_open).book_product(req, {});
+
+    CHECK(response.result.code == "form_not_offered");
+    CHECK(response.result.message.contains("Autocallable_01"));
+}
+
+TEST_CASE(
+    "a product booking is refused for a bad form, missing terms or terms its recipe cannot read",
+    "[service][book_product]") {
+    fixture f;
+    trade_operations_service svc(f.ctx, every_book_open);
+
+    CHECK(svc.book_product(book_product_request_of(f, "spreadsheet"), {}).result.code ==
+          "booking_form_invalid");
+
+    auto empty_native = book_product_request_of(f, "native");
+    empty_native.instruments = {};
+    CHECK(svc.book_product(empty_native, {}).result.code == "terms_missing");
+
+    auto script_native = book_product_request_of(f, "native");
+    script_native.product_code = "Accumulator01";
+    CHECK(svc.book_product(script_native, {}).result.code == "product_unknown");
+
+    auto empty_scripted = book_product_request_of(f, "scripted");
+    empty_scripted.instruments = {};
+    CHECK(svc.book_product(empty_scripted, {}).result.code == "terms_unreadable");
 }

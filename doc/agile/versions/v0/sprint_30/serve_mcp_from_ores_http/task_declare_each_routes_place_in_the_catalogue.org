@@ -8,7 +8,7 @@
 #+filetags: :serve_mcp_from_ores_http:sprint_30:v0:
 #+owner: marco
 #+branch: feature/declare-each-routes-place-in-the-catalogue
-#+pr:
+#+pr: 5055
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-22
@@ -82,7 +82,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5055][#5055]] | [http] Declare every route's place in the operation catalogue |
 
 * Review
 

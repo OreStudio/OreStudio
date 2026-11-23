@@ -302,8 +302,30 @@ class TestServiceLogFile:
         assert "--log-directory" not in unit
 
 
+def _section_of(unit, key):
+    """The [Section] a key is written under; systemd ignores a key in the wrong one."""
+    section = None
+    for line in unit.splitlines():
+        if line.startswith("[") and line.endswith("]"):
+            section = line
+        elif line.startswith(key + "="):
+            return section
+    return None
+
+
 class TestStartBudget:
     """How long a unit's start job may run before systemd kills it."""
+
+    def test_the_budget_is_a_service_setting(self):
+        """TimeoutStartSec= belongs to [Service]; under [Unit] systemd logs
+        "Unknown key" and starts the unit with its 90 second default."""
+        units = [
+            systemd_generate.render_singleton_unit(
+                _native_def(), [], "/checkout", "eager_maxwell", TARGET),
+            systemd_generate.render_nats_unit("/checkout", "eager_maxwell", TARGET, 4222),
+        ]
+        for unit in units:
+            assert _section_of(unit, "TimeoutStartSec") == "[Service]"
 
     def test_a_unit_that_waits_for_readiness_states_the_budget(self):
         unit = systemd_generate.render_singleton_unit(

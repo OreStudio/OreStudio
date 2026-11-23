@@ -249,12 +249,12 @@ Description=ORE Studio {def_row['service_name']} (environment {env_name})
 After={after_line}
 Requires={after_line}
 PartOf={target_name}
-{START_TIMEOUT}
 StartLimitIntervalSec=60
 StartLimitBurst=5
 
 [Service]
 Type=notify
+{START_TIMEOUT}
 NotifyAccess=all
 EnvironmentFile={env_file}
 ExecStart=/bin/sh -c '{shell_cmd}'
@@ -371,12 +371,12 @@ Description=ORE Studio {def_row['service_name']} hot replica {replica} (environm
 After={after_line}
 Requires={after_line}
 PartOf={target_name}
-{START_TIMEOUT}
 StartLimitIntervalSec=60
 StartLimitBurst=5
 
 [Service]
 Type=notify
+{START_TIMEOUT}
 NotifyAccess=all
 EnvironmentFile={env_file}
 ExecStart=/bin/sh -c '{shell_cmd}'
@@ -434,12 +434,12 @@ def render_nats_unit(checkout_root, env_name, target_name, nats_port):
 [Unit]
 Description=NATS server (environment {env_name})
 PartOf={target_name}
-{START_TIMEOUT}
 StartLimitIntervalSec=60
 StartLimitBurst=5
 
 [Service]
 Type=simple
+{START_TIMEOUT}
 EnvironmentFile={checkout_root}/.env
 ExecStart=/usr/sbin/nats-server --config {checkout_root}/build/config/nats-{nats_label}.conf
 ExecStartPost=/bin/sh -c '{port_probe}'
@@ -479,12 +479,12 @@ def render_pooler_unit(checkout_root, env_name, target_name, pooler_port):
 [Unit]
 Description=PostgreSQL transaction pooler (environment {env_name})
 PartOf={target_name}
-{START_TIMEOUT}
 StartLimitIntervalSec=60
 StartLimitBurst=5
 
 [Service]
 Type=simple
+{START_TIMEOUT}
 EnvironmentFile={checkout_root}/.env
 ExecStartPre={checkout_root}/build/scripts/start_ci_pooler.sh print-config {pooler_port}
 ExecStart=/usr/sbin/pgbouncer {checkout_root}/build/pgbouncer/{label}.ini

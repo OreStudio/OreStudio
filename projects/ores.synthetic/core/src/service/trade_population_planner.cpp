@@ -3945,6 +3945,7 @@ plan_on_expected_market_data(const domain::trade_generation_scope& scope) {
                 reason = "the party expects none of the market data that " + code +
                          " trades would name: no generator it is routed to publishes it";
             } catch (const trade_population_error&) {
+                // The full scope refuses the type too, so the planner's own refusal stands.
             }
             outcomes.push_back({.trade_type_code = code, .planned = 0, .reason = reason});
         }

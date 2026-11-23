@@ -24,6 +24,7 @@
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.synthetic.api/feeds/index_fixings.hpp"
 #include <format>
+#include <stdexcept>
 
 namespace ores::synthetic::feed {
 
@@ -78,6 +79,9 @@ index_fixing_feed::index_fixing_feed(ores::nats::service::client& nats,
     , input_(std::move(input))
     , market_(market)
     , series_uris_{input_.item} {
+    if (input_.level_codes.empty())
+        throw std::invalid_argument("index_fixing_feed: '" + input_.item +
+                                    "' names no board member to read its level from.");
     for (const auto& code : input_.level_codes)
         level_members_.push_back(market_.values().member_of(input_.level_kind, code));
 }

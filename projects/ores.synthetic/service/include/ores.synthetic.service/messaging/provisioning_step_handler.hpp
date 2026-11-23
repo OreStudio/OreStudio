@@ -356,7 +356,7 @@ private:
                         by_type += ", " + outcome.reason;
                 }
                 if (!by_type.empty())
-                    wf.record(entry.name + " for " + entry.party + " by type: " + by_type);
+                    wf.record(entry.name + " for " + entry.party + " planned by type: " + by_type);
             } catch (const std::exception& e) {
                 ORES_LOG_SEV(lg(), ores::logging::warn)
                     << "generate_trades: " << entry.name << " for party " << entry.party

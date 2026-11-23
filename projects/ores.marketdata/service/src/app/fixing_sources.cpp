@@ -26,6 +26,7 @@
 #include <format>
 #include <map>
 #include <set>
+#include <vector>
 
 namespace ores::marketdata::service::app {
 
@@ -128,6 +129,7 @@ read_fixing_sources(const ores::database::context& ctx) {
     for (const auto& [key, party] : per_party) {
         auto& written = out[key];
         written.refusal = party.refusal;
+        std::vector<std::string> skipped;
         for (const auto& [provider_code, grouped_source] : party.by_provider) {
             // A publisher that fixes pairs on several bases, such as the simulated fixing
             // publisher's crosses, cannot be crossed through one base, so it is left out and
@@ -138,6 +140,7 @@ read_fixing_sources(const ores::database::context& ctx) {
                     << " quote against " << grouped_source.base << " and "
                     << grouped_source.second_base
                     << " at once, so no one base cancels; it is left out.";
+                skipped.push_back(provider_code);
                 continue;
             }
             for (const auto& [ccy, item] : grouped_source.items)
@@ -148,6 +151,13 @@ read_fixing_sources(const ores::database::context& ctx) {
                                        .currencies = {grouped_source.currencies.begin(),
                                                       grouped_source.currencies.end()}});
         }
+        // A party every publisher of which was left out has nothing to compose from, which the
+        // refusal says rather than leaving it to read as a party with no publisher at all.
+        if (written.sources.empty() && written.refusal.empty() && !skipped.empty())
+            written.refusal = std::format(
+                "Every fixing publisher of this party quotes against more than one base, so no "
+                "one base cancels: {}.",
+                skipped.front());
     }
     return out;
 }

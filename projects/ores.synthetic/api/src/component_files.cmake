@@ -404,6 +404,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/feeds/ir_curve_feed.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/feeds/ir_curve_template_resolver.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/feeds/ir_parameter_conversion.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/feeds/node_diagnostics.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/feeds/producer_subject.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/feeds/variance_calibration.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/generators/calibration_fallback_generator.hpp"

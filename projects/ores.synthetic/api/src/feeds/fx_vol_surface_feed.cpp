@@ -320,6 +320,8 @@ std::string fx_vol_surface_feed::refuse(std::string reason) {
         ORES_LOG_SEV(fx_vol_surface_feed_lg(), ores::logging::warn)
             << "Synthetic surface '" << source_name_ << "' publishes nothing: " << reason;
         refusal_ = reason;
+        if (diagnostics_)
+            diagnostics_->raise(source_name_, "no market: " + reason);
     }
     return "no market: " + reason;
 }
@@ -345,6 +347,8 @@ std::string fx_vol_surface_feed::tick(const tick_context& context) {
         ORES_LOG_SEV(fx_vol_surface_feed_lg(), ores::logging::info)
             << "Synthetic surface '" << source_name_ << "' publishes again";
         refusal_.clear();
+        if (diagnostics_)
+            diagnostics_->clear(source_name_);
     }
     const auto points = emitter_.step(context.drivers, markets_);
     const auto& codec = ores::nats::default_wire_codec();

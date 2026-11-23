@@ -47,6 +47,7 @@ namespace node_state {
 inline constexpr std::string_view running = "running";
 inline constexpr std::string_view stopped = "stopped";
 inline constexpr std::string_view starved = "starved";
+inline constexpr std::string_view failing = "failing";
 }
 
 /**
@@ -143,13 +144,17 @@ inline feed_graph build_feed_graph(const std::vector<feed_start_target>& targets
 /**
  * @brief Derives every node's state by the graph's rule.
  *
- * A node is stopped when an operator stopped it, starved when an input does not run, and running
- * otherwise. Stopped comes first, so a stopped node keeps its own reason. A starved node names
- * the first input, in edge order, that does not run, and says that input's own state and reason,
- * so the chain reads back to the first cause. An input that is no node of the graph does not
- * run. The graph has no cycles, because every edge points to a kind that comes before it.
+ * A node is stopped when an operator stopped it, starved when an input does not run, failing
+ * when it holds a diagnostic, and running otherwise, in that precedence: a stopped node keeps its
+ * own reason, and a failing node produces nothing, so it starves the nodes below it. A starved node
+ * names the first input, in edge order, that does not run, and says that input's own state and
+ * reason, so the chain reads back to the first cause. An input that is no node of the graph does
+ * not run. The graph has no cycles, because every edge points to a kind that comes before it.
  */
-inline void derive_states(feed_graph& graph, const std::set<std::string>& stopped) {
+inline void derive_states(feed_graph& graph,
+                          const std::set<std::string>& stopped,
+                          const std::map<std::string, std::string>& diagnostics = {},
+                          const std::map<std::string, std::string>& stop_reasons = {}) {
     std::map<std::string, std::size_t> index;
     for (std::size_t i = 0; i < graph.nodes.size(); ++i)
         index.emplace(graph.nodes[i].name, i);
@@ -165,7 +170,8 @@ inline void derive_states(feed_graph& graph, const std::set<std::string>& stoppe
         done.insert(node.name);
         if (stopped.contains(node.name)) {
             node.state = node_state::stopped;
-            node.reason = "An operator stopped it.";
+            const auto said = stop_reasons.find(node.name);
+            node.reason = said == stop_reasons.end() ? "An operator stopped it." : said->second;
             return;
         }
         for (const auto& input : inputs[node.name]) {
@@ -192,6 +198,11 @@ inline void derive_states(feed_graph& graph, const std::set<std::string>& stoppe
                 node.reason = input + " is " + upstream.state + ": " + upstream.reason;
                 return;
             }
+        }
+        if (const auto found = diagnostics.find(node.name); found != diagnostics.end()) {
+            node.state = node_state::failing;
+            node.reason = found->second;
+            return;
         }
         node.state = node_state::running;
     };

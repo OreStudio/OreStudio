@@ -18,6 +18,7 @@
  *
  */
 #include "../src/feed_graph.hpp"
+#include "../src/feed_node_journal.hpp"
 #include "ores.synthetic.api/feeds/fx_spot_feed.hpp"
 #include "ores.synthetic.api/feeds/fx_vol_surface_feed.hpp"
 #include "ores.synthetic.api/feeds/ir_curve_feed.hpp"
@@ -187,4 +188,54 @@ TEST_CASE("an edge read twice is kept once", "[feed_graph]") {
     auto g = build_feed_graph({upstream(spot_kind, spot), upstream(spot_kind, spot)},
                               {{.name = "bloomberg-a", .provider_code = "bloomberg"}});
     CHECK(std::ranges::count_if(g.edges, [](const auto& e) { return e.node == spot; }) == 1);
+}
+
+TEST_CASE("a surface holding a diagnostic is failing, and starves its views on it",
+          "[feed_graph]") {
+    auto g = audusd();
+    derive_states(g, {}, {{latent, "no market: curve:USD"}});
+    CHECK(node(g, latent).state == "failing");
+    CHECK(node(g, latent).reason == "no market: curve:USD");
+    CHECK(node(g, ice_view).state == "starved");
+    CHECK(node(g, ice_view).cause == latent);
+}
+
+TEST_CASE("a stopped or starved node is not failing, whatever it holds", "[feed_graph]") {
+    auto g = audusd();
+    derive_states(g, {spot}, {{latent, "no market: spot"}, {spot, "a diagnostic"}});
+    CHECK(node(g, spot).state == "stopped");
+    CHECK(node(g, latent).state == "starved");
+    CHECK(node(g, latent).cause == spot);
+}
+
+TEST_CASE("a stopped node says who stopped it and why", "[feed_graph]") {
+    auto g = audusd();
+    derive_states(g, {spot}, {}, {{spot, "Stopped by alice (common.other): a test."}});
+    CHECK(node(g, spot).reason == "Stopped by alice (common.other): a test.");
+}
+
+TEST_CASE("the journal says a diagnostic once raised, its clearing, and each state change",
+          "[feed_graph]") {
+    std::vector<std::string> said;
+    ores::synthetic::service::feed_node_journal journal(
+        [&said](const std::string& node, std::string_view level, const std::string& message) {
+            said.push_back(node + "|" + std::string(level) + "|" + message);
+        });
+    journal.raise(latent, "no market: curve:USD");
+    CHECK(journal.diagnostics().at(latent) == "no market: curve:USD");
+    journal.clear(latent);
+    journal.clear(latent);
+    CHECK(journal.diagnostics().empty());
+    REQUIRE(said.size() == 2);
+    CHECK(said[0] == latent + "|warn|Failing: no market: curve:USD");
+    CHECK(said[1] == latent + "|info|Produces again.");
+
+    said.clear();
+    auto before = audusd();
+    derive_states(before, {});
+    auto after = audusd();
+    derive_states(after, {ice_view});
+    journal.say_changes(before, after);
+    REQUIRE(said.size() == 1);
+    CHECK(said[0].starts_with(ice_view + "|warn|Now stopped"));
 }

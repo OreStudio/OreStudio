@@ -20,6 +20,7 @@
 #include "ores.synthetic.service/app/application.hpp"
 #include "../derived_fx_vol_adapter.hpp"
 #include "../feed_kind_registry.hpp"
+#include "../feed_node_journal.hpp"
 #include "../fixing_history_writer.hpp"
 #include "../generator_fleet.hpp"
 #include "../generator_runner.hpp"
@@ -37,6 +38,7 @@
 #include "ores.marketdata.api/domain/market_series.hpp"
 #include "ores.marketdata.api/domain/tick_subjects.hpp"
 #include "ores.marketdata.client/market_data_client.hpp"
+#include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.platform/concurrency/stoppable_thread.hpp"
@@ -50,6 +52,7 @@
 #include "ores.synthetic.core/repository/stopped_feed_node_repository.hpp"
 #include "ores.synthetic.service/app/application_exception.hpp"
 #include "ores.synthetic.service/messaging/event_registrar.hpp"
+#include "ores.telemetry.core/messaging/logs_protocol.hpp"
 #include "ores.utility/version/version.hpp"
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
@@ -159,7 +162,8 @@ public:
                   generator_fleet& generators,
                   const feed_kind_registry& registry,
                   const ores::synthetic::feed::feed_build_context& build,
-                  std::shared_ptr<ores::synthetic::feed::fault_state> faults)
+                  std::shared_ptr<ores::synthetic::feed::fault_state> faults,
+                  std::shared_ptr<feed_node_journal> journal)
         : nats_(nats)
         , svc_nats_(svc_nats)
         , db_ctx_(db_ctx)
@@ -167,6 +171,7 @@ public:
         , registry_(registry)
         , build_(build)
         , faults_(std::move(faults))
+        , journal_(std::move(journal))
         , fixings_(db_ctx, svc_nats)
         , worker_([this](ores::platform::concurrency::stop_token stop) { run(stop); }) {}
 
@@ -207,6 +212,20 @@ public:
     }
 
     bool stop(const std::string& source_name) override {
+        const auto before = graph({});
+        const auto done = stop_source(source_name);
+        journal_->say_changes(before, graph({}));
+        return done;
+    }
+
+    bool start(const std::string& source_name) override {
+        const auto before = graph({});
+        const auto done = start_source(source_name);
+        journal_->say_changes(before, graph({}));
+        return done;
+    }
+
+    bool stop_source(const std::string& source_name) {
         const std::lock_guard lock(mu_);
         auto* one = find(source_name);
         if (one == nullptr)
@@ -220,7 +239,7 @@ public:
         return true;
     }
 
-    bool start(const std::string& source_name) override {
+    bool start_source(const std::string& source_name) {
         const std::lock_guard lock(mu_);
         auto* one = find(source_name);
         if (one == nullptr)
@@ -244,11 +263,17 @@ public:
     }
 
     bool stop_node(const std::string& name) override {
-        return set_node(name, true);
+        const auto before = graph({});
+        const auto done = set_node(name, true);
+        journal_->say_changes(before, graph({}));
+        return done;
     }
 
     bool start_node(const std::string& name) override {
-        return set_node(name, false);
+        const auto before = graph({});
+        const auto done = set_node(name, false);
+        journal_->say_changes(before, graph({}));
+        return done;
     }
 
     [[nodiscard]] feed_graph graph(const std::string& around_node) const override {
@@ -264,7 +289,7 @@ public:
                 if (one.stopped)
                     stopped.insert(one.name);
         }
-        derive_states(whole, stopped);
+        derive_states(whole, stopped, journal_->diagnostics(), stop_reasons());
         return around_node.empty() ? whole : around(whole, around_node);
     }
 
@@ -323,6 +348,19 @@ private:
     simulated_adapter* find(const std::string& source_name) {
         const auto found = std::ranges::find(adapters_, source_name, &simulated_adapter::name);
         return found == adapters_.end() ? nullptr : &*found;
+    }
+
+    // Who stopped each stopped node and why, as its stored row says.
+    std::map<std::string, std::string> stop_reasons() const {
+        std::map<std::string, std::string> out;
+        const auto sys_ctx = ores::database::service::tenant_context::with_system_tenant(db_ctx_);
+        for (const auto& row :
+             ores::synthetic::repository::stopped_feed_node_repository().read_latest(sys_ctx))
+            out.emplace(row.node_name,
+                        "Stopped by " + row.performed_by + " (" + row.change_reason_code + ")" +
+                            (row.change_commentary.empty() ? std::string(".") :
+                                                             ": " + row.change_commentary));
+        return out;
     }
 
     // The nodes an operator stopped, which stay stopped across a restart: the sources, or the
@@ -446,6 +484,7 @@ private:
     const feed_kind_registry& registry_;
     const ores::synthetic::feed::feed_build_context& build_;
     std::shared_ptr<ores::synthetic::feed::fault_state> faults_;
+    std::shared_ptr<feed_node_journal> journal_;
     /// The fixings the curves state, written beside whatever a publisher fixes for the index.
     fixing_history_writer fixings_;
     // Guards the adapters against an operator's stop or start while the worker builds them.
@@ -646,14 +685,33 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     // The simulator is an adapter of the market data service for each simulated source. It
     // serves the system collections of the provider of the source, and it starts a generator for
     // each id that the demand names.
-    const ores::synthetic::feed::feed_build_context adapter_build{
-        .nats = nats, .auth_nats = svc_nats, .market = run_market_of_the_run};
+    // Each feed node's messages go to telemetry, tagged with its name, so its page reads its
+    // log by its name.
+    const auto journal = std::make_shared<ores::synthetic::service::feed_node_journal>(
+        [&nats](const std::string& node, std::string_view level, const std::string& message) {
+            ores::telemetry::messaging::publish_log_entries_request req;
+            req.source_name = "ores.synthetic.service";
+            req.tag = node;
+            req.entries.push_back(
+                {.level = std::string(level),
+                 .timestamp_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+                                     std::chrono::system_clock::now().time_since_epoch())
+                                     .count(),
+                 .component = "ores.synthetic.feed_graph",
+                 .message = message});
+            nats.publish(ores::telemetry::messaging::publish_log_entries_request::nats_subject,
+                         ores::nats::default_wire_codec().encode(req));
+        });
+    const ores::synthetic::feed::feed_build_context adapter_build{.nats = nats,
+                                                                  .auth_nats = svc_nats,
+                                                                  .market = run_market_of_the_run,
+                                                                  .diagnostics = journal};
     const auto faults = std::make_shared<ores::synthetic::feed::fault_state>();
     // Every runner of the service claims its feeds here, so one set answers what runs now and
     // one stop reaches a feed whichever run holds it. It outlives the fleet that owns the runners.
     generator_fleet generators;
     detail::adapter_fleet fleet(
-        nats, svc_nats, db_ctx, generators, registry, adapter_build, faults);
+        nats, svc_nats, db_ctx, generators, registry, adapter_build, faults, journal);
 
     // Bound before the await, so no lambda of the call lives in this frame; see run().
     auto service_run = ores::service::service::run(

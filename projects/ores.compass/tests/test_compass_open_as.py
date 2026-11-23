@@ -54,8 +54,14 @@ def test_the_group_head_is_found_whatever_the_location(staff):
 def test_a_role_in_hong_kong_returns_only_hong_kong_staff(staff):
     found = open_as.by_role(staff, "trading", "hk")
     assert found
-    assert all(p["role"] == "Trading" for p in found)
+    assert all("Trading" in p["roles"].split(",") for p in found)
     assert all(p["business_unit_code"].startswith("acme_hk.") for p in found)
+
+
+def test_an_account_holding_two_roles_is_found_by_either(staff):
+    assert open_as.roles_of({"roles": "Trading,Finance"}) == ["Trading", "Finance"]
+    henry = open_as.by_name(staff, "henry.jones")[0]
+    assert open_as.roles_of(henry) == ["Trading", "Finance"]
 
 
 def test_aliases_name_the_same_office(staff):

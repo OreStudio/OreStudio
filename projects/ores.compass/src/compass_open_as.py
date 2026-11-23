@@ -125,13 +125,22 @@ def by_title(staff, text, location):
     return sorted(found, key=lambda p: (p["job_title"], p["full_name"]))
 
 
+def roles_of(person):
+    """The roles a person holds.
+
+    The dataset writes them as one comma-separated string, because an account
+    may hold more than one role."""
+    return [r.strip() for r in (person.get("roles") or "").split(",") if r.strip()]
+
+
 def by_role(staff, text, location):
     role = ROLES.get(text.strip().lower())
     if role is None:
         raise SystemExit(f"open-as: unknown role '{text}'. Known: "
                          + ", ".join(sorted(set(ROLES.values()))))
     prefix = location_prefix(location)
-    found = [p for p in staff if p["role"] == role and in_location(p, prefix)]
+    found = [p for p in staff
+             if role in roles_of(p) and in_location(p, prefix)]
     return sorted(found, key=lambda p: (p["job_title"], p["full_name"]))
 
 

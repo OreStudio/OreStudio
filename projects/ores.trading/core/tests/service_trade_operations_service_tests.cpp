@@ -1374,8 +1374,9 @@ book_scripted_products_of(fixture& f, const boost::uuids::uuid& trade_id) {
 
 }
 
-TEST_CASE("an inline scripted trade is booked and records its script as its product",
-          "[service][book_scripted]") {
+TEST_CASE(
+    "an inline scripted trade is booked and records the free-form ScriptedTrade as its product",
+    "[service][book_scripted]") {
     fixture f;
     const auto req = book_scripted_inline_request(f);
 
@@ -1386,7 +1387,7 @@ TEST_CASE("an inline scripted trade is booked and records its script as its prod
     REQUIRE(response.activity_id.has_value());
     const auto products = book_scripted_products_of(f, req.anchor.id);
     REQUIRE(products.size() == 1u);
-    CHECK(products[0].product_code == "TestPayoff");
+    CHECK(products[0].product_code == "ScriptedTrade");
     CHECK(products[0].booking_form == "scripted");
 }
 
@@ -1482,4 +1483,23 @@ TEST_CASE("a tenant's library script is booked by name, current or pinned at a s
     REQUIRE(instruments.size() == 1u);
     CHECK(instruments[0].script_version == published.version);
     CHECK(instruments[0].script_body.empty());
+}
+
+TEST_CASE("a booking states a known product with a single-valued variable and a form",
+          "[service][book_scripted]") {
+    fixture f;
+    trade_operations_service svc(f.ctx, every_book_open);
+
+    auto unknown = f.request();
+    unknown.product_code = "NoSuchProduct";
+    unknown.booking_form = "native";
+    CHECK(svc.book_trade(unknown, {}).result.code == "product_unknown");
+
+    auto formless = f.request();
+    formless.product_code = "Swap";
+    CHECK(svc.book_trade(formless, {}).result.code == "booking_form_missing");
+
+    auto doubled = book_scripted_inline_request(f);
+    doubled.variables[0].values.push_back("2000");
+    CHECK(svc.book_scripted(doubled, {}).result.code == "variable_not_single");
 }

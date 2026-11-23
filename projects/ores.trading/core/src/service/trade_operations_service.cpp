@@ -37,7 +37,9 @@
 #include "ores.trading.core/repository/bond_issue_leg_schedule_repository.hpp"
 #include "ores.trading.core/repository/bond_issue_repository.hpp"
 #include "ores.trading.core/repository/parent_scoped_queries.hpp"
+#include "ores.trading.core/repository/product_type_repository.hpp"
 #include "ores.trading.core/repository/script_input_repository.hpp"
+#include "ores.trading.core/repository/script_repository.hpp"
 #include "ores.trading.core/repository/structure_member_repository.hpp"
 #include "ores.trading.core/repository/structure_repository.hpp"
 #include "ores.trading.core/repository/trade_activity_repository.hpp"
@@ -212,6 +214,13 @@ trade_operations_service::book_trade(const messaging::book_trade_request& reques
         response.result.message = *refusal;
         return response;
     }
+    if (!request.product_code.empty() && request.booking_form.empty()) {
+        response.result.outcome = outcome::failed;
+        response.result.code = "booking_form_missing";
+        response.result.message = "A product is stated with the form it is booked in: native or "
+                                  "scripted.";
+        return response;
+    }
     if (!request.product_code.empty() && request.booking_form != "native" &&
         request.booking_form != "scripted") {
         response.result.outcome = outcome::failed;
@@ -224,6 +233,17 @@ trade_operations_service::book_trade(const messaging::book_trade_request& reques
         response.result.outcome = outcome::failed;
         response.result.code = "booking_form_without_product";
         response.result.message = "A form is stated with the product it is the form of.";
+        return response;
+    }
+    // The product is a product type, or a library script the caller's tenant
+    // sees for a script-only product, so a screen reopens the trade as one.
+    if (!request.product_code.empty() &&
+        repository::product_type_repository().read_latest(ctx_, request.product_code).empty() &&
+        repository::script_repository().read_latest(ctx_, request.product_code).empty()) {
+        response.result.outcome = outcome::failed;
+        response.result.code = "product_unknown";
+        response.result.message =
+            "No product type or library script is named " + request.product_code + ".";
         return response;
     }
 
@@ -502,6 +522,10 @@ trade_operations_service::book_scripted(const messaging::book_scripted_request& 
     }
     std::vector<tb::scripted_variable> variables;
     for (const auto& v : request.variables) {
+        if (!v.is_array && v.values.size() != 1)
+            return refuse("variable_not_single",
+                          "The variable " + v.name + " is one value, and the trade states " +
+                              std::to_string(v.values.size()) + ".");
         tb::scripted_variable variable{.name = v.name, .type = v.type, .value = std::string{}};
         if (v.is_array)
             variable.value = v.values;
@@ -521,7 +545,9 @@ trade_operations_service::book_scripted(const messaging::book_scripted_request& 
     if (inline_script) {
         built->instrument.script_body = request.code;
         built->instrument.script_npv = request.npv_variable;
-    } else if (request.script_version != 0) {
+    } else {
+        // The version that was validated is the one pinned, so a version
+        // published meanwhile is not booked unvalidated.
         built->instrument.script_tenant_id = library->tenant_id;
         built->instrument.script_version = library->version;
     }
@@ -534,8 +560,12 @@ trade_operations_service::book_scripted(const messaging::book_scripted_request& 
     booking.draft_reason_code = request.draft_reason_code;
     booking.identifiers = request.identifiers;
     domain::append_instrument(booking.instruments, domain::trade_instrument{std::move(*built)});
-    booking.product_code =
-        request.product_code.empty() ? request.script_name : request.product_code;
+    // A library script with no stated product is a script-only product, the
+    // script itself; an inline script with none is the catalogue's free-form
+    // ScriptedTrade.
+    booking.product_code = !request.product_code.empty() ? request.product_code :
+                           inline_script                 ? booking.anchor.trade_type :
+                                                           request.script_name;
     booking.booking_form = "scripted";
 
     const auto booked = book_trade(booking, actor_token);

@@ -8,7 +8,7 @@
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/keep-an-api-answer-out-of-a-cache
-#+pr:
+#+pr: 5073
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-22
@@ -88,7 +88,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5073][#5073]] | [http] Keep an API answer out of a cache |
 
 * Review
 

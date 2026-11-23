@@ -556,6 +556,8 @@ const SYNTHETIC_RECORDS: readonly SyntheticResource[] = [
             start_curvature: z.number().positive().lt(Math.SQRT2),
             spot_oresmd_uri: z.string().trim().startsWith('oresmd://fx/').max(500),
             spot_provider_code: code,
+            base_curve_name: z.string().trim().startsWith('synthetic.').max(255),
+            quote_curve_name: z.string().trim().startsWith('synthetic.').max(255),
         }) satisfies z.ZodType<FxVolSurfaceFeedWrite>,
     },
     {

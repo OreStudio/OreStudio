@@ -117,7 +117,10 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: a tenant still reads the system Latent collection and its surfaces | synthetic_rls_policies_create.sql | Declined | The service's tenant runs read them to build the vendor views; the screens task owns what a party sees of the graph. The provider lists already hide =latent=. |
+| 2 | Local review: the Arrivals save completes with an empty source | volFeeds.tsx | Declined | An edit carries the feed's stored name, so the source is never read there. |
+| 3 | Local review: the SQL, web and C++ name builders could drift | feedNames.ts, synthetic_feed_names_create.sql, fx_vol_surface_feed.cpp | Accepted | Each twin is pinned by a test of the same example name in its own suite. |
+| 4 | Misspell check over the 65 changed files | - | Clean | =misspell-fixer= exit 0. |
 
 * Result
 

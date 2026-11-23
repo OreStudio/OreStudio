@@ -375,9 +375,12 @@ std::vector<std::string> router::uncatalogued() const {
                              route.method != domain::http_method::options;
         const bool carries_body = route.method == domain::http_method::post ||
                                   route.method == domain::http_method::put ||
-                                  route.method == domain::http_method::patch;
+                                  route.method == domain::http_method::patch ||
+                                  route.method == domain::http_method::delete_;
         if (carries_body && !route.body_schema && !route.sink && !route.catalogue.takes_no_body)
             out.push_back(name + " declares neither its typed body nor that it takes none");
+        if (route.catalogue.takes_no_body && (route.body_schema || route.sink))
+            out.push_back(name + " declares that it takes no body, and also a body");
         if (changes && !route.catalogue.writes && !domain::may_declare_read(route.catalogue))
             out.push_back(name + " declares that it does not write, and its tool " +
                           route.catalogue.tool + " is neither a bulk get nor a read");

@@ -334,7 +334,7 @@ void request_routes::register_routes(
 
     add(router->post("/api/requests/{id}/decision")
             .catalogue("web_post_requests_id_decision", "workflow", "requests", true)
-            .body<intent_body>()
+            .body<decide_body>()
             .summary("Approve, refuse, hold or resume one request")
             .description("The decider needs the permission the request's kind names and is not "
                          "the person who asked; the service decides both, so the route does not "
@@ -360,6 +360,7 @@ void request_routes::register_routes(
 
     add(router->delete_("/api/me/requests/{id}")
             .catalogue("web_delete_me_requests_id", "workflow", "requests", true)
+            .body<intent_body>()
             .summary("Take back a request, against the version the caller read")
             .description("Only an open request can be withdrawn, and only by the person who "
                          "asked. A request that moved on is refused rather than discarded.")

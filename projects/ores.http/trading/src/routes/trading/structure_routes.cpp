@@ -1119,6 +1119,7 @@ void structure_routes::register_routes(
 
     add(router->delete_("/api/structures/{key}/legs/{tradeId}")
             .catalogue("web_delete_structures_key_legs_tradeid", "trading", "structures", true)
+            .body<unlink_body>()
             .summary("Take a trade out of a structure")
             .description("The leg is removed, not the trade: the trade stays booked and becomes "
                          "groupable again. The key is the trade and the trade alone, so the route "

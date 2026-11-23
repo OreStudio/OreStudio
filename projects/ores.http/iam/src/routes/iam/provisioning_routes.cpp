@@ -229,7 +229,7 @@ void provisioning_routes::register_routes(
 
     add(router->post("/api/provision-tenant")
             .catalogue("web_post_provision_tenant", "tenancy", "provision_tenant", true)
-            .body<messaging::provision_tenant_command>(),
+            .body<provision_tenant_body>(),
         "Provision a tenant from a starting point",
         [&session](const http_request& req) {
             const auto command = read_tenant_command(req.body);

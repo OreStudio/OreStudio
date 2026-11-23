@@ -100,8 +100,11 @@ struct route_catalogue final {
     std::string entity;
     bool writes = false;
     /**
-     * @brief True when a route whose method could carry a body takes none, so
-     * the catalogue states that its tool needs no input rather than not knowing.
+     * @brief True when a route whose method can carry a body takes none.
+     *
+     * Only POST, PUT, PATCH and DELETE routes use it. The catalogue then knows
+     * that the route's tool needs no input. Without it, the catalogue cannot
+     * tell an empty body from an undeclared one.
      */
     bool takes_no_body = false;
     std::string summary;

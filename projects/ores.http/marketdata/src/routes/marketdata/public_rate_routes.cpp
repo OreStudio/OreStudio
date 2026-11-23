@@ -244,7 +244,7 @@ void public_rate_routes::register_routes(
                        "market-data",
                        "public_rates",
                        true)
-            .body<terms_accept>()
+            .no_body()
             .summary("Withdraw a publisher's acceptance, so its adapter no longer fetches it")
             .description("A person who declines a publisher, or changes their mind, withdraws "
                          "the acceptance. The service clears the record of who accepted and "

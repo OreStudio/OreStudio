@@ -335,6 +335,7 @@ void book_status_classification_routes::register_routes(
             .description("Its versions stay in the history.")
             .tags({"refdata"})
             .entity_catalogue("refdata", "book_status", "screen_delete")
+            .body<cr::removal_body>()
             .auth_required()
             .handler([&session](const http_request& req) { return handle_delete(req, session); });
     const auto delete_built = delete_route.build();

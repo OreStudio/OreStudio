@@ -593,6 +593,7 @@ void calibration_routes::register_routes(
                        "simulation",
                        "calibration",
                        true)
+            .body<calibration::intent_body>()
             .summary("Return an asset class to automatic calibration")
             .description("The class's provider order and its policy row are removed. A class "
                          "with no policy row is already automatic.")
@@ -618,7 +619,7 @@ void calibration_routes::register_routes(
 
     add(router->put("/api/synthetic/calibration/feeds/{id}/pin")
             .catalogue("web_put_synthetic_calibration_feeds_id_pin", "simulation", "feeds", true)
-            .body<calibration::intent_body>()
+            .body<calibration::pin_body>()
             .summary("Pin one candidate on a feed, so it overrides its class policy")
             .description("The feed's own items become the one item given, read on or before the "
                          "clock over the window given. The old items go first, so a write that "
@@ -648,6 +649,7 @@ void calibration_routes::register_routes(
 
     add(router->delete_("/api/synthetic/calibration/feeds/{id}/pin")
             .catalogue("web_delete_synthetic_calibration_feeds_id_pin", "simulation", "feeds", true)
+            .body<calibration::intent_body>()
             .summary("Clear a feed's own items, so it derives its candidates from its policy")
             .description("A feed with no items of its own is already following its policy.")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {

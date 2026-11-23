@@ -289,6 +289,7 @@ void tenor_screen_routes::register_routes(
                        "reference-data",
                        "conventions",
                        true)
+            .body<tenor_screen::removal_body>()
             .summary("Remove the rule one convention resolves one tenor by")
             .description("Answers 200 with the service's result whatever its outcome.")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {

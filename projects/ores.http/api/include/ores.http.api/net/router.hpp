@@ -44,10 +44,13 @@ namespace ores::http::net {
  */
 template <typename T>
 std::string example_json_of(const T& value) {
-    if constexpr (requires { ores::utility::codec::wire_traits<T>::write_json(value); })
+    if constexpr (requires { ores::utility::codec::wire_traits<T>::write_json(value); }) {
         return ores::utility::codec::wire_traits<T>::write_json(value);
-    else
+    } else {
+        static_assert(ores::utility::codec::states_wire_form<T>,
+                      "A route's body or response type needs wire traits or wire_fields.");
         return ores::utility::codec::object::write_json(value);
+    }
 }
 
 /**
@@ -312,14 +315,21 @@ public:
           std::unordered_map<std::string, std::string>& path_params) const;
 
     /**
-     * @brief Every registered route whose place in the catalogue the server
-     * cannot accept, as its method and pattern and why: it declares none, its
-     * area is not a published one, it shares its tool, or it changes something
-     * by its method while declaring that it does not write and is neither a
-     * bulk get nor an operation named for reading, or it is a POST, PUT or
-     * PATCH that declares neither its typed body, a stream, nor that it takes none. The
-     * server refuses to start with one, so a write cannot be declared out of
-     * the six-eyes hold and every tool states its input.
+     * @brief Every registered route the catalogue cannot accept, with the
+     * reason. The server refuses to start with one.
+     *
+     * The router refuses a route for one of these reasons:
+     *
+     * - It declares no place in the catalogue.
+     * - Its area is not a published area.
+     * - It shares its tool with another route.
+     * - Its method changes something, it declares that it does not write, and
+     *   it is not a bulk get or an operation named for reading. This keeps
+     *   every write inside the six-eyes hold.
+     * - Its method can carry a body (POST, PUT, PATCH or DELETE), and it
+     *   declares no typed body, no stream and no empty body. This makes every
+     *   tool state its input.
+     * - It declares an empty body together with a typed body or a stream.
      */
     [[nodiscard]] std::vector<std::string> uncatalogued() const;
 

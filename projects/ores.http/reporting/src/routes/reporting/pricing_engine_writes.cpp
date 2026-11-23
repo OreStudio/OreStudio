@@ -388,6 +388,7 @@ void pricing_engine_writes::register_write_routes(
     add(router->delete_("/api/reporting/pricing-engines/{id}")
             .catalogue(
                 "web_delete_reporting_pricing_engines_id", "reporting", "pricing_engines", true)
+            .no_body()
             .summary("Remove a pricing engine document")
             .description("The document is removed through the service that owns it, and a "
                          "service that says it did not is a refusal that carries its sentence. "

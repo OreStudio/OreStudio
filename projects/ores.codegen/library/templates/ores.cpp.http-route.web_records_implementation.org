@@ -554,6 +554,12 @@ void {{unit}}_routes::register_routes(
                       .description("Removes the row the body's key names.")
                       .tags({"{{component}}"})
                       .entity_catalogue("{{component}}", "{{entity_singular}}", "screen_delete")
+{{^writes_many}}
+                      .body<{{unit}}_removal_body>()
+{{/writes_many}}
+{{#writes_many}}
+                      .body<rr::remove_body>()
+{{/writes_many}}
                       .auth_required()
                       .handler([&session](const http_request& req) { return handle_delete(req, session); });
     const auto remove_built = remove_route.build();

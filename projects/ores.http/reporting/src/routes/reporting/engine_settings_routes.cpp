@@ -977,6 +977,7 @@ void engine_settings_routes::register_write_routes(
     add(router->delete_("/api/reporting/engine-settings/{id}")
             .catalogue(
                 "web_delete_reporting_engine_settings_id", "reporting", "engine_settings", true)
+            .body<engine_remove_body>()
             .summary("Remove a configuration that no report binds")
             .description("A report that binds the configuration refuses the removal with 409. "
                          "Otherwise the parts go first, then the central row, then the header the "

@@ -348,6 +348,7 @@ void series_identity_shape_web_routes::register_routes(
             .description("Removes the row the body's key names.")
             .tags({"marketdata"})
             .entity_catalogue("marketdata", "series_identity_shape", "screen_delete")
+            .body<series_identity_shape_web_removal_body>()
             .auth_required()
             .handler([&session](const http_request& req) { return handle_delete(req, session); });
     const auto remove_built = remove_route.build();

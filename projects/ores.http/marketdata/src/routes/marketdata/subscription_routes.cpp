@@ -265,6 +265,7 @@ void subscription_routes::register_routes(
                        "market-data",
                        "subscriptions",
                        true)
+            .body<removal>()
             .summary("Remove the caller party's subscription to one provider")
             .description("The removal names the version the subscription was read at, so a "
                          "subscription another person changed is not removed unseen.")
@@ -318,6 +319,7 @@ void subscription_routes::register_routes(
 
     add(router->delete_("/api/marketdata/routes/{publisher}")
             .catalogue("web_delete_marketdata_routes_publisher", "market-data", "routes", true)
+            .body<removal>()
             .summary("Remove the caller party's route for one publisher")
             .description("The removal names the version the route was read at, so a route "
                          "another person changed is not removed unseen.")

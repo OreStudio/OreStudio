@@ -437,6 +437,7 @@ void gmm_component_web_routes::register_routes(
             .description("Removes the row the body's key names.")
             .tags({"synthetic"})
             .entity_catalogue("synthetic", "gmm_component", "screen_delete")
+            .body<rr::remove_body>()
             .auth_required()
             .handler([&session](const http_request& req) { return handle_delete(req, session); });
     const auto remove_built = remove_route.build();

@@ -346,6 +346,7 @@ void business_unit_type_web_routes::register_routes(
             .description("Removes the row the body's key names.")
             .tags({"refdata"})
             .entity_catalogue("refdata", "business_unit_type", "screen_delete")
+            .body<business_unit_type_web_removal_body>()
             .auth_required()
             .handler([&session](const http_request& req) { return handle_delete(req, session); });
     const auto remove_built = remove_route.build();

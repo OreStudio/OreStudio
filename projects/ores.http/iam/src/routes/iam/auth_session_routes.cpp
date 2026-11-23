@@ -96,6 +96,7 @@ void auth_session_routes::register_routes(
 
     auto sign_out_route = router->delete_("/api/v1/auth/sessions")
                               .catalogue("delete_auth_sessions", "auth", "sessions", true)
+                              .no_body()
                               .summary("Sign out")
                               .description("Ends the caller's session and clears the cookie")
                               .tags({"auth"})

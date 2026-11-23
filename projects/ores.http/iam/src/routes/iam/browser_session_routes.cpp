@@ -362,6 +362,7 @@ void browser_session_routes::register_routes(
     const auto sign_out_route =
         router->delete_("/api/session")
             .catalogue("web_delete_session", "auth", "session", true)
+            .no_body()
             .summary("Sign out and clear the cookie")
             .tags({"auth"})
             .auth_optional()

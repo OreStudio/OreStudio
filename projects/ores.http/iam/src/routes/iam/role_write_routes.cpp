@@ -316,7 +316,8 @@ void role_write_routes::register_routes(
         });
 
     add(router->delete_("/api/accounts/{accountId}/roles/{roleId}")
-            .catalogue("web_delete_accounts_accountid_roles_roleid", "access", "accounts", true),
+            .catalogue("web_delete_accounts_accountid_roles_roleid", "access", "accounts", true)
+            .no_body(),
         "Take a role away from an account",
         [&session](const http_request& req) {
             const auto account = req.get_path_param("accountId");
@@ -343,7 +344,7 @@ void role_write_routes::register_routes(
 
     add(router->post("/api/accounts/{accountId}/unlock")
             .catalogue("web_post_accounts_accountid_unlock", "access", "accounts", true)
-            .body<give_role_body>(),
+            .no_body(),
         "Unlock one account",
         [&session](const http_request& req) {
             return set_locked<messaging::unlock_account_request>(req, session);
@@ -416,7 +417,8 @@ void role_write_routes::register_routes(
         });
 
     add(router->delete_("/api/roles/{name}")
-            .catalogue("web_delete_roles_name", "access", "roles", true),
+            .catalogue("web_delete_roles_name", "access", "roles", true)
+            .no_body(),
         "Remove a role",
         [&session](const http_request& req) {
             return guarded<messaging::delete_role_request>([&] {

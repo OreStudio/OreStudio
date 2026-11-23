@@ -480,6 +480,7 @@ void cut_kind_routes::register_routes(
 
     add(router->delete_("/api/reporting/cut-kinds/{code}")
             .catalogue("web_delete_reporting_cut_kinds_code", "reporting", "cut_kinds", true)
+            .body<kinds::kind_removal_body>()
             .summary("Remove one kind of cut no cut was taken under")
             .description("A kind a cut names cannot be removed: the cut keeps the facts it "
                          "copied and its label reads the kind's family, so the store refuses "

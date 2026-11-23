@@ -164,3 +164,27 @@ TEST_CASE("the_router_refuses_a_body_route_that_states_no_input", "[catalogue]")
     REQUIRE(refused.size() == 1);
     CHECK(refused[0] == "POST /silent declares neither its typed body nor that it takes none");
 }
+
+TEST_CASE("the_router_refuses_a_route_that_declares_no_body_and_a_body", "[catalogue]") {
+    ores::http::net::router r;
+    const auto handler = [](const http_request&) -> boost::asio::awaitable<http_response> {
+        co_return http_response::json("{}");
+    };
+    r.add_route(r.put("/both")
+                    .catalogue("web_put_both", "workflow", "boths", true)
+                    .no_body()
+                    .json_body()
+                    .auth_optional()
+                    .handler(handler)
+                    .build());
+    r.add_route(r.delete_("/gone")
+                    .catalogue("web_delete_gone", "workflow", "gones", true)
+                    .auth_optional()
+                    .handler(handler)
+                    .build());
+
+    const auto refused = r.uncatalogued();
+    REQUIRE(refused.size() == 2);
+    CHECK(refused[0] == "PUT /both declares that it takes no body, and also a body");
+    CHECK(refused[1] == "DELETE /gone declares neither its typed body nor that it takes none");
+}

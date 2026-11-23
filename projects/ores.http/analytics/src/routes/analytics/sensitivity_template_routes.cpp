@@ -537,7 +537,8 @@ void sensitivity_template_routes::register_routes(
             .catalogue("web_delete_analytics_sensitivity_templates_code",
                        "analytics",
                        "sensitivity_templates",
-                       true),
+                       true)
+            .body<remove_body>(),
         [&session](const http_request& req) {
             return forwarding::guarded<messaging::delete_sensitivity_template_request>([&] {
                 const auto code = code_of(req);

@@ -132,7 +132,7 @@ the order, the states and the screens read one structure.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | DONE                                 |
+| State         | STARTED                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
 | Now           | Every task is merged or in review: the scheme, the design, the rename and the latent collection, the node stops, the states and the graph read, the messages, the screens, the testing fixes, and each vendor view as a feed of its collection with one node journal. |
 | Waiting on    | Nothing.                               |
@@ -175,6 +175,8 @@ the order, the states and the screens read one structure.
 | [[id:8F04AE93-EBE9-4580-88A1-CF11260E64C7][Show the feed graph and each node's messages on every feed page]] | DONE | 2026-11-23 | 2026-11-23 | Every synthetic feed page shows where the feed sits in the graph: its state with its reason and cause, what it reads and what reads it, each a link with its state, and a stop and start of the node, a vendor view's included; and a Messages tab reads the node's log from telemetry. A tenant reads no latent node of the graph. |
 | [[id:ED0065D6-A3A1-41A1-9117-0A3231C5BFFF][Show the latent provider to the system tenant, describe it, and run its feeds as nodes]] | DONE | 2026-11-23 | 2026-11-23 | Fixes found in testing: the Provider and Dashboard tabs hid the latent provider from the system tenant too, it had no description, its Start and Stop did nothing useful, and the graph's links were neither styled nor complete. |
 | [[id:904F8E36-2E41-4245-B3BA-AEB6D2184245][Make each vendor's view of a latent surface a feed of its collection]] | DONE | 2026-11-23 | 2026-11-23 | A vendor's quotes of a latent surface become a view: a feed row of the vendor's own collection, named synthetic.<vendor>.fx.fx_option.<pair>, that reads the latent surface and applies the vendor's noise profile. It is listed and counted under its vendor, has its own page, and replaces the surface's contributor links; and a run's start and stop are written to each node's log. |
+| [[id:AB92BA7A-A1C2-46F4-BD14-C80E899DC06F][Make the latent provider and the vendor views behave like every feed]] | STARTED | 2026-11-23 | | Testing after the vendor view task: the dashboard shows Latent no Start, Stop or state; a latent surface's log has no start or stop; a view page fails for want of its provider and run state. |
+| [[id:A1FD9EF9-BCAA-43B4-BD55-4CCF2808AAB0][Serve a rebuilt web bundle without restarting ores.http]] | BACKLOG | | | ores.http lists the bundle's files once at start, so a rebuild names a script it answers with a 404 and the page is blank until a restart. |
 
 * Decisions
 

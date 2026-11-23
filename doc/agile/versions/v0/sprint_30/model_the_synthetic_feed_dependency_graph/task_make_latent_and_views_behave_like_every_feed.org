@@ -1,0 +1,102 @@
+:PROPERTIES:
+:ID: AB92BA7A-A1C2-46F4-BD14-C80E899DC06F
+:END:
+#+title: Task: Make the latent provider and the vendor views behave like every feed
+#+description: Testing after the vendor view task: the dashboard shows Latent no Start, Stop or state; a latent surface's log has no start or stop; a view page fails for want of its provider and run state.
+#+type: task
+#+level: s1
+#+filetags: :synthetic:web:http:graph:model_the_synthetic_feed_dependency_graph:sprint_30:v0:
+#+owner: marco
+#+branch: fix/make-latent-and-views-behave-like-every-feed
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-23
+#+updated: 2026-11-23
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8DE041AE-95E6-40CE-9B62-2CE3BA77838A][Model the synthetic feeds as a dependency graph: upstreams, latent surfaces and vendor views]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The owner's testing after the vendor view task found four places where the
+latent provider and the vendor views do not behave like every other feed. The
+dashboard gives Latent no Start, no Stop and no state; a latent surface's log
+records no start or stop; and a view's page fails, because its record arrives
+without its provider and its run state. This task makes each behave as every
+feed does.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:8DE041AE-95E6-40CE-9B62-2CE3BA77838A][Model the synthetic feeds as a dependency graph: upstreams, latent surfaces and vendor views]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-23                               |
+
+* Acceptance
+
+- The dashboard's Latent row has Start and Stop, which stop and start its nodes, and a state: Serving when they all run, Stopped when all are stopped, and a count otherwise.
+- A latent surface's log records its start, with the source that first holds it, and its stop, when its last holder releases it.
+- A view's page opens through ores.http and through the BFF, with its provider and whether it runs.
+- Tests cover each: the dashboard control fetches the whole graph, the shared surfaces say start and stop, and both servers' view reads carry the provider and the run.
+
+* Plan
+
+1. *The dashboard control.* =useFeedGraph= turns its query off for an empty
+   node, the whole graph, so =ProviderNodeControl= never fetches and draws
+   nothing. A whole-graph read is its own query. The control's tests placed
+   graph data in the cache, which hid the off query; the new test lets the
+   query run.
+2. *The Latent state.* A provider with no simulated source takes its state from
+   its nodes, the same nodes its Start and Stop act on.
+3. *The latent journal.* =basic_shared_surfaces= starts a surface on its first
+   attach and stops it on its last detach; it says both to the latent node's
+   journal, naming the source.
+4. *The view read.* =ores.http='s =feed_key_routes= and the BFF's =FEED_KEYS=
+   read fx, IR and vol feeds with their provider and run; views join them.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

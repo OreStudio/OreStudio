@@ -121,6 +121,12 @@ via its "Verifies task" field.
 | 2 | Local review: the Arrivals save completes with an empty source | volFeeds.tsx | Declined | An edit carries the feed's stored name, so the source is never read there. |
 | 3 | Local review: the SQL, web and C++ name builders could drift | feedNames.ts, synthetic_feed_names_create.sql, fx_vol_surface_feed.cpp | Accepted | Each twin is pinned by a test of the same example name in its own suite. |
 | 4 | Misspell check over the 65 changed files | - | Clean | =misspell-fixer= exit 0. |
+| 5 | PR review: a dangling curve name may solve against unset discounts | fx_vol_surface_feed.cpp | Declined | An unpublished board member makes the tick return =no market: curve:...=, which feeds_fx_vol_surface_feed_tests checks; the SQL names test now checks both curve edges name a feed. |
+| 6 | PR review: the C++, SQL and TS name builders can drift | synthetic_feed_names_test.sql | Accepted | The SQL test now pins =synthetic.bloomberg.fx.fx_option.audusd=, the example the C++ test pins; the TS tests pin the other three. |
+| 7 | PR review: no migration for existing databases | create scripts | Declined | The project recreates its databases from the create scripts; no migration path exists or is planned. |
+| 8 | PR review: tenants still read the Latent surfaces | story.org | Accepted | Recorded on the story's screens task. |
+| 9 | PR review: stale header comment in the latent populate | synthetic_feeds_latent_populate.sql | Accepted | Says the Bloomberg dataset's spots. |
+| 10 | PR review: ASCII lowering in the C++ twin | fx_vol_surface_feed.cpp | Accepted | Covered by the shared example of row 6; codes are ASCII. |
 
 * Result
 

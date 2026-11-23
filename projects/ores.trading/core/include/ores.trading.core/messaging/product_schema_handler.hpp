@@ -61,7 +61,8 @@ class product_schema_handler {
 public:
     using fields_source = std::function<std::shared_ptr<const service::instrument_fields>()>;
 
-    product_schema_handler(ores::nats::service::client& nats, const ores::database::context& ctx,
+    product_schema_handler(ores::nats::service::client& nats,
+                           const ores::database::context& ctx,
                            std::optional<ores::security::jwt::jwt_authenticator> verifier,
                            fields_source fields)
         : nats_(nats)
@@ -130,8 +131,8 @@ private:
             ORES_LOG_SEV(product_schema_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             resp.success = false;
-            resp.message = "The trading service could not answer " + msg.subject +
-                           "; it logged the reason.";
+            resp.message =
+                "The trading service could not answer " + msg.subject + "; it logged the reason.";
         }
         reply(nats_, msg, resp);
     }

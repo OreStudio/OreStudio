@@ -34,8 +34,8 @@ constexpr std::string_view trade_type_name = "trade";
  * a leaf, including a repeated one such as list:string.
  */
 std::string schema_type_of(const std::string& value_domain) {
-    constexpr std::array<std::string_view, 5> leaf_kinds = {"string", "boolean", "integer",
-                                                            "double", "date"};
+    constexpr std::array<std::string_view, 5> leaf_kinds = {
+        "string", "boolean", "integer", "double", "date"};
     for (const std::string_view prefix : {"record:", "list:"}) {
         if (!value_domain.starts_with(prefix))
             continue;
@@ -59,8 +59,8 @@ messaging::product_field to_field(const ores::ore::domain::ore_parameter& p) {
             .xpath = p.xpath};
 }
 
-std::vector<ores::ore::domain::ore_parameter> in_order(
-    const instrument_fields& fields, const std::string& type) {
+std::vector<ores::ore::domain::ore_parameter> in_order(const instrument_fields& fields,
+                                                       const std::string& type) {
     const auto it = fields.find(type);
     if (it == fields.end())
         return {};
@@ -123,7 +123,8 @@ const domain::script* script_named(const product_catalogue& catalogue, const std
 }
 
 void add_scripted_form(messaging::describe_product_response& out,
-                       const product_catalogue& catalogue, const domain::script& script) {
+                       const product_catalogue& catalogue,
+                       const domain::script& script) {
     out.forms.push_back({.kind = "scripted",
                          .script_name = script.name,
                          .product_tag = script.product_tag.value_or("")});
@@ -145,8 +146,7 @@ messaging::describe_product_response describe_product(const std::string& code,
                                                       const product_catalogue& catalogue,
                                                       const instrument_fields& fields) {
     messaging::describe_product_response out;
-    const auto pt = std::ranges::find(catalogue.product_types, code,
-                                      &domain::product_type::code);
+    const auto pt = std::ranges::find(catalogue.product_types, code, &domain::product_type::code);
     if (pt == catalogue.product_types.end()) {
         const auto* script = script_named(catalogue, code);
         if (script == nullptr) {
@@ -167,7 +167,8 @@ messaging::describe_product_response describe_product(const std::string& code,
         out.fields.clear();
         out.refusal_code = "not_describable";
         out.message = "The fields of the product type " + code + " name the schema type " +
-                      missing.front() + ", which the trading service's cache of ores.ore's "
+                      missing.front() +
+                      ", which the trading service's cache of ores.ore's "
                       "parameters holds no fields for.";
         return out;
     }
@@ -185,12 +186,13 @@ messaging::describe_product_response describe_product(const std::string& code,
 
     if (out.forms.empty()) {
         out.refusal_code = "not_describable";
-        out.message = pt->instrument_table.empty()
-                          ? "ORE has no trade builder for the product type " + code +
-                                ": the catalogue routes it to no instrument table, so it is "
-                                "booked only as a ScriptedTrade over a library script."
-                          : "The product type " + code + " has no element in ORE's schema and "
-                                "no scripted form, so it has no fields to describe.";
+        out.message = pt->instrument_table.empty() ?
+                          "ORE has no trade builder for the product type " + code +
+                              ": the catalogue routes it to no instrument table, so it is "
+                              "booked only as a ScriptedTrade over a library script." :
+                          "The product type " + code +
+                              " has no element in ORE's schema and "
+                              "no scripted form, so it has no fields to describe.";
         return out;
     }
     out.success = true;
@@ -203,8 +205,7 @@ messaging::list_products_response list_products(const product_catalogue& catalog
     std::ranges::sort(types, {}, &domain::product_type::display_order);
     std::set<std::string> named;
     for (const auto& pt : types) {
-        out.products.push_back(
-            {.code = pt.code, .name = pt.name, .construction = pt.construction});
+        out.products.push_back({.code = pt.code, .name = pt.name, .construction = pt.construction});
         named.insert(pt.code);
     }
     for (const auto& t : catalogue.twins)

@@ -26,8 +26,8 @@
 #include "ores.trading.core/repository/script_twin_input_repository.hpp"
 #include "ores.trading.core/service/product_schema_service.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
-#include <catch2/catch_test_macros.hpp>
 #include <algorithm>
+#include <catch2/catch_test_macros.hpp>
 #include <string>
 #include <vector>
 
@@ -36,8 +36,8 @@ using ores::utility::uuid::tenant_id;
 
 namespace {
 
-ores::ore::domain::ore_parameter field(std::string type, std::string name, int position,
-                                       std::string domain, std::string xpath = {}) {
+ores::ore::domain::ore_parameter field(
+    std::string type, std::string name, int position, std::string domain, std::string xpath = {}) {
     ores::ore::domain::ore_parameter p;
     p.scope = "instrument";
     p.subtype = std::move(type);
@@ -52,10 +52,13 @@ ores::ore::domain::ore_parameter field(std::string type, std::string name, int p
 /// product reaches.
 service::instrument_fields swap_fields() {
     service::instrument_fields f;
-    f["trade"] = {field("trade", "FxForwardData", 0, "record:fxForwardData",
-                        "/Trade[TradeType='FxForward']/FxForwardData"),
-                  field("trade", "SwapData", 1, "record:swapData",
-                        "/Trade[TradeType='Swap']/SwapData")};
+    f["trade"] = {
+        field("trade",
+              "FxForwardData",
+              0,
+              "record:fxForwardData",
+              "/Trade[TradeType='FxForward']/FxForwardData"),
+        field("trade", "SwapData", 1, "record:swapData", "/Trade[TradeType='Swap']/SwapData")};
     f["swapData"] = {field("swapData", "Settlement", 1, "string"),
                      field("swapData", "LegData", 0, "list:legData")};
     f["legData"] = {field("legData", "Payer", 0, "boolean"),
@@ -83,8 +86,8 @@ domain::script script(std::string name, tenant_id tenant, int version, std::stri
     return s;
 }
 
-domain::script_input input(std::string script, tenant_id tenant, int version, int seq,
-                           std::string name) {
+domain::script_input
+input(std::string script, tenant_id tenant, int version, int seq, std::string name) {
     domain::script_input i;
     i.script_name = std::move(script);
     i.tenant_id = tenant;
@@ -94,8 +97,13 @@ domain::script_input input(std::string script, tenant_id tenant, int version, in
     return i;
 }
 
-domain::script_input_code code(std::string script, tenant_id tenant, int version, int seq,
-                               std::string input, int value, std::string label) {
+domain::script_input_code code(std::string script,
+                               tenant_id tenant,
+                               int version,
+                               int seq,
+                               std::string input,
+                               int value,
+                               std::string label) {
     domain::script_input_code c;
     c.script_name = std::move(script);
     c.tenant_id = tenant;
@@ -132,9 +140,12 @@ TEST_CASE("a native product is described from its element down, each type once i
 
     REQUIRE(out.success);
     CHECK(out.element == "SwapData");
-    CHECK(names_of(out.fields) == std::vector<std::string>{"trade/SwapData", "swapData/LegData",
-                                                           "swapData/Settlement", "legData/Payer",
-                                                           "legData/Nested", "legData/Rates"});
+    CHECK(names_of(out.fields) == std::vector<std::string>{"trade/SwapData",
+                                                           "swapData/LegData",
+                                                           "swapData/Settlement",
+                                                           "legData/Payer",
+                                                           "legData/Nested",
+                                                           "legData/Rates"});
     REQUIRE(out.forms.size() == 1);
     CHECK(out.forms[0].kind == "native");
     CHECK(out.inputs.empty());
@@ -228,8 +239,8 @@ TEST_CASE("a product type ORE cannot build is refused with that reason", "[produ
     unbuildable.instrument_table = "";
     catalogue.product_types = {unbuildable};
 
-    const auto out = service::describe_product("CommodityPairwiseVarianceSwap", catalogue,
-                                               swap_fields());
+    const auto out =
+        service::describe_product("CommodityPairwiseVarianceSwap", catalogue, swap_fields());
 
     CHECK_FALSE(out.success);
     CHECK(out.message ==
@@ -243,7 +254,8 @@ TEST_CASE("the products are the product types in display order, then the scripts
     const auto system = tenant_id::system();
     service::product_catalogue catalogue;
     catalogue.product_types = {product("Swap", 2), product("FxForward", 1)};
-    catalogue.scripts = {script("Twin", system, 1, ""), script("Alone", system, 1, ""),
+    catalogue.scripts = {script("Twin", system, 1, ""),
+                         script("Alone", system, 1, ""),
                          script("Swap", system, 1, "")};
     catalogue.twins = {twin("Swap", "Twin")};
 
@@ -277,8 +289,8 @@ TEST_CASE("every product the seeded catalogue lists is described, but one ORE ca
     std::vector<std::string> refused;
     for (const auto& p : products) {
         const auto out = service::describe_product(p.code, catalogue, fields);
-        const auto type = std::ranges::find(catalogue.product_types, p.code,
-                                            &domain::product_type::code);
+        const auto type =
+            std::ranges::find(catalogue.product_types, p.code, &domain::product_type::code);
         const bool unbuildable = type != catalogue.product_types.end() &&
                                  type->instrument_table.empty() &&
                                  out.message.starts_with("ORE has no trade builder");

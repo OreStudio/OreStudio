@@ -96,7 +96,7 @@ constexpr std::string_view setup_scope_code = "Setup";
 std::string setting_json_of(const engine_setting_row& setting,
                             const value_fields& fields,
                             const ores::ore::domain::ore_parameter* documented) {
-    const auto of_parameter = [documented](std::string ores::ore::domain::ore_parameter::* field) {
+    const auto of_parameter = [documented](std::string ores::ore::domain::ore_parameter::*field) {
         return documented == nullptr ? std::string() : documented->*field;
     };
     auto members = std::vector<std::string>{

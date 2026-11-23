@@ -323,7 +323,7 @@ std::future<domain::http_response> http_server::run_in_process(domain::http_requ
     return boost::asio::co_spawn(
         io_ctx_,
         [handler = route->handler, req = std::move(req)]() mutable
-            -> boost::asio::awaitable<domain::http_response> { co_return co_await handler(req); },
+        -> boost::asio::awaitable<domain::http_response> { co_return co_await handler(req); },
         boost::asio::use_future);
 }
 

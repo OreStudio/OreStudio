@@ -210,6 +210,19 @@ inline void derive_states(feed_graph& graph,
         resolve(resolve, i);
 }
 
+/** @brief The graph less one provider's nodes and every edge that touches one of them. */
+inline feed_graph without_provider(feed_graph graph, std::string_view provider_code) {
+    std::set<std::string> gone;
+    for (const auto& n : graph.nodes)
+        if (n.provider_code == provider_code)
+            gone.insert(n.name);
+    std::erase_if(graph.nodes, [&gone](const auto& n) { return gone.contains(n.name); });
+    std::erase_if(graph.edges, [&gone](const auto& e) {
+        return gone.contains(e.node) || gone.contains(e.input);
+    });
+    return graph;
+}
+
 /**
  * @brief The part of the graph around one node: the node, every node it reads directly or
  * through others, every node that reads it directly or through others, and the edges among them.

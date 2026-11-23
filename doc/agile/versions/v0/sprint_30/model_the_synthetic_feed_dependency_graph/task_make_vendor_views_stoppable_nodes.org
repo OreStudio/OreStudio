@@ -26,11 +26,11 @@ An operator stops one vendor's quotes of one latent surface, such as synthetic.i
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:8DE041AE-95E6-40CE-9B62-2CE3BA77838A][Model the synthetic feeds as a dependency graph: upstreams, latent surfaces and vendor views]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-23                               |
 
 * Acceptance
@@ -82,7 +82,13 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| C++ synthetic suites | 5 of 5 pass, with the handler's view and unknown-name cases and the runner's re-apply case | =compass test run -- -R synthetic= | ddc38f1b36 |
+| SQL tests, synthetic, market data and IAM | 30 files, 250 tests, all pass | =pg_prove test/synthetic_*_test.sql test/marketdata_*_test.sql test/iam_*_test.sql= | ddc38f1b36 |
+| Web and BFF tests | 1851 pass, with the BFF's view stop case | =npx vitest run packages/web/src/marketdata packages/bff= | ddc38f1b36 |
+| Live, a view stop | ice-a holds 13 surfaces, bloomberg-a and tradeweb-a 14; the runner stopped one generator | =POST /api/synthetic/feed-nodes/synthetic.ice.fx.fx_option.audusd/stop= on ores.http, then =GET /api/synthetic/simulated-sources= | ddc38f1b36 |
+| Live, after a service restart | ice-a still holds 13 | =systemctl --user restart= of the synthetic service, then the list | ddc38f1b36 |
+| Live, a view start | ice-a holds 14 at once | =POST .../start=, then the list | ddc38f1b36 |
+| Live, a source stop and start, and an unknown name | lseg-a stopped then running; the unknown name refused with a conflict that names it | the same routes | ddc38f1b36 |
 
 * Notes
 
@@ -107,6 +113,30 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: the old source routes go with no alias | feed_operation_routes.cpp, synthetic.ts | Accepted | Every caller in the tree moved to the node routes in this PR; no external client uses them. |
+| 2 | Local review: =reapply= may run beside an =apply= from a demand message | generator_runner.hpp | Accepted | Both take the runner's own lock for the running set, as two demand messages already do; the last demand is kept under its own lock. |
+| 3 | Local review: no unit test of the offers' view filter | simulator_offers.hpp | Declined | Building a surface's offers needs the registry and the database; the live holds count proves it. |
+| 4 | Misspell check over the changed files | - | Clean | =misspell-fixer= exit 0. |
 
 * Result
+
+An operator stops one vendor's quotes of one latent surface by the view's
+name, and the surface and the other vendors run on. The stop of a simulated
+source became a stop of any feed node: the table =stopped_feed_nodes=, keyed
+by the node's name, with its kind, =source= or =view=, and its provider, and
+one pair of verbs, =stop_feed_node= and =start_feed_node=. A source stop
+behaves as before. A view stop withholds the view's points from its vendor's
+adapters, and each adapter's runner re-applies its last demand, so the view's
+hold stops at once and resumes at once on a start; a stopped view stays
+stopped across a restart. The BFF, =ores.http= and the web source strip use
+the node routes, =/api/synthetic/feed-nodes/{name}/stop= and =/start=, and the
+old source routes are gone.
+
+No test builds a vol surface's offers, because that needs the full registry
+and database; the offers' filter of a stopped view is proven live instead, by
+the holds count above. The screens to stop a view from its page belong to the
+story's screens task.
+
+main did not build under the clang preset when this task began: an unused
+=this= capture in the trading product schema handler. It was fixed in its own
+PR, #5051, and carried here.

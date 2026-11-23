@@ -23,9 +23,12 @@
 
 namespace ores::http::mcp {
 
-session_registry::session_registry(std::chrono::seconds idle_limit, std::size_t capacity)
+session_registry::session_registry(std::chrono::seconds idle_limit,
+                                   std::size_t capacity,
+                                   std::size_t per_owner)
     : idle_limit_(idle_limit)
-    , capacity_(capacity) {}
+    , capacity_(capacity)
+    , per_owner_(per_owner) {}
 
 void session_registry::evict_idle(clock::time_point now) {
     std::erase_if(entries_,
@@ -36,6 +39,16 @@ std::string session_registry::open(const std::string& owner, const std::string& 
     const auto now = clock::now();
     std::scoped_lock lock(mutex_);
     evict_idle(now);
+    const auto owned = std::ranges::count_if(
+        entries_, [&](const auto& item) { return item.second.owner == owner; });
+    if (owned > 0 && static_cast<std::size_t>(owned) >= per_owner_) {
+        auto oldest = entries_.end();
+        for (auto it = entries_.begin(); it != entries_.end(); ++it)
+            if (it->second.owner == owner &&
+                (oldest == entries_.end() || it->second.last_used < oldest->second.last_used))
+                oldest = it;
+        entries_.erase(oldest);
+    }
     if (!entries_.empty() && entries_.size() >= capacity_) {
         const auto oldest = std::ranges::min_element(
             entries_, {}, [](const auto& item) { return item.second.last_used; });

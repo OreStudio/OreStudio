@@ -38,7 +38,11 @@ using ores::utility::codec::json_value;
 
 class fake_tools final : public tool_provider {
 public:
+    bool broken = false;
+
     std::vector<tool> list(const http_request&) const override {
+        if (broken)
+            throw std::runtime_error("broken");
         return {
             tool{.name = "echo",
                  .description = "Answers its words.",
@@ -273,4 +277,32 @@ TEST_CASE("the_mcp_routes_are_a_transport_the_catalogue_accepts", "[mcp]") {
         CHECK(route.catalogue.transport);
         CHECK_FALSE(route.catalogue.writes);
     }
+}
+
+TEST_CASE("one_owner_cannot_crowd_out_anothers_sessions", "[mcp]") {
+    session_registry sessions(std::chrono::hours(1), 4, 2);
+    const auto kept = sessions.open("owner-b", "2025-11-25");
+    const auto first = sessions.open("owner-a", "2025-11-25");
+    sessions.open("owner-a", "2025-11-25");
+    sessions.open("owner-a", "2025-11-25");
+    sessions.open("owner-a", "2025-11-25");
+    CHECK(sessions.touch(kept, "owner-b") == session_registry::standing::live);
+    CHECK(sessions.touch(first, "owner-a") == session_registry::standing::absent);
+    CHECK(sessions.size() == 3);
+}
+
+TEST_CASE("a_provider_that_cannot_list_and_bad_params_are_protocol_errors", "[mcp]") {
+    auto tools = std::make_shared<fake_tools>();
+    const endpoint served(tools, endpoint_options{});
+    const auto session = open_session(served);
+    tools->broken = true;
+    const auto listed =
+        read(in_session(served, session, R"({"jsonrpc":"2.0","id":2,"method":"tools/list"})"));
+    CHECK(listed.root().member("error").member("code").integer() == -32603);
+
+    const auto bad =
+        read(posted(served,
+                    request_by("agent:grant-1",
+                               R"({"jsonrpc":"2.0","id":1,"method":"initialize","params":[1]})")));
+    CHECK(bad.root().member("error").member("code").integer() == -32602);
 }

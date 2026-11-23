@@ -35,8 +35,10 @@ namespace ores::http::mcp {
  * An Mcp-Session-Id is a transport identifier, not a credential: every request
  * still authenticates with the agent's key. A session is bound to the person
  * and agent that opened it, so an identifier another agent learns names no
- * session for it. A session left idle past its limit ends, and when the
- * registry is full the session used longest ago ends to make room.
+ * session for it. A session left idle past its limit ends. An owner holds at
+ * most a few sessions, and opening one more ends its own oldest, so one key
+ * cannot crowd out another's; when the registry is still full, the session
+ * used longest ago ends to make room.
  */
 class ORES_HTTP_API_EXPORT session_registry final {
 public:
@@ -45,7 +47,8 @@ public:
     enum class standing { live, absent };
 
     explicit session_registry(std::chrono::seconds idle_limit = std::chrono::hours(1),
-                              std::size_t capacity = 10000);
+                              std::size_t capacity = 10000,
+                              std::size_t per_owner = 16);
 
     /**
      * @brief Opens a session for an owner and answers its identifier.
@@ -77,6 +80,7 @@ private:
 
     std::chrono::seconds idle_limit_;
     std::size_t capacity_;
+    std::size_t per_owner_;
     mutable std::mutex mutex_;
     std::unordered_map<std::string, entry> entries_;
 };

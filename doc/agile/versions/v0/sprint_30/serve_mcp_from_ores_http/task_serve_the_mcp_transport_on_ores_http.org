@@ -101,6 +101,12 @@ via its "Verifies task" field.
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
 | 1 | Conformance: a localhost Origin was refused | =endpoint.cpp= | Accept | This machine's origins are served; any other not listed is refused. Tested. |
+| 2 | PR #5069: one agent can evict another's sessions | =session_registry.cpp= | Accept | An owner holds at most 16 sessions and opening one more ends its own oldest; the registry-wide eviction is the last resort. Tested. |
+| 3 | PR #5069: tools/list is not guarded | =endpoint.cpp= | Accept | A provider that throws is answered -32603. Tested. |
+| 4 | PR #5069: the raw Origin is logged | =endpoint.cpp= | Accept | Printable characters only, at most 100. |
+| 5 | PR #5069: the negotiated version is stored but unused | =session_registry.cpp= | Decline | No behaviour differs by revision yet; a mismatch check belongs with the first that does. |
+| 6 | PR #5069: initialize ignores params that are not an object | =endpoint.cpp= | Accept | Answered -32602. Tested. |
+| 7 | PR #5069: test a lookalike localhost origin | tests | No change | Already tested: =http://localhost.evil.example= is refused. |
 
 * Result
 

@@ -45,6 +45,7 @@ constexpr std::int64_t parse_error = -32700;
 constexpr std::int64_t invalid_request = -32600;
 constexpr std::int64_t method_not_found = -32601;
 constexpr std::int64_t invalid_params = -32602;
+constexpr std::int64_t internal_error = -32603;
 }
 
 constexpr std::string_view session_header = "Mcp-Session-Id";
@@ -99,6 +100,15 @@ std::string lowercase(std::string_view text) {
     return out;
 }
 
+/// A header a caller chose, made safe to log: printable characters only, and
+/// no more than a line's worth.
+std::string loggable(std::string_view text) {
+    std::string out;
+    for (const auto c : text.substr(0, 100))
+        out.push_back(std::isprint(static_cast<unsigned char>(c)) ? c : '?');
+    return out;
+}
+
 /// Whether an origin is this machine's: a page served from it is not the
 /// stranger DNS rebinding disguises, which names its own host.
 bool is_local_origin(std::string_view origin) {
@@ -136,7 +146,7 @@ std::optional<http_response> endpoint::refusal(const http_request& req) const {
         std::ranges::none_of(options_.allowed_origins, [&](const std::string& allowed) {
             return lowercase(allowed) == lowercase(origin);
         })) {
-        ORES_LOG_SEV(lg(), warn) << "Refused an MCP request from origin " << origin;
+        ORES_LOG_SEV(lg(), warn) << "Refused an MCP request from origin " << loggable(origin);
         return http_response::forbidden("The Origin is not one this endpoint serves.");
     }
     const auto version = req.get_header("mcp-protocol-version");
@@ -172,7 +182,10 @@ boost::asio::awaitable<http_response> endpoint::post(const http_request& req) co
         if (!id.exists())
             co_return rpc_error(
                 {}, code::invalid_request, "initialize is a request.", http_status::bad_request);
-        const auto asked = message.member("params").member("protocolVersion").text_or();
+        const auto params = message.member("params");
+        if (params.exists() && !params.is_object())
+            co_return rpc_error(id, code::invalid_params, "initialize's params are an object.");
+        const auto asked = params.member("protocolVersion").text_or();
         const auto version = serves_version(asked) ? asked : std::string(latest_version);
         const auto session = sessions_->open(owner, version);
 
@@ -221,7 +234,14 @@ boost::asio::awaitable<http_response> endpoint::post(const http_request& req) co
     if (method == "tools/list") {
         auto doc = envelope(id);
         auto list = doc.root().add_object("result").add_array("tools");
-        for (const auto& tool : tools_->list(req)) {
+        std::vector<tool> tools;
+        try {
+            tools = tools_->list(req);
+        } catch (const std::exception& e) {
+            ORES_LOG_SEV(lg(), error) << "The MCP tools could not be listed: " << e.what();
+            co_return rpc_error(id, code::internal_error, "The tools could not be listed.");
+        }
+        for (const auto& tool : tools) {
             auto entry = list.push_object();
             entry.set("name", tool.name);
             if (!tool.title.empty())

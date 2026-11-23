@@ -85,7 +85,7 @@ public:
      */
     void list_products(ores::nats::message msg) {
         serve<list_products_request, list_products_response>(
-            msg, [this](const auto& ctx, const list_products_request&) {
+            msg, [](const auto& ctx, const list_products_request&) {
                 return service::list_products(
                     {.product_types = repository::product_type_repository().read_latest(ctx),
                      .scripts = repository::script_repository().read_latest(ctx),

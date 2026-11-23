@@ -761,7 +761,7 @@ TEST_CASE("a_volatility_surface_builds_from_its_rows_and_its_pair_convention",
 
     // The surface reads and correlates with the one spot feed its config names, by its URI and
     // its provider, and not with whichever feed of the pair ticked last.
-    CHECK(target.row.candidate.spot_source_name == seeds.fx_enabled_source);
+    CHECK(target.row.candidate.inputs.spot == seeds.fx_enabled_source);
 }
 
 TEST_CASE("a_volatility_surface_naming_no_spot_feed_is_refused_with_the_reason",
@@ -785,7 +785,7 @@ TEST_CASE("a_volatility_surface_naming_no_spot_feed_is_refused_with_the_reason",
     for (const auto& target : f.registry.targets(ctx)) {
         if (target.row.candidate.feed_config_id != surface_id)
             continue;
-        CHECK(target.row.candidate.spot_source_name.empty());
+        CHECK(target.row.candidate.inputs.spot.empty());
         const auto outcome = target.row.candidate.build_input({});
         CHECK_FALSE(outcome.input.has_value());
         CHECK(outcome.skip_reason ==

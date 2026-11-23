@@ -605,7 +605,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         for (const auto& row : rows) {
             if (!row.candidate.block)
                 continue;
-            const auto anchor = spot_series.find(row.candidate.spot_source_name);
+            const auto anchor = spot_series.find(row.candidate.inputs.spot);
             if (anchor == spot_series.end()) {
                 ORES_LOG_SEV(lg(), warn)
                     << "Synthetic surface '" << row.candidate.source_name

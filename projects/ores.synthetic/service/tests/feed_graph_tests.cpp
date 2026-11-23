@@ -61,8 +61,7 @@ feed_start_target surface() {
     t.row.kind = &surface_kind;
     t.row.candidate.source_name = latent;
     t.row.candidate.fx_pair = std::pair{std::string("AUD"), std::string("USD")};
-    t.row.candidate.spot_source_name = spot;
-    t.row.candidate.curve_source_names = std::pair{aud, usd};
+    t.row.candidate.inputs = {.spot = spot, .base_curve = aud, .quote_curve = usd};
     t.row.candidate.contributor_providers = {{"c-bbg", "bloomberg"}, {"c-ice", "ice"}};
     t.container_provider_code = "latent";
     t.container_is_system = true;
@@ -70,10 +69,12 @@ feed_start_target surface() {
 }
 
 feed_graph audusd() {
-    return build_feed_graph(
-        {upstream(spot_kind, spot), upstream(curve_kind, aud), upstream(curve_kind, usd), surface()},
-        {{.name = "bloomberg-a", .provider_code = "bloomberg"},
-         {.name = "ice-a", .provider_code = "ice"}});
+    return build_feed_graph({upstream(spot_kind, spot),
+                             upstream(curve_kind, aud),
+                             upstream(curve_kind, usd),
+                             surface()},
+                            {{.name = "bloomberg-a", .provider_code = "bloomberg"},
+                             {.name = "ice-a", .provider_code = "ice"}});
 }
 
 const feed_graph_node& node(const feed_graph& g, const std::string& name) {
@@ -150,7 +151,7 @@ TEST_CASE("a stopped node keeps its own reason when its input stops too", "[feed
 
 TEST_CASE("a surface that names a curve no feed publishes is starved on it", "[feed_graph]") {
     auto s = surface();
-    s.row.candidate.curve_source_names = std::pair{aud, std::string("synthetic.nobody.ir.x")};
+    s.row.candidate.inputs.quote_curve = "synthetic.nobody.ir.x";
     auto g = build_feed_graph({upstream(spot_kind, spot), upstream(curve_kind, aud), s}, {});
     derive_states(g, {});
     CHECK(node(g, latent).state == "starved");

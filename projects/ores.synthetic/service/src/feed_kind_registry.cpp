@@ -717,8 +717,9 @@ feed_kind make_fx_vol_surface_kind() {
             c.fx_pair = std::pair{cfg.base_currency_code, cfg.quote_currency_code};
             const auto spot = spot_feed_named(ctx, cfg);
             if (spot)
-                c.spot_source_name = *spot;
-            c.curve_source_names = {cfg.base_curve_name, cfg.quote_curve_name};
+                c.inputs.spot = *spot;
+            c.inputs.base_curve = cfg.base_curve_name;
+            c.inputs.quote_curve = cfg.quote_curve_name;
             // The block the run's market is built from, so it can be made before any feed
             // starts: the segments are the expiry rows and the numbers are the row's own.
             {

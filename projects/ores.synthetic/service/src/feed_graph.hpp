@@ -25,9 +25,9 @@
 #include "ores.synthetic.api/messaging/feed_config_protocol.hpp"
 #include <algorithm>
 #include <map>
-#include <tuple>
 #include <set>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -67,7 +67,8 @@ inline feed_graph build_feed_graph(const std::vector<feed_start_target>& targets
     feed_graph out;
     std::map<std::string, std::vector<std::string>> sources_of;
     for (const auto& source : sources) {
-        out.nodes.push_back({.name = source.name, .kind = "source", .provider_code = source.provider_code});
+        out.nodes.push_back(
+            {.name = source.name, .kind = "source", .provider_code = source.provider_code});
         sources_of[source.provider_code].push_back(source.name);
     }
     const auto edge = [&out](const std::string& node, const std::string& input, std::string role) {
@@ -96,11 +97,9 @@ inline feed_graph build_feed_graph(const std::vector<feed_start_target>& targets
                              .kind = "latent",
                              .provider_code = target.container_provider_code,
                              .feed_config_id = c.feed_config_id});
-        edge(c.source_name, c.spot_source_name, "spot");
-        if (c.curve_source_names) {
-            edge(c.source_name, c.curve_source_names->first, "base_curve");
-            edge(c.source_name, c.curve_source_names->second, "quote_curve");
-        }
+        edge(c.source_name, c.inputs.spot, "spot");
+        edge(c.source_name, c.inputs.base_curve, "base_curve");
+        edge(c.source_name, c.inputs.quote_curve, "quote_curve");
         if (!c.fx_pair)
             continue;
         for (const auto& [contributor, provider] : c.contributor_providers) {
@@ -176,7 +175,8 @@ inline void derive_states(feed_graph& graph, const std::set<std::string>& stoppe
  * An empty graph when no node has that name.
  */
 inline feed_graph around(const feed_graph& graph, const std::string& name) {
-    const auto known = std::ranges::find(graph.nodes, name, &ores::synthetic::messaging::feed_graph_node::name);
+    const auto known =
+        std::ranges::find(graph.nodes, name, &ores::synthetic::messaging::feed_graph_node::name);
     if (known == graph.nodes.end())
         return {};
     std::set<std::string> kept{name};

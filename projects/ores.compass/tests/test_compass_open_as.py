@@ -77,6 +77,12 @@ def test_describe_reads_the_role_of_a_built_in_administrator():
     assert "TenantAdmin" in described
 
 
+def test_describe_names_a_person_without_a_role():
+    described = open_as.describe({"username": "nobody", "full_name": "Nobody",
+                                  "job_title": "Nobody", "business_unit_code": None})
+    assert "no role" in described
+
+
 def test_aliases_name_the_same_office(staff):
     assert open_as.location_prefix("HK") == open_as.location_prefix("hong kong")
     assert open_as.location_prefix("ny") == "acme_us"

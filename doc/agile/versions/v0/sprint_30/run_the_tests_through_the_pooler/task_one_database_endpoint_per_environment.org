@@ -229,6 +229,8 @@ Standards and spec review of =origin/main...HEAD=, 2026-11-23.
 | 19 | Claude review: =describe()= prints an empty role slot for a person with neither field | =compass_open_as.py= | Accept | It prints "no role". |
 | 20 | Claude review: the continuation lines of one declaration test are indented to a different column | =test_env_init.py= | Accept | Aligned under the call. |
 | 21 | Claude review: the workflow comment repeats five times; it fits the house style, and macOS and Windows are to be confirmed after their first nightly run | =.github/workflows/= | No change | The repetition stays. The nightly check is in * Result. |
+| 22 | Claude re-check of the follow-up commit: =describe()= has no test for the =no role= path | =test_compass_open_as.py= | Accept | A person with neither field is covered; =43= tests pass. |
+| 23 | Claude re-check closed the first round: no open findings, approve in substance | | No action | |
 
 * Result
 

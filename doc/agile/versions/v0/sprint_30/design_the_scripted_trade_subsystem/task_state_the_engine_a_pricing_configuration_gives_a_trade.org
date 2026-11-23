@@ -1,0 +1,112 @@
+:PROPERTIES:
+:ID: 8E44EA16-D191-4092-9EB7-EA6C4D9811FA
+:END:
+#+title: Task: State the engine a pricing configuration gives a trade
+#+description: No surface states which model and engine prices a booked trade: ORE chooses the engine type from the trade's terms and resolves a script's product tag with its asset class, and nothing in ORE Studio holds that rule.
+#+type: task
+#+level: s1
+#+filetags: :design_the_scripted_trade_subsystem:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-23
+#+updated: 2026-11-23
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E6359881-7919-4BBC-9B9C-03A8EEDB8A03][Design the scripted trade subsystem]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A booked trade states the model and engine a pricing configuration prices it with, as ORE would choose them from the trade's own terms.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:E6359881-7919-4BBC-9B9C-03A8EEDB8A03][Design the scripted trade subsystem]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-23                               |
+
+* Acceptance
+
+- for a booked trade and a pricing configuration, the service states the engine type ORE's builder would look up, the model and the engine
+- a scripted trade's product tag is resolved with the trade's asset class, as ORE resolves it
+- a native trade's engine type follows ORE's builder choice, for example EuropeanSwaption or BermudanSwaption by the swaption's exercise
+- a test fails when a catalogued trade type has no stated rule for its engine type
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+Moved here from [[id:6E4060D6-DF49-44C9-97E3-6CDB8F6954C3][Describe every product by its schema]], whose acceptance asked each form to
+state "the engine its product tag prices with". Measured on 2026-11-23, that is
+not a fact of a product:
+
+- ORE chooses a native trade's engine builder from the trade's terms. A
+  Swaption looks up =EuropeanSwaption= or =BermudanSwaption= by its exercise
+  type (ORE 3d75a6908 =OREData/ored/portfolio/swaption.cpp=, the exercise branch
+  before the builder lookup); an =FxSwap= is priced by the =FxForward= builder
+  (=fxswap.cpp:62=).
+- A scripted trade is priced by the =ScriptedTrade= builder, which resolves the
+  script's product tag by putting the trade's asset class in place of
+  ={AssetClass}= and looks up the resolved tag
+  (=builders/scriptedtrade.cpp:120=), so =SingleAssetOption({AssetClass})= is
+  =SingleAssetOption(EQ)= for an equity trade.
+- Of the 120 catalogued trade types other than the container, 51 share a code
+  with a pricing engine type in the store; none of the 54 library scripts' product
+  tags is a pricing engine type code.
+
+So the engine is stated for a booked trade under a pricing configuration,
+from the trade's terms, and the rule ORE's builders follow must be held as data
+first: which engine type each trade type looks up, and on which term it depends.
+The analytics service's =pricing_model_product= then gives the model and engine
+of that engine type in a configuration.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

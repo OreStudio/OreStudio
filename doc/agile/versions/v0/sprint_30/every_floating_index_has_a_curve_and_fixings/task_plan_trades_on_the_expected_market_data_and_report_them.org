@@ -26,11 +26,11 @@ Every draw goes through one predicate: an index, a pair, an equity, a commodity,
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:0F936789-FEBE-4330-97B9-DFE0837E4466][Every index a generated trade floats on has a curve and fixings]] |
-| Now          | Plan written; step 1.                  |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Step 1.                                |
+| Next         | Nothing. |
 | Last touched | 2026-11-22                               |
 
 * Acceptance
@@ -74,9 +74,28 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Trades, IR and FX fixing addresses, empty addresses | 840; 18 and 13; 0 | =fixing_gap_by_trade.sql=; =evidence/expected_market_data_plan.txt= | this branch |
 
 * Notes
+
+The goal asks the step to plan every config first and then write. The step
+still plans and writes one config at a time, and adds the info entry per config
+the acceptance asks for; planning all first would change when a failed config
+stops the step, and no acceptance needs it.
+
+The end-to-end runs found two faults outside the planner, fixed here because
+the acceptance cannot hold without them:
+- A fixing generator read only the first spot feed of its pair, by config id,
+  and that feed may be one no party starts. It now reads any of the pair's
+  spot feeds.
+- The adapter supervisor counts a tenant's routes only once the tenant is
+  live, and a provision makes the tenant live after writing them, so lseg-a
+  and demo-a were never asked for anything until a restart. A tenant's change
+  now refreshes the demand and the ingest loop.
+
+And one regression of the simulated fixings: a publisher whose FX fixings
+quote against two bases made the system party's whole FX composition refuse.
+Such a publisher is now left out with a log line.
 
 * Test Scenarios
 
@@ -102,3 +121,24 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Every draw goes through one predicate: =expected_candidates= keeps the pairs,
+equities, commodities, credit entities and inflation indices whose address the
+party expects, and the floating swaps already pass through =drawable=.
+=plan_on_expected_market_data= tries each booked type alone; a type the planner
+refuses plans no trade and keeps a reason, which says the party expects none of
+its market data when the full scope would have planned it, and the slots cycle
+over the remaining types. The plan carries one outcome per type, and the
+generate_trades step adds an info entry per config.
+
+Acceptance:
+- No draw names an address outside the party's expected set: the FX worst-of
+  and basket partners come from the filtered pairs; a test checks that every
+  FX index a plan names is the expected one. Met.
+- A type with no candidate is left out and its slots go to the others: the
+  booked types' trades fill the book. Met.
+- The provisioning report has an info entry per config with the trades by type
+  and the reason for each type with none. Met.
+- On a fresh acme_demo provision every fixing address a trade names, IR and
+  FX, has a series with values: 18 IR and 13 FX, none empty
+  (=evidence/expected_market_data_plan.txt=). Met.

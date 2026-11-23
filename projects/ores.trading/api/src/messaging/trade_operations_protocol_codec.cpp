@@ -86,6 +86,48 @@ wire_traits<ores::trading::messaging::book_trade_response>::read_msgpack(
     return object::read_msgpack<ores::trading::messaging::book_trade_response>(data);
 }
 
+std::string wire_traits<ores::trading::messaging::book_product_request>::write_json(
+    const ores::trading::messaging::book_product_request& v) {
+    return object::write_json(v);
+}
+
+ores::trading::messaging::book_product_request
+wire_traits<ores::trading::messaging::book_product_request>::read_json(std::string_view text) {
+    return object::read_json<ores::trading::messaging::book_product_request>(text);
+}
+
+std::string wire_traits<ores::trading::messaging::book_product_request>::write_msgpack(
+    const ores::trading::messaging::book_product_request& v) {
+    return object::write_msgpack(v);
+}
+
+ores::trading::messaging::book_product_request
+wire_traits<ores::trading::messaging::book_product_request>::read_msgpack(
+    std::span<const std::byte> data) {
+    return object::read_msgpack<ores::trading::messaging::book_product_request>(data);
+}
+
+std::string wire_traits<ores::trading::messaging::book_product_response>::write_json(
+    const ores::trading::messaging::book_product_response& v) {
+    return object::write_json(v);
+}
+
+ores::trading::messaging::book_product_response
+wire_traits<ores::trading::messaging::book_product_response>::read_json(std::string_view text) {
+    return object::read_json<ores::trading::messaging::book_product_response>(text);
+}
+
+std::string wire_traits<ores::trading::messaging::book_product_response>::write_msgpack(
+    const ores::trading::messaging::book_product_response& v) {
+    return object::write_msgpack(v);
+}
+
+ores::trading::messaging::book_product_response
+wire_traits<ores::trading::messaging::book_product_response>::read_msgpack(
+    std::span<const std::byte> data) {
+    return object::read_msgpack<ores::trading::messaging::book_product_response>(data);
+}
+
 std::string wire_traits<ores::trading::messaging::book_scripted_request>::write_json(
     const ores::trading::messaging::book_scripted_request& v) {
     return object::write_json(v);

@@ -61,8 +61,14 @@ Six PRs, each ending in a check:
    form of three basket options).
 4. =book_scripted=: a library script by version or an inline script, refused
    with the validation's findings when they hold an error.
-5. =book=: a product, its terms and a form, validated against
-   =describe_product='s schema.
+5. =book_product=: a product type, its terms and a form. Decided with the user
+   on 2026-11-23: the terms are the product's native instrument rows, as
+   =book_trade= takes them, not a generic field-by-field format mapped into each
+   of the 115 native builders, which would be a task of its own. The native form
+   books the rows as the product's element; the scripted form reads the product's
+   twin recipe, or a carried script's, over them. The rows are checked to route to
+   the trade type and to state the script's inputs; their values are not checked
+   against the schema's enumerations, which hold their values only as text.
 6. The =ores.http= and BFF routes under =/api/trading/booking=.
 
 * Measurements

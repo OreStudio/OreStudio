@@ -132,6 +132,53 @@ public:
     }
 
     /**
+     * @brief Serves trading.v1.ops.book_product.
+     */
+    void book_product(ores::nats::message msg) {
+        using ores::service::messaging::decode;
+        using ores::service::messaging::error_reply;
+        using ores::service::messaging::has_permission;
+        using ores::service::messaging::reply;
+        using namespace ores::logging;
+
+        ORES_LOG_SEV(trade_operations_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "trading::trades:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        auto req = decode<book_product_request>(msg);
+        if (!req) {
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        if ((req->anchor.origin == ores::trading::domain::origin::synthetic ||
+             req->anchor.origin == ores::trading::domain::origin::ore_import) &&
+            !has_permission(req_ctx, "trading::trades:write_service_origin")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        service::trade_operations_service svc(req_ctx, books_);
+        try {
+            reply(nats_, msg, svc.book_product(*req, ores::nats::service::extract_bearer(msg)));
+        } catch (const std::exception& e) {
+            ORES_LOG_SEV(trade_operations_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            book_product_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = "The trading service could not book the product; it logged "
+                                     "the reason.";
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
      * @brief Serves trading.v1.ops.book_scripted.
      *
      * A library script is booked by whoever may book trades; an inline script

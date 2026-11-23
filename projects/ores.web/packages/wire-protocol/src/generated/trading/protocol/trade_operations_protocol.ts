@@ -107,6 +107,62 @@ export interface BookTradeResponse {
 }
 
 /**
+ * @brief Books a product type in a form it admits, from its native terms: in its native form as its own element, or in its scripted form as the ScriptedTrade its twin recipe reads over those terms.
+ */
+export interface BookProductRequest {
+    /**
+     * @brief The trade's anchor; the service states its trade type from the form.
+     */
+    anchor: Trade;
+    /**
+     * @brief The trade's booking, as book_trade takes it.
+     */
+    booking: TradeBooking;
+    /**
+     * @brief The activity that books the trade, as book_trade takes it.
+     */
+    activity_type_code: string;
+    /**
+     * @brief Why a draft is not live, as book_trade takes it.
+     */
+    draft_reason_code: string;
+    /**
+     * @brief The trade's identifiers, as book_trade takes them.
+     */
+    identifiers: TradeIdentifier[];
+    /**
+     * @brief The product type to book.
+     */
+    product_code: string;
+    /**
+     * @brief The form to book it in: native, or scripted.
+     */
+    booking_form: string;
+    /**
+     * @brief The script of the scripted form, where the product carries more than one; empty for its twin.
+     */
+    script_name: string;
+    /**
+     * @brief The product's native terms, as the rows of its own element.
+     */
+    instruments: InstrumentBatch;
+}
+
+/**
+ * @brief The outcome of a product's booking.
+ */
+export interface BookProductResponse {
+    /**
+     * @brief The booking's outcome, as book_trade states it; form_not_offered when the product has no such form.
+     */
+    result: Result;
+    /**
+     * @brief The activity that booked the trade, when it was booked.
+     */
+    activity_id: string | null;
+}
+
+/**
  * @brief Books a scripted trade: a library script by name and version, or an inline script, on the variables the trade states, refused with the script's findings when they hold an error.
  */
 export interface BookScriptedRequest {
@@ -499,6 +555,7 @@ export interface ResolveMarketDataRequirementsResponse {
 
 export const subjects = {
     book_trade_request: 'trading.v1.ops.book_trade',
+    book_product_request: 'trading.v1.ops.book_product',
     book_scripted_request: 'trading.v1.ops.book_scripted',
     execute_trade_request: 'trading.v1.ops.execute_trade',
     complete_structure_request: 'trading.v1.ops.complete_structure',
@@ -514,6 +571,7 @@ export const subjects = {
  */
 export const requiresSession = {
     book_trade_request: true,
+    book_product_request: true,
     book_scripted_request: true,
     execute_trade_request: true,
     complete_structure_request: true,

@@ -101,6 +101,18 @@ public:
                                                     std::string_view actor_token);
 
     /**
+     * @brief Books a product type in a form it admits, from its native terms.
+     *
+     * The native form books the rows as the product's own element. The scripted
+     * form reads the product's twin recipe, or the recipe of the script it names,
+     * over the rows, and books the ScriptedTrade that recipe states. Either way
+     * the trade is booked as book_trade books it, and records the product and
+     * the form.
+     */
+    messaging::book_product_response book_product(const messaging::book_product_request& request,
+                                                  std::string_view actor_token);
+
+    /**
      * @brief Takes a draft trade live, and raises the request Operations
      * answers, in one transaction.
      *

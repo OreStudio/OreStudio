@@ -203,6 +203,149 @@ generates no service handler.
  */
 #+end_src
 
+** book_product_request
+:PROPERTIES:
+:subject:  trading.v1.ops.book_product
+:response: book_product_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Books a product type in a form it admits, from its native terms: in its native form as its own element, or in its scripted form as the ScriptedTrade its twin recipe reads over those terms.
+ */
+#+end_src
+
+*** anchor
+:PROPERTIES:
+:cpp_type: ores::trading::domain::trade
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The trade's anchor; the service states its trade type from the form.
+ */
+#+end_src
+
+*** booking
+:PROPERTIES:
+:cpp_type: ores::trading::domain::trade_booking
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The trade's booking, as book_trade takes it.
+ */
+#+end_src
+
+*** activity_type_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The activity that books the trade, as book_trade takes it.
+ */
+#+end_src
+
+*** draft_reason_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Why a draft is not live, as book_trade takes it.
+ */
+#+end_src
+
+*** identifiers
+:PROPERTIES:
+:cpp_type: std::vector<ores::trading::domain::trade_identifier>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The trade's identifiers, as book_trade takes them.
+ */
+#+end_src
+
+*** product_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The product type to book.
+ */
+#+end_src
+
+*** booking_form
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The form to book it in: native, or scripted.
+ */
+#+end_src
+
+*** script_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The script of the scripted form, where the product carries more than one; empty for its twin.
+ */
+#+end_src
+
+*** instruments
+:PROPERTIES:
+:cpp_type: ores::trading::domain::instrument_batch
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The product's native terms, as the rows of its own element.
+ */
+#+end_src
+
+** book_product_response
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The outcome of a product's booking.
+ */
+#+end_src
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The booking's outcome, as book_trade states it; form_not_offered when the product has no such form.
+ */
+#+end_src
+
+*** activity_id
+:PROPERTIES:
+:cpp_type: std::optional<boost::uuids::uuid>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The activity that booked the trade, when it was booked.
+ */
+#+end_src
+
 ** book_scripted_request
 :PROPERTIES:
 :subject:  trading.v1.ops.book_scripted

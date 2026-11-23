@@ -139,6 +139,78 @@ struct book_trade_response {
 };
 
 /**
+ * @brief Books a product type in a form it admits, from its native terms: in its native form as its
+ * own element, or in its scripted form as the ScriptedTrade its twin recipe reads over those terms.
+ */
+struct book_product_request {
+    using response_type = struct book_product_response;
+    static constexpr std::string_view nats_subject = "trading.v1.ops.book_product";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    /**
+     * @brief The trade's anchor; the service states its trade type from the form.
+     */
+    ores::trading::domain::trade anchor;
+    /**
+     * @brief The trade's booking, as book_trade takes it.
+     */
+    ores::trading::domain::trade_booking booking;
+    /**
+     * @brief The activity that books the trade, as book_trade takes it.
+     */
+    std::string activity_type_code;
+    /**
+     * @brief Why a draft is not live, as book_trade takes it.
+     */
+    std::string draft_reason_code;
+    /**
+     * @brief The trade's identifiers, as book_trade takes them.
+     */
+    std::vector<ores::trading::domain::trade_identifier> identifiers;
+    /**
+     * @brief The product type to book.
+     */
+    std::string product_code;
+    /**
+     * @brief The form to book it in: native, or scripted.
+     */
+    std::string booking_form;
+    /**
+     * @brief The script of the scripted form, where the product carries more than one; empty for
+     * its twin.
+     */
+    std::string script_name;
+    /**
+     * @brief The product's native terms, as the rows of its own element.
+     */
+    ores::trading::domain::instrument_batch instruments;
+
+    friend bool operator==(const book_product_request&, const book_product_request&) = default;
+};
+
+/**
+ * @brief The outcome of a product's booking.
+ */
+struct book_product_response {
+    /**
+     * @brief The booking's outcome, as book_trade states it; form_not_offered when the product has
+     * no such form.
+     */
+    ores::utility::domain::result result;
+    /**
+     * @brief The activity that booked the trade, when it was booked.
+     */
+    std::optional<boost::uuids::uuid> activity_id;
+
+    friend bool operator==(const book_product_response&, const book_product_response&) = default;
+};
+
+/**
  * @brief Books a scripted trade: a library script by name and version, or an inline script, on the
  * variables the trade states, refused with the script's findings when they hold an error.
  */
@@ -678,6 +750,45 @@ struct resolve_market_data_requirements_response {
 }
 
 /**
+ * @brief The members of book_product_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<book_product_request>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"anchor", &book_product_request::anchor},
+        ::ores::utility::codec::field{"booking", &book_product_request::booking},
+        ::ores::utility::codec::field{"activity_type_code",
+                                      &book_product_request::activity_type_code},
+        ::ores::utility::codec::field{"draft_reason_code",
+                                      &book_product_request::draft_reason_code},
+        ::ores::utility::codec::field{"identifiers", &book_product_request::identifiers},
+        ::ores::utility::codec::field{"product_code", &book_product_request::product_code},
+        ::ores::utility::codec::field{"booking_form", &book_product_request::booking_form},
+        ::ores::utility::codec::field{"script_name", &book_product_request::script_name},
+        ::ores::utility::codec::field{"instruments", &book_product_request::instruments},
+    };
+}
+
+/**
+ * @brief The members of book_product_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<book_product_response>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"result", &book_product_response::result},
+        ::ores::utility::codec::field{"activity_id", &book_product_response::activity_id},
+    };
+}
+
+/**
  * @brief The members of book_scripted_request, named as the wire names them and in the order
  * the type declares them.
  *
@@ -976,6 +1087,26 @@ struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::book_trade_
     static ores::trading::messaging::book_trade_response read_json(std::string_view text);
     static std::string write_msgpack(const ores::trading::messaging::book_trade_response& v);
     static ores::trading::messaging::book_trade_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::book_product_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::book_product_request& v);
+    static ores::trading::messaging::book_product_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::book_product_request& v);
+    static ores::trading::messaging::book_product_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::book_product_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::book_product_response& v);
+    static ores::trading::messaging::book_product_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::book_product_response& v);
+    static ores::trading::messaging::book_product_response
     read_msgpack(std::span<const std::byte> data);
 };
 template <>

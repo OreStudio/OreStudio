@@ -151,6 +151,7 @@
 #include "ores.refdata.service/messaging/curve_volatility_smile_event_registrar.hpp"
 #include "ores.refdata.service/messaging/curve_volatility_smile_parameter_event_registrar.hpp"
 #include "ores.refdata.service/messaging/curve_volatility_strike_surface_event_registrar.hpp"
+#include "ores.refdata.service/messaging/cut_code_event_registrar.hpp"
 #include "ores.refdata.service/messaging/day_count_fraction_type_event_registrar.hpp"
 #include "ores.refdata.service/messaging/day_counter_event_registrar.hpp"
 #include "ores.refdata.service/messaging/default_curve_benchmark_event_registrar.hpp"
@@ -166,6 +167,9 @@
 #include "ores.refdata.service/messaging/equity_curve_config_event_registrar.hpp"
 #include "ores.refdata.service/messaging/equity_underlying_event_registrar.hpp"
 #include "ores.refdata.service/messaging/equity_volatility_config_event_registrar.hpp"
+#include "ores.refdata.service/messaging/fixing_source_event_registrar.hpp"
+#include "ores.refdata.service/messaging/fixing_source_kind_event_registrar.hpp"
+#include "ores.refdata.service/messaging/fixing_source_status_event_registrar.hpp"
 #include "ores.refdata.service/messaging/floating_index_type_event_registrar.hpp"
 #include "ores.refdata.service/messaging/fra_convention_event_registrar.hpp"
 #include "ores.refdata.service/messaging/future_convention_event_registrar.hpp"
@@ -280,6 +284,10 @@ std::vector<ores::eventing::service::subscription> event_registrar::register_eve
     subs.push_back(register_book_product_type_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_book_purpose_type_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_book_status_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_fixing_source_kind_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_fixing_source_status_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_fixing_source_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_cut_code_event_mapping(event_source, event_bus, nats));
     subs.push_back(
         register_business_day_convention_type_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_business_unit_event_mapping(event_source, event_bus, nats));

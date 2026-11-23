@@ -85,6 +85,20 @@ text_form<std::chrono::year_month_day>::from_text(std::string_view text) {
 }
 
 std::string
+text_form<ores::platform::time::time_of_day>::to_text(const ores::platform::time::time_of_day& v) {
+    return ores::platform::time::datetime::to_iso8601_time(v);
+}
+
+ores::platform::time::time_of_day
+text_form<ores::platform::time::time_of_day>::from_text(std::string_view text) {
+    try {
+        return ores::platform::time::datetime::from_iso8601_time(std::string(text));
+    } catch (const std::exception& e) {
+        refuse(wire_name, text, e.what());
+    }
+}
+
+std::string
 text_form<ores::utility::decimal::decimal>::to_text(const ores::utility::decimal::decimal& v) {
     return v.to_string();
 }

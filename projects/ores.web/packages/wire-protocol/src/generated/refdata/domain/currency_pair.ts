@@ -37,6 +37,7 @@ export interface CurrencyPair {
     base_currency: string;
     quote_currency: string;
     classification: string;
+    default_cut_code: string | null;
     modified_by: string;
     performed_by: string;
     change_reason_code: string;

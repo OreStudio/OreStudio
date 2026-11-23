@@ -1,0 +1,133 @@
+:PROPERTIES:
+:ID: B3E547A5-941B-439E-A10E-EE9EEE2900E4
+:END:
+#+title: Task: Add a time-of-day column type to the codegen
+#+description: A model column of type time is a PostgreSQL time and a branded std::chrono time_of_day in C++, through every layer the codegen generates.
+#+type: task
+#+level: s1
+#+filetags: :every_floating_index_has_a_curve_and_fixings:sprint_30:v0:
+#+owner: marco
+#+branch: feature/add-a-time-of-day-column-type
+#+pr: 5052
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0F936789-FEBE-4330-97B9-DFE0837E4466][Every index a generated trade floats on has a curve and fixings]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Give the codegen a time-of-day column type. The PostgreSQL column is time without time zone, with the zone in its own IANA column; the C++ domain member is ores::platform::time::time_of_day, std::chrono::seconds since midnight with a defaulted comparison, converted to and from std::chrono::hh_mm_ss. Every template that handles a date column handles a time column the same way.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:0F936789-FEBE-4330-97B9-DFE0837E4466][Every index a generated trade floats on has a curve and fixings]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-22                               |
+
+* Acceptance
+
+- A model column of :type: time generates a time column, a time_of_day domain member, and round-trips through the repository, the wire codec, JSON and the table.
+- The fixing source and cut code models use it for their times.
+
+* Plan
+
+The work has two halves.
+
+1. The runtime half, which needs no codegen change:
+   - =ores::platform::time::time_of_day=: seconds since midnight, in the
+     range 00:00:00 to 23:59:59. The constructor refuses a value out of
+     range. Comparison is defaulted.
+   - =datetime::to_iso8601_time= and =from_iso8601_time=: the text form
+     "HH:MM:SS". The parser also reads "HH:MM" and refuses fractions of a
+     second.
+   - =text_form<time_of_day>=, which JSON and msgpack use for the leaf.
+   - The PostgreSQL binding =codec<time_of_day>=: OID 1083, array OID 1183,
+     binary microseconds since midnight. The decoder refuses a value with a
+     fraction of a second.
+   - =query_builder= filter value, the faker sampler and the digest's
+     canonical form.
+2. The template half, which waits on compass v0.0.13: an =is_time= branch
+   beside every =is_date= branch in the entity, generator, repository,
+   history field mapper and service templates.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+compass-ng v0.0.12 derives the type flags from =:type:= only. A model
+property such as =:is_date: true= has no effect, and an unknown type leaves
+the generated TypeScript type empty, so prettier fails. No workaround
+exists before v0.0.13.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5052][#5052]] | [refdata] Hold the fixing sources and their cuts, with a time-of-day column type |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The parser accepts HH:MM; is it intended? | datetime.cpp | No change | Intended; the declaration in datetime.hpp states both forms, and a test reads 12:30 |
+| 2 | Prove that a server time of 24:00:00 is refused | pq_layer_tests.cpp | Accepted | Test added |
+| 3 | Confirm the generated output is reproducible | — | Accepted | compass generate writes no file on the branch |
+| 4 | Track the unchecked publication times | — | Accepted | Inbox capture: Fixing source times checked against their publishers |
+| 5 | ticks-smoke on a fresh database | — | No change | Predates the branch; inbox capture |
+| 6 | Missing Story-ID trailer on 5d6017f010 | — | No change | Only a force-push could reword it |
+
+* Result
+
+A model column of =:type: time= is a PostgreSQL =time= and a
+=ores::platform::time::time_of_day= in C++, seconds since midnight in one day.
+compass v0.0.13 binds the column as text, so the repository record holds
+"HH:MM:SS" and the mapper converts it with =datetime::from_iso8601_time= and
+=to_iso8601_time=. The generator draws a time of day, the shell reads one as an
+"HH:MM:SS" token, and the table printer streams one as "HH:MM:SS". JSON and
+msgpack carry it through =text_form=, and the binary PostgreSQL codec binds it
+as a query parameter.
+
+Acceptance:
+- A =:type: time= column generates a =time= column and a =time_of_day= member,
+  and round-trips through the repository
+  (=a_fixing_source_reads_back_its_publication_time=, 16:00:00 and 23:59:59),
+  the wire codec and JSON (the generated codec round trips of =fixing_source=
+  and =cut_code=) and the table. Met.
+- The fixing source and cut code models use it for their times. Met.
+
+The template branches cover the entity, the mapper, the generator and the
+shell token. The history field mapper has no time branch, because compass sets
+no =render_is_time= flag yet; how the history view shows a time column is not
+checked.

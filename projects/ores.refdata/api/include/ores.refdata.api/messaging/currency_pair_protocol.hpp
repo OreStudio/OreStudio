@@ -53,6 +53,7 @@ struct currency_pair_write {
     std::string base_currency;
     std::string quote_currency;
     std::string classification;
+    std::optional<std::string> default_cut_code;
 
     friend bool operator==(const currency_pair_write&, const currency_pair_write&) = default;
 };
@@ -382,6 +383,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.currency_pairs.de
         utility::codec::field{"base_currency", &currency_pair_write::base_currency},
         utility::codec::field{"quote_currency", &currency_pair_write::quote_currency},
         utility::codec::field{"classification", &currency_pair_write::classification},
+        utility::codec::field{"default_cut_code", &currency_pair_write::default_cut_code},
     };
 }
 

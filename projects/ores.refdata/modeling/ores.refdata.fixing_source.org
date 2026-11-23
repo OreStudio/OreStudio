@@ -1,0 +1,330 @@
+:PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
+:ID: CDB6CD60-501A-4CB6-9317-42F90B839804
+:END:
+#+title: ores.refdata.fixing_source
+#+description: Codegen entity model for the refdata =fixing_source= table: who fixes a rate, how, at what time and zone, on which calendar, and whether it still does.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: A source that fixes a rate at a stated time, with its administrator, calendar, rounding and status.
+#+entity_singular: fixing_source
+#+entity_plural: fixing_sources
+#+entity_title: Fixing Source
+#+coding_scheme: none
+#+image_id: false
+#+created: 2026-11-23
+#+updated: 2026-11-23
+
+Reference data table of the fixing sources ORE Studio supports: the WM/R cut
+sources, the central-bank FX reference rates, the settlement rate options of the
+non-deliverable currencies and the interest rate indices. The code is the label
+the market uses, which is also the =SOURCE= of an ORE FX index such as
+=FX-WMR1600LON-EUR-USD=.
+
+The publication time is a time of day without a zone, and the zone is an IANA
+name in its own column, so the instant a source fixes at is read on the
+source's own clock. The calendar names the source's fixing days by the code of
+a calendar. It is not checked against the calendar table, because the calendars
+are published from their dataset after the reference data is seeded.
+
+See [[id:5AF9CEEF-A878-443A-8C32-C6E9F6C26FC9][Fixing sources for option cuts and non-deliverable currencies]].
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: refdata
+:profile:   simple-lookup
+:END:
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+The source's label.
+
+Examples: 'WMR1600LON', 'ECB', 'KFTC18', 'SOFR'.
+
+#+begin_src cpp :name generator
+std::string("FixingSource")
+#+end_src
+
+** name
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
+:END:
+
+Human-readable name of the source.
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun()) + " Fixing"
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+What the source fixes and for whom.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+** kind_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+How the source arrives at its value: published, keyed or derived.
+
+#+begin_src cpp :name generator
+std::string("published")
+#+end_src
+
+** asset_class
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The asset class of the rates the source fixes, as an oresmd address names it: fx or ir.
+
+#+begin_src cpp :name generator
+std::string("fx")
+#+end_src
+
+** administrator
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The body that administers the source, such as LSEG or the European Central Bank.
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun()) + " Benchmarks"
+#+end_src
+
+** publication_time
+:PROPERTIES:
+:type:     time
+:cpp_type: ores::platform::time::time_of_day
+:nullable: false
+:END:
+
+The time of day the source fixes at, read on the clock of =publication_time_zone=.
+
+** publication_time_zone
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The IANA name of the zone the publication time is read in.
+
+#+begin_src cpp :name generator
+std::string("Europe/London")
+#+end_src
+
+** calendar_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The code of the calendar whose business days the source fixes on.
+
+#+begin_src cpp :name generator
+std::string("TARGET")
+#+end_src
+
+** rounding_decimals
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+The number of decimal places the source rounds its value to.
+
+#+begin_src cpp :name generator
+faker::number::integer(2, 6)
+#+end_src
+
+** status_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Whether the source still fixes: active or ceased.
+
+#+begin_src cpp :name generator
+std::string("active")
+#+end_src
+
+** display_order
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  0
+:END:
+
+Order for UI display purposes.
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 100)
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_fixing_sources_tbl
+:rls_tenant_isolation: true
+:rls_own_or_system_tenant_rows: true
+:END:
+
+** Checks
+
+| expression |
+|------------|
+| "asset_class" in ('fx', 'ir', 'inflation', 'credit', 'commodity', 'equity') |
+| "rounding_decimals" between 0 and 12 |
+| "publication_time_zone" <> '' |
+| "calendar_code" <> '' |
+
+** Extra drops
+
+#+begin_src sql :name body :implements 5E47F108-1350-4540-B3C2-E83DD5379B2D
+drop function if exists ores_refdata_validate_fixing_source_fn;
+#+end_src
+
+* Validation function
+:PROPERTIES:
+:tenant_scope: system
+:order_by:     display_order
+:END:
+
+* Insert trigger
+** Validations
+
+| column             | validation_function               |
+|--------------------+-----------------------------------|
+| change_reason_code | ores_dq_validate_change_reason_fn |
+
+* Foreign keys
+
+** kind_code
+:PROPERTIES:
+:table:             ores_refdata_fixing_source_kinds_tbl
+:target_column:     code
+:system_tenant_visible: true
+:nullable:          false
+:error_message:     Invalid kind_code: %. No active fixing source kind found with this code.
+:END:
+
+** status_code
+:PROPERTIES:
+:table:             ores_refdata_fixing_source_statuses_tbl
+:target_column:     code
+:system_tenant_visible: true
+:nullable:          false
+:error_message:     Invalid status_code: %. No active fixing source status found with this code.
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:       api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: source
+:entity_plural_short:   sources
+:entity_singular_words: fixing source
+:entity_plural_words:   fixing sources
+:system_tenant_visible: true
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include "ores.platform/time/time_of_day.hpp"
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: fs
+:END:
+
+** Table display
+
+| column                | header      |
+|-----------------------+-------------|
+| code                  | Code        |
+| name                  | Name        |
+| kind_code             | Kind        |
+| administrator         | Administrator |
+| publication_time      | Time        |
+| publication_time_zone | Zone        |
+| status_code           | Status      |
+| version               | Version     |
+
+** Presentation
+:PROPERTIES:
+:domain_include:         ores.refdata.api/domain/fixing_source.hpp
+:domain_class:           refdata::domain::fixing_source
+:protocol_include:       ores.refdata.api/messaging/fixing_source_protocol.hpp
+:collection_name:        fixing_sources
+:key_field:              code
+:has_export_macro:       true
+:END:
+
+*** Columns
+
+| enum_name     | field         | header        | type      | width |
+|---------------+---------------+---------------+-----------+-------|
+| Code          | code          | Code          | string    | auto  |
+| Name          | name          | Name          | string    | auto  |
+| KindCode      | kind_code     | Kind          | string    | 90    |
+| Administrator | administrator | Administrator | string    | auto  |
+| StatusCode    | status_code   | Status        | string    | 80    |
+| Version       | version       | Version       | int       | 70    |
+| ModifiedBy    | modified_by   | Modified By   | string    | auto  |
+| RecordedAt    | recorded_at   | Recorded At   | timestamp | auto  |
+
+** Custom repository methods
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.
+- [[id:5AF9CEEF-A878-443A-8C32-C6E9F6C26FC9][Fixing sources for option cuts and non-deliverable currencies]] — the sources seeded.

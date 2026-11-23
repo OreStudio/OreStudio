@@ -145,6 +145,10 @@ select ores_utility_allow_version_replace_fn();
 \ir ../refdata/refdata_contact_types_populate.sql
 \ir ../refdata/refdata_purpose_types_populate.sql
 \ir ../refdata/refdata_book_statuses_populate.sql
+\ir ../refdata/refdata_fixing_source_kinds_populate.sql
+\ir ../refdata/refdata_fixing_source_statuses_populate.sql
+\ir ../refdata/refdata_fixing_sources_populate.sql
+\ir ../refdata/refdata_cut_codes_populate.sql
 \ir ../refdata/refdata_regulatory_book_types_populate.sql
 \ir ../refdata/refdata_book_purpose_types_populate.sql
 \ir ../refdata/refdata_ledger_feed_types_populate.sql

@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 8310E4A7-EA5A-5EFA-9E1F-F951937CF44E
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the cut_codes commands from the shell?
+#+description: Every command the cut_codes submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:cut_codes:
+
+This file documents the cut_codes resource at the shell, one section per command. Every command is a subcommand of =cut_codes=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 8813B5CA-C1E1-529A-B35F-2BB143FBD701
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+cut_codes list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.cut_codes.list=.
+
+#+name: cut_codes-list
+#+begin_src ores-shell :tangle cut_codes-list.ores :exports none
+cut_codes list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: B354A843-E346-5099-A1F4-9581994F18E8
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+cut_codes get <code>
+#+end_example
+
+It is addressed at =refdata.v1.cut_codes.get=.
+
+#+name: cut_codes-get
+#+begin_src ores-shell :tangle cut_codes-get.ores :exports none
+cut_codes get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: D838DC23-DC79-5618-80F8-CF3EE4B8262B
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+cut_codes get-many <code>
+#+end_example
+
+It is addressed at =refdata.v1.cut_codes.get_many=.
+
+#+name: cut_codes-get-many
+#+begin_src ores-shell :tangle cut_codes-get-many.ores :exports none
+cut_codes get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 4C83886B-D23C-511D-9D10-AB0230827D6C
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+cut_codes add <code> <name> <description> <cut_time> <cut_time_zone> <fixing_source_code> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.cut_codes.put=.
+
+#+name: cut_codes-add
+#+begin_src ores-shell :tangle cut_codes-add.ores :exports none
+cut_codes add __none__ __none__ __none__ 00:00:00 __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: F33EAE26-751E-55C7-B498-257D6F5C4D96
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+cut_codes set <code> <name> <description> <cut_time> <cut_time_zone> <fixing_source_code> <display_order> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.cut_codes.put=.
+
+#+name: cut_codes-set
+#+begin_src ores-shell :tangle cut_codes-set.ores :exports none
+cut_codes set __none__ __none__ __none__ 00:00:00 __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 1AD900EF-3025-51D8-BF11-6186598B4AEB
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+cut_codes put-many --count <n> <code> <name> <description> <cut_time> <cut_time_zone> <fixing_source_code> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.cut_codes.put_many=.
+
+#+name: cut_codes-put-many
+#+begin_src ores-shell :tangle cut_codes-put-many.ores :exports none
+cut_codes put-many --count 1 __none__ __none__ __none__ 00:00:00 __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: C358082C-4778-5845-B0F5-C6603B3D263D
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+cut_codes delete <code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.cut_codes.delete=.
+
+#+name: cut_codes-delete
+#+begin_src ores-shell :tangle cut_codes-delete.ores :exports none
+cut_codes delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 6D633723-0E30-5D7A-B6E8-92A2D846ACF3
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+cut_codes delete-many <code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.cut_codes.delete_many=.
+
+#+name: cut_codes-delete-many
+#+begin_src ores-shell :tangle cut_codes-delete-many.ores :exports none
+cut_codes delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 56B4BCBA-E86F-5CAC-80C0-D9EC6B288340
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+cut_codes versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.cut_codes_versions.list=.
+
+#+name: cut_codes-versions
+#+begin_src ores-shell :tangle cut_codes-versions.ores :exports none
+cut_codes versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: D0EEDAD5-57A7-5428-A51F-595304202680
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+cut_codes version <code> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.cut_codes_versions.get=.
+
+#+name: cut_codes-version
+#+begin_src ores-shell :tangle cut_codes-version.ores :exports none
+cut_codes version __none__ --version 1
+#+end_src
+

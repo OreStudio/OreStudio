@@ -2289,6 +2289,22 @@ tangled into the runnable script library
 
 - [[id:09553E7C-ED2E-5359-9EBE-72108372DB47][How do I run the agent_keys commands from the shell?]]
 
+* Fixing Source Kinds
+
+- [[id:AB51E38D-32D9-5E22-9948-5086247AB83C][How do I run the fixing_source_kinds commands from the shell?]]
+
+* Fixing Source Statuses
+
+- [[id:21BEADB5-2CB4-5A48-9CDA-07C00A3DBAF3][How do I run the fixing_source_statuses commands from the shell?]]
+
+* Cut Codes
+
+- [[id:8310E4A7-EA5A-5EFA-9E1F-F951937CF44E][How do I run the cut_codes commands from the shell?]]
+
+* Fixing Sources
+
+- [[id:36C1696E-6A1C-5C5E-B109-F07FCFA3F065][How do I run the fixing_sources commands from the shell?]]
+
 * Stopped Feed Nodes
 
 - [[id:0FC4AB32-3FB2-56D4-A88D-451A9F5D5BA2][How do I run the stopped_feed_nodes commands from the shell?]]

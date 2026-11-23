@@ -20,6 +20,7 @@
 #ifndef ORES_UTILITY_DIGEST_CANONICAL_FORM_HPP
 #define ORES_UTILITY_DIGEST_CANONICAL_FORM_HPP
 
+#include "ores.platform/time/time_of_day.hpp"
 #include "ores.utility/decimal/decimal.hpp"
 #include <chrono>
 #include <format>
@@ -82,6 +83,8 @@ std::string canonical_value(const T& v) {
                                  static_cast<int>(v.year()),
                                  static_cast<unsigned>(v.month()),
                                  static_cast<unsigned>(v.day())));
+    } else if constexpr (std::is_same_v<V, ores::platform::time::time_of_day>) {
+        return frame(std::format("{:%H:%M:%S}", v.hms()));
     } else if constexpr (std::is_same_v<V, std::chrono::system_clock::time_point>) {
         // The clock's tick is a nanosecond on one standard library and a tenth
         // of a microsecond on another, so a tick count would digest the same

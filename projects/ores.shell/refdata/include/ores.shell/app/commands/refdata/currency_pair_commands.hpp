@@ -87,16 +87,16 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <pair_code> <base_currency> <quote_currency> <classification> <reason>
-     * <commentary>
+     * @brief add <pair_code> <base_currency> <quote_currency> <classification> <default_cut_code>
+     * <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief set <pair_code> <base_currency> <quote_currency> <classification> <reason>
-     * <commentary> [--version <n>]
+     * @brief set <pair_code> <base_currency> <quote_currency> <classification> <default_cut_code>
+     * <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -104,7 +104,7 @@ public:
 
     /**
      * @brief put-many --count <n> <pair_code> <base_currency> <quote_currency> <classification>
-     * <reason> <commentary>
+     * <default_cut_code> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

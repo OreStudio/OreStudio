@@ -128,6 +128,10 @@ inline value filter_value(const std::chrono::year_month_day& v) {
     return pq::encode_param(v);
 }
 
+inline value filter_value(const ores::platform::time::time_of_day& v) {
+    return pq::encode_param(v);
+}
+
 inline value filter_value(const std::chrono::system_clock::time_point& v) {
     return pq::encode_param(v);
 }

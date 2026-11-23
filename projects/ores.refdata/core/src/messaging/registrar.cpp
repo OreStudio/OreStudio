@@ -87,10 +87,14 @@
 #include "ores.refdata.core/messaging/currency_pair_registrar.hpp"
 #include "ores.refdata.core/messaging/currency_registrar.hpp"
 #include "ores.refdata.core/messaging/curve_role_registrar.hpp"
+#include "ores.refdata.core/messaging/cut_code_registrar.hpp"
 #include "ores.refdata.core/messaging/day_count_fraction_type_registrar.hpp"
 #include "ores.refdata.core/messaging/day_counter_registrar.hpp"
 #include "ores.refdata.core/messaging/deposit_convention_registrar.hpp"
 #include "ores.refdata.core/messaging/diary_entry_type_registrar.hpp"
+#include "ores.refdata.core/messaging/fixing_source_kind_registrar.hpp"
+#include "ores.refdata.core/messaging/fixing_source_registrar.hpp"
+#include "ores.refdata.core/messaging/fixing_source_status_registrar.hpp"
 #include "ores.refdata.core/messaging/floating_index_type_registrar.hpp"
 #include "ores.refdata.core/messaging/fra_convention_registrar.hpp"
 #include "ores.refdata.core/messaging/fx_vol_surface_blueprint_registrar.hpp"
@@ -316,6 +320,7 @@
 #include "ores.refdata.core/messaging/curve_volatility_smile_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/curve_volatility_smile_parameter_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/curve_volatility_strike_surface_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/cut_code_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/day_count_fraction_type_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/day_counter_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/default_curve_benchmark_history_provider_registrar.hpp"
@@ -338,6 +343,9 @@
 #include "ores.refdata.core/messaging/equity_underlying_registrar.hpp"
 #include "ores.refdata.core/messaging/equity_volatility_config_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/equity_volatility_config_registrar.hpp"
+#include "ores.refdata.core/messaging/fixing_source_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/fixing_source_kind_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/fixing_source_status_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/floating_index_type_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/fra_convention_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/future_convention_history_provider_registrar.hpp"
@@ -484,6 +492,10 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_book_change_handlers(nats, ctx, verifier));
     append(register_book_purpose_type_handlers(nats, ctx, verifier));
     append(register_book_status_handlers(nats, ctx, verifier));
+    append(register_fixing_source_kind_handlers(nats, ctx, verifier));
+    append(register_fixing_source_status_handlers(nats, ctx, verifier));
+    append(register_fixing_source_handlers(nats, ctx, verifier));
+    append(register_cut_code_handlers(nats, ctx, verifier));
     append(register_business_centre_handlers(nats, ctx, verifier));
     append(register_business_day_convention_type_handlers(nats, ctx, verifier));
     append(register_business_process_handlers(nats, ctx, verifier));
@@ -764,6 +776,10 @@ registrar::register_handlers(ores::nats::service::client& nats,
         register_book_change_history_provider(hist_registry);
         register_book_purpose_type_history_provider(hist_registry);
         register_book_status_history_provider(hist_registry);
+        register_fixing_source_kind_history_provider(hist_registry);
+        register_fixing_source_status_history_provider(hist_registry);
+        register_fixing_source_history_provider(hist_registry);
+        register_cut_code_history_provider(hist_registry);
         register_business_centre_history_provider(hist_registry);
         register_business_day_convention_type_history_provider(hist_registry);
         register_business_unit_history_provider(hist_registry);

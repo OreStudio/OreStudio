@@ -21,6 +21,7 @@
 
 #include "ores.database/export.hpp"
 #include "ores.database/pq/result.hpp"
+#include "ores.platform/time/time_of_day.hpp"
 #include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
@@ -286,6 +287,19 @@ struct codec<std::chrono::year_month_day> {
     static constexpr Oid array_oid = 1182;
     ORES_DATABASE_EXPORT static void encode(std::chrono::year_month_day v, std::string& out);
     ORES_DATABASE_EXPORT static std::chrono::year_month_day decode(std::span<const std::byte> in);
+};
+
+/**
+ * @brief time: microseconds since midnight. A time of day holds whole seconds,
+ * so a fraction of a second and the server's 24:00:00 are refused on decode.
+ */
+template <>
+struct codec<ores::platform::time::time_of_day> {
+    static constexpr Oid oid = 1083;
+    static constexpr Oid array_oid = 1183;
+    ORES_DATABASE_EXPORT static void encode(ores::platform::time::time_of_day v, std::string& out);
+    ORES_DATABASE_EXPORT static ores::platform::time::time_of_day
+    decode(std::span<const std::byte> in);
 };
 
 /**

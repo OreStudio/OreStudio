@@ -28,7 +28,9 @@ The methodology is step 5 of external/ore/methodology.txt. In order:
 3. parse every variant with the shell's `script check`, which fails on a
    script that does not parse;
 4. derive every script's inputs with the shell's `script inputs`, merging its
-   variants.
+   variants;
+5. read the codes of every coded input from its comment line, with the
+   corrections of script_input_code_corrections.json (script_input_codes.py).
 
 It writes the dataset's methodology, dataset and artefact populate files.
 With --check it writes nothing and fails when the committed files differ from
@@ -43,6 +45,8 @@ import tempfile
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass, field
 from pathlib import Path
+
+import script_input_codes
 
 ROOT = Path(__file__).resolve().parents[3]
 LIBRARY = ROOT / "external/ore/examples/Products/Input/scriptlibrary.xml"
@@ -265,7 +269,9 @@ def insert(table, columns, rows):
 
 def render_artefacts(scripts):
     rows = {k: [] for k in ("scripts", "script_variants", "script_results", "script_calibrations",
-                            "script_calibration_strikes", "script_coarsenings", "script_inputs")}
+                            "script_calibration_strikes", "script_coarsenings", "script_inputs",
+                            "script_input_codes")}
+    fixes = script_input_codes.corrections()
     for s in scripts:
         name = literal(s.name)
         rows["scripts"].append([name, literal(s.product_tag), literal(s.description)])
@@ -286,6 +292,13 @@ def render_artefacts(scripts):
             rows["script_inputs"].append(
                 [name, literal(n), literal(input_name), literal(data_type), literal(is_array),
                  literal(rule), literal(s.input_descriptions.get(input_name))])
+        number = 0
+        for input_name, data_type, _, _ in s.inputs:
+            for code, label in script_input_codes.codes(
+                    s.name, input_name, data_type, s.input_descriptions.get(input_name), fixes):
+                number += 1
+                rows["script_input_codes"].append(
+                    [name, literal(number), literal(input_name), literal(code), literal(label)])
 
     columns = {
         "scripts": ["name", "product_tag", "description"],
@@ -297,6 +310,7 @@ def render_artefacts(scripts):
         "script_coarsenings": ["script_name", "purpose", "sequence_number", "eligible_schedule"],
         "script_inputs": ["script_name", "sequence_number", "input_name", "data_type", "is_array",
                           "value_rule", "description"],
+        "script_input_codes": ["script_name", "sequence_number", "input_name", "code", "label"],
     }
     deletes = "".join(f"    delete from ores_dq_{t}_artefact_tbl where dataset_id = v_dataset_id;\n"
                       for t in reversed(list(rows)))

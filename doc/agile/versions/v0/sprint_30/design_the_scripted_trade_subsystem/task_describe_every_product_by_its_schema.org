@@ -101,6 +101,7 @@ task and name that file in the Command column.
 | Schema types and fields reachable from those elements | 441 types, 2929 fields; 330 fields described by the guide | =python3 projects/ores.sql/utility/extract_instrument_terms.py= | PR 1 |
 | Rows of the =ore.parameters= seed | 5602, from 2559 | =python3 projects/ores.sql/utility/generate_ore_parameters_dataset.py= | PR 1 |
 | Leaf rows if every product's paths were expanded instead | 11626 | a walk of =instrument_terms.json= from each product's element, before the substitution groups were read | PR 1 |
+| Script inputs with codes; codes staged | 63 inputs, 22 distinct sets; 148 codes | =python3 external/ore/tools/generate_script_library.py= | PR 2 |
 
 * Notes
 
@@ -157,6 +158,24 @@ the rows, =measure_ore_parameter_releases.py= the first release, and
 =generate_ore_parameters_dataset.py= writes the seed, with =--check=. The value
 sets, the element map and its columns are written by compass's =ore_value_sets=
 codec from the value set curation.
+
+** PR 2: the annotations of script-only products
+
+A script-only product's fields are its script's inputs, which trading already
+holds: name, type, array or scalar, the value rule from its REQUIRE statements,
+and the description from the library comment (679 of the 750 inputs have one).
+Of the annotations the design names, only the codes are missing as data: 63 inputs
+read a choice as a number and state its meaning in prose, "1 for DownIn, 2 for
+UpIn". They are now the entity =script_input_code=, a row per code with its
+label, versioned with its script and staged and published with it through the
+=ore.script_library= dataset. A label of a field is its name humanised, so no
+label is stored; the library states no default for any input, so none is stored.
+
+The codes are read by =external/ore/tools/script_input_codes.py=; three inputs
+have a correction, in =script_input_code_corrections.json=: two comments spell
+DownIn as DonwIn, and one states a payoff as a formula. A tenant's own scripts
+get no codes yet: their publish derives inputs from the code, not from a comment
+the library generator reads.
 
 ** Which component serves describe_product
 

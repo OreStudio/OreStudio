@@ -1,0 +1,61 @@
+{
+  "GenericBarrierOption/PayoffType": {
+    "codes": [
+      [
+        0,
+        "Vanilla"
+      ],
+      [
+        1,
+        "Cash or nothing"
+      ]
+    ],
+    "reason": "The comment states the vanilla payoff as a formula, max(0, S-K), which is not a name."
+  },
+  "GenericBarrierOption/BarrierTypes": {
+    "codes": [
+      [
+        1,
+        "DownIn"
+      ],
+      [
+        2,
+        "UpIn"
+      ],
+      [
+        3,
+        "DownOut"
+      ],
+      [
+        4,
+        "UpOut"
+      ]
+    ],
+    "reason": "The comment spells DownIn as DonwIn; every other barrier input of the library spells it DownIn."
+  },
+  "GenericBarrierOption/TransatlanticBarrierType": {
+    "codes": [
+      [
+        0,
+        "none"
+      ],
+      [
+        1,
+        "DownIn"
+      ],
+      [
+        2,
+        "UpIn"
+      ],
+      [
+        3,
+        "DownOut"
+      ],
+      [
+        4,
+        "UpOut"
+      ]
+    ],
+    "reason": "The comment spells DownIn as DonwIn; every other barrier input of the library spells it DownIn."
+  }
+}

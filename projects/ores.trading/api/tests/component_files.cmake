@@ -335,6 +335,8 @@ set(files
     "script_coarsening_codec_roundtrip_tests.cpp"
     "script_coarsening_protocol_codec_roundtrip_tests.cpp"
     "script_codec_roundtrip_tests.cpp"
+    "script_input_code_codec_roundtrip_tests.cpp"
+    "script_input_code_protocol_codec_roundtrip_tests.cpp"
     "script_input_codec_roundtrip_tests.cpp"
     "script_input_protocol_codec_roundtrip_tests.cpp"
     "script_library_operation_protocol_codec_roundtrip_tests.cpp"

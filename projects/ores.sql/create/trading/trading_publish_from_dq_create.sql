@@ -75,7 +75,12 @@ create or replace function ores_trading_staged_script_state_fn(
                            i.sequence_number, i.input_name, i.data_type, i.is_array,
                            i.value_rule, i.description) order by i.sequence_number), '[]')
                    from ores_dq_script_inputs_artefact_tbl i
-                   where i.dataset_id = p_dataset_id and i.script_name = p_script_name));
+                   where i.dataset_id = p_dataset_id and i.script_name = p_script_name),
+        'codes', (select coalesce(jsonb_agg(jsonb_build_array(
+                          d.sequence_number, d.input_name, d.code, d.label)
+                          order by d.sequence_number), '[]')
+                  from ores_dq_script_input_codes_artefact_tbl d
+                  where d.dataset_id = p_dataset_id and d.script_name = p_script_name));
 $$ language sql stable;
 
 create or replace function ores_trading_published_script_state_fn(
@@ -137,7 +142,15 @@ create or replace function ores_trading_published_script_state_fn(
                    where i.tenant_id = p_tenant_id and i.script_name = p_script_name
                      and (i.script_version = p_version
                           or (p_version is null
-                              and i.valid_to = ores_utility_infinity_timestamp_fn()))));
+                              and i.valid_to = ores_utility_infinity_timestamp_fn()))),
+        'codes', (select coalesce(jsonb_agg(jsonb_build_array(
+                          d.sequence_number, d.input_name, d.code, d.label)
+                          order by d.sequence_number), '[]')
+                  from ores_trading_script_input_codes_tbl d
+                  where d.tenant_id = p_tenant_id and d.script_name = p_script_name
+                    and (d.script_version = p_version
+                         or (p_version is null
+                             and d.valid_to = ores_utility_infinity_timestamp_fn()))));
 $$ language sql stable;
 
 -- =============================================================================
@@ -239,6 +252,12 @@ begin
           and not exists (select 1 from ores_dq_script_inputs_artefact_tbl a
                           where a.dataset_id = p_dataset_id and a.script_name = v_name
                             and a.sequence_number = t.sequence_number);
+        update ores_trading_script_input_codes_tbl t set valid_to = current_timestamp
+        where t.tenant_id = p_target_tenant_id and t.script_name = v_name
+          and t.valid_to = ores_utility_infinity_timestamp_fn()
+          and not exists (select 1 from ores_dq_script_input_codes_artefact_tbl a
+                          where a.dataset_id = p_dataset_id and a.script_name = v_name
+                            and a.sequence_number = t.sequence_number);
 
         insert into ores_trading_scripts_tbl (
             name, tenant_id, version, product_tag, description,
@@ -308,6 +327,16 @@ begin
                a.data_type, a.is_array, a.value_rule, a.description,
                v_modified_by, current_user, 'system.external_data_import', v_commentary
         from ores_dq_script_inputs_artefact_tbl a
+        where a.dataset_id = p_dataset_id and a.script_name = v_name;
+
+        insert into ores_trading_script_input_codes_tbl (
+            script_name, sequence_number, tenant_id, version, script_version,
+            input_name, code, label,
+            modified_by, performed_by, change_reason_code, change_commentary)
+        select a.script_name, a.sequence_number, p_target_tenant_id, 0, v_version,
+               a.input_name, a.code, a.label,
+               v_modified_by, current_user, 'system.external_data_import', v_commentary
+        from ores_dq_script_input_codes_artefact_tbl a
         where a.dataset_id = p_dataset_id and a.script_name = v_name;
 
         if v_exists then

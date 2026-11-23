@@ -78,7 +78,8 @@ Data Sourcing and Generation Steps:
    synced it from the engine commit. The other copies of scriptlibrary.xml
    under external/ore/examples/ belong to single examples and are not read.
    Script: external/ore/tools/generate_script_library.py
-   Corrections: external/ore/tools/script_library_corrections.json
+   Corrections: external/ore/tools/script_library_corrections.json and,
+   for the codes of coded inputs, script_input_code_corrections.json
    Output (in projects/ores.sql/populate/ore/):
      - ore_methodology_populate.sql (this file, as the methodology's text)
      - ore_script_library_dataset_populate.sql (the ore.script_library dataset)
@@ -96,7 +97,7 @@ Data Sourcing and Generation Steps:
    writes nothing and exits non-zero when a committed file differs from what
    the generator makes. No server, database or login is needed.
 
-   The generator derives the staged rows in four steps, in order:
+   The generator derives the staged rows in five steps, in order:
      a. Extraction. Every Script element of the library is read with its
         variants (the purpose attribute, "default" when absent), NPV
         variable, results, calibrations and schedule coarsenings. The
@@ -115,6 +116,12 @@ Data Sourcing and Generation Steps:
         line and column.
      d. Derivation of inputs. Every script's inputs are listed by
         "ores.shell script inputs" over its variants, which merges them.
+     e. Codes of coded inputs. A Number input whose description states two
+        or more codes, such as "1 for DownIn, 2 for UpIn", has each code
+        staged with its label (external/ore/tools/script_input_codes.py
+        states the reading). An entry of script_input_code_corrections.json
+        names a script and input, its codes and the reason, and replaces the
+        reading of that input.
 
    The populate publishes nothing: the world bundle publishes the staged
    rows into the system tenant at the end of database bring-up, by the

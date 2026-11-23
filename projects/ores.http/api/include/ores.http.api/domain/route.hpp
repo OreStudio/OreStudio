@@ -87,6 +87,30 @@ using request_handler = std::function<boost::asio::awaitable<http_response>(cons
 /**
  * @brief Represents a registered route with pattern matching.
  */
+/**
+ * @brief Where a route belongs in the operation catalogue an LLM agent walks,
+ * and how it is described.
+ *
+ * The tool is the route's stable name, which no path change moves. The area is
+ * one of the published areas, the entity the collection within it, and writes
+ * says whether the route changes anything: the method alone does not, because
+ * some POST routes only read. A route that names no tool, area or entity is
+ * undeclared, and the server refuses to start with one.
+ */
+struct route_catalogue final {
+    std::string tool;
+    std::string area;
+    std::string entity;
+    bool writes = false;
+    std::string summary;
+    std::string description;
+    std::vector<std::string> tags;
+
+    [[nodiscard]] bool declared() const {
+        return !tool.empty() && !area.empty() && !entity.empty();
+    }
+};
+
 struct ORES_HTTP_API_EXPORT route final {
     /**
      * @brief HTTP method for this route.
@@ -165,19 +189,9 @@ struct ORES_HTTP_API_EXPORT route final {
     std::string rate_policy;
 
     /**
-     * @brief OpenAPI summary for documentation.
+     * @brief The route's place in the catalogue, and its documentation.
      */
-    std::string summary;
-
-    /**
-     * @brief OpenAPI description for documentation.
-     */
-    std::string description;
-
-    /**
-     * @brief OpenAPI tags for grouping.
-     */
-    std::vector<std::string> tags;
+    route_catalogue catalogue;
 
     /**
      * @brief Query parameters for this route.

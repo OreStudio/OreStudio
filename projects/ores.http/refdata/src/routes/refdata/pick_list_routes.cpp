@@ -377,16 +377,16 @@ void pick_list_routes::register_routes(
         router->add_route(built);
         registry->register_route(built);
     };
-    add(router->get("/api/books/pick-lists"),
+    add(router->get("/api/books/pick-lists").catalogue("web_get_books_pick_lists", "reference-data", "pick_lists", false),
         "Read the books form's option lists",
         books_pick_lists);
-    add(router->get("/api/conventions/pick-lists"),
+    add(router->get("/api/conventions/pick-lists").catalogue("web_get_conventions_pick_lists", "reference-data", "pick_lists", false),
         "Read the conventions form's option lists",
         conventions_pick_lists);
-    add(router->get("/api/counterparties/pick-lists"),
+    add(router->get("/api/counterparties/pick-lists").catalogue("web_get_counterparties_pick_lists", "reference-data", "pick_lists", false),
         "Read the counterparties form's option lists",
         counterparties_pick_lists);
-    add(router->get("/api/tenors/pick-lists"),
+    add(router->get("/api/tenors/pick-lists").catalogue("web_get_tenors_pick_lists", "reference-data", "pick_lists", false),
         "Read the tenors form's option lists",
         tenors_pick_lists);
 }

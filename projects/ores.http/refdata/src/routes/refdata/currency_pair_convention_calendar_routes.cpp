@@ -338,6 +338,7 @@ void currency_pair_convention_calendar_routes::register_routes(
             .description(
                 "Forwards to the refdata.v1.currency_pair_convention_calendars.list operation.")
             .tags({"refdata"})
+            .entity_catalogue("refdata", "currency_pair_convention_calendars", "list")
             .auth_required()
             .query_param("offset", "integer", "", false, "Rows to skip")
             .query_param("limit", "integer", "", false, "Rows to return")
@@ -357,6 +358,7 @@ void currency_pair_convention_calendar_routes::register_routes(
             .description(
                 "Forwards to the refdata.v1.currency_pair_convention_calendars.get operation.")
             .tags({"refdata"})
+            .entity_catalogue("refdata", "currency_pair_convention_calendars", "get")
             .auth_required()
             .response<messaging::get_currency_pair_convention_calendar_response>()
             .handler([&session](const http_request& req) { return handle_get(req, session); });
@@ -370,6 +372,7 @@ void currency_pair_convention_calendar_routes::register_routes(
             .description(
                 "Forwards to the refdata.v1.currency_pair_convention_calendars.get_many operation.")
             .tags({"refdata"})
+            .entity_catalogue("refdata", "currency_pair_convention_calendars", "get_many")
             .auth_required()
             .body<messaging::get_many_currency_pair_convention_calendars_request>()
             .response<messaging::get_many_currency_pair_convention_calendars_response>()
@@ -384,6 +387,7 @@ void currency_pair_convention_calendar_routes::register_routes(
             .description(
                 "Forwards to the refdata.v1.currency_pair_convention_calendars.put operation.")
             .tags({"refdata"})
+            .entity_catalogue("refdata", "currency_pair_convention_calendars", "add")
             .auth_required()
             .body<messaging::put_currency_pair_convention_calendar_request>()
             .response<messaging::put_currency_pair_convention_calendar_response>()
@@ -398,6 +402,7 @@ void currency_pair_convention_calendar_routes::register_routes(
             .description(
                 "Forwards to the refdata.v1.currency_pair_convention_calendars.put operation.")
             .tags({"refdata"})
+            .entity_catalogue("refdata", "currency_pair_convention_calendars", "set")
             .auth_required()
             .query_param("version", "integer", "", false, "Version")
             .body<messaging::put_currency_pair_convention_calendar_request>()
@@ -413,6 +418,7 @@ void currency_pair_convention_calendar_routes::register_routes(
             .description(
                 "Forwards to the refdata.v1.currency_pair_convention_calendars.put_many operation.")
             .tags({"refdata"})
+            .entity_catalogue("refdata", "currency_pair_convention_calendars", "put_many")
             .auth_required()
             .body<messaging::put_many_currency_pair_convention_calendars_request>()
             .response<messaging::put_many_currency_pair_convention_calendars_response>()
@@ -429,6 +435,7 @@ void currency_pair_convention_calendar_routes::register_routes(
             .description(
                 "Forwards to the refdata.v1.currency_pair_convention_calendars.delete operation.")
             .tags({"refdata"})
+            .entity_catalogue("refdata", "currency_pair_convention_calendars", "delete")
             .auth_required()
             .query_param("reason", "string", "", true, "Change reason code")
             .query_param("commentary", "string", "", true, "Commentary")
@@ -445,6 +452,7 @@ void currency_pair_convention_calendar_routes::register_routes(
             .description("Forwards to the "
                          "refdata.v1.currency_pair_convention_calendars.delete_many operation.")
             .tags({"refdata"})
+            .entity_catalogue("refdata", "currency_pair_convention_calendars", "delete_many")
             .auth_required()
             .body<messaging::delete_many_currency_pair_convention_calendars_request>()
             .response<messaging::delete_many_currency_pair_convention_calendars_response>()
@@ -463,6 +471,7 @@ void currency_pair_convention_calendar_routes::register_routes(
                 "Forwards to the refdata.v1.currency_pair_convention_calendars.list_by_pair_code "
                 "operation.")
             .tags({"refdata"})
+            .entity_catalogue("refdata", "currency_pair_convention_calendars", "by_pair_code")
             .auth_required()
             .query_param("offset", "integer", "", false, "Rows to skip")
             .query_param("limit", "integer", "", false, "Rows to return")

@@ -322,7 +322,7 @@ void sensitivity_template_routes::register_routes(
         registry->register_route(built);
     };
 
-    add(router->get("/api/analytics/sensitivity-templates"), [&session](const http_request& req) {
+    add(router->get("/api/analytics/sensitivity-templates").catalogue("web_get_analytics_sensitivity_templates", "analytics", "sensitivity_templates", false), [&session](const http_request& req) {
         return forwarding::guarded<messaging::list_sensitivity_templates_request>([&] {
             rr::refuse_unknown_params(req, {"offset", "limit", "search", "sort", "descending"});
             const auto page = read_page_query(req);
@@ -355,7 +355,7 @@ void sensitivity_template_routes::register_routes(
         });
     });
 
-    add(router->get("/api/analytics/sensitivity-templates/choices"),
+    add(router->get("/api/analytics/sensitivity-templates/choices").catalogue("web_get_analytics_sensitivity_templates_choices", "analytics", "sensitivity_templates", false),
         [&session](const http_request& req) {
             return forwarding::guarded<messaging::list_sensitivity_methods_request>([&] {
                 rr::refuse_unknown_params(req, {});
@@ -380,7 +380,7 @@ void sensitivity_template_routes::register_routes(
             });
         });
 
-    add(router->get("/api/analytics/sensitivity-templates/{code}"),
+    add(router->get("/api/analytics/sensitivity-templates/{code}").catalogue("web_get_analytics_sensitivity_templates_code", "analytics", "sensitivity_templates", false),
         [&session](const http_request& req) {
             return forwarding::guarded<messaging::get_sensitivity_template_request>([&] {
                 rr::refuse_unknown_params(req, {});
@@ -391,7 +391,7 @@ void sensitivity_template_routes::register_routes(
             });
         });
 
-    add(router->get("/api/analytics/sensitivity-templates/{code}/history"),
+    add(router->get("/api/analytics/sensitivity-templates/{code}/history").catalogue("web_get_analytics_sensitivity_templates_code_history", "analytics", "sensitivity_templates", false),
         [&session](const http_request& req) {
             // The history step names its own subject, so there is no request type
             // for guard to log a failure against; this route states its failure
@@ -435,7 +435,7 @@ void sensitivity_template_routes::register_routes(
             }
         });
 
-    add(router->post("/api/analytics/sensitivity-templates"), [&session](const http_request& req) {
+    add(router->post("/api/analytics/sensitivity-templates").catalogue("web_post_analytics_sensitivity_templates", "analytics", "sensitivity_templates", true), [&session](const http_request& req) {
         return forwarding::guarded<messaging::put_sensitivity_template_request>([&] {
             const auto body = rr::body_of<create_body>(
                 req,
@@ -464,7 +464,7 @@ void sensitivity_template_routes::register_routes(
         });
     });
 
-    add(router->put("/api/analytics/sensitivity-templates/{code}"),
+    add(router->put("/api/analytics/sensitivity-templates/{code}").catalogue("web_put_analytics_sensitivity_templates_code", "analytics", "sensitivity_templates", true),
         [&session](const http_request& req) {
             return forwarding::guarded<messaging::put_sensitivity_template_request>([&] {
                 const auto code = code_of(req);
@@ -500,7 +500,7 @@ void sensitivity_template_routes::register_routes(
             });
         });
 
-    add(router->delete_("/api/analytics/sensitivity-templates/{code}"),
+    add(router->delete_("/api/analytics/sensitivity-templates/{code}").catalogue("web_delete_analytics_sensitivity_templates_code", "analytics", "sensitivity_templates", true),
         [&session](const http_request& req) {
             return forwarding::guarded<messaging::delete_sensitivity_template_request>([&] {
                 const auto code = code_of(req);

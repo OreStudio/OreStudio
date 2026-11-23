@@ -70,6 +70,19 @@ codegen generates a route, its model supplies both.
 A gate refuses a route that lacks any of them, so the catalogue is complete by
 construction, and the OpenAPI document gains the same metadata.
 
+The declaration is the route's =route_catalogue=, beside its summary,
+description and tags. A generated route takes it from its model through one
+rule: the area is the published area its path names, or its component's area;
+the tool is what it does to its entity, such as =list_currencies=, or an
+operation's own name; and it writes unless it is a =GET=, a bulk get or an
+operation whose name only reads. A hand-written route states the four
+values; those that serve the web application, outside =/api/v1=, name their
+tools with =web_= so that no two routes share a tool. The server refuses to
+start while a route is undeclared or shares its tool, and the OpenAPI document
+carries each as =operationId=, =x-ores-area=, =x-ores-entity= and
+=x-ores-writes=. The gateway's hold of an agent's writes reads the same
+declaration ([[id:381D87BB-4E2D-47BA-8853-6132CF900305][Six-eyes approval of LLM agent writes]]).
+
 * See also
 
 - [[id:47B179BF-C982-4BB1-AF4F-35E00B9D2750][Delegated Access for LLM Agents]] — the structure note that orders this cluster.

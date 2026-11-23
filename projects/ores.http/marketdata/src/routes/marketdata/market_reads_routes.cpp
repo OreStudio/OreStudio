@@ -231,7 +231,7 @@ void market_reads_routes::register_routes(
         registry->register_route(built);
     };
 
-    add(router->post("/api/market/instruments")
+    add(router->post("/api/market/instruments").catalogue("web_post_market_instruments", "market-data", "instruments", true)
             .summary("The session party's instrument catalogue")
             .description("The catalogue of the caller's party as one page: every instrument "
                          "with its axes in draw order and the verdict on each source. The "
@@ -256,7 +256,7 @@ void market_reads_routes::register_routes(
                 });
             }));
 
-    add(router->post("/api/market/rate-ladder")
+    add(router->post("/api/market/rate-ladder").catalogue("web_post_market_rate_ladder", "market-data", "rate_ladder", true)
             .summary("One currency's rate ladder at an instant")
             .description("Each tenor's quotes from the providers the caller names, the "
                          "consensus the service derives and the conventions it holds the "
@@ -284,7 +284,7 @@ void market_reads_routes::register_routes(
                 });
             }));
 
-    add(router->post("/api/market/fx-montage")
+    add(router->post("/api/market/fx-montage").catalogue("web_post_market_fx_montage", "market-data", "fx_montage", true)
             .summary("One base currency's crosses at an instant")
             .description("Each pair's spot from every provider the caller names, the consensus, "
                          "and the day's high, low and change measured from the instant the "
@@ -302,7 +302,7 @@ void market_reads_routes::register_routes(
                 });
             }));
 
-    add(router->post("/api/market/curve-analytics")
+    add(router->post("/api/market/curve-analytics").catalogue("web_post_market_curve_analytics", "market-data", "curve_analytics", true)
             .summary("One curve's conventions, market pillars and bootstrap")
             .description("The curve the id names at an instant: its conventions, the market "
                          "pillars behind it and what the bootstrap makes of them, beside the "

@@ -281,6 +281,7 @@ void tenor_kind_classification_routes::register_routes(
             .summary("List the tenor-kind rows for the classification screen")
             .description("Every row, each with its label.")
             .tags({"refdata"})
+            .entity_catalogue("refdata", "tenor_kind", "screen_list")
             .auth_required()
             .handler([&session](const http_request& req) { return handle_list(req, session); });
     const auto list_built = list_route.build();
@@ -292,6 +293,7 @@ void tenor_kind_classification_routes::register_routes(
             .summary("Add one tenor-kind row")
             .description("A code already in the list is refused rather than replaced.")
             .tags({"refdata"})
+            .entity_catalogue("refdata", "tenor_kind", "screen_create")
             .auth_required()
             .handler([&session](const http_request& req) { return handle_create(req, session); });
     const auto create_built = create_route.build();
@@ -303,6 +305,7 @@ void tenor_kind_classification_routes::register_routes(
             .summary("Correct one tenor-kind row")
             .description("A correction of the version read.")
             .tags({"refdata"})
+            .entity_catalogue("refdata", "tenor_kind", "screen_update")
             .auth_required()
             .handler([&session](const http_request& req) { return handle_update(req, session); });
     const auto update_built = update_route.build();
@@ -314,6 +317,7 @@ void tenor_kind_classification_routes::register_routes(
             .summary("Reorder the tenor-kind rows")
             .description("The rows that moved, each with its version, in one call.")
             .tags({"refdata"})
+            .entity_catalogue("refdata", "tenor_kind", "screen_order")
             .auth_required()
             .handler([&session](const http_request& req) { return handle_order(req, session); });
     const auto order_built = order_route.build();
@@ -325,6 +329,7 @@ void tenor_kind_classification_routes::register_routes(
             .summary("Remove one tenor-kind row")
             .description("Its versions stay in the history.")
             .tags({"refdata"})
+            .entity_catalogue("refdata", "tenor_kind", "screen_delete")
             .auth_required()
             .handler([&session](const http_request& req) { return handle_delete(req, session); });
     const auto delete_built = delete_route.build();
@@ -336,6 +341,7 @@ void tenor_kind_classification_routes::register_routes(
             .summary("Label one tenor-kind row")
             .description("Maps the row's code to a badge, or removes the mapping.")
             .tags({"refdata"})
+            .entity_catalogue("refdata", "tenor_kind", "screen_label")
             .auth_required()
             .handler([&session](const http_request& req) { return handle_label(req, session); });
     const auto label_built = label_route.build();

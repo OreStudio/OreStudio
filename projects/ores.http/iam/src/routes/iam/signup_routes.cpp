@@ -87,6 +87,7 @@ void signup_routes::register_routes(
             .summary("Signup")
             .description("Forwards to the iam.v1.ops.signup operation.")
             .tags({"iam"})
+            .operation_catalogue("iam", "signup", "signup")
             .auth_optional()
             .rate_limit("credential")
             .body<messaging::signup_request>()

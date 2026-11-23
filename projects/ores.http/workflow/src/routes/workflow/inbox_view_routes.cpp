@@ -314,7 +314,7 @@ void inbox_view_routes::register_routes(
         registry->register_route(built);
     };
 
-    add(router->get("/api/requests")
+    add(router->get("/api/requests").catalogue("web_get_requests", "workflow", "requests", false)
             .summary("The requests this person may decide, and those answered and still in view")
             .description("A composed view owned by ores.workflow: the queue is the inbox "
                          "service's own read, which picks what this person may decide from the "

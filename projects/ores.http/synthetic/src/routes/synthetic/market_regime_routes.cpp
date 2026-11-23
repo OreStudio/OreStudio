@@ -238,7 +238,7 @@ void market_regime_routes::register_routes(
         registry->register_route(built);
     };
 
-    add(router->get("/api/synthetic/market-regime")
+    add(router->get("/api/synthetic/market-regime").catalogue("web_get_synthetic_market_regime", "simulation", "market_regime", false)
             .summary("Read the market regime in force")
             .description("The state, the multiplier every feed's rate is scaled by, whether a "
                          "switch holds it, the heat and its readings, and the settings the "
@@ -250,7 +250,7 @@ void market_regime_routes::register_routes(
                 });
             }));
 
-    add(router->post("/api/synthetic/market-regime")
+    add(router->post("/api/synthetic/market-regime").catalogue("web_post_synthetic_market_regime", "simulation", "market_regime", true)
             .summary("Force the market state, or hand it back to the chain")
             .description("The mode is auto, calm or active. The answer is the regime after the "
                          "switch, so a screen redraws from what the service says.")
@@ -268,7 +268,7 @@ void market_regime_routes::register_routes(
                 });
             }));
 
-    add(router->put("/api/synthetic/market-regime/settings")
+    add(router->put("/api/synthetic/market-regime/settings").catalogue("web_put_synthetic_market_regime_settings", "simulation", "settings", true)
             .summary("Set how the market moves from now on")
             .description("The chain's two rates, the heat's jump and decay, the speed and the "
                          "tail loading. Settings the service refuses answer 400 with its words, "
@@ -284,7 +284,7 @@ void market_regime_routes::register_routes(
                 });
             }));
 
-    add(router->get("/api/synthetic/market-trace")
+    add(router->get("/api/synthetic/market-trace").catalogue("web_get_synthetic_market_trace", "simulation", "market_trace", false)
             .summary("The market trace")
             .description("A composed view owned by the synthetic service: the scheduler's recent "
                          "decisions, every tick with the gap its law drew and the wall gap it "
@@ -318,7 +318,7 @@ void market_regime_routes::register_routes(
                 });
             }));
 
-    add(router->get("/api/synthetic/market-history")
+    add(router->get("/api/synthetic/market-history").catalogue("web_get_synthetic_market_history", "simulation", "market_history", false)
             .summary("Read the tick counts of the last stretch of the run, by asset class")
             .description("The last hour by the second, or the last ten minutes by the tenth, "
                          "with the pace and the active share of each slot. Counts rather than "

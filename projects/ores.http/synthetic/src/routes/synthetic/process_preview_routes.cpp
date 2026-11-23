@@ -172,7 +172,7 @@ void process_preview_routes::register_routes(
         registry->register_route(built);
     };
 
-    add(router->post("/api/synthetic/simulate/fx")
+    add(router->post("/api/synthetic/simulate/fx").catalogue("web_post_synthetic_simulate_fx", "simulation", "fx", true)
             .summary("Sample FX spot paths from the values on the screen")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<synthetic_messaging::simulate_fx_spot_paths_request>([&] {
@@ -194,7 +194,7 @@ void process_preview_routes::register_routes(
                 });
             }));
 
-    add(router->post("/api/synthetic/convert/fx")
+    add(router->post("/api/synthetic/convert/fx").catalogue("web_post_synthetic_convert_fx", "simulation", "fx", true)
             .summary("Convert an FX mixture from one engine to another")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<synthetic_messaging::convert_fx_mixture_request>([&] {
@@ -218,7 +218,7 @@ void process_preview_routes::register_routes(
                 });
             }));
 
-    add(router->post("/api/synthetic/convert/fx-simple")
+    add(router->post("/api/synthetic/convert/fx-simple").catalogue("web_post_synthetic_convert_fx_simple", "simulation", "fx_simple", true)
             .summary("Read an FX mixture as the simple view, or write the simple view as one")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<synthetic_messaging::convert_fx_simple_request>([&] {
@@ -259,7 +259,7 @@ void process_preview_routes::register_routes(
                 });
             }));
 
-    add(router->post("/api/synthetic/convert/ir")
+    add(router->post("/api/synthetic/convert/ir").catalogue("web_post_synthetic_convert_ir", "simulation", "ir", true)
             .summary("Convert an IR process's parameters to or from the simple view")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<synthetic_messaging::convert_ir_parameters_request>([&] {
@@ -293,7 +293,7 @@ void process_preview_routes::register_routes(
                 });
             }));
 
-    add(router->post("/api/synthetic/simulate/ir")
+    add(router->post("/api/synthetic/simulate/ir").catalogue("web_post_synthetic_simulate_ir", "simulation", "ir", true)
             .summary("Sample short-rate paths from the process and parameters on the screen")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<synthetic_messaging::simulate_ir_curve_paths_request>([&] {
@@ -313,7 +313,7 @@ void process_preview_routes::register_routes(
                 });
             }));
 
-    add(router->post("/api/synthetic/preview/ir-shape")
+    add(router->post("/api/synthetic/preview/ir-shape").catalogue("web_post_synthetic_preview_ir_shape", "simulation", "ir_shape", true)
             .summary("Price the rate at each ladder row from the process on the screen")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<synthetic_messaging::preview_ir_curve_shape_request>([&] {

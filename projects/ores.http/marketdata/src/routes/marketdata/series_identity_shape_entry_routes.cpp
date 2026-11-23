@@ -380,6 +380,7 @@ void series_identity_shape_entry_routes::register_routes(
             .description(
                 "Forwards to the marketdata.v1.series_identity_shape_entries.list operation.")
             .tags({"marketdata"})
+            .entity_catalogue("marketdata", "series_identity_shape_entries", "list")
             .auth_required()
             .query_param("offset", "integer", "", false, "Rows to skip")
             .query_param("limit", "integer", "", false, "Rows to return")
@@ -408,6 +409,7 @@ void series_identity_shape_entry_routes::register_routes(
             .description(
                 "Forwards to the marketdata.v1.series_identity_shape_entries.get operation.")
             .tags({"marketdata"})
+            .entity_catalogue("marketdata", "series_identity_shape_entries", "get")
             .auth_required()
             .response<messaging::get_series_identity_shape_entry_response>()
             .handler([&session](const http_request& req) { return handle_get(req, session); });
@@ -421,6 +423,7 @@ void series_identity_shape_entry_routes::register_routes(
             .description(
                 "Forwards to the marketdata.v1.series_identity_shape_entries.get_many operation.")
             .tags({"marketdata"})
+            .entity_catalogue("marketdata", "series_identity_shape_entries", "get_many")
             .auth_required()
             .body<messaging::get_many_series_identity_shape_entries_request>()
             .response<messaging::get_many_series_identity_shape_entries_response>()
@@ -435,6 +438,7 @@ void series_identity_shape_entry_routes::register_routes(
             .description(
                 "Forwards to the marketdata.v1.series_identity_shape_entries.put operation.")
             .tags({"marketdata"})
+            .entity_catalogue("marketdata", "series_identity_shape_entries", "add")
             .auth_required()
             .body<messaging::put_series_identity_shape_entry_request>()
             .response<messaging::put_series_identity_shape_entry_response>()
@@ -449,6 +453,7 @@ void series_identity_shape_entry_routes::register_routes(
             .description(
                 "Forwards to the marketdata.v1.series_identity_shape_entries.put operation.")
             .tags({"marketdata"})
+            .entity_catalogue("marketdata", "series_identity_shape_entries", "set")
             .auth_required()
             .query_param("version", "integer", "", false, "Version")
             .body<messaging::put_series_identity_shape_entry_request>()
@@ -464,6 +469,7 @@ void series_identity_shape_entry_routes::register_routes(
             .description(
                 "Forwards to the marketdata.v1.series_identity_shape_entries.put_many operation.")
             .tags({"marketdata"})
+            .entity_catalogue("marketdata", "series_identity_shape_entries", "put_many")
             .auth_required()
             .body<messaging::put_many_series_identity_shape_entries_request>()
             .response<messaging::put_many_series_identity_shape_entries_response>()
@@ -478,6 +484,7 @@ void series_identity_shape_entry_routes::register_routes(
             .description(
                 "Forwards to the marketdata.v1.series_identity_shape_entries.delete operation.")
             .tags({"marketdata"})
+            .entity_catalogue("marketdata", "series_identity_shape_entries", "delete")
             .auth_required()
             .query_param("reason", "string", "", true, "Change reason code")
             .query_param("commentary", "string", "", true, "Commentary")
@@ -494,6 +501,7 @@ void series_identity_shape_entry_routes::register_routes(
             .description("Forwards to the marketdata.v1.series_identity_shape_entries.delete_many "
                          "operation.")
             .tags({"marketdata"})
+            .entity_catalogue("marketdata", "series_identity_shape_entries", "delete_many")
             .auth_required()
             .body<messaging::delete_many_series_identity_shape_entries_request>()
             .response<messaging::delete_many_series_identity_shape_entries_response>()
@@ -510,6 +518,7 @@ void series_identity_shape_entry_routes::register_routes(
                 "Forwards to the marketdata.v1.series_identity_shape_entries.list_by_shape_code "
                 "operation.")
             .tags({"marketdata"})
+            .entity_catalogue("marketdata", "series_identity_shape_entries", "by_shape_code")
             .auth_required()
             .query_param("offset", "integer", "", false, "Rows to skip")
             .query_param("limit", "integer", "", false, "Rows to return")
@@ -529,6 +538,7 @@ void series_identity_shape_entry_routes::register_routes(
             .description("Forwards to the "
                          "marketdata.v1.series_identity_shape_entries_versions.list operation.")
             .tags({"marketdata"})
+            .entity_catalogue("marketdata", "series_identity_shape_entries", "versions")
             .auth_required()
             .query_param("offset", "integer", "", false, "Rows to skip")
             .query_param("limit", "integer", "", false, "Rows to return")
@@ -546,6 +556,7 @@ void series_identity_shape_entry_routes::register_routes(
             .description("Forwards to the marketdata.v1.series_identity_shape_entries_versions.get "
                          "operation.")
             .tags({"marketdata"})
+            .entity_catalogue("marketdata", "series_identity_shape_entries", "version")
             .auth_required()
             .response<messaging::get_series_identity_shape_entry_version_response>()
             .handler([&session](const http_request& req) { return handle_version(req, session); });

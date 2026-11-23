@@ -148,7 +148,7 @@ void sign_in_routes::register_routes(
         registry->register_route(built);
     };
 
-    add(router->get("/api/login-info"),
+    add(router->get("/api/login-info").catalogue("web_get_login_info", "auth", "login_info", false),
         "Read a page of the tenant's sign-in records",
         [&session](const http_request& req) {
             const auto page = read_page(req);
@@ -167,7 +167,7 @@ void sign_in_routes::register_routes(
             });
         });
 
-    add(router->get("/api/login-info/{accountId}"),
+    add(router->get("/api/login-info/{accountId}").catalogue("web_get_login_info_accountid", "auth", "login_info", false),
         "Read one account's sign-in record",
         [&session](const http_request& req) {
             const auto account = req.get_path_param("accountId");
@@ -192,7 +192,7 @@ void sign_in_routes::register_routes(
             });
         });
 
-    add(router->get("/api/sessions"),
+    add(router->get("/api/sessions").catalogue("web_get_sessions", "auth", "sessions", false),
         "Read a page of the tenant's sessions",
         [&session](const http_request& req) {
             const auto page = read_page(req);
@@ -207,7 +207,7 @@ void sign_in_routes::register_routes(
             });
         });
 
-    add(router->get("/api/sessions/active"),
+    add(router->get("/api/sessions/active").catalogue("web_get_sessions_active", "auth", "active", false),
         "Read the tenant's open sessions",
         [&session](const http_request& req) {
             return guarded<messaging::get_active_sessions_request>([&] {
@@ -218,7 +218,7 @@ void sign_in_routes::register_routes(
             });
         });
 
-    add(router->get("/api/me/sessions"),
+    add(router->get("/api/me/sessions").catalogue("web_get_me_sessions", "access", "sessions", false),
         "Read the caller's own open sessions",
         [&session](const http_request& req) {
             return guarded<messaging::get_my_sessions_request>([&] {
@@ -229,7 +229,7 @@ void sign_in_routes::register_routes(
             });
         });
 
-    add(router->get("/api/accounts/{username}/sign-ins"),
+    add(router->get("/api/accounts/{username}/sign-ins").catalogue("web_get_accounts_username_sign_ins", "access", "accounts", false),
         "Read one account with its sign-in state and its sessions, newest first",
         [&session](const http_request& req) {
             const auto page = read_sign_ins_page(req);

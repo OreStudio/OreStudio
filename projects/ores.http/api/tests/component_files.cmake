@@ -20,6 +20,7 @@
 # Template: cmake_component_files_tests.mustache
 # To modify, update the template and regenerate.
 set(files
+    "catalogue_rules_tests.cpp"
     "classification_routes_tests.cpp"
     "client_address_tests.cpp"
     "endpoint_registry_tests.cpp"

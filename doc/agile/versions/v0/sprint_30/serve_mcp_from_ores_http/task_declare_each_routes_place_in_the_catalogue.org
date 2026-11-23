@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :serve_mcp_from_ores_http:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/declare-each-routes-place-in-the-catalogue
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,7 +26,7 @@ Every route of ores.http declares a stable tool name, the area and entity it bel
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:008127D7-B897-4CF7-854B-6DDFB89AC7F4][Serve ORE's API to LLM agents over MCP]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -41,9 +41,15 @@ Every route of ores.http declares a stable tool name, the area and entity it bel
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Two pull requests. The first declares every route's tool, area, entity and
+whether it writes: a =route_catalogue= on the route, grouping its
+documentation so the route narrows from 17 fields to 15; one rule in
+=ores.http.api= for generated routes, called from the four route templates; a
+rerunnable codemod for the 321 hand-written routes, reading each area from the
+route inventory; a router report the server refuses to start with; and the
+OpenAPI fields. The six-eyes hold reads the declaration instead of guessing
+from names. The second declares a typed body on each of the 116 hand-written
+routes that take one, under its own gate.
 
 * Measurements
 

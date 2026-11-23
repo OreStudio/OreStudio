@@ -171,7 +171,7 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
     ORES_LOG_SEV(lg(), info) << "Registering API routes...";
 
     auto api_info_builder =
-        router->get("/api/v1/info")
+        router->get("/api/v1/info").catalogue("get_info", "operations", "info", false)
             .summary("API Information")
             .description("Returns information about the API")
             .tags({"info"})
@@ -322,6 +322,16 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
             ORES_LOG_SEV(lg(), warn)
                 << "No browser bundle at " << cfg.web_dir << "; the server serves no application";
         }
+    }
+
+    // Every route states its place in the catalogue an LLM agent walks, so the
+    // catalogue is complete by construction: a server with one that does not
+    // refuses to start.
+    if (const auto undeclared = router->uncatalogued(); !undeclared.empty()) {
+        for (const auto& route : undeclared)
+            ORES_LOG_SEV(lg(), error) << "Route without a catalogue declaration: " << route;
+        throw std::runtime_error(std::to_string(undeclared.size()) +
+                                 " routes declare no place in the operation catalogue.");
     }
 
     ORES_LOG_SEV(lg(), info) << "API routes registered.";

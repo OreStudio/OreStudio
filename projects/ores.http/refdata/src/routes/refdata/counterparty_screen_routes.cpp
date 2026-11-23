@@ -220,7 +220,7 @@ void counterparty_screen_routes::register_routes(
         registry->register_route(built);
     };
 
-    add(router->get("/api/counterparties/{id}")
+    add(router->get("/api/counterparties/{id}").catalogue("web_get_counterparties_id", "reference-data", "counterparties", false)
             .summary("Read one counterparty with the identifiers it is known by")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<messaging::list_counterparties_request>([&] {
@@ -252,7 +252,7 @@ void counterparty_screen_routes::register_routes(
                 });
             }));
 
-    add(router->get("/api/counterparties/children")
+    add(router->get("/api/counterparties/children").catalogue("web_get_counterparties_children", "reference-data", "children", false)
             .summary(
                 "Read the identifiers, contacts and business centres of a page of counterparties")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
@@ -298,7 +298,7 @@ void counterparty_screen_routes::register_routes(
                 });
             }));
 
-    add(router->put("/api/counterparties/composite")
+    add(router->put("/api/counterparties/composite").catalogue("web_put_counterparties_composite", "reference-data", "composite", true)
             .summary("Write a counterparty with its children in one change")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 const auto body =
@@ -327,7 +327,7 @@ void counterparty_screen_routes::register_routes(
                 });
             }));
 
-    add(router->get("/api/counterparties/{id}/visibility")
+    add(router->get("/api/counterparties/{id}/visibility").catalogue("web_get_counterparties_id_visibility", "reference-data", "counterparties", false)
             .summary("Read the parties a counterparty is directly visible to")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<messaging::list_by_counterparty_id_party_counterparties_request>(
@@ -346,7 +346,7 @@ void counterparty_screen_routes::register_routes(
                     });
             }));
 
-    add(router->put("/api/counterparties/{id}/visibility")
+    add(router->put("/api/counterparties/{id}/visibility").catalogue("web_put_counterparties_id_visibility", "reference-data", "counterparties", true)
             .summary("Make a counterparty visible to a party")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<messaging::put_party_counterparty_request>([&] {
@@ -367,7 +367,7 @@ void counterparty_screen_routes::register_routes(
                 });
             }));
 
-    add(router->put("/api/counterparties/{id}/business-centres")
+    add(router->put("/api/counterparties/{id}/business-centres").catalogue("web_put_counterparties_id_business_centres", "reference-data", "counterparties", true)
             .summary("Set the business centres a counterparty holds")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<messaging::put_many_counterparty_business_centres_request>([&] {

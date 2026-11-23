@@ -344,7 +344,7 @@ void classification_routes::register_routes(
     series_subclass_code_classification_routes::register_routes(router, registry, session);
 
     auto catalogue_route =
-        router->get("/api/classifications")
+        router->get("/api/classifications").catalogue("web_get_classifications", "reference-data", "classifications", false)
             .summary("List the classification lists the screen offers")
             .description("Each list's key, topic, shape, whether it is editable, its "
                          "permissions and how many rows it holds.")
@@ -362,7 +362,7 @@ void classification_routes::register_routes(
     registry->register_route(catalogue_built);
 
     auto labels_route =
-        router->get("/api/labels")
+        router->get("/api/labels").catalogue("web_get_labels", "reference-data", "labels", false)
             .summary("Read the label catalogue")
             .description("Every label, the labels each code domain uses, and the badge each "
                          "code of each domain is painted with.")

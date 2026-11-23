@@ -20,6 +20,7 @@
 # Template: cmake_component_files_src.mustache
 # To modify, update the template and regenerate.
 set(files
+    "domain/catalogue_rules.cpp"
     "domain/http_request.cpp"
     "domain/http_response.cpp"
     "domain/route.cpp"
@@ -46,6 +47,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.api/domain/bearer_exchange.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.api/domain/body_sink.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.api/domain/body_source.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.api/domain/catalogue_rules.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.api/domain/http_method.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.api/domain/http_request.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.api/domain/http_response.hpp"

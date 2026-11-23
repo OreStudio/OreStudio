@@ -90,7 +90,7 @@ void retry_routes::register_routes(std::shared_ptr<ores::http::net::router> rout
         registry->register_route(built);
     };
 
-    add(router->post("/api/workflow/{instanceId}/retry")
+    add(router->post("/api/workflow/{instanceId}/retry").catalogue("web_post_workflow_instanceid_retry", "workflow", "workflow", true)
             .summary("Resume a stopped run from the step the page chose")
             .description("The engine decides: it re-dispatches the step the body names, or the "
                          "step the run stopped at when the body names none, and an answer that "

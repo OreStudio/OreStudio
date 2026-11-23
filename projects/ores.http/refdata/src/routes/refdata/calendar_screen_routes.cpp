@@ -98,7 +98,7 @@ void calendar_screen_routes::register_routes(
         registry->register_route(built);
     };
 
-    add(router->get("/api/refdata/calendars/{code}/days")
+    add(router->get("/api/refdata/calendars/{code}/days").catalogue("web_get_refdata_calendars_code_days", "reference-data", "calendars", false)
             .summary("Read one calendar's built days in one year")
             .query_param("year", "integer", "", true, "The year, 1900 to 2200")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
@@ -150,7 +150,7 @@ void calendar_screen_routes::register_routes(
                 });
             }));
 
-    add(router->post("/api/refdata/calendars/{code}/rebuild")
+    add(router->post("/api/refdata/calendars/{code}/rebuild").catalogue("web_post_refdata_calendars_code_rebuild", "reference-data", "calendars", true)
             .summary("Build one calendar's days up to the end of a year")
             .description("A day already built keeps the value it was built with.")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {

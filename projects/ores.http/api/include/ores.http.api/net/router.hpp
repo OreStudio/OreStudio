@@ -107,6 +107,26 @@ public:
     route_builder& tags(std::vector<std::string> t);
 
     /**
+     * @brief The route's place in the operation catalogue: its stable tool
+     * name, its published area, its entity and whether it writes.
+     */
+    route_builder& catalogue(std::string tool, std::string area, std::string entity, bool writes);
+
+    /**
+     * @brief A generated entity route's place, from its model.
+     */
+    route_builder& entity_catalogue(std::string_view component,
+                                    std::string_view entity,
+                                    std::string_view identifier);
+
+    /**
+     * @brief A generated operation route's place, from its model.
+     */
+    route_builder& operation_catalogue(std::string_view component,
+                                       std::string_view entity,
+                                       std::string_view name);
+
+    /**
      * @brief Adds a query parameter for OpenAPI documentation.
      */
     route_builder& query_param(const std::string& name,
@@ -194,9 +214,7 @@ private:
     bool requires_auth_ = false;
     bool auth_declared_ = false;
     std::vector<std::string> required_roles_;
-    std::string summary_;
-    std::string description_;
-    std::vector<std::string> tags_;
+    domain::route_catalogue catalogue_;
     std::vector<domain::query_param> query_params_;
     std::uint64_t max_body_size_ = 0;
     std::string rate_policy_;
@@ -268,6 +286,13 @@ public:
     /**
      * @brief Returns all registered routes (for OpenAPI generation).
      */
+    /**
+     * @brief Every registered route that does not declare its place in the
+     * catalogue, or shares its tool with another, as its method and pattern.
+     * The server refuses to start with one.
+     */
+    [[nodiscard]] std::vector<std::string> uncatalogued() const;
+
     const std::vector<domain::route>& routes() const {
         return routes_;
     }

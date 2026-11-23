@@ -215,6 +215,7 @@ void login_info_routes::register_routes(
             .summary("List login info")
             .description("Forwards to the iam.v1.login_info.list operation.")
             .tags({"iam"})
+            .entity_catalogue("iam", "login_info", "list")
             .auth_required()
             .query_param("offset", "integer", "", false, "Rows to skip")
             .query_param("limit", "integer", "", false, "Rows to return")
@@ -236,6 +237,7 @@ void login_info_routes::register_routes(
             .summary("Get one login info")
             .description("Forwards to the iam.v1.login_info.get operation.")
             .tags({"iam"})
+            .entity_catalogue("iam", "login_info", "get")
             .auth_required()
             .response<messaging::get_login_info_response>()
             .handler([&session](const http_request& req) { return handle_get(req, session); });
@@ -248,6 +250,7 @@ void login_info_routes::register_routes(
             .summary("Get many login info")
             .description("Forwards to the iam.v1.login_info.get_many operation.")
             .tags({"iam"})
+            .entity_catalogue("iam", "login_info", "get_many")
             .auth_required()
             .body<messaging::get_many_login_info_request>()
             .response<messaging::get_many_login_info_response>()

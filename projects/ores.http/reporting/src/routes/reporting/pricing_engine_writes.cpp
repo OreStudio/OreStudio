@@ -323,7 +323,7 @@ void pricing_engine_writes::register_write_routes(
         registry->register_route(built);
     };
 
-    add(router->post("/api/reporting/pricing-engines")
+    add(router->post("/api/reporting/pricing-engines").catalogue("web_post_reporting_pricing_engines", "reporting", "pricing_engines", true)
             .summary("Create a pricing engine document and the header a report binds it through")
             .description("The reporting configuration is written first and the document second, "
                          "and a refused document removes the configuration again, so a create "
@@ -356,7 +356,7 @@ void pricing_engine_writes::register_write_routes(
                 });
             }));
 
-    add(router->put("/api/reporting/pricing-engines/{id}")
+    add(router->put("/api/reporting/pricing-engines/{id}").catalogue("web_put_reporting_pricing_engines_id", "reporting", "pricing_engines", true)
             .summary("Change a pricing engine document against the version the screen read")
             .description("The party and the configuration the record fills travel from the record "
                          "just read, so a change cannot move a document to another party. A "
@@ -381,7 +381,7 @@ void pricing_engine_writes::register_write_routes(
                 });
             }));
 
-    add(router->delete_("/api/reporting/pricing-engines/{id}")
+    add(router->delete_("/api/reporting/pricing-engines/{id}").catalogue("web_delete_reporting_pricing_engines_id", "reporting", "pricing_engines", true)
             .summary("Remove a pricing engine document")
             .description("The document is removed through the service that owns it, and a "
                          "service that says it did not is a refusal that carries its sentence. "

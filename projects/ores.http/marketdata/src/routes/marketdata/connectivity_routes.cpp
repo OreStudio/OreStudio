@@ -230,7 +230,7 @@ void connectivity_routes::register_routes(
     nats_client& session) {
     using forwarding::guarded;
     const auto built =
-        router->get("/api/marketdata/connectivity")
+        router->get("/api/marketdata/connectivity").catalogue("web_get_marketdata_connectivity", "market-data", "connectivity", false)
             .summary("Every catalogue the connectivity screen draws, in one answer")
             .description("A composed view owned by ores.marketdata: the publishers and their "
                          "suppliers, the adapters, the sessions, and the feeds with the scopes "

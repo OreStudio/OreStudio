@@ -93,14 +93,14 @@ void currency_ore_document_routes::register_routes(
         registry->register_route(built);
     };
 
-    add(router->get("/api/refdata/currencies/ore-document")
+    add(router->get("/api/refdata/currencies/ore-document").catalogue("web_get_refdata_currencies_ore_document", "reference-data", "ore_document", false)
             .summary("Export every currency as the ORE currency configuration document")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return forwarding::respond(
                     req, session, ore_messaging::export_currency_config_request{});
             }));
 
-    add(router->post("/api/refdata/currencies/ore-import/preview")
+    add(router->post("/api/refdata/currencies/ore-import/preview").catalogue("web_post_refdata_currencies_ore_import_preview", "reference-data", "preview", true)
             .summary("Read what an ORE currency configuration file would change")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 const auto body = rr::read_body<currency_ore_document::preview_body>(req.body);
@@ -113,7 +113,7 @@ void currency_ore_document_routes::register_routes(
                 co_return forwarding::respond(req, session, msg);
             }));
 
-    add(router->post("/api/refdata/currencies/ore-import")
+    add(router->post("/api/refdata/currencies/ore-import").catalogue("web_post_refdata_currencies_ore_import", "reference-data", "ore_import", true)
             .summary("Import an ORE currency configuration file with a choice per currency")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 auto body = rr::read_body<currency_ore_document::import_body>(req.body);

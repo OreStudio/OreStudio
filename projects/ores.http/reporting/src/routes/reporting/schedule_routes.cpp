@@ -110,7 +110,7 @@ void schedule_routes::register_routes(
         registry->register_route(built);
     };
 
-    add(router->post("/api/reporting/reports/schedule")
+    add(router->post("/api/reporting/reports/schedule").catalogue("web_post_reporting_reports_schedule", "reporting", "schedule", true)
             .summary("Set the schedule of one or more report definitions")
             .description("A body that states an expression names one definition, and the "
                          "service writes the expression and makes the job in one handler, so an "
@@ -148,7 +148,7 @@ void schedule_routes::register_routes(
                 });
             }));
 
-    add(router->post("/api/reporting/reports/unschedule")
+    add(router->post("/api/reporting/reports/unschedule").catalogue("web_post_reporting_reports_unschedule", "reporting", "unschedule", true)
             .summary("Clear the schedule of one or more report definitions")
             .description("The answer states how many definitions it changed, which it refused "
                          "and the operation's own words for the first refusal.")

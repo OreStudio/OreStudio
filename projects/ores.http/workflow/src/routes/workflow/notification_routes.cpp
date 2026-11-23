@@ -158,7 +158,7 @@ void notification_routes::register_routes(
         registry->register_route(built);
     };
 
-    add(router->get("/api/me/notifications")
+    add(router->get("/api/me/notifications").catalogue("web_get_me_notifications", "workflow", "notifications", false)
             .summary("The notices the caller is given, newest first")
             .description("A page of the notices the signed-in person holds, or only the unread "
                          "ones, each with the words its wording names.")
@@ -184,7 +184,7 @@ void notification_routes::register_routes(
                 });
             }));
 
-    add(router->get("/api/me/notifications/unread-count")
+    add(router->get("/api/me/notifications/unread-count").catalogue("web_get_me_notifications_unread_count", "workflow", "unread_count", false)
             .summary("How many notices the caller has not read")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<inbox_messaging::count_unread_notifications_request>([&] {
@@ -196,7 +196,7 @@ void notification_routes::register_routes(
                 });
             }));
 
-    add(router->post("/api/me/notifications/read")
+    add(router->post("/api/me/notifications/read").catalogue("web_post_me_notifications_read", "workflow", "read", false)
             .summary("Mark notices read, or every unread one when the list is empty")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<inbox_messaging::mark_notifications_read_request>([&] {
@@ -210,7 +210,7 @@ void notification_routes::register_routes(
                 });
             }));
 
-    add(router->post("/api/me/notifications/clear")
+    add(router->post("/api/me/notifications/clear").catalogue("web_post_me_notifications_clear", "workflow", "clear", true)
             .summary("Clear notices, or every read one when the list is empty")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<inbox_messaging::clear_notifications_request>([&] {

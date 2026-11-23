@@ -158,7 +158,7 @@ void audit_routes::register_routes(std::shared_ptr<ores::http::net::router> rout
         registry->register_route(built);
     };
 
-    add(router->get("/api/auth-events"),
+    add(router->get("/api/auth-events").catalogue("web_get_auth_events", "auth", "auth_events", false),
         "Read the sign-in events of a period",
         [&session](const http_request& req) {
             const auto query = read_query(req,
@@ -182,7 +182,7 @@ void audit_routes::register_routes(std::shared_ptr<ores::http::net::router> rout
             });
         });
 
-    add(router->get("/api/session-statistics"),
+    add(router->get("/api/session-statistics").catalogue("web_get_session_statistics", "auth", "session_statistics", false),
         "Read the session statistics of a period",
         [&session](const http_request& req) {
             const auto query = read_query(
@@ -204,7 +204,7 @@ void audit_routes::register_routes(std::shared_ptr<ores::http::net::router> rout
             });
         });
 
-    add(router->get("/api/geo/country"),
+    add(router->get("/api/geo/country").catalogue("web_get_geo_country", "auth", "country", false),
         "Read the country an address is in",
         [&session](const http_request& req) {
             const auto address = req.get_query_param("address");
@@ -228,7 +228,7 @@ void audit_routes::register_routes(std::shared_ptr<ores::http::net::router> rout
             });
         });
 
-    add(router->post("/api/sessions/{sessionId}/end"),
+    add(router->post("/api/sessions/{sessionId}/end").catalogue("web_post_sessions_sessionid_end", "auth", "sessions", true),
         "End one session",
         [&session](const http_request& req) {
             const auto id = req.get_path_param("sessionId");

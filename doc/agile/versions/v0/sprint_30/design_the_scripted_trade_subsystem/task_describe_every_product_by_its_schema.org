@@ -310,6 +310,12 @@ via its "Verifies task" field.
 | 5044.4 | a code stated twice with two labels is dropped silently | script_input_codes.py, generate_script_library.py | accept | the generator warns; KikoType, the one case, has a correction saying the second statement is advice |
 | 5044.5 | track the codes of tenant scripts | doc/agile/product_backlog/inbox | accept | captured as Codes for a tenant's published scripts |
 | 5044.6 | no unit test of the heuristic reader | build/scripts/tests/test_script_input_codes.py | accept | 9 cases, run by the build-script-tests check |
+| 5048.1 | exception text is sent to the caller | product_schema_handler.hpp | accept | the handler logs it and answers that it could not, naming the subject |
+| 5048.2 | list_products reads the inputs and codes it never uses | product_schema_handler.hpp | accept | the list reads product types, scripts and twins only |
+| 5048.3 | the instrument fields are copied on every call | ores.ore.ore_parameter.org, product_schema_handler.hpp | accept | the cache's views are shared and immutable, so a read copies a pointer; the snapshot copied the aux before, too. Two first calls may both load, which replaces the partition twice and is harmless |
+| 5048.4 | a type no cache entry describes is dropped silently | product_schema_service.cpp | accept | the product is refused, naming the type; the check caught list:string being taken for a type, which is fixed |
+| 5048.5 | the element row is assumed to be the first match | product_schema_service.cpp | accept | commented: the seed writes one trade row per trade type |
+| 5048.6 | comment the tenant preference; pin the unbuildable refusal | product_schema_service.cpp, service_product_schema_tests.cpp | accept | commented, and a test pins the text |
 
 * Result
 

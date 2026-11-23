@@ -19,6 +19,7 @@
  */
 #include "ores.trading.core/service/product_schema_service.hpp"
 #include <algorithm>
+#include <array>
 #include <deque>
 #include <set>
 
@@ -28,10 +29,19 @@ namespace {
 
 constexpr std::string_view trade_type_name = "trade";
 
+/**
+ * The schema type a field's value is, from record:TYPE or list:TYPE; empty for
+ * a leaf, including a repeated one such as list:string.
+ */
 std::string schema_type_of(const std::string& value_domain) {
-    for (const std::string_view prefix : {"record:", "list:"})
-        if (value_domain.starts_with(prefix))
-            return value_domain.substr(prefix.size());
+    constexpr std::array<std::string_view, 5> leaf_kinds = {"string", "boolean", "integer",
+                                                            "double", "date"};
+    for (const std::string_view prefix : {"record:", "list:"}) {
+        if (!value_domain.starts_with(prefix))
+            continue;
+        auto type = value_domain.substr(prefix.size());
+        return std::ranges::find(leaf_kinds, type) == leaf_kinds.end() ? type : std::string{};
+    }
     return {};
 }
 
@@ -61,13 +71,17 @@ std::vector<ores::ore::domain::ore_parameter> in_order(
 
 /**
  * The element row of a trade type, whose XPath names the trade type, and then
- * the fields of every type reachable from it, each type once, breadth first.
+ * the fields of every type reachable from it, each type once, breadth first. A
+ * type a field names that the fields hold nothing for is added to missing.
  */
 std::vector<messaging::product_field> fields_of(const std::string& trade_type,
-                                                const instrument_fields& fields) {
+                                                const instrument_fields& fields,
+                                                std::vector<std::string>& missing) {
     const auto prefix = "/Trade[TradeType='" + trade_type + "']/";
     std::vector<messaging::product_field> out;
     std::deque<std::string> pending;
+    // The seed writes one row of the trade per trade type, its element, so the
+    // first row under the trade type's prefix is the only one.
     for (const auto& row : in_order(fields, std::string(trade_type_name))) {
         if (row.xpath.starts_with(prefix)) {
             out.push_back(to_field(row));
@@ -81,6 +95,10 @@ std::vector<messaging::product_field> fields_of(const std::string& trade_type,
         pending.pop_front();
         if (type.empty() || !seen.insert(type).second)
             continue;
+        if (!fields.contains(type)) {
+            missing.push_back(type);
+            continue;
+        }
         for (const auto& row : in_order(fields, type)) {
             out.push_back(to_field(row));
             pending.push_back(schema_type_of(row.ore_parameter_value_domain_code));
@@ -89,6 +107,10 @@ std::vector<messaging::product_field> fields_of(const std::string& trade_type,
     return out;
 }
 
+/**
+ * The script a name resolves to: the tenant's own where it has one, which its
+ * bookings resolve before the world library's, whatever the order of the rows.
+ */
 const domain::script* script_named(const product_catalogue& catalogue, const std::string& name) {
     const domain::script* found = nullptr;
     for (const auto& s : catalogue.scripts) {
@@ -138,7 +160,15 @@ messaging::describe_product_response describe_product(const std::string& code,
     }
 
     out.product = {.code = pt->code, .name = pt->name, .construction = pt->construction};
-    out.fields = fields_of(code, fields);
+    std::vector<std::string> missing;
+    out.fields = fields_of(code, fields, missing);
+    if (!missing.empty()) {
+        out.fields.clear();
+        out.message = "The fields of the product type " + code + " name the schema type " +
+                      missing.front() + ", which the trading service's cache of ores.ore's "
+                      "parameters holds no fields for.";
+        return out;
+    }
     if (!out.fields.empty()) {
         out.element = out.fields.front().name;
         out.forms.push_back({.kind = "native"});

@@ -35,6 +35,7 @@
 #include "ores.trading.core/repository/script_twin_input_repository.hpp"
 #include "ores.trading.core/service/product_schema_service.hpp"
 #include <functional>
+#include <memory>
 #include <optional>
 #include <utility>
 
@@ -58,7 +59,7 @@ inline auto& product_schema_handler_lg() {
  */
 class product_schema_handler {
 public:
-    using fields_source = std::function<service::instrument_fields()>;
+    using fields_source = std::function<std::shared_ptr<const service::instrument_fields>()>;
 
     product_schema_handler(ores::nats::service::client& nats, const ores::database::context& ctx,
                            std::optional<ores::security::jwt::jwt_authenticator> verifier,
@@ -74,7 +75,8 @@ public:
     void describe_product(ores::nats::message msg) {
         serve<describe_product_request, describe_product_response>(
             msg, [this](const auto& ctx, const describe_product_request& req) {
-                return service::describe_product(req.code, catalogue(ctx), fields_());
+                const auto fields = fields_();
+                return service::describe_product(req.code, catalogue(ctx), *fields);
             });
     }
 
@@ -84,7 +86,10 @@ public:
     void list_products(ores::nats::message msg) {
         serve<list_products_request, list_products_response>(
             msg, [this](const auto& ctx, const list_products_request&) {
-                return service::list_products(catalogue(ctx));
+                return service::list_products(
+                    {.product_types = repository::product_type_repository().read_latest(ctx),
+                     .scripts = repository::script_repository().read_latest(ctx),
+                     .twins = repository::script_twin_input_repository().read_latest(ctx)});
             });
     }
 
@@ -125,7 +130,8 @@ private:
             ORES_LOG_SEV(product_schema_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             resp.success = false;
-            resp.message = e.what();
+            resp.message = "The trading service could not answer " + msg.subject +
+                           "; it logged the reason.";
         }
         reply(nats_, msg, resp);
     }

@@ -59,7 +59,8 @@ service::instrument_fields swap_fields() {
     f["swapData"] = {field("swapData", "Settlement", 1, "string"),
                      field("swapData", "LegData", 0, "list:legData")};
     f["legData"] = {field("legData", "Payer", 0, "boolean"),
-                    field("legData", "Nested", 1, "record:legData")};
+                    field("legData", "Nested", 1, "record:legData"),
+                    field("legData", "Rates", 2, "list:double")};
     f["fxForwardData"] = {field("fxForwardData", "ValueDate", 0, "date")};
     return f;
 }
@@ -133,7 +134,7 @@ TEST_CASE("a native product is described from its element down, each type once i
     CHECK(out.element == "SwapData");
     CHECK(names_of(out.fields) == std::vector<std::string>{"trade/SwapData", "swapData/LegData",
                                                            "swapData/Settlement", "legData/Payer",
-                                                           "legData/Nested"});
+                                                           "legData/Nested", "legData/Rates"});
     REQUIRE(out.forms.size() == 1);
     CHECK(out.forms[0].kind == "native");
     CHECK(out.inputs.empty());
@@ -189,7 +190,9 @@ TEST_CASE("a script no product type names is a script-only product, the tenant's
 
 TEST_CASE("a product with nothing to describe is refused, naming it", "[product_schema]") {
     service::product_catalogue catalogue;
-    catalogue.product_types = {product("Cdo", 1)};
+    auto cdo = product("Cdo", 1);
+    cdo.instrument_table = "credit_instrument";
+    catalogue.product_types = {cdo};
 
     const auto unknown = service::describe_product("Nothing", catalogue, swap_fields());
     CHECK_FALSE(unknown.success);
@@ -198,7 +201,38 @@ TEST_CASE("a product with nothing to describe is refused, naming it", "[product_
     const auto empty = service::describe_product("Cdo", catalogue, swap_fields());
     CHECK_FALSE(empty.success);
     CHECK(empty.message.find("Cdo") != std::string::npos);
+    CHECK(empty.message.find("no element in ORE's schema") != std::string::npos);
     CHECK(empty.forms.empty());
+}
+
+TEST_CASE("a product whose fields name a type the cache holds nothing for is refused, naming it",
+          "[product_schema]") {
+    service::product_catalogue catalogue;
+    catalogue.product_types = {product("Swap", 1)};
+    auto fields = swap_fields();
+    fields.erase("legData");
+
+    const auto out = service::describe_product("Swap", catalogue, fields);
+
+    CHECK_FALSE(out.success);
+    CHECK(out.fields.empty());
+    CHECK(out.message.find("legData") != std::string::npos);
+}
+
+TEST_CASE("a product type ORE cannot build is refused with that reason", "[product_schema]") {
+    service::product_catalogue catalogue;
+    auto unbuildable = product("CommodityPairwiseVarianceSwap", 1);
+    unbuildable.instrument_table = "";
+    catalogue.product_types = {unbuildable};
+
+    const auto out = service::describe_product("CommodityPairwiseVarianceSwap", catalogue,
+                                               swap_fields());
+
+    CHECK_FALSE(out.success);
+    CHECK(out.message ==
+          "ORE has no trade builder for the product type CommodityPairwiseVarianceSwap: the "
+          "catalogue routes it to no instrument table, so it is booked only as a ScriptedTrade "
+          "over a library script.");
 }
 
 TEST_CASE("the products are the product types in display order, then the scripts no type twins",

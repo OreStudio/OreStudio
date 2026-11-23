@@ -18,7 +18,7 @@
           <Level>1.5793</Level>
         </Levels>
       </BarrierData>
-      <FXIndex>FX-TR20H-EUR-USD</FXIndex>
+      <FXIndex>FX-WMR1000NYC-EUR-USD</FXIndex>
       <Strike>1.4357</Strike>
       <PayoffAmount>3895254.25</PayoffAmount>
       <PayoffCurrency>USD</PayoffCurrency>
@@ -44,7 +44,7 @@
           <Level>1.6486</Level>
         </Levels>
       </BarrierData>
-      <FXIndex>FX-TR20H-EUR-USD</FXIndex>
+      <FXIndex>FX-WMR1000NYC-EUR-USD</FXIndex>
       <Strike>1.4987</Strike>
       <PayoffAmount>7267341.12</PayoffAmount>
       <PayoffCurrency>USD</PayoffCurrency>

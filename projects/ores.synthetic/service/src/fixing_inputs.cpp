@@ -18,6 +18,7 @@
  *
  */
 #include "fixing_inputs.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/messaging/fixing_read_operations_protocol.hpp"
 #include "ores.marketdata.client/market_data_client.hpp"

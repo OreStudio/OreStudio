@@ -8,7 +8,7 @@
       <Strike>0.9185</Strike>
       <Underlying>
         <Type>FX</Type>
-        <Name>TR20H-EUR-USD</Name>
+        <Name>WMR1000NYC-EUR-USD</Name>
       </Underlying>
       <OptionData>
         <LongShort>Long</LongShort>
@@ -35,7 +35,7 @@
       <Strike>0.9102</Strike>
       <Underlying>
         <Type>FX</Type>
-        <Name>TR20H-EUR-USD</Name>
+        <Name>WMR1000NYC-EUR-USD</Name>
       </Underlying>
       <OptionData>
         <LongShort>Short</LongShort>

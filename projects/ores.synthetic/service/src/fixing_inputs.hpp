@@ -20,7 +20,7 @@
 #ifndef ORES_SYNTHETIC_SERVICE_FIXING_INPUTS_HPP
 #define ORES_SYNTHETIC_SERVICE_FIXING_INPUTS_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "simulator_offers.hpp"
 

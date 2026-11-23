@@ -73,7 +73,8 @@ simulated_fixing_notation::read(const messaging::vendor_id& id) const {
                         std::string(simulated_fixing_scheme) + "'.");
     if (id.field != simulated_fixing_field)
         return fail(notation_error::kind::wrong_field,
-                    "The field '" + id.field + "' is not '" + std::string(simulated_fixing_field) + "'.");
+                    "The field '" + id.field + "' is not '" + std::string(simulated_fixing_field) +
+                        "'.");
     const auto item = canonical_fixing(id.external_id);
     if (!item)
         return std::unexpected(item.error());

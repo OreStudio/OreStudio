@@ -85,6 +85,7 @@ struct surface_inputs final {
     std::string quote_curve;
 };
 
+// compass:except(wide_types/over_ceiling) expires=2027-05-23 approver=marco reason=each kind adds the fields only it reads, the fixing item of a curve the latest; grouping them by kind is its own refactor
 struct feed_kind_candidate final {
     /** The row's own id (fx_spot_generation_config::id, ir_curve_generation_config::id, ...). */
     std::string feed_config_id;

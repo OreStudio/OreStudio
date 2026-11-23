@@ -48,7 +48,7 @@ system_clock::time_point utc_at(year_month_day date, hours h, minutes m = {}, se
 }
 
 const fixing_time new_york_ten_cut{.at = time_of_day(hours{10}, minutes{0}),
-                               .zone = "America/New_York"};
+                                   .zone = "America/New_York"};
 
 }
 
@@ -104,7 +104,8 @@ TEST_CASE("an_fx_fixing_is_the_pairs_spot_at_the_cut", index_fixing_feed_tags) {
     CHECK(feed.tick({.elapsed_seconds = 1.0, .observed_at = utc_at(a_cut_friday, 14h)}) == "3");
 
     market.values().publish_spot(spot, 1.09, utc_at(a_cut_friday, 15h));
-    CHECK(feed.tick({.elapsed_seconds = 1.0, .observed_at = utc_at(a_cut_friday, 15h, 0min, 1s)}) == "1");
+    CHECK(feed.tick({.elapsed_seconds = 1.0, .observed_at = utc_at(a_cut_friday, 15h, 0min, 1s)}) ==
+          "1");
     CHECK(feed.tick({.elapsed_seconds = 1.0, .observed_at = utc_at(a_cut_friday, 16h)}) == "0");
 
     for (int i = 0; i < 50 && ticks.size() < 4; ++i)
@@ -121,5 +122,6 @@ TEST_CASE("an_fx_fixing_is_the_pairs_spot_at_the_cut", index_fixing_feed_tags) {
         ores::nats::default_wire_codec().decode<ores::marketdata::messaging::adapter_tick>(
             sent[2].data);
     REQUIRE(first_history_day);
-    CHECK(first_history_day->vendor_time == utc_at(year_month_day{sys_days{a_cut_friday} - days{1}}, 12h));
+    CHECK(first_history_day->vendor_time ==
+          utc_at(year_month_day{sys_days{a_cut_friday} - days{1}}, 12h));
 }

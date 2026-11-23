@@ -9,7 +9,7 @@
       <Strike>0.6184</Strike>
       <Underlying>
         <Type>FX</Type>
-        <Name>TR20H-EUR-USD</Name>
+        <Name>WMR1000NYC-EUR-USD</Name>
       </Underlying>
       <ScheduleData>
         <Rules>
@@ -54,7 +54,7 @@
       <Strike>0.9535</Strike>
       <Underlying>
         <Type>FX</Type>
-        <Name>TR20H-EUR-USD</Name>
+        <Name>WMR1000NYC-EUR-USD</Name>
       </Underlying>
       <ScheduleData>
         <Rules>

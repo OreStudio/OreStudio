@@ -2240,7 +2240,7 @@
         </Currency>
         <Index>
           <Name>Underlying</Name>
-          <Value>FX-TR20H-EUR-USD</Value>
+          <Value>FX-WMR1000NYC-EUR-USD</Value>
         </Index>
         <Event>
           <Name>BarrierMonitoringDates</Name>
@@ -2301,8 +2301,8 @@
         <Index>
           <Name>Underlyings</Name>
           <Values>
-            <Value>FX-TR20H-EUR-USD</Value>
-            <Value>FX-TR20H-GBP-USD</Value>
+            <Value>FX-WMR1000NYC-EUR-USD</Value>
+            <Value>FX-WMR1000NYC-GBP-USD</Value>
           </Values>
         </Index>
         <Event>
@@ -2351,8 +2351,8 @@
         <Index>
           <Name>Underlyings</Name>
           <Values>
-            <Value>FX-TR20H-EUR-USD</Value>
-            <Value>FX-TR20H-GBP-USD</Value>
+            <Value>FX-WMR1000NYC-EUR-USD</Value>
+            <Value>FX-WMR1000NYC-GBP-USD</Value>
           </Values>
         </Index>
         <Event>
@@ -2409,7 +2409,7 @@
         </Currency>
         <Index>
           <Name>Underlying</Name>
-          <Value>FX-TR20H-EUR-USD</Value>
+          <Value>FX-WMR1000NYC-EUR-USD</Value>
         </Index>
         <Event>
           <Name>StrikeDate</Name>
@@ -2489,7 +2489,7 @@
         </Currency>
         <Index>
           <Name>Underlying</Name>
-          <Value>FX-TR20H-EUR-USD</Value>
+          <Value>FX-WMR1000NYC-EUR-USD</Value>
         </Index>
         <Event>
           <Name>StartDate</Name>
@@ -2557,8 +2557,8 @@
         <Index>
           <Name>Underlyings</Name>
           <Values>
-            <Value>FX-TR20H-EUR-USD</Value>
-            <Value>FX-TR20H-GBP-USD</Value>
+            <Value>FX-WMR1000NYC-EUR-USD</Value>
+            <Value>FX-WMR1000NYC-GBP-USD</Value>
           </Values>
         </Index>
         <Event>
@@ -2636,8 +2636,8 @@
         <Index>
           <Name>Underlyings</Name>
           <Values>
-            <Value>FX-TR20H-EUR-USD</Value>
-            <Value>FX-TR20H-GBP-USD</Value>
+            <Value>FX-WMR1000NYC-EUR-USD</Value>
+            <Value>FX-WMR1000NYC-GBP-USD</Value>
           </Values>
         </Index>
         <Event>
@@ -2692,7 +2692,7 @@
         </Currency>
         <Index>
           <Name>Underlying</Name>
-          <Value>FX-TR20H-EUR-USD</Value>
+          <Value>FX-WMR1000NYC-EUR-USD</Value>
         </Index>
         <Event>
           <Name>FvaDate</Name>
@@ -2826,8 +2826,8 @@
         <Index>
           <Name>Underlyings</Name>
           <Values>
-            <Value>FX-TR20H-EUR-USD</Value>
-            <Value>FX-TR20H-GBP-USD</Value>
+            <Value>FX-WMR1000NYC-EUR-USD</Value>
+            <Value>FX-WMR1000NYC-GBP-USD</Value>
           </Values>
         </Index>
         <Index>
@@ -3003,7 +3003,7 @@
         </Currency>
         <Index>
           <Name>Underlying</Name>
-          <Value>FX-TR20H-EUR-USD</Value>
+          <Value>FX-WMR1000NYC-EUR-USD</Value>
         </Index>
         <Event>
           <Name>BarrierMonitoringDates</Name>
@@ -3064,8 +3064,8 @@
         <Index>
           <Name>Underlyings</Name>
           <Values>
-            <Value>FX-TR20H-EUR-USD</Value>
-            <Value>FX-TR20H-GBP-USD</Value>
+            <Value>FX-WMR1000NYC-EUR-USD</Value>
+            <Value>FX-WMR1000NYC-GBP-USD</Value>
           </Values>
         </Index>
         <Event>
@@ -3114,8 +3114,8 @@
         <Index>
           <Name>Underlyings</Name>
           <Values>
-            <Value>FX-TR20H-EUR-USD</Value>
-            <Value>FX-TR20H-GBP-USD</Value>
+            <Value>FX-WMR1000NYC-EUR-USD</Value>
+            <Value>FX-WMR1000NYC-GBP-USD</Value>
           </Values>
         </Index>
         <Event>
@@ -3172,7 +3172,7 @@
         </Currency>
         <Index>
           <Name>Underlying</Name>
-          <Value>FX-TR20H-EUR-USD</Value>
+          <Value>FX-WMR1000NYC-EUR-USD</Value>
         </Index>
         <Event>
           <Name>StrikeDate</Name>
@@ -3277,7 +3277,7 @@
         </Currency>
         <Index>
           <Name>Underlying</Name>
-          <Value>FX-TR20H-EUR-USD</Value>
+          <Value>FX-WMR1000NYC-EUR-USD</Value>
         </Index>
         <Event>
           <Name>StartDate</Name>
@@ -3345,8 +3345,8 @@
         <Index>
           <Name>Underlyings</Name>
           <Values>
-            <Value>FX-TR20H-EUR-USD</Value>
-            <Value>FX-TR20H-GBP-USD</Value>
+            <Value>FX-WMR1000NYC-EUR-USD</Value>
+            <Value>FX-WMR1000NYC-GBP-USD</Value>
           </Values>
         </Index>
         <Event>
@@ -3424,8 +3424,8 @@
         <Index>
           <Name>Underlyings</Name>
           <Values>
-            <Value>FX-TR20H-EUR-USD</Value>
-            <Value>FX-TR20H-GBP-USD</Value>
+            <Value>FX-WMR1000NYC-EUR-USD</Value>
+            <Value>FX-WMR1000NYC-GBP-USD</Value>
           </Values>
         </Index>
         <Event>
@@ -3480,7 +3480,7 @@
         </Currency>
         <Index>
           <Name>Underlying</Name>
-          <Value>FX-TR20H-EUR-USD</Value>
+          <Value>FX-WMR1000NYC-EUR-USD</Value>
         </Index>
         <Event>
           <Name>FvaDate</Name>
@@ -3586,8 +3586,8 @@
         <Index>
           <Name>Underlyings</Name>
           <Values>
-            <Value>FX-TR20H-EUR-USD</Value>
-            <Value>FX-TR20H-GBP-USD</Value>
+            <Value>FX-WMR1000NYC-EUR-USD</Value>
+            <Value>FX-WMR1000NYC-GBP-USD</Value>
           </Values>
         </Index>
         <Index>

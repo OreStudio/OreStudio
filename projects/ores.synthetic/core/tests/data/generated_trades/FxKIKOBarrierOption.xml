@@ -26,7 +26,7 @@
           </Levels>
         </BarrierData>
       </Barriers>
-      <FXIndex>FX-TR20H-EUR-USD</FXIndex>
+      <FXIndex>FX-WMR1000NYC-EUR-USD</FXIndex>
       <BoughtCurrency>EUR</BoughtCurrency>
       <BoughtAmount>3614264.98</BoughtAmount>
       <SoldCurrency>USD</SoldCurrency>
@@ -59,7 +59,7 @@
           </Levels>
         </BarrierData>
       </Barriers>
-      <FXIndex>FX-TR20H-EUR-USD</FXIndex>
+      <FXIndex>FX-WMR1000NYC-EUR-USD</FXIndex>
       <BoughtCurrency>EUR</BoughtCurrency>
       <BoughtAmount>2449079.16</BoughtAmount>
       <SoldCurrency>USD</SoldCurrency>

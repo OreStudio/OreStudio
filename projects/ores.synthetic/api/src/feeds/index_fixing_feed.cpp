@@ -130,11 +130,19 @@ std::string index_fixing_feed::tick(const ores::analytics::quant::service::tick_
             std::chrono::floor<std::chrono::days>(context.observed_at)}));
         std::set<std::chrono::year_month_day> held;
         if (input_.held) {
+            // The read is a request to the market data service on the loop's thread, so a
+            // service that does not answer is asked again at most once a minute of the run.
+            if (next_held_read_ && context.observed_at < *next_held_read_)
+                return "0";
             const auto read = input_.held(input_.item, to);
             if (!read) {
-                ORES_LOG_SEV(index_fixing_feed_lg(), info)
+                next_held_read_ = context.observed_at + std::chrono::minutes{1};
+                const auto severity =
+                    held_failure_logged_ ? ores::logging::debug : ores::logging::info;
+                ORES_LOG_SEV(index_fixing_feed_lg(), severity)
                     << "The days the market holds of '" << input_.item
                     << "' are not read yet: " << read.error();
+                held_failure_logged_ = true;
                 return "0";
             }
             held = *read;

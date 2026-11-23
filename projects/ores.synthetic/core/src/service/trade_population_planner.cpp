@@ -1941,7 +1941,6 @@ pair_for(const domain::trade_generation_scope& scope, std::uint32_t slot, std::s
     return scope.currency_pairs[slot % scope.currency_pairs.size()];
 }
 
-
 /// The FX index of a pair, built as an oresmd index: the projection writes it as ORE names it.
 ores::marketdata::datum::market_reference fx_index_of(const domain::currency_pair_reference& pair) {
     namespace md = ores::marketdata::datum;

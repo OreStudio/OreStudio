@@ -142,6 +142,10 @@ private:
     std::vector<std::string> series_uris_;
     std::optional<std::chrono::year_month_day> last_fixed_;
     bool history_stated_ = false;
+    /// When the read of the held days may be tried again after it failed, on the run's clock.
+    std::optional<std::chrono::system_clock::time_point> next_held_read_;
+    /// Whether a failed read of the held days has been logged at info already.
+    bool held_failure_logged_ = false;
     std::atomic<std::uint64_t> published_{0};
     std::optional<std::size_t> handle_;
 };

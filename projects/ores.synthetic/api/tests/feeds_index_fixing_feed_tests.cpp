@@ -57,6 +57,17 @@ TEST_CASE("an_fx_fixing_falls_due_at_its_cut_on_the_cut_zones_clock", index_fixi
     CHECK(fixing_due(new_york_ten_cut, utc_at(a_cut_friday, 15h), std::nullopt) == a_cut_friday);
 }
 
+TEST_CASE("an_fx_cut_follows_its_zone_across_a_daylight_saving_change", index_fixing_feed_tags) {
+    // New York leaves daylight saving on 1 November 2026, so its 10:00 is 14:00 UTC on the
+    // Friday before and 15:00 UTC on the Monday after.
+    constexpr year_month_day before{year{2026}, October, day{30}};
+    constexpr year_month_day after{year{2026}, November, day{2}};
+    CHECK_FALSE(fixing_due(new_york_ten_cut, utc_at(before, 13h, 59min), std::nullopt));
+    CHECK(fixing_due(new_york_ten_cut, utc_at(before, 14h), std::nullopt) == before);
+    CHECK_FALSE(fixing_due(new_york_ten_cut, utc_at(after, 14h, 30min), before));
+    CHECK(fixing_due(new_york_ten_cut, utc_at(after, 15h), before) == after);
+}
+
 TEST_CASE("a_fixing_is_due_once_a_day_and_never_at_a_weekend", index_fixing_feed_tags) {
     CHECK_FALSE(fixing_due(new_york_ten_cut, utc_at(a_cut_friday, 16h), a_cut_friday));
     const year_month_day saturday{sys_days{a_cut_friday} + days{1}};

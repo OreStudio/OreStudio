@@ -8,7 +8,7 @@
 #+filetags: :design_the_scripted_trade_subsystem:sprint_30:v0:
 #+owner: marco
 #+branch: feature/book-a-product-in-either-form
-#+pr: 5063
+#+pr: 5068
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-21
@@ -100,6 +100,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5068][#5068]] | [trading] Record the product a trade was booked as, and its form |
 | [[https://github.com/OreStudio/OreStudio/pull/5063][#5063]] | [trading] Move the twin recipe evaluator into ores.trading.api |
 | [[https://github.com/OreStudio/OreStudio/pull/5062][#5062]] | [trading] Validate a script against a trade's variables |
 

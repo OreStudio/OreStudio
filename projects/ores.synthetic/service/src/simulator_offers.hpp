@@ -134,8 +134,10 @@ system_generator_offers(const feed_kind_registry& registry,
                                                               feed_id,
                                                               adapter_id,
                                                               contributor,
-                                                              target.row.candidate.source_name +
-                                                                  "." + provider_code,
+                                                              fx_option_view_name(
+                                                                  provider_code,
+                                                                  target.row.candidate.fx_pair->first,
+                                                                  target.row.candidate.fx_pair->second),
                                                               point_targets,
                                                               make_surface));
                 };

@@ -313,8 +313,8 @@ select ores_utility_allow_version_replace_fn();
 \ir marketdata/marketdata_derived_inventory_populate.sql
 
 \echo ''
-\echo '--- Synthetic Feeds: Bloomberg Volatility Surfaces (read from the refdata blueprints) ---'
-\ir synthetic/synthetic_feeds_bloomberg_volatility_populate.sql
+\echo '--- Synthetic Feeds: Latent Volatility Surfaces (read from the refdata blueprints) ---'
+\ir synthetic/synthetic_feeds_latent_populate.sql
 \ir marketdata/marketdata_vendor_volatility_instruments_populate.sql
 
 -- =============================================================================

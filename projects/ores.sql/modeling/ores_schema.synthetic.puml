@@ -425,6 +425,8 @@ package "synthetic" #F9FBE7 {
         * start_curvature : double
         * spot_oresmd_uri : text
         * spot_provider_code : text
+        * base_curve_name : text
+        * quote_curve_name : text
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>

@@ -711,7 +711,7 @@ TEST_CASE("only the currency's discounting curve writes its curve on the run's b
     ores::analytics::quant::service::run_market market(clock, {}, 42);
     const auto usd =
         market.values().member_of(ores::analytics::quant::domain::market_member_kind::curve,
-                                  ores::synthetic::feed::curve_member_code({}, "USD"));
+                                  ores::synthetic::feed::curve_member_code("usd_sofr_test"));
     const ores::analytics::quant::service::tick_context tick{
         .elapsed_seconds = 1.0, .observed_at = std::chrono::system_clock::now()};
 
@@ -736,26 +736,24 @@ TEST_CASE("only the currency's discounting curve writes its curve on the run's b
     CHECK(market.values().view(usd).published);
 }
 
-TEST_CASE("a discounting curve writes the board curve of its own collection only",
+TEST_CASE("a discounting curve writes the board under its own name only",
           "[feed_factory]") {
-    // Each collection is a vendor, and a surface strikes against its own vendor's curves, so a
-    // demo collection's two-year curve must not replace a vendor's thirty-year one.
+    // A surface names the curves it strikes against, so a demo curve that stops at two years
+    // must not replace the vendor curve of the same currency that a surface names.
     ores::nats::service::client nats(ores::testing::make_nats_options());
     nats.connect();
     REQUIRE(nats.is_connected());
     ores::analytics::quant::service::manual_run_clock clock(std::chrono::system_clock::now());
     ores::analytics::quant::service::run_market market(clock, {}, 42);
-    const auto vendor = boost::uuids::random_generator()();
-    const auto demo = boost::uuids::random_generator()();
     using ores::analytics::quant::domain::market_member_kind;
     using ores::synthetic::feed::curve_member_code;
-    const auto vendor_usd =
-        market.values().member_of(market_member_kind::curve, curve_member_code(vendor, "USD"));
-    const auto demo_usd =
-        market.values().member_of(market_member_kind::curve, curve_member_code(demo, "USD"));
+    const auto vendor_usd = market.values().member_of(
+        market_member_kind::curve, curve_member_code("synthetic.bloomberg.ir.yield_curve.sofr.usd"));
+    const auto demo_usd = market.values().member_of(
+        market_member_kind::curve, curve_member_code("synthetic.demo.ir.yield_curve.sofr.usd"));
 
     auto f = make_ir_fixture();
-    f.config.config_id = demo;
+    f.config.source_name = "synthetic.demo.ir.yield_curve.sofr.usd";
     const auto demo_curve = ores::synthetic::feed::make_ir_curve_feed(
         nats, f.config, f.entries, f.values, f.definitions, f.refctx, market);
     demo_curve->tick({.elapsed_seconds = 1.0, .observed_at = std::chrono::system_clock::now()});

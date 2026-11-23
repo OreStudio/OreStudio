@@ -58,6 +58,8 @@ ores::synthetic::domain::fx_vol_surface_feed feed_row() {
     row.source_name = "synthetic.fx_vol.eurusd";
     row.base_currency_code = "EUR";
     row.quote_currency_code = "USD";
+    row.base_curve_name = "synthetic.test.ir.yield_curve.ois.eur";
+    row.quote_curve_name = "synthetic.test.ir.yield_curve.ois.usd";
     row.ticks_per_hour = 12;
     row.arrival_mode = "periodic";
     row.sensitivity = 1.0;
@@ -272,7 +274,7 @@ TEST_CASE("a tick whose run has not published what the surface reads says which 
         return feed.tick({.elapsed_seconds = 1.0, .observed_at = at, .drivers = drivers});
     };
 
-    CHECK(tick() == "no market: curve:" + curve_member_code({}, "EUR"));
+    CHECK(tick() == "no market: curve:" + curve_member_code("synthetic.test.ir.yield_curve.ois.eur"));
     CHECK(feed.publish_count() == 0);
 
     // The gate refuses before it reads a curve, so two stated points are all these need.
@@ -282,13 +284,13 @@ TEST_CASE("a tick whose run has not published what the surface reads says which 
             {.date = std::chrono::year_month_day{}, .discount_factor = factor}};
     };
     const auto eur = market.values().member_of(
-        ores::analytics::quant::domain::market_member_kind::curve, curve_member_code({}, "EUR"));
+        ores::analytics::quant::domain::market_member_kind::curve, curve_member_code("synthetic.test.ir.yield_curve.ois.eur"));
     market.values().publish_curve(eur, std::chrono::year_month_day{}, flat(0.97), at);
-    CHECK(tick() == "no market: curve:" + curve_member_code({}, "USD"));
+    CHECK(tick() == "no market: curve:" + curve_member_code("synthetic.test.ir.yield_curve.ois.usd"));
     CHECK(feed.publish_count() == 0);
 
     const auto usd_id = market.values().member_of(
-        ores::analytics::quant::domain::market_member_kind::curve, curve_member_code({}, "USD"));
+        ores::analytics::quant::domain::market_member_kind::curve, curve_member_code("synthetic.test.ir.yield_curve.ois.usd"));
     market.values().publish_curve(usd_id, std::chrono::year_month_day{}, flat(0.99), at);
     CHECK(tick() == "no market: spot:synthetic.test.spot.eurusd");
     CHECK(feed.publish_count() == 0);
@@ -357,9 +359,9 @@ TEST_CASE("a contributor no adapter serves records its points while the vendors 
     };
     const auto at = system_clock::now();
     const auto eur =
-        market.values().member_of(market_member_kind::curve, curve_member_code({}, "EUR"));
+        market.values().member_of(market_member_kind::curve, curve_member_code("synthetic.test.ir.yield_curve.ois.eur"));
     const auto usd =
-        market.values().member_of(market_member_kind::curve, curve_member_code({}, "USD"));
+        market.values().member_of(market_member_kind::curve, curve_member_code("synthetic.test.ir.yield_curve.ois.usd"));
     const auto spot =
         market.values().member_of(market_member_kind::spot, "synthetic.test.spot.eurusd");
     market.values().publish_curve(eur, spot_date, flat(0.03), at);
@@ -395,4 +397,10 @@ TEST_CASE("a contributor no adapter serves records its points while the vendors 
         REQUIRE(tick);
         CHECK(tick->id_scheme == "test_ticker");
     }
+}
+
+TEST_CASE("a vendor view of a surface is named in the vendor's namespace",
+          "[feeds][fx_vol_surface]") {
+    CHECK(ores::synthetic::feed::fx_option_view_name("bloomberg", "AUD", "USD") ==
+          "synthetic.bloomberg.fx.fx_option.audusd");
 }

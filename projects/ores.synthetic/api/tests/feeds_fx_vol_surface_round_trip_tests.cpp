@@ -100,6 +100,8 @@ ores::synthetic::domain::fx_vol_surface_feed round_trip_row() {
     row.source_name = "synthetic.fx_vol.round_trip";
     row.base_currency_code = "EUR";
     row.quote_currency_code = "USD";
+    row.base_curve_name = "synthetic.test.ir.yield_curve.ois.eur";
+    row.quote_curve_name = "synthetic.test.ir.yield_curve.ois.usd";
     row.ticks_per_hour = 1.0;
     row.arrival_mode = "periodic";
     row.branching_ratio = 0.0;
@@ -167,8 +169,8 @@ std::vector<curve_point> round_trip_curve(double rate, const std::vector<date_pe
 /// The run's board with the pair's three members, as the two feeds resolve them.
 struct round_trip_board final {
     round_trip_board() {
-        eur = values.member_of(market_member_kind::curve, curve_member_code({}, "EUR"));
-        usd = values.member_of(market_member_kind::curve, curve_member_code({}, "USD"));
+        eur = values.member_of(market_member_kind::curve, curve_member_code("synthetic.test.ir.yield_curve.ois.eur"));
+        usd = values.member_of(market_member_kind::curve, curve_member_code("synthetic.test.ir.yield_curve.ois.usd"));
         spot = values.member_of(market_member_kind::spot,
                                 spot_member_code("synthetic.test.spot.eurusd"));
     }

@@ -85,8 +85,14 @@ export interface FeedKind {
     readonly kept: readonly string[];
     /** What a new feed starts with. */
     readonly initial: FieldValues;
-    /** The fields that follow from the others, written with the rest. */
-    readonly complete: (write: Readonly<Record<string, unknown>>) => Record<string, unknown>;
+    /**
+     * The fields that follow from the others, written with the rest; the source is the
+     * collection's, which a default source name starts with.
+     */
+    readonly complete: (
+        write: Readonly<Record<string, unknown>>,
+        source: string,
+    ) => Record<string, unknown>;
     /** The rules across fields, said before the save. */
     readonly useCheck: () => (values: FieldValues) => readonly string[];
     /** What the feed is named in a title and a crumb, such as a pair or a curve. */

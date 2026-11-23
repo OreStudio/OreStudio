@@ -100,8 +100,8 @@ std::vector<curve_point> tick_curve(double rate, const std::vector<date_period>&
 /// The run's board with the pair's three members, resolved as the two feeds resolve them.
 struct tick_board final {
     tick_board() {
-        eur = values.member_of(market_member_kind::curve, curve_member_code({}, "EUR"));
-        usd = values.member_of(market_member_kind::curve, curve_member_code({}, "USD"));
+        eur = values.member_of(market_member_kind::curve, curve_member_code("synthetic.test.ir.yield_curve.ois.eur"));
+        usd = values.member_of(market_member_kind::curve, curve_member_code("synthetic.test.ir.yield_curve.ois.usd"));
         spot = values.member_of(market_member_kind::spot,
                                 spot_member_code("synthetic.test.spot.eurusd"));
     }
@@ -185,12 +185,12 @@ TEST_CASE("a surface names the member the run has not published", "[fx_vol_surfa
     // Nothing has ticked yet: the base currency is the first thing a reader of the run looks for.
     auto inputs = fx_vol_board_inputs(board.values, board.eur, board.usd, board.spot);
     REQUIRE_FALSE(inputs);
-    CHECK(inputs.error() == "curve:" + curve_member_code({}, "EUR"));
+    CHECK(inputs.error() == "curve:" + curve_member_code("synthetic.test.ir.yield_curve.ois.eur"));
 
     board.values.publish_curve(board.eur, tick_spot_date, base, at);
     inputs = fx_vol_board_inputs(board.values, board.eur, board.usd, board.spot);
     REQUIRE_FALSE(inputs);
-    CHECK(inputs.error() == "curve:" + curve_member_code({}, "USD"));
+    CHECK(inputs.error() == "curve:" + curve_member_code("synthetic.test.ir.yield_curve.ois.usd"));
 
     board.values.publish_curve(board.usd, tick_spot_date, quote, at);
     inputs = fx_vol_board_inputs(board.values, board.eur, board.usd, board.spot);

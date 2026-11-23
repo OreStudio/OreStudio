@@ -108,7 +108,7 @@ select is(
      join ores_synthetic_folders_tbl a on a.id = f.parent_id and a.valid_to = ores_utility_infinity_timestamp_fn()
      join ores_synthetic_folders_tbl c on c.id = a.parent_id and c.valid_to = ores_utility_infinity_timestamp_fn()
      join ores_synthetic_folders_tbl r on r.id = c.parent_id and r.valid_to = ores_utility_infinity_timestamp_fn()
-     where x.source_name = 'synthetic.lseg.eurgbp'
+     where x.source_name = 'synthetic.lseg.fx.fx_spot.eurgbp'
        and x.valid_to = ores_utility_infinity_timestamp_fn()),
     'FX Rates > FX > LSEG > Synthetic',
     'a feed sits in the folders of its collection under the system root'
@@ -145,7 +145,7 @@ select is(
          from ores_synthetic_fx_spot_generation_configs_tbl x
          join ores_synthetic_folders_tbl f on f.id = x.folder_id
           and f.valid_to = ores_utility_infinity_timestamp_fn()
-         where x.source_name = 'synthetic.lseg.eurgbp'
+         where x.source_name = 'synthetic.lseg.fx.fx_spot.eurgbp'
            and x.valid_to = ores_utility_infinity_timestamp_fn()
          union all
          select p.id, p.parent_id, p.tenant_id

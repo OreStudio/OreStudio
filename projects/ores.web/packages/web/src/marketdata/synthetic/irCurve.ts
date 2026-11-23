@@ -19,6 +19,7 @@
  *
  */
 
+import { yieldCurveName } from './feedNames.js';
 import { show } from '../../refdata/records.js';
 
 /** The tenor of an overnight index, which the oresmd series states as `1D`. */
@@ -62,14 +63,20 @@ export function curveOf(feed: Readonly<Record<string, unknown>>): string {
  * family's catalogue row says which tenors it admits, and the server refuses
  * any other.
  */
-export function completeIrFeed(write: Readonly<Record<string, unknown>>): Record<string, unknown> {
-    const family = show(write['index_family']);
-    const tenor = show(write['tenor']);
+export function completeIrFeed(
+    write: Readonly<Record<string, unknown>>,
+    source: string,
+): Record<string, unknown> {
     return {
         ...write,
         source_name:
             show(write['source_name']) === ''
-                ? `synthetic.${show(write['currency_code'])}${family}${tenor}`.toLowerCase()
+                ? yieldCurveName(
+                      source,
+                      show(write['index_family']),
+                      show(write['currency_code']),
+                      show(write['tenor']),
+                  )
                 : write['source_name'],
     };
 }

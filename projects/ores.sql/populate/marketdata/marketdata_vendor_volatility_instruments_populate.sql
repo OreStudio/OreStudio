@@ -23,7 +23,7 @@
  * Installs the ids the contributors of the latent FX volatility surfaces quote, in each
  * contributor's own notation, and maps each to the fx_option item of its point, which is the item
  * the surface blueprints' pillars read. It runs after the surfaces are staged
- * (synthetic_feeds_bloomberg_volatility_populate.sql), and reads them: a point is one row for each
+ * (synthetic_feeds_latent_populate.sql), and reads them: a point is one row for each
  * expiry of each surface, each label the feed quotes, and each contributor that quotes it.
  *
  * No id is written by hand. tools/vendor_catalogue writes the block between the markers below,

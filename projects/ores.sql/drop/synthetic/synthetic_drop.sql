@@ -18,6 +18,7 @@
  *
  */
 
+\ir ./synthetic_feed_names_drop.sql
 \ir ./synthetic_trade_generation_trade_types_notify_trigger_drop.sql
 \ir ./synthetic_trade_generation_trade_types_drop.sql
 \ir ./synthetic_trade_generation_counterparties_notify_trigger_drop.sql

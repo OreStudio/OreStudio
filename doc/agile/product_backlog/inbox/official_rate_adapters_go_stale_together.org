@@ -19,9 +19,10 @@ environment =eager_maxwell= on 2026-11-23, over one hour of
 =ores.marketdata.service=, =rba-aonia= went stale 16 times and =nyfed-sofr=,
 =ecb-frankfurter=, =imf-frankfurter=, =mas-sora=, =norgesbank-nowa=,
 =riksbank-swestr= and =tcmb-frankfurter= 15 times each, every adapter at the
-same timestamps, such as 21:40:32. Each stale is followed by the adapters
-announcing again: =ecb-estr= announced 38 times since its service started at
-15:39. While they are stale, the dashboard reports the demanded ids as not
+same timestamps, such as 21:40:32. The adapters also announce
+again often: =ecb-estr= announced 38 times between its start at 15:39 and
+21:40. That is neither one announce per =reannounce_interval= (60 seconds) nor
+one per stale, so what triggers those announces is still open. While they are stale, the dashboard reports the demanded ids as not
 served (153 at one reading), although nothing is wrong with the rates.
 
 * Why
@@ -31,18 +32,29 @@ of an official source looks the same as the flapping.
 
 Hypothesis, not yet proved: the cause is the adapter's single loop
 (=official_adapter::loop= in =projects/ores.marketdata/official/src/app/official_adapter.cpp=).
-Each pass sends every source's heartbeat, then lets one source read its
-publisher through a blocking =refresh=. One read that takes longer than the
-supervisor's 15-second timeout (=adapter_registry::default_heartbeat_timeout=)
-holds back every heartbeat at once. That fits all the adapters going stale
-together. The service's NATS log supports it but does not prove it: it is
-silent from 21:40:04 to 21:42:34. The log does not say which publisher read
-was slow, because a refresh logs only what it sent.
+One thread serves every source. Each pass sends every source's heartbeat. Then
+one source may read its publisher through a blocking =refresh=. The same
+thread also runs two other calls that can be slow: =load_universe=, while a
+source is not ready, and =announce=, once each =reannounce_interval=.
 
-To settle it: log each refresh's duration with its source, then line the slow
-reads up with the stale timestamps. If they match, beat from a thread of its
-own, or read the publishers off the loop, so a slow read never delays a
-heartbeat.
+A source beats every 5 seconds (=heartbeat_interval=), and the supervisor marks
+it stale after 15 seconds of silence (=adapter_registry::default_heartbeat_timeout=).
+So a stale means the loop stalled for at least 10 seconds. One slow call holds
+back every heartbeat at once, which fits all the adapters going stale together.
+
+The service's NATS log fits this but does not prove it: it is silent from
+21:40:04 to 21:42:34. A stall in the NATS client, such as back-pressure on a
+publish or a reconnect, would give the same silence and the same symptom. The
+log does not say which call was slow, because a refresh logs only what it sent.
+
+To settle it:
+
+1. Log the duration of each =refresh=, =load_universe= and =announce=, with its
+   source, and of each heartbeat publish.
+2. Line the slow calls up with the stale timestamps.
+3. If a publisher call is slow, beat from a thread of its own, or read the
+   publishers off the loop. If the publish is slow, look at the NATS client
+   instead.
 
 * References
 

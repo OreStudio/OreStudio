@@ -8,7 +8,7 @@
 #+filetags: :model_the_synthetic_feed_dependency_graph:sprint_30:v0:
 #+owner: marco
 #+branch: feature/make-each-vendor-view-a-feed
-#+pr: 5078
+#+pr: 5074
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-23

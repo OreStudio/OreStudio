@@ -4608,6 +4608,7 @@ const pt: SourceCatalogue = {
                 surfaces: 'Superfícies',
                 graph: 'Grafo',
                 messages: 'Mensagens',
+                views: 'Vistas',
             },
         },
         fields: {
@@ -7284,6 +7285,23 @@ const pt: SourceCatalogue = {
             noMessages: 'Nenhuma mensagem no último dia.',
             latestOnly: 'A mostrar as {count} mensagens mais recentes.',
         },
+        volViews: {
+            addTitle: 'Nova vista de fornecedor',
+            held: 'Corre enquanto a fonte simulada do seu fornecedor detém a superfície latente que cota.',
+            removeWarning:
+                'O seu fornecedor deixa de cotar esta superfície. A superfície e os outros fornecedores continuam.',
+            engine: 'Ruído sobre uma superfície latente',
+            lead: 'As cotações de {vendor} da superfície de volatilidade latente {pair}: a superfície, que nenhum fornecedor publica como sua, com o ruído de {vendor} por cima.',
+            surface: 'A superfície latente que cota',
+            noise: 'O ruído que aplica',
+            noiseOf: 'O perfil de ruído de {vendor}',
+            noiseShared:
+                'Um perfil por fornecedor, partilhado por todos os pares que o fornecedor cota: altere-o lá, e todas as vistas do fornecedor seguem.',
+            help: {
+                feed_id: 'A superfície latente que a vista cota.',
+                contributor_id: 'O perfil de ruído do fornecedor que a vista aplica.',
+            },
+        },
         volFeeds: {
             add: 'Nova superfície de volatilidade',
             addTitle: 'Nova superfície de volatilidade',
@@ -7347,6 +7365,10 @@ const pt: SourceCatalogue = {
                 add: 'Adicionar um vencimento',
                 one: 'Vencimento',
                 remove: 'Apagar o vencimento',
+            },
+            views: {
+                lead: 'A vista de cada fornecedor desta superfície: um feed da coleção do próprio fornecedor, a superfície com o ruído do fornecedor por cima. Abra uma vista para a parar, iniciar ou alterar.',
+                view: 'Vista',
             },
             contributors: {
                 title: 'Contribuidores de volatilidade',

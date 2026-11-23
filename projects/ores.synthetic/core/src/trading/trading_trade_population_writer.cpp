@@ -44,9 +44,9 @@
 #include "ores.synthetic.api/feeds/expected_market_data.hpp"
 #include "ores.synthetic.api/messaging/fx_spot_generation_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/fx_vol_contributor_protocol.hpp"
-#include "ores.synthetic.api/messaging/fx_vol_surface_feed_contributor_protocol.hpp"
 #include "ores.synthetic.api/messaging/fx_vol_surface_feed_expiry_protocol.hpp"
 #include "ores.synthetic.api/messaging/fx_vol_surface_feed_protocol.hpp"
+#include "ores.synthetic.api/messaging/fx_vol_view_protocol.hpp"
 #include "ores.synthetic.api/messaging/ir_curve_generation_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/ir_curve_template_entry_protocol.hpp"
 #include "ores.synthetic.api/messaging/market_data_generation_config_protocol.hpp"
@@ -448,10 +448,10 @@ trading_trade_population_writer::resolve_scope(const boost::uuids::uuid& config_
         generators.contributors = whole(read(req).fx_vol_contributors, "surface contributors");
     }
     {
-        synthetic::list_fx_vol_surface_feed_contributors_request req;
+        synthetic::list_fx_vol_views_request req;
         req.limit = page;
         generators.surface_contributors =
-            whole(read(req).fx_vol_surface_feed_contributors, "surface contributor links");
+            whole(read(req).fx_vol_views, "surface contributor links");
     }
     scope.expected_market_data =
         feed::expected_market_data(demand.routes, feed::generator_publications(generators));

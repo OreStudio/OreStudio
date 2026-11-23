@@ -63,7 +63,9 @@ feed_start_target surface() {
     t.row.candidate.source_name = latent;
     t.row.candidate.fx_pair = std::pair{std::string("AUD"), std::string("USD")};
     t.row.candidate.inputs = {.spot = spot, .base_curve = aud, .quote_curve = usd};
-    t.row.candidate.contributor_providers = {{"c-bbg", "bloomberg"}, {"c-ice", "ice"}};
+    t.row.candidate.views = {
+        {"c-bbg", {.provider_code = "bloomberg", .view_id = "v-bbg", .source_name = bbg_view}},
+        {"c-ice", {.provider_code = "ice", .view_id = "v-ice", .source_name = ice_view}}};
     t.container_provider_code = "latent";
     t.container_is_system = true;
     return t;

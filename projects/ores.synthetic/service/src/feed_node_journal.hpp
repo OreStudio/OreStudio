@@ -21,7 +21,7 @@
 #define ORES_SYNTHETIC_SERVICE_FEED_NODE_JOURNAL_HPP
 
 #include "feed_graph.hpp"
-#include "ores.synthetic.api/feeds/node_diagnostics.hpp"
+#include "ores.synthetic.api/feeds/node_journal.hpp"
 #include <functional>
 #include <map>
 #include <mutex>
@@ -37,7 +37,7 @@ namespace ores::synthetic::service {
  * log by its name; the publish is given, so the journal needs no bus. A node holding a
  * diagnostic is failing. See doc/knowledge/architecture/synthetic_feed_graph.org.
  */
-class feed_node_journal final : public ores::synthetic::feed::node_diagnostics {
+class feed_node_journal final : public ores::synthetic::feed::node_journal {
 public:
     /** Says one message of one node, at a level: warn, info. */
     using publish_fn = std::function<void(
@@ -45,6 +45,10 @@ public:
 
     explicit feed_node_journal(publish_fn publish)
         : publish_(std::move(publish)) {}
+
+    void say(const std::string& node, std::string_view level, const std::string& message) override {
+        publish_(node, level, message);
+    }
 
     void raise(const std::string& node, const std::string& message) override {
         {

@@ -253,13 +253,17 @@ TEST_CASE("each contributor of a surface is its own stream", "[fx_vol_surface_fe
 }
 
 // The diagnostics a surface raises and clears, as said.
-struct recorded_diagnostics final : ores::synthetic::feed::node_diagnostics {
+struct recorded_diagnostics final : ores::synthetic::feed::node_journal {
+    void say(const std::string& node, std::string_view, const std::string& message) override {
+        said.push_back(node + "|" + message);
+    }
     void raise(const std::string& node, const std::string& message) override {
         raised.push_back(node + "|" + message);
     }
     void clear(const std::string& node) override {
         cleared.push_back(node);
     }
+    std::vector<std::string> said;
     std::vector<std::string> raised;
     std::vector<std::string> cleared;
 };
@@ -287,7 +291,7 @@ TEST_CASE("a tick whose run has not published what the surface reads says which 
         return feed.tick({.elapsed_seconds = 1.0, .observed_at = at, .drivers = drivers});
     };
     const auto said = std::make_shared<recorded_diagnostics>();
-    feed.set_diagnostics(said);
+    feed.set_journal(said);
 
     CHECK(tick() ==
           "no market: curve:" + curve_member_code("synthetic.test.ir.yield_curve.ois.eur"));
@@ -398,7 +402,7 @@ TEST_CASE("a contributor no adapter serves records its points while the vendors 
     // A surface built after a halt holds no refusal of its own, so its first tick that publishes
     // clears the diagnostic an earlier build of it raised.
     const auto said = std::make_shared<recorded_diagnostics>();
-    feed.set_diagnostics(said);
+    feed.set_journal(said);
 
     const std::vector<double> drivers(5, 0.0);
     CHECK(feed.tick({.elapsed_seconds = 1.0, .observed_at = at, .drivers = drivers}) ==

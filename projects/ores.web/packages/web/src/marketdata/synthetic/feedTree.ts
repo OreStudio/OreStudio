@@ -57,6 +57,7 @@ export function folderChain(rows: readonly FolderRow[], id: string): readonly Fo
 const PAGE_OF_KIND: Readonly<Record<string, string>> = {
     ir_curve: PATHS.irFeed,
     fx_vol_surface: PATHS.volFeed,
+    fx_vol_view: PATHS.volView,
 };
 
 /** The address of a feed's own page. */

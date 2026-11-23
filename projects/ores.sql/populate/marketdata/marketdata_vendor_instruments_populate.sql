@@ -83,7 +83,7 @@
  *       from ores_dq_fx_vol_surface_feeds_artefact_tbl f
  *       join ores_dq_fx_vol_surface_feed_expiries_artefact_tbl e
  *         on e.dataset_id = f.dataset_id and e.feed_id = f.id
- *       join ores_dq_fx_vol_surface_feed_contributors_artefact_tbl l
+ *       join ores_dq_fx_vol_views_artefact_tbl l
  *         on l.dataset_id = f.dataset_id and l.feed_id = f.id
  *       join ores_dq_fx_vol_contributors_artefact_tbl c
  *         on c.dataset_id = l.dataset_id and c.id = l.contributor_id

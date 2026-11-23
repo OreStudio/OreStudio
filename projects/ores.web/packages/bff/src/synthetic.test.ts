@@ -175,7 +175,7 @@ describe('synthetic resource routes', () => {
             'fx-vol-surface-feeds',
             'fx-vol-surface-feed-expiries',
             'fx-vol-contributors',
-            'fx-vol-surface-feed-contributors',
+            'fx-vol-views',
             'process-types',
             'ir-curve-index-families',
             'parameter-definitions',

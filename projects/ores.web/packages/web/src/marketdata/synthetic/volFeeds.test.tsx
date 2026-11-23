@@ -60,7 +60,7 @@ function resource(key: string, name: string): SyntheticResourceView {
 const REGISTRY = [
     resource('fx-vol-surface-feeds', 'fx_vol_surface_feed'),
     resource('fx-vol-surface-feed-expiries', 'fx_vol_surface_feed_expiry'),
-    resource('fx-vol-surface-feed-contributors', 'fx_vol_surface_feed_contributor'),
+    resource('fx-vol-views', 'fx_vol_view'),
     resource('fx-vol-contributors', 'fx_vol_contributor'),
 ];
 
@@ -190,7 +190,7 @@ function render(path: string, seed: (client: QueryClient) => void): string {
     client.setQueryData(['registry', 'synthetic'], REGISTRY);
     client.setQueryData(['records', 'fx-vol-surface-feeds', 'key', FEED_ID], feed);
     client.setQueryData(['records', 'fx-vol-surface-feed-expiries', FEED_ID], []);
-    client.setQueryData(['records', 'fx-vol-surface-feed-contributors', FEED_ID], []);
+    client.setQueryData(['records', 'fx-vol-views', FEED_ID], []);
     seed(client);
     return renderToStaticMarkup(
         <QueryClientProvider client={client}>
@@ -214,7 +214,7 @@ describe('the vol surface feed screens', () => {
         const html = render(`/market-data/synthetic/vol/${FEED_ID}`, writer);
         expect(html).toContain('synthetic.latent.fx.fx_vol_surface.eurusd');
         expect(html).toContain('SSVI');
-        for (const tab of ['Surface', 'Expiries', 'Contributors', 'Arrivals', 'History']) {
+        for (const tab of ['Surface', 'Expiries', 'Views', 'Arrivals', 'History']) {
             expect(html).toContain(`>${tab}<`);
         }
     });
@@ -289,14 +289,28 @@ describe('the vol surface feed screens', () => {
         expect(html).toContain('8.50%');
     });
 
-    it('lists the vendors that quote the surface, each opening its own page', () => {
-        const html = render(`/market-data/synthetic/vol/${FEED_ID}?tab=contributors`, (client) => {
+    it("lists the vendors' views of the surface, each opening the view's own page", () => {
+        const html = render(`/market-data/synthetic/vol/${FEED_ID}?tab=views`, (client) => {
             writer(client);
             client.setQueryData(
-                ['records', 'fx-vol-surface-feed-contributors', FEED_ID],
+                ['records', 'fx-vol-views', FEED_ID],
                 [
-                    { id: 'l1', version: 1, feed_id: FEED_ID, contributor_id: ICE },
-                    { id: 'l2', version: 1, feed_id: FEED_ID, contributor_id: BLOOMBERG },
+                    {
+                        id: 'l1',
+                        version: 1,
+                        feed_id: FEED_ID,
+                        contributor_id: ICE,
+                        source_name: 'synthetic.ice.fx.fx_option.eurusd',
+                        enabled: true,
+                    },
+                    {
+                        id: 'l2',
+                        version: 1,
+                        feed_id: FEED_ID,
+                        contributor_id: BLOOMBERG,
+                        source_name: 'synthetic.bloomberg.fx.fx_option.eurusd',
+                        enabled: true,
+                    },
                 ],
             );
             client.setQueryData(
@@ -313,8 +327,8 @@ describe('the vol surface feed screens', () => {
         expect(html).not.toContain('>tradeweb<');
         expect(html.indexOf('>bloomberg<')).toBeLessThan(html.indexOf('>ice<'));
         expect(html).toContain('>0.0025<');
-        expect(html).toContain('cursor-pointer');
-        expect(html).not.toContain('Noise profile');
+        expect(html).toContain('href="/market-data/synthetic/view/l2"');
+        expect(html).not.toContain('Add a contributor');
     });
 });
 
@@ -468,8 +482,8 @@ describe('the feed graph on a surface page', () => {
             }),
         ).toBe('/market-data/synthetic/ir/c');
         expect(
-            nodePage({ kind: 'view', name: ice, feed_config_id: '', provider_code: 'ice' }, graph),
-        ).toBe(`/market-data/synthetic/vol/${FEED_ID}?tab=graph`);
+            nodePage({ kind: 'view', name: ice, feed_config_id: 'v-ice', provider_code: 'ice' }),
+        ).toBe('/market-data/synthetic/view/v-ice');
         expect(
             nodePage({ kind: 'source', name: 'ice-a', feed_config_id: '', provider_code: 'ice' }),
         ).toBe('/market-data/synthetic?tab=provider&provider=ice');

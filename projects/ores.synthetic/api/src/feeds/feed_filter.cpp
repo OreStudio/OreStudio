@@ -131,7 +131,20 @@ std::string feeds_query() {
         from ores_synthetic_fx_vol_surface_feeds_tbl f
         join ores_synthetic_market_data_generation_configs_tbl c
           on c.id = f.config_id and c.valid_to = ores_utility_infinity_timestamp_fn()
-        where f.valid_to = ores_utility_infinity_timestamp_fn())sql";
+        where f.valid_to = ores_utility_infinity_timestamp_fn()
+        union all
+        select v.id::text, 'fx_vol_view',
+               s.base_currency_code || '/' || s.quote_currency_code,
+               v.source_name, '', v.folder_id, v.enabled, v.auto_start,
+               s.asset_class_code, s.ticks_per_hour, 'noise',
+               s.base_currency_code || '/' || s.quote_currency_code,
+               c.provider_code, v.tenant_id::text
+        from ores_synthetic_fx_vol_views_tbl v
+        join ores_synthetic_fx_vol_surface_feeds_tbl s
+          on s.id = v.feed_id and s.valid_to = ores_utility_infinity_timestamp_fn()
+        join ores_synthetic_market_data_generation_configs_tbl c
+          on c.id = v.config_id and c.valid_to = ores_utility_infinity_timestamp_fn()
+        where v.valid_to = ores_utility_infinity_timestamp_fn())sql";
 }
 
 std::string where_clause(const feed_filter& filter,

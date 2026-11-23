@@ -334,15 +334,15 @@ with check (
 );
 
 -- -----------------------------------------------------------------------------
--- fx_vol_surface_feed_contributors
+-- fx_vol_views
 -- -----------------------------------------------------------------------------
-alter table ores_synthetic_fx_vol_surface_feed_contributors_tbl enable row level security;
+alter table ores_synthetic_fx_vol_views_tbl enable row level security;
 
-drop policy if exists fx_vol_surface_feed_contributors_tenant_isolation_policy
-    on ores_synthetic_fx_vol_surface_feed_contributors_tbl;
+drop policy if exists fx_vol_views_tenant_isolation_policy
+    on ores_synthetic_fx_vol_views_tbl;
 
-create policy fx_vol_surface_feed_contributors_tenant_isolation_policy
-on ores_synthetic_fx_vol_surface_feed_contributors_tbl
+create policy fx_vol_views_tenant_isolation_policy
+on ores_synthetic_fx_vol_views_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
     or tenant_id = ores_utility_system_tenant_id_fn()

@@ -57,7 +57,7 @@ select throws_ok(
 select results_eq(
     format($$select action, record_count from ores_synthetic_publish_market_data_providers_from_dq_fn(%L::uuid, ores_utility_system_tenant_id_fn(), 'insert_only', '{}'::jsonb)$$,
         (select id from t_dataset)),
-    $$values ('skipped'::text, 8::bigint)$$,
+    $$values ('skipped'::text, 9::bigint)$$,
     'an insert-only publish over the catalogue skips every provider it already holds'
 );
 
@@ -65,8 +65,8 @@ select is(
     (select count(*)::int from ores_synthetic_market_data_providers_tbl
      where tenant_id = ores_utility_system_tenant_id_fn()
        and valid_to = ores_utility_infinity_timestamp_fn()),
-    8,
-    'the system tenant holds the eight providers the dataset stages'
+    9,
+    'the system tenant holds the nine providers the dataset stages'
 );
 
 -- The catalogue was published earlier in this same transaction. A

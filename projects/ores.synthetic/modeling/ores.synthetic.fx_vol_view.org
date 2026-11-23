@@ -1,0 +1,294 @@
+:PROPERTIES:
+:ID: 158E2637-5025-47F3-8CAC-C4B6DF308E1B
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
+:ores.cpp.wire-codec.enabled: true
+:ores.cpp.http-route.web_records_header.enabled: true
+:ores.cpp.http-route.web_records_implementation.enabled: true
+:ores.cpp.http-route.web_records_tests.enabled: true
+:END:
+#+title: ores.synthetic.fx_vol_view
+#+description: Codegen entity model for the synthetic fx_vol_view table; one vendor's view of a latent FX volatility surface: a feed of the vendor's collection that is the vendor's noise over the surface.
+#+type: ores.codegen.entity
+#+web_resource: fx-vol-views
+#+web_writes: many
+#+web_system_owned: true
+#+web_parent_filter: feed_id
+#+component: synthetic
+#+filetags: :model:entity:synthetic:
+#+entity_singular: fx_vol_view
+#+entity_plural: fx_vol_views
+#+entity_title: FX Volatility View
+#+brief: One vendor's view of a latent FX volatility surface: its noise over the surface.
+#+created: 2026-11-12
+#+updated: 2026-11-23
+
+A view is one vendor's quotes of a latent FX volatility surface: the surface,
+which no vendor publishes as its own, with the vendor's noise over it. It is a
+feed of the vendor's collection, named in the vendor's namespace, such as
+=synthetic.bloomberg.fx.fx_option.audusd=, and listed, counted, stopped and
+started with the vendor's other feeds. It reads two inputs: the latent surface
+it quotes, and the vendor's noise profile it applies, which is one per vendor
+and shared by every pair the vendor quotes. The vendor's simulated source runs
+it, holding the shared surface and publishing the view's points under the
+vendor's ids.
+
+A view of the clean =demo= contributor applies no noise: it records the latent
+surface itself, for the tests to compare against.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     synthetic
+:profile:       uuid-identified-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:      uuid
+:cpp_type:  boost::uuids::uuid
+:primary_key: true
+:END:
+
+Surrogate UUID uniquely identifying this row.
+
+** party_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:natural_key: true
+:server_owned: true
+:END:
+
+Owning party: the system party, which runs the installation's feeds.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** feed_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:natural_key: true
+:filterable:  true
+:END:
+
+The latent =fx_vol_surface_feed= the view quotes.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** contributor_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:natural_key: true
+:filterable:  true
+:END:
+
+The vendor's =fx_vol_contributor=: the noise profile the view applies.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** config_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The vendor's =market_data_generation_config=: the collection the view is a
+feed of.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** folder_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
+:END:
+
+The =folder= the view lives under in its vendor's collection.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** source_name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The view's name by the naming scheme, in its vendor's namespace, such as
+=synthetic.bloomberg.fx.fx_option.audusd=.
+
+#+begin_src cpp :name generator
+std::string("synthetic.bloomberg.fx.fx_option.eurusd")
+#+end_src
+
+** enabled
+:PROPERTIES:
+:type:     boolean
+:cpp_type: bool
+:nullable: false
+:END:
+
+Whether the view may run at all.
+
+#+begin_src cpp :name generator
+true
+#+end_src
+
+** auto_start
+:PROPERTIES:
+:type:     boolean
+:cpp_type: bool
+:nullable: false
+:END:
+
+Whether the view starts on its own when the service starts.
+
+#+begin_src cpp :name generator
+false
+#+end_src
+
+* Artefact columns
+:PROPERTIES:
+:key: id
+:END:
+
+One row per latent surface and contributor that quotes it, naming the imported
+rows' ids, which the publish maps to the rows it creates. The publish places
+each view in its contributor's vendor collection and names it by the scheme.
+
+** id
+:PROPERTIES:
+:type: uuid
+:END:
+
+** version
+:PROPERTIES:
+:type: integer
+:END:
+
+** feed_id
+:PROPERTIES:
+:type: uuid
+:END:
+
+** contributor_id
+:PROPERTIES:
+:type: uuid
+:END:
+
+* Artefact indexes
+
+** feed_id
+:PROPERTIES:
+:columns: feed_id
+:END:
+
+** contributor_id
+:PROPERTIES:
+:columns: contributor_id
+:END:
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_synthetic_fx_vol_views_tbl
+:END:
+
+** Checks
+
+| expression                        |
+|-----------------------------------|
+| "source_name" like 'synthetic.%'  |
+
+* Foreign keys
+
+** config_id
+:PROPERTIES:
+:table:         ores_synthetic_market_data_generation_configs_tbl
+:error_message: Invalid config_id: %. No active market_data_generation_config found with this id.
+:nullable:      false
+:END:
+
+** feed_id
+:PROPERTIES:
+:table:         ores_synthetic_fx_vol_surface_feeds_tbl
+:error_message: Invalid feed_id: %. No active fx_vol_surface_feed found with this id.
+:nullable:      false
+:END:
+
+** contributor_id
+:PROPERTIES:
+:table:         ores_synthetic_fx_vol_contributors_tbl
+:error_message: Invalid contributor_id: %. No active fx_vol_contributor found with this id.
+:nullable:      false
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: fx_vol_view
+:entity_plural_short:   fx_vol_views
+:entity_singular_words: FX volatility view
+:entity_plural_words:   FX volatility views
+:system_tenant_visible: true
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <optional>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <optional>
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: j
+:END:
+
+** Table display
+
+| column         | header      |
+|----------------+-------------|
+| source_name    | View        |
+| feed_id        | Surface     |
+| contributor_id | Noise       |
+| version        | Version     |
+
+* See also
+
+- [[id:DE836AD8-09BF-4AF6-8BF6-5D4CEF227A6E][FX Volatility Surface Feed]] -- the latent surface a view quotes.
+- [[id:2376A086-4C3C-4D61-92E5-29B122DB6A41][Synthetic feed graph]] -- the view as a node.

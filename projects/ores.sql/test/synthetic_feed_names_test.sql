@@ -27,7 +27,7 @@
 
 begin;
 
-select plan(9);
+select plan(10);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
 
@@ -39,6 +39,9 @@ select 'yield_curve', source_name from ores_synthetic_ir_curve_generation_config
 where valid_to = ores_utility_infinity_timestamp_fn()
 union all
 select 'fx_vol_surface', source_name from ores_synthetic_fx_vol_surface_feeds_tbl
+where valid_to = ores_utility_infinity_timestamp_fn()
+union all
+select 'fx_option', source_name from ores_synthetic_fx_vol_views_tbl
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 select ok((select count(*) from t_names) > 0, 'the system tenant holds published feeds');
@@ -98,6 +101,17 @@ select is(
                          and c.valid_to = ores_utility_infinity_timestamp_fn())),
     0,
     'every surface names a quote curve that a feed publishes'
+);
+
+select is(
+    (select count(*)::int from ores_synthetic_fx_vol_views_tbl v
+     join ores_synthetic_market_data_generation_configs_tbl c
+       on c.id = v.config_id and c.valid_to = ores_utility_infinity_timestamp_fn()
+     where v.valid_to = ores_utility_infinity_timestamp_fn()
+       and c.provider_code = 'bloomberg' and v.folder_id is not null
+       and v.source_name like 'synthetic.bloomberg.fx.fx_option.%'),
+    14,
+    'Bloomberg''s collection holds a view of each of the 14 latent surfaces, each in its folder'
 );
 
 select * from finish();

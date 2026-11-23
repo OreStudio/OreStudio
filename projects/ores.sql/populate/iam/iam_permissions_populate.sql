@@ -634,11 +634,11 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_report_configurations:write',      'Create and modify curve report configurations');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_report_configurations:delete',     'Delete curve report configurations');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::fx_volatility_configs:read',                   'View FX volatilities');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::fx_volatility_configs:write',                  'Create and modify FX volatilities');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::fx_volatility_configs:delete',                 'Delete FX volatilities');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::fx_volatility_smiles:read',   'View FX volatility smiles');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::fx_volatility_smiles:write',  'Create and modify FX volatility smiles');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::fx_volatility_smiles:delete', 'Delete FX volatility smiles');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::fx_volatility_configs:write',                  'Create and modify a vendor''s view of a latent FX volatility surface');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::fx_volatility_configs:delete',                 'Delete a vendor''s view of a latent FX volatility surface');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::fx_volatility_smiles:read',   'View the vendors'' views of the latent FX volatility surfaces');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::fx_volatility_smiles:write',  'Create and modify a vendor''s view of a latent FX volatility surface');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::fx_volatility_smiles:delete', 'Delete a vendor''s view of a latent FX volatility surface');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::supervisory_bodies:delete', 'Delete supervisory bodys');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::supervisory_bodies:read', 'View supervisory bodys');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::supervisory_bodies:write', 'Create and modify supervisory bodys');
@@ -835,15 +835,15 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::ir_curve_bootstrap_pillars:read',          'View ir curve bootstrap pillars');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::ir_curve_bootstrap_pillars:write',         'Create and modify ir curve bootstrap pillars');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::ir_curve_bootstrap_pillars:delete',        'Delete ir curve bootstrap pillars');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::fx_vol_surface_blueprints:read', 'View FX volatility surface blueprints');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::fx_vol_surface_blueprints:write', 'Create and modify FX volatility surface blueprints');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::fx_vol_surface_blueprints:delete', 'Delete FX volatility surface blueprints');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::fx_vol_surface_pillars:read', 'View FX volatility surface pillars');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::fx_vol_surface_pillars:write', 'Create and modify FX volatility surface pillars');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::fx_vol_surface_pillars:delete', 'Delete FX volatility surface pillars');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::fx_vol_surface_pillar_sources:read', 'View FX volatility surface pillar sources');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::fx_vol_surface_pillar_sources:write', 'Create and modify FX volatility surface pillar sources');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::fx_vol_surface_pillar_sources:delete', 'Delete FX volatility surface pillar sources');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::fx_vol_surface_blueprints:read', 'View the vendors'' views of the latent FX volatility surfaces');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::fx_vol_surface_blueprints:write', 'Create and modify a vendor''s view of a latent FX volatility surface');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::fx_vol_surface_blueprints:delete', 'Delete a vendor''s view of a latent FX volatility surface');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::fx_vol_surface_pillars:read', 'View the vendors'' views of the latent FX volatility surfaces');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::fx_vol_surface_pillars:write', 'Create and modify a vendor''s view of a latent FX volatility surface');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::fx_vol_surface_pillars:delete', 'Delete a vendor''s view of a latent FX volatility surface');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::fx_vol_surface_pillar_sources:read', 'View the vendors'' views of the latent FX volatility surfaces');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::fx_vol_surface_pillar_sources:write', 'Create and modify a vendor''s view of a latent FX volatility surface');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::fx_vol_surface_pillar_sources:delete', 'Delete a vendor''s view of a latent FX volatility surface');
 
     -- Ledger feed types permissions
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::ledger_feed_types:read',                   'View ledger feed types');
@@ -918,7 +918,7 @@ BEGIN
 
     -- FX option conventions permissions
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::fx_option_conventions:read',               'View FX option conventions');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::fx_option_conventions:write',              'Create and modify FX option conventions');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::fx_option_conventions:write',              'Create and modify a vendor''s view of a latent FX volatility surface');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::fx_option_conventions:delete',             'Delete FX option conventions');
 
     -- Averaging OIS conventions permissions
@@ -1172,12 +1172,12 @@ BEGIN
 
     -- FSM states
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'dq::fsm_states:read', 'View FSM states');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'dq::fsm_states:write', 'Create and modify FSM states');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'dq::fsm_states:write', 'Create and modify a vendor''s view of a latent FX volatility surface');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'dq::fsm_states:delete', 'Delete FSM states');
 
     -- FSM transitions
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'dq::fsm_transitions:read', 'View FSM transitions');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'dq::fsm_transitions:write', 'Create and modify FSM transitions');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'dq::fsm_transitions:write', 'Create and modify a vendor''s view of a latent FX volatility surface');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'dq::fsm_transitions:delete', 'Delete FSM transitions');
 
     -- Publications
@@ -1618,11 +1618,11 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_forward_volatility_agreement_instruments:read', 'View equity forward volatility agreement instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_basket_variance_swap_instruments:read', 'View FX basket variance swap instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_forward_volatility_agreement_instruments:read', 'View FX forward volatility agreement instruments');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_basket_option_instruments:write', 'Create and modify FX basket option instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_basket_option_instruments:write', 'Create and modify a vendor''s view of a latent FX volatility surface');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_basket_variance_swap_instruments:write', 'Create and modify equity basket variance swap instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_forward_volatility_agreement_instruments:write', 'Create and modify equity forward volatility agreement instruments');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_basket_variance_swap_instruments:write', 'Create and modify FX basket variance swap instruments');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_forward_volatility_agreement_instruments:write', 'Create and modify FX forward volatility agreement instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_basket_variance_swap_instruments:write', 'Create and modify a vendor''s view of a latent FX volatility surface');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_forward_volatility_agreement_instruments:write', 'Create and modify a vendor''s view of a latent FX volatility surface');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_basket_option_instruments:delete', 'Delete FX basket option instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_basket_variance_swap_instruments:delete', 'Delete equity basket variance swap instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_forward_volatility_agreement_instruments:delete', 'Delete equity forward volatility agreement instruments');
@@ -1631,23 +1631,23 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_best_entry_option_instruments:read', 'View equity best entry option instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_best_entry_option_instruments:read', 'View FX best entry option instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_best_entry_option_instruments:write', 'Create and modify equity best entry option instruments');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_best_entry_option_instruments:write', 'Create and modify FX best entry option instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_best_entry_option_instruments:write', 'Create and modify a vendor''s view of a latent FX volatility surface');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_best_entry_option_instruments:delete', 'Delete equity best entry option instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_best_entry_option_instruments:delete', 'Delete FX best entry option instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_strike_resettable_option_instruments:read', 'View equity strike resettable option instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_strike_resettable_option_instruments:read', 'View FX strike resettable option instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_strike_resettable_option_instruments:write', 'Create and modify equity strike resettable option instruments');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_strike_resettable_option_instruments:write', 'Create and modify FX strike resettable option instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_strike_resettable_option_instruments:write', 'Create and modify a vendor''s view of a latent FX volatility surface');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_strike_resettable_option_instruments:delete', 'Delete equity strike resettable option instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_strike_resettable_option_instruments:delete', 'Delete FX strike resettable option instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_window_barrier_option_instruments:read', 'View equity window barrier option instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_window_barrier_option_instruments:read', 'View FX window barrier option instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_window_barrier_option_instruments:write', 'Create and modify equity window barrier option instruments');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_window_barrier_option_instruments:write', 'Create and modify FX window barrier option instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_window_barrier_option_instruments:write', 'Create and modify a vendor''s view of a latent FX volatility surface');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_window_barrier_option_instruments:delete', 'Delete equity window barrier option instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_window_barrier_option_instruments:delete', 'Delete FX window barrier option instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_worst_of_basket_swap_instruments:read', 'View FX worst-of basket swap instruments');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_worst_of_basket_swap_instruments:write', 'Create and modify FX worst-of basket swap instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_worst_of_basket_swap_instruments:write', 'Create and modify a vendor''s view of a latent FX volatility surface');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_worst_of_basket_swap_instruments:delete', 'Delete FX worst-of basket swap instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::autocallable_instruments:read', 'View autocallable instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::autocallable_instruments:write', 'Create and modify autocallable instruments');
@@ -1946,7 +1946,7 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::market_data_generation_configs:delete', 'Delete market data generation configs');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::feeds:run',   'Start and stop synthetic feeds');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_spot_generation_configs:read',   'View FX spot generation configs');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_spot_generation_configs:write',  'Create and modify FX spot generation configs');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_spot_generation_configs:write',  'Create and modify a vendor''s view of a latent FX volatility surface');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_spot_generation_configs:delete', 'Delete FX spot generation configs');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::gmm_components:read',   'View GMM components');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::gmm_components:write',  'Create and modify GMM components');
@@ -1960,21 +1960,21 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::variance_calibration_input_points:read',   'View variance calibration input points');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::variance_calibration_input_points:write',  'Create and modify variance calibration input points');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::variance_calibration_input_points:delete', 'Delete variance calibration input points');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_vol_contributors:read',   'View FX volatility contributors');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_vol_contributors:write',  'Create and modify FX volatility contributors');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_vol_contributors:delete', 'Delete FX volatility contributors');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_vol_contributors:read',   'View the vendors'' views of the latent FX volatility surfaces');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_vol_contributors:write',  'Create and modify a vendor''s view of a latent FX volatility surface');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_vol_contributors:delete', 'Delete a vendor''s view of a latent FX volatility surface');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::stopped_feed_nodes:read',   'View the feed nodes an operator stopped');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::stopped_feed_nodes:write',  'Record a stopped feed node');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::stopped_feed_nodes:delete', 'Remove a stopped feed node');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_vol_surface_feeds:read',   'View FX volatility surface feeds');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_vol_surface_feeds:write',  'Create and modify FX volatility surface feeds');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_vol_surface_feeds:delete', 'Delete FX volatility surface feeds');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_vol_surface_feed_expiries:read',   'View FX volatility surface feed expiries');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_vol_surface_feed_expiries:write',  'Create and modify FX volatility surface feed expiries');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_vol_surface_feed_expiries:delete', 'Delete FX volatility surface feed expiries');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_vol_surface_feed_contributors:read',   'View FX volatility surface feed contributors');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_vol_surface_feed_contributors:write',  'Create and modify FX volatility surface feed contributors');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_vol_surface_feed_contributors:delete', 'Delete FX volatility surface feed contributors');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_vol_surface_feeds:read',   'View the vendors'' views of the latent FX volatility surfaces');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_vol_surface_feeds:write',  'Create and modify a vendor''s view of a latent FX volatility surface');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_vol_surface_feeds:delete', 'Delete a vendor''s view of a latent FX volatility surface');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_vol_surface_feed_expiries:read',   'View the vendors'' views of the latent FX volatility surfaces');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_vol_surface_feed_expiries:write',  'Create and modify a vendor''s view of a latent FX volatility surface');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_vol_surface_feed_expiries:delete', 'Delete a vendor''s view of a latent FX volatility surface');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_vol_views:read',   'View the vendors'' views of the latent FX volatility surfaces');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_vol_views:write',  'Create and modify a vendor''s view of a latent FX volatility surface');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_vol_views:delete', 'Delete a vendor''s view of a latent FX volatility surface');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::variance_calibrations:read',   'View variance calibrations');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::variance_calibrations:write',  'Create and modify variance calibrations');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::variance_calibrations:delete', 'Delete variance calibrations');
@@ -2284,10 +2284,10 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_pairwise_variance_swap_instruments:write', 'Create and modify equity pairwise variance swap instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_pairwise_variance_swap_instruments:delete', 'Delete equity pairwise variance swap instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_asian_option_instruments:read', 'View FX asian option instruments');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_asian_option_instruments:write', 'Create and modify FX asian option instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_asian_option_instruments:write', 'Create and modify a vendor''s view of a latent FX volatility surface');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_asian_option_instruments:delete', 'Delete FX asian option instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_pairwise_variance_swap_instruments:read', 'View FX pairwise variance swap instruments');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_pairwise_variance_swap_instruments:write', 'Create and modify FX pairwise variance swap instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_pairwise_variance_swap_instruments:write', 'Create and modify a vendor''s view of a latent FX volatility surface');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::fx_pairwise_variance_swap_instruments:delete', 'Delete FX pairwise variance swap instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::rate_digital_option_instruments:read', 'View rate digital option instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::rate_digital_option_instruments:write', 'Create and modify rate digital option instruments');

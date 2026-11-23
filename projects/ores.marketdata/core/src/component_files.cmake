@@ -297,6 +297,7 @@ set(files
     "vendor/ice_notation.cpp"
     "vendor/lseg_notation.cpp"
     "vendor/provider_notation.cpp"
+    "vendor/simulated_fixing_notation.cpp"
     "vendor/tradeweb_notation.cpp"
 )
 
@@ -634,5 +635,6 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/vendor/lseg_notation.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/vendor/provider_notation.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/vendor/quote_description.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/vendor/simulated_fixing_notation.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/vendor/tradeweb_notation.hpp"
 )

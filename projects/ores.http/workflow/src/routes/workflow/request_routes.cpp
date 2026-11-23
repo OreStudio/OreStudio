@@ -191,7 +191,8 @@ void request_routes::register_routes(
         registry->register_route(built);
     };
 
-    add(router->get("/api/me/requests").catalogue("web_get_me_requests", "workflow", "requests", false)
+    add(router->get("/api/me/requests")
+            .catalogue("web_get_me_requests", "workflow", "requests", false)
             .summary("The requests the caller raised, newest first")
             .description("Each row names the roles it asks for and the latest thing said about "
                          "it. The names are a join: the account that raised a request, and the "
@@ -243,7 +244,8 @@ void request_routes::register_routes(
                 });
             }));
 
-    add(router->get("/api/requests/{id}").catalogue("web_get_requests_id", "workflow", "requests", false)
+    add(router->get("/api/requests/{id}")
+            .catalogue("web_get_requests_id", "workflow", "requests", false)
             .summary("One request, with what it asks for, what was decided and what it is about")
             .description("A notice carries the request it is about, and is read after the request "
                          "stopped waiting, so this read does not depend on a queue. A request the "
@@ -302,7 +304,9 @@ void request_routes::register_routes(
                 });
             }));
 
-    add(router->post("/api/me/requests").catalogue("web_post_me_requests", "workflow", "requests", true)
+    add(router->post("/api/me/requests")
+            .catalogue("web_post_me_requests", "workflow", "requests", true)
+            .body<ask_body>()
             .summary("Ask for roles, and answer the request raised")
             .description("The service refuses a role that is unknown, already held, or already "
                          "asked for in a request that still waits.")
@@ -328,7 +332,9 @@ void request_routes::register_routes(
                 });
             }));
 
-    add(router->post("/api/requests/{id}/decision").catalogue("web_post_requests_id_decision", "workflow", "requests", true)
+    add(router->post("/api/requests/{id}/decision")
+            .catalogue("web_post_requests_id_decision", "workflow", "requests", true)
+            .body<decide_body>()
             .summary("Approve, refuse, hold or resume one request")
             .description("The decider needs the permission the request's kind names and is not "
                          "the person who asked; the service decides both, so the route does not "
@@ -352,7 +358,9 @@ void request_routes::register_routes(
                 });
             }));
 
-    add(router->delete_("/api/me/requests/{id}").catalogue("web_delete_me_requests_id", "workflow", "requests", true)
+    add(router->delete_("/api/me/requests/{id}")
+            .catalogue("web_delete_me_requests_id", "workflow", "requests", true)
+            .body<intent_body>()
             .summary("Take back a request, against the version the caller read")
             .description("Only an open request can be withdrawn, and only by the person who "
                          "asked. A request that moved on is refused rather than discarded.")

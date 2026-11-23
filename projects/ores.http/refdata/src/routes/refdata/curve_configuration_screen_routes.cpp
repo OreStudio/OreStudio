@@ -219,7 +219,11 @@ void curve_configuration_screen_routes::register_routes(
         registry->register_route(built);
     };
 
-    add(router->get("/api/refdata/curve-configurations").catalogue("web_get_refdata_curve_configurations", "reference-data", "curve_configurations", false)
+    add(router->get("/api/refdata/curve-configurations")
+            .catalogue("web_get_refdata_curve_configurations",
+                       "reference-data",
+                       "curve_configurations",
+                       false)
             .summary("The curve configurations a party holds, in name order")
             .description("One row per configuration with how many curves it holds and how many "
                          "sections they name, so a person reaches a configuration without a "
@@ -274,7 +278,11 @@ void curve_configuration_screen_routes::register_routes(
                 });
             }));
 
-    add(router->get("/api/refdata/curve-configurations/{id}").catalogue("web_get_refdata_curve_configurations_id", "reference-data", "curve_configurations", false)
+    add(router->get("/api/refdata/curve-configurations/{id}")
+            .catalogue("web_get_refdata_curve_configurations_id",
+                       "reference-data",
+                       "curve_configurations",
+                       false)
             .summary("One curve configuration, as its screen reads it")
             .description("The configuration a reporting configuration is filled by, drawn as the "
                          "sections the schema declares, each with its entries, the leaves they "
@@ -326,7 +334,12 @@ void curve_configuration_screen_routes::register_routes(
             }));
 
 
-    add(router->put("/api/refdata/curve-configurations/{id}").catalogue("web_put_refdata_curve_configurations_id", "reference-data", "curve_configurations", true)
+    add(router->put("/api/refdata/curve-configurations/{id}")
+            .catalogue("web_put_refdata_curve_configurations_id",
+                       "reference-data",
+                       "curve_configurations",
+                       true)
+            .body<curve_amend::body>()
             .summary("Change leaves of one curve configuration")
             .description("Reads the stored document whole, changes the leaves the caller names "
                          "and writes back only the tables they reach, so the rows the screen does "

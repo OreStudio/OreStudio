@@ -18,7 +18,7 @@
  *
  *
  */
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import { useState, type ReactNode } from 'react';
 import { Link } from 'react-router';
 import { useHeld } from '../../access/holds.js';
@@ -29,7 +29,10 @@ import { logTime } from '../../operations/LogsPage.js';
 import { ReasonFields, useReason } from '../../refdata/shared.js';
 import { Card } from '../../ui/Card.js';
 import { Button, Dialog, Notice, Tag } from '../../ui/Primitives.js';
+import { PATHS } from '../../shell/paths.js';
 import { feedPageOf } from './feedTree.js';
+import { FOLDERS_KEY } from './useCollections.js';
+import { HELD_KEY } from './useProviderFeeds.js';
 
 const graphKey = (node: string): readonly unknown[] => ['feed-graph', node];
 
@@ -44,33 +47,48 @@ function useFeedGraph(node: string) {
 }
 
 /**
- * The page of a node of the graph, when it has one: an upstream spot or curve, or a latent
- * surface. A source or a vendor view has none.
+ * Where a node of the graph opens: a feed's own page, the Graph tab of the surface a vendor view
+ * quotes, since a view has no page of its own and is stopped there, or a source's provider on
+ * the Provider tab. The graph is what names a view's surface.
  */
 export function nodePage(
-    node: Pick<FeedGraphNode, 'kind' | 'name' | 'feed_config_id'>,
+    node: Pick<FeedGraphNode, 'kind' | 'name' | 'feed_config_id' | 'provider_code'>,
+    graph?: FeedGraph,
 ): string | undefined {
+    if (node.kind === 'source')
+        return `${PATHS.synthetic}?tab=provider&provider=${encodeURIComponent(node.provider_code)}`;
+    if (node.kind === 'view') {
+        const surface = graph?.edges.find((e) => e.node === node.name && e.role === 'surface');
+        const latent = graph?.nodes.find((n) => n.name === surface?.input);
+        const page = latent === undefined ? undefined : nodePage(latent);
+        return page === undefined ? undefined : `${page}?tab=graph`;
+    }
     if (node.feed_config_id === '') return undefined;
     if (node.kind === 'latent')
         return feedPageOf({ kind: 'fx_vol_surface', id: node.feed_config_id });
-    if (node.kind !== 'upstream') return undefined;
     return feedPageOf({
         kind: node.name.includes('.ir.yield_curve.') ? 'ir_curve' : 'fx_spot',
         id: node.feed_config_id,
     });
 }
 
-/** A node's name, as a link to its page when it has one. */
+/** A node's name, as a link to where it opens. */
 function NodeName({
     node,
     name,
+    graph,
 }: {
     readonly node: FeedGraphNode | undefined;
     readonly name: string;
+    readonly graph: FeedGraph;
 }): ReactNode {
-    const page = node === undefined ? undefined : nodePage(node);
-    const shown = <span className="font-mono text-xs">{name}</span>;
-    return page === undefined ? shown : <Link to={page}>{shown}</Link>;
+    const page = node === undefined ? undefined : nodePage(node, graph);
+    if (page === undefined) return <span className="font-mono text-xs">{name}</span>;
+    return (
+        <Link className="font-mono text-xs text-accent hover:text-accent-bright" to={page}>
+            {name}
+        </Link>
+    );
 }
 
 const TONE: Readonly<Record<string, 'up' | 'down' | 'warn' | 'muted'>> = {
@@ -86,6 +104,25 @@ export function NodeState({ state }: { readonly state: string }): ReactNode {
     return <Tag tone={TONE[state] ?? 'muted'}>{t(`marketdata.feedGraph.state.${state}`)}</Tag>;
 }
 
+/**
+ * Waits for every one of several node stops or starts, so a failure stops none of the others
+ * from landing, and fails with how many failed and the first reason.
+ */
+async function settleAll(calls: readonly Promise<void>[]): Promise<void> {
+    const settled = await Promise.allSettled(calls);
+    const failed = settled.filter((one) => one.status === 'rejected');
+    if (failed.length === 0) return;
+    const first = failed[0] as PromiseRejectedResult;
+    const reason = first.reason instanceof Error ? first.reason.message : String(first.reason);
+    throw new Error(`${failed.length} of ${settled.length} failed: ${reason}`);
+}
+
+/** Reads again what a node stop or start changes: the graph, the messages and the feed lists. */
+function refreshNodes(queries: QueryClient): void {
+    for (const queryKey of [['feed-graph'], ['feed-messages'], FOLDERS_KEY, HELD_KEY])
+        void queries.invalidateQueries({ queryKey });
+}
+
 /** Stop or start one node, with the person's reason for a stop. */
 function NodeControl({ node }: { readonly node: FeedGraphNode }): ReactNode {
     const { t } = useTranslation();
@@ -94,10 +131,7 @@ function NodeControl({ node }: { readonly node: FeedGraphNode }): ReactNode {
     const [stopping, setStopping] = useState(false);
     const start = useMutation({
         mutationFn: () => api.startFeedNode(node.name),
-        onSuccess: () => {
-            void queries.invalidateQueries({ queryKey: ['feed-graph'] });
-            void queries.invalidateQueries({ queryKey: ['feed-messages'] });
-        },
+        onSettled: () => refreshNodes(queries),
     });
     if (!mayRun) return null;
     return (
@@ -112,17 +146,25 @@ function NodeControl({ node }: { readonly node: FeedGraphNode }): ReactNode {
                 </Button>
             )}
             {start.error !== null && <Notice tone="error">{start.error.message}</Notice>}
-            {stopping && <StopNodeDialog node={node} onClose={() => setStopping(false)} />}
+            {stopping && (
+                <StopNodeDialog
+                    title={t('marketdata.feedGraph.stopTitle', { node: node.name })}
+                    names={[node.name]}
+                    onClose={() => setStopping(false)}
+                />
+            )}
         </>
     );
 }
 
-/** The question a stop asks: what it does, and why the person stops the node. */
+/** The question a stop asks: what it does, and why the person stops the nodes. */
 function StopNodeDialog({
-    node,
+    title,
+    names,
     onClose,
 }: {
-    readonly node: FeedGraphNode;
+    readonly title: string;
+    readonly names: readonly string[];
     readonly onClose: () => void;
 }): ReactNode {
     const { t } = useTranslation();
@@ -132,19 +174,20 @@ function StopNodeDialog({
     const missing = reason.needsCommentary && commentary.trim() === '';
     const stop = useMutation({
         mutationFn: () =>
-            api.stopFeedNode(node.name, {
-                reason_code: reason.code,
-                commentary: commentary.trim(),
-            }),
-        onSuccess: () => {
-            void queries.invalidateQueries({ queryKey: ['feed-graph'] });
-            void queries.invalidateQueries({ queryKey: ['feed-messages'] });
-            onClose();
-        },
+            settleAll(
+                names.map((name) =>
+                    api.stopFeedNode(name, {
+                        reason_code: reason.code,
+                        commentary: commentary.trim(),
+                    }),
+                ),
+            ),
+        onSettled: () => refreshNodes(queries),
+        onSuccess: () => onClose(),
     });
     return (
         <Dialog
-            title={t('marketdata.feedGraph.stopTitle', { node: node.name })}
+            title={title}
             name="stop-feed-node"
             onClose={onClose}
             footer={
@@ -169,6 +212,57 @@ function StopNodeDialog({
             />
             {stop.error !== null && <Notice tone="error">{stop.error.message}</Notice>}
         </Dialog>
+    );
+}
+
+/**
+ * Stops or starts every feed of a provider that has no source of its own, such as latent, as
+ * nodes of the graph: the vendors' sources hold its feeds, so a hand run cannot start one, and a
+ * node stop is stored, said to the nodes below it, and lifted by a start.
+ */
+export function ProviderNodeControl({
+    provider,
+    name,
+}: {
+    readonly provider: string;
+    readonly name: string;
+}): ReactNode {
+    const { t } = useTranslation();
+    const mayRun = useHeld()(PERMISSION.feedsRun);
+    const queries = useQueryClient();
+    const [stopping, setStopping] = useState(false);
+    const graph = useFeedGraph('');
+    const nodes = (graph.data?.nodes ?? []).filter(
+        (n) => n.provider_code === provider && n.kind !== 'source' && n.kind !== 'view',
+    );
+    const stopped = nodes.filter((n) => n.state === 'stopped').map((n) => n.name);
+    const others = nodes.filter((n) => n.state !== 'stopped').map((n) => n.name);
+    const start = useMutation({
+        mutationFn: () => settleAll(stopped.map((one) => api.startFeedNode(one))),
+        onSettled: () => refreshNodes(queries),
+    });
+    if (!mayRun || nodes.length === 0) return null;
+    return (
+        <>
+            <Button
+                size="sm"
+                disabled={stopped.length === 0 || start.isPending}
+                onClick={() => start.mutate()}
+            >
+                {t('marketdata.synthetic.runs.start')}
+            </Button>
+            <Button size="sm" disabled={others.length === 0} onClick={() => setStopping(true)}>
+                {t('marketdata.synthetic.runs.stop')}
+            </Button>
+            {start.error !== null && <Notice tone="error">{start.error.message}</Notice>}
+            {stopping && (
+                <StopNodeDialog
+                    title={t('marketdata.feedGraph.stopTitle', { node: name })}
+                    names={others}
+                    onClose={() => setStopping(false)}
+                />
+            )}
+        </>
     );
 }
 
@@ -202,7 +296,7 @@ function Neighbours({
                                         {t(`marketdata.feedGraph.role.${row.role}`)}
                                     </td>
                                     <td className="py-1 pr-2">
-                                        <NodeName node={node} name={row.name} />
+                                        <NodeName node={node} name={row.name} graph={graph} />
                                     </td>
                                     <td className="py-1 pr-2">
                                         {node === undefined ? null : (
@@ -257,7 +351,7 @@ export function FeedGraphTab({ name }: { readonly name: string }): ReactNode {
                     {me.cause !== '' && (
                         <div>
                             {t('marketdata.feedGraph.causedBy')}{' '}
-                            <NodeName node={cause} name={me.cause} />
+                            <NodeName node={cause} name={me.cause} graph={graph.data} />
                         </div>
                     )}
                 </div>

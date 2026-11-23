@@ -419,7 +419,8 @@ void tenant_roster_routes::register_routes(
             });
         });
 
-    add(router->get("/api/overview").catalogue("web_get_overview", "tenancy", "overview", false)
+    add(router->get("/api/overview")
+            .catalogue("web_get_overview", "tenancy", "overview", false)
             .description("A composed view owned by the IAM service: the tenant roster counted "
                          "by status, the tenants that need the administrator, the first page of "
                          "the roster and the newest setups. Each count is a list read that asks "
@@ -547,7 +548,8 @@ void tenant_roster_routes::register_routes(
             });
         });
 
-    add(router->get("/api/tenants/{code}").catalogue("web_get_tenants_code", "tenancy", "tenants", false),
+    add(router->get("/api/tenants/{code}")
+            .catalogue("web_get_tenants_code", "tenancy", "tenants", false),
         "Read one tenant of the deployment and the run that set it up",
         [&session](const http_request& req) {
             return guarded<messaging::get_tenant_request>([&] {
@@ -570,7 +572,9 @@ void tenant_roster_routes::register_routes(
             });
         });
 
-    add(router->delete_("/api/tenants/{code}").catalogue("web_delete_tenants_code", "tenancy", "tenants", true),
+    add(router->delete_("/api/tenants/{code}")
+            .catalogue("web_delete_tenants_code", "tenancy", "tenants", true)
+            .body<confirm_removal_body>(),
         "Remove one tenant of the deployment",
         [&session](const http_request& req) {
             return guarded<messaging::delete_tenant_request>([&] {

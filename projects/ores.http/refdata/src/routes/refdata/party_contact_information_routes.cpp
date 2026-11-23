@@ -484,6 +484,7 @@ void party_contact_information_routes::register_routes(
             .query_param("reason", "string", "", true, "Change reason code")
             .query_param("commentary", "string", "", true, "Commentary")
             .query_param("version", "integer", "", false, "Version")
+            .no_body()
             .response<messaging::delete_party_contact_information_response>()
             .handler([&session](const http_request& req) { return handle_delete(req, session); });
     const auto delete_built = delete_route.build();

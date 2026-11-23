@@ -156,31 +156,13 @@ public:
     [[nodiscard]] std::optional<double> index_rate() const;
 
     /**
-     * @brief The fixings of the curve's own index, as the run states them, or nothing.
+     * @brief Puts the rate of the curve's own index on the run's board, under the index's
+     * fixing address, on every tick.
      *
-     * A curve states the fixings of its own index because no publisher fixes these indices,
-     * and a leg that has already reset needs them. The plan is what the curve knows and the
-     * service writes: the index's address, the rate the curve states for it, the day the
-     * history ends on, and the run's seed, which draws the days.
+     * The simulated fixing publisher reads the rate there and fixes the index from it, so a
+     * fixing and the curve agree on the day it is taken.
      */
-    struct fixing_plan final {
-        std::string index_uri;
-        double level = 0.0;
-        std::chrono::year_month_day as_of;
-        std::uint64_t run_seed = 0;
-    };
-
-    /// Plans the stating of the index's fixings, which the service writes when it starts the
-    /// feed.
-    void plan_fixings(std::string index_uri,
-                      double level,
-                      std::chrono::year_month_day as_of,
-                      std::uint64_t run_seed);
-
-    /// The plan the feed carries, or nothing when its index states no fixings.
-    [[nodiscard]] const std::optional<fixing_plan>& fixings_plan() const {
-        return fixings_;
-    }
+    void state_index_rate(const std::string& index_uri);
 
     /**
      * @brief The subject this feed's ticks actually travel on.
@@ -238,7 +220,8 @@ private:
     /// market tick. Empty for every entry when the feed serves no adapter.
     std::vector<std::optional<ir_pillar_quote_target>> adapter_targets_;
     /// The fixings of the curve's own index, which the service writes when it starts the feed.
-    std::optional<fixing_plan> fixings_;
+    /// Where the curve states its index's rate on the board, or nothing when it states none.
+    std::optional<ores::analytics::quant::domain::market_board::member_id> index_rate_member_;
     /// The last adapter tick of each pillar, by its external id, so a repeated tick is the one the
     /// pillar made before.
     std::map<std::string, ores::marketdata::messaging::adapter_tick> previous_ticks_;

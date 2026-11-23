@@ -10,11 +10,11 @@
       <Underlyings>
         <Underlying>
           <Type>FX</Type>
-          <Name>TR20H-EUR-USD</Name>
+          <Name>WMR1000NYC-EUR-USD</Name>
         </Underlying>
         <Underlying>
           <Type>FX</Type>
-          <Name>TR20H-GBP-USD</Name>
+          <Name>WMR1000NYC-GBP-USD</Name>
         </Underlying>
       </Underlyings>
       <InitialPrices>
@@ -143,11 +143,11 @@
       <Underlyings>
         <Underlying>
           <Type>FX</Type>
-          <Name>TR20H-EUR-USD</Name>
+          <Name>WMR1000NYC-EUR-USD</Name>
         </Underlying>
         <Underlying>
           <Type>FX</Type>
-          <Name>TR20H-GBP-USD</Name>
+          <Name>WMR1000NYC-GBP-USD</Name>
         </Underlying>
       </Underlyings>
       <InitialPrices>

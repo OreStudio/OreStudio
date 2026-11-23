@@ -77,6 +77,23 @@
  *       on l.dataset_id = f.dataset_id and l.feed_id = f.id
  *     join ores_dq_fx_vol_contributors_artefact_tbl c
  *       on c.dataset_id = l.dataset_id and c.id = l.contributor_id
+ *     union all
+ *     select distinct 'fixir', c.currency_code, c.index_family, c.tenor, '', '', '', ''
+ *     from ores_dq_ir_curve_generation_configs_artefact_tbl c
+ *     where c.provider_code is not null
+ *     union all
+ *     select distinct 'fixfx', s.base_currency_code, s.quote_currency_code,
+ *            k.fixing_source_code, '', '', '', ''
+ *     from ores_dq_fx_spot_generation_configs_artefact_tbl s
+ *     join ores_dq_currency_pairs_artefact_tbl p
+ *       on p.base_currency = s.base_currency_code and p.quote_currency = s.quote_currency_code
+ *     join ores_refdata_cut_codes_tbl k
+ *       on k.code = p.default_cut_code and k.valid_to = ores_utility_infinity_timestamp_fn()
+ *     where s.provider_code is not null
+ *
+ * A fixing line names an interest rate index (fixir: currency, family, tenor) or an FX pair at
+ * the source of its default cut (fixfx: base, quote, source). Its id is what the simulated fixing
+ * notation writes for the fixing's address.
  *
  * A surface's line is expanded to the five labels its feed quotes at the expiry, and its rows go
  * to the volatility seed, which runs after the surfaces are staged.
@@ -84,11 +101,14 @@
  * With no --write the statements go to stdout. With no input file the quotes are read from stdin.
  */
 #include "ores.marketdata.api/datum/market_datum.hpp"
+#include "ores.marketdata.api/datum/market_index.hpp"
 #include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.core/oresmd/pillar_quote.hpp"
 #include "ores.marketdata.core/vendor/provider_notation.hpp"
 #include "ores.marketdata.core/vendor/quote_description.hpp"
+#include "ores.marketdata.core/vendor/simulated_fixing_notation.hpp"
 #include "ores.synthetic.api/domain/ir_curve_generation_config.hpp"
+#include "ores.synthetic.api/feeds/index_fixings.hpp"
 #include "ores.synthetic.api/feeds/ir_curve_template_resolver.hpp"
 #include <algorithm>
 #include <array>
@@ -119,10 +139,16 @@ constexpr std::string_view ir_begin_marker = "-- BEGIN GENERATED ir pillar ids";
 constexpr std::string_view ir_end_marker = "-- END GENERATED ir pillar ids";
 constexpr std::string_view vol_begin_marker = "-- BEGIN GENERATED fx option ids";
 constexpr std::string_view vol_end_marker = "-- END GENERATED fx option ids";
+constexpr std::string_view fixing_begin_marker = "-- BEGIN GENERATED fixing ids";
+constexpr std::string_view fixing_end_marker = "-- END GENERATED fixing ids";
 
 /// The seed of the volatility points, which runs after the surfaces are staged.
 constexpr std::string_view default_option_seed =
     "projects/ores.sql/populate/marketdata/marketdata_vendor_volatility_instruments_populate.sql";
+
+/// The seed of the simulated fixings, which runs after the currency pairs are staged.
+constexpr std::string_view default_fixing_seed =
+    "projects/ores.sql/populate/marketdata/marketdata_vendor_fixing_instruments_populate.sql";
 
 /// The labels a surface feed quotes at each expiry.
 constexpr std::array<std::string_view, 5> option_labels{"ATM", "25RR", "25BF", "10RR", "10BF"};
@@ -158,6 +184,23 @@ struct option_feed final {
     std::string quote_currency_code;
     std::string expiry;
     std::string strike_label;
+};
+
+/**
+ * @brief One fixing the simulator publishes, as the artefact tables state it.
+ *
+ * An interest rate fixing is the index of one curve: its currency, family and index tenor. An
+ * FX fixing is one pair at the source that fixes its default cut.
+ */
+struct fixing_feed final {
+    /// "ir" or "fx".
+    std::string kind;
+    /// The currency of an IR index, or the base of an FX pair.
+    std::string key_a;
+    /// The family of an IR index, or the quote of an FX pair.
+    std::string key_b;
+    /// The curve config's tenor field of an IR index, or the fixing source of an FX pair.
+    std::string key_c;
 };
 
 /// The id and the item of one quote, or neither when no notation writes the quote.
@@ -464,6 +507,69 @@ std::string vol_statement_of(const row_map<option_feed>& rows) {
     return out;
 }
 
+/**
+ * @brief The fixing's address and its id in the simulated fixing notation, or neither when the
+ * fixing has no address: a meeting-dated curve states no fixings of its own.
+ */
+quote_row row_of(const fixing_feed& f) {
+    std::optional<std::string> item;
+    if (f.kind == "ir") {
+        ores::synthetic::domain::ir_curve_generation_config cfg;
+        cfg.currency_code = f.key_a;
+        cfg.index_family = f.key_b;
+        cfg.tenor = f.key_c;
+        if (auto uri = ores::synthetic::feed::curve_fixing_uri(cfg))
+            item = std::move(*uri);
+    } else {
+        auto index = datum::market_index::make(
+            datum::index_family::fx, f.key_a, {{"source", f.key_c}, {"ccy", f.key_b}});
+        if (!index)
+            throw std::runtime_error("the FX fixing " + f.key_a + f.key_b + " at " + f.key_c +
+                                     " has no index: " + index.error());
+        auto uri = datum::oresmd_uri_codec::write_index(*index);
+        if (!uri)
+            throw std::runtime_error("the FX fixing " + f.key_a + f.key_b + " at " + f.key_c +
+                                     " has no address: " + uri.error());
+        item = std::move(*uri);
+    }
+    if (!item)
+        return {};
+    const vendor::simulated_fixing_notation notation;
+    const vendor::quote_description description{vendor::index_fixing{.item = *item}};
+    const auto written = notation.write(description);
+    if (!written)
+        throw std::runtime_error("the simulated fixing notation does not write '" + *item +
+                                 "': " + written.error().message);
+    require_round_trip(notation, description, *written);
+    return quote_row{.id = *written, .oresmd_uri = *item};
+}
+
+/// The statement that fills the seed's fixing lookup, one row for each fixing the simulator
+/// publishes.
+std::string fixing_statement_of(const row_map<fixing_feed>& rows) {
+    std::size_t named = 0;
+    for (const auto& [feed, row] : rows)
+        if (row.id)
+            ++named;
+    std::string out = std::format("    -- {}: {} with an id, {} without\n",
+                                  vendor::simulated_fixings_provider,
+                                  named,
+                                  rows.size() - named);
+    out += "    insert into t_fixing_id (kind, key_a, key_b, key_c,\n"
+           "        id_scheme, external_id, field, oresmd_uri) values\n";
+    std::size_t i = 0;
+    for (const auto& [feed, row] : rows) {
+        out += std::format("    ({}, {}, {}, {}, ",
+                           quoted(feed.kind),
+                           quoted(feed.key_a),
+                           quoted(feed.key_b),
+                           quoted(feed.key_c));
+        out += id_columns_of(row);
+        out += (++i == rows.size()) ? ");\n" : "),\n";
+    }
+    return out;
+}
+
 /// The seed's text with the region between @p begin_marker and @p end_marker replaced by
 /// @p statement.
 std::string replaced(const std::string& seed,
@@ -485,6 +591,7 @@ struct feeds final {
     std::vector<pair_feed> pairs;
     std::vector<pillar_feed> pillars;
     std::vector<option_feed> options;
+    std::vector<fixing_feed> fixings;
 };
 
 /// The input, read from @p in: one line for each quote of each artefact config.
@@ -517,6 +624,12 @@ feeds read_feeds(std::istream& in) {
             for (const auto label : option_labels)
                 out.options.push_back(
                     option_feed{fields[1], fields[2], fields[3], fields[4], std::string(label)});
+        } else if (fields[0] == "fixir" || fields[0] == "fixfx") {
+            if (fields.size() < 4)
+                throw std::runtime_error(
+                    "expected at least four tab separated fields for a fixing, got '" + line + "'");
+            out.fixings.push_back(
+                fixing_feed{fields[0] == "fixir" ? "ir" : "fx", fields[1], fields[2], fields[3]});
         } else {
             throw std::runtime_error("'" + fields[0] + "' is not a market this program writes");
         }
@@ -549,6 +662,12 @@ bool pillar_less(const pillar_feed& a, const pillar_feed& b) {
                                         b.tenor);
 }
 
+
+/// The order of the fixings, and the identity the seed joins on.
+bool fixing_less(const fixing_feed& a, const fixing_feed& b) {
+    return std::tie(a.kind, a.key_a, a.key_b, a.key_c) <
+           std::tie(b.kind, b.key_a, b.key_b, b.key_c);
+}
 
 /// The order of the surface points, and the identity the seed joins on.
 bool option_less(const option_feed& a, const option_feed& b) {
@@ -584,6 +703,8 @@ int main(int argc, char** argv) {
                          "    fx provider base quote\n"
                          "    ir provider currency index-family instrument start end tenor\n"
                          "    vol provider base quote expiry\n"
+                         "    fixir currency index-family tenor\n"
+                         "    fixfx base quote fixing-source\n"
                          "  Writes the seeds' three lookup tables.\n";
             return 2;
         } else {
@@ -629,12 +750,18 @@ int main(int argc, char** argv) {
         for (const auto& p : input.options)
             vol_rows.emplace(p, row_of(p, unnamed_by_notation, unnamed_by_provider));
 
+        row_map<fixing_feed> fixing_rows(fixing_less);
+        for (const auto& f : input.fixings)
+            fixing_rows.emplace(f, row_of(f));
+
         const auto fx_statement = fx_statement_of(fx_rows);
+        const auto fixing_statement =
+            fixing_rows.empty() ? std::string() : fixing_statement_of(fixing_rows);
         const auto ir_statement = ir_statement_of(ir_rows);
         const auto vol_statement = vol_rows.empty() ? std::string() : vol_statement_of(vol_rows);
 
         if (!write) {
-            std::cout << fx_statement << ir_statement << vol_statement;
+            std::cout << fx_statement << ir_statement << vol_statement << fixing_statement;
             return 0;
         }
 
@@ -656,6 +783,27 @@ int main(int argc, char** argv) {
                 out << option_updated;
                 std::cout << "wrote " << vol_rows.size() << " surface point(s) to "
                           << option_seed_path.string() << '\n';
+            }
+        }
+
+        // The fixings have a seed of their own, which runs after the currency pairs are staged.
+        if (!fixing_rows.empty()) {
+            const auto fixing_seed_path = std::filesystem::path(std::string(default_fixing_seed));
+            std::ifstream fixing_file(fixing_seed_path);
+            if (!fixing_file)
+                throw std::runtime_error("cannot read the seed: " + fixing_seed_path.string());
+            std::ostringstream fixing_text;
+            fixing_text << fixing_file.rdbuf();
+            fixing_file.close();
+            const auto fixing_updated = replaced(
+                fixing_text.str(), fixing_begin_marker, fixing_end_marker, fixing_statement);
+            if (fixing_updated != fixing_text.str()) {
+                std::ofstream out(fixing_seed_path);
+                if (!out)
+                    throw std::runtime_error("cannot write the seed: " + fixing_seed_path.string());
+                out << fixing_updated;
+                std::cout << "wrote " << fixing_rows.size() << " fixing(s) to "
+                          << fixing_seed_path.string() << '\n';
             }
         }
 

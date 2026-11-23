@@ -287,6 +287,7 @@ void storage_routes::register_routes(
 
     router->add_route(router->delete_(object_pattern)
                           .catalogue("delete_storage_object", "operations", "storage_objects", true)
+                          .no_body()
                           .summary("Delete storage object")
                           .description("Delete an object from the named bucket by key")
                           .tags({"storage"})

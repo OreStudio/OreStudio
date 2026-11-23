@@ -389,7 +389,9 @@ void calibration_routes::register_routes(
         registry->register_route(built);
     };
 
-    add(router->get("/api/synthetic/calibration/{assetClass}").catalogue("web_get_synthetic_calibration_assetclass", "simulation", "calibration", false)
+    add(router->get("/api/synthetic/calibration/{assetClass}")
+            .catalogue(
+                "web_get_synthetic_calibration_assetclass", "simulation", "calibration", false)
             .summary("The calibration of an asset class")
             .description("A composed view owned by the synthetic service: the policy the class "
                          "calibrates under, every feed of it resolved as a start would, with its "
@@ -431,7 +433,10 @@ void calibration_routes::register_routes(
                 });
             }));
 
-    add(router->post("/api/synthetic/calibration/{assetClass}/run").catalogue("web_post_synthetic_calibration_assetclass_run", "simulation", "calibration", true)
+    add(router->post("/api/synthetic/calibration/{assetClass}/run")
+            .catalogue(
+                "web_post_synthetic_calibration_assetclass_run", "simulation", "calibration", true)
+            .body<calibration::run_body>()
             .summary("Calibrate an asset class's feeds and store what moved")
             .description("Each feed's resolved level and deviations are written as a new version "
                          "of its config, under the reason system.calibration, when they moved. "
@@ -467,7 +472,10 @@ void calibration_routes::register_routes(
                 });
             }));
 
-    add(router->post("/api/synthetic/calibration/variance/{id}/review").catalogue("web_post_synthetic_calibration_variance_id_review", "simulation", "variance", true)
+    add(router->post("/api/synthetic/calibration/variance/{id}/review")
+            .catalogue(
+                "web_post_synthetic_calibration_variance_id_review", "simulation", "variance", true)
+            .body<calibration::review_body>()
             .summary("Approve or reject one proposed variance calibration")
             .description("Approving supersedes the pair's earlier approval and points the pair's "
                          "GJR-GARCH feeds at the new calibration. A calibration that does not "
@@ -509,7 +517,12 @@ void calibration_routes::register_routes(
                 });
             }));
 
-    add(router->put("/api/synthetic/calibration/{assetClass}/policy").catalogue("web_put_synthetic_calibration_assetclass_policy", "simulation", "calibration", true)
+    add(router->put("/api/synthetic/calibration/{assetClass}/policy")
+            .catalogue("web_put_synthetic_calibration_assetclass_policy",
+                       "simulation",
+                       "calibration",
+                       true)
+            .body<calibration::policy_body>()
             .summary("State an asset class's calibration policy")
             .description("The policy row is written against the version read. The variance "
                          "window and approval rules are kept as stored, or as the defaults for a "
@@ -575,7 +588,12 @@ void calibration_routes::register_routes(
                 });
             }));
 
-    add(router->delete_("/api/synthetic/calibration/{assetClass}/policy").catalogue("web_delete_synthetic_calibration_assetclass_policy", "simulation", "calibration", true)
+    add(router->delete_("/api/synthetic/calibration/{assetClass}/policy")
+            .catalogue("web_delete_synthetic_calibration_assetclass_policy",
+                       "simulation",
+                       "calibration",
+                       true)
+            .body<calibration::intent_body>()
             .summary("Return an asset class to automatic calibration")
             .description("The class's provider order and its policy row are removed. A class "
                          "with no policy row is already automatic.")
@@ -599,7 +617,9 @@ void calibration_routes::register_routes(
                 });
             }));
 
-    add(router->put("/api/synthetic/calibration/feeds/{id}/pin").catalogue("web_put_synthetic_calibration_feeds_id_pin", "simulation", "feeds", true)
+    add(router->put("/api/synthetic/calibration/feeds/{id}/pin")
+            .catalogue("web_put_synthetic_calibration_feeds_id_pin", "simulation", "feeds", true)
+            .body<calibration::pin_body>()
             .summary("Pin one candidate on a feed, so it overrides its class policy")
             .description("The feed's own items become the one item given, read on or before the "
                          "clock over the window given. The old items go first, so a write that "
@@ -627,7 +647,9 @@ void calibration_routes::register_routes(
                 });
             }));
 
-    add(router->delete_("/api/synthetic/calibration/feeds/{id}/pin").catalogue("web_delete_synthetic_calibration_feeds_id_pin", "simulation", "feeds", true)
+    add(router->delete_("/api/synthetic/calibration/feeds/{id}/pin")
+            .catalogue("web_delete_synthetic_calibration_feeds_id_pin", "simulation", "feeds", true)
+            .body<calibration::intent_body>()
             .summary("Clear a feed's own items, so it derives its candidates from its policy")
             .description("A feed with no items of its own is already following its policy.")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {

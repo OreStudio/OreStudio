@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :serve_mcp_from_ores_http:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/declare-a-typed-body-on-every-hand-written-route
+#+pr: 5066
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-23
@@ -26,11 +26,11 @@ Split from Declare each route's place in the catalogue, whose first PR declared 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:008127D7-B897-4CF7-854B-6DDFB89AC7F4][Serve ORE's API to LLM agents over MCP]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-23                               |
 
 * Acceptance
@@ -45,6 +45,18 @@ Split from Declare each route's place in the catalogue, whose first PR declared 
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
+- The two web templates declare their write routes' bodies, by the same
+  sections their handlers read them under; the other templates already did.
+- A lever reads each hand-written POST, PUT and PATCH handler, following it
+  into the functions it calls with the request, and declares the type it
+  reads, or =.no_body()= where it reads none.
+- The router gains =.no_body()= and =.json_body()=, the latter for a body whose
+  members depend on a family no one type fixes, and its start-up gate refuses
+  a body route that declares neither a type, a stream nor that it takes none.
+- The builder writes an example through a type's wire traits where it has
+  them, else through the fields it states, because a route's own body type
+  states its fields and has no traits.
+
 * Measurements
 
 Every number this task claims about a tree, with the command that produced it
@@ -57,7 +69,7 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| POST, PUT, PATCH and DELETE operations with a request body in the OpenAPI document | POST 307 of 315, PUT 202 of 202, DELETE 88 of 134; the rest declare and read none | =curl /openapi.json= and count =requestBody= per method | eec9c4824f plus working tree |
 
 * Notes
 
@@ -76,12 +88,30 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5066][#5066]] | [http] Declare a typed body on every hand-written route |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local check: the lever took a hand parser's return type as the body | =change_routes.cpp=, =site_routes.cpp=, =image_screen_routes.cpp= | Accept | Two parsed by hand now declare =.json_body()=; the image upload declares =upload_body=. |
+| 2 | Local check: a template parameter declared as a body | =calibration_routes.cpp= | Accept | The policy route declares =calibration::policy_body=. |
+| 3 | Local check: five routes read through a template helper were marked bodiless | =tenor_screen_routes.cpp=, =feed_operation_routes.cpp= | Accept | Found by counting the live OpenAPI document; each declares the type its helper reads, and the six left bodiless were read by hand. |
+| 4 | Local check: the gate refused the streamed storage upload | =router.cpp= | Accept | A route with a sink declares its body as a stream. |
+| 5 | PR #5066: a route may declare no body and a body at once | =router.cpp= | Accept | The gate refuses it; tested. |
+| 6 | PR #5066: DELETE is not gated | templates, =router.cpp= | Accept | All 134 DELETE operations lacked a schema though 49 generated ones read a removal body; the templates declare it, a single-row DELETE declares none, the hand-written ones are declared and read against their handlers, and the gate covers DELETE. |
+| 7 | PR #5066: the lever's types are unverified | route files | Accept | An audit of each declared body against what its handler reads, then a reading of every route it could not confirm, found ten declared from a neighbouring route: unlock, withdraw-terms, the calibration pin, the request decision, tenant provisioning, and four DELETE routes. All corrected. |
+| 8 | PR #5066: the example writer's fallback fails opaquely | =router.hpp= | Accept | A =static_assert= names what the type needs. |
+| 9 | PR #5066: the gate's comment is long | =router.hpp= | Accept | One reason per list item. |
+| 10 | PR #5066: document =takes_no_body= | =route.hpp= | Accept | States the methods it serves. |
+| 11 | PR #5066: template body types must exist per unit | template | Decline | The compiler refuses a unit without one. |
 
 * Result
+
+Every ores.http route whose method can carry a body, DELETE included, states what it takes: a typed
+body schema, a JSON object of no fixed shape, a stream, or none. The generated
+web routes take theirs from their templates and the hand-written ones state
+theirs, and the server refuses to start while one states nothing. The OpenAPI
+document carries the body of 307 of 315 POST, all 202 PUT and 88 of 134 DELETE
+operations; the rest declare, and read, none. An agent's tool can therefore answer its input schema
+from the catalogue.

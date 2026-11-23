@@ -415,7 +415,8 @@ void booking_routes::register_routes(
         registry->register_route(built);
     };
 
-    add(router->get("/api/trades/new").catalogue("web_get_trades_new", "trading", "new", false)
+    add(router->get("/api/trades/new")
+            .catalogue("web_get_trades_new", "trading", "new", false)
             .summary("What the booking form offers")
             .description("The acting party's open books, the securities a bond trade can name, "
                          "and the identifier schemes the tenant knows. The books and the "
@@ -438,7 +439,8 @@ void booking_routes::register_routes(
                 });
             }));
 
-    add(router->get("/api/draft-reasons").catalogue("web_get_draft_reasons", "trading", "draft_reasons", false)
+    add(router->get("/api/draft-reasons")
+            .catalogue("web_get_draft_reasons", "trading", "draft_reasons", false)
             .summary("The reasons a trade may be captured as a draft with")
             .description("A draft names a code from this list rather than free text, so the form "
                          "offers it and a report of aged drafts can group by it.")
@@ -461,7 +463,8 @@ void booking_routes::register_routes(
                 });
             }));
 
-    add(router->get("/api/trade-link-types").catalogue("web_get_trade_link_types", "trading", "trade_link_types", false)
+    add(router->get("/api/trade-link-types")
+            .catalogue("web_get_trade_link_types", "trading", "trade_link_types", false)
             .summary("The link types a person can record, with the words that describe each")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<trading_messaging::list_trade_link_types_request>([&] {
@@ -480,7 +483,9 @@ void booking_routes::register_routes(
                 });
             }));
 
-    add(router->post("/api/trades/{id}/links").catalogue("web_post_trades_id_links", "trading", "trades", true)
+    add(router->post("/api/trades/{id}/links")
+            .catalogue("web_post_trades_id_links", "trading", "trades", true)
+            .body<booking::link_body>()
             .summary("Record a link from one trade to another")
             .description("A link is made by an activity, and the activity is the newest state's, "
                          "which the route reads rather than trusting a client to name it. The link "
@@ -510,7 +515,9 @@ void booking_routes::register_routes(
                 });
             }));
 
-    add(router->post("/api/trades").catalogue("web_post_trades", "trading", "trades", true)
+    add(router->post("/api/trades")
+            .catalogue("web_post_trades", "trading", "trades", true)
+            .body<booking::link_body>()
             .summary("Book a trade")
             .description(
                 "The write is the trading service's operation, so the route states a "

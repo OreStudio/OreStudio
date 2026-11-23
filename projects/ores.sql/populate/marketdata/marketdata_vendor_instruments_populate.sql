@@ -86,11 +86,27 @@
  *       join ores_dq_fx_vol_surface_feed_contributors_artefact_tbl l
  *         on l.dataset_id = f.dataset_id and l.feed_id = f.id
  *       join ores_dq_fx_vol_contributors_artefact_tbl c
- *         on c.dataset_id = l.dataset_id and c.id = l.contributor_id"
+ *         on c.dataset_id = l.dataset_id and c.id = l.contributor_id
+ *       union all
+ *       select distinct 'fixir', c.currency_code, c.index_family, c.tenor, '', '', '', ''
+ *       from ores_dq_ir_curve_generation_configs_artefact_tbl c
+ *       where c.provider_code is not null
+ *       union all
+ *       select distinct 'fixfx', s.base_currency_code, s.quote_currency_code,
+ *              k.fixing_source_code, '', '', '', ''
+ *       from ores_dq_fx_spot_generation_configs_artefact_tbl s
+ *       join ores_dq_currency_pairs_artefact_tbl p
+ *         on p.base_currency = s.base_currency_code and p.quote_currency = s.quote_currency_code
+ *       join ores_refdata_cut_codes_tbl k
+ *         on k.code = p.default_cut_code and k.valid_to = ores_utility_infinity_timestamp_fn()
+ *       where s.provider_code is not null"
  *   build/publish/bin/ores.marketdata.vendor-catalogue --write tmp/vendor-catalogue.tsv
  *
  * The volatility points go to marketdata_vendor_volatility_instruments_populate.sql, which runs
  * after the surfaces are staged.
+ *
+ * The fixings the simulator publishes go to marketdata_vendor_fixing_instruments_populate.sql,
+ * which runs after the currency pairs are staged.
  *
  * An instrument of a config this seed has no row for stops the seed, and says so, rather than
  * leaving the catalogue quietly short of a feed's ids.

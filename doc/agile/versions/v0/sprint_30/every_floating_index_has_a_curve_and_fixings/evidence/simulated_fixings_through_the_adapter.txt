@@ -1,0 +1,19 @@
+fixing_gap_by_trade.sql on a fresh acme_demo provision, with no service restart.
+Branch feature/generate-simulated-fixings-through-the-adapter, 2026-11-23.
+Command: compass sql -u ddl -- -f evidence/fixing_gap_by_trade.sql
+
+ trades | ir_fixing_addresses | fx_fixing_addresses | empty_fixing_addresses
+--------+---------------------+---------------------+------------------------
+   1235 |                  18 |                  18 |                      0
+
+Fixings by source (excerpt): every simulated fixing arrived through the adapter
+of the simulated fixing publisher, and none carries the source "synthetic" the
+removed direct writer stamped.
+
+       source        | fixings | items
+---------------------+---------+-------
+ simulated-fixings-a |   42640 |    82
+
+The first provision on this branch, before the FX draw kept only the pairs a
+spot config quotes, left five FX addresses empty: AUD/CAD, AUD/CHF, GBP/AUD,
+GBP/CAD and GBP/NZD at WMR1000NYC, crosses no vendor collection quotes.

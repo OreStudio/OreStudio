@@ -88,7 +88,9 @@ void account_door_routes::register_routes(
     using ores::http::forwarding::guarded;
 
     const auto signup =
-        router->post("/api/signup").catalogue("web_post_signup", "auth", "signup", true)
+        router->post("/api/signup")
+            .catalogue("web_post_signup", "auth", "signup", true)
+            .body<signup_body>()
             .summary("Register an account")
             .tags({"auth"})
             .auth_optional()
@@ -120,7 +122,8 @@ void account_door_routes::register_routes(
     registry->register_route(signup);
 
     const auto policy =
-        router->get("/api/password-policy").catalogue("web_get_password_policy", "auth", "password_policy", false)
+        router->get("/api/password-policy")
+            .catalogue("web_get_password_policy", "auth", "password_policy", false)
             .summary("Read the rules a password must keep")
             .tags({"auth"})
             .auth_optional()

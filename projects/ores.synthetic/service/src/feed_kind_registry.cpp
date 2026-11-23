@@ -34,6 +34,7 @@
 #include "ores.synthetic.api/feeds/derived_fx_vol.hpp"
 #include "ores.synthetic.api/feeds/feed_factory.hpp"
 #include "ores.synthetic.api/feeds/generator_outputs.hpp"
+#include "ores.synthetic.api/feeds/index_fixings.hpp"
 #include "ores.synthetic.api/feeds/ir_curve_template_resolver.hpp"
 #include "ores.synthetic.api/messaging/ir_curve_operations_protocol.hpp"
 #include "ores.synthetic.api/messaging/simulate_fx_spot_paths_protocol.hpp"
@@ -374,6 +375,8 @@ feed_kind make_ir_curve_kind() {
             c.auto_start = cfg.auto_start;
             c.folder_id = cfg.folder_id;
             const auto index_tenor = feed::ir_curve_index_tenor(cfg);
+            if (auto item = feed::curve_fixing_uri(cfg))
+                c.fixing_item = std::move(*item);
             for (const auto& e : all_entries)
                 if (e.ir_curve_config_id == cfg.id)
                     c.pillars.push_back(vendor::ir_curve_pillar{cfg.currency_code,

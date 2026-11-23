@@ -39,7 +39,8 @@ void change_routes::register_routes(std::shared_ptr<http::net::router> router,
 
     ORES_LOG_SEV(lg(), info) << "Registering the change stream";
 
-    auto changes = router->get("/api/v1/changes").catalogue("get_changes", "changes", "changes", false)
+    auto changes = router->get("/api/v1/changes")
+                       .catalogue("get_changes", "changes", "changes", false)
                        .summary("Follow the changes")
                        .description("A stream of change frames, written as they happen")
                        .tags({"changes"})
@@ -52,7 +53,8 @@ void change_routes::register_routes(std::shared_ptr<http::net::router> router,
     registry->register_route(changes_built);
 
     auto events =
-        router->get("/api/events").catalogue("web_get_events", "changes", "events", false)
+        router->get("/api/events")
+            .catalogue("web_get_events", "changes", "events", false)
             .summary("Follow the changes the session watches")
             .description("The change stream, carrying only the collections the session watches")
             .tags({"changes"})
@@ -62,7 +64,9 @@ void change_routes::register_routes(std::shared_ptr<http::net::router> router,
     router->add_route(events_built);
     registry->register_route(events_built);
 
-    auto watch = router->post("/api/events/watch").catalogue("web_post_events_watch", "changes", "watch", true)
+    auto watch = router->post("/api/events/watch")
+                     .catalogue("web_post_events_watch", "changes", "watch", true)
+                     .json_body()
                      .summary("State what the session watches")
                      .description("Replaces the collections the session's change stream carries")
                      .tags({"changes"})

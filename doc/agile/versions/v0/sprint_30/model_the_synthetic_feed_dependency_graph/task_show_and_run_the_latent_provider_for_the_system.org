@@ -1,0 +1,106 @@
+:PROPERTIES:
+:ID: ED0065D6-A3A1-41A1-9117-0A3231C5BFFF
+:END:
+#+title: Task: Show the latent provider to the system tenant, describe it, and run its feeds as nodes
+#+description: Fixes found in testing: the Provider and Dashboard tabs hid the latent provider from the system tenant too, it had no description, its Start and Stop did nothing useful, and the graph's links were neither styled nor complete.
+#+type: task
+#+level: s1
+#+filetags: :model_the_synthetic_feed_dependency_graph:sprint_30:v0:
+#+owner: marco
+#+branch: fix/show-the-latent-provider-to-the-system-tenant
+#+pr: 5064
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-23
+#+updated: 2026-11-23
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8DE041AE-95E6-40CE-9B62-2CE3BA77838A][Model the synthetic feeds as a dependency graph: upstreams, latent surfaces and vendor views]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The system tenant sees the latent provider, described, on the dashboard and the Provider tab, and stops or starts all its feeds as nodes of the graph; every neighbour on a Graph tab links where it opens.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:8DE041AE-95E6-40CE-9B62-2CE3BA77838A][Model the synthetic feeds as a dependency graph: upstreams, latent surfaces and vendor views]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-23                               |
+
+* Acceptance
+
+- The system tenant sees Latent on the Provider tab and the dashboard; a tenant does not.
+- Latent has a description in the synthetic provider list.
+- Start and Stop of a provider with no source of its own stop and start its feeds as graph nodes, with one reason.
+- Every neighbour on a Graph tab is a styled link: a feed to its page, a view to its surface's Graph tab, a source to its provider.
+
+* Plan
+
+Fixes the owner found testing the merged story, each live-checked as it
+landed, in one PR.
+
+1. The tabs hid a provider their catalogue lacks; that catalogue is the
+   synthetic provider list, which held no =latent=, so the system tenant lost
+   it too. Hide the system's own providers by the session's tenant instead.
+2. Seed =latent= in the synthetic provider list, so it has a description.
+3. A provider with no source of its own cannot hand-start its feeds: stop and
+   start them as graph nodes, with one reason.
+4. Style the Graph tab's links, and link views and sources too.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Web tests | 2671 pass, the whole web package | =npx vitest run= in packages/web | 5632070ab6 |
+| Live, Latent for super_admin | the Provider tab's combo box lists Latent with its 14 surfaces; the provider list holds latent with its description | the owner's session; =GET /api/synthetic/providers= | 5632070ab6 |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5064][#5064]] | [web] Show the latent provider to the system tenant and run its feeds as nodes |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Local review: the providers to hide are a fixed set | providers.ts | Accepted | One system provider exists; the market data catalogue's kind is the server's rule, and the web mirrors it for its own list. |
+| 2 | Local review: a view links to its surface, not a page of its own | feedNode.tsx | Accepted | Until the next task gives a view its page. |
+
+* Result
+
+The system tenant sees the Latent provider, with its description, on the
+dashboard and the Provider tab, and a tenant does not. Its Start and Stop stop
+and start its 14 surfaces as graph nodes, with one reason. Every neighbour on
+a Graph tab is a styled link: a feed to its page, a view to its surface's Graph
+tab, a source to its provider.
+
+Testing also showed a vendor's view is a feed and must be one: the next task
+makes each view a feed of its vendor's collection, with its own page.

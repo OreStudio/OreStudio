@@ -366,6 +366,7 @@ void tenor_web_routes::register_routes(
             .description("A new row with no version, else a correction of the version read.")
             .tags({"refdata"})
             .entity_catalogue("refdata", "tenor", "screen_put")
+            .body<tenor_web_save_body>()
             .auth_required()
             .handler([&session](const http_request& req) { return handle_put(req, session); });
     const auto put_built = put_route.build();
@@ -378,6 +379,7 @@ void tenor_web_routes::register_routes(
             .description("Removes the row the body's key names.")
             .tags({"refdata"})
             .entity_catalogue("refdata", "tenor", "screen_delete")
+            .body<rr::remove_body>()
             .auth_required()
             .handler([&session](const http_request& req) { return handle_delete(req, session); });
     const auto remove_built = remove_route.build();

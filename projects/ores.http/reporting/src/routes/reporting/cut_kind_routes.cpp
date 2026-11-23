@@ -303,7 +303,8 @@ void cut_kind_routes::register_routes(
         registry->register_route(built);
     };
 
-    add(router->get("/api/reporting/cut-kinds").catalogue("web_get_reporting_cut_kinds", "reporting", "cut_kinds", false)
+    add(router->get("/api/reporting/cut-kinds")
+            .catalogue("web_get_reporting_cut_kinds", "reporting", "cut_kinds", false)
             .summary("The kinds of cut a report may select")
             .description("One page of them with the words each of their three codes stands for, "
                          "and the cuts the party holds of each kind.")
@@ -332,7 +333,8 @@ void cut_kind_routes::register_routes(
                 });
             }));
 
-    add(router->get("/api/reporting/cut-kind-choices").catalogue("web_get_reporting_cut_kind_choices", "reporting", "cut_kind_choices", false)
+    add(router->get("/api/reporting/cut-kind-choices")
+            .catalogue("web_get_reporting_cut_kind_choices", "reporting", "cut_kind_choices", false)
             .summary("The lookups a kind's form offers")
             .description("The families, the resolution rules, the approval kinds and the "
                          "business centres, and the retention destinations the kinds "
@@ -391,7 +393,8 @@ void cut_kind_routes::register_routes(
                 });
             }));
 
-    add(router->get("/api/reporting/cut-kinds/{code}").catalogue("web_get_reporting_cut_kinds_code", "reporting", "cut_kinds", false)
+    add(router->get("/api/reporting/cut-kinds/{code}")
+            .catalogue("web_get_reporting_cut_kinds_code", "reporting", "cut_kinds", false)
             .summary("One kind of cut and the cuts the party holds of it")
             .description("The kind with the words its codes stand for, and its cuts newest "
                          "first, which a page groups by the period above its frequency.")
@@ -425,7 +428,9 @@ void cut_kind_routes::register_routes(
                 });
             }));
 
-    add(router->put("/api/reporting/cut-kinds/{code}").catalogue("web_put_reporting_cut_kinds_code", "reporting", "cut_kinds", true)
+    add(router->put("/api/reporting/cut-kinds/{code}")
+            .catalogue("web_put_reporting_cut_kinds_code", "reporting", "cut_kinds", true)
+            .body<kinds::kind_edit_body>()
             .summary("Write the naming and the rules of one kind of cut")
             .description("The write names the version the form was filled from, so a kind "
                          "somebody else changed in between is a conflict rather than a silent "
@@ -473,7 +478,9 @@ void cut_kind_routes::register_routes(
                 });
             }));
 
-    add(router->delete_("/api/reporting/cut-kinds/{code}").catalogue("web_delete_reporting_cut_kinds_code", "reporting", "cut_kinds", true)
+    add(router->delete_("/api/reporting/cut-kinds/{code}")
+            .catalogue("web_delete_reporting_cut_kinds_code", "reporting", "cut_kinds", true)
+            .body<kinds::kind_removal_body>()
             .summary("Remove one kind of cut no cut was taken under")
             .description("A kind a cut names cannot be removed: the cut keeps the facts it "
                          "copied and its label reads the kind's family, so the store refuses "

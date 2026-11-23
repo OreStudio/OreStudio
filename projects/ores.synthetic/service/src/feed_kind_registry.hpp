@@ -85,6 +85,7 @@ struct surface_inputs final {
     std::string quote_curve;
 };
 
+// compass:except(wide_types/over_ceiling) expires=2027-05-23 approver=marco reason=each kind adds the fields only it reads, the fixing item of a curve the latest; grouping them by kind is its own refactor
 struct feed_kind_candidate final {
     /** The row's own id (fx_spot_generation_config::id, ir_curve_generation_config::id, ...). */
     std::string feed_config_id;
@@ -119,6 +120,13 @@ struct feed_kind_candidate final {
      * points. Other kinds leave both empty.
      */
     std::vector<ores::marketdata::vendor::fx_option_quote> option_points;
+    /**
+     * @brief The address of the fixings a curve states its index's rate for, or nothing.
+     *
+     * The simulated fixing publisher fixes the index from that rate. Other kinds, and a
+     * meeting-dated curve, leave it empty.
+     */
+    std::optional<std::string> fixing_item;
     std::map<std::string, std::string> contributor_providers;
 
     /**

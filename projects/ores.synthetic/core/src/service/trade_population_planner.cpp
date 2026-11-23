@@ -1941,20 +1941,11 @@ pair_for(const domain::trade_generation_scope& scope, std::uint32_t slot, std::s
     return scope.currency_pairs[slot % scope.currency_pairs.size()];
 }
 
-/*
- * The fixing source ORE's examples state for every pair. The source belongs to
- * the tenant's market data configuration, which the market data task gives a
- * home; until then every generated trade observes this one.
- */
-constexpr std::string_view fx_fixing_source = "TR20H";
-
 /// The FX index of a pair, built as an oresmd index: the projection writes it as ORE names it.
 ores::marketdata::datum::market_reference fx_index_of(const domain::currency_pair_reference& pair) {
     namespace md = ores::marketdata::datum;
-    auto index =
-        md::market_index::make(md::index_family::fx,
-                               pair.base,
-                               {{"source", std::string(fx_fixing_source)}, {"ccy", pair.quote}});
+    auto index = md::market_index::make(
+        md::index_family::fx, pair.base, {{"source", pair.fixing_source}, {"ccy", pair.quote}});
     if (!index)
         throw trade_population_error("The pair " + pair.base + pair.quote +
                                      " has no FX index: " + index.error());

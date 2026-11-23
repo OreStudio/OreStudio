@@ -9,12 +9,12 @@
       <Underlyings>
         <Underlying>
           <Type>FX</Type>
-          <Name>TR20H-EUR-USD</Name>
+          <Name>WMR1000NYC-EUR-USD</Name>
           <Weight>1</Weight>
         </Underlying>
         <Underlying>
           <Type>FX</Type>
-          <Name>TR20H-GBP-USD</Name>
+          <Name>WMR1000NYC-GBP-USD</Name>
           <Weight>1</Weight>
         </Underlying>
       </Underlyings>
@@ -38,12 +38,12 @@
       <Underlyings>
         <Underlying>
           <Type>FX</Type>
-          <Name>TR20H-EUR-USD</Name>
+          <Name>WMR1000NYC-EUR-USD</Name>
           <Weight>1</Weight>
         </Underlying>
         <Underlying>
           <Type>FX</Type>
-          <Name>TR20H-GBP-USD</Name>
+          <Name>WMR1000NYC-GBP-USD</Name>
           <Weight>1</Weight>
         </Underlying>
       </Underlyings>

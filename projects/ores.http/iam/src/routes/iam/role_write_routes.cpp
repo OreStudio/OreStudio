@@ -293,7 +293,9 @@ void role_write_routes::register_routes(
         registry->register_route(built);
     };
 
-    add(router->post("/api/accounts/{accountId}/roles").catalogue("web_post_accounts_accountid_roles", "access", "accounts", true),
+    add(router->post("/api/accounts/{accountId}/roles")
+            .catalogue("web_post_accounts_accountid_roles", "access", "accounts", true)
+            .body<give_role_body>(),
         "Give a role to an account, for a reason",
         [&session](const http_request& req) {
             const auto account = req.get_path_param("accountId");
@@ -313,7 +315,9 @@ void role_write_routes::register_routes(
             });
         });
 
-    add(router->delete_("/api/accounts/{accountId}/roles/{roleId}").catalogue("web_delete_accounts_accountid_roles_roleid", "access", "accounts", true),
+    add(router->delete_("/api/accounts/{accountId}/roles/{roleId}")
+            .catalogue("web_delete_accounts_accountid_roles_roleid", "access", "accounts", true)
+            .no_body(),
         "Take a role away from an account",
         [&session](const http_request& req) {
             const auto account = req.get_path_param("accountId");
@@ -330,13 +334,17 @@ void role_write_routes::register_routes(
             });
         });
 
-    add(router->post("/api/accounts/{accountId}/lock").catalogue("web_post_accounts_accountid_lock", "access", "accounts", true),
+    add(router->post("/api/accounts/{accountId}/lock")
+            .catalogue("web_post_accounts_accountid_lock", "access", "accounts", true)
+            .no_body(),
         "Lock one account",
         [&session](const http_request& req) {
             return set_locked<messaging::lock_account_request>(req, session);
         });
 
-    add(router->post("/api/accounts/{accountId}/unlock").catalogue("web_post_accounts_accountid_unlock", "access", "accounts", true),
+    add(router->post("/api/accounts/{accountId}/unlock")
+            .catalogue("web_post_accounts_accountid_unlock", "access", "accounts", true)
+            .no_body(),
         "Unlock one account",
         [&session](const http_request& req) {
             return set_locked<messaging::unlock_account_request>(req, session);
@@ -351,7 +359,8 @@ void role_write_routes::register_routes(
             });
         });
 
-    add(router->get("/api/permissions").catalogue("web_get_permissions", "access", "permissions", false),
+    add(router->get("/api/permissions")
+            .catalogue("web_get_permissions", "access", "permissions", false),
         "Read every permission the platform defines",
         [&session](const http_request& req) {
             return guarded<messaging::list_permissions_request>([&] {
@@ -363,52 +372,66 @@ void role_write_routes::register_routes(
             });
         });
 
-    add(router->post("/api/roles").catalogue("web_post_roles", "access", "roles", true), "Make a role", [&session](const http_request& req) {
-        const auto role = read_new_role(req.body);
-        if (!role)
-            return refused(http_status::bad_request, "invalid-request", "A role needs a name.");
-        const auto id = boost::uuids::random_generator()();
-        return guarded<messaging::put_role_request>([&] {
-            // A new role is requestable and not given at registration, whatever
-            // the body says: the BFF made every new role this way, and the
-            // editor sets the flags once the role exists.
-            const auto reply = ores::http::forwarding::forward(
-                req, session, put_role_of(id, *role, std::nullopt, false, true));
-            return written(reply.result,
-                           "{\"id\":" + json::write(boost::uuids::to_string(id)) + "}");
+    add(router->post("/api/roles")
+            .catalogue("web_post_roles", "access", "roles", true)
+            .body<role_body>(),
+        "Make a role",
+        [&session](const http_request& req) {
+            const auto role = read_new_role(req.body);
+            if (!role)
+                return refused(http_status::bad_request, "invalid-request", "A role needs a name.");
+            const auto id = boost::uuids::random_generator()();
+            return guarded<messaging::put_role_request>([&] {
+                // A new role is requestable and not given at registration, whatever
+                // the body says: the BFF made every new role this way, and the
+                // editor sets the flags once the role exists.
+                const auto reply = ores::http::forwarding::forward(
+                    req, session, put_role_of(id, *role, std::nullopt, false, true));
+                return written(reply.result,
+                               "{\"id\":" + json::write(boost::uuids::to_string(id)) + "}");
+            });
         });
-    });
 
-    add(router->put("/api/roles/{roleId}").catalogue("web_put_roles_roleid", "access", "roles", true), "Edit a role", [&session](const http_request& req) {
-        const auto id = req.get_path_param("roleId");
-        const auto role = read_edited_role(req.body);
-        if (!rr::is_uuid(id) || !role)
-            return refused(http_status::bad_request,
-                           "invalid-request",
-                           "A role needs a name and the version it was read at.");
-        return guarded<messaging::put_role_request>([&] {
-            const auto reply = ores::http::forwarding::forward(
-                req,
-                session,
-                put_role_of(boost::uuids::string_generator()(id),
-                            *role,
-                            static_cast<std::uint32_t>(*role->version),
-                            *role->registrationDefault,
-                            *role->requestable));
-            return written(reply.result);
+    add(router->put("/api/roles/{roleId}")
+            .catalogue("web_put_roles_roleid", "access", "roles", true)
+            .body<role_body>(),
+        "Edit a role",
+        [&session](const http_request& req) {
+            const auto id = req.get_path_param("roleId");
+            const auto role = read_edited_role(req.body);
+            if (!rr::is_uuid(id) || !role)
+                return refused(http_status::bad_request,
+                               "invalid-request",
+                               "A role needs a name and the version it was read at.");
+            return guarded<messaging::put_role_request>([&] {
+                const auto reply = ores::http::forwarding::forward(
+                    req,
+                    session,
+                    put_role_of(boost::uuids::string_generator()(id),
+                                *role,
+                                static_cast<std::uint32_t>(*role->version),
+                                *role->registrationDefault,
+                                *role->requestable));
+                return written(reply.result);
+            });
         });
-    });
 
-    add(router->delete_("/api/roles/{name}").catalogue("web_delete_roles_name", "access", "roles", true), "Remove a role", [&session](const http_request& req) {
-        return guarded<messaging::delete_role_request>([&] {
-            messaging::delete_role_request remove;
-            remove.removal.key = messaging::role_key{req.get_path_param("name")};
-            const auto reply = ores::http::forwarding::forward(req, session, remove);
-            return written(reply.result);
+    add(router->delete_("/api/roles/{name}")
+            .catalogue("web_delete_roles_name", "access", "roles", true)
+            .no_body(),
+        "Remove a role",
+        [&session](const http_request& req) {
+            return guarded<messaging::delete_role_request>([&] {
+                messaging::delete_role_request remove;
+                remove.removal.key = messaging::role_key{req.get_path_param("name")};
+                const auto reply = ores::http::forwarding::forward(req, session, remove);
+                return written(reply.result);
+            });
         });
-    });
 
-    add(router->put("/api/roles/{roleId}/permissions").catalogue("web_put_roles_roleid_permissions", "access", "roles", true),
+    add(router->put("/api/roles/{roleId}/permissions")
+            .catalogue("web_put_roles_roleid_permissions", "access", "roles", true)
+            .body<permission_bundle_body>(),
         "Write every permission a role grants",
         [&session](const http_request& req) {
             const auto id = req.get_path_param("roleId");
@@ -422,7 +445,9 @@ void role_write_routes::register_routes(
             });
         });
 
-    add(router->post("/api/roles/{roleId}/permissions/changes").catalogue("web_post_roles_roleid_permissions_changes", "access", "roles", true),
+    add(router->post("/api/roles/{roleId}/permissions/changes")
+            .catalogue("web_post_roles_roleid_permissions_changes", "access", "roles", true)
+            .body<permission_changes_body>(),
         "Add and remove permissions from a role",
         [&session](const http_request& req) {
             const auto id = req.get_path_param("roleId");
@@ -443,7 +468,8 @@ void role_write_routes::register_routes(
             });
         });
 
-    add(router->get("/api/me/ways-to-hold").catalogue("web_get_me_ways_to_hold", "access", "ways_to_hold", false)
+    add(router->get("/api/me/ways-to-hold")
+            .catalogue("web_get_me_ways_to_hold", "access", "ways_to_hold", false)
             .description("A composed view owned by the IAM service: the roles of the catalogue "
                          "that grant the permission and the caller does not hold yet. Two "
                          "reads, the caller's roles and the catalogue with what each grants. A "

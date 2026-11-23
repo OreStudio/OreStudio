@@ -152,6 +152,12 @@ export function useOptionalSession(): SessionContextValue | undefined {
     return use(SessionContext);
 }
 
+/** The signed-in session's tenant, or nothing outside a session. */
+export function useSessionTenantId(): string | undefined {
+    const value = use(SessionContext);
+    return value?.state.status === 'authenticated' ? value.state.session.tenantId : undefined;
+}
+
 export function useSession(): SessionContextValue {
     const value = use(SessionContext);
     if (value === undefined) {

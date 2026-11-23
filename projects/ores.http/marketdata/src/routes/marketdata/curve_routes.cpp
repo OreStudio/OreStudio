@@ -420,7 +420,9 @@ void curve_routes::register_routes(std::shared_ptr<ores::http::net::router> rout
         registry->register_route(built);
     };
 
-    add(router->post("/api/curves/series").catalogue("web_post_curves_series", "market-data", "series", true)
+    add(router->post("/api/curves/series")
+            .catalogue("web_post_curves_series", "market-data", "series", true)
+            .body<identity_body>()
             .summary("The series a typed identity names")
             .description("The caller states the identity as typed fields and the service resolves "
                          "it, so no caller builds an oresmd URI and no caller matches on one.")
@@ -434,7 +436,9 @@ void curve_routes::register_routes(std::shared_ptr<ores::http::net::router> rout
                 });
             }));
 
-    add(router->post("/api/curves/series-by-id").catalogue("web_post_curves_series_by_id", "market-data", "series_by_id", true)
+    add(router->post("/api/curves/series-by-id")
+            .catalogue("web_post_curves_series_by_id", "market-data", "series_by_id", true)
+            .body<series_by_body>()
             .summary("The oresmd URI of each series a set of ids names")
             .description("A blueprint holds its output series as a soft reference, so the screen "
                          "that lists blueprints names each one and reads its URI here. No id "
@@ -451,7 +455,9 @@ void curve_routes::register_routes(std::shared_ptr<ores::http::net::router> rout
                 });
             }));
 
-    add(router->post("/api/curves/compute").catalogue("web_post_curves_compute", "market-data", "compute", true)
+    add(router->post("/api/curves/compute")
+            .catalogue("web_post_curves_compute", "market-data", "compute", true)
+            .body<compute_body>()
             .summary("Build a recipe's curve at an instant and echo its points")
             .description("Nothing is written and nothing is published; the check tab reads the "
                          "answer, so a refusal is the recipe's or the market's.")
@@ -466,7 +472,9 @@ void curve_routes::register_routes(std::shared_ptr<ores::http::net::router> rout
                 });
             }));
 
-    add(router->post("/api/curves/series-list").catalogue("web_post_curves_series_list", "market-data", "series_list", true)
+    add(router->post("/api/curves/series-list")
+            .catalogue("web_post_curves_series_list", "market-data", "series_list", true)
+            .body<series_list_body>()
             .summary("The series the caller's party can see, each as its identity")
             .description("The body may be empty, which asks across the parties the caller's "
                          "session sees.")
@@ -480,7 +488,9 @@ void curve_routes::register_routes(std::shared_ptr<ores::http::net::router> rout
                 });
             }));
 
-    add(router->post("/api/curves/manual-point").catalogue("web_post_curves_manual_point", "market-data", "manual_point", true)
+    add(router->post("/api/curves/manual-point")
+            .catalogue("web_post_curves_manual_point", "market-data", "manual_point", true)
+            .body<key_point_body>()
             .summary("Key a manual point on one node")
             .description("The point holds the node until it is cleared, and the feed value shows "
                          "again only then.")
@@ -509,7 +519,9 @@ void curve_routes::register_routes(std::shared_ptr<ores::http::net::router> rout
                 });
             }));
 
-    add(router->post("/api/curves/manual-point/clear").catalogue("web_post_curves_manual_point_clear", "market-data", "clear", true)
+    add(router->post("/api/curves/manual-point/clear")
+            .catalogue("web_post_curves_manual_point_clear", "market-data", "clear", true)
+            .body<clear_point_body>()
             .summary("Clear the manual point on one node")
             .description("The feed value shows again once the manual point is cleared.")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
@@ -523,7 +535,9 @@ void curve_routes::register_routes(std::shared_ptr<ores::http::net::router> rout
                 });
             }));
 
-    add(router->post("/api/curves/snapshot").catalogue("web_post_curves_snapshot", "market-data", "snapshot", true)
+    add(router->post("/api/curves/snapshot")
+            .catalogue("web_post_curves_snapshot", "market-data", "snapshot", true)
+            .body<snapshot_body>()
             .summary("The object at one instant, with the age of its oldest point")
             .description("The instant the answer is as of travels with it, so a reader measures "
                          "an age from the market and not from its own clock.")
@@ -538,7 +552,9 @@ void curve_routes::register_routes(std::shared_ptr<ores::http::net::router> rout
                 });
             }));
 
-    add(router->post("/api/curves/slice").catalogue("web_post_curves_slice", "market-data", "slice", true)
+    add(router->post("/api/curves/slice")
+            .catalogue("web_post_curves_slice", "market-data", "slice", true)
+            .body<slice_body>()
             .summary("One slice of the object over a range, at one component")
             .description("The component fixes one axis and the slice varies over the other, "
                          "oldest instant first.")
@@ -563,7 +579,9 @@ void curve_routes::register_routes(std::shared_ptr<ores::http::net::router> rout
                 });
             }));
 
-    add(router->post("/api/curves/evolution").catalogue("web_post_curves_evolution", "market-data", "evolution", true)
+    add(router->post("/api/curves/evolution")
+            .catalogue("web_post_curves_evolution", "market-data", "evolution", true)
+            .body<evolution_body>()
             .summary("The object's evolution over a range, or at the instants stated")
             .description("A stated set of instants replaces the range, which is why the range is "
                          "not sent with it.")
@@ -594,7 +612,9 @@ void curve_routes::register_routes(std::shared_ptr<ores::http::net::router> rout
                 });
             }));
 
-    add(router->post("/api/curves/published").catalogue("web_post_curves_published", "market-data", "published", true)
+    add(router->post("/api/curves/published")
+            .catalogue("web_post_curves_published", "market-data", "published", true)
+            .body<published_list_body>()
             .summary("The tenant's published sets, with the state each is in")
             .description("The read is the list screen's whole page: the filters and the pager are "
                          "the service's, so a screen never filters a page it was given.")
@@ -630,7 +650,9 @@ void curve_routes::register_routes(std::shared_ptr<ores::http::net::router> rout
                 });
             }));
 
-    add(router->post("/api/curves/published-sets").catalogue("web_post_curves_published_sets", "market-data", "published_sets", true)
+    add(router->post("/api/curves/published-sets")
+            .catalogue("web_post_curves_published_sets", "market-data", "published_sets", true)
+            .body<published_sets_body>()
             .summary("One curve's last published sets, with the pillars each holds")
             .description("The sets are read beside their points because the snapshot read serves "
                          "the market at the caller's clock, and a set built at an earlier as-of is "
@@ -649,7 +671,10 @@ void curve_routes::register_routes(std::shared_ptr<ores::http::net::router> rout
                 });
             }));
 
-    add(router->post("/api/curves/fx-forward-ladder").catalogue("web_post_curves_fx_forward_ladder", "market-data", "fx_forward_ladder", true)
+    add(router->post("/api/curves/fx-forward-ladder")
+            .catalogue(
+                "web_post_curves_fx_forward_ladder", "market-data", "fx_forward_ladder", true)
+            .body<ladder_body>()
             .summary("The caller party's published forward set of one pair, with where each "
                      "number came from")
             .description("The party is the session's, so the body names none.")
@@ -664,7 +689,9 @@ void curve_routes::register_routes(std::shared_ptr<ores::http::net::router> rout
                 });
             }));
 
-    add(router->post("/api/curves/published/withdraw").catalogue("web_post_curves_published_withdraw", "market-data", "withdraw", true)
+    add(router->post("/api/curves/published/withdraw")
+            .catalogue("web_post_curves_published_withdraw", "market-data", "withdraw", true)
+            .body<withdraw_body>()
             .summary("Take a published set out of use")
             .description("The reason is a change reason code the service validates, and the "
                          "request is the one that authorised the act when a decision stands "

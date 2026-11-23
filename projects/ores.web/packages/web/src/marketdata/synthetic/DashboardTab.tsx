@@ -32,7 +32,14 @@ import {
     useSources,
     type Source,
 } from './adapterStatus.js';
-import { providerName, providersOf, type ProviderEntry, type ProviderFacts } from './providers.js';
+import {
+    providerName,
+    providersOf,
+    useHiddenProviders,
+    type ProviderEntry,
+    type ProviderFacts,
+} from './providers.js';
+import { ProviderNodeControl } from './feedNode.js';
 import { useSelectionRuns } from './selectionRuns.js';
 import { useCollections } from './useCollections.js';
 import {
@@ -136,8 +143,9 @@ export function DashboardTab(): ReactNode {
     const runs = useSelectionRuns();
     const { collections, loaded, error } = useCollections();
     const facts = useProviderFacts();
+    const hidden = useHiddenProviders();
     const sources = useSources();
-    const providers = providersOf(collections, facts);
+    const providers = providersOf(collections, hidden);
     const counts = useProviderFeedCounts(providers.map((entry) => entry.code));
     const ready = loaded && counts !== undefined && sources !== undefined;
     const notServed = sources === undefined ? 0 : demandedNotServedAll(sources);
@@ -271,7 +279,13 @@ export function DashboardTab(): ReactNode {
                                             </td>
                                             <td className="px-4 py-2 text-right">
                                                 <span className="flex items-center justify-end gap-2">
-                                                    {runs.mayRun && (
+                                                    {source === undefined && (
+                                                        <ProviderNodeControl
+                                                            provider={entry.code}
+                                                            name={providerName(entry.code, facts)}
+                                                        />
+                                                    )}
+                                                    {runs.mayRun && source !== undefined && (
                                                         <>
                                                             <Button
                                                                 size="sm"

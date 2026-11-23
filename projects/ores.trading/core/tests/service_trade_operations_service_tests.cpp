@@ -66,6 +66,7 @@
 #include "ores.trading.core/repository/trade_authorisation_request_repository.hpp"
 #include "ores.trading.core/repository/trade_booking_repository.hpp"
 #include "ores.trading.core/repository/trade_identifier_repository.hpp"
+#include "ores.trading.core/repository/trade_product_repository.hpp"
 #include "ores.trading.core/repository/trade_repository.hpp"
 #include "ores.trading.core/repository/trade_state_repository.hpp"
 #include "ores.trading.core/repository/trade_summary_repository.hpp"
@@ -1342,4 +1343,99 @@ TEST_CASE("a_scripted_trade_that_states_a_variable_its_script_never_reads_passes
 
     INFO(response.result.message);
     CHECK(response.result.code != "script_input_mismatch");
+}
+
+namespace {
+
+/// A scripted booking of an inline payoff on the fixture's book, every input stated.
+ores::trading::messaging::book_scripted_request book_scripted_inline_request(fixture& f) {
+    const auto base = f.request();
+    ores::trading::messaging::book_scripted_request r;
+    r.anchor = base.anchor;
+    r.booking = base.booking;
+    r.activity_type_code = base.activity_type_code;
+    r.script_name = "TestPayoff";
+    r.code = "Option = PAY(Notional * 5, Expiry, Expiry, PayCcy);";
+    r.npv_variable = "Option";
+    r.variables = {{.name = "Notional", .type = "Number", .values = {"1000"}},
+                   {.name = "Expiry", .type = "Event", .values = {"2027-06-30"}},
+                   {.name = "PayCcy", .type = "Currency", .values = {"EUR"}}};
+    return r;
+}
+
+/// The products the store records for a trade.
+std::vector<ores::trading::domain::trade_product> book_scripted_products_of(
+    fixture& f, const boost::uuids::uuid& trade_id) {
+    return ores::trading::repository::trade_product_repository().read_latest(
+        f.ctx, boost::uuids::to_string(trade_id));
+}
+
+}
+
+TEST_CASE("an inline scripted trade is booked and records its script as its product",
+          "[service][book_scripted]") {
+    fixture f;
+    const auto req = book_scripted_inline_request(f);
+
+    const auto response = trade_operations_service(f.ctx, every_book_open).book_scripted(req, {});
+
+    INFO(response.result.code << ": " << response.result.message);
+    REQUIRE(response.result.outcome == outcome::ok);
+    REQUIRE(response.activity_id.has_value());
+    const auto products = book_scripted_products_of(f, req.anchor.id);
+    REQUIRE(products.size() == 1u);
+    CHECK(products[0].product_code == "TestPayoff");
+    CHECK(products[0].booking_form == "scripted");
+}
+
+TEST_CASE("a scripted trade that leaves out an input is refused with its finding, booking nothing",
+          "[service][book_scripted]") {
+    fixture f;
+    auto req = book_scripted_inline_request(f);
+    std::erase_if(req.variables, [](const auto& v) { return v.name == "Notional"; });
+
+    const auto response = trade_operations_service(f.ctx, every_book_open).book_scripted(req, {});
+
+    CHECK(response.result.outcome == outcome::failed);
+    CHECK(response.result.code == "script_invalid");
+    CHECK(std::ranges::any_of(response.diagnostics,
+                              [](const auto& d) { return d.subject == "Notional"; }));
+    CHECK(ores::trading::repository::trade_repository()
+              .read_latest(f.ctx, boost::uuids::to_string(req.anchor.id))
+              .empty());
+}
+
+TEST_CASE("a scripted trade of a script the store does not hold is refused by name",
+          "[service][book_scripted]") {
+    fixture f;
+    auto req = book_scripted_inline_request(f);
+    req.code.clear();
+    req.script_name = "NoSuchScript";
+
+    const auto response = trade_operations_service(f.ctx, every_book_open).book_scripted(req, {});
+
+    CHECK(response.result.code == "script_not_found");
+    CHECK(response.result.message.contains("NoSuchScript"));
+}
+
+TEST_CASE("book_trade records the product a caller states, and refuses a form that is neither",
+          "[service][book_scripted]") {
+    fixture f;
+    auto req = f.request();
+    req.product_code = "Swap";
+    req.booking_form = "native";
+
+    const auto booked = trade_operations_service(f.ctx, every_book_open).book_trade(req, {});
+
+    INFO(booked.result.code << ": " << booked.result.message);
+    REQUIRE(booked.result.outcome == outcome::ok);
+    const auto products = book_scripted_products_of(f, req.anchor.id);
+    REQUIRE(products.size() == 1u);
+    CHECK(products[0].booking_form == "native");
+
+    auto odd = f.request();
+    odd.product_code = "Swap";
+    odd.booking_form = "spreadsheet";
+    CHECK(trade_operations_service(f.ctx, every_book_open).book_trade(odd, {}).result.code ==
+          "booking_form_invalid");
 }

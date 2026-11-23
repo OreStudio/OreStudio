@@ -88,6 +88,19 @@ public:
                                               std::string_view actor_token);
 
     /**
+     * @brief Books a scripted trade: a library script, as the caller's tenant
+     * resolves its name and version, or an inline script, on the variables the
+     * trade states.
+     *
+     * The script is validated first, and a finding that is an error refuses the
+     * booking with every finding; warnings alone book. The trade is then booked
+     * as book_trade books it, as a ScriptedTrade, and records its product in its
+     * scripted form: the product the caller states, or the script itself.
+     */
+    messaging::book_scripted_response book_scripted(const messaging::book_scripted_request& request,
+                                                    std::string_view actor_token);
+
+    /**
      * @brief Takes a draft trade live, and raises the request Operations
      * answers, in one transaction.
      *

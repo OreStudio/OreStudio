@@ -29,6 +29,7 @@ import { DEFAULT_PAGE_SIZE, Pager, pageBounds } from '../../ui/Pager.js';
 import { Button, Notice, Select, Tag, cx } from '../../ui/Primitives.js';
 import { AddFeed, useMayAddFeed } from './AddFeed.js';
 import { useSources } from './adapterStatus.js';
+import { ProviderNodeControl } from './feedNode.js';
 import { ServingTag, useProviderFacts } from './DashboardTab.js';
 import { SourceStrip } from './sourceStrip.js';
 
@@ -37,7 +38,7 @@ const ASSET_CLASSES = ['fx', 'interest_rates'] as const;
 import { feedPageOf } from './feedTree.js';
 import { frequencyOf } from './frequency.js';
 import { ProcessTag } from './processSummary.js';
-import { providerName, providersOf, type ProviderEntry } from './providers.js';
+import { providerName, providersOf, useHiddenProviders, type ProviderEntry } from './providers.js';
 import { FEEDS_KEY, useSelectionRuns } from './selectionRuns.js';
 import { EVERY_MS, useCollections } from './useCollections.js';
 
@@ -69,8 +70,9 @@ export function ProviderTab(): ReactNode {
     const [params, setParams] = useSearchParams();
     const { collections, loaded, error } = useCollections();
     const facts = useProviderFacts();
+    const hidden = useHiddenProviders();
     const sources = useSources();
-    const providers = providersOf(collections, facts);
+    const providers = providersOf(collections, hidden);
     const chosen = params.get('provider') ?? '';
     const entry: ProviderEntry | undefined =
         providers.find((one) => one.code === chosen) ?? providers[0];
@@ -157,7 +159,15 @@ export function ProviderTab(): ReactNode {
                             })}
                         </span>
                         <span className="ml-auto flex items-center gap-2">
-                            {runs.mayRun && (
+                            {/* A provider with no source of its own, such as latent, is held by the
+                                vendors' sources: its feeds stop and start as nodes of the graph. */}
+                            {sources !== undefined && source === undefined && (
+                                <ProviderNodeControl
+                                    provider={entry.code}
+                                    name={providerName(entry.code, facts)}
+                                />
+                            )}
+                            {runs.mayRun && source !== undefined && (
                                 <>
                                     <Button size="sm" onClick={() => ask('start')}>
                                         {t('marketdata.synthetic.runs.start')}

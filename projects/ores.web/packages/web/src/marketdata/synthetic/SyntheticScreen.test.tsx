@@ -37,7 +37,10 @@ import { SyntheticScreen } from './SyntheticScreen.js';
 import { FOLDERS_KEY } from './useCollections.js';
 import { HELD_KEY } from './useProviderFeeds.js';
 
-vi.mock('../../session/SessionProvider.js', () => ({ useActingPartyId: () => 'party-1' }));
+vi.mock('../../session/SessionProvider.js', () => ({
+    useActingPartyId: () => 'party-1',
+    useSessionTenantId: () => 'ffffffff-ffff-ffff-ffff-ffffffffffff',
+}));
 
 function access(codes: string[]): AccountAccess {
     return {

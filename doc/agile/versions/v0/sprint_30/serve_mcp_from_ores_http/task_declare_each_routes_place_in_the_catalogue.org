@@ -88,6 +88,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | PR #5055: the hold trusts writes=false, so a mis-declared write route skips six eyes | router gate | Accept, differently | The startup gate refuses a non-GET route declared not to write unless it is a bulk get or an operation named for reading; the list held one real mistake, POST /api/me/notifications/read, now a write. Holding every non-GET would hold POST reads again. |
+| 2 | PR #5055: misplaced doc comments | =route.hpp=, =router.hpp= | Accept | Moved. |
+| 3 | PR #5055: hard-coded array sizes | =catalogue_rules.cpp= | Accept | =std::to_array=. |
+| 4 | PR #5055: an unknown component's area passes the gate | router gate | Accept | The gate refuses an area that is not published. |
+| 5 | PR #5055: duplicated carry-over in the two builder methods | =router.cpp= | Accept | One =place= helper keeps the documentation whichever comes first. |
+| 6 | PR #5055: untested head, delete, search, lookup, unknown area, missing entity | tests | Accept | Covered. |
+| 7 | PR #5055: include order | =router.cpp= | Accept | Sorted. |
 
 * Result

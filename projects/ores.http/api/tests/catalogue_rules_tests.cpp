@@ -54,8 +54,8 @@ TEST_CASE("a_bulk_get_is_a_post_that_only_reads", "[catalogue]") {
 }
 
 TEST_CASE("an_operation_writes_unless_its_name_only_reads", "[catalogue]") {
-    CHECK_FALSE(operation_route_catalogue("iam", "agent_grant_operations", "list_own_agent_grants")
-                    .writes);
+    CHECK_FALSE(
+        operation_route_catalogue("iam", "agent_grant_operations", "list_own_agent_grants").writes);
     CHECK(operation_route_catalogue("iam", "agent_grant_operations", "create_agent_grant").writes);
     CHECK(operation_route_catalogue("refdata", "party_operations", "get_or_create_party").writes);
     CHECK(operation_route_catalogue("iam", "agent_grant_operations", "x").area == "access");
@@ -67,11 +67,70 @@ TEST_CASE("the_router_names_every_undeclared_route_and_every_shared_tool", "[cat
         co_return http_response::json("{}");
     };
     r.add_route(r.get("/a").auth_optional().handler(handler).build());
-    r.add_route(r.get("/b").catalogue("one", "qa", "b", false).auth_optional().handler(handler).build());
-    r.add_route(r.get("/c").catalogue("one", "qa", "c", false).auth_optional().handler(handler).build());
+    r.add_route(
+        r.get("/b").catalogue("one", "qa", "b", false).auth_optional().handler(handler).build());
+    r.add_route(
+        r.get("/c").catalogue("one", "qa", "c", false).auth_optional().handler(handler).build());
 
     const auto undeclared = r.uncatalogued();
     REQUIRE(undeclared.size() == 2);
     CHECK(undeclared[0] == "GET /a");
     CHECK(undeclared[1].find("shares the tool one") != std::string::npos);
+}
+
+TEST_CASE("every_generated_method_and_name_reads_or_writes_as_stated", "[catalogue]") {
+    CHECK_FALSE(entity_route_catalogue(http_method::head,
+                                       "/api/v1/reference-data/currencies/{iso_code}",
+                                       "refdata",
+                                       "currencies",
+                                       "head")
+                    .writes);
+    CHECK(entity_route_catalogue(http_method::delete_,
+                                 "/api/v1/reference-data/currencies/{iso_code}",
+                                 "refdata",
+                                 "currencies",
+                                 "delete")
+              .writes);
+    CHECK(operation_only_reads("search_trades"));
+    CHECK(operation_only_reads("lookup_country"));
+    CHECK_FALSE(operation_only_reads("find_or_create_book"));
+}
+
+TEST_CASE("a_component_the_table_does_not_name_is_not_a_published_area", "[catalogue]") {
+    CHECK(area_of_component("nowhere") == "nowhere");
+    CHECK_FALSE(is_published_area("nowhere"));
+    CHECK(is_published_area("reference-data"));
+}
+
+TEST_CASE("the_router_refuses_a_write_declared_out_of_the_hold", "[catalogue]") {
+    ores::http::net::router r;
+    const auto handler = [](const http_request&) -> boost::asio::awaitable<http_response> {
+        co_return http_response::json("{}");
+    };
+    r.add_route(r.post("/mark")
+                    .catalogue("web_post_mark", "workflow", "marks", false)
+                    .auth_optional()
+                    .handler(handler)
+                    .build());
+    r.add_route(r.post("/bulk")
+                    .catalogue("get_many_marks", "workflow", "marks", false)
+                    .auth_optional()
+                    .handler(handler)
+                    .build());
+    r.add_route(r.get("/no-entity")
+                    .catalogue("tool_only", "workflow", "", false)
+                    .auth_optional()
+                    .handler(handler)
+                    .build());
+    r.add_route(r.get("/stray")
+                    .catalogue("stray", "nowhere", "strays", false)
+                    .auth_optional()
+                    .handler(handler)
+                    .build());
+
+    const auto refused = r.uncatalogued();
+    REQUIRE(refused.size() == 3);
+    CHECK(refused[0].starts_with("POST /mark declares that it does not write"));
+    CHECK(refused[1] == "GET /no-entity");
+    CHECK(refused[2].find("not a published one") != std::string::npos);
 }

@@ -85,9 +85,6 @@ struct response_schema final {
 using request_handler = std::function<boost::asio::awaitable<http_response>(const http_request&)>;
 
 /**
- * @brief Represents a registered route with pattern matching.
- */
-/**
  * @brief Where a route belongs in the operation catalogue an LLM agent walks,
  * and how it is described.
  *
@@ -111,6 +108,9 @@ struct route_catalogue final {
     }
 };
 
+/**
+ * @brief Represents a registered route with pattern matching.
+ */
 struct ORES_HTTP_API_EXPORT route final {
     /**
      * @brief HTTP method for this route.

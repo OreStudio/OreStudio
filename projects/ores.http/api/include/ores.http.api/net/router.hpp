@@ -113,6 +113,11 @@ public:
     route_builder& catalogue(std::string tool, std::string area, std::string entity, bool writes);
 
     /**
+     * @brief Takes a place in the catalogue, keeping the route's documentation.
+     */
+    route_builder& place(domain::route_catalogue placed);
+
+    /**
      * @brief A generated entity route's place, from its model.
      */
     route_builder& entity_catalogue(std::string_view component,
@@ -122,9 +127,8 @@ public:
     /**
      * @brief A generated operation route's place, from its model.
      */
-    route_builder& operation_catalogue(std::string_view component,
-                                       std::string_view entity,
-                                       std::string_view name);
+    route_builder&
+    operation_catalogue(std::string_view component, std::string_view entity, std::string_view name);
 
     /**
      * @brief Adds a query parameter for OpenAPI documentation.
@@ -284,15 +288,18 @@ public:
           std::unordered_map<std::string, std::string>& path_params) const;
 
     /**
-     * @brief Returns all registered routes (for OpenAPI generation).
-     */
-    /**
-     * @brief Every registered route that does not declare its place in the
-     * catalogue, or shares its tool with another, as its method and pattern.
-     * The server refuses to start with one.
+     * @brief Every registered route whose place in the catalogue the server
+     * cannot accept, as its method and pattern and why: it declares none, its
+     * area is not a published one, it shares its tool, or it changes something
+     * by its method while declaring that it does not write and is neither a
+     * bulk get nor an operation named for reading. The server refuses to start
+     * with one, so a write cannot be declared out of the six-eyes hold.
      */
     [[nodiscard]] std::vector<std::string> uncatalogued() const;
 
+    /**
+     * @brief Returns all registered routes (for OpenAPI generation).
+     */
     const std::vector<domain::route>& routes() const {
         return routes_;
     }

@@ -18,6 +18,7 @@
  *
  */
 #include "ores.http.api/domain/catalogue_rules.hpp"
+#include <algorithm>
 #include <array>
 #include <utility>
 
@@ -26,17 +27,22 @@ namespace ores::http::domain {
 namespace {
 
 /// The published areas, as design section 11.2 names them.
-constexpr std::array<std::string_view, 16> published_areas = {
-    "access",  "agile",       "analytics", "assets",         "auth",       "changes",
-    "grid",    "market-data", "operations", "qa",            "reference-data", "reporting",
-    "simulation", "tenancy",  "trading",   "workflow"};
-
-bool is_published_area(std::string_view segment) {
-    for (const auto area : published_areas)
-        if (area == segment)
-            return true;
-    return false;
-}
+constexpr auto published_areas = std::to_array<std::string_view>({"access",
+                                                                  "agile",
+                                                                  "analytics",
+                                                                  "assets",
+                                                                  "auth",
+                                                                  "changes",
+                                                                  "grid",
+                                                                  "market-data",
+                                                                  "operations",
+                                                                  "qa",
+                                                                  "reference-data",
+                                                                  "reporting",
+                                                                  "simulation",
+                                                                  "tenancy",
+                                                                  "trading",
+                                                                  "workflow"});
 
 /// The segment of a pattern after /api/v1/, or empty.
 std::string_view first_api_segment(std::string_view pattern) {
@@ -49,8 +55,16 @@ std::string_view first_api_segment(std::string_view pattern) {
 
 }
 
+bool is_published_area(std::string_view area) {
+    return std::ranges::find(published_areas, area) != published_areas.end();
+}
+
+bool may_declare_read(const route_catalogue& catalogue) {
+    return catalogue.tool.starts_with("get_many_") || operation_only_reads(catalogue.tool);
+}
+
 std::string area_of_component(std::string_view component) {
-    static constexpr std::array<std::pair<std::string_view, std::string_view>, 18> table = {{
+    static constexpr auto table = std::to_array<std::pair<std::string_view, std::string_view>>({
         {"iam", "access"},
         {"refdata", "reference-data"},
         {"dq", "reference-data"},
@@ -69,7 +83,7 @@ std::string area_of_component(std::string_view component) {
         {"scheduler", "operations"},
         {"storage", "operations"},
         {"http", "operations"},
-    }};
+    });
     for (const auto& [name, area] : table)
         if (name == component)
             return std::string(area);

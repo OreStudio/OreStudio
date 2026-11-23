@@ -19,10 +19,10 @@
  */
 #include "ores.http.api/net/router.hpp"
 #include "ores.http.api/domain/catalogue_rules.hpp"
-#include <unordered_map>
 #include <algorithm>
 #include <sstream>
 #include <string_view>
+#include <unordered_map>
 #include <vector>
 
 namespace ores::http::net {
@@ -125,32 +125,30 @@ std::logic_error undeclared_auth(const domain::http_method method, const std::st
 
 // route_builder implementation
 
+route_builder& route_builder::place(domain::route_catalogue placed) {
+    // The place replaces the catalogue's first four values and keeps the
+    // documentation, whichever was stated first.
+    catalogue_.tool = std::move(placed.tool);
+    catalogue_.area = std::move(placed.area);
+    catalogue_.entity = std::move(placed.entity);
+    catalogue_.writes = placed.writes;
+    return *this;
+}
+
 route_builder& route_builder::entity_catalogue(std::string_view component,
                                                std::string_view entity,
                                                std::string_view identifier) {
-    auto placed = domain::entity_route_catalogue(method_, pattern_, component, entity, identifier);
-    placed.summary = std::move(catalogue_.summary);
-    placed.description = std::move(catalogue_.description);
-    placed.tags = std::move(catalogue_.tags);
-    catalogue_ = std::move(placed);
-    return *this;
+    return place(domain::entity_route_catalogue(method_, pattern_, component, entity, identifier));
 }
 
 route_builder& route_builder::operation_catalogue(std::string_view component,
                                                   std::string_view entity,
                                                   std::string_view name) {
-    auto placed = domain::operation_route_catalogue(component, entity, name);
-    placed.summary = std::move(catalogue_.summary);
-    placed.description = std::move(catalogue_.description);
-    placed.tags = std::move(catalogue_.tags);
-    catalogue_ = std::move(placed);
-    return *this;
+    return place(domain::operation_route_catalogue(component, entity, name));
 }
 
-route_builder& route_builder::catalogue(std::string tool,
-                                        std::string area,
-                                        std::string entity,
-                                        bool writes) {
+route_builder&
+route_builder::catalogue(std::string tool, std::string area, std::string entity, bool writes) {
     catalogue_.tool = std::move(tool);
     catalogue_.area = std::move(area);
     catalogue_.entity = std::move(entity);
@@ -352,10 +350,23 @@ std::vector<std::string> router::uncatalogued() const {
             out.push_back(name);
             continue;
         }
+        if (!domain::is_published_area(route.catalogue.area))
+            out.push_back(name + " names the area " + route.catalogue.area +
+                          ", which is not a published one");
+        // A route that changes something by its method writes unless it is
+        // one of the two kinds that only read, so no write is declared out of
+        // the hold that keeps an agent's writes for its person.
+        const bool changes = route.method != domain::http_method::get &&
+                             route.method != domain::http_method::head &&
+                             route.method != domain::http_method::options;
+        if (changes && !route.catalogue.writes && !domain::may_declare_read(route.catalogue))
+            out.push_back(name + " declares that it does not write, and its tool " +
+                          route.catalogue.tool + " is neither a bulk get nor a read");
         // A tool names one operation, so two routes may not share one.
         const auto [it, fresh] = first_with_tool.emplace(route.catalogue.tool, name);
         if (!fresh)
-            out.push_back(name + " shares the tool " + route.catalogue.tool + " with " + it->second);
+            out.push_back(name + " shares the tool " + route.catalogue.tool + " with " +
+                          it->second);
     }
     return out;
 }

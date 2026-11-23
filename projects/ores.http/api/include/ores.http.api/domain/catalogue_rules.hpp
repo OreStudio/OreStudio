@@ -35,6 +35,17 @@ namespace ores::http::domain {
 ORES_HTTP_API_EXPORT std::string area_of_component(std::string_view component);
 
 /**
+ * @brief Whether an area is one of the published areas.
+ */
+ORES_HTTP_API_EXPORT bool is_published_area(std::string_view area);
+
+/**
+ * @brief Whether a route that changes something by its method may declare
+ * that it does not write: only a bulk get, or an operation named for reading.
+ */
+ORES_HTTP_API_EXPORT bool may_declare_read(const route_catalogue& catalogue);
+
+/**
  * @brief Whether an operation only reads, by its name: one that lists, gets,
  * reads, finds, searches or looks up changes nothing, unless it also makes, as
  * get_or_create does.

@@ -59,10 +59,14 @@ struct fixture {
     ores::testing::handler_test_keys keys;
     std::vector<ores::nats::service::subscription> subs;
     boost::uuids::uuid party;
+    // Stands for a service whose cache of ores.ore's parameters holds none.
+    bool parameters_unavailable = false;
 
     ores::reporting::messaging::run_document_handler handler() {
         return ores::reporting::messaging::run_document_handler(
             nats, db.context(), std::optional(keys.verifier()), [this]() {
+                if (parameters_unavailable)
+                    return std::vector<ores::ore::domain::ore_parameter>{};
                 return ores::testing::system_analytic_parameters(db.context(), db.db_user());
             });
     }
@@ -241,4 +245,22 @@ TEST_CASE("a session that acts for no party cannot change a run, but can read it
     REQUIRE(got);
     CHECK(got->success);
     CHECK(got->party_id == boost::uuids::to_string(f.party));
+}
+
+TEST_CASE("a run is refused, naming the parameters, when none have reached the service",
+          "[reporting][run_document][handler]") {
+    fixture f;
+    f.parameters_unavailable = true;
+    const auto token = f.token(all_permissions);
+    const auto definition = make_definition(f, f.party);
+
+    const auto saved = decode_reply<save_run_document_response>(request(
+        f.nats,
+        subject("save_run_document"),
+        token,
+        save_run_document_request{.report_definition_id = definition, .document = npv_run()}));
+    REQUIRE(saved);
+    CHECK_FALSE(saved->success);
+    CHECK(saved->message.find("ore parameters are not available") != std::string::npos);
+    CHECK(saved->message.find("which no ore parameter describes") == std::string::npos);
 }

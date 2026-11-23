@@ -81,6 +81,16 @@ run_document_handler::run_document_handler(
     , analytic_parameters_(std::move(analytic_parameters)) {}
 
 
+std::vector<ores::ore::domain::ore_parameter> run_document_handler::analytic_parameters() const {
+    auto parameters = analytic_parameters_();
+    // Every analytic has parameters, so none at all means the ore parameters
+    // have not reached this service, not that the document names unknown ones.
+    if (parameters.empty())
+        throw std::runtime_error("The ore parameters are not available to the reporting service: "
+                                 "its cache of ores.ore's parameters holds none.");
+    return parameters;
+}
+
 void run_document_handler::save_run_document(ores::nats::message msg) {
     const auto ctx = authorise(nats_, ctx_, msg, verifier_, "reporting::run_documents:write");
     if (!ctx)
@@ -93,7 +103,7 @@ void run_document_handler::save_run_document(ores::nats::message msg) {
     try {
         require_party(*ctx);
         const auto [scope, definition] = owner_scope(*ctx, req->report_definition_id);
-        service::run_document_service runs(scope, analytic_parameters_());
+        service::run_document_service runs(scope, analytic_parameters());
         runs.save(definition, req->document);
         reply(nats_, msg, save_run_document_response{.success = true});
     } catch (const std::exception& e) {
@@ -114,7 +124,7 @@ void run_document_handler::bind_configuration(ores::nats::message msg) {
     try {
         require_party(*ctx);
         const auto [scope, definition] = owner_scope(*ctx, req->report_definition_id);
-        service::run_document_service runs(scope, analytic_parameters_());
+        service::run_document_service runs(scope, {});
         const auto c = runs.bind(definition, req->configuration_type_code, req->name);
         reply(nats_,
               msg,
@@ -137,7 +147,7 @@ void run_document_handler::get_run_document(ores::nats::message msg) {
     }
     try {
         const auto [scope, definition] = owner_scope(*ctx, req->report_definition_id);
-        service::run_document_service runs(scope, analytic_parameters_());
+        service::run_document_service runs(scope, analytic_parameters());
         const auto document = runs.get(definition);
         if (!document) {
             reply(nats_,
@@ -170,7 +180,7 @@ void run_document_handler::delete_run_document(ores::nats::message msg) {
     try {
         require_party(*ctx);
         const auto [scope, definition] = owner_scope(*ctx, req->report_definition_id);
-        service::run_document_service runs(scope, analytic_parameters_());
+        service::run_document_service runs(scope, {});
         runs.remove(definition);
         reply(nats_, msg, delete_run_document_response{.success = true});
     } catch (const std::exception& e) {

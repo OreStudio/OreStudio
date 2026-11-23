@@ -503,7 +503,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
             if (!*parameters_loaded) {
                 if (const auto error = ore_parameters->load(system); !error.empty())
                     throw std::runtime_error(
-                        "The ore parameters could not be read from the ore service: " + error);
+                        "The ore parameters could not be read from the ore service into the "
+                        "reporting service's cache: " + error);
                 *parameters_loaded = true;
             }
             return ore_parameters->analytics_parameters(system);

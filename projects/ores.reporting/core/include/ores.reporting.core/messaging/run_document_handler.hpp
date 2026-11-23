@@ -76,6 +76,13 @@ private:
     ores::nats::service::client& nats_;
     ores::database::context ctx_;
     std::optional<ores::security::jwt::jwt_authenticator> verifier_;
+    /**
+     * @brief The analytics' parameters, refused when none have reached the service.
+     *
+     * Only a save and a read map parameters; a bind and a delete take none.
+     */
+    std::vector<ores::ore::domain::ore_parameter> analytic_parameters() const;
+
     analytic_parameters_source analytic_parameters_;
 };
 

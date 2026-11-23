@@ -92,7 +92,7 @@ task and name that file in the Command column.
 |------+-------+---------+--------|
 | parameters rows after the move | 2554 parameters, 5 value domains, 249 value sets, 558 values, 3 catalogues, 996 setting links, 477 vocabularies, 479 element map columns; the same as the reporting tables before; no ores_reporting_ore_ table left | counts before on the PR 1 database, after compass db recreate -y -k | PR 2 head |
 | pgTAP of the parameters | 14 files pass: the nine ore_* tests, ore_ore_files, the refdata convention and curve validators, the risk report config publish, the file types | pg_prove as the test user | PR 2 head |
-| suites after the parameters move | ores.ore.api 1204 in 328, ores.ore.core 521281 in 607, ores.ore.service 54 in 10, ores.shell.ore 462 in 163, ores.shell.reporting 1651 in 599, ores.shell.application 237 in 65, ores.reporting.api 4717 in 1211, ores.reporting.core 1640 in 282, ores.http.core 100592 in 100, ores.http.refdata 3200 in 529, ores.http.reporting 731 in 102, ores.analytics.core 1080 in 107; BFF 1335 tests in 96 files; web and BFF tsc clean | the test binaries; npx vitest run; npx tsc --noEmit | PR 2 head |
+| suites after the parameters move | ores.ore.api 1204 in 328, ores.ore.core 521281 in 607, ores.ore.service 54 in 10, ores.shell.ore 462 in 163, ores.shell.reporting 1651 in 599, ores.shell.application 237 in 65, ores.reporting.api 4717 in 1211, ores.reporting.core 1640 in 282 (1645 in 283 after the review), ores.http.core 100592 in 100, ores.http.refdata 3200 in 529, ores.http.reporting 731 in 102, ores.analytics.core 1080 in 107; BFF 1335 tests in 96 files; web and BFF tsc clean | the test binaries; npx vitest run; npx tsc --noEmit | PR 2 head |
 | through the services | ore.v1 lists of parameter value domains, parameters and value sets answer; bundles publish system_core completes its 18 datasets, ore.parameter_value_domains and ore.parameters through the ore service's publish handler; ore export-run reads a stored run document, and reporting's cache loads the parameters from ore.v1.ore_parameters.list at that moment | compass shell -f, after a recreate and a services start | PR 2 head |
 | rows after the move | 14 ORE file categories, 148 ORE files, 24 file versions at 1.8.17.0, 164 file types; no ores_reporting_ore_file table left | compass db recreate -y -k, then a count of the current rows | PR 1 head |
 | seeds | identical to the seeds they replace; 164 file types and 148 ORE files match the guide and the 416 ORE samples | generate_file_types_populate.py --check, and a diff of each seed with its predecessor | PR 1 head |
@@ -199,6 +199,11 @@ via its "Verifies task" field.
 | 5028.4 | are the protocol codecs reproducible | none | no change | generate after the merge of main wrote no file for this change |
 | 5028.5 | stale SVG ER diagrams | projects/ores.sql/modeling | accept | the ore and reporting diagrams and the index are redrawn; the other groups' drift is main's and left alone |
 | 5028.6 | the testing section gives evidence only for the ratchet | none | no change | the PR body states the row counts, pgTAP, the suites, the BFF and the live listing |
+| 5039.1 | an empty or failed cache reads as a document naming unknown parameters | run_document_handler.cpp | accept | the handler refuses with a message naming the cache when it holds no analytic parameters; a failed load names the cache too |
+| 5039.2 | bind and delete read the cache they do not use | run_document_handler.cpp | accept | only save and get read the parameters |
+| 5039.3 | paging stability of the cache load | none | no change | the list orders by id, so its pages are stable |
+| 5039.4 | no test of the cache-miss path | run_document_handler_tests.cpp | accept | a test refuses a save when no parameters reached the service, and checks the message is not the unknown-parameter one |
+| 5039.5 | the ratchet evidence | none | no change | rerun before the merge, below |
 
 * Result
 

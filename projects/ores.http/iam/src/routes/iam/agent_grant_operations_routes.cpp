@@ -136,6 +136,17 @@ agent_grant_operations_routes::handle_list_own_agent_grants(const http_request& 
     }
 }
 
+boost::asio::awaitable<http_response>
+agent_grant_operations_routes::handle_list_every_agent_grant(const http_request& req,
+                                                             nats_client& session) {
+    using request_type = messaging::list_every_agent_grant_request;
+    try {
+        co_return ores::http::forwarding::respond(req, session, request_type{});
+    } catch (const std::exception& e) {
+        co_return http_response::api_error(http_status::bad_request, "invalid-request", e.what());
+    }
+}
+
 void agent_grant_operations_routes::register_routes(
     std::shared_ptr<ores::http::net::router> router,
     std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
@@ -217,7 +228,22 @@ void agent_grant_operations_routes::register_routes(
     router->add_route(list_own_agent_grants_built);
     registry->register_route(list_own_agent_grants_built);
 
-    ORES_LOG_SEV(lg(), info) << "agent_grant_operations routes registered: " << 5 << " endpoint(s)";
+    auto list_every_agent_grant_route =
+        router->post("/api/v1/iam/ops/list_every_agent_grant")
+            .summary("List every agent grant")
+            .description("Forwards to the iam.v1.ops.list_every_agent_grant operation.")
+            .tags({"iam"})
+            .auth_required()
+            .body<messaging::list_every_agent_grant_request>()
+            .response<messaging::list_every_agent_grant_response>()
+            .handler([&session](const http_request& req) {
+                return handle_list_every_agent_grant(req, session);
+            });
+    const auto list_every_agent_grant_built = list_every_agent_grant_route.build();
+    router->add_route(list_every_agent_grant_built);
+    registry->register_route(list_every_agent_grant_built);
+
+    ORES_LOG_SEV(lg(), info) << "agent_grant_operations routes registered: " << 6 << " endpoint(s)";
 }
 
 }

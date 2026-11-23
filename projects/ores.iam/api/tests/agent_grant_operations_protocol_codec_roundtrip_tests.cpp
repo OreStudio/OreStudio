@@ -76,3 +76,11 @@ TEST_CASE("ores::iam::messaging::list_own_agent_grants_request", "[codec][roundt
 TEST_CASE("ores::iam::messaging::list_own_agent_grants_response", "[codec][roundtrip][protocol]") {
     ores::testing::check_wire_roundtrip<ores::iam::messaging::list_own_agent_grants_response>();
 }
+
+TEST_CASE("ores::iam::messaging::list_every_agent_grant_request", "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::iam::messaging::list_every_agent_grant_request>();
+}
+
+TEST_CASE("ores::iam::messaging::list_every_agent_grant_response", "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::iam::messaging::list_every_agent_grant_response>();
+}

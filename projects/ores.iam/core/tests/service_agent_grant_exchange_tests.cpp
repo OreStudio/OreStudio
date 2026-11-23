@@ -254,3 +254,24 @@ TEST_CASE("an_agent_cannot_make_a_grant", "[service][agent_grants]") {
     req.valid_days = 1;
     CHECK_FALSE(agent_grant_operations_service(agent_ctx).create_agent_grant(req).success);
 }
+
+TEST_CASE("every_agent_grant_is_listed_only_to_a_holder_of_the_read", "[service][agent_grants]") {
+    agent_exchange_fixture f;
+    const ores::iam::messaging::list_every_agent_grant_request req;
+
+    // The person who made the grant holds create, not read.
+    CHECK_FALSE(agent_grant_operations_service(*f.person_context).list_every_agent_grant(req).success);
+
+    const auto admin_ctx = f.h.context()
+                               .with_party(f.h.tenant_id(), f.party, {f.party}, f.gateway.username)
+                               .with_roles({"iam::agent_grants:read"});
+    const auto listed = agent_grant_operations_service(admin_ctx).list_every_agent_grant(req);
+    REQUIRE(listed.success);
+    CHECK(std::ranges::any_of(
+        listed.grants, [&](const auto& g) { return boost::uuids::to_string(g.id) == f.grant_id; }));
+    REQUIRE_FALSE(listed.keys.empty());
+    CHECK(std::ranges::all_of(listed.keys, [](const auto& k) { return k.secret_hash.empty(); }));
+
+    const auto as_agent = admin_ctx.with_delegated_actor("agent:" + f.grant_id);
+    CHECK_FALSE(agent_grant_operations_service(as_agent).list_every_agent_grant(req).success);
+}

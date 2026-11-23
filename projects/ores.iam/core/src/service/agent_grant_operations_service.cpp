@@ -410,6 +410,28 @@ messaging::list_own_agent_grants_response agent_grant_operations_service::list_o
     return r;
 }
 
+messaging::list_every_agent_grant_response
+agent_grant_operations_service::list_every_agent_grant(const messaging::list_every_agent_grant_request&) {
+    using response = messaging::list_every_agent_grant_response;
+
+    if (ctx_.acts_for_agent())
+        return refuse_agent_request<response>("An agent cannot read agent grants.");
+    if (!has_permission(ctx_, read_permission))
+        return refuse_agent_request<response>("Reading every agent grant needs " +
+                                              std::string(read_permission) + ".");
+
+    response r;
+    r.success = true;
+    r.grants = agent_grant_service(ctx_).list_grants(0, 1000);
+    agent_key_service keys(ctx_);
+    for (const auto& g : r.grants)
+        for (auto k : keys.list_keys_by_grant_id(boost::uuids::to_string(g.id), 0, 1000)) {
+            k.secret_hash.clear();
+            r.keys.push_back(std::move(k));
+        }
+    return r;
+}
+
 messaging::exchange_agent_key_response agent_grant_operations_service::exchange_agent_key(
     const messaging::exchange_agent_key_request& request) {
     using response = messaging::exchange_agent_key_response;

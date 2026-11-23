@@ -366,6 +366,14 @@ export const CARDS = {
         permission: ['iam::sessions:read', 'iam::login_info:read'],
         screenTitleKey: 'auditSignIns.title',
     },
+    agentGrants: {
+        titleKey: 'agentGrantsAdmin.card',
+        bodyKey: 'agentGrantsAdmin.cardBody',
+        to: PATHS.agentGrants,
+        icon: 'access',
+        permission: PERMISSION.agentGrantsRead,
+        screenTitleKey: 'agentGrantsAdmin.title',
+    },
     marketDataFeeds: {
         titleKey: 'operations.screens.feeds',
         bodyKey: 'operations.screens.feedsBody',
@@ -528,6 +536,7 @@ export const AREA_CARDS = {
         'bus',
         'logs',
         'signIns',
+        'agentGrants',
         'versions',
         'marketDataFeeds',
     ],

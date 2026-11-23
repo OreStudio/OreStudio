@@ -21,7 +21,7 @@
 
 import { useState, type ReactNode } from 'react';
 import { useQuery, type UseQueryResult } from '@tanstack/react-query';
-import { Link } from 'react-router';
+import { Link, useSearchParams } from 'react-router';
 import { isWireTimestamp } from '@ores/wire-protocol/browser';
 import type {
     AuthEvent,
@@ -1010,8 +1010,16 @@ export function AuditPage(): ReactNode {
             statistics.dataUpdatedAt,
         ),
     );
-    const openSessions = (sessions.data ?? []).filter((row) =>
-        withinPeriod(row.startTime, filter.period),
+    /*
+     * The agent grants screen links here with the grant it names, so the
+     * window opens on that agent's sessions alone.
+     */
+    const [params] = useSearchParams();
+    const grant = params.get('grant') ?? '';
+    const openSessions = (sessions.data ?? []).filter(
+        (row) =>
+            withinPeriod(row.startTime, filter.period) &&
+            (grant === '' || row.agentGrantId === grant),
     );
     const chosenSession = openSessions.find((row) => row.id === chosen) ?? openSessions[0];
 

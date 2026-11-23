@@ -53,6 +53,7 @@ import { AppShell } from './components/AppShell.js';
 import type { ShellWidth } from './shell/layout.js';
 import { PublicShell } from './components/PublicShell.js';
 import { AuditPage } from './pages/AuditPage.js';
+import { AgentGrantsAdminPage } from './access/AgentGrantsAdminPage.js';
 import { HomePage } from './pages/HomePage.js';
 import { DevelopmentArea } from './development/DevelopmentArea.js';
 import { DocPage } from './development/DocPage.js';
@@ -524,6 +525,19 @@ export function AppRoutes({
                 path={PATHS.signIns}
                 element={signedIn(gate.version, session, shell, () => (
                     <AuditPage />
+                ))}
+            />
+            {/*
+             * Every LLM agent grant in the administrator's parties. The
+             * person's own grants are a panel of Security; this reads the
+             * tenant's.
+             */}
+            <Route
+                path={PATHS.agentGrants}
+                element={signedIn(gate.version, session, shell, () => (
+                    <Requires needs={NEEDS.agentGrants} screen={t('agentGrantsAdmin.title')}>
+                        <AgentGrantsAdminPage />
+                    </Requires>
                 ))}
             />
             {/*

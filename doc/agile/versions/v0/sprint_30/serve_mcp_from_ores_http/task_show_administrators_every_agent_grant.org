@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :serve_mcp_from_ores_http:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/show-administrators-every-agent-grant
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,11 +26,11 @@ IAM already answers every agent grant and key in the caller's parties to a holde
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:008127D7-B897-4CF7-854B-6DDFB89AC7F4][Serve ORE's API to LLM agents over MCP]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-22                               |
 
 * Acceptance
@@ -42,9 +42,14 @@ IAM already answers every agent grant and key in the caller's parties to a holde
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+No HTTP route read every grant: the generated entity reads are NATS-only. A
+new operation, =list_every_agent_grant=, answers every grant and key in the
+caller's parties to a holder of =iam::agent_grants:read=, never to an agent,
+and clears every key's hash, as the person's own list does. Its name avoids
+the generated entity protocol's =list_agent_grants_request=. The page lives in
+the Operations area beside the sign-ins audit, gated by the declared screen
+needs, and joins people and roles by name client-side. Its sessions link opens
+the sessions window filtered by =?grant=.
 
 * Measurements
 
@@ -58,7 +63,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| IAM core suite | 301 of 301 | =./compass.sh build test_ores.iam.core.tests= | branch head |
+| HTTP IAM suite | 173 passed, 1 skipped | =./compass.sh build test_ores.http.iam.tests= | branch head |
+| Web tests touched (access, pages, shell, i18n, routes) | 347 passed | =npx vitest run= | branch head |
+| End-to-end through ores.http, Acme provisioned | 15 of 15 | scratchpad =agent_e2e.py= | branch head |
 
 * Notes
 
@@ -86,3 +94,13 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+An administrator who holds =iam::agent_grants:read= opens Agent grants in the
+Operations area and sees every grant in their parties: the person, the agent,
+the role, the expiry and the live keys, filtered by person and by state. A
+holder of =iam::agent_grants:revoke= revokes a grant or a key after a warning
+that the agent stops at once. Each grant links to its agent's sessions. IAM's
+new =list_every_agent_grant= refuses a reader without the permission and any
+agent, and never returns a key's hash. When each key was last used is not
+shown; the issue log holds it, and the audit task's activity view is where a
+person reads it.

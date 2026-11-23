@@ -8,7 +8,7 @@
 #+filetags: :ci:cdash:keep_main_green:sprint_30:v0:
 #+owner: marco
 #+branch: hotfix/pin-compass-ng-0-0-13
-#+pr:
+#+pr: 5061
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-23
@@ -89,7 +89,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5061][#5061]] | [ci] Pin compass-ng v0.0.13 and let the name resolve |
 
 * Review
 

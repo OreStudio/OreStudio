@@ -1611,3 +1611,25 @@ TEST_CASE("a scripted form the product does not carry is refused by name",
     CHECK(response.result.code == "form_not_offered");
     CHECK(response.result.message.contains("Autocallable_01"));
 }
+
+TEST_CASE(
+    "a product booking is refused for a bad form, missing terms or terms its recipe cannot read",
+    "[service][book_product]") {
+    fixture f;
+    trade_operations_service svc(f.ctx, every_book_open);
+
+    CHECK(svc.book_product(book_product_request_of(f, "spreadsheet"), {}).result.code ==
+          "booking_form_invalid");
+
+    auto empty_native = book_product_request_of(f, "native");
+    empty_native.instruments = {};
+    CHECK(svc.book_product(empty_native, {}).result.code == "terms_missing");
+
+    auto script_native = book_product_request_of(f, "native");
+    script_native.product_code = "Accumulator01";
+    CHECK(svc.book_product(script_native, {}).result.code == "product_unknown");
+
+    auto empty_scripted = book_product_request_of(f, "scripted");
+    empty_scripted.instruments = {};
+    CHECK(svc.book_product(empty_scripted, {}).result.code == "terms_unreadable");
+}

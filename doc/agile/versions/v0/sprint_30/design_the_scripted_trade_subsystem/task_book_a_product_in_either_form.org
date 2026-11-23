@@ -139,6 +139,13 @@ via its "Verifies task" field.
 | 5070.5 | each variant is parsed twice | none | no change | the parse is cheap, and returning the inputs would widen the validation's contract for one caller |
 | 5070.6 | the inline purpose default | none | no change | default is the library's own default purpose, so both validate alike |
 | 5070.7 | reformatting in the handler | none | no change | the formatter's output on this task's own handler |
+| 5071.1 | a native booking with no rows is caught only by book_trade | trade_operations_service.cpp | accept | refused as terms_missing when the request states no instrument header |
+| 5071.2 | a native booking does not check the product code | trade_operations_service.cpp | accept | the native form needs a product type, refused as product_unknown, naming book_scripted for a script-only product |
+| 5071.3 | the scripted refusal for a product with no twin | trade_operations_service.cpp | accept | it says to name one of the scripts the product carries |
+| 5071.4 | the move from the chosen form | trade_operations_service.cpp | accept | commented |
+| 5071.5 | a shared origin check for the handlers | none | no change | three handlers state it; a helper belongs with a fourth |
+| 5071.6 | terms_unreadable states the recipe's reason | none | no change | the reason names the recipe's source and the native column it found empty, which the caller stated |
+| 5071.7 | tests of the refusals | service_trade_operations_service_tests.cpp | accept | booking_form_invalid, terms_missing, product_unknown and terms_unreadable |
 
 * Result
 

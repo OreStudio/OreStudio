@@ -599,6 +599,17 @@ trade_operations_service::book_product(const messaging::book_product_request& re
     booking.booking_form = request.booking_form;
 
     if (request.booking_form == "native") {
+        if (repository::product_type_repository().read_latest(ctx_, request.product_code).empty())
+            return refuse("product_unknown",
+                          "No product type is named " + request.product_code +
+                              "; a script-only product is booked with book_scripted.");
+        // A type no table holds names every routed array with rows, so an empty
+        // list means the request states no instrument header at all.
+        if (service::misrouted_arrays(request.instruments, std::string_view{}).empty())
+            return refuse("terms_missing",
+                          "The " + request.product_code +
+                              " is booked from its terms, and the request "
+                              "states no row of its element.");
         booking.anchor.trade_type = request.product_code;
         booking.instruments = request.instruments;
     } else if (request.booking_form == "scripted") {
@@ -613,12 +624,15 @@ trade_operations_service::book_product(const messaging::book_product_request& re
         const auto chosen = std::ranges::find_if(forms, [&](const auto& f) {
             return request.script_name.empty() ? f.twin : f.script_name == request.script_name;
         });
-        if (chosen == forms.end())
-            return refuse(
-                "form_not_offered",
-                "The product " + request.product_code + " has no scripted form" +
-                    (request.script_name.empty() ? std::string{} : " over " + request.script_name) +
-                    ".");
+        if (chosen == forms.end()) {
+            std::string message = "The product " + request.product_code + " has no scripted form";
+            if (!request.script_name.empty())
+                message += " over " + request.script_name;
+            else if (!forms.empty())
+                message += " of its own; name one of the scripts it carries";
+            return refuse("form_not_offered", message + ".");
+        }
+        // The forms are this call's own, so the chosen one's rows are moved.
         booking.anchor.trade_type = std::string(tb::scripted_trade_builder::trade_type);
         domain::append_instrument(booking.instruments,
                                   domain::trade_instrument{std::move(chosen->data)});

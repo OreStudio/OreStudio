@@ -106,3 +106,12 @@ TEST_CASE("from_token_converts_an_instant_token", "[app]") {
     CHECK(ores::platform::time::datetime::to_iso8601_utc(other) == "2020-01-01 00:00:00.000000Z");
     CHECK(parsed != other);
 }
+
+TEST_CASE("from_token_reads_a_time_of_day_token", "[app]") {
+    using ores::platform::time::time_of_day;
+    using namespace std::chrono_literals;
+    CHECK(from_token<time_of_day>("16:00:00") == time_of_day(16h, 0min));
+    CHECK(from_token<std::optional<time_of_day>>(std::string(ores::shell::app::absent_token)) ==
+          std::nullopt);
+    CHECK_THROWS(from_token<time_of_day>("25:00:00"));
+}

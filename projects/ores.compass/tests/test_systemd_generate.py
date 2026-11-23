@@ -323,7 +323,11 @@ class TestStartBudget:
             systemd_generate.render_singleton_unit(
                 _native_def(), [], "/checkout", "eager_maxwell", TARGET),
             systemd_generate.render_nats_unit("/checkout", "eager_maxwell", TARGET, 4222),
+            systemd_generate.render_pooler_unit("/checkout", "eager_maxwell", TARGET, 6432)[1],
         ]
+        units += [u for _, u in systemd_generate.render_wrapper_units(
+            _native_def("ores.compute.wrapper", replicas=2), [], "/checkout",
+            "eager_maxwell", TARGET)]
         for unit in units:
             assert _section_of(unit, "TimeoutStartSec") == "[Service]"
 

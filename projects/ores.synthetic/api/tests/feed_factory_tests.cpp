@@ -736,8 +736,7 @@ TEST_CASE("only the currency's discounting curve writes its curve on the run's b
     CHECK(market.values().view(usd).published);
 }
 
-TEST_CASE("a discounting curve writes the board under its own name only",
-          "[feed_factory]") {
+TEST_CASE("a discounting curve writes the board under its own name only", "[feed_factory]") {
     // A surface names the curves it strikes against, so a demo curve that stops at two years
     // must not replace the vendor curve of the same currency that a surface names.
     ores::nats::service::client nats(ores::testing::make_nats_options());
@@ -747,8 +746,9 @@ TEST_CASE("a discounting curve writes the board under its own name only",
     ores::analytics::quant::service::run_market market(clock, {}, 42);
     using ores::analytics::quant::domain::market_member_kind;
     using ores::synthetic::feed::curve_member_code;
-    const auto vendor_usd = market.values().member_of(
-        market_member_kind::curve, curve_member_code("synthetic.bloomberg.ir.yield_curve.sofr.usd"));
+    const auto vendor_usd =
+        market.values().member_of(market_member_kind::curve,
+                                  curve_member_code("synthetic.bloomberg.ir.yield_curve.sofr.usd"));
     const auto demo_usd = market.values().member_of(
         market_member_kind::curve, curve_member_code("synthetic.demo.ir.yield_curve.sofr.usd"));
 

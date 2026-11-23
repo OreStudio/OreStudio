@@ -130,16 +130,16 @@ system_generator_offers(const feed_kind_registry& registry,
                             registry.factory().make(target.row.kind->kind, build, *outcome.input));
                     };
                     return std::shared_ptr<ores::marketdata::domain::i_feed>(
-                        std::make_shared<shared_surface_hold>(*surfaces,
-                                                              feed_id,
-                                                              adapter_id,
-                                                              contributor,
-                                                              fx_option_view_name(
-                                                                  provider_code,
-                                                                  target.row.candidate.fx_pair->first,
-                                                                  target.row.candidate.fx_pair->second),
-                                                              point_targets,
-                                                              make_surface));
+                        std::make_shared<shared_surface_hold>(
+                            *surfaces,
+                            feed_id,
+                            adapter_id,
+                            contributor,
+                            fx_option_view_name(provider_code,
+                                                target.row.candidate.fx_pair->first,
+                                                target.row.candidate.fx_pair->second),
+                            point_targets,
+                            make_surface));
                 };
                 for (const auto& id : ids)
                     out.push_back(

@@ -103,7 +103,8 @@ ir_curve_feed::ir_curve_feed(
 
     // The run's board holds the curve under its own name when it discounts its currency, so a
     // surface that names it solves its strikes against the same discounts this feed prices its
-    // pillars off. A curve given no code projects and leaves the board alone. The member is taken once, here, so a tick writes by index.
+    // pillars off. A curve given no code projects and leaves the board alone. The member is taken
+    // once, here, so a tick writes by index.
     if (board_curve_code) {
         board_member_ = market_.values().member_of(
             ores::analytics::quant::domain::market_member_kind::curve, *board_curve_code);
@@ -473,9 +474,8 @@ std::shared_ptr<ir_curve_feed> make_ir_curve_feed(
         cfg.currency_code,
         ir_curve_index_tenor(cfg),
         cfg.role,
-        ir_curve_discounts_its_currency(cfg) ?
-            std::optional(curve_member_code(cfg.source_name)) :
-            std::nullopt,
+        ir_curve_discounts_its_currency(cfg) ? std::optional(curve_member_code(cfg.source_name)) :
+                                               std::nullopt,
         std::move(process),
         arrival,
         std::move(resolved),

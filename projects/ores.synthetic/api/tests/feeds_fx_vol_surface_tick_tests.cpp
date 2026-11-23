@@ -100,8 +100,10 @@ std::vector<curve_point> tick_curve(double rate, const std::vector<date_period>&
 /// The run's board with the pair's three members, resolved as the two feeds resolve them.
 struct tick_board final {
     tick_board() {
-        eur = values.member_of(market_member_kind::curve, curve_member_code("synthetic.test.ir.yield_curve.ois.eur"));
-        usd = values.member_of(market_member_kind::curve, curve_member_code("synthetic.test.ir.yield_curve.ois.usd"));
+        eur = values.member_of(market_member_kind::curve,
+                               curve_member_code("synthetic.test.ir.yield_curve.ois.eur"));
+        usd = values.member_of(market_member_kind::curve,
+                               curve_member_code("synthetic.test.ir.yield_curve.ois.usd"));
         spot = values.member_of(market_member_kind::spot,
                                 spot_member_code("synthetic.test.spot.eurusd"));
     }

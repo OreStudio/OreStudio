@@ -169,8 +169,10 @@ std::vector<curve_point> round_trip_curve(double rate, const std::vector<date_pe
 /// The run's board with the pair's three members, as the two feeds resolve them.
 struct round_trip_board final {
     round_trip_board() {
-        eur = values.member_of(market_member_kind::curve, curve_member_code("synthetic.test.ir.yield_curve.ois.eur"));
-        usd = values.member_of(market_member_kind::curve, curve_member_code("synthetic.test.ir.yield_curve.ois.usd"));
+        eur = values.member_of(market_member_kind::curve,
+                               curve_member_code("synthetic.test.ir.yield_curve.ois.eur"));
+        usd = values.member_of(market_member_kind::curve,
+                               curve_member_code("synthetic.test.ir.yield_curve.ois.usd"));
         spot = values.member_of(market_member_kind::spot,
                                 spot_member_code("synthetic.test.spot.eurusd"));
     }

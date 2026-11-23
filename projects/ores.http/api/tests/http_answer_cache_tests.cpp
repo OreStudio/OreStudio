@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.http.api/domain/body_source.hpp"
 #include "ores.http.api/net/http_server.hpp"
 #include "ores.logging/logger.hpp"
 #include "test_suite.hpp"
@@ -25,9 +26,11 @@
 #include <boost/asio/io_context.hpp>
 #include <boost/beast/core.hpp>
 #include <boost/beast/http.hpp>
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <cstdint>
+#include <memory>
 #include <optional>
 #include <string>
 #include <thread>
@@ -119,6 +122,63 @@ cache_get(std::uint16_t port, const std::string& target, std::chrono::millisecon
 }
 
 /// Answers a fixed JSON body, and whatever cache rule the case gives it.
+/// Posts a body and returns the answer, or nothing when none arrived in time.
+std::optional<http::response<http::string_body>>
+cache_post(std::uint16_t port, const std::string& target, const std::string& body) {
+    asio::io_context io;
+    beast::tcp_stream stream(io);
+    beast::error_code ec;
+    stream.expires_after(std::chrono::seconds(5));
+
+    const auto address = asio::ip::make_address("127.0.0.1", ec);
+    if (ec)
+        return std::nullopt;
+    stream.connect(asio::ip::tcp::endpoint(address, port), ec);
+    if (ec)
+        return std::nullopt;
+
+    http::request<http::string_body> req{http::verb::post, target, 11};
+    req.set(http::field::host, "127.0.0.1");
+    req.body() = body;
+    req.prepare_payload();
+    http::write(stream, req, ec);
+    if (ec)
+        return std::nullopt;
+
+    beast::flat_buffer buffer;
+    http::response<http::string_body> res;
+    http::read(stream, buffer, res, ec);
+    if (ec)
+        return std::nullopt;
+
+    stream.socket().shutdown(asio::ip::tcp::socket::shutdown_both, ec);
+    return res;
+}
+
+/// A body written a piece at a time, which is how a file or a view leaves.
+class cache_streamed_source final : public body_source {
+public:
+    explicit cache_streamed_source(std::string bytes)
+        : bytes_(std::move(bytes)) {}
+
+    [[nodiscard]] std::optional<std::uint64_t> size() const override {
+        return bytes_.size();
+    }
+
+    std::size_t read(std::span<char> into) override {
+        if (offset_ >= bytes_.size())
+            return 0;
+        const auto take = std::min(into.size(), bytes_.size() - offset_);
+        std::copy_n(bytes_.data() + offset_, take, into.data());
+        offset_ += take;
+        return take;
+    }
+
+private:
+    std::string bytes_;
+    std::size_t offset_ = 0;
+};
+
 request_handler cache_handler(std::optional<std::string> own_rule = std::nullopt) {
     return [own_rule](const http_request&) -> asio::awaitable<http_response> {
         auto answer = http_response::json(R"({"ok":true})");
@@ -235,4 +295,62 @@ TEST_CASE("a_path_outside_the_api_states_no_such_rule", "[http_api][cache]") {
     REQUIRE(answer.has_value());
     REQUIRE(answer->result_int() == 200);
     REQUIRE((*answer)[http::field::cache_control].empty());
+}
+
+/**
+ * @brief A streamed answer carries the rule too.
+ *
+ * A view or a file leaves through the second writer, whose head is on the wire
+ * before its body, so this is the case that proves that writer states it.
+ */
+TEST_CASE("a_streamed_api_answer_is_not_storable_either", "[http_api][cache]") {
+    auto lg(make_logger(test_suite));
+    ORES_LOG_SEV(lg, info) << "Testing that a streamed API answer states that it is not storable";
+
+    cache_test_server fixture(cache_options());
+    auto router = fixture.server().get_router();
+    router->add_route(router->get("/api/stream")
+                          .summary("Answer from a source, a piece at a time")
+                          .auth_optional()
+                          .handler([](const http_request&) -> asio::awaitable<http_response> {
+                              auto answer = http_response::json(R"({"ok":true})");
+                              answer.body_stream =
+                                  std::make_shared<cache_streamed_source>(answer.body);
+                              co_return answer;
+                          })
+                          .build());
+
+    const auto answer = cache_get(fixture.port(), "/api/stream", std::chrono::seconds(5));
+
+    REQUIRE(answer.has_value());
+    REQUIRE(answer->result_int() == 200);
+    REQUIRE((*answer)[http::field::cache_control] == "private, no-store");
+}
+
+/**
+ * @brief A refusal the session makes before it reads a body states the rule.
+ *
+ * A body over the limit is refused from the headers, before the body is read, so
+ * this is the earliest answer a route has nothing to do with.
+ */
+TEST_CASE("a_refused_api_body_is_not_storable_either", "[http_api][cache]") {
+    auto lg(make_logger(test_suite));
+    ORES_LOG_SEV(lg, info) << "Testing that a refused API body states that it is not storable";
+
+    auto options = cache_options();
+    options.default_max_body_size = 64;
+
+    cache_test_server fixture(options);
+    auto router = fixture.server().get_router();
+    router->add_route(router->post("/api/upload")
+                          .summary("Take a body")
+                          .auth_optional()
+                          .handler(cache_handler())
+                          .build());
+
+    const auto answer = cache_post(fixture.port(), "/api/upload", std::string(500, 'x'));
+
+    REQUIRE(answer.has_value());
+    REQUIRE(answer->result_int() == 413);
+    REQUIRE((*answer)[http::field::cache_control] == "private, no-store");
 }

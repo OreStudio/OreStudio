@@ -168,9 +168,17 @@ private:
      * An API answer may carry a person's rows or a refusal that says why, so the BFF
      * stamped every =/api/= answer that set no cache rule of its own with
      * =private, no-store=. Set once from the request target, like the headers above,
-     * so a refusal and a served answer both carry it.
+     * so a refusal and a served answer both carry it. A refusal the session makes
+     * before it has read a target states it too.
      */
     bool uncacheable_answer_{false};
+
+    /**
+     * @brief States the cache rule on @p head, unless the route stated one.
+     *
+     * Both writers call this, so the two answers cannot drift apart.
+     */
+    void apply_cache_rule(boost::beast::http::fields& head) const;
 
 
     /**

@@ -109,11 +109,17 @@ therefore on the answers no route builds: a rate-limit refusal, a body over the
 limit, a CSRF refusal and a missing route. The streamed head states it too, so a
 view or a file leaves with it.
 
-Proven by =ores.http.api.tests=: 194 cases and 6785 assertions pass, four of them
-new — a served answer, a route's own rule, a 404 built by the session, and a path
-outside the API. The build ran under build-lock slot 'a' for 28 minutes with the
-tree main had taken in. The local gate is green: 12 checks, the C++ class among
-them.
+A refusal the session makes before it has read a target states the rule too: a
+malformed request line, a header past the limit or a body past it leaves before
+any path is known, and a cache may hold a 4xx it was given no freshness rule for.
+Both writers share one helper, =apply_cache_rule=, so the plain answer and the
+streamed head cannot drift apart.
+
+Proven by =ores.http.api.tests=: 196 cases and 6791 assertions pass, six of them
+new — a served answer, a route's own rule, a 404 built by the session, a path
+outside the API, a streamed answer, and a body refused for its size. The build ran
+under build-lock slot 'a'; the first run took 28 minutes on the tree main had taken
+in, the second 3 minutes. The local gate is green.
 
 What is not proven: the header on a running deployment. The gateway process was
 not restarted with this build, so the live server still answers without it until

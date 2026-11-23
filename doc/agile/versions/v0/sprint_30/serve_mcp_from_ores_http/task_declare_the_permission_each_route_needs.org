@@ -8,7 +8,7 @@
 #+filetags: :serve_mcp_from_ores_http:sprint_30:v0:
 #+owner: marco
 #+branch: feature/declare-the-permission-each-route-needs
-#+pr:
+#+pr: 5080
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-23
@@ -90,7 +90,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5080][#5080]] | [http] State a generated entity route's permission, and filter the tools by it |
 
 * Review
 

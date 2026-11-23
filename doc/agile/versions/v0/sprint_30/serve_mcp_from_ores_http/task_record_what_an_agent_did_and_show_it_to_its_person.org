@@ -8,7 +8,7 @@
 #+filetags: :serve_mcp_from_ores_http:sprint_30:v0:
 #+owner: marco
 #+branch: feature/record-what-an-agent-did-and-show-it-to-its-person
-#+pr:
+#+pr: 5049
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-22
@@ -100,7 +100,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5049][#5049]] | [iam] Record what an LLM agent did and show it to its person |
 
 * Review
 

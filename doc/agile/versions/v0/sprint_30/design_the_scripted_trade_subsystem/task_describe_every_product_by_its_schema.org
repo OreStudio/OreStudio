@@ -8,7 +8,7 @@
 #+filetags: :design_the_scripted_trade_subsystem:sprint_30:v0:
 #+owner: marco
 #+branch: feature/describe-every-product-by-its-schema
-#+pr: 5040
+#+pr: 5044
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-21
@@ -249,6 +249,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5044][#5044]] | [trading] Hold the codes of coded script inputs as data |
 | [[https://github.com/OreStudio/OreStudio/pull/5040][#5040]] | [ore] Describe the fields of every native product in the ore parameters |
 
 * Review

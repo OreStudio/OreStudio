@@ -513,6 +513,7 @@ public:
                                *ctx_expected, req->script_name, req->script_version)) {
                     resp = service::validate_script(*variants, variables);
                 } else {
+                    resp.code = "script_not_found";
                     resp.message = "No library script " + req->script_name +
                                    (req->script_version == 0 ?
                                         std::string{} :
@@ -520,12 +521,14 @@ public:
                                    " is held.";
                 }
             } else {
+                resp.code = "request_invalid";
                 resp.message = "Invalid validate_script_request.";
             }
         } catch (const std::exception& e) {
             ORES_LOG_SEV(trade_operations_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             resp.success = false;
+            resp.code = "internal";
             resp.message =
                 "The trading service could not validate the script; it logged the reason.";
         }

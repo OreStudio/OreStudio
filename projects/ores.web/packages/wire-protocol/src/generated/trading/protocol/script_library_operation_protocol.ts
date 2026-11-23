@@ -252,6 +252,10 @@ export interface ValidateScriptResponse {
      */
     message: string;
     /**
+     * @brief Why the validation did not run, as a caller branches on it: script_not_found, request_invalid or internal; empty when it ran.
+     */
+    code: string;
+    /**
      * @brief Whether no finding is an error, so a booking on these variables would pass.
      */
     is_valid: boolean;

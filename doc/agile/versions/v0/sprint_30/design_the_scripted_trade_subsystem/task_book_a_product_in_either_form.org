@@ -147,6 +147,13 @@ via its "Verifies task" field.
 | 5071.5 | a shared origin check for the handlers | none | no change | three handlers state it; a helper belongs with a fourth |
 | 5071.6 | terms_unreadable states the recipe's reason | none | no change | the reason names the recipe's source and the native column it found empty, which the caller stated |
 | 5071.7 | tests of the refusals | service_trade_operations_service_tests.cpp | accept | booking_form_invalid, terms_missing, product_unknown and terms_unreadable |
+| 5075.1 | a refused form read is not a missing trade | booking_routes.cpp, scripted-booking.ts | accept | only a missing product row is 404; other refusals map as any refused read |
+| 5075.2 | validate-script maps every failure to 404 | ores.trading.script_library_operations.org, the handler, both routes | accept | the response states a code: script_not_found is 404, request_invalid 400, internal 502 |
+| 5075.3 | a scripted trade with no script row | booking_routes.cpp, scripted-booking.ts | accept | 502: the store is inconsistent, and the screen cannot reopen the trade |
+| 5075.4 | the BFF passes product rows through | none | no change | the service owns the rows' shape, as decided; ores.http refuses a malformed batch with its codec |
+| 5075.5 | the refusal mapping is in both servers | none | no change | two servers that mirror each other; a shared table needs a shared language |
+| 5075.6 | the return after require_ok | booking_routes.cpp | accept | commented: a caller passes only a refused result |
+| 5075.7 | tests of the refusal paths | scripted-booking.test.ts | accept | 404 and 502 on validation, 403 on a refused read, 502 on a missing script row |
 
 * Result
 

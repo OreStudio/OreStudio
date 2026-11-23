@@ -348,3 +348,59 @@ describe('GET /api/trading/booking/:tradeId/form', () => {
         expect(response.statusCode).toBe(404);
     });
 });
+
+describe('refusals the screen tells apart', () => {
+    const tradeId = '88888888-8888-4888-8888-888888888888';
+
+    it('answers a library script that is not held with a 404, and a failed validation with a 502', async () => {
+        for (const [code, status] of [
+            ['script_not_found', 404],
+            ['internal', 502],
+        ] as const) {
+            const { server, cookies } = buildTestServer({
+                [VALIDATE]: { success: false, code, message: 'no' },
+            });
+            const response = await server.inject({
+                method: 'POST',
+                url: '/api/trading/booking/validate-script',
+                cookies,
+                payload: { scriptName: 'Missing' },
+            });
+            await server.close();
+            expect(response.statusCode).toBe(status);
+        }
+    });
+
+    it('answers a refused form read as refused, not as a trade with no product', async () => {
+        const { server, cookies } = buildTestServer({
+            [TRADE_PRODUCT]: { result: { outcome: 'denied', message: 'No.' }, trade_product: null },
+        });
+        const response = await server.inject({
+            method: 'GET',
+            url: `/api/trading/booking/${tradeId}/form`,
+            cookies,
+        });
+        await server.close();
+        expect(response.statusCode).toBe(403);
+    });
+
+    it('answers a scripted trade whose script row is missing with a 502', async () => {
+        const { server, cookies } = buildTestServer({
+            [TRADE_PRODUCT]: {
+                result: { outcome: 'ok' },
+                trade_product: { product_code: 'EquityBasketOption', booking_form: 'scripted' },
+            },
+            [SCRIPTED_ROW]: {
+                result: { outcome: 'missing', message: 'none' },
+                scripted_instrument: null,
+            },
+        });
+        const response = await server.inject({
+            method: 'GET',
+            url: `/api/trading/booking/${tradeId}/form`,
+            cookies,
+        });
+        await server.close();
+        expect(response.statusCode).toBe(502);
+    });
+});

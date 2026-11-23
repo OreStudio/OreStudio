@@ -444,6 +444,8 @@ http_response refused_booking(const ores::utility::domain::result& result,
     if (result.code == "script_not_found" || result.code == "product_unknown" ||
         result.code == "form_not_offered")
         return http_response::api_error(http_status::not_found, "not-found", result.message);
+    // A caller passes only a refused result, so require_ok throws; the return
+    // states a gateway failure should a result ever arrive refused as ok.
     rr::require_ok(result);
     return http_response::api_error(
         http_status::bad_gateway, "upstream-unavailable", result.message);
@@ -765,9 +767,14 @@ void booking_routes::register_routes(
                     msg.code = body.code;
                     msg.variables = wire_variables(body.variables);
                     const auto resp = forwarding::forward(req, session, msg);
-                    if (!resp.success)
+                    if (resp.code == "script_not_found")
                         return http_response::api_error(
                             http_status::not_found, "not-found", resp.message);
+                    if (resp.code == "request_invalid")
+                        rr::invalid(resp.message);
+                    if (!resp.success)
+                        return http_response::api_error(
+                            http_status::bad_gateway, "upstream-unavailable", resp.message);
                     return http_response::json(
                         "{\"isValid\":" + json::write(resp.is_valid) +
                         ",\"message\":" + json::write(resp.message) +
@@ -899,8 +906,9 @@ void booking_routes::register_routes(
                     trading_messaging::get_trade_product_request product_msg;
                     product_msg.key.trade_id = trade_id;
                     const auto product = forwarding::forward(req, session, product_msg);
-                    if (product.result.outcome != ores::utility::domain::outcome::ok ||
-                        !product.trade_product)
+                    if (product.result.outcome != ores::utility::domain::outcome::missing)
+                        rr::require_ok(product.result);
+                    if (!product.trade_product)
                         return http_response::api_error(
                             http_status::not_found,
                             "not-found",
@@ -912,10 +920,16 @@ void booking_routes::register_routes(
                         trading_messaging::get_scripted_instrument_request scripted_msg;
                         scripted_msg.key.trade_id = trade_id;
                         const auto scripted = forwarding::forward(req, session, scripted_msg);
-                        if (scripted.scripted_instrument) {
-                            script_name = scripted.scripted_instrument->script_name;
-                            script_version = scripted.scripted_instrument->script_version;
-                        }
+                        if (scripted.result.outcome != ores::utility::domain::outcome::missing)
+                            rr::require_ok(scripted.result);
+                        if (!scripted.scripted_instrument)
+                            rr::refuse(http_status::bad_gateway,
+                                       "upstream-unavailable",
+                                       "Trade " + boost::uuids::to_string(trade_id) +
+                                           " was booked scripted, and the trading service "
+                                           "holds no script for it.");
+                        script_name = scripted.scripted_instrument->script_name;
+                        script_version = scripted.scripted_instrument->script_version;
                     }
                     return http_response::json(form_json(trade_id,
                                                          product.trade_product->product_code,

@@ -136,6 +136,11 @@ function refusalOf(reply: z.infer<typeof bookingReply>): HttpFailure {
     return refusalOfBooking(reply.result);
 }
 
+/** The trading service answered, and its answer cannot be served. */
+function upstreamFailure(message: string): HttpFailure {
+    return new HttpFailure(502, { code: 'upstream-unavailable', message });
+}
+
 export function registerScriptedBookingRoutes(
     server: FastifyInstance,
     requireSession: (request: FastifyRequest) => LiveSession,
@@ -154,12 +159,19 @@ export function registerScriptedBookingRoutes(
             z.looseObject({
                 success: z.boolean().default(false),
                 message: z.string().default(''),
+                code: z.string().default(''),
                 is_valid: z.boolean().default(false),
                 diagnostics: z.array(diagnosticSchema).default([]),
             }),
         );
-        if (!reply.success) {
+        if (reply.code === 'script_not_found') {
             throw notFound(reply.message);
+        }
+        if (reply.code === 'request_invalid') {
+            throw invalidRequest(reply.message);
+        }
+        if (!reply.success) {
+            throw upstreamFailure(reply.message);
         }
         return {
             isValid: reply.is_valid,
@@ -239,7 +251,10 @@ export function registerScriptedBookingRoutes(
                 trade_product: z.looseObject({}).nullable().default(null),
             }),
         );
-        if (product.result.outcome !== 'ok' || product.trade_product === null) {
+        if (product.result.outcome !== 'ok' && product.result.outcome !== 'missing') {
+            throw refusalOfBooking(product.result);
+        }
+        if (product.trade_product === null) {
             throw notFound(`Trade ${tradeId} records no product it was booked as.`);
         }
         const form = text(product.trade_product['booking_form']);
@@ -254,12 +269,18 @@ export function registerScriptedBookingRoutes(
                     scripted_instrument: z.looseObject({}).nullable().default(null),
                 }),
             );
-            const row = scripted.scripted_instrument;
-            if (row !== null) {
-                scriptName = text(row['script_name']);
-                const version = row['script_version'];
-                scriptVersion = typeof version === 'number' ? version : null;
+            if (scripted.result.outcome !== 'ok' && scripted.result.outcome !== 'missing') {
+                throw refusalOfBooking(scripted.result);
             }
+            const row = scripted.scripted_instrument;
+            if (row === null) {
+                throw upstreamFailure(
+                    `Trade ${tradeId} was booked scripted, and the trading service holds no script for it.`,
+                );
+            }
+            scriptName = text(row['script_name']);
+            const version = row['script_version'];
+            scriptVersion = typeof version === 'number' ? version : null;
         }
         return {
             tradeId,

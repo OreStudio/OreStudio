@@ -262,6 +262,12 @@ via its "Verifies task" field.
 | 5040.4 | an inline type named like a named type would drop fields silently | extract_instrument_terms.py | accept | the extractor refuses the clash |
 | 5040.5 | the catalogue is parsed by column position; the convention extractor is not in the check | extract_instrument_terms.py, local_checks.py | accept | the header row is checked; extract_convention_terms.py joins the check's paths |
 | 5040.6 | post the synthetic rebuild's result | none | no change | rebuilt; the service starts and runs, so the bad_alloc was the stale binary |
+| 5044.1 | sequence_number runs across the script, so a new code renumbers later ones | none | no change | a changed script is written whole at its new version, every row anew, so renumbering adds no rows or churn |
+| 5044.2 | a correction key with a typo is ignored silently | generate_script_library.py | accept | the generator fails on a correction naming no script's input |
+| 5044.3 | the docstring has an unwrapped line | script_input_codes.py | accept | rewrapped |
+| 5044.4 | a code stated twice with two labels is dropped silently | script_input_codes.py, generate_script_library.py | accept | the generator warns; KikoType, the one case, has a correction saying the second statement is advice |
+| 5044.5 | track the codes of tenant scripts | doc/agile/product_backlog/inbox | accept | captured as Codes for a tenant's published scripts |
+| 5044.6 | no unit test of the heuristic reader | build/scripts/tests/test_script_input_codes.py | accept | 9 cases, run by the build-script-tests check |
 
 * Result
 

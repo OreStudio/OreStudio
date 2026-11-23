@@ -25,8 +25,9 @@ next code, a comma or a semicolon, with what is in brackets, a leading article, 
 trailing "or", "and" or "position", and the words every label of the input ends
 with removed: "1 for a long, -1 for a short position" gives long and short, and
 "1 for American KO style, -1 for European KO style" gives American and European.
-An input whose line states fewer than two distinct codes is not coded. The first statement of a code wins, so a later "should be 1
-for pure KO" does not relabel it.
+An input whose line states fewer than two distinct codes is not coded. The first
+statement of a code wins, so a later "should be 1 for pure KO" does not relabel it;
+a later statement that gives the code another label is reported as a conflict.
 
 Where the prose is wrong or reads badly, script_input_code_corrections.json, beside
 this file, states the codes of the input with its reason, and the reading is not
@@ -71,17 +72,33 @@ def phrase(text):
     return " ".join(words)
 
 
-def read(description):
-    """The (code, label) pairs a comment line states, or none."""
-    if not description:
-        return []
-    found = list(MARKER.finditer(description))
-    pairs, seen = [], set()
+def statements(description):
+    """Every (code, label) a comment line states, in order, repeats included."""
+    found = list(MARKER.finditer(description or ""))
+    out = []
     for i, match in enumerate(found):
         end = found[i + 1].start() if i + 1 < len(found) else len(description)
-        code = int(match.group(1))
         label = phrase(description[match.end():end])
-        if code in seen or not label or not label[0].isalpha():
+        if label and label[0].isalpha():
+            out.append((int(match.group(1)), label))
+    return out
+
+
+def conflicts(description):
+    """The codes a comment line gives two different labels."""
+    first, out = {}, []
+    for code, label in statements(description):
+        if code in first and first[code] != label and code not in out:
+            out.append(code)
+        first.setdefault(code, label)
+    return out
+
+
+def read(description):
+    """The (code, label) pairs a comment line states, or none."""
+    pairs, seen = [], set()
+    for code, label in statements(description):
+        if code in seen:
             continue
         seen.add(code)
         pairs.append([code, label])

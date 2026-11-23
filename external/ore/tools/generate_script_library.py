@@ -272,6 +272,18 @@ def render_artefacts(scripts):
                             "script_calibration_strikes", "script_coarsenings", "script_inputs",
                             "script_input_codes")}
     fixes = script_input_codes.corrections()
+    known = {f"{s.name}/{input_name}" for s in scripts for input_name, *_ in s.inputs}
+    unknown = sorted(set(fixes) - known)
+    if unknown:
+        raise GenerationError("script_input_code_corrections.json names inputs no script "
+                              f"has: {', '.join(unknown)}")
+    for s in scripts:
+        for input_name, data_type, _, _ in s.inputs:
+            description = s.input_descriptions.get(input_name)
+            clash = script_input_codes.conflicts(description)
+            if clash and f"{s.name}/{input_name}" not in fixes and data_type == "Number":
+                print(f"warning: {s.name}/{input_name} gives code(s) {clash} two labels; the "
+                      "first is kept", file=sys.stderr)
     for s in scripts:
         name = literal(s.name)
         rows["scripts"].append([name, literal(s.product_tag), literal(s.description)])

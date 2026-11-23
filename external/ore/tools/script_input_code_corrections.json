@@ -57,5 +57,22 @@
       ]
     ],
     "reason": "The comment spells DownIn as DonwIn; every other barrier input of the library spells it DownIn."
+  },
+  "GenericBarrierOption/KikoType": {
+    "codes": [
+      [
+        1,
+        "KoAlways"
+      ],
+      [
+        2,
+        "KoBeforeKi"
+      ],
+      [
+        3,
+        "KoAfterKi"
+      ]
+    ],
+    "reason": "The comment ends with advice, \"should be 1 for pure KO or pure KI barrier\", which names code 1 again; it is not a fourth meaning of the code."
   }
 }

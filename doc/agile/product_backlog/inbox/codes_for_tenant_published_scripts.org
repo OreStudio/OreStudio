@@ -1,0 +1,37 @@
+:PROPERTIES:
+:ID: F2F425DD-82B2-46CD-A2D9-C421DCF9E765
+:END:
+#+title: Codes for a tenant's published scripts
+#+description: A tenant's own published script gets no input codes, because the codes are read from library comments by the script library generator.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-11-23
+#+updated: 2026-11-23
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Give a tenant's own published script the codes of its coded inputs, as the
+library's scripts have them: a row of =script_input_code= for each number a
+coded input reads and the name it stands for.
+
+* Why
+
+The codes of the library's scripts are read from the library's comments by
+the script library generator, which a tenant's publish does not run: the
+publish derives a script's inputs from its code with the parser, and a comment
+is not data the publish reads. A tenant's coded input therefore has no codes,
+and a form offers a bare number for it. The publish could read the codes from
+the script's comment, as the generator does, or take them as a field of the
+publish request.
+
+* References
+
+- PR #5044, which added the codes for the library's scripts.
+
+* See also
+
+- [[id:52E27C32-7F44-4103-81B0-870A83436BC8][ores.trading.script_input_code]] — the codes of the library's scripts.
+- [[id:6E4060D6-DF49-44C9-97E3-6CDB8F6954C3][Describe every product by its schema]] — the task that added them.

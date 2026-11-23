@@ -32,13 +32,13 @@ select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::t
 
 -- The trigger reads the parameter contract, which the system provisioning step
 -- publishes; a fresh database has not run it, so the test publishes it here.
-select * from ores_reporting_publish_ore_parameter_value_domains_from_dq_fn(
+select * from ores_ore_publish_ore_parameter_value_domains_from_dq_fn(
     (select id from ores_dq_datasets_tbl
       where code = 'ore.parameter_value_domains'
         and valid_to = ores_utility_infinity_timestamp_fn()),
     ores_utility_system_tenant_id_fn(), 'upsert', '{}'::jsonb);
 
-select * from ores_reporting_publish_ore_parameters_from_dq_fn(
+select * from ores_ore_publish_ore_parameters_from_dq_fn(
     (select id from ores_dq_datasets_tbl
       where code = 'ore.parameters'
         and valid_to = ores_utility_infinity_timestamp_fn()),
@@ -136,7 +136,7 @@ select throws_like(
 -- authority the map stated text for them and no rule reached the screen.
 select is(
     (select value_set_code || ' ' || source
-       from ores_reporting_ore_parameter_vocabularies_tbl
+       from ores_ore_parameter_vocabularies_tbl
       where xpath = '/Conventions/OIS/SpotLag'
         and valid_to = ores_utility_infinity_timestamp_fn()),
     'convention.integer ore_xsd',
@@ -144,7 +144,7 @@ select is(
 
 select is(
     (select value_set_code || ' ' || source
-       from ores_reporting_ore_parameter_vocabularies_tbl
+       from ores_ore_parameter_vocabularies_tbl
       where xpath = '/Conventions/TenorBasisSwap/SpreadOnShort'
         and valid_to = ores_utility_infinity_timestamp_fn()),
     'flag ore_xsd',
@@ -160,7 +160,7 @@ select ok(
                    and t.tgrelid = k.table_name::regclass)) = 0
        from (select distinct terms.entity_name, columns.table_name
                from ores_refdata_convention_kind_terms_tbl terms
-               left join ores_reporting_ore_element_map_columns_tbl columns
+               left join ores_ore_element_map_columns_tbl columns
                  on columns.entity_name = terms.entity_name
                 and columns.valid_to = ores_utility_infinity_timestamp_fn()
               where terms.valid_to = ores_utility_infinity_timestamp_fn()) k),

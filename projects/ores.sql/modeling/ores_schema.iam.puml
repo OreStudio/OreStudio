@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: iam
-Tables: 25
+Tables: 28
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -348,6 +348,106 @@ package "iam" #E8F4FD {
     generated service's get_account_history(id) collides in name and
     signature with the hand-written get_account_history(username) while
     meaning a different read.
+    end note
+
+    entity ores_iam_agent_grants_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * grantor_account_id : uuid <<FK>>
+        * agent_name : text
+        * role_id : uuid <<FK>>
+        * not_after : timestamptz
+          revoked_at : timestamptz
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_iam_agent_grants_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Agent Grant Table
+    An agent grant records that a person allows one named LLM agent to act for
+    them in one tenant and one party, bounded by a role made for the work, until an
+    expiry of at most ninety days or until the grant is revoked. It holds no secret: an agent key redeems it,
+    and IAM re-checks the grant and its person at every exchange. It is IAM's
+    second form of the Grant Management pattern, after the run grant, and
+    [[id:A7E2942C-66AD-449C-B80B-CA789EBC34FA][Agent grants: delegated consent for LLM agents]] states its checks and its lifecycle.
+    The table is readable over the wire and written only by IAM's own create and
+    revoke operations, which take the person's own session:
+    :client_read_only: removes the generic write verbs from the wire and keeps
+    the repository writable for those operations.
+    end note
+
+    entity ores_iam_agent_keys_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * grant_id : uuid <<FK>>
+        * secret_hash : text
+          revoked_at : timestamptz
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_iam_agent_keys_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Agent Key Table
+    An agent key redeems an [[id:ED9E53BF-27A3-4261-9767-3A25B98BFCA4][agent grant]]: an LLM agent presents it as a
+    bearer token, and IAM exchanges it for a short token that names the grant's
+    person and the agent ([[id:1162906F-BB72-486E-9A11-30D567C65F3E][Delegation tokens for LLM agents: subject and actor claims]]). The key is shown once, when it is made, and is
+    ores_ak_<tenant id>_<key id>_<secret>. Only its id, which finds it, and the
+    SHA-256 hash of its secret, which checks it, are stored. A grant may have
+    several keys, so a key can be replaced before the old one is revoked.
+    The table is readable over the wire and written only by IAM's own operations:
+    :client_read_only: removes the generic write verbs from the wire.
+    end note
+
+    entity ores_iam_agent_token_issues_tbl  #F7E5FF {
+        * id : text <<PK>>
+        * issued_at : timestamptz <<PK>>
+        --
+        * tenant_id : text <<FK>>
+        * party_id : text <<FK>>
+        * grant_id : text <<FK>>
+        * key_id : text <<FK>>
+        * session_id : text <<FK>>
+        * grantor_account_id : text <<FK>>
+        * client_address : text
+        * outcome : text
+        * reason : text
+    }
+
+    note right of ores_iam_agent_token_issues_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Agent Token Issue Table
+    A row says that ores.http exchanged an LLM agent's key, for which grant, key and
+    session, from which client address, and whether the token was issued or
+    refused. It never holds the key. The exchange reads it to find a key's open
+    session, and the grants page reads it for each key's last use. The rows are
+    append-only, so the model states :current_state:.
+    The table is an audit log like the run token issue log, and follows it: its
+    tenant_id is an ordinary text column isolated by a policy in
+    iam_rls_policies_create.sql, and only IAM's own exchange writes it, each row
+    through a session of its own tenant. No retention policy is set.
+    The table is internal, so only the data layer and the SQL schema are generated.
+    The reads stay hand-written in agent_token_issue_log.
     end note
 
     entity ores_iam_auth_events_tbl  #F7E5FF {
@@ -891,6 +991,7 @@ package "iam" #E8F4FD {
         * bytes_received : bigint
         * country_code : text
         * protocol : text
+          agent_grant_id : uuid <<FK>>
     }
 
     note right of ores_iam_sessions_tbl
@@ -1034,6 +1135,9 @@ ores_iam_accounts_tbl ||--o{ ores_iam_account_credentials_tbl : "has"
 ores_iam_accounts_tbl ||--o{ ores_iam_account_parties_tbl : "has"
 ores_iam_accounts_tbl ||--o{ ores_iam_account_roles_tbl : "assigned"
 ores_iam_roles_tbl ||--o{ ores_iam_account_roles_tbl : "granted to"
+ores_iam_roles_tbl ||--o{ ores_iam_agent_grants_tbl : "has"
+ores_iam_accounts_tbl ||--o{ ores_iam_agent_grants_tbl : "has"
+ores_iam_agent_grants_tbl ||--o{ ores_iam_agent_keys_tbl : "has"
 ores_iam_role_grant_requests_tbl ||--o{ ores_iam_role_grant_request_roles_tbl : "has"
 ores_iam_roles_tbl ||--o{ ores_iam_role_grant_request_roles_tbl : "has"
 ores_iam_accounts_tbl ||--o{ ores_iam_role_grant_requests_tbl : "has"

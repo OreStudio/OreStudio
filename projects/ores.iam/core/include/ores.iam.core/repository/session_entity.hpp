@@ -64,6 +64,7 @@ struct session_entity {
     std::uint64_t bytes_received = 0;
     std::string country_code = "";
     std::string protocol = "binary";
+    std::optional<boost::uuids::uuid> agent_grant_id;
 
     /**
      * @brief The columns of the table, named as the members, with the key.
@@ -83,7 +84,8 @@ struct session_entity {
                query_builder::bind("bytes_sent", &e::bytes_sent) |
                query_builder::bind("bytes_received", &e::bytes_received) |
                query_builder::bind("country_code", &e::country_code) |
-               query_builder::bind("protocol", &e::protocol);
+               query_builder::bind("protocol", &e::protocol) |
+               query_builder::bind("agent_grant_id", &e::agent_grant_id);
     }
 };
 

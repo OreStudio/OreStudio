@@ -596,6 +596,7 @@ const wireSessionSchema = z.object({
     bytes_received: z.int().nonnegative().default(0),
     country_code: text,
     protocol: text,
+    agent_grant_id: uuidSchema.nullable().default(null),
 });
 
 /** Translates one wire session into the domain type, field by field. */
@@ -614,6 +615,7 @@ function mapSession(row: z.infer<typeof wireSessionSchema>): Session {
         bytesReceived: row.bytes_received,
         countryCode: row.country_code,
         protocol: row.protocol,
+        agentGrantId: row.agent_grant_id,
     };
 }
 

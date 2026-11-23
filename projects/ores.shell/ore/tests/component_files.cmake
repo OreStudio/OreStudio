@@ -24,4 +24,10 @@ set(files
     "ore_file_category_commands_tests.cpp"
     "ore_file_commands_tests.cpp"
     "ore_file_version_commands_tests.cpp"
+    "ore_parameter_commands_tests.cpp"
+    "ore_parameter_setting_value_set_commands_tests.cpp"
+    "ore_parameter_value_domain_commands_tests.cpp"
+    "ore_parameter_value_set_catalogue_commands_tests.cpp"
+    "ore_parameter_value_set_commands_tests.cpp"
+    "ore_parameter_value_set_value_commands_tests.cpp"
 )

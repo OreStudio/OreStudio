@@ -162,7 +162,9 @@ boost::asio::awaitable<http_response> session_routes::handle_list(const http_req
         session_refuse_undeclared_filters(req,
                                           {
                                               "f.account_id",
+                                              "f.agent_grant_id",
                                               "f.account_id_one_of",
+                                              "f.agent_grant_id_one_of",
                                           });
         session_apply_page(msg, req);
         if (const auto raw = req.get_query_param("f.account_id"); !raw.empty()) {
@@ -170,11 +172,23 @@ boost::asio::awaitable<http_response> session_routes::handle_list(const http_req
                 msg.filter = messaging::sessions_filter{};
             msg.filter->account_id = session_read_param<boost::uuids::uuid>(raw, "f.account_id");
         }
+        if (const auto raw = req.get_query_param("f.agent_grant_id"); !raw.empty()) {
+            if (!msg.filter)
+                msg.filter = messaging::sessions_filter{};
+            msg.filter->agent_grant_id =
+                session_read_param<boost::uuids::uuid>(raw, "f.agent_grant_id");
+        }
         if (const auto raw = req.get_query_param("f.account_id_one_of"); !raw.empty()) {
             if (!msg.filter)
                 msg.filter = messaging::sessions_filter{};
             msg.filter->account_id_one_of =
                 session_read_list<boost::uuids::uuid>(raw, "f.account_id_one_of");
+        }
+        if (const auto raw = req.get_query_param("f.agent_grant_id_one_of"); !raw.empty()) {
+            if (!msg.filter)
+                msg.filter = messaging::sessions_filter{};
+            msg.filter->agent_grant_id_one_of =
+                session_read_list<boost::uuids::uuid>(raw, "f.agent_grant_id_one_of");
         }
         co_return ores::http::forwarding::respond(req, session, msg);
     } catch (const std::exception& e) {
@@ -323,11 +337,18 @@ void session_routes::register_routes(
             .query_param("sort", "string", "", false, "Column to order")
             .query_param("descending", "boolean", "", false, "Descending")
             .query_param("f.account_id", "string", "", false, "Rows whose account_id is this value")
+            .query_param(
+                "f.agent_grant_id", "string", "", false, "Rows whose agent_grant_id is this value")
             .query_param("f.account_id_one_of",
                          "string",
                          "",
                          false,
                          "Rows whose account_id is one of these comma-separated values")
+            .query_param("f.agent_grant_id_one_of",
+                         "string",
+                         "",
+                         false,
+                         "Rows whose agent_grant_id is one of these comma-separated values")
             .response<messaging::list_sessions_response>()
             .handler([&session](const http_request& req) { return handle_list(req, session); });
     const auto list_built = list_route.build();

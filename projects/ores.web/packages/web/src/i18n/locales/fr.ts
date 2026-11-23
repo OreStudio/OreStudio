@@ -569,6 +569,26 @@ const fr: SourceCatalogue = {
         },
     },
 
+    agents: {
+        title: 'Agents LLM',
+        lead: 'Un agent que vous nommez agit pour vous sous un rôle, jusqu’à l’expiration de l’autorisation ou jusqu’à ce que vous la révoquiez. Ses appels sont les vôtres et sont enregistrés comme ceux de l’agent.',
+        empty: 'Vous n’avez aucune autorisation d’agent active.',
+        keyOnce:
+            'Copiez cette clé dans l’agent maintenant. Elle n’est affichée qu’une fois et ne peut pas être relue.',
+        until: 'jusqu’au {at}',
+        newKey: 'Nouvelle clé',
+        revokeGrant: 'Révoquer l’autorisation',
+        revokeGrantConfirm:
+            'Révoquer l’autorisation révoque toutes ses clés et termine les sessions de l’agent. Continuer ?',
+        key: 'Clé {id}, créée le {at}',
+        revokeKey: 'Révoquer la clé',
+        name: 'Nom de l’agent',
+        role: 'Rôle',
+        days: 'Jours de validité (1–90)',
+        create: 'Créer l’autorisation',
+        readFailed: 'Vos autorisations d’agent n’ont pas pu être lues.',
+        actFailed: 'La modification a été refusée.',
+    },
     auditSignIns: {
         title: 'Connexions',
         description: 'Qui est connecté, ce que chacun fait, et qui échoue à se connecter.',
@@ -602,6 +622,7 @@ const fr: SourceCatalogue = {
             client: 'Client',
             address: 'Adresse',
             country: 'Pays',
+            agent: 'Agent',
             account: 'Compte',
             traffic: 'Envoyé / reçu',
             authorisation: 'Autorisation',
@@ -622,6 +643,14 @@ const fr: SourceCatalogue = {
             end: 'Terminer la session',
             ending: 'Fin en cours…',
             ended: 'Session terminée. Les sessions ouvertes ont été relues.',
+            endAgent:
+                'Terminer la session d’un agent révoque aussi la clé qui l’a ouverte. Le prochain appel de l’agent est refusé aussitôt, ou au plus tard dans cinq minutes ; il lui faut une nouvelle clé pour reprendre. Continuer ?',
+            holder: 'Afficher',
+            holders: {
+                all: 'Personnes et agents',
+                people: 'Personnes',
+                agents: 'Agents',
+            },
             endFailed: 'La session n’a pas pu être terminée.',
             notAllowed: 'Vous ne pouvez pas lire les sessions du locataire.',
             note: 'Toutes les sessions ouvertes du locataire sont lues ; en terminer une écrit son heure de fin et relit ce panneau.',
@@ -4549,6 +4578,7 @@ const fr: SourceCatalogue = {
                 surface: 'Surface',
                 expiries: 'Échéances',
                 contributors: 'Contributeurs',
+                surfaces: 'Surfaces',
             },
         },
         fields: {
@@ -4665,6 +4695,8 @@ const fr: SourceCatalogue = {
             curve_role_code: 'Rôle de courbe',
             start_skew: 'Asymétrie initiale (ρ)',
             start_curvature: 'Courbure initiale (η)',
+            spot_oresmd_uri: 'URI du spot',
+            spot_provider_code: 'Fournisseur du spot',
             skew_reversion: "Retour de l'asymétrie",
             skew_volatility: "Volatilité de l'asymétrie",
             curvature_reversion: 'Retour de la courbure',
@@ -6961,8 +6993,8 @@ const fr: SourceCatalogue = {
                 interest_rates: "Taux d'intérêt",
             },
             runs: {
-                start: 'Démarrer',
-                stop: 'Arrêter',
+                start: 'Démarrer les flux',
+                stop: 'Arrêter les flux',
                 startTitle: 'Démarrer {name} ?',
                 stopTitle: 'Arrêter {name} ?',
                 startBody:
@@ -6972,6 +7004,20 @@ const fr: SourceCatalogue = {
                 startReport:
                     '{started} démarrés pour {name}. {already} tournaient déjà, {skipped} ignorés.',
                 stopReport: '{stopped} arrêtés pour {name}.',
+            },
+            source: {
+                title: 'Source simulée',
+                start: 'Démarrer la source',
+                stop: 'Arrêter la source',
+                holds: '{feeds} flux servis · {surfaces} surfaces de volatilité tenues',
+                stopTitle: 'Arrêter {source} ?',
+                effect: {
+                    feeds: "Les {count} flux qu'elle sert pour le magasin s'arrêtent.",
+                    surfaces:
+                        "Elle libère les {count} surfaces de volatilité qu'elle tient : {stop} s'arrêtent avec elle, et {runOn} continuent pour d'autres sources.",
+                    byHand: 'Les flux démarrés à la main continuent.',
+                    stays: "Elle reste arrêtée, même après un redémarrage du service, jusqu'à ce que quelqu'un la démarre.",
+                },
             },
             provider: {
                 provider: 'Fournisseur',
@@ -7200,10 +7246,24 @@ const fr: SourceCatalogue = {
             addTitle: 'Nouvelle surface de volatilité',
             engine: 'SSVI',
             held: "Tourne tant qu'une source simulée d'un fournisseur la tient.",
+            upstreams: {
+                title: 'Ce que lit la surface',
+                intro: "À chaque tick, la surface lit son spot et les courbes d'actualisation de ses deux devises. La page de chaque flux montre son départ et sa calibration.",
+                notRunning:
+                    "La surface ne tourne pas. Elle lit ces valeurs tant que la source d'un fournisseur la tient.",
+                spot: 'Spot',
+                baseCurve: "Courbe d'actualisation {currency}",
+                quoteCurve: "Courbe d'actualisation {currency}",
+                missing: 'Aucun flux ne correspond : {wants}',
+            },
             samePair: 'Les devises de base et de cotation doivent être différentes.',
             removeWarning:
                 "Le flux s'arrête s'il tourne. Ses échéances et ses liens vers les contributeurs sont supprimés d'abord, puis le flux. L'historique de chacun reste.",
             help: {
+                spot_provider_code:
+                    "Le fournisseur dont cette surface lit le spot et avec lequel elle se corrèle. Une URI nomme ce qui est observé, pas qui l'observe : le fournisseur choisit un seul flux spot.",
+                spot_oresmd_uri:
+                    "L'URI oresmd du spot que lit cette surface. Laissée vide, c'est le cours spot de la paire.",
                 ticks_per_hour:
                     'Combien de surfaces le flux produit en une heure. 12 en fait une toutes les cinq minutes.',
                 arrival_mode:
@@ -7240,7 +7300,6 @@ const fr: SourceCatalogue = {
                 correlations: 'Corrélations',
                 editTitle: '{part} : {pair}',
                 gamma: 'Gamma (γ)',
-                fixed: 'fixe',
                 gammaWhy:
                     "Le générateur maintient gamma à un demi. À cette valeur, la surface est libre d'arbitrage papillon tant que la courbure reste sous la racine carrée de 2, et le générateur l'y maintient. Un autre gamma rend les conditions de non-arbitrage dépendantes de chaque échéance et de l'asymétrie : vous ne pouvez donc pas le modifier ici.",
             },
@@ -7251,6 +7310,10 @@ const fr: SourceCatalogue = {
                 remove: "Supprimer l'échéance",
             },
             contributors: {
+                title: 'Contributeurs de volatilité',
+                surfacesLead:
+                    "Les surfaces que ce contributeur cote. Son profil de bruit s'applique à chacune d'elles.",
+                noSurfaces: 'Il ne cote aucune surface.',
                 lead: "Les fournisseurs qui cotent la surface. Chaque fournisseur ajoute son propre bruit aux cotations, et toutes les surfaces qu'il cote partagent ce profil de bruit.",
                 add: 'Ajouter un contributeur',
                 one: 'Contributeur',

@@ -51,8 +51,8 @@ declare
 begin
     for v_column in
         select k.column_name, m.value_set_code
-          from ores_reporting_ore_element_map_columns_tbl k
-          join ores_reporting_ore_parameter_vocabularies_tbl m
+          from ores_ore_element_map_columns_tbl k
+          join ores_ore_parameter_vocabularies_tbl m
             on m.code = k.element_map_code
            and m.tenant_id = ores_utility_system_tenant_id_fn()
            and m.valid_to = ores_utility_infinity_timestamp_fn()
@@ -64,11 +64,11 @@ begin
         if v_value is null or v_value = '' then
             continue;
         end if;
-        if not ores_reporting_value_in_set_fn(v_column.value_set_code, v_value) then
+        if not ores_ore_value_in_set_fn(v_column.value_set_code, v_value) then
             raise exception 'Invalid value % for %.%: the value is not in set %.',
                 v_value, TG_ARGV[0], v_column.column_name, v_column.value_set_code;
         end if;
-        v_canonical := ores_reporting_canonical_value_fn(v_column.value_set_code, v_value);
+        v_canonical := ores_ore_canonical_value_fn(v_column.value_set_code, v_value);
         if v_canonical is distinct from v_value then
             v_stored := v_stored || jsonb_build_object(v_column.column_name, v_canonical);
         end if;

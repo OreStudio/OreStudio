@@ -14,10 +14,10 @@
 A value that no set states is refused by a trigger on the table that stores it,
 not by the service that writes it. Four trigger functions cover the four ways a
 value reaches a row, and all of them delegate the verdict to one function,
-=ores_reporting_value_in_set_fn=. That function asks
-=ores_reporting_value_in_set_item_fn= what one value may be, and splits a comma
+=ores_ore_value_in_set_fn=. That function asks
+=ores_ore_value_in_set_item_fn= what one value may be, and splits a comma
 separated list first when the set states =cardinality = many=. A fifth function,
-=ores_reporting_setting_value_verdict_fn=, answers the same question in a form a
+=ores_ore_setting_value_verdict_fn=, answers the same question in a form a
 caller can read: whether the setting names a set at all, which set, and whether
 the value is in it. The engine settings sign-off path asks that one before a
 person is asked to sign.
@@ -28,7 +28,7 @@ function all reach the same table, and only a trigger sees all four.
 
 The same guard states what is stored. A set names the form a configuration holds
 for a value ORE writes several ways, and the guard replaces the value with that
-form before the row exists, through =ores_reporting_canonical_value_fn=. A
+form before the row exists, through =ores_ore_canonical_value_fn=. A
 document that says =A360= and one that says =ACT/360= therefore leave one row, and
 the rendering never reaches a table at all.
 
@@ -36,7 +36,7 @@ the rendering never reaches a table at all.
 
 | Trigger function | Attached to | Resolves the set by |
 |------------------+-------------+---------------------|
-| =ores_reporting_validate_parameter_value_fn= | =ores_analytics_pricing_model_product_parameters_tbl= | =(scope, name)= on the setting link |
+| =ores_ore_validate_parameter_value_fn= | =ores_analytics_pricing_model_product_parameters_tbl= | =(scope, name)= on the setting link |
 | =ores_refdata_validate_curve_values_fn= | each of the refdata curve configuration tables | the column's row in the element map, which names the set |
 | =ores_refdata_validate_convention_terms_fn= | each of the convention and currency pair tables | the term's row in the element map, which names the set |
 | =ores_reporting_validate_engine_settings_part_fn= | the fixings, building and execution part tables | =Setup:= and the part's ORE name |
@@ -64,7 +64,7 @@ security, see nothing, and read a rule that does not exist.
 #+end_src
 
 That sentence is from the function's own comment
-(=projects/ores.sql/create/reporting/reporting_ore_parameter_value_validate_fn_create.sql:170=),
+(=projects/ores.sql/create/ore/ore_ore_parameter_value_validate_fn_create.sql:170=),
 and it is the whole argument. The value sets are shared rows in the system
 tenant, and the writer is tenant-scoped. A check that ran with the writer's
 rights would meet row-level security, see no sets, find no rule and admit the
@@ -73,7 +73,7 @@ makes the rule visible at all.
 
 The verdict function exists in this shape for the same reason: the reporting core
 suite proves it answers for a tenant caller who cannot see the sets
-(=projects/ores.sql/test/reporting_setting_value_verdict_test.sql=, five
+(=projects/ores.sql/test/ore_setting_value_verdict_test.sql=, five
 assertions covering a found setting, a value in its set, a value outside it, a
 typed value and a setting with no set).
 
@@ -106,23 +106,23 @@ All are stated here rather than left for a reader to discover.
   can fall but not grow unnoticed.
 - A parameter with no set is admitted by the product parameter guard: it returns
   the row when the link is not found
-  (=…reporting_ore_parameter_value_validate_fn_create.sql:231=). The engine
+  (=…ore_ore_parameter_value_validate_fn_create.sql:231=). The engine
   settings guard does the opposite and refuses, because every engine setting a
   group states is required to name a set. The shell's completeness gate,
   =ore_parameter_settings check=
-  (=projects/ores.shell/reporting/src/app/commands/reporting/ore_parameter_settings_commands.cpp:353=),
+  (=projects/ores.shell/ore/src/app/commands/ore/ore_parameter_settings_commands.cpp:353=),
   is what catches the product case: it fails when a parameter in the contract
   has no set or a set has no values, and it refuses to judge at all when the
   contract is not published for the tenant.
 - A set code that names no set admits every value
-  (=…reporting_ore_parameter_value_validate_fn_create.sql:87=), and the canonical
+  (=…ore_ore_parameter_value_validate_fn_create.sql:87=), and the canonical
   function answers with the value itself for the same reason. Nothing catches a
   typo in a link's =value_set_code=; only a foreign key would, and it is still
   missing.
 
 Until both are closed, "the rule is always enforced" is true for a parameter that
 has a set and false for one whose set is missing or misspelt. A reader checking a
-specific value should ask =ores_reporting_setting_value_verdict_fn= and read
+specific value should ask =ores_ore_setting_value_verdict_fn= and read
 =found=, not =is_in_set= alone.
 
 * See also

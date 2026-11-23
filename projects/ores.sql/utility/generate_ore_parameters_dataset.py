@@ -48,8 +48,8 @@ import setup_parameter_rows  # noqa: E402
 from ore_parameter_seed import artefact_row, parameter_id, sql_text, xpath  # noqa: E402
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
-SEED = os.path.join(ROOT, "projects", "ores.sql", "populate", "reporting",
-                    "reporting_ore_parameters_artefact_populate.sql")
+SEED = os.path.join(ROOT, "projects", "ores.sql", "populate", "ore",
+                    "ore_ore_parameters_artefact_populate.sql")
 
 VALUE_DOMAINS = (
     ("string", "Text", "string"),
@@ -89,8 +89,8 @@ SQL_HEADER = """/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: ni
  * stages their rows. Both are members of the system_core bundle and of no
  * other, so the publication writes them into the system tenant once, at
  * bring-up, through
- * ores_reporting_publish_ore_parameter_value_domains_from_dq_fn and
- * ores_reporting_publish_ore_parameters_from_dq_fn; a tenant reads those rows
+ * ores_ore_publish_ore_parameter_value_domains_from_dq_fn and
+ * ores_ore_publish_ore_parameters_from_dq_fn; a tenant reads those rows
  * through the shared-reference read. This script is idempotent: it replaces
  * the artefact rows of each dataset.
  */

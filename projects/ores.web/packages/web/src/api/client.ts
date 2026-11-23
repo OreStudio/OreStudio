@@ -936,6 +936,18 @@ export interface CalibrationPolicyInput {
  * it sits under, whether its generator runs and where the run started. The feed's
  * own record names no provider, no run and no start.
  */
+/** One simulated source the synthetic service serves, and what it runs and holds. */
+export const simulatedSourceSchema = z.object({
+    source_name: z.string(),
+    provider_code: z.string(),
+    stopped: z.boolean().default(false),
+    served_feeds: z.int().default(0),
+    held_surfaces: z.int().default(0),
+    surfaces_only_held_here: z.int().default(0),
+});
+
+export type SimulatedSource = z.infer<typeof simulatedSourceSchema>;
+
 export const feedRecordSchema = z.looseObject({
     version: z.int().nonnegative(),
     provider_code: z.string(),
@@ -2730,6 +2742,34 @@ export const api = {
     /** Starts one feed. The server refuses a feed whose source or pair another running feed holds. */
     async startFeed(id: string): Promise<void> {
         await request(`/api/synthetic/feeds/${encodeURIComponent(id)}/start`, {
+            method: 'POST',
+            headers: JSON_HEADERS,
+            body: '{}',
+        });
+    },
+
+    /** The simulated sources the synthetic service serves, with what each runs and holds. */
+    async simulatedSources(): Promise<readonly SimulatedSource[]> {
+        return z
+            .object({ sources: z.array(simulatedSourceSchema) })
+            .parse(await request('/api/synthetic/simulated-sources', { method: 'GET' })).sources;
+    },
+
+    /** Stops a simulated source until someone starts it, with the person's reason. */
+    async stopSimulatedSource(
+        name: string,
+        intent: { readonly reason_code: string; readonly commentary: string },
+    ): Promise<void> {
+        await request(`/api/synthetic/simulated-sources/${encodeURIComponent(name)}/stop`, {
+            method: 'POST',
+            headers: JSON_HEADERS,
+            body: JSON.stringify(intent),
+        });
+    },
+
+    /** Starts a stopped simulated source again. */
+    async startSimulatedSource(name: string): Promise<void> {
+        await request(`/api/synthetic/simulated-sources/${encodeURIComponent(name)}/start`, {
             method: 'POST',
             headers: JSON_HEADERS,
             body: '{}',

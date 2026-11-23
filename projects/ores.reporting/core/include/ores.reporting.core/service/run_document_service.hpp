@@ -21,6 +21,7 @@
 #define ORES_REPORTING_CORE_SERVICE_RUN_DOCUMENT_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
+#include "ores.ore.api/domain/ore_parameter.hpp"
 #include "ores.reporting.api/domain/configuration.hpp"
 #include "ores.reporting.api/domain/report_configuration.hpp"
 #include "ores.reporting.api/messaging/run_document_protocol.hpp"
@@ -47,7 +48,13 @@ class ORES_REPORTING_CORE_EXPORT run_document_service {
 public:
     using context = ores::database::context;
 
-    explicit run_document_service(const context& ctx);
+    /**
+     * @param analytic_parameters The ore parameters of the analytics, which are
+     * ores.ore's, as the caller holds them; a run document names a parameter by
+     * its analytic and its name, and a stored configuration by its id.
+     */
+    run_document_service(const context& ctx,
+                         std::vector<ores::ore::domain::ore_parameter> analytic_parameters);
 
     /**
      * @brief Stores a run document against a report definition.
@@ -96,6 +103,7 @@ private:
                      const std::string& configuration_type_code);
 
     context ctx_;
+    std::vector<ores::ore::domain::ore_parameter> analytic_parameters_;
 };
 
 }

@@ -87,6 +87,18 @@ struct selection_body final {
                                               field{"excludedIds", &selection_body::excludedIds}};
 }
 
+/** Why a simulated source is stopped: a change reason code and what the person said. */
+struct stop_body final {
+    std::optional<std::string> reason_code;
+    std::optional<std::string> commentary;
+};
+
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<stop_body>) {
+    using ores::utility::codec::field;
+    return ::ores::utility::codec::field_list{field{"reason_code", &stop_body::reason_code},
+                                              field{"commentary", &stop_body::commentary}};
+}
+
 }
 
 /// What narrows the feed table, each member checked as the BFF checked it.
@@ -179,6 +191,12 @@ std::string id_of(const http_request& req) {
     return id;
 }
 
+/// The simulated source the address names, by its catalogue name.
+std::string source_name_of(const http_request& req) {
+    return rr::code(req.get_path_param("name"),
+                    "A simulated source is named by a code of 1 to 100 characters.");
+}
+
 /// A start or stop the service refused, which conflicts with the feed's state.
 void require_done(bool success, const std::string& message) {
     if (!success)
@@ -248,6 +266,53 @@ void feed_operation_routes::register_routes(
                 co_return guarded<synthetic_messaging::stop_feed_request>([&] {
                     synthetic_messaging::stop_feed_request msg;
                     msg.config_id = id_of(req);
+                    const auto reply = forwarding::forward(req, session, msg);
+                    require_done(reply.success, reply.message);
+                    return message_answer(reply.message);
+                });
+            }));
+
+    add(router->get("/api/synthetic/simulated-sources")
+            .summary("List the simulated sources, with what each runs and holds")
+            .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
+                co_return guarded<synthetic_messaging::list_simulated_sources_request>([&] {
+                    const auto reply = forwarding::forward(
+                        req, session, synthetic_messaging::list_simulated_sources_request{});
+                    if (!reply.success)
+                        rr::refuse(http_status::bad_gateway,
+                                   "upstream-unavailable",
+                                   std::string(rr::unanswered));
+                    return http_response::json("{\"sources\":" + json::write(reply.sources) + "}");
+                });
+            }));
+
+    add(router->post("/api/synthetic/simulated-sources/{name}/stop")
+            .summary("Stop a simulated source until someone starts it")
+            .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
+                co_return guarded<synthetic_messaging::stop_simulated_source_request>([&] {
+                    const auto body = rr::read_body<feed_operation::stop_body>(req.body);
+                    const auto reason = body ? rr::trimmed(body->reason_code.value_or("")) : "";
+                    const auto commentary = body ? body->commentary.value_or("") : "";
+                    if (reason.empty() || rr::characters_of(reason) > 200 ||
+                        rr::characters_of(commentary) > 2000)
+                        rr::invalid("A stop states a reason code of 1 to 200 characters and a "
+                                    "commentary of up to 2000.");
+                    synthetic_messaging::stop_simulated_source_request msg;
+                    msg.source_name = source_name_of(req);
+                    msg.reason_code = reason;
+                    msg.commentary = commentary;
+                    const auto reply = forwarding::forward(req, session, msg);
+                    require_done(reply.success, reply.message);
+                    return message_answer(reply.message);
+                });
+            }));
+
+    add(router->post("/api/synthetic/simulated-sources/{name}/start")
+            .summary("Start a stopped simulated source again")
+            .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
+                co_return guarded<synthetic_messaging::start_simulated_source_request>([&] {
+                    synthetic_messaging::start_simulated_source_request msg;
+                    msg.source_name = source_name_of(req);
                     const auto reply = forwarding::forward(req, session, msg);
                     require_done(reply.success, reply.message);
                     return message_answer(reply.message);

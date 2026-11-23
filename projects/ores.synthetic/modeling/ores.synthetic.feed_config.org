@@ -512,6 +512,195 @@ feeds it answers with, because a caller reads it beside the config list.
 #+end_src
 
 
+** simulated_source
+#+begin_src cpp :name comment
+/**
+ * @brief One simulated source of the catalogue as the synthetic service serves it.
+ */
+#+end_src
+
+*** source_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief The catalogue name of the source, which its adapter announces under. */
+#+end_src
+
+*** provider_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief The provider whose notation its ticks use. */
+#+end_src
+
+*** stopped
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+#+begin_src cpp :name comment
+/** @brief An operator stopped it, and it stays stopped until someone starts it. */
+#+end_src
+
+*** served_feeds
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+#+begin_src cpp :name comment
+/** @brief How many feeds its adapter runs now for the store, its surface holds aside. */
+#+end_src
+
+*** held_surfaces
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+#+begin_src cpp :name comment
+/** @brief How many vol surfaces its adapter holds now. */
+#+end_src
+
+*** surfaces_only_held_here
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+#+begin_src cpp :name comment
+/** @brief How many of those no other source holds, so they would stop with it. */
+#+end_src
+
+** list_simulated_sources_request
+:PROPERTIES:
+:subject: synthetic.v1.simulated_sources.list
+:response: list_simulated_sources_response
+:END:
+#+begin_src cpp :name comment
+/**
+ * @brief Request the simulated sources the service serves, each with its state.
+ */
+#+end_src
+
+** list_simulated_sources_response
+#+begin_src cpp :name comment
+/**
+ * @brief The simulated sources, in name order, and whether the read succeeded.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** sources
+:PROPERTIES:
+:cpp_type: std::vector<simulated_source>
+:END:
+#+begin_src cpp :name comment
+/** @brief The sources, in name order. */
+#+end_src
+
+** stop_simulated_source_request
+:PROPERTIES:
+:subject: synthetic.v1.ops.stop_simulated_source
+:response: stop_simulated_source_response
+:END:
+#+begin_src cpp :name comment
+/**
+ * @brief Request to stop one simulated source, and keep it stopped until it is started.
+ *
+ * Its adapter stops: the feeds it runs for the store stop, and it releases the vol surfaces
+ * it holds, each of which runs on while another source holds it. Feeds started by hand run on.
+ */
+#+end_src
+
+*** source_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief The catalogue name of the source. */
+#+end_src
+
+*** reason_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief Why it is stopped, as a change reason code. */
+#+end_src
+
+*** commentary
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief What the person said about why. */
+#+end_src
+
+** stop_simulated_source_response
+#+begin_src cpp :name comment
+/**
+ * @brief Whether the source stopped, and why not when it did not.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** start_simulated_source_request
+:PROPERTIES:
+:subject: synthetic.v1.ops.start_simulated_source
+:response: start_simulated_source_response
+:END:
+#+begin_src cpp :name comment
+/**
+ * @brief Request to start a stopped simulated source again.
+ */
+#+end_src
+
+*** source_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief The catalogue name of the source. */
+#+end_src
+
+** start_simulated_source_response
+#+begin_src cpp :name comment
+/**
+ * @brief Whether the source started, and why not when it did not.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
 ** calibration_policy_summary
 #+begin_src cpp :name comment
 /**

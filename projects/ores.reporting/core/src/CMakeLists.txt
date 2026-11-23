@@ -70,6 +70,8 @@ target_link_libraries(${lib_target_name}
         ores.diff.lib
         ores.dq.api.lib
         # compass:except(core_link_edges/forbidden_edge) expires=2027-05-18 approver=marco reason=accepted until the edge is removed
+        ores.eventing.core.lib
+        # compass:except(core_link_edges/forbidden_edge) expires=2027-05-18 approver=marco reason=accepted until the edge is removed
         ores.history.core.lib
         ores.iam.api.lib
         ores.iam.client.lib

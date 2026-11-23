@@ -33,4 +33,4 @@ create or replace trigger ores_analytics_pricing_model_product_parameters_value_
     before insert or update of parameter_scope, parameter_name, parameter_value
     on ores_analytics_pricing_model_product_parameters_tbl
     for each row
-    execute function ores_reporting_validate_parameter_value_fn();
+    execute function ores_ore_validate_parameter_value_fn();

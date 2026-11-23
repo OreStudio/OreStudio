@@ -22,15 +22,7 @@
 #include "ores.marketdata.api/domain/adapter_subjects.hpp"
 #include "ores.marketdata.api/domain/provider.hpp"
 #include "ores.marketdata.core/repository/adapter_repository.hpp"
-#include "ores.marketdata.core/repository/feed_repository.hpp"
-#include "ores.marketdata.core/repository/feed_scope_repository.hpp"
-#include "ores.marketdata.core/repository/live_tenant_repository.hpp"
-#include "ores.marketdata.core/repository/market_data_mapping_repository.hpp"
-#include "ores.marketdata.core/repository/market_data_vendor_instrument_repository.hpp"
-#include "ores.marketdata.core/repository/provider_repository.hpp"
-#include "ores.marketdata.core/repository/route_repository.hpp"
-#include "ores.marketdata.core/repository/subscription_repository.hpp"
-#include "ores.marketdata.service/app/live_tenants.hpp"
+#include "ores.marketdata.service/app/demand_catalogue_reader.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include <algorithm>
@@ -93,22 +85,11 @@ void adapter_supervisor::refresh() {
     auto next = std::make_shared<snapshot>();
     for (const auto& adapter : repository::adapter_repository{}.read_latest(system_ctx))
         next->adapter_codes.insert(adapter.code);
-    next->catalogue.providers = repository::provider_repository{}.read_latest(system_ctx);
+    next->catalogue = read_demand_catalogue(ctx_);
     for (const auto& provider : next->catalogue.providers)
         next->providers.insert(provider.code);
-    next->catalogue.feeds = repository::feed_repository{}.read_latest(system_ctx);
-    next->catalogue.scopes = repository::feed_scope_repository{}.read_latest(system_ctx);
-    next->catalogue.instruments =
-        repository::market_data_vendor_instrument_repository{}.read_latest(system_ctx);
-    next->catalogue.mappings = repository::market_data_mapping_repository{}.read_latest(system_ctx);
     for (const auto& v : next->catalogue.instruments)
         next->ids.emplace(v.provider_code, v.id_scheme, v.external_id, v.field);
-    next->catalogue.routes = repository::route_repository{}.read_latest_all_tenants(ctx_);
-    next->catalogue.subscriptions =
-        repository::subscription_repository{}.read_latest_all_tenants(ctx_);
-    const auto live = repository::live_tenant_repository{}.read(ctx_);
-    keep_live_tenants(next->catalogue.routes, live);
-    keep_live_tenants(next->catalogue.subscriptions, live);
 
     std::map<boost::uuids::uuid, std::string> source_names;
     for (const auto& source : next->catalogue.feeds)

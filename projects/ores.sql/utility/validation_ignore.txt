@@ -151,6 +151,7 @@ TENANT_002 ores_iam_sessions_tbl
 TENANT_002 ores_iam_session_samples_tbl
 TENANT_002 ores_iam_auth_events_tbl
 TENANT_002 ores_iam_run_token_issues_tbl
+TENANT_002 ores_iam_agent_token_issues_tbl
 TENANT_002 ores_telemetry_logs_tbl
 TENANT_002 ores_compute_grid_samples_tbl
 TENANT_002 ores_compute_node_samples_tbl
@@ -429,7 +430,7 @@ RLS_001 ores_trading_lifecycle_events_tbl
 # by every tenant, like the refdata and reporting lookup tables above; a
 # tenant-isolation policy would filter rows no caller should be filtered from.
 RLS_001 ores_reporting_configuration_types_tbl
-RLS_001 ores_reporting_ore_parameter_value_domains_tbl
+RLS_001 ores_ore_parameter_value_domains_tbl
 
 # Reporting requirement junction -- which configuration types a report type
 # requires. It pairs two of the system-wide code tables above and is seeded
@@ -500,6 +501,11 @@ RLS_002 ores_iam_auth_events_tbl
 # IAM run token issues — the same audit log as auth events; party_id records
 # which party the run acted in, not a data-isolation boundary.
 RLS_002 ores_iam_run_token_issues_tbl
+
+# IAM agent token issues — the same audit log for LLM agent key exchanges;
+# party_id records which party the agent acted in, not a data-isolation
+# boundary, and only IAM's own exchange writes it.
+RLS_002 ores_iam_agent_token_issues_tbl
 
 # MQ messages and archive — access is controlled by queue ownership (which
 # queue a message belongs to), not by party_id. Custom queue-based policies

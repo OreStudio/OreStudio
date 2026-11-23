@@ -75,6 +75,7 @@ target_link_libraries(${lib_target_name}
         ores.database.lib
         ores.dq.api.lib
         ores.history.api.lib
+        ores.ore.api.lib
         ores.reporting.api.lib
         ores.http.nats.lib)
 

@@ -89,6 +89,17 @@ BEGIN
     -- grant's audience names hold it.
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::run_grants:exchange', 'Exchange a run grant for a run token');
 
+    -- Agent grant permissions. Delegating to an LLM agent is a permission of
+    -- its own, which Member does not hold: a person with it creates, lists
+    -- and revokes their own grants and keys. Administrators read and revoke
+    -- everyone's. ores.http alone exchanges a key, and no agent holds any of
+    -- these, because IAM withholds them from every agent token.
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::agent_grants:create', 'Delegate to an LLM agent: create, list and revoke one''s own agent grants and keys');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::agent_grants:read', 'View every agent grant of one''s parties');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::agent_grants:revoke', 'Revoke any agent grant or key of one''s parties');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::agent_keys:read', 'View every agent key of one''s parties, never its secret');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::agent_keys:exchange', 'Exchange an LLM agent''s key for a token naming its person and the agent');
+
     -- A service that dispatches work mints the object-scoped capability a
     -- worker node presents to storage. The grants are the caller's to state,
     -- so only a service trusted to scope an assignment holds it.
@@ -1290,12 +1301,12 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::report_configurations:read', 'View report configurations');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::report_configurations:write', 'Create and modify report configurations');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::report_configurations:delete', 'Delete report configurations');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::ore_parameter_value_domains:read', 'View ore parameter value domains');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::ore_parameter_value_domains:write', 'Create and modify ore parameter value domains');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::ore_parameter_value_domains:delete', 'Delete ore parameter value domains');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::ore_parameters:read', 'View ore parameters');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::ore_parameters:write', 'Create and modify ore parameters');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::ore_parameters:delete', 'Delete ore parameters');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'ore::ore_parameter_value_domains:read', 'View ore parameter value domains');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'ore::ore_parameter_value_domains:write', 'Create and modify ore parameter value domains');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'ore::ore_parameter_value_domains:delete', 'Delete ore parameter value domains');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'ore::ore_parameters:read', 'View ore parameters');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'ore::ore_parameters:write', 'Create and modify ore parameters');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'ore::ore_parameters:delete', 'Delete ore parameters');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::engine_settings:read', 'View engine settings');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::engine_settings:write', 'Create and modify engine settings');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::engine_settings:delete', 'Delete engine settings');
@@ -1358,18 +1369,18 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::concurrency_policies:delete', 'Delete concurrency policies');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::concurrency_policies:read', 'View concurrency policies');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::*', 'Full access to all reporting operations');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::ore_parameter_value_sets:read', 'View parameter value sets');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::ore_parameter_value_sets:write', 'Create and modify parameter value sets');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::ore_parameter_value_sets:delete', 'Delete parameter value sets');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::ore_parameter_value_set_values:read', 'View the values a parameter value set offers');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::ore_parameter_value_set_values:write', 'Create and modify the values a parameter value set offers');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::ore_parameter_value_set_values:delete', 'Delete the values a parameter value set offers');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::ore_parameter_value_set_catalogues:read', 'View the catalogues a value set may draw on');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::ore_parameter_value_set_catalogues:write', 'Create and modify the catalogues a value set may draw on');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::ore_parameter_value_set_catalogues:delete', 'Delete the catalogues a value set may draw on');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::ore_parameter_setting_value_sets:read', 'View the value set each parameter setting names');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::ore_parameter_setting_value_sets:write', 'Create and modify the value set each parameter setting names');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::ore_parameter_setting_value_sets:delete', 'Delete the value set each parameter setting names');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'ore::ore_parameter_value_sets:read', 'View parameter value sets');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'ore::ore_parameter_value_sets:write', 'Create and modify parameter value sets');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'ore::ore_parameter_value_sets:delete', 'Delete parameter value sets');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'ore::ore_parameter_value_set_values:read', 'View the values a parameter value set offers');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'ore::ore_parameter_value_set_values:write', 'Create and modify the values a parameter value set offers');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'ore::ore_parameter_value_set_values:delete', 'Delete the values a parameter value set offers');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'ore::ore_parameter_value_set_catalogues:read', 'View the catalogues a value set may draw on');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'ore::ore_parameter_value_set_catalogues:write', 'Create and modify the catalogues a value set may draw on');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'ore::ore_parameter_value_set_catalogues:delete', 'Delete the catalogues a value set may draw on');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'ore::ore_parameter_setting_value_sets:read', 'View the value set each parameter setting names');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'ore::ore_parameter_setting_value_sets:write', 'Create and modify the value set each parameter setting names');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'ore::ore_parameter_setting_value_sets:delete', 'Delete the value set each parameter setting names');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::engine_settings_groups:read', 'View engine settings groups');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::engine_settings_groups:write', 'Create and modify engine settings groups');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::engine_settings_groups:delete', 'Delete engine settings groups');
@@ -1934,6 +1945,9 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_vol_contributors:read',   'View FX volatility contributors');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_vol_contributors:write',  'Create and modify FX volatility contributors');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_vol_contributors:delete', 'Delete FX volatility contributors');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::stopped_simulated_sources:read',   'View the simulated sources an operator stopped');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::stopped_simulated_sources:write',  'Record a stopped simulated source');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::stopped_simulated_sources:delete', 'Remove a stopped simulated source');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_vol_surface_feeds:read',   'View FX volatility surface feeds');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_vol_surface_feeds:write',  'Create and modify FX volatility surface feeds');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_vol_surface_feeds:delete', 'Delete FX volatility surface feeds');

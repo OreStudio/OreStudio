@@ -148,6 +148,21 @@ public:
     [[nodiscard]] context with_roles(std::vector<std::string> roles) const;
 
     /**
+     * @brief The actor a delegated token names in its act claim, when it names
+     * one: a step service's role name for a run token, or agent: followed by
+     * the agent grant's id for an LLM agent's token. Empty for a person's own
+     * token.
+     */
+    [[nodiscard]] const std::optional<std::string>& delegated_actor() const;
+
+    /**
+     * @brief Whether the request is an LLM agent's, made for its person.
+     */
+    [[nodiscard]] bool acts_for_agent() const;
+
+    [[nodiscard]] context with_delegated_actor(std::optional<std::string> actor) const;
+
+    /**
      * @brief A context for another tenant, with no party.
      *
      * The service account, the pool, the open policy and the roles are kept, so

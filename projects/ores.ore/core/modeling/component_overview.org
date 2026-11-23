@@ -29,8 +29,13 @@ vocabulary, the projections and mappers between the codec's records and the
 and the directory round trip, readers for ORE's market data text formats,
 the import planner and directory scanner, the generated series key shape
 entity with its repository, and the generated repositories, services and
-handlers of the description of ORE: =ore_file=, =ore_file_category= and
-=ore_file_version=.
+handlers of the description of ORE: the ORE files (=ore_file=,
+=ore_file_category=, =ore_file_version=), the parameters of ORE's documents
+(=ore_parameter=, =ore_parameter_value_domain=), their value sets
+(=ore_parameter_value_set=, =ore_parameter_value_set_value=,
+=ore_parameter_value_set_catalogue=, =ore_parameter_setting_value_set=,
+=ore_parameter_vocabulary=) and the element map (=ore_element_map_column=), and
+the handler of their publish from DQ.
 
 The record tables are generated from the vendored schemas by compass-ng's
 =xml_bindings= codec, configured by [[id:37EB318F-FFCE-58FF-B5E0-0A70BB1E7379][the XML bindings check]], and its drift check
@@ -80,8 +85,9 @@ the store that once wrote reporting, refdata and analytics rows lived here and
 was removed, because a format codec that opens a session is a codec that writes
 another component's tables. The component's own rows are another matter: the
 description of ORE, its files, their categories and the contents of each file as
-an ORE release ships it, is =ores.ore='s, and its generated repositories,
-services and handlers write only those tables.
+an ORE release ships it, the parameters of its documents and the values they
+accept, is =ores.ore='s, and its generated repositories, services and handlers
+write only those tables.
 
 XML parsing is the generated binding code. The component links =pugixml=
 for the documents it writes and does not link =nats.c=.

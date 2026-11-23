@@ -91,9 +91,9 @@ begin
             using errcode = '23503';
     end if;
 
-    -- Validate ore_parameter_id (soft FK to ores_reporting_ore_parameters_tbl)
+    -- Validate ore_parameter_id (soft FK to ores_ore_parameters_tbl)
     if not exists (
-        select 1 from ores_reporting_ore_parameters_tbl
+        select 1 from ores_ore_parameters_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
           and id = NEW.ore_parameter_id
           and valid_to = ores_utility_infinity_timestamp_fn()

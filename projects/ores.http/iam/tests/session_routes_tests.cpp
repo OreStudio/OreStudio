@@ -198,7 +198,9 @@ TEST_CASE("session_routes_list_accepts_every_filter_it_declares", "[routes]") {
     // so the case isolates the declaration from the reading of a value.
     const std::vector<std::string> names{
         "f.account_id",
+        "f.agent_grant_id",
         "f.account_id_one_of",
+        "f.agent_grant_id_one_of",
     };
     for (const auto& name : names) {
         const auto response =
@@ -230,5 +232,17 @@ TEST_CASE("session_routes_list_refuses_an_empty_item_in_f_account_id_one_of", "[
 
     CHECK(response.status == http_status::bad_request);
     CHECK(response.body.find("f.account_id_one_of") != std::string::npos);
+    ORES_LOG_SEV(lg, debug) << "Response: " << response.body;
+}
+
+TEST_CASE("session_routes_list_refuses_an_empty_item_in_f_agent_grant_id_one_of", "[routes]") {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    const auto response = session_run(
+        session_routes::handle_list(session_query({{"f.agent_grant_id_one_of", ","}}), session));
+
+    CHECK(response.status == http_status::bad_request);
+    CHECK(response.body.find("f.agent_grant_id_one_of") != std::string::npos);
     ORES_LOG_SEV(lg, debug) << "Response: " << response.body;
 }

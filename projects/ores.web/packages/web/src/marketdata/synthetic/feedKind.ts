@@ -116,6 +116,11 @@ export interface FeedKind {
      * state and offers no Start or Stop.
      */
     readonly heldByProvider?: boolean;
+    /**
+     * The Calibration tab, when the kind's calibration is another feed's: a surface reads its spot
+     * and its curves, and their own pages show how they start and what they were calibrated as.
+     */
+    readonly calibration?: (context: FeedTabContext) => ReactNode;
 }
 
 /** The feed's page, for the kind. */

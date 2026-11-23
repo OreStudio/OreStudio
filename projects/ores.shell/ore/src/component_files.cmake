@@ -23,6 +23,13 @@ set(files
     "app/commands/ore/ore_file_category_commands.cpp"
     "app/commands/ore/ore_file_commands.cpp"
     "app/commands/ore/ore_file_version_commands.cpp"
+    "app/commands/ore/ore_parameter_commands.cpp"
+    "app/commands/ore/ore_parameter_setting_value_set_commands.cpp"
+    "app/commands/ore/ore_parameter_settings_commands.cpp"
+    "app/commands/ore/ore_parameter_value_domain_commands.cpp"
+    "app/commands/ore/ore_parameter_value_set_catalogue_commands.cpp"
+    "app/commands/ore/ore_parameter_value_set_commands.cpp"
+    "app/commands/ore/ore_parameter_value_set_value_commands.cpp"
 )
 
 # The headers are listed for the install and IDE targets.
@@ -30,5 +37,12 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/ore/ore_file_category_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/ore/ore_file_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/ore/ore_file_version_commands.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/ore/ore_parameter_commands.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/ore/ore_parameter_setting_value_set_commands.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/ore/ore_parameter_settings_commands.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/ore/ore_parameter_value_domain_commands.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/ore/ore_parameter_value_set_catalogue_commands.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/ore/ore_parameter_value_set_commands.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/ore/ore_parameter_value_set_value_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/ores.shell.ore.hpp"
 )

@@ -127,6 +127,9 @@ std::string json_of(const ores::iam::domain::session& s) {
     out += ",\"bytesReceived\":" + std::to_string(s.bytes_received);
     out += ",\"countryCode\":" + json::write(s.country_code);
     out += ",\"protocol\":" + json::write(s.protocol);
+    out += ",\"agentGrantId\":" + (s.agent_grant_id ?
+                                       json::write(boost::uuids::to_string(*s.agent_grant_id)) :
+                                       std::string("null"));
     return out + "}";
 }
 

@@ -69,13 +69,17 @@ function feed(over: Record<string, unknown> = {}): RecordRow {
     } as unknown as RecordRow;
 }
 
-function render(start: FeedStart | null, row: RecordRow = feed()): string {
+function render(
+    start: FeedStart | null,
+    row: RecordRow = feed(),
+    running: boolean = start !== null,
+): string {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     return renderToStaticMarkup(
         <QueryClientProvider client={client}>
             <MemoryRouter>
                 <TranslationProvider>
-                    <FeedRunTab feed={row} start={start} />
+                    <FeedRunTab feed={row} start={start} running={running} />
                 </TranslationProvider>
             </MemoryRouter>
         </QueryClientProvider>,
@@ -184,6 +188,11 @@ describe('a feed’s run tab', () => {
         expect(html).toContain('GJR-GARCH');
         expect(html).toContain(`${CALIBRATION_LINK}>${CALIBRATION}</a>`);
         expect(html).not.toContain('Start level');
+    });
+
+    it('does not call a running feed stopped when its run reports no start', () => {
+        const html = render(null, feed(), true);
+        expect(html).not.toContain('The feed is not running.');
     });
 
     it('shows a constant variance and no calibration for a feed without GJR-GARCH', () => {

@@ -404,10 +404,10 @@ std::string_view bond_trade_planner::asset_class_code() const {
 
 namespace {
 
-// A trade on an index no curve serves has no fixings, so no draw names one.
+// A trade on an index the party receives no fixings for cannot be valued, so no draw names one.
 bool drawable(const ores::refdata::domain::swap_convention& swap,
               const domain::trade_generation_scope& scope) {
-    return swap.oresmd_uri && scope.served_fixing_uris.contains(*swap.oresmd_uri);
+    return swap.oresmd_uri && scope.expected_market_data.contains(*swap.oresmd_uri);
 }
 
 /*

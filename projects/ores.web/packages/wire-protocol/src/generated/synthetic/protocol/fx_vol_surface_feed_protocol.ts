@@ -56,6 +56,8 @@ export interface FxVolSurfaceFeedWrite {
     segment_correlation: number;
     start_skew: number;
     start_curvature: number;
+    spot_oresmd_uri: string;
+    spot_provider_code: string;
 }
 
 export interface FxVolSurfaceFeedChange {

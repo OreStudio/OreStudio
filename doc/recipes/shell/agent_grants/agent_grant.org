@@ -1,0 +1,140 @@
+:PROPERTIES:
+:ID: A11B3E10-AF11-50B5-AE31-966AEB4CC9B1
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the agent_grants commands from the shell?
+#+description: Every command the agent_grants submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:agent_grants:
+
+This file documents the agent_grants resource at the shell, one section per command. Every command is a subcommand of =agent_grants=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: F30BC542-31E3-54A0-A3E4-E7143548BFB7
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+agent_grants list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =iam.v1.agent_grants.list=.
+
+#+name: agent_grants-list
+#+begin_src ores-shell :tangle agent_grants-list.ores :exports none
+agent_grants list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: A8EB7750-3462-541C-9C73-52C5B3EA2F4F
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+agent_grants get <agent_name>
+#+end_example
+
+It is addressed at =iam.v1.agent_grants.get=.
+
+#+name: agent_grants-get
+#+begin_src ores-shell :tangle agent_grants-get.ores :exports none
+agent_grants get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: F5CA9EDA-FC8E-5293-86C6-B6DDADE3E4ED
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+agent_grants get-many <agent_name>
+#+end_example
+
+It is addressed at =iam.v1.agent_grants.get_many=.
+
+#+name: agent_grants-get-many
+#+begin_src ores-shell :tangle agent_grants-get-many.ores :exports none
+agent_grants get-many __none__
+#+end_src
+
+** =by-grantor-account-id=
+:PROPERTIES:
+:ID: C25AC9F8-A060-505D-AA56-C2AF05080744
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+agent_grants by-grantor-account-id <grantor_account_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =iam.v1.agent_grants.list_by_grantor_account_id=.
+
+#+name: agent_grants-by-grantor-account-id
+#+begin_src ores-shell :tangle agent_grants-by-grantor-account-id.ores :exports none
+agent_grants by-grantor-account-id 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 03858742-F88B-58D4-A67A-8C7E825C8102
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+agent_grants versions <agent_name> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =iam.v1.agent_grants_versions.list=.
+
+#+name: agent_grants-versions
+#+begin_src ores-shell :tangle agent_grants-versions.ores :exports none
+agent_grants versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 4F57BEFF-69F6-54E3-A6E6-70BD5C39D79D
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+agent_grants version <agent_name> --version <n>
+#+end_example
+
+It is addressed at =iam.v1.agent_grants_versions.get=.
+
+#+name: agent_grants-version
+#+begin_src ores-shell :tangle agent_grants-version.ores :exports none
+agent_grants version __none__ --version 1
+#+end_src
+

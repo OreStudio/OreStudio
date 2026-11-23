@@ -33,6 +33,7 @@
 #include "ores.synthetic.api/domain/yield_curve_process_parameter_mapping.hpp"
 #include "ores.synthetic.api/feeds/derived_fx_vol.hpp"
 #include "ores.synthetic.api/feeds/feed_factory.hpp"
+#include "ores.synthetic.api/feeds/generator_outputs.hpp"
 #include "ores.synthetic.api/feeds/ir_curve_template_resolver.hpp"
 #include "ores.synthetic.api/messaging/ir_curve_operations_protocol.hpp"
 #include "ores.synthetic.api/messaging/simulate_fx_spot_paths_protocol.hpp"
@@ -98,6 +99,45 @@ read_calibration_policy(const ores::database::context& ctx, const std::string& a
 }
 
 namespace {
+
+/**
+ * @brief The source name of the spot feed a surface names, or why it names none.
+ *
+ * A URI names what is observed and not who observes it, so two collections may quote one spot
+ * under one URI; the provider is what makes it one feed. A spot feed's provider is its
+ * collection's.
+ */
+std::expected<std::string, std::string>
+spot_feed_named(const ores::database::context& ctx,
+                const ores::synthetic::domain::fx_vol_surface_feed& cfg) {
+    namespace repo = ores::synthetic::repository;
+    std::map<boost::uuids::uuid, std::string> provider_of_collection;
+    for (const auto& collection : repo::market_data_generation_config_repository().read_latest(ctx))
+        provider_of_collection.emplace(collection.id, collection.provider_code);
+    // A tenant reads its own rows and the system tenant's, so one URI and provider can name a
+    // spot in each. The nearest wins: the surface's own collection, then its own tenant.
+    const auto nearness = [&cfg](const ores::synthetic::domain::fx_spot_generation_config& spot) {
+        if (spot.config_id == cfg.config_id)
+            return 0;
+        return spot.tenant_id == cfg.tenant_id ? 1 : 2;
+    };
+    std::optional<ores::synthetic::domain::fx_spot_generation_config> nearest;
+    for (const auto& spot : repo::fx_spot_generation_config_repository().read_latest(ctx)) {
+        if (spot.oresmd_uri != cfg.spot_oresmd_uri)
+            continue;
+        const auto provider = provider_of_collection.find(spot.config_id);
+        if (provider == provider_of_collection.end() || provider->second != cfg.spot_provider_code)
+            continue;
+        if (!nearest || nearness(spot) < nearness(*nearest))
+            nearest = spot;
+    }
+    if (nearest)
+        return nearest->source_name;
+    return std::unexpected("The surface " + cfg.base_currency_code + "/" + cfg.quote_currency_code +
+                           " names no spot feed: no collection of provider '" +
+                           cfg.spot_provider_code + "' has a current spot feed at " +
+                           cfg.spot_oresmd_uri);
+}
 
 // One kind's IR refdata context, resolved from the config's own series qualifier. The context is
 // per config: the FOMC grid resolves under RATES_SPOT_FOMC, everything else under
@@ -675,6 +715,9 @@ feed_kind make_fx_vol_surface_kind() {
             c.folder_id = cfg.folder_id;
             c.asset_class_code = cfg.asset_class_code;
             c.fx_pair = std::pair{cfg.base_currency_code, cfg.quote_currency_code};
+            const auto spot = spot_feed_named(ctx, cfg);
+            if (spot)
+                c.spot_source_name = *spot;
             // The block the run's market is built from, so it can be made before any feed
             // starts: the segments are the expiry rows and the numbers are the row's own.
             {
@@ -710,8 +753,11 @@ feed_kind make_fx_vol_surface_kind() {
                             found != providers.end())
                             c.contributor_providers.emplace(found->first, found->second);
             }
-            c.build_input = [ctx, cfg](const feed::feed_adapter& adapter) -> feed_build_outcome {
+            c.build_input =
+                [ctx, cfg, spot](const feed::feed_adapter& adapter) -> feed_build_outcome {
                 static_cast<void>(adapter);
+                if (!spot)
+                    return {.input = std::nullopt, .skip_reason = spot.error()};
 
                 repo::fx_vol_surface_feed_expiry_repository expiry_repo;
                 std::vector<ores::synthetic::domain::fx_vol_surface_feed_expiry> expiries;
@@ -814,6 +860,7 @@ feed_kind make_fx_vol_surface_kind() {
 
                 fx_vol_surface_feed_build_input in;
                 in.config = cfg;
+                in.spot_source_name = *spot;
                 in.expiries = std::move(expiries);
                 in.contributors = std::move(contributors);
                 in.contributor_profiles = std::move(profiles);
@@ -824,7 +871,8 @@ feed_kind make_fx_vol_surface_kind() {
                  * two currencies' curves from the run's values on every tick, and solves each
                  * expiry against the forward they imply.
                  */
-                in.deltas = {0.25, 0.10};
+                in.deltas.assign(feed::fx_vol_surface_deltas.begin(),
+                                 feed::fx_vol_surface_deltas.end());
                 return {.input = feed::feed_build_input{std::move(in)}, .skip_reason = {}};
             };
             out.push_back(std::move(c));

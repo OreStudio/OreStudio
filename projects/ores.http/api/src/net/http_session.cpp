@@ -145,6 +145,17 @@ struct run_token_renewal final {
     }
 };
 
+/// A bearer exchange, as the worker pool runs it: it may block on IAM.
+struct run_bearer_exchange final {
+    const domain::bearer_exchanger& exchange;
+    const std::string& bearer;
+    const std::string& client_address;
+
+    asio::awaitable<std::optional<domain::bearer_exchange>> operator()() const {
+        co_return exchange(bearer, client_address);
+    }
+};
+
 /// The route handler, as the worker pool runs it.
 struct run_route_handler final {
     const domain::request_handler& handler;
@@ -179,7 +190,7 @@ http_session::http_session(asio::ip::tcp::socket socket,
                            std::shared_ptr<domain::session_store> sessions,
                            domain::cookie_settings cookie,
                            std::shared_ptr<rate_limiting> limits,
-                           domain::token_renewer renewer)
+                           domain::credential_exchange credentials)
     : stream_(std::move(socket))
     , router_(std::move(router))
     , verifier_(std::move(verifier))
@@ -191,7 +202,7 @@ http_session::http_session(asio::ip::tcp::socket socket,
     , sessions_(std::move(sessions))
     , cookie_(std::move(cookie))
     , limits_(std::move(limits))
-    , renewer_(std::move(renewer)) {
+    , credentials_(std::move(credentials)) {
 
     auto endpoint = stream_.socket().remote_endpoint();
     peer_ = endpoint.address();
@@ -414,7 +425,7 @@ asio::awaitable<void> http_session::refuse_rate_limited(unsigned version,
 
 asio::awaitable<bool> http_session::renew_if_due(const std::string& identifier,
                                                  domain::session_record& record) {
-    if (!renewer_)
+    if (!credentials_.renew)
         co_return true;
     /*
      * A token is renewed once three quarters of its life have passed, so the
@@ -433,8 +444,9 @@ asio::awaitable<bool> http_session::renew_if_due(const std::string& identifier,
     const auto token = record.token;
     domain::token_renewal renewal;
     try {
-        renewal = workers_ != nullptr ? co_await workers_->run(run_token_renewal{renewer_, token}) :
-                                        renewer_(token);
+        renewal = workers_ != nullptr ?
+                      co_await workers_->run(run_token_renewal{credentials_.renew, token}) :
+                      credentials_.renew(token);
     } catch (const std::exception& e) {
         ORES_LOG_SEV(lg(), warn) << "A session's token was not renewed: " << e.what();
     }
@@ -632,7 +644,53 @@ asio::awaitable<void> http_session::handle_request(domain::http_request domain_r
                 co_return;
             }
 
-            auto claims_result = effective->validate(*token);
+            /*
+             * A bearer value that is not a token, such as an LLM agent's key, is
+             * exchanged first, and the token IAM issues for it is verified and
+             * relayed like any other. A refusal is a failed credential. The value
+             * is never logged.
+             */
+            auto bearer = *token;
+            if (credentials_.exchange) {
+                std::optional<domain::bearer_exchange> exchanged;
+                try {
+                    exchanged = workers_ != nullptr ?
+                                    co_await workers_->run(run_bearer_exchange{
+                                        credentials_.exchange, bearer, remote_address_}) :
+                                    credentials_.exchange(bearer, remote_address_);
+                } catch (const std::exception& e) {
+                    ORES_LOG_SEV(lg(), warn) << "A bearer exchange failed for " << matched->pattern
+                                             << " from " << remote_address_ << ": " << e.what();
+                    exchanged = domain::bearer_exchange{
+                        .result = domain::bearer_exchange::outcome::unavailable};
+                }
+                if (exchanged) {
+                    if (exchanged->result == domain::bearer_exchange::outcome::unavailable) {
+                        ORES_LOG_SEV(lg(), warn) << "A bearer exchange could not be made for "
+                                                 << matched->pattern << " from " << remote_address_;
+                        auto unavailable = domain::http_response::error(
+                            domain::http_status::service_unavailable,
+                            "The credential could not be checked now; retry shortly.");
+                        unavailable.set_header("Retry-After", "5");
+                        co_await write_response(unavailable, version, keep_alive, true);
+                        co_return;
+                    }
+                    if (exchanged->result == domain::bearer_exchange::outcome::refused) {
+                        ORES_LOG_SEV(lg(), warn) << "Refused a bearer exchange for "
+                                                 << matched->pattern << " from " << remote_address_;
+                        if (co_await refused_failed_credential(
+                                version, matched->pattern, keep_alive))
+                            co_return;
+                        auto unauthorized = domain::http_response::unauthorized("invalid key");
+                        co_await write_response(unauthorized, version, keep_alive, true);
+                        co_return;
+                    }
+                    bearer = exchanged->token;
+                    carry_session_token(domain_req, bearer);
+                }
+            }
+
+            auto claims_result = effective->validate(bearer);
             if (!claims_result) {
                 ORES_LOG_SEV(lg(), warn)
                     << "Invalid token for " << matched->pattern << " from " << remote_address_

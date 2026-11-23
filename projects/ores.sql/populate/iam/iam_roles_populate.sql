@@ -337,8 +337,8 @@ BEGIN
     -- row and its three parts. Deleting a configuration stays with the
     -- administrative roles. The configuration rows are party-scoped by row-level
     -- security, like the report definitions above.
-    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'reporting::ore_parameters:read');
-    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'reporting::ore_parameter_value_domains:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'ore::ore_parameters:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'ore::ore_parameter_value_domains:read');
     -- The curve configuration screen reads a curve document, which the ORE bundle
     -- import writes as the party's own rows and the report configuration binds.
     -- The sections are the vocabulary the document is built from, so both are
@@ -425,6 +425,7 @@ BEGIN
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'synthetic::variance_calibration_inputs:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'synthetic::variance_calibration_input_points:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'synthetic::fx_vol_contributors:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'synthetic::stopped_simulated_sources:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'synthetic::fx_vol_surface_feeds:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'synthetic::fx_vol_surface_feed_expiries:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'synthetic::fx_vol_surface_feed_contributors:read');
@@ -875,10 +876,10 @@ BEGIN
     -- takes its values from. The list needs none of them, the form fills from
     -- all of them, and none is a business fact of the tenant.
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'refdata::instrument_codes:read');
-    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'reporting::ore_parameter_value_sets:read');
-    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'reporting::ore_parameter_value_set_values:read');
-    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'reporting::ore_parameter_value_set_catalogues:read');
-    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'reporting::ore_parameter_setting_value_sets:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'ore::ore_parameter_value_sets:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'ore::ore_parameter_value_set_values:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'ore::ore_parameter_value_set_catalogues:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'ore::ore_parameter_setting_value_sets:read');
     -- The market-risk decision an approval request waits for. *Decide a
     -- publish* and *Decide a convention change* name a person from Market
     -- Risk, other than the requester, and the request's kind carries this
@@ -1117,6 +1118,9 @@ BEGIN
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportingService', 'scheduler::job_definitions:delete');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportingService', 'storage::objects:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportingService', 'storage::objects:write');
+    -- A run document names its parameters by the ore parameters, which are ores.ore's; the
+    -- service mirrors them in a cache it fills through the ore service.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportingService', 'ore::ore_parameters:read');
 
     -- Telemetry service: full own-component + tenant read
     PERFORM ores_iam_roles_upsert_fn(ores_utility_system_tenant_id_fn(), 'TelemetryService', 'Telemetry domain service', false);
@@ -1202,6 +1206,9 @@ BEGIN
     -- observations and the fixing as the service, since no run token stands in for a person.
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'SyntheticService', 'marketdata::feeds:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'SyntheticService', 'marketdata::market_series:read');
+    -- A trade population is drawn on the market data its party is configured to receive, which
+    -- the service reads as the demand of the party's routes.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'SyntheticService', 'marketdata::routes:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'SyntheticService', 'marketdata::market_observations:read');
     -- A feed whose price source is "fixing" reads the latest public fixing, which is a tick
     -- class of its own on a table of its own, so the read is granted by its own name.
@@ -1282,6 +1289,9 @@ BEGIN
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'HttpService', 'iam::auth_events:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'HttpService', 'iam::geo:lookup');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'HttpService', 'iam::accounts:read');
+    -- The HTTP edge exchanges an LLM agent's key for a token; it is the only
+    -- holder of this permission.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'HttpService', 'iam::agent_keys:exchange');
 
     -- Compute Wrapper service: worker that processes compute jobs from JetStream
     PERFORM ores_iam_roles_upsert_fn(ores_utility_system_tenant_id_fn(), 'ComputeWrapperService', 'Compute Wrapper worker service — processes compute grid jobs', false);
@@ -1585,6 +1595,39 @@ BEGIN
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Viewer', 'refdata::instrument_codes:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Viewer', 'refdata::counterparty_identifiers:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Viewer', 'refdata::legal_entities:read');
+END $$;
+
+-- =============================================================================
+-- Roles for LLM agents
+--
+-- AgentDelegator lets a person delegate to an LLM agent, and holds that one
+-- permission. AgentReader is the role a grant names for an agent that only
+-- reads. It holds every read and lookup code of the catalogue as it stands
+-- now, each assigned explicitly: an agent role never holds a wildcard, so a
+-- code added later reaches no agent until somebody adds it here. The codes an
+-- agent never holds are left out: the installation's, and the read of other
+-- people's agent grants and keys. A token made from the grant carries only
+-- the codes its person also holds.
+-- =============================================================================
+DO $$
+DECLARE
+    v_code text;
+BEGIN
+    PERFORM ores_iam_roles_upsert_fn(ores_utility_system_tenant_id_fn(), 'AgentDelegator', 'Delegate to LLM agents: create, list and revoke one''s own agent grants');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'AgentDelegator', 'iam::agent_grants:create');
+
+    PERFORM ores_iam_roles_upsert_fn(ores_utility_system_tenant_id_fn(), 'AgentReader', 'An LLM agent that reads: every read the person holds, and no write');
+    FOR v_code IN
+        SELECT code FROM ores_iam_permissions_tbl
+        WHERE tenant_id = ores_utility_system_tenant_id_fn()
+          AND valid_to = ores_utility_infinity_timestamp_fn()
+          AND (code LIKE '%:read' OR code LIKE '%:lookup')
+          AND code NOT LIKE 'installation::%'
+          AND code NOT IN ('iam::agent_grants:read', 'iam::agent_keys:read')
+        ORDER BY code
+    LOOP
+        PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'AgentReader', v_code);
+    END LOOP;
 END $$;
 
 

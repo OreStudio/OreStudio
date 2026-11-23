@@ -40,6 +40,10 @@
 \ir ./iam_account_party_drop.sql
 
 -- Run grants (dropped before the accounts and roles they reference)
+\ir ./iam_agent_keys_notify_trigger_drop.sql
+\ir ./iam_agent_keys_drop.sql
+\ir ./iam_agent_grants_notify_trigger_drop.sql
+\ir ./iam_agent_grants_drop.sql
 \ir ./iam_run_grants_notify_trigger_drop.sql
 \ir ./iam_run_grants_drop.sql
 
@@ -59,6 +63,7 @@
 
 -- Sessions and login
 \ir ./iam_auth_events_drop.sql
+\ir ./iam_agent_token_issues_drop.sql
 \ir ./iam_run_token_issues_drop.sql
 \ir ./iam_session_samples_drop.sql
 \ir ./iam_session_stats_drop.sql

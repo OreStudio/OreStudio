@@ -20,6 +20,7 @@
 #ifndef ORES_HTTP_NET_HTTP_SESSION_HPP
 #define ORES_HTTP_NET_HTTP_SESSION_HPP
 
+#include "ores.http.api/domain/bearer_exchange.hpp"
 #include "ores.http.api/domain/session_cookie.hpp"
 #include "ores.http.api/domain/session_store.hpp"
 #include "ores.http.api/export.hpp"
@@ -80,7 +81,7 @@ public:
                           std::shared_ptr<domain::session_store> sessions = nullptr,
                           domain::cookie_settings cookie = {},
                           std::shared_ptr<rate_limiting> limits = nullptr,
-                          domain::token_renewer renewer = {});
+                          domain::credential_exchange credentials = {});
 
     /**
      * @brief Starts processing the session.
@@ -252,7 +253,7 @@ private:
     std::shared_ptr<domain::session_store> sessions_;
     domain::cookie_settings cookie_;
     std::shared_ptr<rate_limiting> limits_;
-    domain::token_renewer renewer_;
+    domain::credential_exchange credentials_;
     boost::asio::ip::address peer_;
     /// The client the current request counts as, set as its headers are read.
     std::string client_;

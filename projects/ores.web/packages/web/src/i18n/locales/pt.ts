@@ -569,6 +569,26 @@ const pt: SourceCatalogue = {
         },
     },
 
+    agents: {
+        title: 'Agentes LLM',
+        lead: 'Um agente que nomeia age por si sob uma função, até a autorização expirar ou até a revogar. As suas chamadas são suas e ficam registadas como do agente.',
+        empty: 'Não tem nenhuma autorização de agente ativa.',
+        keyOnce:
+            'Copie esta chave para o agente agora. É mostrada uma vez e não pode ser lida de novo.',
+        until: 'até {at}',
+        newKey: 'Nova chave',
+        revokeGrant: 'Revogar autorização',
+        revokeGrantConfirm:
+            'Revogar a autorização revoga todas as chaves e termina as sessões do agente. Continuar?',
+        key: 'Chave {id}, criada em {at}',
+        revokeKey: 'Revogar chave',
+        name: 'Nome do agente',
+        role: 'Função',
+        days: 'Dias de validade (1–90)',
+        create: 'Criar autorização',
+        readFailed: 'Não foi possível ler as suas autorizações de agente.',
+        actFailed: 'A alteração foi recusada.',
+    },
     auditSignIns: {
         title: 'Inícios de sessão',
         description: 'Quem tem sessão iniciada, o que cada um faz, e quem falha ao entrar.',
@@ -602,6 +622,7 @@ const pt: SourceCatalogue = {
             client: 'Cliente',
             address: 'Endereço',
             country: 'País',
+            agent: 'Agente',
             account: 'Conta',
             traffic: 'Enviado / recebido',
             authorisation: 'Autorização',
@@ -622,6 +643,14 @@ const pt: SourceCatalogue = {
             end: 'Terminar sessão',
             ending: 'A terminar…',
             ended: 'Sessão terminada. As sessões abertas foram lidas de novo.',
+            endAgent:
+                'Terminar a sessão de um agente revoga também a chave que a abriu. A próxima chamada do agente é recusada de imediato, ou no máximo em cinco minutos; precisa de uma nova chave para retomar. Continuar?',
+            holder: 'Mostrar',
+            holders: {
+                all: 'Pessoas e agentes',
+                people: 'Pessoas',
+                agents: 'Agentes',
+            },
             endFailed: 'Não foi possível terminar a sessão.',
             notAllowed: 'Não pode ler as sessões do inquilino.',
             note: 'São lidas todas as sessões abertas do inquilino; terminar uma escreve a sua hora de fim e relê este painel.',
@@ -4515,6 +4544,7 @@ const pt: SourceCatalogue = {
                 surface: 'Superfície',
                 expiries: 'Vencimentos',
                 contributors: 'Contribuidores',
+                surfaces: 'Superfícies',
             },
         },
         fields: {
@@ -4631,6 +4661,8 @@ const pt: SourceCatalogue = {
             curve_role_code: 'Papel da curva',
             start_skew: 'Assimetria inicial (ρ)',
             start_curvature: 'Curvatura inicial (η)',
+            spot_oresmd_uri: 'URI do spot',
+            spot_provider_code: 'Fornecedor do spot',
             skew_reversion: 'Reversão da assimetria',
             skew_volatility: 'Volatilidade da assimetria',
             curvature_reversion: 'Reversão da curvatura',
@@ -6907,8 +6939,8 @@ const pt: SourceCatalogue = {
                 interest_rates: 'Taxa de juro',
             },
             runs: {
-                start: 'Iniciar',
-                stop: 'Parar',
+                start: 'Iniciar feeds',
+                stop: 'Parar feeds',
                 startTitle: 'Iniciar {name}?',
                 stopTitle: 'Parar {name}?',
                 startBody:
@@ -6918,6 +6950,20 @@ const pt: SourceCatalogue = {
                 startReport:
                     '{started} iniciados em {name}. {already} já corriam, {skipped} ignorados.',
                 stopReport: '{stopped} parados em {name}.',
+            },
+            source: {
+                title: 'Fonte simulada',
+                start: 'Iniciar fonte',
+                stop: 'Parar fonte',
+                holds: '{feeds} feeds servidos · {surfaces} superfícies de volatilidade mantidas',
+                stopTitle: 'Parar {source}?',
+                effect: {
+                    feeds: 'Os {count} feeds que serve para o armazém param.',
+                    surfaces:
+                        'Liberta as {count} superfícies de volatilidade que mantém: {stop} param com ela, e {runOn} continuam para outras fontes.',
+                    byHand: 'Os feeds iniciados à mão continuam a correr.',
+                    stays: 'Fica parada, mesmo depois de reiniciar o serviço, até alguém a iniciar.',
+                },
             },
             provider: {
                 provider: 'Fornecedor',
@@ -7144,10 +7190,24 @@ const pt: SourceCatalogue = {
             addTitle: 'Nova superfície de volatilidade',
             engine: 'SSVI',
             held: 'Corre enquanto uma fonte simulada de um fornecedor a mantém.',
+            upstreams: {
+                title: 'O que a superfície lê',
+                intro: 'Em cada tick, a superfície lê o seu spot e as curvas de desconto das suas duas moedas. A página de cada feed mostra como começa e como foi calibrado.',
+                notRunning:
+                    'A superfície não está a correr. Lê estes valores enquanto a fonte de um fornecedor a mantém.',
+                spot: 'Spot',
+                baseCurve: 'Curva de desconto {currency}',
+                quoteCurve: 'Curva de desconto {currency}',
+                missing: 'Nenhum feed corresponde: {wants}',
+            },
             samePair: 'As moedas base e de cotação têm de ser diferentes.',
             removeWarning:
                 'O feed para se estiver a correr. Os seus vencimentos e ligações a contribuidores são apagados primeiro, depois o feed. O histórico de cada um fica.',
             help: {
+                spot_provider_code:
+                    'O fornecedor cujo spot esta superfície lê e com o qual se correlaciona. Um URI nomeia o que é observado, não quem o observa, por isso o fornecedor escolhe um único feed spot.',
+                spot_oresmd_uri:
+                    'O URI oresmd do spot que esta superfície lê. Em branco, é a taxa spot do par.',
                 ticks_per_hour:
                     'Quantas superfícies o feed produz numa hora. 12 é uma a cada cinco minutos.',
                 arrival_mode: 'Como chegam os ticks: a intervalo fixo, ao acaso ou em grupos.',
@@ -7180,7 +7240,6 @@ const pt: SourceCatalogue = {
                 correlations: 'Correlações',
                 editTitle: '{part}: {pair}',
                 gamma: 'Gama (γ)',
-                fixed: 'fixo',
                 gammaWhy:
                     'O gerador mantém gama em meio. Com esse valor, a superfície está livre de arbitragem borboleta enquanto a curvatura ficar abaixo da raiz quadrada de 2, e o gerador mantém-na aí. Outro gama faz as condições de não arbitragem dependerem de cada vencimento e da assimetria, por isso não o pode alterar aqui.',
             },
@@ -7191,6 +7250,10 @@ const pt: SourceCatalogue = {
                 remove: 'Apagar o vencimento',
             },
             contributors: {
+                title: 'Contribuidores de volatilidade',
+                surfacesLead:
+                    'As superfícies que este contribuidor cota. O seu perfil de ruído aplica-se a cada uma delas.',
+                noSurfaces: 'Não cota nenhuma superfície.',
                 lead: 'Os fornecedores que cotam a superfície. Cada fornecedor acrescenta o seu próprio ruído às cotações, e todas as superfícies que cota partilham esse perfil de ruído.',
                 add: 'Adicionar um contribuidor',
                 one: 'Contribuidor',

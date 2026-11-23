@@ -9,8 +9,8 @@
 #+owner: marco
 #+branch: feature/describe-every-product-by-its-schema
 #+pr:
-#+blocked_on: 0FD7D2A8-7A4A-4052-A4D5-6C8A01CAAA41
-#+blocked_since: 2026-11-22
+#+blocked_on:
+#+blocked_since:
 #+created: 2026-11-21
 #+updated: 2026-11-21
 #+environment: jolly_knuth
@@ -26,11 +26,11 @@ describe_product serves every product's schema: its fields, with type, list or s
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BLOCKED                              |
+| State        | STARTED                              |
 | Parent story | [[id:E6359881-7919-4BBC-9B9C-03A8EEDB8A03][Design the scripted trade subsystem]] |
 | Now          | Planned; analysed what exists. |
-| Waiting on   | Move the ORE metamodel into ores.ore. |
-| Next         | The move, then PR 1. |
+| Waiting on   | Nothing. |
+| Next         | PR 1. |
 | Last touched | 2026-11-22                               |
 
 * Acceptance

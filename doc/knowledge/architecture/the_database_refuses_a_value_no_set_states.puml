@@ -23,7 +23,7 @@ actor "shell, screen or job" as caller
 participant "service or repository" as svc
 database "the table storing the value" as db
 participant "the family's trigger function" as fn
-participant "ores_reporting_value_in_set_fn\n(security definer)" as verdict
+participant "ores_ore_value_in_set_fn\n(security definer)" as verdict
 database "the value set tables\n(system tenant)" as sets
 
 caller -> svc : write a value
@@ -44,7 +44,7 @@ svc --> caller : the outcome
 
 note over caller
   The engine settings proposal service asks
-  ores_reporting_setting_value_verdict_fn before a
+  ores_ore_setting_value_verdict_fn before a
   person is asked to sign, so a proposal nobody
   could apply is refused at the desk and not at the
   trigger.

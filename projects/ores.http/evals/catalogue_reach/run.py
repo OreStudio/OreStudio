@@ -28,7 +28,11 @@ calls it made until then. The model is served by llama.cpp with an
 OpenAI-compatible API.
 
 Usage: run.py <repository root> --model-url http://127.0.0.1:PORT/v1
-              [--model NAME] [--steps 8] [--out results.json]
+              [--model NAME] [--steps 8] [--temperature 0.1] [--out results.json]
+
+A request counts as reached on the operation's name alone: the expected
+operations are reads, so the arguments the model gives do not change whether
+it found the right one.
 
 It signs in as the .env's shell login, creates a read-only agent grant for the
 run, and revokes its key at the end. It prints no key or token.
@@ -88,47 +92,59 @@ class ores:
 
 class mcp:
     def __init__(self, server, key):
-        self.server, self.key, self.next_id = server, key, 1
-        _, headers, _ = self.send("initialize", {"protocolVersion": "2025-11-25", "capabilities": {},
-                                                 "clientInfo": {"name": "catalogue-reach", "version": "1"}})
+        self.server, self.key, self.next_id, self.session = server, key, 1, None
+        status, headers, _ = self.send("initialize", {"protocolVersion": "2025-11-25", "capabilities": {},
+                                                      "clientInfo": {"name": "catalogue-reach", "version": "1"}})
         self.session = headers.get("Mcp-Session-Id")
+        if status != 200 or not self.session:
+            raise RuntimeError(f"/mcp refused initialize with {status}")
         self.server.call("POST", "/mcp", {"jsonrpc": "2.0", "method": "notifications/initialized"},
                          bearer=self.key, headers={"Mcp-Session-Id": self.session})
 
     def send(self, method, params):
         self.next_id += 1
-        headers = {"Mcp-Session-Id": self.session} if getattr(self, "session", None) else {}
+        headers = {"Mcp-Session-Id": self.session} if self.session else {}
         return self.server.call("POST", "/mcp", {"jsonrpc": "2.0", "id": self.next_id, "method": method,
                                                  "params": params}, bearer=self.key, headers=headers)
 
     def tools(self):
-        return self.send("tools/list", {})[2]["result"]["tools"]
+        status, _, body = self.send("tools/list", {})
+        if status != 200 or not isinstance(body, dict) or "result" not in body:
+            raise RuntimeError(f"/mcp refused tools/list with {status}")
+        return body["result"]["tools"]
 
     def call_tool(self, name, arguments):
-        _, _, body = self.send("tools/call", {"name": name, "arguments": arguments})
-        result = body.get("result", {}) if isinstance(body, dict) else {}
-        content = result.get("content") or [{"text": str(body)}]
-        return content[0].get("text", "")
+        """The tool's text, and whether the server, not the model, failed."""
+        status, _, body = self.send("tools/call", {"name": name, "arguments": arguments})
+        if status != 200 or not isinstance(body, dict) or "result" not in body:
+            return f"The server failed: {status}", True
+        content = body["result"].get("content") or [{"text": ""}]
+        return content[0].get("text", ""), False
 
 
-def chat(url, model, messages, tools):
-    body = {"model": model, "messages": messages, "tools": tools, "temperature": 0}
+def chat(url, model, messages, tools, temperature):
+    body = {"model": model, "messages": messages, "tools": tools, "temperature": temperature}
     req = urllib.request.Request(url.rstrip("/") + "/chat/completions", data=json.dumps(body).encode(),
                                  method="POST", headers={"Content-Type": "application/json"})
     with urllib.request.urlopen(req, timeout=600) as answer:
         return json.load(answer)["choices"][0]["message"]
 
 
-def run_one(session, url, model, request, offered, steps):
+def run_one(session, url, model, request, offered, steps, temperature):
     tools = [{"type": "function", "function": {"name": t["name"], "description": t["description"],
                                                "parameters": t["inputSchema"]}} for t in offered]
     messages = [{"role": "system", "content": SYSTEM}, {"role": "user", "content": request}]
     trail = []
     for step in range(1, steps + 1):
-        reply = chat(url, model, messages, tools)
+        try:
+            reply = chat(url, model, messages, tools, temperature)
+        except (urllib.error.URLError, TimeoutError, ValueError, KeyError) as error:
+            return {"reached": None, "steps": step - 1, "trail": trail, "ended": f"model error: {error}"}
         calls = reply.get("tool_calls") or []
         if not calls:
             return {"reached": None, "steps": step - 1, "trail": trail, "ended": "answered without a call"}
+        # The prompt asks for one tool at a time, and a later call may depend
+        # on what the first answers, so only the first is run.
         messages.append({"role": "assistant", "content": reply.get("content") or "", "tool_calls": calls[:1]})
         call = calls[0]
         name = call["function"]["name"]
@@ -139,8 +155,11 @@ def run_one(session, url, model, request, offered, steps):
         trail.append({"tool": name, "arguments": arguments})
         if name == "call_operation":
             return {"reached": arguments.get("name"), "steps": step, "trail": trail, "ended": "called"}
-        text = session.call_tool(name, arguments) if name in [t["name"] for t in offered] else \
-            f"No tool is named {name}."
+        if name in [t["name"] for t in offered]:
+            text, server_failed = session.call_tool(name, arguments)
+            trail[-1]["server_failed"] = server_failed
+        else:
+            text = f"No tool is named {name}."
         messages.append({"role": "tool", "tool_call_id": call.get("id", str(step)), "content": text[:4000]})
     return {"reached": None, "steps": steps, "trail": trail, "ended": "ran out of steps"}
 
@@ -151,6 +170,7 @@ def main():
     parser.add_argument("--model-url", required=True)
     parser.add_argument("--model", default="lfm3-1.7b")
     parser.add_argument("--steps", type=int, default=8)
+    parser.add_argument("--temperature", type=float, default=0.1)
     parser.add_argument("--out", type=pathlib.Path)
     options = parser.parse_args()
 
@@ -158,6 +178,9 @@ def main():
     server = ores(f"http://localhost:{env['ORES_HTTP_PORT']}")
     status, _, login = server.call("POST", "/api/session", {"username": env["ORES_SHELL_LOGIN_USERNAME"],
                                                             "password": env["ORES_SHELL_LOGIN_PASSWORD"]})
+    if status != 200 or not isinstance(login, dict):
+        print(f"could not sign in: {status}", file=sys.stderr)
+        return 1
     server.call("POST", "/api/session/party", {"partyId": (login or {}).get("defaultPartyId", "")})
     _, _, made = server.call("POST", "/api/v1/iam/agent_grants/put",
                              {"agent_name": "catalogue-reach-" + str(int(time.time())), "role": "AgentReader",
@@ -170,18 +193,24 @@ def main():
         session = mcp(server, key)
         offered = {t["name"]: t for t in session.tools()}
         cases = json.loads((pathlib.Path(__file__).parent / "requests.json").read_text())["requests"]
+        missing = [n for n in BROWSE + SEARCH if n not in offered]
+        if missing:
+            raise RuntimeError("/mcp does not offer " + ", ".join(missing))
         results = []
         for mode, names in (("browse", BROWSE), ("search", SEARCH)):
             for case in cases:
                 started = time.monotonic()
                 outcome = run_one(session, options.model_url, options.model, case["request"],
-                                  [offered[n] for n in names], options.steps)
+                                  [offered[n] for n in names], options.steps, options.temperature)
                 outcome.update({"mode": mode, "request": case["request"], "expected": case["expected"],
                                 "seconds": round(time.monotonic() - started, 1)})
                 outcome["hit"] = outcome["reached"] == case["expected"]
                 results.append(outcome)
                 print(f"{mode:6} {'HIT ' if outcome['hit'] else 'MISS'} {outcome['steps']} steps "
                       f"{case['expected']} <- {outcome['reached']} ({outcome['ended']})", flush=True)
+                if options.out:
+                    options.out.write_text(json.dumps({"model": options.model, "partial": True,
+                                                       "results": results}, indent=2) + "\n")
         summary = {}
         for mode in ("browse", "search"):
             rows = [r for r in results if r["mode"] == mode]
@@ -191,13 +220,17 @@ def main():
                              if hits else None}
         print(json.dumps(summary, indent=2))
         if options.out:
-            options.out.write_text(json.dumps({"model": options.model, "summary": summary, "results": results},
-                                              indent=2) + "\n")
+            options.out.write_text(json.dumps({"model": options.model, "temperature": options.temperature,
+                                               "summary": summary, "results": results}, indent=2) + "\n")
     finally:
-        key_id = key.split("_")[3]
-        server.call("POST", "/api/v1/iam/ops/revoke_agent_key",
-                    {"key_id": f"{key_id[:8]}-{key_id[8:12]}-{key_id[12:16]}-{key_id[16:20]}-{key_id[20:]}",
-                     "reason": "catalogue-reach run"})
+        parts = key.split("_")
+        key_id = parts[3] if len(parts) > 3 and len(parts[3]) == 32 else ""
+        status, _, revoked = server.call(
+            "POST", "/api/v1/iam/ops/revoke_agent_key",
+            {"key_id": f"{key_id[:8]}-{key_id[8:12]}-{key_id[12:16]}-{key_id[16:20]}-{key_id[20:]}",
+             "reason": "catalogue-reach run"}) if key_id else (0, None, None)
+        if status != 200 or not (isinstance(revoked, dict) and revoked.get("success")):
+            print("warning: the run's agent key may not be revoked; revoke it in ores.web", file=sys.stderr)
     return 0
 
 

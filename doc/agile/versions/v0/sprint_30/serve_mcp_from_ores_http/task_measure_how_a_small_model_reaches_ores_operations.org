@@ -54,7 +54,10 @@ plan itself stays — it is the historical record of what we did.)
   beside =call_operation=, at most eight steps. A request is reached when the
   model calls the expected operation.
 - The model is ores.agent's pinned LFM3-1.7B Q4_0 on llama.cpp b12172 with
-  CUDA on an RTX 2080 Ti, at temperature 0; ores.agent serves it at 0.1.
+  CUDA on an RTX 2080 Ti, run once at temperature 0 and three times at 0.1,
+  ores.agent's own temperature.
+- Several requests use words close to the operation's name, so the set may
+  overstate how a model copes with a person's own phrasing.
 
 * Measurements
 
@@ -68,8 +71,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Reached by browsing | 10 of 20, 4.7 steps when reached | =run.py --model-url http://127.0.0.1:20630/v1=; =evidence/catalogue_reach_lfm3_1_7b.json= | dde8473cb0 |
-| Reached by search | 13 of 20, 2.0 steps when reached | the same run | dde8473cb0 |
+| Reached by browsing, temperature 0, one run | 10 of 20, 4.7 steps when reached | =run.py --temperature 0=; =evidence/catalogue_reach_lfm3_1_7b_t0.json= | e915722324 |
+| Reached by browsing, temperature 0.1, three runs | 8, 8 and 9 of 20 | =run.py --temperature 0.1=; =evidence/catalogue_reach_lfm3_1_7b_t01_run1..3.json= | e915722324 |
+| Reached by search, temperature 0, one run | 13 of 20, 2.0 steps when reached | the temperature 0 run | e915722324 |
+| Reached by search, temperature 0.1, three runs | 13, 13 and 16 of 20, about 2.0 steps | the three runs | e915722324 |
 | Misses that chose a duplicate read answering the request | 2 browsing, 1 searching | the same run | dde8473cb0 |
 
 * Notes
@@ -95,14 +100,23 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | PR #5081: a fragile key parse and an unchecked revoke | =run.py= | Accept | The parse is guarded and a failed revoke warns. |
+| 2 | PR #5081: a failed sign-in is not reported | =run.py= | Accept | It stops with the status. |
+| 3 | PR #5081: initialize is not checked | =run.py= | Accept | The session starts empty and a refusal stops the run. |
+| 4 | PR #5081: tools/list and tools/call assume a good reply | =run.py= | Accept | A refusal is reported, and a tool's server failure is flagged on its step. |
+| 5 | PR #5081: a server failure counts as a model miss | =run.py= | Accept | The trail flags =server_failed=. |
+| 6 | PR #5081: a hit is judged on the name alone | =run.py= | Accept | Stated in the usage; the expected operations are reads. |
+| 7 | PR #5081: a missing tool raises KeyError | =run.py= | Accept | The run names it. |
+| 8 | PR #5081: one model error loses the whole run | =run.py= | Accept | A model error ends that request only, and results are written after each. |
+| 9 | PR #5081: one run at temperature 0 is within noise | evidence | Accept | Three more runs at 0.1; search led in all four. |
+| 10 | PR #5081: requests close to the operations' names | task | Accept | Stated as a limit in the plan. |
 
 * Result
 
 The request set and its runner are in the repository and rerun against any
-served model. LFM3-1.7B reached 10 of 20 operations by browsing, in 4.7 steps
-when it did, and 13 of 20 by search, in 2.0 steps; counting a duplicate read
-that also answers the request, 12 and 14. Every miss is named in the evidence
+served model. LFM3-1.7B reached 8 to 10 of 20 operations by browsing, in under
+five steps when it did, and 13 to 16 by search, in two, over four runs; search
+led in every run, by 3 to 7 requests. Every miss is named in the evidence
 file. Browsing failed most by answering after =list_areas= without walking on,
 by wandering among entities a screen route splits, and by areas whose purpose
 misled; search failed by dropping a word of the request. The result says the

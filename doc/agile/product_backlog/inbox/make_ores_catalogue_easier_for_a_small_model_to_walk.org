@@ -2,7 +2,7 @@
 :ID: 75C3EE23-A43D-4621-80F6-36B25C9D2CDE
 :END:
 #+title: Make ORE's catalogue easier for a small model to walk
-#+description: A 1.7B model reached 10 of 20 operations browsing and 13 searching; screen routes split entities and duplicate reads, two area purposes mislead, and the model stops after list_areas.
+#+description: A 1.7B model reached 8 to 10 of 20 operations browsing and 13 to 16 searching; screen routes split entities and duplicate reads, two area purposes mislead, and the model stops after list_areas.
 #+type: capture
 #+level: cross
 #+filetags: 
@@ -22,16 +22,17 @@ needs more often, each change measured with the request set:
   =web_get_seed_profiles= duplicates =list_seed_profiles=.
 - Reword the area purposes that misled: curve bootstrap configurations and
   index families were looked for in market-data.
-- Make =list_areas= say that the next step is =list_entities=: in four runs the
+- Make =list_areas= say that the next step is =list_entities=: in four requests the
   model answered after it instead of walking on.
 - Have =find_operations= keep every word asked for: "tenant" ranked
   =list_tenants= above =list_tenant_types=.
 
 * Why
 
-LFM3-1.7B reached 10 of 20 operations by browsing, in 4.7 steps when it did,
-and 13 of 20 by search, in 2.0 steps. Three of the misses chose a duplicate
-read that also answers the request. The rest trace to the causes above.
+LFM3-1.7B reached 8 to 10 of 20 operations by browsing over four runs, in 4.5
+to 4.9 steps when it did, and 13 to 16 by search, in about two. In the first
+run, three misses chose a duplicate read that also answers the request; the
+rest trace to the causes above.
 
 * References
 

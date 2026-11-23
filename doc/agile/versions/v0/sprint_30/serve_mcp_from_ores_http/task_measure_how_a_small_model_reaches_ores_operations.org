@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :serve_mcp_from_ores_http:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/measure-how-a-small-model-reaches-ores-operations
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,11 +26,11 @@ Write a set of real requests a person would give an agent, each with the operati
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:008127D7-B897-4CF7-854B-6DDFB89AC7F4][Serve ORE's API to LLM agents over MCP]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-22                               |
 
 * Acceptance
@@ -44,6 +44,18 @@ Write a set of real requests a person would give an agent, each with the operati
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
+- Twenty requests a person would give, each answered by one operation a
+  read-only grant reaches, in =projects/ores.http/evals/catalogue_reach/requests.json=;
+  every expected operation was checked reachable through =call_operation=
+  before the run.
+- =run.py= drives the model through the running =/mcp= with a read-only agent
+  grant it creates and revokes. Each request runs browsing (=list_areas=,
+  =list_entities=, =list_operations=) and searching (=find_operations=), each
+  beside =call_operation=, at most eight steps. A request is reached when the
+  model calls the expected operation.
+- The model is ores.agent's pinned LFM3-1.7B Q4_0 on llama.cpp b12172 with
+  CUDA on an RTX 2080 Ti, at temperature 0; ores.agent serves it at 0.1.
+
 * Measurements
 
 Every number this task claims about a tree, with the command that produced it
@@ -56,7 +68,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Reached by browsing | 10 of 20, 4.7 steps when reached | =run.py --model-url http://127.0.0.1:20630/v1=; =evidence/catalogue_reach_lfm3_1_7b.json= | dde8473cb0 |
+| Reached by search | 13 of 20, 2.0 steps when reached | the same run | dde8473cb0 |
+| Misses that chose a duplicate read answering the request | 2 browsing, 1 searching | the same run | dde8473cb0 |
 
 * Notes
 
@@ -84,3 +98,18 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The request set and its runner are in the repository and rerun against any
+served model. LFM3-1.7B reached 10 of 20 operations by browsing, in 4.7 steps
+when it did, and 13 of 20 by search, in 2.0 steps; counting a duplicate read
+that also answers the request, 12 and 14. Every miss is named in the evidence
+file. Browsing failed most by answering after =list_areas= without walking on,
+by wandering among entities a screen route splits, and by areas whose purpose
+misled; search failed by dropping a word of the request. The result says the
+catalogue's entities and purposes need work, which
+[[id:75C3EE23-A43D-4621-80F6-36B25C9D2CDE][Make ORE's catalogue easier for a small model to walk]] takes up. ores.agent's
+live evaluation passed 26 of 36 cases, but through tools written per
+capability, so it measures a different task and is not compared here.
+
+Checking the expected operations found =list_images= failing for every caller;
+see [[id:E4FA5F3A-AEF6-4DAD-95C8-52739440CAB9][List images without exceeding the NATS payload]].

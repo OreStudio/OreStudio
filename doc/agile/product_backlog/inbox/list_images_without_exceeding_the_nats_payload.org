@@ -1,0 +1,35 @@
+:PROPERTIES:
+:ID: E4FA5F3A-AEF6-4DAD-95C8-52739440CAB9
+:END:
+#+title: List images without exceeding the NATS payload
+#+description: GET /api/v1/assets/images answers internal_error: the assets service's list reply exceeds NATS's maximum payload, so its publish fails and no caller can list images.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-11-23
+#+updated: 2026-11-23
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=list_images= in the assets service answers a page of images small enough for
+one NATS message, or answers the images without their data, so
+=GET /api/v1/assets/images= lists them.
+
+* Why
+
+On 2026-11-23 the assets service logged
+=assets.v1.images.list failed: NATS publish failed: Maximum Payload Exceeded=,
+and the route answered =internal_error=. A list that carries every image's
+bytes outgrows the payload limit as images are added, so the list fails for
+every caller, an LLM agent's =call_operation= included. Found while checking
+the operations the small-model measurement expects.
+
+* References
+
+-
+
+* See also
+
+-

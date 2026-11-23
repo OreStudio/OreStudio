@@ -86,6 +86,14 @@ std::shared_ptr<const operation_catalogue> make_catalogue() {
                     .auth_required()
                     .handler(echo)
                     .build());
+    r.add_route(r.get("/api/v1/reference-data/greeting")
+                    .catalogue("get_greeting", "reference-data", "greetings", false)
+                    .summary("Greet in a word with accents")
+                    .auth_required()
+                    .handler([](const http_request&) -> boost::asio::awaitable<http_response> {
+                        co_return http_response::json("{\"word\":\"\u00e9\u00e9\u00e9\"}");
+                    })
+                    .build());
     r.add_route(r.get("/api/v1/trading/trades")
                     .catalogue("list_trades", "trading", "trades", false)
                     .summary("List the trades of a book")
@@ -165,7 +173,7 @@ TEST_CASE("the_areas_and_entities_are_listed_with_their_counts", "[mcp]") {
     const catalogue_tools tools(make_catalogue(), {});
     const auto areas = run(tools, caller(writer), "list_areas", "{}");
     CHECK_THAT(areas.text, ContainsSubstring("reference-data: "));
-    CHECK_THAT(areas.text, ContainsSubstring("(4)"));
+    CHECK_THAT(areas.text, ContainsSubstring("(5)"));
     CHECK_THAT(areas.text, !ContainsSubstring("access"));
     const auto entities =
         run(tools, caller(reader), "list_entities", R"({"area":"reference-data"})");
@@ -259,7 +267,13 @@ TEST_CASE("call_operation_offers_a_write_to_the_hold_and_records_each_call", "[m
         caller(reader),
         "call_operation",
         R"({"name":"get_currency","arguments":{"code":"EUR"}})");
-    CHECK(recorded == std::vector<std::string>{"GET /api/v1/reference-data/currencies/{code} 200"});
+    run(tools,
+        caller(reader),
+        "call_operation",
+        R"({"name":"put_currency","arguments":{"body":{"code":"EUR"}}})");
+    CHECK(recorded == std::vector<std::string>{"POST /api/v1/reference-data/currencies 202",
+                                               "GET /api/v1/reference-data/currencies/{code} 200",
+                                               "POST /api/v1/reference-data/currencies 403"});
 }
 
 TEST_CASE("a_long_answer_is_cut_to_what_a_model_can_read", "[mcp]") {
@@ -283,4 +297,24 @@ TEST_CASE("an_input_schema_states_its_definitions_where_its_references_point", "
     const auto ref = body.member("$ref").text_or();
     REQUIRE(ref.starts_with("#/$defs/"));
     CHECK(root.member("$defs").member(ref.substr(8)).is_object());
+}
+
+TEST_CASE("a_cut_never_splits_a_character", "[mcp]") {
+    const catalogue_tools tools(make_catalogue(), {.answer_limit = 10});
+    const auto cut =
+        run(tools, caller(reader), "call_operation", R"({"name":"get_greeting","arguments":{}})");
+    CHECK_THAT(cut.text, ContainsSubstring("{\"word\":\"\n[cut: 8 more"));
+}
+
+TEST_CASE("call_operation_refuses_a_caller_without_a_token_and_an_unreadable_argument", "[mcp]") {
+    const catalogue_tools tools(make_catalogue(), {});
+    http_request anonymous;
+    CHECK(run(tools, anonymous, "call_operation", R"({"name":"list_currencies","arguments":{}})")
+              .is_error);
+    const auto listed = run(tools,
+                            caller(reader),
+                            "call_operation",
+                            R"({"name":"list_currencies","arguments":{"limit":[1,2]}})");
+    CHECK(listed.is_error);
+    CHECK_THAT(listed.text, ContainsSubstring("limit is missing, or is not text"));
 }

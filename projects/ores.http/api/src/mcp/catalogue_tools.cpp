@@ -270,18 +270,42 @@ tool_result catalogue_tools::found(const http_request& caller, const json_value&
 
 boost::asio::awaitable<tool_result> catalogue_tools::called(const http_request& caller,
                                                             json_value arguments) const {
+    if (!caller.authenticated_user)
+        co_return refused("call_operation is served to an agent's token.");
     const auto name = arguments.member("name").text_or();
     const auto* op = catalogue_->find(name);
-    const auto writes = may_write(caller);
-    if (op == nullptr || (op->writes && !writes))
+    if (op == nullptr)
         co_return refused("No operation you may call is named \"" + name +
                           "\"; find_operations finds one.");
-    if (!op->required_roles.empty() && caller.authenticated_user &&
+
+    // Each call that names an operation is recorded as the agent's direct
+    // call would be, a refusal or a hold included, so its person sees it.
+    const auto started = std::chrono::steady_clock::now();
+    const auto note = [&](int status) {
+        if (!options_.record)
+            return;
+        options_.record(domain::exchanged_call{
+            .claims = *caller.authenticated_user,
+            .method = std::string(domain::method_name(op->method)),
+            .route = op->pattern,
+            .status = status,
+            .duration = std::chrono::duration_cast<std::chrono::milliseconds>(
+                std::chrono::steady_clock::now() - started)});
+    };
+
+    if (op->writes && !may_write(caller)) {
+        note(403);
+        co_return refused("No operation you may call is named \"" + name +
+                          "\"; find_operations finds one.");
+    }
+    if (!op->required_roles.empty() &&
         std::ranges::none_of(op->required_roles, [&](const std::string& role) {
             return std::ranges::find(caller.authenticated_user->roles, role) !=
                    caller.authenticated_user->roles.end();
-        }))
+        })) {
+        note(403);
         co_return refused("Your person's roles do not reach " + op->tool + ".");
+    }
 
     const auto given = arguments.member("arguments");
     if (!given.exists() || !given.is_object() || given.size() == 0) {
@@ -289,6 +313,13 @@ boost::asio::awaitable<tool_result> catalogue_tools::called(const http_request& 
             std::ranges::any_of(op->query_params, [](const auto& q) { return q.required; }))
             co_return tool_result{.text = schema_answer(*op, op->tool + " needs arguments.")};
     }
+    const auto misread = [&](const std::string& argument) {
+        return tool_result{.text = schema_answer(*op,
+                                                 "The argument " + argument +
+                                                     " is missing, or is not text, a number "
+                                                     "or a truth value."),
+                           .is_error = true};
+    };
 
     http_request inner;
     inner.method = op->method;
@@ -301,9 +332,7 @@ boost::asio::awaitable<tool_result> catalogue_tools::called(const http_request& 
     for (const auto& param : op->path_params) {
         const auto value = text_of(given.member(param));
         if (!value)
-            co_return tool_result{.text =
-                                      schema_answer(*op, "The argument " + param + " is missing."),
-                                  .is_error = true};
+            co_return misread(param);
         inner.path_params[param] = *value;
         const auto at = path.find("{" + param + "}");
         if (at != std::string::npos)
@@ -311,14 +340,15 @@ boost::asio::awaitable<tool_result> catalogue_tools::called(const http_request& 
     }
     std::string query;
     for (const auto& param : op->query_params) {
-        const auto value = text_of(given.member(param.name));
-        if (!value) {
+        const auto argument = given.member(param.name);
+        if (!argument.exists()) {
             if (param.required)
-                co_return tool_result{
-                    .text = schema_answer(*op, "The argument " + param.name + " is missing."),
-                    .is_error = true};
+                co_return misread(param.name);
             continue;
         }
+        const auto value = text_of(argument);
+        if (!value)
+            co_return misread(param.name);
         inner.query_params[param.name] = *value;
         query += (query.empty() ? "?" : "&") + encoded(param.name) + "=" + encoded(*value);
     }
@@ -328,8 +358,7 @@ boost::asio::awaitable<tool_result> catalogue_tools::called(const http_request& 
             inner.body = body.write();
             inner.headers["content-type"] = "application/json";
         } else if (op->body->required) {
-            co_return tool_result{.text = schema_answer(*op, "The argument body is missing."),
-                                  .is_error = true};
+            co_return misread("body");
         }
     }
     inner.target = path + query;
@@ -337,29 +366,24 @@ boost::asio::awaitable<tool_result> catalogue_tools::called(const http_request& 
     if (op->writes && options_.hold) {
         if (auto held = options_.hold(inner, op->pattern)) {
             ORES_LOG_SEV(lg(), info) << "Held an agent's call of " << op->tool;
+            note(static_cast<int>(held->status));
             co_return tool_result{.text =
                                       "The write waits for your person's approval: " + held->body,
                                   .is_error = static_cast<int>(held->status) >= 400};
         }
     }
 
-    const auto started = std::chrono::steady_clock::now();
     auto answer = co_await op->handler(inner);
-    const auto took = std::chrono::duration_cast<std::chrono::milliseconds>(
-        std::chrono::steady_clock::now() - started);
-    if (options_.record && caller.authenticated_user)
-        options_.record(
-            domain::exchanged_call{.claims = *caller.authenticated_user,
-                                   .method = std::string(domain::method_name(op->method)),
-                                   .route = op->pattern,
-                                   .status = static_cast<int>(answer.status),
-                                   .duration = took});
-
     const auto status = static_cast<int>(answer.status);
+    note(status);
+
     std::string text = "HTTP " + std::to_string(status) + "\n";
     if (answer.body.size() > options_.answer_limit) {
-        text += answer.body.substr(0, options_.answer_limit);
-        text += "\n[cut: " + std::to_string(answer.body.size() - options_.answer_limit) +
+        auto cut = options_.answer_limit;
+        while (cut > 0 && (static_cast<unsigned char>(answer.body[cut]) & 0xC0) == 0x80)
+            --cut;
+        text += answer.body.substr(0, cut);
+        text += "\n[cut: " + std::to_string(answer.body.size() - cut) +
                 " more characters; ask for less, such as a smaller page]";
     } else {
         text += answer.body;

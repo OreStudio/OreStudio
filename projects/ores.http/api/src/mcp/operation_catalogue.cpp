@@ -196,7 +196,8 @@ operation_catalogue::search(std::string_view words,
             const auto covered = std::ranges::count_if(name, [&](const std::string& t) {
                 return std::ranges::find(terms, t) != terms.end();
             });
-            score += name_weight * static_cast<double>(covered) / static_cast<double>(name.size());
+            score += name_weight * static_cast<double>(covered) /
+                     static_cast<double>(std::max<std::size_t>(1, name.size()));
             scored.emplace_back(score, i);
         }
     }

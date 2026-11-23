@@ -108,6 +108,13 @@ via its "Verifies task" field.
 | 1 | Local check: "list currencies" ranked the currency-groups tool first | =operation_catalogue.cpp= | Accept | The share of a tool's name the words cover is weighted 2. Tested. |
 | 2 | Local check: a body's =$ref= pointed at =$defs= nested under =body= | =operation_catalogue.cpp= | Accept | The definitions move to the root. Tested. |
 | 3 | Local check: a coroutine held a reference to a temporary arguments view | =tools.hpp= | Accept | The view is taken by value. |
+| 4 | PR #5077: refused and held calls are not recorded | =catalogue_tools.cpp= | Accept | Every call naming an operation is recorded, 403 for a refusal and the hold's status for a held write, as the direct path records them. Tested. |
+| 5 | PR #5077: the cut can split a UTF-8 character | =catalogue_tools.cpp= | Accept | It backs up to a character's first byte. Tested. |
+| 6 | PR #5077: the role check is skipped without a user | =catalogue_tools.cpp= | Accept | call_operation refuses a caller without a token. Tested. |
+| 7 | PR #5077: array query arguments are dropped | =catalogue_tools.cpp= | Accept | An argument that is not text, a number or a truth value is answered with the schema. Tested. |
+| 8 | PR #5077: division by zero for a nameless tool | =operation_catalogue.cpp= | Accept | Guarded. |
+| 9 | PR #5077: hide operations withheld from every agent | =catalogue_tools.cpp= | Decline | It needs each route's permission: [[id:83CA0DEA-C89F-426B-B5B3-5D84DD0711CA][Declare the permission each route needs]]. |
+| 10 | PR #5077: the schema can pass the answer limit | =catalogue_tools.cpp= | Decline | The schema is what the model needs after a refusal; the limit bounds the result. |
 
 * Result
 

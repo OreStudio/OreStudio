@@ -326,6 +326,9 @@ struct list_own_agent_activity_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+    std::string grant_id;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
 
     friend bool operator==(const list_own_agent_activity_request&,
                            const list_own_agent_activity_request&) = default;
@@ -568,7 +571,11 @@ struct list_own_agent_activity_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_own_agent_activity_request>) {
-    return ::ores::utility::codec::field_list{};
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"grant_id", &list_own_agent_activity_request::grant_id},
+        ::ores::utility::codec::field{"offset", &list_own_agent_activity_request::offset},
+        ::ores::utility::codec::field{"limit", &list_own_agent_activity_request::limit},
+    };
 }
 
 /**

@@ -86,10 +86,10 @@ export const agentGrants = {
         );
     },
     /** What the reader's own agents did, newest first: calls, never their content. */
-    async listActivity(): Promise<AgentCall[]> {
+    async listActivity(grantId: string, offset: number, limit: number): Promise<AgentCall[]> {
         const reply = await post(
             '/api/v1/iam/ops/list_own_agent_activity',
-            {},
+            { grant_id: grantId, offset, limit },
             z.object({ ...answer, calls: z.array(callSchema) }),
         );
         return reply.calls;

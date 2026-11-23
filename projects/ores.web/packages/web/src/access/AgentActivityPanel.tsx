@@ -19,13 +19,16 @@
  *
  */
 
-import { useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import { useSearchParams } from 'react-router';
 import { agentGrants } from '../api/agentGrants.js';
 import { useTranslation } from '../i18n/Provider.js';
-import { Notice, Select, Tag } from '../ui/Primitives.js';
+import { Button, Notice, Select, Tag } from '../ui/Primitives.js';
 import { RefreshNow } from '../ui/RefreshButton.js';
+
+/** How many calls the panel reads at a time. */
+const AGENT_ACTIVITY_PAGE = 100;
 
 /**
  * What the reader's own LLM agents did: every call, reads and writes, newest
@@ -36,9 +39,12 @@ export function AgentActivityPanel(): ReactNode {
     const { t } = useTranslation();
     const [params, setParams] = useSearchParams();
     const agent = params.get('agent') ?? '';
-    const calls = useQuery({
-        queryKey: ['agent-activity'],
-        queryFn: () => agentGrants.listActivity(),
+    const calls = useInfiniteQuery({
+        queryKey: ['agent-activity', agent],
+        queryFn: ({ pageParam }) => agentGrants.listActivity(agent, pageParam, AGENT_ACTIVITY_PAGE),
+        initialPageParam: 0,
+        getNextPageParam: (last, pages) =>
+            last.length < AGENT_ACTIVITY_PAGE ? undefined : pages.length * AGENT_ACTIVITY_PAGE,
         retry: false,
     });
     const grants = useQuery({
@@ -46,7 +52,7 @@ export function AgentActivityPanel(): ReactNode {
         queryFn: () => agentGrants.listOwn(),
     });
     const nameOf = new Map((grants.data?.grants ?? []).map((g) => [g.id, g.agent_name] as const));
-    const shown = (calls.data ?? []).filter((c) => agent === '' || c.grant_id === agent);
+    const shown = (calls.data?.pages ?? []).flat();
 
     return (
         <section id="agent-activity" className="card space-y-4 p-6">
@@ -114,6 +120,16 @@ export function AgentActivityPanel(): ReactNode {
                         ))}
                     </tbody>
                 </table>
+            )}
+            {calls.hasNextPage && (
+                <Button
+                    size="sm"
+                    variant="secondary"
+                    disabled={calls.isFetchingNextPage}
+                    onClick={() => void calls.fetchNextPage()}
+                >
+                    {t('agents.activity.more')}
+                </Button>
             )}
         </section>
     );

@@ -611,6 +611,7 @@ const pt: SourceCatalogue = {
             took: 'Duração',
             ms: '{ms} ms',
             link: 'Atividade',
+            more: 'Mostrar chamadas mais antigas',
         },
         title: 'Agentes LLM',
         lead: 'Um agente que nomeia age por si sob uma função, até a autorização expirar ou até a revogar. As suas chamadas são suas e ficam registadas como do agente.',

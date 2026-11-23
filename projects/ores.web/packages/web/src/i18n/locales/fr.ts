@@ -611,6 +611,7 @@ const fr: SourceCatalogue = {
             took: 'Durée',
             ms: '{ms} ms',
             link: 'Activité',
+            more: 'Afficher les appels plus anciens',
         },
         title: 'Agents LLM',
         lead: 'Un agent que vous nommez agit pour vous sous un rôle, jusqu’à l’expiration de l’autorisation ou jusqu’à ce que vous la révoquiez. Ses appels sont les vôtres et sont enregistrés comme ceux de l’agent.',

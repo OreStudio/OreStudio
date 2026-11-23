@@ -56,9 +56,12 @@ public:
     void record(domain::agent_call call);
 
     /**
-     * @brief The calls the agents of one person made, newest first.
+     * @brief The calls the agents of one person made, newest first, a page at
+     * a time; with a grant, that grant's agent's calls only.
      */
     [[nodiscard]] std::vector<domain::agent_call> calls_for(const std::string& grantor_account_id,
+                                                            const std::string& grant_id,
+                                                            std::uint32_t offset,
                                                             std::uint32_t limit) const;
 
 private:

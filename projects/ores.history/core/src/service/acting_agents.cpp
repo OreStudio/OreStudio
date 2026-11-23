@@ -44,6 +44,8 @@ void mark_acting_agents(const ores::database::context& ctx,
                         std::vector<messaging::entity_history_version>& versions) {
     if (versions.empty() || key.empty())
         return;
+    // The table and its key column are names the model gave the generator,
+    // compiled into each provider; no request supplies them.
     const auto sql = "select (extract(epoch from valid_from) * 1000000)::bigint::text, "
                      "acting_agent from \"" +
                      source.table + "\" where \"" + source.key_column + "\" = $1" +

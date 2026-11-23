@@ -106,7 +106,13 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | PR #5049: refused and probing calls are not in the call log | auditing note | Accept, as docs | A refused key never makes a call; its refusal and reason are in the token issue log. Stated on the page. |
+| 2 | PR #5049: a failed record is only a warning | =http_session.cpp= | Accept | Logged as an error. |
+| 3 | PR #5049: a fixed window of 500, filtered in the browser | =list_own_agent_activity= | Accept | The read takes a grant, an offset and a limit; the panel pages. |
+| 4 | PR #5049: a dedicated read permission for activity | service | Decline | Activity belongs to a person who has agents, who holds =iam::agent_grants:create=. |
+| 5 | PR #5049: no retention on the call log | SQL | Decline | As the token issue log; the page says so. |
+| 6 | PR #5049: the history join on valid_from and two writes in one transaction | =acting_agents.cpp= | No change | Both sides read the same column; writes in one transaction share one agent. |
+| 7 | PR #5049: say the SQL names are not a request's | =acting_agents.cpp= | Accept | Commented. |
 
 * Result
 

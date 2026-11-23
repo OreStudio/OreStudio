@@ -40,14 +40,16 @@ void agent_call_log::record(domain::agent_call call) {
 }
 
 std::vector<domain::agent_call> agent_call_log::calls_for(const std::string& grantor_account_id,
+                                                          const std::string& grant_id,
+                                                          std::uint32_t offset,
                                                           std::uint32_t limit) const {
     const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx_,
         "select tenant_id, party_id, grant_id, session_id, grantor_account_id, method, route, "
         "status::text, duration_ms::text, (extract(epoch from called_at) * 1000000)::bigint::text, "
         "id from ores_iam_agent_calls_tbl where grantor_account_id = $1 "
-        "order by called_at desc limit $2",
-        {grantor_account_id, std::to_string(limit)},
+        "and ($2 = '' or grant_id = $2) order by called_at desc limit $3 offset $4",
+        {grantor_account_id, grant_id, std::to_string(limit), std::to_string(offset)},
         lg(),
         "Reading a person's agent calls");
     std::vector<domain::agent_call> calls;

@@ -443,6 +443,28 @@ it. [[id:A7E2942C-66AD-449C-B80B-CA789EBC34FA][Agent grants: delegated consent f
  */
 #+end_src
 
+*** grant_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+One of the caller's grants, to read only its agent's calls; empty for every
+agent's.
+
+*** offset
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:default: 0
+:END:
+
+*** limit
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:default: 100
+:END:
+
+At most this many calls, from one to five hundred.
+
 ** list_own_agent_activity_response
 
 #+begin_src cpp :name comment

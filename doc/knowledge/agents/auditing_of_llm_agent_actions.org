@@ -44,7 +44,10 @@ rows instead.
 grant, the person, the session, the method, the route, the status and the
 duration. Reads are logged as writes are. The route is the pattern, such as
 =/currencies/{iso_code}=, never the address with its values, and no request or
-answer is kept, so the log cannot hold a secret an agent sent or read. The log
+answer is kept, so the log cannot hold a secret an agent sent or read. A key
+that is refused never makes a call: the refusal, with its reason, is in the
+token issue log ([[id:1162906F-BB72-486E-9A11-30D567C65F3E][Delegation tokens for LLM agents: subject and actor claims]]), and the call log holds only the calls an
+agent made. Like that log, it sets no retention. The log
 is the person's view, not an audit of the system: it answers "what did my agent
 do today" without searching every entity's history. When agents call through
 MCP, a tool call is one such row, and the approval request a write raised is

@@ -415,7 +415,7 @@ messaging::list_own_agent_grants_response agent_grant_operations_service::list_o
 }
 
 messaging::list_own_agent_activity_response agent_grant_operations_service::list_own_agent_activity(
-    const messaging::list_own_agent_activity_request&) {
+    const messaging::list_own_agent_activity_request& request) {
     using response = messaging::list_own_agent_activity_response;
 
     if (ctx_.acts_for_agent())
@@ -429,7 +429,9 @@ messaging::list_own_agent_activity_response agent_grant_operations_service::list
                                               ctx_.actor() + ".");
     response r;
     r.success = true;
-    r.calls = repository::agent_call_log(ctx_).calls_for(boost::uuids::to_string(*caller), 500);
+    const auto limit = std::clamp<std::uint32_t>(request.limit, 1, 500);
+    r.calls = repository::agent_call_log(ctx_).calls_for(
+        boost::uuids::to_string(*caller), request.grant_id, request.offset, limit);
     return r;
 }
 

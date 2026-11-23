@@ -33,29 +33,31 @@ function render(path: string): string {
     const client = new QueryClient({
         defaultOptions: { queries: { retry: false, retryOnMount: false, staleTime: Infinity } },
     });
-    client.setQueryData(
-        ['agent-activity'],
-        [
-            {
-                id: 'c1',
-                called_at: '2026-11-23 10:00:00Z',
-                grant_id: READER,
-                method: 'GET',
-                route: '/api/v1/reference-data/currencies',
-                status: 200,
-                duration_ms: 12,
-            },
-            {
-                id: 'c2',
-                called_at: '2026-11-23 10:01:00Z',
-                grant_id: TRADER,
-                method: 'DELETE',
-                route: '/api/v1/reference-data/currencies/{iso_code}',
-                status: 403,
-                duration_ms: 7,
-            },
-        ],
-    );
+    const agent = new URLSearchParams(path.split('?')[1] ?? '').get('agent') ?? '';
+    const all = [
+        {
+            id: 'c1',
+            called_at: '2026-11-23 10:00:00Z',
+            grant_id: READER,
+            method: 'GET',
+            route: '/api/v1/reference-data/currencies',
+            status: 200,
+            duration_ms: 12,
+        },
+        {
+            id: 'c2',
+            called_at: '2026-11-23 10:01:00Z',
+            grant_id: TRADER,
+            method: 'DELETE',
+            route: '/api/v1/reference-data/currencies/{iso_code}',
+            status: 403,
+            duration_ms: 7,
+        },
+    ];
+    client.setQueryData(['agent-activity', agent], {
+        pages: [all.filter((c) => agent === '' || c.grant_id === agent)],
+        pageParams: [0],
+    });
     client.setQueryData(['agent-grants-own'], {
         grants: [
             { id: READER, agent_name: 'research-bot' },

@@ -899,7 +899,7 @@ asio::awaitable<void> http_session::handle_request(domain::http_request domain_r
             else
                 credentials_.record(call);
         } catch (const std::exception& e) {
-            ORES_LOG_SEV(lg(), warn) << "A call made with an exchanged credential was not "
+            ORES_LOG_SEV(lg(), error) << "A call made with an exchanged credential was not "
                                      << "recorded for " << matched->pattern << ": " << e.what();
         }
     }

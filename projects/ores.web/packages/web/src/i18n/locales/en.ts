@@ -613,6 +613,7 @@ export const en: SourceCatalogue = {
             took: 'Took',
             ms: '{ms} ms',
             link: 'Activity',
+            more: 'Show older calls',
         },
         title: 'LLM agents',
         lead: 'An agent you name acts for you under one role, until the grant’s expiry or until you revoke it. Its calls are yours and are recorded as the agent’s.',

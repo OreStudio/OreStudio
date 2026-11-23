@@ -152,7 +152,12 @@ agent_grant_operations_routes::handle_list_own_agent_activity(const http_request
                                                               nats_client& session) {
     using request_type = messaging::list_own_agent_activity_request;
     try {
-        co_return ores::http::forwarding::respond(req, session, request_type{});
+        const auto parsed = agent_grant_operations_read_body<request_type>(req.body);
+        if (!parsed) {
+            co_return http_response::api_error(
+                http_status::bad_request, "invalid-request", "Invalid request body");
+        }
+        co_return ores::http::forwarding::respond(req, session, *parsed);
     } catch (const std::exception& e) {
         co_return http_response::api_error(http_status::bad_request, "invalid-request", e.what());
     }

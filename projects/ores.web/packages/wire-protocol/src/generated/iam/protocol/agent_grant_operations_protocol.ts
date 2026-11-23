@@ -194,7 +194,11 @@ export interface ListEveryAgentGrantResponse {
  * A self read, like the caller's own grants: it needs
  * iam::agent_grants:create and is refused to an agent.
  */
-export interface ListOwnAgentActivityRequest {}
+export interface ListOwnAgentActivityRequest {
+    grant_id: string;
+    offset: number;
+    limit: number;
+}
 
 /**
  * @brief The caller's agents' calls: route, method, answer and duration, never

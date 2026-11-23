@@ -1,0 +1,112 @@
+:PROPERTIES:
+:ID: 898F098A-E6D5-49AF-98C7-65F58D5E0AC1
+:END:
+#+title: Task: Keep every feed node's state and answer the feed graph in one read
+#+description: Every node of the feed graph, sources, upstreams, latent surfaces and vendor views, can be stopped by name; the service derives each node's state and reason, propagates starves down the edges, and answers the whole graph, or one node's neighbourhood, in one read served by the BFF and ores.http.
+#+type: task
+#+level: s1
+#+filetags: :model_the_synthetic_feed_dependency_graph:sprint_30:v0:
+#+owner: marco
+#+branch: feature/keep-feed-node-states-and-read-the-graph
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-23
+#+updated: 2026-11-23
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8DE041AE-95E6-40CE-9B62-2CE3BA77838A][Model the synthetic feeds as a dependency graph: upstreams, latent surfaces and vendor views]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+An operator stops an upstream spot or curve, or a latent surface, as they stop a source or a view, and the nodes below it stop producing and say why: each starved node names the node that starved it. One read answers every node with its kind, state, reason and cause, and every edge with its role, so a screen can show the graph from any node.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:8DE041AE-95E6-40CE-9B62-2CE3BA77838A][Model the synthetic feeds as a dependency graph: upstreams, latent surfaces and vendor views]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-23                               |
+
+* Acceptance
+
+- The stopped feed node table admits the kinds source, upstream, latent and view; the node verbs stop and start each of them by name.
+- A stopped upstream is withheld from its source's offers, and a stopped latent surface withholds every view of it; both resume at once on a start.
+- The service derives each node's state, running, stopped or starved, with its reason and, for a starve, the input that caused it, by one rule walked down the edges.
+- synthetic.v1.feed_graph.get answers the nodes and edges, the whole graph or one node with its upstreams and downstreams, and the BFF and ores.http serve it.
+- Live: stopping a Bloomberg spot shows the AUD/USD latent surface and its three views starved, each naming its cause; starting it shows them running.
+
+* Plan
+
+One PR, in slices that each end in a check. It applies choices 3 and 4 of the
+[[id:2376A086-4C3C-4D61-92E5-29B122DB6A41][synthetic feed graph]] design: state derived in the service, and one read.
+
+1. *Every kind stops.* The stopped feed node's kind check admits =upstream=
+   and =latent= beside =source= and =view=. The fleet keeps one set of stopped
+   node names, read at start, in place of the stopped views. The offers leave
+   out an upstream whose name is stopped, a latent surface whose name is
+   stopped, and a view whose name is stopped; every running adapter re-applies
+   its demand on a stop or start, so the change lands at once. The handler
+   resolves a name to a source, an upstream, a latent surface or a view.
+2. *The graph.* A pure function builds the graph from the system tenant's
+   candidates and the served sources: an upstream's edge to its source, a
+   latent surface's edges to its spot and its two curves, a view's edges to
+   its surface and its source. It derives each node's state by the design's
+   rule, walked down the edges: =stopped= when an operator stopped it,
+   =starved= when an input does not run, naming that input, and =running=
+   otherwise. =failing= needs each node's last diagnostic, which the
+   diagnostics task brings; until then no node is failing. Check: unit tests
+   of the rule on a small graph, the precedence and the cause included.
+3. *The read.* =synthetic.v1.feed_graph.get=, with an optional node name that
+   narrows the answer to that node, its upstreams and its downstreams. The BFF
+   and =ores.http= serve =GET /api/synthetic/feed-graph=, with =?node=. Check:
+   handler and route tests.
+4. *Proof.* Live: stop the Bloomberg AUD/USD spot and read the graph: the
+   latent surface and its three views are starved, naming their causes; start
+   it, and they run.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

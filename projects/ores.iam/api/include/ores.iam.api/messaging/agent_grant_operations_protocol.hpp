@@ -275,6 +275,41 @@ struct list_own_agent_grants_response {
 };
 
 /**
+ * @brief Lists every agent grant and its keys in the caller's parties.
+ *
+ * The privileged read: it needs iam::agent_grants:read, which administrators
+ * hold and no agent does. Row-level security keeps it to the parties the
+ * caller sees.
+ */
+struct list_every_agent_grant_request {
+    using response_type = struct list_every_agent_grant_response;
+    static constexpr std::string_view nats_subject = "iam.v1.ops.list_every_agent_grant";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+
+    friend bool operator==(const list_every_agent_grant_request&,
+                           const list_every_agent_grant_request&) = default;
+};
+
+/**
+ * @brief Every grant the caller sees and its keys, never a key's secret or hash.
+ */
+struct list_every_agent_grant_response {
+    bool success = false;
+    std::string message;
+    std::vector<ores::iam::domain::agent_grant> grants;
+    std::vector<ores::iam::domain::agent_key> keys;
+
+    friend bool operator==(const list_every_agent_grant_response&,
+                           const list_every_agent_grant_response&) = default;
+};
+
+/**
  * @brief The members of create_agent_grant_request, named as the wire names them and in the order
  * the type declares them.
  *
@@ -460,6 +495,35 @@ struct list_own_agent_grants_response {
     };
 }
 
+/**
+ * @brief The members of list_every_agent_grant_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_every_agent_grant_request>) {
+    return ::ores::utility::codec::field_list{};
+}
+
+/**
+ * @brief The members of list_every_agent_grant_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_every_agent_grant_response>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"success", &list_every_agent_grant_response::success},
+        ::ores::utility::codec::field{"message", &list_every_agent_grant_response::message},
+        ::ores::utility::codec::field{"grants", &list_every_agent_grant_response::grants},
+        ::ores::utility::codec::field{"keys", &list_every_agent_grant_response::keys},
+    };
+}
+
 }
 namespace ores::utility::codec {
 
@@ -581,6 +645,27 @@ struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::list_own_agent_gran
     static ores::iam::messaging::list_own_agent_grants_response read_json(std::string_view text);
     static std::string write_msgpack(const ores::iam::messaging::list_own_agent_grants_response& v);
     static ores::iam::messaging::list_own_agent_grants_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::list_every_agent_grant_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::list_every_agent_grant_request& v);
+    static ores::iam::messaging::list_every_agent_grant_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::iam::messaging::list_every_agent_grant_request& v);
+    static ores::iam::messaging::list_every_agent_grant_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::list_every_agent_grant_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::list_every_agent_grant_response& v);
+    static ores::iam::messaging::list_every_agent_grant_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::iam::messaging::list_every_agent_grant_response& v);
+    static ores::iam::messaging::list_every_agent_grant_response
     read_msgpack(std::span<const std::byte> data);
 };
 }

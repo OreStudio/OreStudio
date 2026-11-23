@@ -380,6 +380,52 @@ it. [[id:A7E2942C-66AD-449C-B80B-CA789EBC34FA][Agent grants: delegated consent f
 :cpp_type: std::vector<ores::iam::domain::agent_key>
 :END:
 
+** list_every_agent_grant_request
+:PROPERTIES:
+:subject: iam.v1.ops.list_every_agent_grant
+:response: list_every_agent_grant_response
+:http_route: true
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Lists every agent grant and its keys in the caller's parties.
+ *
+ * The privileged read: it needs iam::agent_grants:read, which administrators
+ * hold and no agent does. Row-level security keeps it to the parties the
+ * caller sees.
+ */
+#+end_src
+
+** list_every_agent_grant_response
+
+#+begin_src cpp :name comment
+/**
+ * @brief Every grant the caller sees and its keys, never a key's secret or hash.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** grants
+:PROPERTIES:
+:cpp_type: std::vector<ores::iam::domain::agent_grant>
+:END:
+
+*** keys
+:PROPERTIES:
+:cpp_type: std::vector<ores::iam::domain::agent_key>
+:END:
+
 * See also
 
 - [[id:A7E2942C-66AD-449C-B80B-CA789EBC34FA][Agent grants: delegated consent for LLM agents]] — the rules these operations carry out.

@@ -168,6 +168,25 @@ export interface ListOwnAgentGrantsResponse {
     keys: AgentKey[];
 }
 
+/**
+ * @brief Lists every agent grant and its keys in the caller's parties.
+ *
+ * The privileged read: it needs iam::agent_grants:read, which administrators
+ * hold and no agent does. Row-level security keeps it to the parties the
+ * caller sees.
+ */
+export interface ListEveryAgentGrantRequest {}
+
+/**
+ * @brief Every grant the caller sees and its keys, never a key's secret or hash.
+ */
+export interface ListEveryAgentGrantResponse {
+    success: boolean;
+    message: string;
+    grants: AgentGrant[];
+    keys: AgentKey[];
+}
+
 export const subjects = {
     create_agent_grant_request: 'iam.v1.agent_grants.put',
     create_agent_key_request: 'iam.v1.ops.create_agent_key',
@@ -175,6 +194,7 @@ export const subjects = {
     revoke_agent_key_request: 'iam.v1.ops.revoke_agent_key',
     exchange_agent_key_request: 'iam.v1.ops.exchange_agent_key',
     list_own_agent_grants_request: 'iam.v1.ops.list_own_agent_grants',
+    list_every_agent_grant_request: 'iam.v1.ops.list_every_agent_grant',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -188,4 +208,5 @@ export const requiresSession = {
     revoke_agent_key_request: true,
     exchange_agent_key_request: true,
     list_own_agent_grants_request: true,
+    list_every_agent_grant_request: true,
 } as const;

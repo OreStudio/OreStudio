@@ -569,6 +569,36 @@ const fr: SourceCatalogue = {
         },
     },
 
+    agentGrantsAdmin: {
+        card: 'Autorisations d’agents',
+        cardBody: 'Chaque agent LLM qui agit pour une personne, et ses clés.',
+        title: 'Autorisations d’agents',
+        description:
+            'Chaque autorisation d’agent LLM de vos entités : qui l’a donnée, à quel agent, sous quel rôle et jusqu’à quand.',
+        person: 'Personne',
+        everyone: 'Tout le monde',
+        state: 'État',
+        empty: 'Aucune autorisation d’agent ne correspond.',
+        ended: 'terminée',
+        revokeKey: 'Révoquer la clé',
+        revokeGrant: 'Révoquer l’autorisation',
+        sessions: 'Sessions',
+        revokeConfirm:
+            'La révocation arrête l’agent aussitôt : son prochain appel est refusé, ou au plus tard dans cinq minutes. Continuer ?',
+        revokeFailed: 'La révocation a été refusée.',
+        states: {
+            active: 'Actives',
+            ended: 'Terminées',
+            all: 'Toutes',
+        },
+        column: {
+            person: 'Personne',
+            agent: 'Agent',
+            role: 'Rôle',
+            until: 'Jusqu’au',
+            keys: 'Clés',
+        },
+    },
     agents: {
         title: 'Agents LLM',
         lead: 'Un agent que vous nommez agit pour vous sous un rôle, jusqu’à l’expiration de l’autorisation ou jusqu’à ce que vous la révoquiez. Ses appels sont les vôtres et sont enregistrés comme ceux de l’agent.',
@@ -643,6 +673,8 @@ const fr: SourceCatalogue = {
             end: 'Terminer la session',
             ending: 'Fin en cours…',
             ended: 'Session terminée. Les sessions ouvertes ont été relues.',
+            grantFilter: 'Seules les sessions de l’autorisation d’agent {grant} sont affichées.',
+            grantFilterClear: 'Afficher toutes les sessions',
             endAgent:
                 'Terminer la session d’un agent révoque aussi la clé qui l’a ouverte. Le prochain appel de l’agent est refusé aussitôt, ou au plus tard dans cinq minutes ; il lui faut une nouvelle clé pour reprendre. Continuer ?',
             holder: 'Afficher',
@@ -8741,6 +8773,9 @@ const fr: SourceCatalogue = {
     },
 
     permissionWords: {
+        agentGrantsCreate: 'laisser un agent LLM agir pour vous',
+        agentGrantsRead: 'voir chaque autorisation d’agent LLM de vos entités',
+        agentGrantsRevoke: 'révoquer l’autorisation ou la clé d’agent LLM de quiconque',
         reportInstancesWrite: 'Lancer un rapport',
         loginInfoRead: 'voir la dernière connexion des personnes',
         partiesRead: 'voir les parties du locataire',

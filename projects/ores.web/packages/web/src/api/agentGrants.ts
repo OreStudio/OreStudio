@@ -32,6 +32,7 @@ const answer = { success: z.boolean(), message: z.string() };
 
 const grantSchema = z.looseObject({
     id: z.string(),
+    grantor_account_id: z.string(),
     agent_name: z.string(),
     role_id: z.string(),
     not_after: z.string(),
@@ -69,6 +70,14 @@ export const agentGrants = {
     async listOwn(): Promise<{ grants: AgentGrant[]; keys: AgentKey[] }> {
         return post(
             '/api/v1/iam/ops/list_own_agent_grants',
+            {},
+            z.object({ ...answer, grants: z.array(grantSchema), keys: z.array(keySchema) }),
+        );
+    },
+    /** Every grant and key in the reader's parties; needs iam::agent_grants:read. */
+    async listAll(): Promise<{ grants: AgentGrant[]; keys: AgentKey[] }> {
+        return post(
+            '/api/v1/iam/ops/list_every_agent_grant',
             {},
             z.object({ ...answer, grants: z.array(grantSchema), keys: z.array(keySchema) }),
         );

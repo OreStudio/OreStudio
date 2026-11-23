@@ -23,6 +23,7 @@ import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { api } from '../api/client.js';
 import { AgentGrantsPanel } from '../access/AgentGrantsPanel.js';
 import { useHeld } from '../access/holds.js';
+import { PERMISSION } from '../access/permissions.js';
 import { SignInFacts } from '../access/SignInFacts.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { PageTrail } from '../shell/AreaTrail.js';
@@ -103,7 +104,7 @@ function Loaded({
     return (
         <div className="space-y-6">
             <SessionsPanel sessions={loaded.sessions} onReload={onReload} />
-            {held('iam::agent_grants:create') && <AgentGrantsPanel />}
+            {held(PERMISSION.agentGrantsCreate) && <AgentGrantsPanel />}
             <div className="grid gap-6 lg:grid-cols-2">
                 <PasswordPanel policy={loaded.policy} onChanged={onReload} />
                 <SignInStatePanel session={session} state={loaded.loginInfo} />

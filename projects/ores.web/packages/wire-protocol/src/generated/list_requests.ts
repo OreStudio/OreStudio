@@ -886,6 +886,11 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: [],
         rows: [],
     },
+    'iam.v1.ops.list_every_agent_grant': {
+        asOf: false,
+        filter: [],
+        rows: ['grants', 'keys'],
+    },
     'iam.v1.ops.list_my_permissions': {
         asOf: false,
         filter: [],

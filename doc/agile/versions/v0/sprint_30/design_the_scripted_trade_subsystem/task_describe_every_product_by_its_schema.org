@@ -275,5 +275,6 @@ In progress: PR 1 is in. Every native product of the catalogue has its fields
 in the =ore.parameters= dataset, read from the vendored ORE schemas with the
 guide's words: one row for each field of each schema type, 2929 in all, and
 the data element of each trade type as a field of its trade,
-=/Trade[TradeType='Swap']/SwapData=. The script-only products' fields, the
-=describe_product= operation and its HTTP and BFF routes follow in PRs 2 to 4.
+=/Trade[TradeType='Swap']/SwapData=. PR 2 is in: the codes of the library's
+coded script inputs are data, the entity =script_input_code=, published with their
+script. The =describe_product= operation and its HTTP and BFF routes follow.

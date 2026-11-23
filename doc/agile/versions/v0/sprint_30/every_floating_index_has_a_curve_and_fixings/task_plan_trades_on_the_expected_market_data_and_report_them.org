@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :every_floating_index_has_a_curve_and_fixings:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/plan-trades-on-the-expected-market-data-and-report-them
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,11 +26,11 @@ Every draw goes through one predicate: an index, a pair, an equity, a commodity,
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:0F936789-FEBE-4330-97B9-DFE0837E4466][Every index a generated trade floats on has a curve and fixings]] |
-| Now          | Not yet started.                       |
+| Now          | Plan written; step 1.                  |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Step 1.                                |
 | Last touched | 2026-11-22                               |
 
 * Acceptance
@@ -42,9 +42,25 @@ Every draw goes through one predicate: an index, a pair, an equity, a commodity,
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. *One predicate over the candidates.* Before a population is planned, each
+   candidate list of the scope keeps only the candidates whose address the
+   party expects: a pair by its FX fixing at its cut source, an equity, a
+   commodity, a credit entity and an inflation index by the address a trade on
+   it names. The floating swaps already pass through =drawable=. The expected
+   set gains each spot-fed pair's FX fixing, which the simulated fixing
+   publisher states for the system party every party falls back to.
+2. *A type with no candidate leaves the cycle.* Each planner builds one probe
+   slot of each booked type on the filtered scope. A type whose probe throws
+   leaves the cycle, with the throw's message as its reason, and the slots
+   cycle over the types that remain, so a book keeps its size. The planners'
+   existing refusals become the reasons.
+3. *The plan says what it did.* =trade_population_plan= carries one outcome per
+   booked type: the trades planned and the reason when there are none.
+4. *The step reports it.* The generate_trades step plans every config first,
+   then writes, and adds an info entry per config with the trades by type and
+   the reason for each type with none.
+5. *Prove it.* Unit tests for the filter and the cycle; a fresh acme_demo
+   provision with the fixing gap query and the step log.
 
 * Measurements
 

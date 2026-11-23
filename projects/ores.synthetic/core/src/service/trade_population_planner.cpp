@@ -3942,8 +3942,8 @@ plan_on_expected_market_data(const domain::trade_generation_scope& scope) {
             std::string reason = e.what();
             try {
                 static_cast<void>(planner.plan(unfiltered));
-                reason = "the party expects none of the market data a " + code +
-                         " would name: no generator it is routed to publishes it";
+                reason = "the party expects none of the market data that " + code +
+                         " trades would name: no generator it is routed to publishes it";
             } catch (const trade_population_error&) {
             }
             outcomes.push_back({.trade_type_code = code, .planned = 0, .reason = reason});

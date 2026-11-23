@@ -23,6 +23,7 @@
 #include "ores.platform/export.hpp"
 #include <chrono>
 #include <compare>
+#include <iosfwd>
 
 namespace ores::platform::time {
 
@@ -79,6 +80,11 @@ public:
 private:
     std::chrono::seconds since_midnight_{0};
 };
+
+/**
+ * @brief Writes the time as HH:MM:SS, the form the text and wire codecs carry.
+ */
+ORES_PLATFORM_EXPORT std::ostream& operator<<(std::ostream& s, const time_of_day& t);
 
 }
 

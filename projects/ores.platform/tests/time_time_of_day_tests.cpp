@@ -21,6 +21,7 @@
 #include "ores.platform/time/time_of_day.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
+#include <sstream>
 #include <stdexcept>
 
 namespace {
@@ -75,4 +76,11 @@ TEST_CASE("from_iso8601_time_refuses_text_that_is_not_a_time_of_day", "[time][da
     CHECK_THROWS_AS(datetime::from_iso8601_time("1200"), std::invalid_argument);
     CHECK_THROWS_AS(datetime::from_iso8601_time("ab:cd"), std::invalid_argument);
     CHECK_THROWS_AS(datetime::from_iso8601_time(""), std::invalid_argument);
+}
+
+TEST_CASE("a_time_of_day_streams_as_hh_mm_ss", "[time][time_of_day]") {
+    using namespace std::chrono_literals;
+    std::ostringstream s;
+    s << ores::platform::time::time_of_day(9h, 5min, 7s);
+    CHECK(s.str() == "09:05:07");
 }

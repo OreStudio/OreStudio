@@ -51,6 +51,7 @@ generate_synthetic_currency_pair(utility::generation::generation_context& ctx) {
     r.base_currency = std::string("EUR");
     r.quote_currency = std::string("USD");
     r.classification = std::string("major");
+    r.default_cut_code = std::nullopt;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

@@ -80,6 +80,13 @@ struct currency_pair final {
     std::string classification;
 
     /**
+     * @brief The option expiry cut a trade on the pair takes unless its terms name another, and so
+     * the fixing source that fixes the pair at expiry. Null when the pair has no supported cut. See
+     * [[id:3B39B2E2-6E05-4DF8-B68B-6ACA12F2FCE9][The option-expiry cut code]].
+     */
+    std::optional<std::string> default_cut_code;
+
+    /**
      * @brief Username of the person who last modified this currency pair.
      */
     std::string modified_by;

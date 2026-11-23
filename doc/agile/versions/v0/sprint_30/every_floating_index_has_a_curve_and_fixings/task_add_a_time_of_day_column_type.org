@@ -26,11 +26,11 @@ Give the codegen a time-of-day column type. The PostgreSQL column is time withou
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:0F936789-FEBE-4330-97B9-DFE0837E4466][Every index a generated trade floats on has a curve and fixings]] |
-| Now          | The runtime type and its codecs are built and tested. |
-| Waiting on   | compass v0.0.13, which carries =:type: time=. |
-| Next         | Add the =is_time= branches beside every =is_date= branch in the templates. |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
 | Last touched | 2026-11-22                               |
 
 * Acceptance
@@ -104,3 +104,25 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A model column of =:type: time= is a PostgreSQL =time= and a
+=ores::platform::time::time_of_day= in C++, seconds since midnight in one day.
+compass v0.0.13 binds the column as text, so the repository record holds
+"HH:MM:SS" and the mapper converts it with =datetime::from_iso8601_time= and
+=to_iso8601_time=. The generator draws a time of day, the shell reads one as an
+"HH:MM:SS" token, and the table printer streams one as "HH:MM:SS". JSON and
+msgpack carry it through =text_form=, and the binary PostgreSQL codec binds it
+as a query parameter.
+
+Acceptance:
+- A =:type: time= column generates a =time= column and a =time_of_day= member,
+  and round-trips through the repository
+  (=a_fixing_source_reads_back_its_publication_time=, 16:00:00 and 23:59:59),
+  the wire codec and JSON (the generated codec round trips of =fixing_source=
+  and =cut_code=) and the table. Met.
+- The fixing source and cut code models use it for their times. Met.
+
+The template branches cover the entity, the mapper, the generator and the
+shell token. The history field mapper has no time branch, because compass sets
+no =render_is_time= flag yet; how the history view shows a time column is not
+checked.

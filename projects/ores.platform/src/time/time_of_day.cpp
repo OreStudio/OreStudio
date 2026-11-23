@@ -19,6 +19,7 @@
  */
 #include "ores.platform/time/time_of_day.hpp"
 #include <format>
+#include <ostream>
 #include <stdexcept>
 
 namespace ores::platform::time {
@@ -32,5 +33,9 @@ time_of_day::time_of_day(std::chrono::seconds since_midnight)
 
 time_of_day::time_of_day(std::chrono::hours h, std::chrono::minutes m, std::chrono::seconds s)
     : time_of_day(h + m + s) {}
+
+std::ostream& operator<<(std::ostream& s, const time_of_day& t) {
+    return s << std::format("{:%H:%M:%S}", t.hms());
+}
 
 }

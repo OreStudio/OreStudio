@@ -46,6 +46,10 @@
 #include "ores.refdata.core/messaging/book_purpose_type_registrar.hpp"
 #include "ores.refdata.core/messaging/book_registrar.hpp"
 #include "ores.refdata.core/messaging/book_status_registrar.hpp"
+#include "ores.refdata.core/messaging/fixing_source_kind_registrar.hpp"
+#include "ores.refdata.core/messaging/fixing_source_status_registrar.hpp"
+#include "ores.refdata.core/messaging/fixing_source_registrar.hpp"
+#include "ores.refdata.core/messaging/cut_code_registrar.hpp"
 #include "ores.refdata.core/messaging/business_centre_registrar.hpp"
 #include "ores.refdata.core/messaging/business_day_convention_type_registrar.hpp"
 #include "ores.refdata.core/messaging/business_unit_registrar.hpp"
@@ -172,6 +176,10 @@
 #include "ores.refdata.core/messaging/book_product_type_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/book_purpose_type_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/book_status_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/fixing_source_kind_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/fixing_source_status_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/fixing_source_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/cut_code_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/bundle_import_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/bundle_import_item_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/business_centre_history_provider_registrar.hpp"
@@ -484,6 +492,10 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_book_change_handlers(nats, ctx, verifier));
     append(register_book_purpose_type_handlers(nats, ctx, verifier));
     append(register_book_status_handlers(nats, ctx, verifier));
+    append(register_fixing_source_kind_handlers(nats, ctx, verifier));
+    append(register_fixing_source_status_handlers(nats, ctx, verifier));
+    append(register_fixing_source_handlers(nats, ctx, verifier));
+    append(register_cut_code_handlers(nats, ctx, verifier));
     append(register_business_centre_handlers(nats, ctx, verifier));
     append(register_business_day_convention_type_handlers(nats, ctx, verifier));
     append(register_business_process_handlers(nats, ctx, verifier));
@@ -764,6 +776,10 @@ registrar::register_handlers(ores::nats::service::client& nats,
         register_book_change_history_provider(hist_registry);
         register_book_purpose_type_history_provider(hist_registry);
         register_book_status_history_provider(hist_registry);
+        register_fixing_source_kind_history_provider(hist_registry);
+        register_fixing_source_status_history_provider(hist_registry);
+        register_fixing_source_history_provider(hist_registry);
+        register_cut_code_history_provider(hist_registry);
         register_business_centre_history_provider(hist_registry);
         register_business_day_convention_type_history_provider(hist_registry);
         register_business_unit_history_provider(hist_registry);

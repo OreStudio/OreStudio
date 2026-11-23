@@ -142,6 +142,7 @@ domain::currency_pair currency_pair_to_domain(const messaging::currency_pair_wri
     v.base_currency = write.base_currency;
     v.quote_currency = write.quote_currency;
     v.classification = write.classification;
+    v.default_cut_code = write.default_cut_code;
     return v;
 }
 

@@ -41,6 +41,7 @@ create table if not exists "ores_refdata_currency_pairs_tbl" (
     "base_currency" text not null,
     "quote_currency" text not null,
     "classification" text not null,
+    "default_cut_code" text null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -77,6 +78,20 @@ declare
 begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
+
+    -- Validate default_cut_code (optional soft FK to ores_refdata_cut_codes_tbl)
+    if NEW.default_cut_code is not null then
+        if not exists (
+            select 1 from ores_refdata_cut_codes_tbl
+            where (tenant_id = NEW.tenant_id
+               or tenant_id = ores_utility_system_tenant_id_fn())
+              and code = NEW.default_cut_code
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            raise exception 'Invalid default_cut_code: %. No active cut code found with this code.', NEW.default_cut_code
+                using errcode = '23503';
+        end if;
+    end if;
 
     -- Validate base_currency
     NEW.base_currency := ores_refdata_validate_currency_fn(NEW.tenant_id, NEW.base_currency);

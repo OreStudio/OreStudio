@@ -3344,6 +3344,16 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'refdata.v1.cut_codes.list': {
+        asOf: true,
+        filter: ['code_one_of'],
+        rows: ['cuts'],
+    },
+    'refdata.v1.cut_codes_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
     'refdata.v1.day_count_fraction_types.list': {
         asOf: true,
         filter: ['code_one_of'],
@@ -3500,6 +3510,36 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         rows: ['equity_volatility_configs'],
     },
     'refdata.v1.equity_volatility_configs_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'refdata.v1.fixing_source_kinds.list': {
+        asOf: true,
+        filter: ['code_one_of'],
+        rows: ['kinds'],
+    },
+    'refdata.v1.fixing_source_kinds_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'refdata.v1.fixing_source_statuses.list': {
+        asOf: true,
+        filter: ['code_one_of'],
+        rows: ['statuses'],
+    },
+    'refdata.v1.fixing_source_statuses_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'refdata.v1.fixing_sources.list': {
+        asOf: true,
+        filter: ['code_one_of'],
+        rows: ['sources'],
+    },
+    'refdata.v1.fixing_sources_versions.list': {
         asOf: false,
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],

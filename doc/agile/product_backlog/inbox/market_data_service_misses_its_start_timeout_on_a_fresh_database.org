@@ -1,0 +1,42 @@
+:PROPERTIES:
+:ID: 164EF184-C929-4896-A3C3-876BC068475D
+:END:
+#+title: Market data service misses its start timeout on a fresh database
+#+description: The first usage sync writes every demand interval before the service reports ready, which takes about two minutes on a fresh database and passes the 90-second systemd start timeout.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-11-23
+#+updated: 2026-11-23
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Let the market data service report ready before its first usage sync, or
+make that sync write its demand intervals in batches, so the service starts
+inside its systemd start timeout on a fresh database.
+
+* Why
+
+On a fresh database the supervisor's first refresh calls the usage recorder,
+which opens every demand interval one write at a time, each with an event,
+before the runner reports "Service ready". On 2026-11-23 in clever_dijkstra the
+service started at 03:45:25, logged "Usage intervals: 19 subscription opened,
+0 closed; 5496 demand opened" at 03:47:21 and reported ready in the same
+second. systemd had already timed the start out at 03:46:55 (=TimeoutStartSec=
+90 s) and terminated it.
+
+The service restarts and comes up, but =ores.marketdata.official= depends on it
+and stays inactive with "Dependency failed", and the =ticks-smoke= gate fails on
+that unit. The same failure was read as host load in earlier gate runs.
+
+* References
+
+- =ores.marketdata.service/app/usage_recorder.cpp=, =usage_recorder::sync=.
+- =ores.marketdata.service/app/adapter_supervisor.cpp=, =adapter_supervisor::refresh=, which calls the listener.
+- =journalctl --user -u ores.marketdata.service-clever_dijkstra.service= for the timeline above.
+
+* See also
+
+- [[id:E5314CD1-6AB9-4F65-8858-AF2B08FBAEAC][Make a fresh environment ready quickly]]

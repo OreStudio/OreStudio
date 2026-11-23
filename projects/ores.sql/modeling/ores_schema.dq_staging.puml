@@ -1187,6 +1187,7 @@ package "dq_staging" #F3E5F5 {
         * base_currency : text
         * quote_currency : text
         * classification : text
+          default_cut_code : text
     }
 
     note right of ores_dq_currency_pairs_artefact_tbl

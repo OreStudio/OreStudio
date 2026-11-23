@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 21BEADB5-2CB4-5A48-9CDA-07C00A3DBAF3
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the fixing_source_statuses commands from the shell?
+#+description: Every command the fixing_source_statuses submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:fixing_source_statuses:
+
+This file documents the fixing_source_statuses resource at the shell, one section per command. Every command is a subcommand of =fixing_source_statuses=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: B6EF7516-D03B-5E8A-B9E9-767F099B309D
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+fixing_source_statuses list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.fixing_source_statuses.list=.
+
+#+name: fixing_source_statuses-list
+#+begin_src ores-shell :tangle fixing_source_statuses-list.ores :exports none
+fixing_source_statuses list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: D93C0DB2-385D-5A24-B880-AEA0552A4873
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+fixing_source_statuses get <code>
+#+end_example
+
+It is addressed at =refdata.v1.fixing_source_statuses.get=.
+
+#+name: fixing_source_statuses-get
+#+begin_src ores-shell :tangle fixing_source_statuses-get.ores :exports none
+fixing_source_statuses get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 648E1D97-6129-528B-B695-92BD6AC6394B
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+fixing_source_statuses get-many <code>
+#+end_example
+
+It is addressed at =refdata.v1.fixing_source_statuses.get_many=.
+
+#+name: fixing_source_statuses-get-many
+#+begin_src ores-shell :tangle fixing_source_statuses-get-many.ores :exports none
+fixing_source_statuses get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: B9E2FC49-B085-5697-900A-14270EFCD44F
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+fixing_source_statuses add <code> <name> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.fixing_source_statuses.put=.
+
+#+name: fixing_source_statuses-add
+#+begin_src ores-shell :tangle fixing_source_statuses-add.ores :exports none
+fixing_source_statuses add __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 90453CBC-60CC-5141-B16F-ADC508B3BF50
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+fixing_source_statuses set <code> <name> <description> <display_order> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.fixing_source_statuses.put=.
+
+#+name: fixing_source_statuses-set
+#+begin_src ores-shell :tangle fixing_source_statuses-set.ores :exports none
+fixing_source_statuses set __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 65805A2C-9CA4-501F-895A-67B889C3EB50
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+fixing_source_statuses put-many --count <n> <code> <name> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.fixing_source_statuses.put_many=.
+
+#+name: fixing_source_statuses-put-many
+#+begin_src ores-shell :tangle fixing_source_statuses-put-many.ores :exports none
+fixing_source_statuses put-many --count 1 __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 0891FFFA-8747-5FD8-BF68-890B4C583F71
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+fixing_source_statuses delete <code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.fixing_source_statuses.delete=.
+
+#+name: fixing_source_statuses-delete
+#+begin_src ores-shell :tangle fixing_source_statuses-delete.ores :exports none
+fixing_source_statuses delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: B4B84F71-7F14-52DC-A507-A261C64295F6
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+fixing_source_statuses delete-many <code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.fixing_source_statuses.delete_many=.
+
+#+name: fixing_source_statuses-delete-many
+#+begin_src ores-shell :tangle fixing_source_statuses-delete-many.ores :exports none
+fixing_source_statuses delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: F69F79C0-1C12-5AA6-858E-FFB34E592D54
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+fixing_source_statuses versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.fixing_source_statuses_versions.list=.
+
+#+name: fixing_source_statuses-versions
+#+begin_src ores-shell :tangle fixing_source_statuses-versions.ores :exports none
+fixing_source_statuses versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: CD5BEBE7-E7A2-5B28-A7D2-6F2DFFFF5579
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+fixing_source_statuses version <code> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.fixing_source_statuses_versions.get=.
+
+#+name: fixing_source_statuses-version
+#+begin_src ores-shell :tangle fixing_source_statuses-version.ores :exports none
+fixing_source_statuses version __none__ --version 1
+#+end_src
+

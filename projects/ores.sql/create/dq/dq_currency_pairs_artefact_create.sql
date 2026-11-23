@@ -34,7 +34,8 @@ create table if not exists "ores_dq_currency_pairs_artefact_tbl" (
     "version" integer not null,
     "base_currency" text not null,
     "quote_currency" text not null,
-    "classification" text not null
+    "classification" text not null,
+    "default_cut_code" text null
 );
 
 create index if not exists dq_currency_pairs_artefact_dataset_idx

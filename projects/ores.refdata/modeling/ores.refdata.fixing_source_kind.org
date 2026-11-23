@@ -1,0 +1,193 @@
+:PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
+:ID: 8B70D225-D826-4302-BDDA-E20847BAF2B3
+:END:
+#+title: ores.refdata.fixing_source_kind
+#+description: Codegen entity model for the refdata =fixing_source_kind= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: How a fixing source arrives at its value: published, keyed or derived.
+#+entity_singular: fixing_source_kind
+#+entity_plural: fixing_source_kinds
+#+entity_title: Fixing Source Kind
+#+coding_scheme: none
+#+image_id: false
+#+created: 2026-11-23
+#+updated: 2026-11-23
+
+Reference data table of the kinds of fixing source. A kind says how a
+source arrives at the value it fixes.
+
+| Code | Meaning |
+|------+---------|
+| =published= | an administrator publishes the value, such as WM/Reuters or a central bank |
+| =keyed= | the value is keyed from a screen page at the source's time |
+| =derived= | the value is computed from other market data, such as a curve |
+
+See [[id:5AF9CEEF-A878-443A-8C32-C6E9F6C26FC9][Fixing sources for option cuts and non-deliverable currencies]].
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: refdata
+:profile:   simple-lookup
+:END:
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+Unique code.
+
+Examples: 'published', 'keyed', 'derived'.
+
+#+begin_src cpp :name generator
+std::string("FixingSourceKind")
+#+end_src
+
+** name
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
+:END:
+
+Human-readable name for the fixing source kind.
+
+#+begin_src cpp :name generator
+std::string(faker::word::adjective()) + " Status"
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+What the fixing source kind means.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+** display_order
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  0
+:END:
+
+Order for UI display purposes.
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 100)
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_fixing_source_kinds_tbl
+:rls_tenant_isolation: true
+:rls_own_or_system_tenant_rows: true
+:END:
+
+** Extra drops
+
+#+begin_src sql :name body :implements 5E47F108-1350-4540-B3C2-E83DD5379B2D
+drop function if exists ores_refdata_validate_fixing_source_kind_fn;
+#+end_src
+
+* Validation function
+:PROPERTIES:
+:tenant_scope: system
+:order_by:     display_order
+:END:
+
+* Insert trigger
+** Validations
+
+| column             | validation_function               |
+|--------------------+-----------------------------------|
+| change_reason_code | ores_dq_validate_change_reason_fn |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:       api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: kind
+:entity_plural_short:   kinds
+:entity_singular_words: fixing source kind
+:entity_plural_words:   fixing source kinds
+:system_tenant_visible: true
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: fsk
+:END:
+
+** Table display
+
+| column        | header        |
+|---------------+---------------|
+| code          | Code          |
+| name          | Name          |
+| description   | Description   |
+| display_order | Display Order |
+| modified_by   | Modified By   |
+| version       | Version       |
+
+** Presentation
+:PROPERTIES:
+:domain_include:         ores.refdata.api/domain/fixing_source_kind.hpp
+:domain_class:           refdata::domain::fixing_source_kind
+:protocol_include:       ores.refdata.api/messaging/fixing_source_kind_protocol.hpp
+:collection_name:        fixing_source_kinds
+:key_field:              code
+:has_export_macro:       true
+:END:
+
+*** Columns
+
+| enum_name    | field         | header        | type      | width |
+|--------------+---------------+---------------+-----------+-------|
+| Code         | code          | Code          | string    | auto  |
+| Name         | name          | Name          | string    | auto  |
+| Description  | description   | Description   | string    | auto  |
+| DisplayOrder | display_order | Display Order | int       | 70    |
+| Version      | version       | Version       | int       | 70    |
+| ModifiedBy   | modified_by   | Modified By   | string    | auto  |
+| RecordedAt   | recorded_at   | Recorded At   | timestamp | auto  |
+
+** Custom repository methods
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

@@ -23,6 +23,7 @@
 #include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/domain/i_feed.hpp"
 #include "ores.marketdata.api/messaging/adapter_operation_protocol.hpp"
+#include "ores.synthetic.api/feeds/node_journal.hpp"
 #include "running_set.hpp"
 #include <algorithm>
 #include <atomic>
@@ -123,6 +124,16 @@ public:
         , names_(names)
         , started_(std::move(started)) {}
 
+    /**
+     * @brief Where the runner says, for each run it starts or stops, what happened and why, and
+     * the source it runs for, which names it in those messages.
+     */
+    void set_journal(std::shared_ptr<ores::synthetic::feed::node_journal> journal,
+                     std::string source) {
+        journal_ = std::move(journal);
+        source_ = std::move(source);
+    }
+
     ~generator_runner() {
         stop_all();
     }
@@ -219,6 +230,8 @@ public:
                 }
                 if (started_)
                     started_(*started.feed);
+                tell(source_name,
+                     "Started: the market data service demands it, and " + source_ + " runs it.");
                 running_.emplace(feed, std::move(started));
                 out.accepted.push_back(id);
                 ++out.started;
@@ -234,6 +247,11 @@ public:
                 ++it;
                 continue;
             }
+            tell(it->second.source_name,
+                 offers.feeds.contains(it->first) ?
+                     "Stopped: the market data service no longer demands it." :
+                     "Stopped: it is no longer offered: a stop holds it or one of its inputs, "
+                     "or it is disabled.");
             dropped.push_back(std::move(it->second));
             it = running_.erase(it);
             ++out.stopped;
@@ -279,6 +297,7 @@ public:
             }
             running_.emplace(std::move(group), std::move(started));
         }
+        tell(source_name, "Started by hand, on " + source_ + ".");
         ORES_LOG_SEV(lg(), ores::logging::info) << "Manual start of " << source_name << "; "
                                                 << running_count() << " generator(s) running";
         return true;
@@ -311,6 +330,7 @@ public:
             running_.erase(found);
         }
         halt(stopped);
+        tell(source_name, "Stopped by hand.");
         ORES_LOG_SEV(lg(), ores::logging::info)
             << "Stopped " << source_name << "; " << running_count() << " generator(s) running";
         return 1;
@@ -326,8 +346,10 @@ public:
                 stopped.push_back(std::move(g));
             running_.clear();
         }
-        for (auto& g : stopped)
+        for (auto& g : stopped) {
+            tell(g.source_name, "Stopped: its source " + source_ + " stops.");
             halt(g);
+        }
         return stopped.size();
     }
 
@@ -445,6 +467,11 @@ private:
         release(g.source_name);
     }
 
+    void tell(const std::string& node, const std::string& message) const {
+        if (journal_)
+            journal_->say(node, "info", message);
+    }
+
     bool claim(const std::string& source_name) {
         return names_ == nullptr || names_->claim(source_name);
     }
@@ -455,6 +482,8 @@ private:
     }
 
     offers_fn offers_;
+    std::shared_ptr<ores::synthetic::feed::node_journal> journal_;
+    std::string source_;
     std::mutex demand_mu_;
     std::vector<ores::marketdata::messaging::vendor_id> last_demand_;
     running_set* names_;

@@ -47,22 +47,18 @@ function useFeedGraph(node: string) {
 }
 
 /**
- * Where a node of the graph opens: a feed's own page, the Graph tab of the surface a vendor view
- * quotes, since a view has no page of its own and is stopped there, or a source's provider on
- * the Provider tab. The graph is what names a view's surface.
+ * Where a node of the graph opens: a feed's own page, a vendor view's included, or a source's
+ * provider on the Provider tab.
  */
 export function nodePage(
     node: Pick<FeedGraphNode, 'kind' | 'name' | 'feed_config_id' | 'provider_code'>,
-    graph?: FeedGraph,
 ): string | undefined {
     if (node.kind === 'source')
         return `${PATHS.synthetic}?tab=provider&provider=${encodeURIComponent(node.provider_code)}`;
-    if (node.kind === 'view') {
-        const surface = graph?.edges.find((e) => e.node === node.name && e.role === 'surface');
-        const latent = graph?.nodes.find((n) => n.name === surface?.input);
-        const page = latent === undefined ? undefined : nodePage(latent);
-        return page === undefined ? undefined : `${page}?tab=graph`;
-    }
+    if (node.kind === 'view')
+        return node.feed_config_id === ''
+            ? undefined
+            : feedPageOf({ kind: 'fx_vol_view', id: node.feed_config_id });
     if (node.feed_config_id === '') return undefined;
     if (node.kind === 'latent')
         return feedPageOf({ kind: 'fx_vol_surface', id: node.feed_config_id });
@@ -76,13 +72,11 @@ export function nodePage(
 function NodeName({
     node,
     name,
-    graph,
 }: {
     readonly node: FeedGraphNode | undefined;
     readonly name: string;
-    readonly graph: FeedGraph;
 }): ReactNode {
-    const page = node === undefined ? undefined : nodePage(node, graph);
+    const page = node === undefined ? undefined : nodePage(node);
     if (page === undefined) return <span className="font-mono text-xs">{name}</span>;
     return (
         <Link className="font-mono text-xs text-accent hover:text-accent-bright" to={page}>
@@ -296,7 +290,7 @@ function Neighbours({
                                         {t(`marketdata.feedGraph.role.${row.role}`)}
                                     </td>
                                     <td className="py-1 pr-2">
-                                        <NodeName node={node} name={row.name} graph={graph} />
+                                        <NodeName node={node} name={row.name} />
                                     </td>
                                     <td className="py-1 pr-2">
                                         {node === undefined ? null : (
@@ -351,7 +345,7 @@ export function FeedGraphTab({ name }: { readonly name: string }): ReactNode {
                     {me.cause !== '' && (
                         <div>
                             {t('marketdata.feedGraph.causedBy')}{' '}
-                            <NodeName node={cause} name={me.cause} graph={graph.data} />
+                            <NodeName node={cause} name={me.cause} />
                         </div>
                     )}
                 </div>

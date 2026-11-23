@@ -39,7 +39,7 @@ namespace ores::synthetic::domain {
  *
  * A synthetic contributor, a provider of the simulator that quotes FX volatility
  * as a broker does. Its noise profile is its own, whatever pair it quotes, so it
- * is held once here and fx_vol_surface_feed_contributor says which pairs it
+ * is held once here and each fx_vol_view of the vendor says which pairs it
  * quotes. A profile of zeros is the clean contributor, whose quotes are the truth.
  *
  * The noise of a point is noise, widened on the wings by

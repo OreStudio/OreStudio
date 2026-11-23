@@ -48,6 +48,9 @@ begin
     if tg_table_name = 'ores_synthetic_fx_spot_generation_configs_tbl' then
         v_asset_class_name := 'FX';
         v_instrument_name := 'FX Rates';
+    elsif tg_table_name = 'ores_synthetic_fx_vol_views_tbl' then
+        v_asset_class_name := 'FX';
+        v_instrument_name := 'FX Volatility';
     else
         v_asset_class_name := 'Rates';
         v_instrument_name := 'IR Curves';
@@ -139,4 +142,8 @@ for each row execute function ores_synthetic_place_feed_in_folder_fn();
 
 create or replace trigger ores_synthetic_ir_curve_generation_configs_place_trg
 before insert on "ores_synthetic_ir_curve_generation_configs_tbl"
+for each row execute function ores_synthetic_place_feed_in_folder_fn();
+
+create or replace trigger ores_synthetic_fx_vol_views_place_trg
+before insert on "ores_synthetic_fx_vol_views_tbl"
 for each row execute function ores_synthetic_place_feed_in_folder_fn();

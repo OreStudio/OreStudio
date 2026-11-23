@@ -30,9 +30,9 @@
 #include "ores.http/routes/synthetic/folder_web_routes.hpp"
 #include "ores.http/routes/synthetic/fx_spot_generation_config_web_routes.hpp"
 #include "ores.http/routes/synthetic/fx_vol_contributor_web_routes.hpp"
-#include "ores.http/routes/synthetic/fx_vol_surface_feed_contributor_web_routes.hpp"
 #include "ores.http/routes/synthetic/fx_vol_surface_feed_expiry_web_routes.hpp"
 #include "ores.http/routes/synthetic/fx_vol_surface_feed_web_routes.hpp"
+#include "ores.http/routes/synthetic/fx_vol_view_web_routes.hpp"
 #include "ores.http/routes/synthetic/gmm_component_web_routes.hpp"
 #include "ores.http/routes/synthetic/ir_curve_generation_config_process_parameter_value_web_routes.hpp"
 #include "ores.http/routes/synthetic/ir_curve_generation_config_web_routes.hpp"
@@ -77,7 +77,7 @@ std::string catalogue_body(const ores::http::domain::http_request& req) {
         fx_vol_contributor_web_routes::catalogue_entry(req),
         fx_vol_surface_feed_web_routes::catalogue_entry(req),
         fx_vol_surface_feed_expiry_web_routes::catalogue_entry(req),
-        fx_vol_surface_feed_contributor_web_routes::catalogue_entry(req),
+        fx_vol_view_web_routes::catalogue_entry(req),
         yield_curve_process_type_web_routes::catalogue_entry(req),
         ir_curve_index_family_web_routes::catalogue_entry(req),
         yield_curve_process_parameter_definition_web_routes::catalogue_entry(req),
@@ -123,7 +123,7 @@ void synthetic_routes::register_routes(
     fx_vol_contributor_web_routes::register_routes(router, registry, session);
     fx_vol_surface_feed_web_routes::register_routes(router, registry, session);
     fx_vol_surface_feed_expiry_web_routes::register_routes(router, registry, session);
-    fx_vol_surface_feed_contributor_web_routes::register_routes(router, registry, session);
+    fx_vol_view_web_routes::register_routes(router, registry, session);
     yield_curve_process_type_web_routes::register_routes(router, registry, session);
     ir_curve_index_family_web_routes::register_routes(router, registry, session);
     yield_curve_process_parameter_definition_web_routes::register_routes(router, registry, session);
@@ -136,7 +136,8 @@ void synthetic_routes::register_routes(
 
     // The screens read which resources they may name, and whether this session
     // may write each, from one catalogue.
-    auto catalogue = router->get("/api/synthetic").catalogue("web_get_synthetic", "simulation", "synthetic", false)
+    auto catalogue = router->get("/api/synthetic")
+                         .catalogue("web_get_synthetic", "simulation", "synthetic", false)
                          .summary("List the synthetic resources a screen may name")
                          .description("Each resource's key, key field, whether this session may "
                                       "write it and why not, search, sortable fields and "

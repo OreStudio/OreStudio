@@ -2161,10 +2161,6 @@ tangled into the runnable script library
 
 - [[id:7A9AA495-17EA-5FAB-949A-ACB083C8026A][How do I run the fx_vol_contributors commands from the shell?]]
 
-* Fx Vol Surface Feed Contributors
-
-- [[id:05215F36-EDAE-507D-8F63-DCFD6E0C07E0][How do I run the fx_vol_surface_feed_contributors commands from the shell?]]
-
 * Fx Vol Surface Feed Expiries
 
 - [[id:CF66C3E8-C2AB-5A8F-AF1C-FBB0CFB5AA65][How do I run the fx_vol_surface_feed_expiries commands from the shell?]]
@@ -2308,3 +2304,7 @@ tangled into the runnable script library
 * Stopped Feed Nodes
 
 - [[id:0FC4AB32-3FB2-56D4-A88D-451A9F5D5BA2][How do I run the stopped_feed_nodes commands from the shell?]]
+
+* Fx Vol Views
+
+- [[id:A60F892C-EDA9-5E74-A4B4-42FBDCDB0B66][How do I run the fx_vol_views commands from the shell?]]

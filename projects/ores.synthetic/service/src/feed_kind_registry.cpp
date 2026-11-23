@@ -45,9 +45,9 @@
 #include "ores.synthetic.core/repository/fx_spot_fixing_item_repository.hpp"
 #include "ores.synthetic.core/repository/fx_spot_generation_config_repository.hpp"
 #include "ores.synthetic.core/repository/fx_vol_contributor_repository.hpp"
-#include "ores.synthetic.core/repository/fx_vol_surface_feed_contributor_repository.hpp"
 #include "ores.synthetic.core/repository/fx_vol_surface_feed_expiry_repository.hpp"
 #include "ores.synthetic.core/repository/fx_vol_surface_feed_repository.hpp"
+#include "ores.synthetic.core/repository/fx_vol_view_repository.hpp"
 #include "ores.synthetic.core/repository/gmm_component_repository.hpp"
 #include "ores.synthetic.core/repository/ir_curve_generation_config_process_parameter_value_repository.hpp"
 #include "ores.synthetic.core/repository/ir_curve_generation_config_repository.hpp"
@@ -750,13 +750,18 @@ feed_kind make_fx_vol_surface_kind() {
                 repo::fx_vol_contributor_repository who_repo;
                 for (const auto& who : who_repo.read_latest(ctx))
                     providers.emplace(boost::uuids::to_string(who.id), who.provider_code);
-                repo::fx_vol_surface_feed_contributor_repository link_repo;
-                for (const auto& link : link_repo.read_latest(ctx))
-                    if (link.feed_id == cfg.id)
+                repo::fx_vol_view_repository view_repo;
+                for (const auto& view : view_repo.read_latest(ctx))
+                    if (view.feed_id == cfg.id)
                         if (const auto found =
-                                providers.find(boost::uuids::to_string(link.contributor_id));
+                                providers.find(boost::uuids::to_string(view.contributor_id));
                             found != providers.end())
-                            c.contributor_providers.emplace(found->first, found->second);
+                            c.views.emplace(
+                                found->first,
+                                surface_view{.provider_code = found->second,
+                                             .view_id = boost::uuids::to_string(view.id),
+                                             .source_name = view.source_name,
+                                             .enabled = view.enabled});
             }
             c.build_input =
                 [ctx, cfg, spot](const feed::feed_adapter& adapter) -> feed_build_outcome {
@@ -783,7 +788,7 @@ feed_kind make_fx_vol_surface_kind() {
                     contributor_rows;
                 for (auto& row : repo::fx_vol_contributor_repository().read_latest(ctx))
                     contributor_rows.emplace(row.id, std::move(row));
-                repo::fx_vol_surface_feed_contributor_repository contributor_repo;
+                repo::fx_vol_view_repository contributor_repo;
                 std::vector<std::string> contributors;
                 std::vector<ores::analytics::quant::service::fx_vol_noise_profile> profiles;
                 // Each contributor's noise stream is seeded by its place in the list, so the

@@ -60,6 +60,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <chrono>
+#include <format>
 #include <functional>
 #include <map>
 #include <memory>
@@ -132,6 +133,7 @@ make_adapters(const std::vector<ores::marketdata::domain::feed>& sources,
                     registry, ctx, build, name, provider, faults, surfaces, node_halted, fixings);
             },
             &generators.running_names());
+        one.runner->set_journal(build.journal, source.name);
         one.adapter = std::make_unique<simulator_adapter>(nats,
                                                           *one.runner,
                                                           source.name,
@@ -727,7 +729,8 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     // Each feed node's messages go to telemetry, tagged with its name, so its page reads its
     // log by its name.
     const auto journal = std::make_shared<ores::synthetic::service::feed_node_journal>(
-        [&nats](const std::string& node, std::string_view level, const std::string& message) {
+        [&nats, &run_market_of_the_run](
+            const std::string& node, std::string_view level, const std::string& message) {
             ores::telemetry::messaging::publish_log_entries_request req;
             req.source_name = "ores.synthetic.service";
             req.tag = node;
@@ -737,14 +740,13 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                                      std::chrono::system_clock::now().time_since_epoch())
                                      .count(),
                  .component = "ores.synthetic.feed_graph",
-                 .message = message});
+                 .message = message + std::format(" [market time {:.1f}]",
+                                                  run_market_of_the_run.loop().snapshot().tau)});
             nats.publish(ores::telemetry::messaging::publish_log_entries_request::nats_subject,
                          ores::nats::default_wire_codec().encode(req));
         });
-    const ores::synthetic::feed::feed_build_context adapter_build{.nats = nats,
-                                                                  .auth_nats = svc_nats,
-                                                                  .market = run_market_of_the_run,
-                                                                  .diagnostics = journal};
+    const ores::synthetic::feed::feed_build_context adapter_build{
+        .nats = nats, .auth_nats = svc_nats, .market = run_market_of_the_run, .journal = journal};
     const auto faults = std::make_shared<ores::synthetic::feed::fault_state>();
     // Every runner of the service claims its feeds here, so one set answers what runs now and
     // one stop reaches a feed whichever run holds it. It outlives the fleet that owns the runners.

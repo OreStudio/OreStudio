@@ -139,6 +139,31 @@ inputs run again, with no action of their own.
   latent surface's refused expiry or missing convention. It needs a check that a
   log entry carries an attribute a query can filter on; the story's diagnostics
   task owns that check.
+- /Settled in building it./ The check held: a telemetry entry's tag is the
+  node's name, and the existing log read filters on it. Every part of the
+  service reports a node's events through one interface, =node_journal=, with
+  three calls: =say= an event with its reason, =raise= a diagnostic and =clear=
+  it. The runner says why a run starts and stops: demanded and run by a source,
+  by hand, released because the demand dropped, its offer was withdrawn, or its
+  source stopped. The stop and start of a node say each state they change. A
+  latent surface raises the reason it publishes nothing and clears it when it
+  publishes again. Telemetry is the one implementation; a test records instead.
+
+*** The journal and the scheduler trace
+
+Two records of the synthetic market exist, for two readers, and neither stands
+in for the other.
+
+| Record | Holds | Rate | Kept | Read by |
+|--------+-------+------+------+---------|
+| Scheduler trace | each decision of the market loop: a tick with its gaps and heat, a regime transition, a series added or removed | every tick | a fixed ring in memory, lost on restart | the Market tab's pace and raster charts |
+| Node journal | each event of a node, with its reason, and its diagnostics | a few a day for a node | telemetry, aged out by its policy | the node's Messages tab |
+
+The rule: what a person reads on a feed's page goes in the journal; what a
+chart plots goes in the trace. The trace marks a series added or removed, but
+the loop does not know why, so the reason is the runner's, said in the journal.
+Each journal entry carries the market time the trace stamps its events with,
+so a message lines up with the Market tab's charts without merging the records.
 
 *** How the screens read the graph
 

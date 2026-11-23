@@ -72,6 +72,17 @@ struct feed_latent_block final {
 /**
  * @brief One config row of one kind, in the shape every shared verb reads.
  */
+/**
+ * @brief One vendor's view of a surface, as its view row states it: a feed of the vendor's
+ * collection that is the vendor's noise over the surface.
+ */
+struct surface_view final {
+    std::string provider_code;
+    std::string view_id;
+    std::string source_name;
+    bool enabled = true;
+};
+
 /** @brief The feeds a vol surface reads: its spot and its two discounting curves. */
 struct surface_inputs final {
     /**
@@ -113,11 +124,11 @@ struct feed_kind_candidate final {
      */
     std::vector<ores::marketdata::vendor::ir_curve_pillar> pillars;
     /**
-     * @brief The points of a volatility surface feed, in the notation's own words, and the
-     * provider of each contributor that quotes them, by contributor id.
+     * @brief The points of a volatility surface feed, in the notation's own words, and each
+     * vendor's view of it, by contributor id.
      *
-     * A surface is offered to the adapter of each contributor's provider, for that contributor's
-     * points. Other kinds leave both empty.
+     * A surface is offered to the adapter of each view's provider, for that view's points. Other
+     * kinds leave both empty.
      */
     std::vector<ores::marketdata::vendor::fx_option_quote> option_points;
     /**
@@ -127,7 +138,7 @@ struct feed_kind_candidate final {
      * meeting-dated curve, leave it empty.
      */
     std::optional<std::string> fixing_item;
-    std::map<std::string, std::string> contributor_providers;
+    std::map<std::string, surface_view> views;
 
     /**
      * @brief Builds the kind's factory input, or says why it cannot.

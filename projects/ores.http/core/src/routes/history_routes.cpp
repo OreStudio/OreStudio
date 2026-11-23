@@ -117,8 +117,8 @@ constexpr std::string_view history_types[]{
     "ores.synthetic.fx_spot_generation_config",
     "ores.synthetic.fx_vol_contributor",
     "ores.synthetic.fx_vol_surface_feed",
-    "ores.synthetic.fx_vol_surface_feed_contributor",
     "ores.synthetic.fx_vol_surface_feed_expiry",
+    "ores.synthetic.fx_vol_view",
     "ores.synthetic.gmm_component",
     "ores.synthetic.ir_curve_generation_config",
     "ores.synthetic.ir_curve_generation_config_process_parameter_value",
@@ -247,7 +247,8 @@ void history_routes::register_routes(
     std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
     nats_client& session) {
     auto history_route =
-        router->get("/api/history").catalogue("web_get_history", "operations", "history", false)
+        router->get("/api/history")
+            .catalogue("web_get_history", "operations", "history", false)
             .summary("Read the versions of one record")
             .description("Every version, newest first, with its fields and what changed in it.")
             .tags({"history"})

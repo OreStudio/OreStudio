@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: A60F892C-EDA9-5E74-A4B4-42FBDCDB0B66
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the fx_vol_views commands from the shell?
+#+description: Every command the fx_vol_views submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:fx_vol_views:
+
+This file documents the fx_vol_views resource at the shell, one section per command. Every command is a subcommand of =fx_vol_views=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 192ACD16-7E13-5C6F-89B3-E1FAE2EAD9F6
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_views list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =synthetic.v1.fx_vol_views.list=.
+
+#+name: fx_vol_views-list
+#+begin_src ores-shell :tangle fx_vol_views-list.ores :exports none
+fx_vol_views list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 3CD248C1-159D-502B-B90A-AB4187BE34D7
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_views get <id>
+#+end_example
+
+It is addressed at =synthetic.v1.fx_vol_views.get=.
+
+#+name: fx_vol_views-get
+#+begin_src ores-shell :tangle fx_vol_views-get.ores :exports none
+fx_vol_views get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 45E28ECF-77DE-5254-8599-D0213387DF86
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_views get-many <id>
+#+end_example
+
+It is addressed at =synthetic.v1.fx_vol_views.get_many=.
+
+#+name: fx_vol_views-get-many
+#+begin_src ores-shell :tangle fx_vol_views-get-many.ores :exports none
+fx_vol_views get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 3C60AC75-EAD6-5391-8E39-0DD605B17E24
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_views add <feed_id> <contributor_id> <config_id> <folder_id> <source_name> <enabled> <auto_start> <reason> <commentary>
+#+end_example
+
+It is addressed at =synthetic.v1.fx_vol_views.put=.
+
+#+name: fx_vol_views-add
+#+begin_src ores-shell :tangle fx_vol_views-add.ores :exports none
+fx_vol_views add 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 - __none__ false false system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: E1B5E02E-E721-5204-A4DF-2B31C7C0CF3E
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_views set <id> <feed_id> <contributor_id> <config_id> <folder_id> <source_name> <enabled> <auto_start> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =synthetic.v1.fx_vol_views.put=.
+
+#+name: fx_vol_views-set
+#+begin_src ores-shell :tangle fx_vol_views-set.ores :exports none
+fx_vol_views set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 - __none__ false false system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 923F1703-BBB0-5F11-B5AD-48E4A344FD01
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_views put-many --count <n> <id> <feed_id> <contributor_id> <config_id> <folder_id> <source_name> <enabled> <auto_start> <reason> <commentary>
+#+end_example
+
+It is addressed at =synthetic.v1.fx_vol_views.put_many=.
+
+#+name: fx_vol_views-put-many
+#+begin_src ores-shell :tangle fx_vol_views-put-many.ores :exports none
+fx_vol_views put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 - __none__ false false system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 4BB7CEAE-D165-5A60-9243-A302BF3128A6
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_views delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =synthetic.v1.fx_vol_views.delete=.
+
+#+name: fx_vol_views-delete
+#+begin_src ores-shell :tangle fx_vol_views-delete.ores :exports none
+fx_vol_views delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: CBBA31DC-42E1-52E7-957C-0B0BB60F4DD2
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_views delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =synthetic.v1.fx_vol_views.delete_many=.
+
+#+name: fx_vol_views-delete-many
+#+begin_src ores-shell :tangle fx_vol_views-delete-many.ores :exports none
+fx_vol_views delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 9995701C-6363-5C18-8B2C-D3E9B4E605BF
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_views versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =synthetic.v1.fx_vol_views_versions.list=.
+
+#+name: fx_vol_views-versions
+#+begin_src ores-shell :tangle fx_vol_views-versions.ores :exports none
+fx_vol_views versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 235E8A3D-95B7-5E82-9B20-340FD31B3113
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_views version <id> --version <n>
+#+end_example
+
+It is addressed at =synthetic.v1.fx_vol_views_versions.get=.
+
+#+name: fx_vol_views-version
+#+begin_src ores-shell :tangle fx_vol_views-version.ores :exports none
+fx_vol_views version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

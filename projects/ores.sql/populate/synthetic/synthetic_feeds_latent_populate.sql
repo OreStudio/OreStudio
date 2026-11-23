@@ -210,11 +210,11 @@ begin
     join ores_dq_fx_vol_surface_pillars_artefact_tbl x
       on x.dataset_id = b.dataset_id and x.blueprint_id = b.id;
 
-    insert into ores_dq_fx_vol_surface_feed_contributors_artefact_tbl (
+    insert into ores_dq_fx_vol_views_artefact_tbl (
         dataset_id, tenant_id, id, version, feed_id, contributor_id
     )
     select v_dataset_id, v_tenant_id,
-           md5('synthetic.feeds.latent|fx_vol_surface_feed_contributor|' || p.base || p.quote
+           md5('synthetic.feeds.latent|fx_vol_view|' || p.base || p.quote
                || '|' || c.provider_code)::uuid,
            0, p.feed_id, c.contributor_id
     from t_vol_pairs p

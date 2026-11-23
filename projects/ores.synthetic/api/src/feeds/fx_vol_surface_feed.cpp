@@ -321,8 +321,8 @@ std::string fx_vol_surface_feed::refuse(std::string reason) {
             << "Synthetic surface '" << source_name_ << "' publishes nothing: " << reason;
         refusal_ = reason;
         cleared_after_refusal_ = true;
-        if (diagnostics_)
-            diagnostics_->raise(source_name_, "no market: " + reason);
+        if (journal_)
+            journal_->raise(source_name_, "no market: " + reason);
     }
     return "no market: " + reason;
 }
@@ -351,8 +351,8 @@ std::string fx_vol_surface_feed::tick(const tick_context& context) {
     }
     // The first tick that publishes clears too: a surface built again after a halt starts with no
     // refusal of its own, and the diagnostic an earlier build raised would otherwise stay.
-    if (diagnostics_ && (!published_once_ || cleared_after_refusal_)) {
-        diagnostics_->clear(source_name_);
+    if (journal_ && (!published_once_ || cleared_after_refusal_)) {
+        journal_->clear(source_name_);
         published_once_ = true;
         cleared_after_refusal_ = false;
     }

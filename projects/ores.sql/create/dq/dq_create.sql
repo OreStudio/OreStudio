@@ -199,7 +199,7 @@
 \ir ./dq_fx_vol_surface_feeds_artefact_create.sql
 \ir ./dq_fx_vol_surface_feed_expiries_artefact_create.sql
 \ir ./dq_fx_vol_contributors_artefact_create.sql
-\ir ./dq_fx_vol_surface_feed_contributors_artefact_create.sql
+\ir ./dq_fx_vol_views_artefact_create.sql
 \ir ./dq_ir_curve_template_entries_artefact_create.sql
 
 -- Market data artefact tables

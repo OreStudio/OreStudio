@@ -24,8 +24,8 @@
 #include "ores.synthetic.api/domain/fx_spot_generation_config.hpp"
 #include "ores.synthetic.api/domain/fx_vol_contributor.hpp"
 #include "ores.synthetic.api/domain/fx_vol_surface_feed.hpp"
-#include "ores.synthetic.api/domain/fx_vol_surface_feed_contributor.hpp"
 #include "ores.synthetic.api/domain/fx_vol_surface_feed_expiry.hpp"
+#include "ores.synthetic.api/domain/fx_vol_view.hpp"
 #include "ores.synthetic.api/domain/ir_curve_generation_config.hpp"
 #include "ores.synthetic.api/domain/ir_curve_template_entry.hpp"
 #include "ores.synthetic.api/domain/market_data_generation_config.hpp"
@@ -58,7 +58,7 @@ struct generator_catalogue final {
     std::vector<domain::fx_vol_surface_feed> surfaces;
     std::vector<domain::fx_vol_surface_feed_expiry> surface_expiries;
     std::vector<domain::fx_vol_contributor> contributors;
-    std::vector<domain::fx_vol_surface_feed_contributor> surface_contributors;
+    std::vector<domain::fx_vol_view> surface_contributors;
 };
 
 /**

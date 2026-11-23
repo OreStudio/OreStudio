@@ -422,6 +422,8 @@ seeded_configs seed_configs(ores::testing::scoped_database_helper& h,
         surface.start_curvature = 0.8;
         surface.spot_oresmd_uri = fx_enabled.oresmd_uri;
         surface.spot_provider_code = main_container.provider_code;
+        surface.base_curve_name = "synthetic.test.ir.yield_curve.ois.eur";
+        surface.quote_curve_name = "synthetic.test.ir.yield_curve.ois.usd";
         surface.modified_by = db_user;
         surface.performed_by = db_user;
         surface.change_reason_code = "system.test";

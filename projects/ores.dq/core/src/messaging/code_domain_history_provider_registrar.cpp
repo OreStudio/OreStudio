@@ -27,6 +27,7 @@
 #include "ores.dq.core/presentation/code_domain_history_field_mapper.hpp"
 #include "ores.dq.core/service/code_domain_service.hpp"
 #include "ores.history.api/service/version_builder.hpp"
+#include "ores.history.core/service/acting_agents.hpp"
 #include "ores.history.core/service/dispatch_registry.hpp"
 
 namespace ores::dq::messaging {
@@ -38,8 +39,18 @@ void register_code_domain_history_provider(ores::history::service::dispatch_regi
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::code_domain_service svc(scoped_ctx);
             auto versions = svc.get_domain_history(entity_id);
-            return ores::history::service::build_entity_history_versions(
+            auto history = ores::history::service::build_entity_history_versions(
                 versions, presentation::render_code_domain_fields);
+            // The versions an LLM agent wrote carry the agent, read from the
+            // rows' own stamp.
+            if (!versions.empty())
+                ores::history::service::mark_acting_agents(scoped_ctx,
+                                                           {.table = "ores_dq_code_domains_tbl",
+                                                            .key_column = "code",
+                                                            .key_is_uuid = false},
+                                                           versions.front().code,
+                                                           history);
+            return history;
         });
 }
 

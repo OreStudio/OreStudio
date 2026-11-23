@@ -46,6 +46,17 @@ const keySchema = z.looseObject({
     recorded_at: z.string(),
 });
 
+const callSchema = z.looseObject({
+    id: z.string(),
+    called_at: z.string(),
+    grant_id: z.string(),
+    method: z.string(),
+    route: z.string(),
+    status: z.number(),
+    duration_ms: z.number(),
+});
+
+export type AgentCall = z.infer<typeof callSchema>;
 export type AgentGrant = z.infer<typeof grantSchema>;
 export type AgentKey = z.infer<typeof keySchema>;
 
@@ -73,6 +84,15 @@ export const agentGrants = {
             {},
             z.object({ ...answer, grants: z.array(grantSchema), keys: z.array(keySchema) }),
         );
+    },
+    /** What the reader's own agents did, newest first: calls, never their content. */
+    async listActivity(grantId: string, offset: number, limit: number): Promise<AgentCall[]> {
+        const reply = await post(
+            '/api/v1/iam/ops/list_own_agent_activity',
+            { grant_id: grantId, offset, limit },
+            z.object({ ...answer, calls: z.array(callSchema) }),
+        );
+        return reply.calls;
     },
     /** Every grant and key in the reader's parties; needs iam::agent_grants:read. */
     async listAll(): Promise<{ grants: AgentGrant[]; keys: AgentKey[] }> {

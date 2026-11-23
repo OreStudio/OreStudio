@@ -51,6 +51,7 @@ package "compute" #EDE7F6 {
         * sha256 : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -86,6 +87,7 @@ package "compute" #EDE7F6 {
         * release_note : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -112,6 +114,7 @@ package "compute" #EDE7F6 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -149,6 +152,7 @@ package "compute" #EDE7F6 {
         * status : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -224,6 +228,7 @@ package "compute" #EDE7F6 {
         * credit_total : numeric
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -293,6 +298,7 @@ package "compute" #EDE7F6 {
         * is_active : boolean
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -334,6 +340,7 @@ package "compute" #EDE7F6 {
           duration_ms : bigint
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -491,6 +498,7 @@ package "compute" #EDE7F6 {
           canonical_result_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz

@@ -21,6 +21,7 @@
 # To modify, update the template and regenerate.
 set(files
     "messaging/registrar.cpp"
+    "service/acting_agents.cpp"
     "service/dispatch_registry.cpp"
 )
 
@@ -30,5 +31,6 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.history.core/messaging/history_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.history.core/messaging/registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.history.core/ores.history.core.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.history.core/service/acting_agents.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.history.core/service/dispatch_registry.hpp"
 )

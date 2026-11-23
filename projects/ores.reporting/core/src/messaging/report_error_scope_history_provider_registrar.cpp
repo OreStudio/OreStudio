@@ -25,6 +25,7 @@
 #include "ores.reporting.core/messaging/report_error_scope_history_provider_registrar.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.history.api/service/version_builder.hpp"
+#include "ores.history.core/service/acting_agents.hpp"
 #include "ores.history.core/service/dispatch_registry.hpp"
 #include "ores.reporting.core/presentation/report_error_scope_history_field_mapper.hpp"
 #include "ores.reporting.core/service/report_error_scope_service.hpp"
@@ -45,8 +46,19 @@ void register_report_error_scope_history_provider(
                                                         scoped_ctx.actor());
             service::report_error_scope_service svc(sys_ctx);
             auto versions = svc.get_scope_history(entity_id);
-            return ores::history::service::build_entity_history_versions(
+            auto history = ores::history::service::build_entity_history_versions(
                 versions, presentation::render_report_error_scope_fields);
+            // The versions an LLM agent wrote carry the agent, read from the
+            // rows' own stamp.
+            if (!versions.empty())
+                ores::history::service::mark_acting_agents(
+                    sys_ctx,
+                    {.table = "ores_reporting_report_error_scopes_tbl",
+                     .key_column = "code",
+                     .key_is_uuid = false},
+                    versions.front().code,
+                    history);
+            return history;
         });
 }
 

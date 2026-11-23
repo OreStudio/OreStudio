@@ -114,6 +114,13 @@ public:
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_list_every_agent_grant(const ores::http::domain::http_request& req,
                                   ores::nats::service::nats_client& session);
+
+    /**
+     * @brief POST /api/v1/iam/ops/list_own_agent_activity — List own agent activity.
+     */
+    static boost::asio::awaitable<ores::http::domain::http_response>
+    handle_list_own_agent_activity(const ores::http::domain::http_request& req,
+                                   ores::nats::service::nats_client& session);
 };
 
 }

@@ -7,9 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:agents:audit:
 #+created: 2026-11-22
-#+updated: 2026-11-22
-
-This page states the target design. It does not describe what is built.
+#+updated: 2026-11-23
 
 * Summary
 
@@ -25,26 +23,46 @@ what an agent did wants to know what it looked at as well as what it changed.
 ** On every row
 
 A temporal row carries =modified_by=, the person, and =performed_by=, the
-service account that wrote it. A third field, the acting agent, holds the
-grant id and the agent's name, and is empty for a person's own write. It is
-stamped by the same server-side code that stamps the other two from the
-request context, never from the request body, and it is added by the codegen
-to every entity, as the others are. =performed_by= keeps its meaning; reusing
-it for the agent would erase which service wrote the row.
+service account that wrote it. A third column, =acting_agent=, holds =agent:=
+and the grant's id, and is empty for a person's own write and for a service's.
+The agent's name is read from the grant, never stored on the row, so a renamed
+agent is not misreported. =performed_by= keeps its meaning; reusing it for the
+agent would erase which service wrote the row.
+
+The column is stamped where =performed_by= is: by every table's insert trigger,
+from a session setting, never from the request body. Each transaction sets
+=app.current_agent= from the token's =act= claim when it names an agent, beside
+the actor and the service it already sets, and the codegen adds the column and
+the stamp to every entity's table as it adds the other two
+([[id:1162906F-BB72-486E-9A11-30D567C65F3E][Delegation tokens for LLM agents: subject and actor claims]]). The stamp stays out of the C++ domain types, which keeps
+every entity within its width ceiling; a record's history reads it from the
+rows instead.
 
 ** In one log of calls
 
-=ores.http= writes one row per tool call: the grant, the person, the tool, the
-operation, its arguments with secrets removed, the outcome, the duration, and
-for a write the approval request it raised. Reads are logged as writes are. The
-log is the person's view, not an audit of the system: it answers "what did my
-agent do today" without searching every entity's history.
+=ores.http= writes one row per call an agent makes, once it has answered: the
+grant, the person, the session, the method, the route, the status and the
+duration. Reads are logged as writes are. The route is the pattern, such as
+=/currencies/{iso_code}=, never the address with its values, and no request or
+answer is kept, so the log cannot hold a secret an agent sent or read. A key
+that is refused never makes a call: the refusal, with its reason, is in the
+token issue log ([[id:1162906F-BB72-486E-9A11-30D567C65F3E][Delegation tokens for LLM agents: subject and actor claims]]), and the call log holds only the calls an
+agent made. Like that log, it sets no retention. The log
+is the person's view, not an audit of the system: it answers "what did my agent
+do today" without searching every entity's history. When agents call through
+MCP, a tool call is one such row, and the approval request a write raised is
+linked from it ([[id:381D87BB-4E2D-47BA-8853-6132CF900305][Six-eyes approval of LLM agent writes]]).
 
 ** What a person sees
 
-ores.web shows a person their agents' activity, by agent and by time, from the
-log, each entry linked to the record it changed or the request it raised. A
-record's history marks the changes an agent made, from the field on the row.
+ores.web shows a person their agents' activity on their Security page, newest
+first, filtered by agent, from the log. A record's history marks the versions an
+agent made: the history service reads =acting_agent= for the record from its
+table and joins it to each version on the instant the version was recorded, so
+every entity's history is marked without a change to its own code. The history
+of a junction, which lists a parent's links, is not marked yet. The person's
+sessions link each agent's session to its activity, and an administrator's
+sessions window links it to its grant.
 From the activity a person reaches the grant, and revokes it
 ([[id:A7E2942C-66AD-449C-B80B-CA789EBC34FA][Agent grants: delegated consent for LLM agents]]).
 

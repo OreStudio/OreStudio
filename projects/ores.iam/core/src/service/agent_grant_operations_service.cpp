@@ -22,6 +22,7 @@
 #include "ores.iam.api/domain/agent_key_format.hpp"
 #include "ores.iam.api/domain/session.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
+#include "ores.iam.core/repository/agent_call_log.hpp"
 #include "ores.iam.core/repository/agent_token_issue_log.hpp"
 #include "ores.iam.core/repository/session_repository.hpp"
 #include "ores.iam.core/service/agent_grant_service.hpp"
@@ -410,6 +411,27 @@ messaging::list_own_agent_grants_response agent_grant_operations_service::list_o
             k.secret_hash.clear();
             r.keys.push_back(std::move(k));
         }
+    return r;
+}
+
+messaging::list_own_agent_activity_response agent_grant_operations_service::list_own_agent_activity(
+    const messaging::list_own_agent_activity_request& request) {
+    using response = messaging::list_own_agent_activity_response;
+
+    if (ctx_.acts_for_agent())
+        return refuse_agent_request<response>("An agent cannot read agent activity.");
+    if (!has_permission(ctx_, create_permission))
+        return refuse_agent_request<response>("Reading your agents' activity needs " +
+                                              std::string(create_permission) + ".");
+    const auto caller = authorization_service(ctx_).caller_account();
+    if (!caller)
+        return refuse_agent_request<response>("No account matches the session's user, " +
+                                              ctx_.actor() + ".");
+    response r;
+    r.success = true;
+    const auto limit = std::clamp<std::uint32_t>(request.limit, 1, 500);
+    r.calls = repository::agent_call_log(ctx_).calls_for(
+        boost::uuids::to_string(*caller), request.grant_id, request.offset, limit);
     return r;
 }
 

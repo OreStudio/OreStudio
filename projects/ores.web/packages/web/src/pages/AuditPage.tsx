@@ -489,7 +489,11 @@ function SessionsPanel({
                                             </td>
                                             <td className="py-2">
                                                 {row.agentGrantId !== null ? (
-                                                    <Tag>{row.clientIdentifier}</Tag>
+                                                    <Link
+                                                        to={`${PATHS.agentGrants}?grant=${encodeURIComponent(row.agentGrantId)}`}
+                                                    >
+                                                        <Tag>{row.clientIdentifier}</Tag>
+                                                    </Link>
                                                 ) : (
                                                     <span className="text-ink-faint">—</span>
                                                 )}

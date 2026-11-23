@@ -25,9 +25,11 @@
 #include "ores.workflow.core/messaging/workflow_step_history_provider_registrar.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.history.api/service/version_builder.hpp"
+#include "ores.history.core/service/acting_agents.hpp"
 #include "ores.history.core/service/dispatch_registry.hpp"
 #include "ores.workflow.core/presentation/workflow_step_history_field_mapper.hpp"
 #include "ores.workflow.core/service/workflow_step_service.hpp"
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::workflow::messaging {
 
@@ -38,8 +40,19 @@ void register_workflow_step_history_provider(ores::history::service::dispatch_re
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::workflow_step_service svc(scoped_ctx);
             auto versions = svc.get_step_history(entity_id);
-            return ores::history::service::build_entity_history_versions(
+            auto history = ores::history::service::build_entity_history_versions(
                 versions, presentation::render_workflow_step_fields);
+            // The versions an LLM agent wrote carry the agent, read from the
+            // rows' own stamp.
+            if (!versions.empty())
+                ores::history::service::mark_acting_agents(
+                    scoped_ctx,
+                    {.table = "ores_workflow_workflow_steps_tbl",
+                     .key_column = "id",
+                     .key_is_uuid = true},
+                    boost::uuids::to_string(versions.front().id),
+                    history);
+            return history;
         });
 }
 

@@ -66,6 +66,14 @@ instead, so it would be a second command for one read and would lose the diff.
 :cpp_type: std::string
 :END:
 
+*** acting_agent
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The LLM agent that wrote this version, =agent:= and its grant's id, or empty
+for a version its person or a service wrote.
+
 *** recorded_at
 :PROPERTIES:
 :cpp_type: std::chrono::system_clock::time_point

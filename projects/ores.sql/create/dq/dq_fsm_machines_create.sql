@@ -32,6 +32,7 @@ create table if not exists "ores_dq_fsm_machines_tbl" (
     "description" text null,
     "modified_by" text not null,
     "performed_by" text not null,
+    "acting_agent" text not null default '',
     "change_reason_code" text not null,
     "change_commentary" text not null,
     "valid_from" timestamp with time zone not null,
@@ -105,6 +106,7 @@ begin
 
     NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by);
     new.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
+    new.acting_agent = coalesce(ores_iam_current_agent_fn(), '');
 
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 

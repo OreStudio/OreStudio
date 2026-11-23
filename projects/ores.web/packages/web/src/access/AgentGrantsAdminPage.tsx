@@ -21,7 +21,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { useState, type ReactNode } from 'react';
-import { Link } from 'react-router';
+import { Link, useSearchParams } from 'react-router';
 import { api } from '../api/client.js';
 import { agentGrants, isStamped, type AgentGrant, type AgentKey } from '../api/agentGrants.js';
 import { useTranslation } from '../i18n/Provider.js';
@@ -71,7 +71,10 @@ export function AgentGrantsAdminPage(): ReactNode {
     );
     const roleOf = new Map<string, string>((roles.data ?? []).map((r) => [r.id, r.name] as const));
     const now = Date.now();
+    const [params] = useSearchParams();
+    const only = params.get('grant') ?? '';
     const rows = (grants.data?.grants ?? [])
+        .filter((g) => only === '' || g.id === only)
         .filter((g) => person === '' || g.grantor_account_id === person)
         .filter((g) => (state === 'all' ? true : grantIsActive(g, now) === (state === 'active')));
     const people = [...new Set((grants.data?.grants ?? []).map((g) => g.grantor_account_id))];

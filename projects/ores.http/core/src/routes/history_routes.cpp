@@ -155,6 +155,7 @@ versions_of(const ores::history::messaging::get_entity_history_response& r) {
         version_row row;
         row.version = v.version;
         row.modified_by = v.modified_by;
+        row.acting_agent = v.acting_agent;
         row.recorded_at = v.recorded_at;
         for (const auto& field : v.fields)
             row.fields.push_back({field.name, field.value});
@@ -198,6 +199,7 @@ std::vector<std::string> history_routes::version_members(const version_row& row)
     std::vector<std::string> members;
     members.push_back("\"version\":" + std::to_string(row.version));
     members.push_back("\"modifiedBy\":" + json::write(row.modified_by));
+    members.push_back("\"actingAgent\":" + json::write(row.acting_agent));
     members.push_back("\"recordedAt\":" + json::write(row.recorded_at));
     std::vector<std::string> fields;
     fields.reserve(row.fields.size());

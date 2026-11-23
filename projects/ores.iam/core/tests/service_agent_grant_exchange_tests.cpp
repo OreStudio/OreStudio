@@ -17,16 +17,20 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.database/query_builder/execute.hpp"
+#include "ores.history.core/service/dispatch_registry.hpp"
 #include "ores.iam.api/domain/agent_key_format.hpp"
 #include "ores.iam.api/generators/account_generator.hpp"
 #include "ores.iam.api/generators/permission_generator.hpp"
 #include "ores.iam.api/generators/role_generator.hpp"
+#include "ores.iam.core/messaging/agent_grant_history_provider_registrar.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
 #include "ores.iam.core/repository/permission_repository.hpp"
 #include "ores.iam.core/repository/role_permission_repository.hpp"
 #include "ores.iam.core/repository/role_repository.hpp"
 #include "ores.iam.core/repository/session_repository.hpp"
 #include "ores.iam.core/service/agent_grant_operations_service.hpp"
+#include "ores.iam.core/service/agent_grant_service.hpp"
 #include "ores.iam.core/service/authorization_service.hpp"
 #include "ores.logging/logger.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
@@ -260,7 +264,8 @@ TEST_CASE("every_agent_grant_is_listed_only_to_a_holder_of_the_read", "[service]
     const ores::iam::messaging::list_every_agent_grant_request req;
 
     // The person who made the grant holds create, not read.
-    CHECK_FALSE(agent_grant_operations_service(*f.person_context).list_every_agent_grant(req).success);
+    CHECK_FALSE(
+        agent_grant_operations_service(*f.person_context).list_every_agent_grant(req).success);
 
     const auto admin_ctx = f.h.context()
                                .with_party(f.h.tenant_id(), f.party, {f.party}, f.gateway.username)
@@ -274,4 +279,50 @@ TEST_CASE("every_agent_grant_is_listed_only_to_a_holder_of_the_read", "[service]
 
     const auto as_agent = admin_ctx.with_delegated_actor("agent:" + f.grant_id);
     CHECK_FALSE(agent_grant_operations_service(as_agent).list_every_agent_grant(req).success);
+}
+
+TEST_CASE("an_agent_s_write_is_stamped_with_the_agent_and_marked_in_history",
+          "[service][agent_grants]") {
+    auto lg(make_logger(test_suite));
+    agent_exchange_fixture f;
+    const auto id = boost::uuids::string_generator()(f.grant_id);
+    const auto agent = "agent:" + f.grant_id;
+
+    // A person's own change, then one made by the agent for them.
+    auto person = ores::iam::service::agent_grant_service(*f.person_context);
+    auto grant = person.find_grant(id);
+    REQUIRE(grant);
+    grant->change_reason_code = "system.test";
+    grant->change_commentary = "changed by the person";
+    person.save_grant(*grant);
+    const auto as_agent = f.person_context->with_delegated_actor(agent);
+    auto by_agent = ores::iam::service::agent_grant_service(as_agent);
+    grant = by_agent.find_grant(id);
+    REQUIRE(grant);
+    grant->change_commentary = "changed by the agent";
+    by_agent.save_grant(*grant);
+
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
+        *f.person_context,
+        "select change_commentary, acting_agent from ores_iam_agent_grants_tbl "
+        "where id = $1::uuid order by version",
+        {f.grant_id},
+        lg,
+        "Reading the grant's stamps");
+    REQUIRE(rows.size() >= 3);
+    CHECK(rows[rows.size() - 2][1] == std::optional<std::string>(""));
+    CHECK(rows.back()[1] == std::optional<std::string>(agent));
+
+    ores::history::service::dispatch_registry registry;
+    ores::iam::messaging::register_agent_grant_history_provider(registry);
+    ores::history::messaging::get_entity_history_request req;
+    req.entity_type = "ores.iam.agent_grant";
+    req.entity_id = f.grant_id;
+    const auto reader = f.person_context->with_roles({"iam::agent_grants:read"});
+    const auto history = registry.dispatch(req, reader);
+    REQUIRE(history.success);
+    REQUIRE(history.versions.size() >= 3);
+    // Newest first: the agent's change, then the person's.
+    CHECK(history.versions[0].acting_agent == agent);
+    CHECK(history.versions[1].acting_agent.empty());
 }

@@ -35,6 +35,7 @@ set(files
     "account_status_protocol_codec_roundtrip_tests.cpp"
     "account_type_codec_roundtrip_tests.cpp"
     "account_type_protocol_codec_roundtrip_tests.cpp"
+    "agent_call_codec_roundtrip_tests.cpp"
     "agent_grant_codec_roundtrip_tests.cpp"
     "agent_grant_operations_protocol_codec_roundtrip_tests.cpp"
     "agent_grant_protocol_codec_roundtrip_tests.cpp"

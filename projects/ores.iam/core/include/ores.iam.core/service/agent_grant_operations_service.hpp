@@ -94,6 +94,9 @@ public:
     messaging::list_own_agent_grants_response
     list_own_agent_grants(const messaging::list_own_agent_grants_request& request);
 
+    messaging::list_own_agent_activity_response
+    list_own_agent_activity(const messaging::list_own_agent_activity_request& request);
+
     messaging::list_every_agent_grant_response
     list_every_agent_grant(const messaging::list_every_agent_grant_request& request);
 

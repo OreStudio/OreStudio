@@ -27,6 +27,7 @@
 #include "ores.analytics.core/service/pricing_engine_type_service.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.history.api/service/version_builder.hpp"
+#include "ores.history.core/service/acting_agents.hpp"
 #include "ores.history.core/service/dispatch_registry.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 
@@ -45,8 +46,19 @@ void register_pricing_engine_type_history_provider(
                                                         scoped_ctx.actor());
             service::pricing_engine_type_service svc(sys_ctx);
             auto versions = svc.get_type_history(entity_id);
-            return ores::history::service::build_entity_history_versions(
+            auto history = ores::history::service::build_entity_history_versions(
                 versions, presentation::render_pricing_engine_type_fields);
+            // The versions an LLM agent wrote carry the agent, read from the
+            // rows' own stamp.
+            if (!versions.empty())
+                ores::history::service::mark_acting_agents(
+                    sys_ctx,
+                    {.table = "ores_analytics_pricing_engine_types_tbl",
+                     .key_column = "code",
+                     .key_is_uuid = false},
+                    versions.front().code,
+                    history);
+            return history;
         });
 }
 

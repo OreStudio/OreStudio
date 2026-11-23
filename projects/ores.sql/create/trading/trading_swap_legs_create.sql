@@ -134,6 +134,7 @@ create table if not exists "ores_trading_swap_legs_tbl" (
     "zero_coupon_subtract_notional" boolean null,
     "modified_by" text not null,
     "performed_by" text not null,
+    "acting_agent" text not null default '',
     "change_reason_code" text not null,
     "change_commentary" text not null,
     "valid_from" timestamp with time zone not null,
@@ -307,6 +308,7 @@ begin
     NEW.valid_from = clock_timestamp();
     NEW.valid_to = ores_utility_infinity_timestamp_fn();
     NEW.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
+    NEW.acting_agent = coalesce(ores_iam_current_agent_fn(), '');
 
     return NEW;
 end;

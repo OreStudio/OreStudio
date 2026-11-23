@@ -367,6 +367,14 @@
 -- Party reference data tables
 \ir ./refdata_contact_types_notify_trigger_drop.sql
 \ir ./refdata_contact_types_drop.sql
+\ir ./refdata_cut_codes_notify_trigger_drop.sql
+\ir ./refdata_cut_codes_drop.sql
+\ir ./refdata_fixing_sources_notify_trigger_drop.sql
+\ir ./refdata_fixing_sources_drop.sql
+\ir ./refdata_fixing_source_statuses_notify_trigger_drop.sql
+\ir ./refdata_fixing_source_statuses_drop.sql
+\ir ./refdata_fixing_source_kinds_notify_trigger_drop.sql
+\ir ./refdata_fixing_source_kinds_drop.sql
 \ir ./refdata_book_statuses_notify_trigger_drop.sql
 \ir ./refdata_book_statuses_drop.sql
 \ir ./refdata_regulatory_book_types_notify_trigger_drop.sql

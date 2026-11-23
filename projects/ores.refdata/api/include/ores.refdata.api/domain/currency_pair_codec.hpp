@@ -53,6 +53,7 @@ namespace ores::refdata::domain {
         utility::codec::field{"base_currency", &currency_pair::base_currency},
         utility::codec::field{"quote_currency", &currency_pair::quote_currency},
         utility::codec::field{"classification", &currency_pair::classification},
+        utility::codec::field{"default_cut_code", &currency_pair::default_cut_code},
         utility::codec::field{"modified_by", &currency_pair::modified_by},
         utility::codec::field{"performed_by", &currency_pair::performed_by},
         utility::codec::field{"change_reason_code", &currency_pair::change_reason_code},

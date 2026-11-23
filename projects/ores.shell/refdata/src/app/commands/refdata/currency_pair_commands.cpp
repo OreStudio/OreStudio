@@ -139,15 +139,16 @@ void currency_pair_commands::register_commands(cli::Menu& root_menu, nats_client
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <pair_code> <base_currency> <quote_currency> <classification> <reason> <commentary>");
+        "add <pair_code> <base_currency> <quote_currency> <classification> <default_cut_code> "
+        "<reason> <commentary>");
 
     menu->Insert(
         "set",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <pair_code> <base_currency> <quote_currency> <classification> <reason> <commentary> "
-        "[--version <n>]");
+        "set <pair_code> <base_currency> <quote_currency> <classification> <default_cut_code> "
+        "<reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -155,7 +156,7 @@ void currency_pair_commands::register_commands(cli::Menu& root_menu, nats_client
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
         "put-many --count <n> <pair_code> <base_currency> <quote_currency> <classification> "
-        "<reason> <commentary>");
+        "<default_cut_code> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -356,8 +357,8 @@ void currency_pair_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 4 + 2) {
-            fail(out) << "Expected " << (4 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 5 + 2) {
+            fail(out) << "Expected " << (5 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -369,6 +370,8 @@ void currency_pair_commands::process_add(std::ostream& out,
             req.change.write.quote_currency, parsed->positionals[next++], "quote_currency");
         currency_pair_read_token(
             req.change.write.classification, parsed->positionals[next++], "classification");
+        currency_pair_read_token(
+            req.change.write.default_cut_code, parsed->positionals[next++], "default_cut_code");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -413,8 +416,8 @@ void currency_pair_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 4 + 2) {
-            fail(out) << "Expected " << (4 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 5 + 2) {
+            fail(out) << "Expected " << (5 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -426,6 +429,8 @@ void currency_pair_commands::process_set(std::ostream& out,
             req.change.write.quote_currency, parsed->positionals[next++], "quote_currency");
         currency_pair_read_token(
             req.change.write.classification, parsed->positionals[next++], "classification");
+        currency_pair_read_token(
+            req.change.write.default_cut_code, parsed->positionals[next++], "default_cut_code");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -482,8 +487,8 @@ void currency_pair_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 4 + 2) {
-            fail(out) << "Expected " << (change_count * 4 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 5 + 2) {
+            fail(out) << "Expected " << (change_count * 5 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -497,6 +502,8 @@ void currency_pair_commands::process_put_many(std::ostream& out,
                 change.write.quote_currency, parsed->positionals[next++], "quote_currency");
             currency_pair_read_token(
                 change.write.classification, parsed->positionals[next++], "classification");
+            currency_pair_read_token(
+                change.write.default_cut_code, parsed->positionals[next++], "default_cut_code");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }

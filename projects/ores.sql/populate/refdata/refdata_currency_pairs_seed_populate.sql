@@ -233,6 +233,25 @@ begin
 end $$;
 
 -- =============================================================================
+-- Default Cuts
+-- =============================================================================
+
+-- The cut a pair's options expire at unless their terms name another. A
+-- PLN or HUF pair takes its regional cut; every other fiat pair takes the New
+-- York 10:00 cut. A metal has no WM/R cut, so it takes none.
+update ores_dq_currency_pairs_artefact_tbl
+set default_cut_code = case
+        when 'PLN' in (base_currency, quote_currency) then 'WAR1100'
+        when 'HUF' in (base_currency, quote_currency) then 'BUD1200'
+        when classification = 'commodity' then null
+        else 'NYC1000'
+    end
+where dataset_id = (select id from ores_dq_datasets_tbl
+                    where tenant_id = ores_utility_system_tenant_id_fn()
+                      and code = 'refdata.currency_pairs'
+                      and valid_to = ores_utility_infinity_timestamp_fn());
+
+-- =============================================================================
 -- Summary
 -- =============================================================================
 

@@ -20,6 +20,7 @@
 #ifndef ORES_UTILITY_CODEC_TEXT_FORM_HPP
 #define ORES_UTILITY_CODEC_TEXT_FORM_HPP
 
+#include "ores.platform/time/time_of_day.hpp"
 #include "ores.utility/export.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
@@ -143,6 +144,19 @@ struct ORES_UTILITY_EXPORT text_form<std::chrono::year_month_day> {
 
     static std::string to_text(const std::chrono::year_month_day& v);
     static std::chrono::year_month_day from_text(std::string_view text);
+};
+
+/**
+ * @brief A time of day's text form is =HH:MM:SS=. Every value is a time of
+ * day, midnight included, so no text stands for an absent time; an optional
+ * member carries the absence.
+ */
+template <>
+struct ORES_UTILITY_EXPORT text_form<ores::platform::time::time_of_day> {
+    static constexpr std::string_view wire_name = "a time of day";
+
+    static std::string to_text(const ores::platform::time::time_of_day& v);
+    static ores::platform::time::time_of_day from_text(std::string_view text);
 };
 
 /**

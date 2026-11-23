@@ -169,6 +169,26 @@ year_month_day codec<year_month_day>::decode(std::span<const std::byte> in) {
     return year_month_day(sys_days(year{2000} / January / 1) + std::chrono::days(days));
 }
 
+void codec<ores::platform::time::time_of_day>::encode(ores::platform::time::time_of_day v,
+                                                      std::string& out) {
+    const auto micros = std::chrono::duration_cast<std::chrono::microseconds>(v.since_midnight());
+    wire::put_u64(out, static_cast<std::uint64_t>(micros.count()));
+}
+
+ores::platform::time::time_of_day
+codec<ores::platform::time::time_of_day>::decode(std::span<const std::byte> in) {
+    wire::expect_size(in, 8, "time");
+    const auto micros = static_cast<std::int64_t>(wire::get_u64(in));
+    if (micros % 1'000'000 != 0)
+        refuse("Not a time of day in whole seconds: " + std::to_string(micros) +
+               " microseconds after midnight");
+    try {
+        return ores::platform::time::time_of_day(std::chrono::seconds{micros / 1'000'000});
+    } catch (const std::out_of_range& e) {
+        refuse(e.what());
+    }
+}
+
 void codec<utility::decimal::decimal>::encode(const utility::decimal::decimal& v,
                                               std::string& out) {
     std::string text = v.to_string();

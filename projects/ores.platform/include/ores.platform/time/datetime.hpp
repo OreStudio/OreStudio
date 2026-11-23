@@ -21,6 +21,7 @@
 #define ORES_PLATFORM_TIME_DATETIME_HPP
 
 #include "ores.platform/export.hpp"
+#include "ores.platform/time/time_of_day.hpp"
 #include <chrono>
 #include <string>
 
@@ -153,6 +154,29 @@ public:
      *         not form a valid calendar date (e.g. "2024-02-30").
      */
     static std::chrono::year_month_day from_iso8601_date(const std::string& str);
+
+    /**
+     * @brief Formats a time of day as an ISO 8601 time string.
+     *
+     * Output format: "HH:MM:SS", the text PostgreSQL reads into a time column.
+     *
+     * @param time Time of day to format.
+     * @return ISO 8601 time string.
+     */
+    static std::string to_iso8601_time(const time_of_day& time);
+
+    /**
+     * @brief Parses an ISO 8601 time string to a time of day.
+     *
+     * Accepts the extended forms "HH:MM:SS" and "HH:MM". A fraction of a
+     * second is refused, because a time of day holds whole seconds.
+     *
+     * @param str String to parse.
+     * @return Parsed time of day.
+     * @throws std::invalid_argument if the string is not one of the accepted
+     *         forms, or does not name a time of day (e.g. "24:00").
+     */
+    static time_of_day from_iso8601_time(const std::string& str);
 };
 
 }

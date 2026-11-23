@@ -108,6 +108,12 @@ struct {{entity_singular}}_entity {
 {{#is_required_date}}
     std::chrono::year_month_day {{name}};
 {{/is_required_date}}
+{{#is_optional_time}}
+    std::optional<std::string> {{name}};
+{{/is_optional_time}}
+{{#is_time}}
+    std::string {{name}};
+{{/is_time}}
 {{#is_optional_decimal}}
     std::optional<ores::utility::decimal::decimal> {{name}};
 {{/is_optional_decimal}}

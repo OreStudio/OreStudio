@@ -27,6 +27,7 @@
 #include "ores.history.api/domain/provenance_fields.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.refdata.api/domain/currency_pair.hpp"
+#include <string>
 #include <vector>
 
 namespace ores::refdata::presentation {
@@ -40,6 +41,8 @@ render_currency_pair_fields(const domain::currency_pair& v) {
     fields.push_back({.name = "Base Currency", .value = v.base_currency});
     fields.push_back({.name = "Quote Currency", .value = v.quote_currency});
     fields.push_back({.name = "Classification", .value = v.classification});
+    fields.push_back(
+        {.name = "Default Cut Code", .value = v.default_cut_code.value_or(std::string{})});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

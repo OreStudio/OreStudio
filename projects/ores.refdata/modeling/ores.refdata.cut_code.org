@@ -1,0 +1,244 @@
+:PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
+:ID: 8C91D35E-FB72-4E26-BBB6-2B3FCF4F8007
+:END:
+#+title: ores.refdata.cut_code
+#+description: Codegen entity model for the refdata =cut_code= table: the name of an option expiry instant, its time and zone, and the fixing source that fixes the market at it.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: The name of an option expiry instant, with its time, zone and fixing source.
+#+entity_singular: cut_code
+#+entity_plural: cut_codes
+#+entity_title: Cut Code
+#+coding_scheme: none
+#+image_id: false
+#+created: 2026-11-23
+#+updated: 2026-11-23
+
+Reference data table of the option expiry cuts ORE Studio supports. A cut code
+is the name of the instant an option expires at; the cut time and its zone are
+what the name resolves to. Each cut names the fixing source that fixes the
+market at its instant, because a cut with no source cannot be offered.
+
+See [[id:3B39B2E2-6E05-4DF8-B68B-6ACA12F2FCE9][The option-expiry cut code]] and
+[[id:5AF9CEEF-A878-443A-8C32-C6E9F6C26FC9][Fixing sources for option cuts and non-deliverable currencies]].
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: refdata
+:profile:   simple-lookup
+:END:
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+The cut's code.
+
+Examples: 'NYC1000', 'TKY1500', 'LON1600'.
+
+#+begin_src cpp :name generator
+std::string("CutCode")
+#+end_src
+
+** name
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
+:END:
+
+Human-readable name of the cut, such as 'New York 10:00'.
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun()) + " Cut"
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+What the cut is used for.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+** cut_time
+:PROPERTIES:
+:type:     time
+:cpp_type: ores::platform::time::time_of_day
+:nullable: false
+:END:
+
+The time of day the cut names, read on the clock of =cut_time_zone=.
+
+** cut_time_zone
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The IANA name of the zone the cut time is read in.
+
+#+begin_src cpp :name generator
+std::string("America/New_York")
+#+end_src
+
+** fixing_source_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The fixing source that fixes the market at the cut.
+
+#+begin_src cpp :name generator
+std::string("WMR1000NYC")
+#+end_src
+
+** display_order
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  0
+:END:
+
+Order for UI display purposes.
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 100)
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_cut_codes_tbl
+:rls_tenant_isolation: true
+:rls_own_or_system_tenant_rows: true
+:END:
+
+** Checks
+
+| expression |
+|------------|
+| "cut_time_zone" <> '' |
+
+** Extra drops
+
+#+begin_src sql :name body :implements 5E47F108-1350-4540-B3C2-E83DD5379B2D
+drop function if exists ores_refdata_validate_cut_code_fn;
+#+end_src
+
+* Validation function
+:PROPERTIES:
+:tenant_scope: system
+:order_by:     display_order
+:END:
+
+* Insert trigger
+** Validations
+
+| column             | validation_function               |
+|--------------------+-----------------------------------|
+| change_reason_code | ores_dq_validate_change_reason_fn |
+
+* Foreign keys
+
+** fixing_source_code
+:PROPERTIES:
+:table:             ores_refdata_fixing_sources_tbl
+:target_column:     code
+:system_tenant_visible: true
+:nullable:          false
+:error_message:     Invalid fixing_source_code: %. No active fixing source found with this code.
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:       api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: cut
+:entity_plural_short:   cuts
+:entity_singular_words: cut code
+:entity_plural_words:   cut codes
+:system_tenant_visible: true
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include "ores.platform/time/time_of_day.hpp"
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: cc
+:END:
+
+** Table display
+
+| column             | header |
+|--------------------+--------|
+| code               | Code   |
+| name               | Name   |
+| cut_time           | Time   |
+| cut_time_zone      | Zone   |
+| fixing_source_code | Source |
+| version            | Version |
+
+** Presentation
+:PROPERTIES:
+:domain_include:         ores.refdata.api/domain/cut_code.hpp
+:domain_class:           refdata::domain::cut_code
+:protocol_include:       ores.refdata.api/messaging/cut_code_protocol.hpp
+:collection_name:        cut_codes
+:key_field:              code
+:has_export_macro:       true
+:END:
+
+*** Columns
+
+| enum_name        | field              | header      | type      | width |
+|------------------+--------------------+-------------+-----------+-------|
+| Code             | code               | Code        | string    | auto  |
+| Name             | name               | Name        | string    | auto  |
+| CutTimeZone      | cut_time_zone      | Zone        | string    | auto  |
+| FixingSourceCode | fixing_source_code | Source      | string    | auto  |
+| Version          | version            | Version     | int       | 70    |
+| ModifiedBy       | modified_by        | Modified By | string    | auto  |
+| RecordedAt       | recorded_at        | Recorded At | timestamp | auto  |
+
+** Custom repository methods
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.
+- [[id:3B39B2E2-6E05-4DF8-B68B-6ACA12F2FCE9][The option-expiry cut code]] — what a cut code names.

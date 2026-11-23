@@ -34,5 +34,6 @@ set(files
     "system_system_info_tests.cpp"
     "time_datetime_tests.cpp"
     "time_relative_time_formatter_tests.cpp"
+    "time_time_of_day_tests.cpp"
     "time_utils_tests.cpp"
 )

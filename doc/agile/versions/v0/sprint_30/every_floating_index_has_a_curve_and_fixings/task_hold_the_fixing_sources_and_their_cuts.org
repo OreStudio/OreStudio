@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :every_floating_index_has_a_curve_and_fixings:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/add-a-time-of-day-column-type
+#+pr: 5052
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-22
@@ -26,11 +26,11 @@ Hold the fixing sources of [[id:5AF9CEEF-A878-443A-8C32-C6E9F6C26FC9][Fixing sou
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:0F936789-FEBE-4330-97B9-DFE0837E4466][Every index a generated trade floats on has a curve and fixings]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | Nothing. |
+| Waiting on   | Nothing. It shares a branch with [[id:B3E547A5-941B-439E-A10E-EE9EEE2900E4][Add a time-of-day column type to the codegen]], whose first real column it is. |
+| Next         | Nothing. |
 | Last touched | 2026-11-22                               |
 
 * Acceptance
@@ -41,9 +41,22 @@ Hold the fixing sources of [[id:5AF9CEEF-A878-443A-8C32-C6E9F6C26FC9][Fixing sou
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Four refdata entities, each a =simple-lookup= model in =ores.refdata=, so the
+codegen writes every layer:
+
+1. =fixing_source_kind= (published, keyed, derived) and
+   =fixing_source_status= (active, ceased).
+2. =fixing_source=: code, name, description, kind, asset class, administrator,
+   publication time and zone, calendar, rounding and status. The publication
+   time is the first =:type: time= column.
+3. =cut_code=: code, name, description, cut time and zone, and the fixing
+   source that fixes the market at the cut.
+4. =currency_pair.default_cut_code=, nullable, checked against the cuts by the
+   insert trigger. The DQ publish function copies it, and the pair seed sets it
+   by rule: a PLN pair takes =WAR1100=, a HUF pair =BUD1200=, a metal none,
+   every other fiat pair =NYC1000=.
+
+The seeds are written by a data script from the tables of the design page.
 
 * Measurements
 
@@ -57,9 +70,29 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Fixing sources seeded, of them ceased | 24, 1 | =fixing_sources_check.sql= on a recreated database | this branch |
+| Cut codes seeded, each with its source's time and zone | 7 | =fixing_sources_check.sql= | this branch |
+| Currency pair artefacts by default cut: NYC1000, WAR1100, BUD1200, none | 171, 2, 2, 4 | =fixing_sources_check.sql= | this branch |
 
 * Notes
+
+The cut and publication times are time-of-day columns: PostgreSQL =time=
+without time zone, the zone in its own IANA column, and
+=ores::platform::time::time_of_day= in C++.
+
+The calendar code is not checked against the calendar table. The calendars are
+published from their DQ dataset after the populate scripts run, so a check at
+seed time would refuse every row. Each seeded source names a calendar the
+calendar dataset holds.
+
+=TR20H= is not seeded: ORE does not document which source it stands for, and a
+source row needs a publication time. Imported ORE examples that name it are
+unaffected, because no FX index is checked against this table yet.
+
+The publication times of the non-deliverable currencies' settlement rate
+options, and of the Bank of Canada, IMF and CBRT rates, are market convention.
+They have not been checked against Annex A or the publishers' own pages, and
+need that check before a trade depends on them.
 
 * Test Scenarios
 
@@ -76,7 +109,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5052][#5052]] | [refdata] Hold the fixing sources and their cuts, with a time-of-day column type |
 
 * Review
 
@@ -85,3 +118,21 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Four refdata entities hold the fixing sources and their cuts:
+=fixing_source_kind=, =fixing_source_status=, =fixing_source= and =cut_code=,
+each generated through every layer from its model. A currency pair names its
+default cut in =default_cut_code=, which the pair's insert trigger checks
+against the cuts and the DQ publish copies from the pair dataset.
+
+Acceptance:
+- The supported sources are seeded with their administrator and status: 24
+  sources, LIBOR ceased. Met.
+- Each seeded cut names a fixing source with its time and zone: 7 cuts, each
+  the time and zone of its WM/R source. Met.
+- A currency pair's default cut and fixing source resolve to seeded rows: 171
+  pair artefacts name =NYC1000=, 2 =WAR1100=, 2 =BUD1200=, and the trigger
+  refuses a cut that is not seeded. The 4 metals name none. Met.
+
+The times of the non-deliverable currencies and of the BOC, IMF and TCMB rates
+need checking against their publishers; see the notes.

@@ -56,6 +56,7 @@ struct currency_pair_entity {
     std::string base_currency;
     std::string quote_currency;
     std::string classification;
+    std::optional<std::string> default_cut_code;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
@@ -75,6 +76,7 @@ struct currency_pair_entity {
                query_builder::bind("base_currency", &e::base_currency) |
                query_builder::bind("quote_currency", &e::quote_currency) |
                query_builder::bind("classification", &e::classification) |
+               query_builder::bind("default_cut_code", &e::default_cut_code) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |
                query_builder::bind("change_reason_code", &e::change_reason_code) |

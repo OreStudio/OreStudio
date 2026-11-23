@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: refdata
-Tables: 218
+Tables: 222
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -2967,6 +2967,7 @@ package "refdata" #FFF3E0 {
         * base_currency : text
         * quote_currency : text
         * classification : text
+          default_cut_code : text <<FK>>
         * modified_by : text
         * performed_by : text
         * acting_agent : text
@@ -4282,6 +4283,39 @@ package "refdata" #FFF3E0 {
     a kind of this type.
     end note
 
+    entity ores_refdata_cut_codes_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * name : text
+        * description : text
+        * cut_time : time
+        * cut_time_zone : text
+        * fixing_source_code : text <<FK>>
+        * display_order : integer
+        * modified_by : text
+        * performed_by : text
+        * acting_agent : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_cut_codes_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Cut Code Table
+    Reference data table of the option expiry cuts ORE Studio supports. A cut code
+    is the name of the instant an option expires at; the cut time and its zone are
+    what the name resolves to. Each cut names the fixing source that fixes the
+    market at its instant, because a cut with no source cannot be offered.
+    See [[id:3B39B2E2-6E05-4DF8-B68B-6ACA12F2FCE9][The option-expiry cut code]] and
+    [[id:5AF9CEEF-A878-443A-8C32-C6E9F6C26FC9][Fixing sources for option cuts and non-deliverable currencies]].
+    end note
+
     entity ores_refdata_day_count_fraction_types_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * code : text <<PK>>
@@ -4858,6 +4892,104 @@ package "refdata" #FFF3E0 {
     is a row of curve_report_configuration.
     The schema also allows a OneDimSolverConfig, which no corpus document writes;
     the mapper refuses an entry that has one rather than lose it.
+    end note
+
+    entity ores_refdata_fixing_source_kinds_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * name : text
+        * description : text
+        * display_order : integer
+        * modified_by : text
+        * performed_by : text
+        * acting_agent : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_fixing_source_kinds_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Fixing Source Kind Table
+    Reference data table of the kinds of fixing source. A kind says how a
+    source arrives at the value it fixes.
+    See [[id:5AF9CEEF-A878-443A-8C32-C6E9F6C26FC9][Fixing sources for option cuts and non-deliverable currencies]].
+    end note
+
+    entity ores_refdata_fixing_source_statuses_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * name : text
+        * description : text
+        * display_order : integer
+        * modified_by : text
+        * performed_by : text
+        * acting_agent : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_fixing_source_statuses_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Fixing Source Status Table
+    Reference data table of the states of a fixing source. A ceased source,
+    such as LIBOR, keeps its row, because historical trades and fixings still name
+    it.
+    See [[id:5AF9CEEF-A878-443A-8C32-C6E9F6C26FC9][Fixing sources for option cuts and non-deliverable currencies]].
+    end note
+
+    entity ores_refdata_fixing_sources_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * name : text
+        * description : text
+        * kind_code : text <<FK>>
+        * asset_class : text
+        * administrator : text
+        * publication_time : time
+        * publication_time_zone : text
+        * calendar_code : text
+        * rounding_decimals : integer
+        * status_code : text <<FK>>
+        * display_order : integer
+        * modified_by : text
+        * performed_by : text
+        * acting_agent : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_fixing_sources_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Fixing Source Table
+    Reference data table of the fixing sources ORE Studio supports: the WM/R cut
+    sources, the central-bank FX reference rates, the settlement rate options of the
+    non-deliverable currencies and the interest rate indices. The code is the label
+    the market uses, which is also the SOURCE of an ORE FX index such as
+    FX-WMR1600LON-EUR-USD.
+    The publication time is a time of day without a zone, and the zone is an IANA
+    name in its own column, so the instant a source fixes at is read on the
+    source's own clock. The calendar names the source's fixing days by the code of
+    a calendar. It is not checked against the calendar table, because the calendars
+    are published from their dataset after the reference data is seeded.
+    See [[id:5AF9CEEF-A878-443A-8C32-C6E9F6C26FC9][Fixing sources for option cuts and non-deliverable currencies]].
     end note
 
     entity ores_refdata_floating_index_types_tbl <<temporal>> #C6F0D8 {
@@ -7871,6 +8003,7 @@ ores_refdata_conventions_tbl ||--o{ ores_refdata_cross_currency_fix_float_swap_t
 ores_refdata_csas_tbl ||--o{ ores_refdata_csa_eligible_currencies_tbl : "has"
 ores_refdata_parties_tbl ||--o{ ores_refdata_csas_tbl : "has"
 ores_refdata_netting_sets_tbl ||--o{ ores_refdata_csas_tbl : "has"
+ores_refdata_cut_codes_tbl ||--o{ ores_refdata_currency_pairs_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_curve_bootstrap_configs_tbl : "has"
 ores_refdata_default_curve_configurations_tbl ||--o{ ores_refdata_curve_bootstrap_configs_tbl : "has"
 ores_refdata_curve_configurations_tbl ||--o{ ores_refdata_curve_configuration_sections_tbl : "has"
@@ -7911,6 +8044,7 @@ ores_refdata_curve_volatility_kinds_tbl ||--o{ ores_refdata_curve_volatility_pro
 ores_refdata_curve_volatility_smiles_tbl ||--o{ ores_refdata_curve_volatility_smile_parameters_tbl : "has"
 ores_refdata_curve_volatility_kinds_tbl ||--o{ ores_refdata_curve_volatility_smiles_tbl : "has"
 ores_refdata_curve_volatility_kinds_tbl ||--o{ ores_refdata_curve_volatility_strike_surfaces_tbl : "has"
+ores_refdata_fixing_sources_tbl ||--o{ ores_refdata_cut_codes_tbl : "has"
 ores_refdata_default_curve_configurations_tbl ||--o{ ores_refdata_default_curve_benchmarks_tbl : "has"
 ores_refdata_default_curve_configurations_tbl ||--o{ ores_refdata_default_curve_cds_terms_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_default_curve_configs_tbl : "has"
@@ -7920,6 +8054,8 @@ ores_refdata_default_curve_configurations_tbl ||--o{ ores_refdata_default_curve_
 ores_refdata_default_curve_configurations_tbl ||--o{ ores_refdata_default_curve_yield_reinterpretations_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_equity_curve_configs_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_equity_volatility_configs_tbl : "has"
+ores_refdata_fixing_source_kinds_tbl ||--o{ ores_refdata_fixing_sources_tbl : "has"
+ores_refdata_fixing_source_statuses_tbl ||--o{ ores_refdata_fixing_sources_tbl : "has"
 ores_refdata_fx_vol_surface_pillars_tbl ||--o{ ores_refdata_fx_vol_surface_pillar_sources_tbl : "has"
 ores_refdata_fx_vol_surface_blueprints_tbl ||--o{ ores_refdata_fx_vol_surface_pillars_tbl : "has"
 ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_fx_volatility_configs_tbl : "has"

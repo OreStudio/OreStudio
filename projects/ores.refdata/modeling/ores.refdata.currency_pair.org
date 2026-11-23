@@ -103,6 +103,22 @@ entity — see [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support 
 std::string("major")
 #+end_src
 
+** default_cut_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The option expiry cut a trade on the pair takes unless its terms name another,
+and so the fixing source that fixes the pair at expiry. Null when the pair has
+no supported cut. See
+[[id:3B39B2E2-6E05-4DF8-B68B-6ACA12F2FCE9][The option-expiry cut code]].
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
 * SQL
 
 ** Flags
@@ -151,6 +167,15 @@ drop function if exists ores_refdata_validate_currency_pair_fn;
 :skip_check:      true
 :nullable:        false
 :error_message:   Invalid classification: %. No active currency pair classification found with this code.
+:END:
+
+** default_cut_code
+:PROPERTIES:
+:table:             ores_refdata_cut_codes_tbl
+:target_column:     code
+:system_tenant_visible: true
+:nullable:          true
+:error_message:     Invalid default_cut_code: %. No active cut code found with this code.
 :END:
 
 * Validation function

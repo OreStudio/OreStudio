@@ -32,6 +32,7 @@ set(files
     "system/system_info.cpp"
     "time/datetime.cpp"
     "time/relative_time_formatter.cpp"
+    "time/time_of_day.cpp"
     "time/time_utils.cpp"
 )
 
@@ -66,5 +67,6 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.platform/time/datetime.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.platform/time/ores.platform.time.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.platform/time/relative_time_formatter.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.platform/time/time_of_day.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.platform/time/time_utils.hpp"
 )

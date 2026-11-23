@@ -115,6 +115,7 @@
 #include "ores.shell/app/commands/refdata/curve_volatility_smile_commands.hpp"
 #include "ores.shell/app/commands/refdata/curve_volatility_smile_parameter_commands.hpp"
 #include "ores.shell/app/commands/refdata/curve_volatility_strike_surface_commands.hpp"
+#include "ores.shell/app/commands/refdata/cut_code_commands.hpp"
 #include "ores.shell/app/commands/refdata/day_count_fraction_type_commands.hpp"
 #include "ores.shell/app/commands/refdata/day_counter_commands.hpp"
 #include "ores.shell/app/commands/refdata/default_curve_benchmark_commands.hpp"
@@ -131,6 +132,9 @@
 #include "ores.shell/app/commands/refdata/equity_curve_config_commands.hpp"
 #include "ores.shell/app/commands/refdata/equity_underlying_commands.hpp"
 #include "ores.shell/app/commands/refdata/equity_volatility_config_commands.hpp"
+#include "ores.shell/app/commands/refdata/fixing_source_commands.hpp"
+#include "ores.shell/app/commands/refdata/fixing_source_kind_commands.hpp"
+#include "ores.shell/app/commands/refdata/fixing_source_status_commands.hpp"
 #include "ores.shell/app/commands/refdata/floating_index_type_commands.hpp"
 #include "ores.shell/app/commands/refdata/fra_convention_commands.hpp"
 #include "ores.shell/app/commands/refdata/future_convention_commands.hpp"
@@ -247,6 +251,10 @@ void refdata_commands::register_commands(cli::Menu& root_menu,
     book_product_type_commands::register_commands(root_menu, session);
     book_purpose_type_commands::register_commands(root_menu, session);
     book_status_commands::register_commands(root_menu, session);
+    fixing_source_kind_commands::register_commands(root_menu, session);
+    fixing_source_status_commands::register_commands(root_menu, session);
+    fixing_source_commands::register_commands(root_menu, session);
+    cut_code_commands::register_commands(root_menu, session);
     business_centre_commands::register_commands(root_menu, session);
     business_day_convention_type_commands::register_commands(root_menu, session);
     business_process_commands::register_commands(root_menu, session);

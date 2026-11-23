@@ -8,7 +8,7 @@
 #+filetags: :model_the_synthetic_feed_dependency_graph:sprint_30:v0:
 #+owner: marco
 #+branch: feature/log-each-feed-node-messages
-#+pr:
+#+pr: 5057
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-23
@@ -100,7 +100,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5057][#5057]] | [synthetic] Log each feed node's messages and halt what a stop starves |
 
 * Review
 

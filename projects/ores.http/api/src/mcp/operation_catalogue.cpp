@@ -135,6 +135,7 @@ operation_catalogue::operation_catalogue(const std::vector<domain::route>& route
         op.summary = route.catalogue.summary;
         op.description = route.catalogue.description;
         op.writes = route.catalogue.writes;
+        op.permission = route.catalogue.permission;
         op.method = route.method;
         op.pattern = route.pattern;
         op.path_params = route.param_names;

@@ -20,6 +20,7 @@
 #include "ores.http.api/mcp/catalogue_tools.hpp"
 #include "ores.http.api/domain/catalogue_rules.hpp"
 #include "ores.security/authorization/agent_withholding.hpp"
+#include "ores.security/authorization/grants.hpp"
 #include "ores.utility/codec/json_document.hpp"
 #include <algorithm>
 #include <array>
@@ -144,6 +145,18 @@ bool catalogue_tools::may_write(const http_request& caller) {
     });
 }
 
+bool catalogue_tools::reaches(const http_request& caller, const operation& op) {
+    if (!caller.authenticated_user || (op.writes && !may_write(caller)))
+        return false;
+    if (op.permission.empty())
+        return true;
+    const auto& claims = *caller.authenticated_user;
+    if (claims.act && claims.act->starts_with("agent:") &&
+        ores::security::authorization::is_withheld_from_agents(op.permission))
+        return false;
+    return ores::security::authorization::grants(claims.roles, op.permission);
+}
+
 std::vector<tool> catalogue_tools::list(const http_request&) const {
     const auto paging =
         R"("page":{"type":"integer","minimum":1,"description":"The page of a long list, from 1."})";
@@ -203,10 +216,9 @@ boost::asio::awaitable<std::optional<tool_result>> catalogue_tools::call(
 }
 
 tool_result catalogue_tools::areas(const http_request& caller) const {
-    const auto writes = may_write(caller);
     std::map<std::string, std::size_t> counts;
     for (const auto& op : catalogue_->operations())
-        if (writes || !op.writes)
+        if (reaches(caller, op))
             ++counts[op.area];
     std::string out = "Areas, each with what it holds and how many operations you may call:\n";
     for (const auto area : domain::published_areas())
@@ -219,10 +231,9 @@ tool_result catalogue_tools::areas(const http_request& caller) const {
 tool_result catalogue_tools::entities(const http_request& caller,
                                       const json_value& arguments) const {
     const auto area = arguments.member("area").text_or();
-    const auto writes = may_write(caller);
     std::map<std::string, std::size_t> counts;
     for (const auto& op : catalogue_->operations())
-        if (op.area == area && (writes || !op.writes))
+        if (op.area == area && reaches(caller, op))
             ++counts[op.entity];
     if (counts.empty())
         return refused("No area named \"" + area +
@@ -240,10 +251,9 @@ tool_result catalogue_tools::operations(const http_request& caller,
                                         const json_value& arguments) const {
     const auto area = arguments.member("area").text_or();
     const auto entity = arguments.member("entity").text_or();
-    const auto writes = may_write(caller);
     std::vector<std::string> lines;
     for (const auto& op : catalogue_->operations())
-        if (op.area == area && op.entity == entity && (writes || !op.writes))
+        if (op.area == area && op.entity == entity && reaches(caller, op))
             lines.push_back(line_of(op));
     if (lines.empty())
         return refused("No entity named \"" + entity + "\" in \"" + area +
@@ -257,9 +267,8 @@ tool_result catalogue_tools::found(const http_request& caller, const json_value&
     const auto words = arguments.member("words").text_or();
     if (search_terms(words).empty())
         return refused("find_operations needs a few words, such as \"list currencies\".");
-    const auto writes = may_write(caller);
     const auto best =
-        catalogue_->search(words, 5, [&](const operation& op) { return writes || !op.writes; });
+        catalogue_->search(words, 5, [&](const operation& op) { return reaches(caller, op); });
     if (best.empty())
         return tool_result{.text = "No operation matches those words; try others, or list_areas."};
     std::string out = "The best matches, best first:\n";
@@ -293,7 +302,7 @@ boost::asio::awaitable<tool_result> catalogue_tools::called(const http_request& 
                 std::chrono::steady_clock::now() - started)});
     };
 
-    if (op->writes && !may_write(caller)) {
+    if (!reaches(caller, *op)) {
         note(403);
         co_return refused("No operation you may call is named \"" + name +
                           "\"; find_operations finds one.");

@@ -51,7 +51,9 @@ struct catalogue_tools_options final {
  * and call_operation.
  *
  * The tools are the same whatever the catalogue holds. Every list shows only
- * what the agent's grant reaches: reads alone when the grant only reads.
+ * what the agent's grant reaches: reads alone when the grant only reads, and
+ * an operation whose permission the catalogue knows only when the token
+ * grants it.
  */
 class ORES_HTTP_API_EXPORT catalogue_tools final : public tool_provider {
 private:
@@ -79,6 +81,13 @@ public:
      * not a read.
      */
     [[nodiscard]] static bool may_write(const domain::http_request& caller);
+
+    /**
+     * @brief Whether a caller may call an operation: a write only when its
+     * token may write, and an operation whose permission the catalogue knows
+     * only when the token grants it and it is not withheld from agents.
+     */
+    [[nodiscard]] static bool reaches(const domain::http_request& caller, const operation& op);
 
 private:
     [[nodiscard]] tool_result areas(const domain::http_request& caller) const;

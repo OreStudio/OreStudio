@@ -54,15 +54,17 @@ ORES_HTTP_API_EXPORT bool may_declare_read(const route_catalogue& catalogue);
 
 /**
  * @brief Whether an operation only reads, by its name: one that lists, gets,
- * reads, finds, searches or looks up changes nothing, unless it also makes, as
- * get_or_create does.
+ * reads, finds, searches, looks up or validates changes nothing, unless it also
+ * makes, as get_or_create does.
  */
 ORES_HTTP_API_EXPORT bool operation_only_reads(std::string_view name);
 
 /**
  * @brief The catalogue place of a generated entity route: the published area
  * its path names, the entity, a tool named for what it does to the entity, and
- * whether it writes, which a GET or a bulk get never does.
+ * whether it writes, which a GET or a bulk get never does. Outside the
+ * screens, it also states the permission the entity's handler checks:
+ * =component::entity:read=, =:write=, or =:delete= for a removal.
  */
 ORES_HTTP_API_EXPORT route_catalogue entity_route_catalogue(http_method method,
                                                             std::string_view pattern,

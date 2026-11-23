@@ -122,12 +122,13 @@ route_builder& route_builder::no_body() {
 }
 
 route_builder& route_builder::place(domain::route_catalogue placed) {
-    // The place replaces the catalogue's first four values and keeps the
-    // documentation, whichever was stated first.
+    // The place replaces where the route belongs and what it needs, and keeps
+    // the documentation, whichever was stated first.
     catalogue_.tool = std::move(placed.tool);
     catalogue_.area = std::move(placed.area);
     catalogue_.entity = std::move(placed.entity);
     catalogue_.writes = placed.writes;
+    catalogue_.permission = std::move(placed.permission);
     return *this;
 }
 

@@ -23,7 +23,9 @@
 #include "ores.eventing.api/service/event_bus.hpp"
 #include "ores.eventing.core/service/entity_event_publisher.hpp"
 #include "ores.eventing.core/service/postgres_event_source.hpp"
+#include "ores.iam.client/client/service_token_provider.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.nats/service/nats_client.hpp"
 #include "ores.service/service/domain_service_runner.hpp"
 #include "ores.service/service/heartbeat_publisher.hpp"
 #include "ores.trading.core/messaging/registrar.hpp"
@@ -180,6 +182,12 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
 
     ores::nats::service::client nats(cfg.nats);
     nats.connect();
+
+    // The service's own token, for the reads it makes of other services on its
+    // own behalf, such as loading the cache of ores.ore's parameters.
+    ores::nats::service::nats_client svc_nats(nats,
+                                              ores::iam::client::make_service_token_provider(
+                                                  nats, cfg.database.user, cfg.database.password));
 
     // =========================================================================
     // Entity change event pipeline: PostgreSQL LISTEN/NOTIFY → NATS publish
@@ -508,9 +516,9 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         nats,
         make_context(cfg.database),
         "ores.trading.service",
-        [&cfg](auto& n, auto c, auto v) {
+        [&cfg, &svc_nats](auto& n, auto c, auto v) {
             return ores::trading::messaging::registrar::register_handlers(
-                n, std::move(c), std::move(v), cfg.http_base_url);
+                n, std::move(c), std::move(v), cfg.http_base_url, svc_nats);
         },
         [&nats](boost::asio::io_context& ioc) {
             auto hb = std::make_shared<ores::service::service::heartbeat_publisher>(

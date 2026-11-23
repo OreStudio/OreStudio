@@ -276,17 +276,19 @@ def main():
         if entry and element is None:
             without_element[code] = entry["evidence"]
             continue
-        if element not in data_elements:
+        declared = entry.get("type_of", element) if entry else element
+        if declared not in data_elements:
             unresolved.append(code)
             continue
-        member = data_elements[element]
-        root = member.get("type") if member.get("type") in schema.types else f"{element}"
+        member = data_elements[declared]
+        root = member.get("type") if member.get("type") in schema.types else declared
         products[code] = {"element": element, "root": root, "construction": construction,
+                          **({"declared": declared} if declared != element else {}),
                           "evidence": entry["evidence"] if entry else "the type's name and Data"}
 
     types, pending, declared_by = {}, [], {}
     for code, product in products.items():
-        member = data_elements[product["element"]]
+        member = data_elements[product.get("declared", product["element"])]
         if product["root"] in schema.types:
             pending.append((product["root"], schema.types[product["root"]]))
         else:

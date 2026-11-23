@@ -191,6 +191,32 @@ text today. Value sets attach to a parameter through a junction keyed by scope
 and name, which is not unique for instrument fields (=Type= is a field of many
 types), so they wait for their own unit of this task.
 
+** PR 3b: describe_product and list_products
+
+Trading serves both from a pure service over data, =product_schema_service=,
+which takes trading's rows and the instrument fields and returns the
+description, so it is tested without a database or a bus. The handler reads the
+rows in the caller's context and the fields from =ores.ore.client='s cache,
+loaded on first use with the service's own token; the trading service now holds
+a service token client for that, as reporting does.
+
+A product type's fields are its element's row and the fields of every type it
+reaches, each type once, breadth first; a twin recipe gives it a scripted form
+with its script's inputs and codes; a code that names a library script and no
+product type describes a script-only product. The response carries its own
+=product_field= rather than =ore_parameter=, because no operation model carries
+another component's domain type.
+
+Every product the seeded catalogue lists is described but one:
+=CommodityPairwiseVarianceSwap=, which ORE cannot build and the catalogue routes
+to no table, is refused with that reason. =CommodityWindowBarrierOption= was
+refused at first, because the vendored schema omits its element; ORE reads it
+with the same =fromXML= as the equity and FX window barriers, so
+=instrument_elements.json= now gives it the equity element's type, with that
+evidence. The engine a pricing configuration assigns a form's product tag is
+not in the response yet: the configuration is analytics' data, and reading it
+needs its own cache.
+
 ** Which component serves describe_product
 
 Who needs the schema, and when:

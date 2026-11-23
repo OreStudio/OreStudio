@@ -1,5 +1,5 @@
 {
-  "description": "The element each trade type is read under, where it is not the type's name followed by Data, with the evidence. An element of null states that the vendored schema declares no element ORE reads the type under, and why; such a type has no native fields.",
+  "description": "The element each trade type is read under, where it is not the type's name followed by Data, with the evidence. An element of null states that ORE has no element for the type, and why; such a type has no native fields. A type_of names the element whose schema type an element the vendored schema omits shares, when ORE reads both with one fromXML.",
   "elements": {
     "Autocallable_01": {
       "element": "Autocallable01Data",
@@ -14,8 +14,9 @@
       "evidence": "ORE has no trade builder for CommodityPairwiseVarianceSwap, as the trade type catalogue's unsupported types record; it is booked as a ScriptedTrade over the PairwiseVarianceSwap script"
     },
     "CommodityWindowBarrierOption": {
-      "element": null,
-      "evidence": "ORE 3d75a6908 OREData/ored/portfolio/windowbarrieroption.cpp reads tradeType() + \"Data\", CommodityWindowBarrierOptionData, which the vendored schema's oreTradeData group does not declare"
+      "element": "CommodityWindowBarrierOptionData",
+      "type_of": "EquityWindowBarrierOptionData",
+      "evidence": "ORE 3d75a6908 OREData/ored/portfolio/windowbarrieroption.cpp:219 reads tradeType() + \"Data\" for the commodity, equity and FX forms with one fromXML; the vendored schema declares the equity and FX elements only, so the commodity element takes the equity element's type"
     },
     "PerformanceOption_01": {
       "element": "PerformanceOption01Data",

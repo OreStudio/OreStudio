@@ -51,14 +51,6 @@ TEST_CASE("ores::trading::messaging::book_trade_response", "[codec][roundtrip][p
     ores::testing::check_wire_roundtrip<ores::trading::messaging::book_trade_response>();
 }
 
-TEST_CASE("ores::trading::messaging::book_scripted_request", "[codec][roundtrip][protocol]") {
-    ores::testing::check_wire_roundtrip<ores::trading::messaging::book_scripted_request>();
-}
-
-TEST_CASE("ores::trading::messaging::book_scripted_response", "[codec][roundtrip][protocol]") {
-    ores::testing::check_wire_roundtrip<ores::trading::messaging::book_scripted_response>();
-}
-
 TEST_CASE("ores::trading::messaging::execute_trade_request", "[codec][roundtrip][protocol]") {
     ores::testing::check_wire_roundtrip<ores::trading::messaging::execute_trade_request>();
 }

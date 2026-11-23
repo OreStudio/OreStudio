@@ -42,7 +42,6 @@
 #include "ores.trading.api/domain/trade_envelope_data.hpp"
 #include "ores.trading.api/domain/trade_identifier.hpp"
 #include "ores.trading.api/export.hpp"
-#include "ores.trading.api/messaging/script_library_operation_protocol.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
@@ -136,91 +135,6 @@ struct book_trade_response {
     std::optional<boost::uuids::uuid> activity_id;
 
     friend bool operator==(const book_trade_response&, const book_trade_response&) = default;
-};
-
-/**
- * @brief Books a scripted trade: a library script by name and version, or an inline script, on the
- * variables the trade states, refused with the script's findings when they hold an error.
- */
-struct book_scripted_request {
-    using response_type = struct book_scripted_response;
-    static constexpr std::string_view nats_subject = "trading.v1.ops.book_scripted";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
-    /**
-     * @brief The trade's anchor; its trade type is ScriptedTrade.
-     */
-    ores::trading::domain::trade anchor;
-    /**
-     * @brief The trade's booking, as book_trade takes it.
-     */
-    ores::trading::domain::trade_booking booking;
-    /**
-     * @brief The activity that books the trade, as book_trade takes it.
-     */
-    std::string activity_type_code;
-    /**
-     * @brief Why a draft is not live, as book_trade takes it.
-     */
-    std::string draft_reason_code;
-    /**
-     * @brief The trade's identifiers, as book_trade takes them.
-     */
-    std::vector<ores::trading::domain::trade_identifier> identifiers;
-    /**
-     * @brief The library script, as the caller's tenant resolves the name; for an inline script,
-     * the name its code is booked under.
-     */
-    std::string script_name;
-    /**
-     * @brief The library script's version; 0 for its current version.
-     */
-    int script_version = 0;
-    /**
-     * @brief An inline script's code; empty to book the library script.
-     */
-    std::string code;
-    /**
-     * @brief The variable an inline script's value lands in.
-     */
-    std::string npv_variable;
-    /**
-     * @brief The variables the trade states for the script.
-     */
-    std::vector<script_variable_value> variables;
-    /**
-     * @brief The product the trade is booked as; empty for a script-only product, which is the
-     * script.
-     */
-    std::string product_code;
-
-    friend bool operator==(const book_scripted_request&, const book_scripted_request&) = default;
-};
-
-/**
- * @brief The outcome of a scripted booking, and the script's findings.
- */
-struct book_scripted_response {
-    /**
-     * @brief The booking's outcome, as book_trade states it; script_invalid when the script's
-     * findings hold an error.
-     */
-    ores::utility::domain::result result;
-    /**
-     * @brief The activity that booked the trade, when it was booked.
-     */
-    std::optional<boost::uuids::uuid> activity_id;
-    /**
-     * @brief The script's findings, also when it is booked with warnings only.
-     */
-    std::vector<script_diagnostic> diagnostics;
-
-    friend bool operator==(const book_scripted_response&, const book_scripted_response&) = default;
 };
 
 /**
@@ -678,48 +592,6 @@ struct resolve_market_data_requirements_response {
 }
 
 /**
- * @brief The members of book_scripted_request, named as the wire names them and in the order
- * the type declares them.
- *
- * This is the one statement of the message's shape. The carriers find it by
- * argument-dependent lookup, so no caller passes a list, and a message that
- * holds another message or a domain type encodes it as its own object.
- */
-[[nodiscard]] constexpr auto wire_fields(std::type_identity<book_scripted_request>) {
-    return ::ores::utility::codec::field_list{
-        ::ores::utility::codec::field{"anchor", &book_scripted_request::anchor},
-        ::ores::utility::codec::field{"booking", &book_scripted_request::booking},
-        ::ores::utility::codec::field{"activity_type_code",
-                                      &book_scripted_request::activity_type_code},
-        ::ores::utility::codec::field{"draft_reason_code",
-                                      &book_scripted_request::draft_reason_code},
-        ::ores::utility::codec::field{"identifiers", &book_scripted_request::identifiers},
-        ::ores::utility::codec::field{"script_name", &book_scripted_request::script_name},
-        ::ores::utility::codec::field{"script_version", &book_scripted_request::script_version},
-        ::ores::utility::codec::field{"code", &book_scripted_request::code},
-        ::ores::utility::codec::field{"npv_variable", &book_scripted_request::npv_variable},
-        ::ores::utility::codec::field{"variables", &book_scripted_request::variables},
-        ::ores::utility::codec::field{"product_code", &book_scripted_request::product_code},
-    };
-}
-
-/**
- * @brief The members of book_scripted_response, named as the wire names them and in the order
- * the type declares them.
- *
- * This is the one statement of the message's shape. The carriers find it by
- * argument-dependent lookup, so no caller passes a list, and a message that
- * holds another message or a domain type encodes it as its own object.
- */
-[[nodiscard]] constexpr auto wire_fields(std::type_identity<book_scripted_response>) {
-    return ::ores::utility::codec::field_list{
-        ::ores::utility::codec::field{"result", &book_scripted_response::result},
-        ::ores::utility::codec::field{"activity_id", &book_scripted_response::activity_id},
-        ::ores::utility::codec::field{"diagnostics", &book_scripted_response::diagnostics},
-    };
-}
-
-/**
  * @brief The members of execute_trade_request, named as the wire names them and in the order
  * the type declares them.
  *
@@ -976,26 +848,6 @@ struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::book_trade_
     static ores::trading::messaging::book_trade_response read_json(std::string_view text);
     static std::string write_msgpack(const ores::trading::messaging::book_trade_response& v);
     static ores::trading::messaging::book_trade_response
-    read_msgpack(std::span<const std::byte> data);
-};
-template <>
-struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::book_scripted_request> {
-    static constexpr bool is_generated = true;
-
-    static std::string write_json(const ores::trading::messaging::book_scripted_request& v);
-    static ores::trading::messaging::book_scripted_request read_json(std::string_view text);
-    static std::string write_msgpack(const ores::trading::messaging::book_scripted_request& v);
-    static ores::trading::messaging::book_scripted_request
-    read_msgpack(std::span<const std::byte> data);
-};
-template <>
-struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::book_scripted_response> {
-    static constexpr bool is_generated = true;
-
-    static std::string write_json(const ores::trading::messaging::book_scripted_response& v);
-    static ores::trading::messaging::book_scripted_response read_json(std::string_view text);
-    static std::string write_msgpack(const ores::trading::messaging::book_scripted_response& v);
-    static ores::trading::messaging::book_scripted_response
     read_msgpack(std::span<const std::byte> data);
 };
 template <>

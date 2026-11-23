@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: ED0065D6-A3A1-41A1-9117-0A3231C5BFFF
+:END:
+#+title: Task: Show the latent provider to the system tenant, describe it, and run its feeds as nodes
+#+description: Fixes found in testing: the Provider and Dashboard tabs hid the latent provider from the system tenant too, it had no description, its Start and Stop did nothing useful, and the graph's links were neither styled nor complete.
+#+type: task
+#+level: s1
+#+filetags: :model_the_synthetic_feed_dependency_graph:sprint_30:v0:
+#+owner: marco
+#+branch: fix/show-the-latent-provider-to-the-system-tenant
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-23
+#+updated: 2026-11-23
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8DE041AE-95E6-40CE-9B62-2CE3BA77838A][Model the synthetic feeds as a dependency graph: upstreams, latent surfaces and vendor views]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The system tenant sees the latent provider, described, on the dashboard and the Provider tab, and stops or starts all its feeds as nodes of the graph; every neighbour on a Graph tab links where it opens.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:8DE041AE-95E6-40CE-9B62-2CE3BA77838A][Model the synthetic feeds as a dependency graph: upstreams, latent surfaces and vendor views]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-23                               |
+
+* Acceptance
+
+- The system tenant sees Latent on the Provider tab and the dashboard; a tenant does not.
+- Latent has a description in the synthetic provider list.
+- Start and Stop of a provider with no source of its own stop and start its feeds as graph nodes, with one reason.
+- Every neighbour on a Graph tab is a styled link: a feed to its page, a view to its surface's Graph tab, a source to its provider.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

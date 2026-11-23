@@ -243,8 +243,11 @@ jobs:
           curl -fsSLO "${base}/${asset}.sha256"
           sha256sum -c "${asset}.sha256"
           tar -xzf "${asset}"
-          bin=$(find "$RUNNER_TEMP/${asset%.tar.gz}" -type f -path '*/bin/compass' -o -type f -name compass | head -1)
-          echo "$(dirname "$bin")" >> "$GITHUB_PATH"
+          dir=$(dirname "$(find "$RUNNER_TEMP/${asset%.tar.gz}" -type f -name compass | head -1)")
+          chmod +x "${dir}/compass"
+          # compass env configure looks for the tool under its release name.
+          ln -sf compass "${dir}/compass-ng"
+          echo "${dir}" >> "$GITHUB_PATH"
 
       - name: Init environment
         env:

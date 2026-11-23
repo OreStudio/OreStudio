@@ -1,0 +1,105 @@
+:PROPERTIES:
+:ID: 70191ADC-EF7D-4E85-8BAF-DA50133B1DAC
+:END:
+#+title: Task: Pin compass-ng v0.0.13 and make the name resolve in CI
+#+description: The install step put the release's bin on PATH, but the binary is named compass and compass env configure looks for compass-ng, so the nightlies still stopped at Init environment. The pin also still named v0.0.12.
+#+type: task
+#+level: s1
+#+filetags: :ci:cdash:keep_main_green:sprint_30:v0:
+#+owner: marco
+#+branch: hotfix/pin-compass-ng-0-0-13
+#+pr: 5061
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-23
+#+updated: 2026-11-23
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4FCC628C-551E-4F7C-B1D7-69546174A9CD][Keep main green]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The install step added in #5032 runs and puts the release's bin on PATH, and the
+nightly of 2026-11-23 still stops in =Init environment= with "compass-ng is not
+on the PATH". The release archive carries one binary, named =compass=, and
+=compass env configure= looks for =compass-ng=. The pin also still named
+v0.0.12 while v0.0.13 has been released.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:4FCC628C-551E-4F7C-B1D7-69546174A9CD][Keep main green]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-23                               |
+
+* Acceptance
+
+- The workflows install v0.0.13 and expose it under both names.
+- The nightly reaches the build and submits to CDash.
+
+* Plan
+
+Raise =build/scripts/compass_ng.pin= to v0.0.13 with the commit it was built from
+(8259d8b2ae, 2026-11-22T22:11:00Z), and, in the two Linux workflows, symlink
+=compass-ng= beside the extracted =compass= before adding its directory to PATH.
+The archive layout is =opt/compass/<version>/bin/compass=, checked by unpacking
+the release here.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| The binary the release ships | one, =opt/compass/0.0.13/bin/compass=, and no =compass-ng= | =tar -tzf compass-0.0.13-Linux-x86_64.tar.gz= | release v0.0.13 |
+| The name the tool looks for | =shutil.which("compass-ng")= | =grep -n "compass-ng" projects/ores.compass/src/compass.py= | main at ef57d51b0c |
+| The nightly after the first CI fix | still failed at =Init environment= on 2026-11-23T05:43 | =gh run view --log-failed= | main at ef57d51b0c |
+| v0.0.13's commit | 8259d8b2ae, 104 commits ahead of the pinned one, so it holds it | =gh api repos/MASD-Project/compass/commits/v0.0.13= | release v0.0.13 |
+| Workflows | both parse after the change | a YAML load of each | working tree on 2026-11-23 |
+
+* Notes
+
+#5032 was half the fix: it installed the release, which is v0.0.12, and put a
+binary called =compass= on PATH. The step's own log shows it running; the error
+that follows is the name, not the presence.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5061][#5061]] | [ci] Pin compass-ng v0.0.13 and let the name resolve |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The pin names v0.0.13 and its commit, and both Linux workflows expose the
+release under =compass-ng= as well as =compass=, so =env configure= finds it. The
+next scheduled run is the proof: it either builds and submits to CDash, or the
+log says at which step it stopped.

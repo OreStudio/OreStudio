@@ -80,6 +80,14 @@ export interface BookTradeRequest {
      * row. A row for a kind with no writer yet refuses the booking by name.
      */
     instruments: InstrumentBatch;
+    /**
+     * @brief The product the trade is booked as, as describe_product names it; empty when the caller states none, and the trade then records no product.
+     */
+    product_code: string;
+    /**
+     * @brief The form the product is booked in, native or scripted; stated with the product.
+     */
+    booking_form: string;
 }
 
 /**
@@ -96,6 +104,74 @@ export interface BookTradeResponse {
      * refused.
      */
     activity_id: string | null;
+}
+
+/**
+ * @brief Books a scripted trade: a library script by name and version, or an inline script, on the variables the trade states, refused with the script's findings when they hold an error.
+ */
+export interface BookScriptedRequest {
+    /**
+     * @brief The trade's anchor; its trade type is ScriptedTrade.
+     */
+    anchor: Trade;
+    /**
+     * @brief The trade's booking, as book_trade takes it.
+     */
+    booking: TradeBooking;
+    /**
+     * @brief The activity that books the trade, as book_trade takes it.
+     */
+    activity_type_code: string;
+    /**
+     * @brief Why a draft is not live, as book_trade takes it.
+     */
+    draft_reason_code: string;
+    /**
+     * @brief The trade's identifiers, as book_trade takes them.
+     */
+    identifiers: TradeIdentifier[];
+    /**
+     * @brief The library script, as the caller's tenant resolves the name; for an inline script, the name its code is booked under.
+     */
+    script_name: string;
+    /**
+     * @brief The library script's version; 0 for its current version.
+     */
+    script_version: number;
+    /**
+     * @brief An inline script's code; empty to book the library script.
+     */
+    code: string;
+    /**
+     * @brief The variable an inline script's value lands in.
+     */
+    npv_variable: string;
+    /**
+     * @brief The variables the trade states for the script.
+     */
+    variables: ScriptVariableValue[];
+    /**
+     * @brief The product the trade is booked as; empty for a script-only product, which is the script.
+     */
+    product_code: string;
+}
+
+/**
+ * @brief The outcome of a scripted booking, and the script's findings.
+ */
+export interface BookScriptedResponse {
+    /**
+     * @brief The booking's outcome, as book_trade states it; script_invalid when the script's findings hold an error.
+     */
+    result: Result;
+    /**
+     * @brief The activity that booked the trade, when it was booked.
+     */
+    activity_id: string | null;
+    /**
+     * @brief The script's findings, also when it is booked with warnings only.
+     */
+    diagnostics: ScriptDiagnostic[];
 }
 
 /**
@@ -423,6 +499,7 @@ export interface ResolveMarketDataRequirementsResponse {
 
 export const subjects = {
     book_trade_request: 'trading.v1.ops.book_trade',
+    book_scripted_request: 'trading.v1.ops.book_scripted',
     execute_trade_request: 'trading.v1.ops.execute_trade',
     complete_structure_request: 'trading.v1.ops.complete_structure',
     put_bond_issue_composite_request: 'trading.v1.ops.put_bond_issue_composite',
@@ -437,6 +514,7 @@ export const subjects = {
  */
 export const requiresSession = {
     book_trade_request: true,
+    book_scripted_request: true,
     execute_trade_request: true,
     complete_structure_request: true,
     put_bond_issue_composite_request: true,

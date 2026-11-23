@@ -8,7 +8,7 @@
 #+filetags: :design_the_scripted_trade_subsystem:sprint_30:v0:
 #+owner: marco
 #+branch: feature/book-a-product-in-either-form
-#+pr: 5068
+#+pr: 5070
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-21
@@ -100,6 +100,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5070][#5070]] | [trading] Book a scripted trade, refused with the script's findings |
 | [[https://github.com/OreStudio/OreStudio/pull/5068][#5068]] | [trading] Record the product a trade was booked as, and its form |
 | [[https://github.com/OreStudio/OreStudio/pull/5063][#5063]] | [trading] Move the twin recipe evaluator into ores.trading.api |
 | [[https://github.com/OreStudio/OreStudio/pull/5062][#5062]] | [trading] Validate a script against a trade's variables |
@@ -123,6 +124,13 @@ via its "Verifies task" field.
 | 5068.2 | the activity is checked only on insert | none | no change | as on every child of the anchor: the row records the activity that wrote it |
 | 5068.3 | no test of an empty product or a cross-party read | repository_trade_product_tests.cpp | accept | both added; the party case pins the restrictive policy |
 | 5068.4 | regenerating gives no diff | none | no change | the ratchet's codegen drift check passes |
+| 5070.1 | an unknown product would fail at the store, not by name | trade_operations_service.cpp | accept | book_trade refuses a product that is neither a product type nor a visible script as product_unknown; an inline script with no product is the catalogue's ScriptedTrade |
+| 5070.2 | a version published between validation and the write is booked unvalidated | trade_operations_service.cpp | accept | the validated version is always pinned |
+| 5070.3 | a product with no form reads as an invalid form | trade_operations_service.cpp | accept | its own refusal, booking_form_missing |
+| 5070.4 | extra values of a single-valued variable are dropped | trade_operations_service.cpp | accept | refused as variable_not_single |
+| 5070.5 | each variant is parsed twice | none | no change | the parse is cheap, and returning the inputs would widen the validation's contract for one caller |
+| 5070.6 | the inline purpose default | none | no change | default is the library's own default purpose, so both validate alike |
+| 5070.7 | reformatting in the handler | none | no change | the formatter's output on this task's own handler |
 
 * Result
 

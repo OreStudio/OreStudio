@@ -288,7 +288,7 @@ values
      'dq_ore_parameters_artefact_tbl', 'ore_ore_parameters_tbl', 'ore.v1.ops.publish_ore_parameters_from_dq', 79,
      current_user, current_user, 'system.initial_load', 'Initial population of artefact types'),
     (ores_utility_system_tenant_id_fn(), 'script_library', 0, 'Script Library', 'ORE''s payoff scripts with their variants, results, calibrations, schedule coarsenings and inputs, published into the system tenant one script at a time',
-     'dq_scripts_artefact_tbl, dq_script_variants_artefact_tbl, dq_script_results_artefact_tbl, dq_script_calibrations_artefact_tbl, dq_script_calibration_strikes_artefact_tbl, dq_script_coarsenings_artefact_tbl, dq_script_inputs_artefact_tbl',
+     'dq_scripts_artefact_tbl, dq_script_variants_artefact_tbl, dq_script_results_artefact_tbl, dq_script_calibrations_artefact_tbl, dq_script_calibration_strikes_artefact_tbl, dq_script_coarsenings_artefact_tbl, dq_script_inputs_artefact_tbl, dq_script_input_codes_artefact_tbl',
      'trading_scripts_tbl', 'trading.v1.ops.publish_script_library_from_dq', 80,
      current_user, current_user, 'system.initial_load', 'Initial population of artefact types')
 on conflict (tenant_id, code)

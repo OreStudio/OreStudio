@@ -194,6 +194,8 @@
 \ir ./trading_script_coarsenings_notify_trigger_create.sql
 \ir ./trading_script_inputs_create.sql
 \ir ./trading_script_inputs_notify_trigger_create.sql
+\ir ./trading_script_input_codes_create.sql
+\ir ./trading_script_input_codes_notify_trigger_create.sql
 \ir ./trading_script_twin_inputs_create.sql
 \ir ./trading_script_twin_inputs_notify_trigger_create.sql
 

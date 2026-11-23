@@ -8,7 +8,7 @@
 #+filetags: :design_the_scripted_trade_subsystem:sprint_30:v0:
 #+owner: marco
 #+branch: feature/describe-every-product-by-its-schema
-#+pr: 5040
+#+pr: 5044
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-21
@@ -101,6 +101,7 @@ task and name that file in the Command column.
 | Schema types and fields reachable from those elements | 441 types, 2929 fields; 330 fields described by the guide | =python3 projects/ores.sql/utility/extract_instrument_terms.py= | PR 1 |
 | Rows of the =ore.parameters= seed | 5602, from 2559 | =python3 projects/ores.sql/utility/generate_ore_parameters_dataset.py= | PR 1 |
 | Leaf rows if every product's paths were expanded instead | 11626 | a walk of =instrument_terms.json= from each product's element, before the substitution groups were read | PR 1 |
+| Script inputs with codes; codes staged | 63 inputs, 22 distinct sets; 148 codes | =python3 external/ore/tools/generate_script_library.py= | PR 2 |
 
 * Notes
 
@@ -157,6 +158,24 @@ the rows, =measure_ore_parameter_releases.py= the first release, and
 =generate_ore_parameters_dataset.py= writes the seed, with =--check=. The value
 sets, the element map and its columns are written by compass's =ore_value_sets=
 codec from the value set curation.
+
+** PR 2: the annotations of script-only products
+
+A script-only product's fields are its script's inputs, which trading already
+holds: name, type, array or scalar, the value rule from its REQUIRE statements,
+and the description from the library comment (679 of the 750 inputs have one).
+Of the annotations the design names, only the codes are missing as data: 63 inputs
+read a choice as a number and state its meaning in prose, "1 for DownIn, 2 for
+UpIn". They are now the entity =script_input_code=, a row per code with its
+label, versioned with its script and staged and published with it through the
+=ore.script_library= dataset. A label of a field is its name humanised, so no
+label is stored; the library states no default for any input, so none is stored.
+
+The codes are read by =external/ore/tools/script_input_codes.py=; three inputs
+have a correction, in =script_input_code_corrections.json=: two comments spell
+DownIn as DonwIn, and one states a payoff as a formula. A tenant's own scripts
+get no codes yet: their publish derives inputs from the code, not from a comment
+the library generator reads.
 
 ** Which component serves describe_product
 
@@ -230,6 +249,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5044][#5044]] | [trading] Hold the codes of coded script inputs as data |
 | [[https://github.com/OreStudio/OreStudio/pull/5040][#5040]] | [ore] Describe the fields of every native product in the ore parameters |
 
 * Review
@@ -242,6 +262,12 @@ via its "Verifies task" field.
 | 5040.4 | an inline type named like a named type would drop fields silently | extract_instrument_terms.py | accept | the extractor refuses the clash |
 | 5040.5 | the catalogue is parsed by column position; the convention extractor is not in the check | extract_instrument_terms.py, local_checks.py | accept | the header row is checked; extract_convention_terms.py joins the check's paths |
 | 5040.6 | post the synthetic rebuild's result | none | no change | rebuilt; the service starts and runs, so the bad_alloc was the stale binary |
+| 5044.1 | sequence_number runs across the script, so a new code renumbers later ones | none | no change | a changed script is written whole at its new version, every row anew, so renumbering adds no rows or churn |
+| 5044.2 | a correction key with a typo is ignored silently | generate_script_library.py | accept | the generator fails on a correction naming no script's input |
+| 5044.3 | the docstring has an unwrapped line | script_input_codes.py | accept | rewrapped |
+| 5044.4 | a code stated twice with two labels is dropped silently | script_input_codes.py, generate_script_library.py | accept | the generator warns; KikoType, the one case, has a correction saying the second statement is advice |
+| 5044.5 | track the codes of tenant scripts | doc/agile/product_backlog/inbox | accept | captured as Codes for a tenant's published scripts |
+| 5044.6 | no unit test of the heuristic reader | build/scripts/tests/test_script_input_codes.py | accept | 9 cases, run by the build-script-tests check |
 
 * Result
 
@@ -249,5 +275,6 @@ In progress: PR 1 is in. Every native product of the catalogue has its fields
 in the =ore.parameters= dataset, read from the vendored ORE schemas with the
 guide's words: one row for each field of each schema type, 2929 in all, and
 the data element of each trade type as a field of its trade,
-=/Trade[TradeType='Swap']/SwapData=. The script-only products' fields, the
-=describe_product= operation and its HTTP and BFF routes follow in PRs 2 to 4.
+=/Trade[TradeType='Swap']/SwapData=. PR 2 is in: the codes of the library's
+coded script inputs are data, the entity =script_input_code=, published with their
+script. The =describe_product= operation and its HTTP and BFF routes follow.

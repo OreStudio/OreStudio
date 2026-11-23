@@ -257,6 +257,7 @@
 \ir ./dq_script_calibration_strikes_artefact_create.sql
 \ir ./dq_script_coarsenings_artefact_create.sql
 \ir ./dq_script_inputs_artefact_create.sql
+\ir ./dq_script_input_codes_artefact_create.sql
 
 -- Report configuration documents: staging tables
 \ir ./dq_pricing_model_configs_artefact_create.sql

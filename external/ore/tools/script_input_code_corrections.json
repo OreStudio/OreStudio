@@ -1,0 +1,78 @@
+{
+  "GenericBarrierOption/PayoffType": {
+    "codes": [
+      [
+        0,
+        "Vanilla"
+      ],
+      [
+        1,
+        "Cash or nothing"
+      ]
+    ],
+    "reason": "The comment states the vanilla payoff as a formula, max(0, S-K), which is not a name."
+  },
+  "GenericBarrierOption/BarrierTypes": {
+    "codes": [
+      [
+        1,
+        "DownIn"
+      ],
+      [
+        2,
+        "UpIn"
+      ],
+      [
+        3,
+        "DownOut"
+      ],
+      [
+        4,
+        "UpOut"
+      ]
+    ],
+    "reason": "The comment spells DownIn as DonwIn; every other barrier input of the library spells it DownIn."
+  },
+  "GenericBarrierOption/TransatlanticBarrierType": {
+    "codes": [
+      [
+        0,
+        "none"
+      ],
+      [
+        1,
+        "DownIn"
+      ],
+      [
+        2,
+        "UpIn"
+      ],
+      [
+        3,
+        "DownOut"
+      ],
+      [
+        4,
+        "UpOut"
+      ]
+    ],
+    "reason": "The comment spells DownIn as DonwIn; every other barrier input of the library spells it DownIn."
+  },
+  "GenericBarrierOption/KikoType": {
+    "codes": [
+      [
+        1,
+        "KoAlways"
+      ],
+      [
+        2,
+        "KoBeforeKi"
+      ],
+      [
+        3,
+        "KoAfterKi"
+      ]
+    ],
+    "reason": "The comment ends with advice, \"should be 1 for pure KO or pure KI barrier\", which names code 1 again; it is not a fourth meaning of the code."
+  }
+}

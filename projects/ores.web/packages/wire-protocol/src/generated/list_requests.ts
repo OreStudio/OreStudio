@@ -7004,6 +7004,16 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'trading.v1.script_input_codes.list': {
+        asOf: true,
+        filter: [],
+        rows: ['codes'],
+    },
+    'trading.v1.script_input_codes_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
     'trading.v1.script_inputs.list': {
         asOf: true,
         filter: [],

@@ -69,8 +69,16 @@
 #include "ores.shell/app/commands/marketdata/public_terms_commands.hpp"
 #include "ores.shell/app/commands/marketdata_commands.hpp"
 #include "ores.shell/app/commands/navigation_commands.hpp"
-#include "ores.shell/app/commands/orgmode/knowledge_page_commands.hpp"
-#include "ores.shell/app/commands/orgmode_commands.hpp"
+#include "ores.shell/app/commands/ore/ore_file_category_commands.hpp"
+#include "ores.shell/app/commands/ore/ore_file_commands.hpp"
+#include "ores.shell/app/commands/ore/ore_file_version_commands.hpp"
+#include "ores.shell/app/commands/ore/ore_parameter_commands.hpp"
+#include "ores.shell/app/commands/ore/ore_parameter_setting_value_set_commands.hpp"
+#include "ores.shell/app/commands/ore/ore_parameter_settings_commands.hpp"
+#include "ores.shell/app/commands/ore/ore_parameter_value_domain_commands.hpp"
+#include "ores.shell/app/commands/ore/ore_parameter_value_set_catalogue_commands.hpp"
+#include "ores.shell/app/commands/ore/ore_parameter_value_set_commands.hpp"
+#include "ores.shell/app/commands/ore/ore_parameter_value_set_value_commands.hpp"
 #include "ores.shell/app/commands/provision_commands.hpp"
 #include "ores.shell/app/commands/rbac_commands.hpp"
 #include "ores.shell/app/commands/refdata/refdata_commands.hpp"
@@ -95,16 +103,6 @@
 #include "ores.shell/app/commands/reporting/engine_settings_group_commands.hpp"
 #include "ores.shell/app/commands/reporting/engine_settings_group_setting_commands.hpp"
 #include "ores.shell/app/commands/reporting/file_type_commands.hpp"
-#include "ores.shell/app/commands/reporting/ore_file_category_commands.hpp"
-#include "ores.shell/app/commands/reporting/ore_file_commands.hpp"
-#include "ores.shell/app/commands/reporting/ore_file_version_commands.hpp"
-#include "ores.shell/app/commands/reporting/ore_parameter_commands.hpp"
-#include "ores.shell/app/commands/reporting/ore_parameter_setting_value_set_commands.hpp"
-#include "ores.shell/app/commands/reporting/ore_parameter_settings_commands.hpp"
-#include "ores.shell/app/commands/reporting/ore_parameter_value_domain_commands.hpp"
-#include "ores.shell/app/commands/reporting/ore_parameter_value_set_catalogue_commands.hpp"
-#include "ores.shell/app/commands/reporting/ore_parameter_value_set_commands.hpp"
-#include "ores.shell/app/commands/reporting/ore_parameter_value_set_value_commands.hpp"
 #include "ores.shell/app/commands/reporting/pricing_engines_commands.hpp"
 #include "ores.shell/app/commands/reporting/report_configuration_commands.hpp"
 #include "ores.shell/app/commands/reporting/report_definition_commands.hpp"
@@ -176,7 +174,6 @@ std::unique_ptr<cli::Cli> repl::setup_menus() {
     refdata_commands::register_commands(*root, session_);
     analytics_commands::register_commands(*root, session_);
     storage_commands::register_commands(*root, session_);
-    knowledge_page_commands::register_commands(*root, session_);
     accounts_commands::register_commands(*root, session_, pagination_);
     system_setting_commands::register_commands(*root, session_);
     concurrency_policy_commands::register_commands(*root, session_);
@@ -228,7 +225,6 @@ std::unique_ptr<cli::Cli> repl::setup_menus() {
     role_grant_request_commands::register_commands(*root, session_);
     role_grant_request_role_commands::register_commands(*root, session_);
     navigation_commands::register_commands(*root, pagination_);
-    orgmode_commands::register_commands(*root);
     history_commands::register_commands(*root, session_);
     script_commands::register_commands(*root, active_session_);
     bundles_commands::register_commands(*root, session_);

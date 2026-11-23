@@ -27,6 +27,7 @@ set(files
     "domain/session_store.cpp"
     "messaging/http_info_protocol_codec.cpp"
     "net/client_address.cpp"
+    "net/cors.cpp"
     "net/http_server.cpp"
     "net/http_server_options.cpp"
     "net/http_session.cpp"
@@ -42,6 +43,7 @@ set(files
 # The headers are listed for the install and IDE targets.
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.api/domain/awaitable_body_source.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.api/domain/bearer_exchange.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.api/domain/body_sink.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.api/domain/body_source.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.api/domain/http_method.hpp"
@@ -55,6 +57,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.api/messaging/http_info_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.api/net/classification_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.api/net/client_address.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.api/net/cors.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.api/net/http_server.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.api/net/http_server_options.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.api/net/http_session.hpp"

@@ -1,0 +1,181 @@
+:PROPERTIES:
+:ID: 6B455B15-0FDB-4E1E-A2A8-CEFC4C1D155C
+:END:
+#+title: Investigation: Security review of delegated access for LLM agents
+#+description: The approved agent design reviewed against the identity and access cluster and its patterns: what fits, what conflicts, what must change.
+#+type: investigation
+#+level: s1
+#+filetags: :security:agents:mcp:investigation:serve_mcp_from_ores_http:sprint_30:v0:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+
+A point-in-time record, written while the story that commissioned it was open,
+of an [[id:A7F8D9E2-3C4B-4A5D-B67C-8E9F0A1B2C3D][investigation]] into whether the approved design of delegated access for
+LLM agents fits ORE Studio's security architecture, and what must change where
+it does not.
+
+It is a snapshot, not a description of the system. Whatever it concludes that the code must keep doing belongs on the page that owns the subject; cite that page from code, recipes and models, not this one.
+
+* Context
+
+The cluster [[id:47B179BF-C982-4BB1-AF4F-35E00B9D2750][Delegated Access for LLM Agents]] was approved on 2026-11-22, and work started on its first
+code task, the agent grant and its key. The product owner then asked whether
+the design had been checked against the existing security pages and whether
+those pages had been updated with it, because the code is sensitive. It had
+been linked to them, but not reviewed against them. The code task stopped
+before anything was generated, and this review was made first.
+
+* Methodology
+
+Every page of the identity and access cluster, and the patterns the design
+reuses, read in full or by their rules, on =origin/main= at =572b1a6a85=:
+
+| Page | Read for |
+|------+----------|
+| [[id:78B82824-0BBB-4442-A9FA-E1F265DF57BD][Run grants and run tokens]] | the closest precedent: its grant, checks, claims, cache and trust boundaries |
+| [[id:AE30F62E-3B9E-4B59-9D11-E8FEE876949A][Grant Management]] | its forces, pitfalls and security section |
+| [[id:96460BBE-D7BF-4538-B620-AC5FD9F0C9FE][Token Exchange]] | its forces, pitfalls and security section |
+| Access Token | the claims a token carries |
+| [[id:3E20C1A0-7BA1-4F31-8C34-1E5F13558890][Service-to-Service Auth]] | which identity each layer acts as, and the rules at the HTTP edge |
+| [[id:3CAA394F-E84C-3434-331B-6E664F7E84D2][Role-Based Access Control]] | the rules for roles and wildcards |
+| Authorised reads, Role requests, Session modes and capabilities | what an agent's token meets on reads, role requests and the shell |
+| [[id:0EAAEDFD-7954-4649-A463-9EE377B023F7][Data read across tenants]], RLS and permission exceptions register | the rule for entering or reading across tenants |
+| Identity and Access Management, Internal actor impersonation | the vocabulary of actors, and the one other minted identity |
+
+And the code each relies on: =jwt_claims= and =jwt_authenticator= for the
+=act= claim, =authorization::grants= for wildcard matching,
+=run_grant_operations_service= for the exchange, and =http_session= for the
+bearer path at the edge.
+
+* Paths taken
+
+** What fits
+
+- *IAM stays the only signer.* ores.http holds no key and mints nothing; it
+  exchanges and relays, as the edge rules of [[id:3E20C1A0-7BA1-4F31-8C34-1E5F13558890][Service-to-Service Auth]] require.
+- *Run grants are the right precedent.* Grant Management and Token Exchange
+  are reused rather than reinvented: the grant holds no secret, the exchange
+  re-checks the grant and the person each time, tokens last five minutes, and
+  every issue is logged.
+- *One party.* =visible_party_ids= is the grant's party only, as for a run
+  token, so an agent reads no other party, and row-level security enforces it.
+- *Read-only as explicit codes.* [[id:3CAA394F-E84C-3434-331B-6E664F7E84D2][Role-Based Access Control]] forbids read wildcards. A read-only
+  token carries the explicit read codes the person holds, never a wildcard, so
+  an entity added later is not readable without a decision.
+- *No stored token.* The agent's token is cached in memory and never written,
+  as a relayed token must not be.
+
+** What conflicts
+
+1. *The grant is wider than the work.* [[id:AE30F62E-3B9E-4B59-9D11-E8FEE876949A][Grant Management]] names it as a pitfall: "A grant with
+   the person's whole role is a session in disguise. Grant a role made for the
+   work." [[id:96460BBE-D7BF-4538-B620-AC5FD9F0C9FE][Token Exchange]] says the same of tokens. The approved design gives a
+   read-and-write grant the person's whole permission set. A run grant names a
+   role, and its token carries the role's permissions intersected with what the
+   person holds now; an agent grant does not.
+2. *Nothing keeps an agent out of administration.* A read-and-write grant of a
+   tenant administrator carries =*=, and so every IAM write: accounts, role
+   assignment, password resets, impersonation, run grants and agent grants
+   themselves, and every decide permission of the approval queue. The six-eyes
+   note says an agent never decides a part, but nothing in the token enforces
+   it, and no handler reads =act= today.
+3. *The key is a credential at rest.* [[id:AE30F62E-3B9E-4B59-9D11-E8FEE876949A][Grant Management]]'s forces say "a stored token is a
+   credential at rest", and the pattern avoids one by making the grant id
+   useless without the client's own token. An outside agent has no token of its
+   own, so the key it stores is its credential. This departs from the pattern
+   and is unavoidable for an agent outside ORE; the design must say so and
+   bound it, which it does only in part: it allows a grant with no expiry.
+4. *=act= is a service's name today.* A run token sets =act= to the step
+   service's role name, such as =ReportingService=. An agent's name in the same
+   claim could be read as a service's. RFC 8693 also defines =act= as an object
+   with a =sub=; ORE carries it as a string. Nothing reads =act= today, so the
+   convention can still be fixed.
+5. *IAM enters a tenant named by an untrusted key.* The key carries its
+   tenant, and the exchange reads the grant there, as the run-grant exchange
+   does with a tenant from a step header. [[id:0EAAEDFD-7954-4649-A463-9EE377B023F7][Data read across tenants]] requires an exception of this
+   kind to be stated, reviewed and signed off; the register's entry E5 records
+   a service entering tenants, and the agent exchange would be another such
+   entry.
+6. *The edge logs and limits.* =http_session= logs a refused token's error and
+   limits failed credentials, but the design did not say that a key is never
+   written to a log, or how a key differs from a token in the failure limiter.
+
+** What the existing pages lack
+
+| Page | Change |
+|------+--------|
+| [[id:78B82824-0BBB-4442-A9FA-E1F265DF57BD][Run grants and run tokens]] | name the agent grant as the second grant, and what the two share and do not |
+| [[id:3E20C1A0-7BA1-4F31-8C34-1E5F13558890][Service-to-Service Auth]] | a row in the table of who acts as whom: an LLM agent, over MCP, as the person narrowed by an agent grant |
+| [[id:3CAA394F-E84C-3434-331B-6E664F7E84D2][Role-Based Access Control]] | the agent roles, and the permissions no agent role may hold |
+| Access Token, [[id:96460BBE-D7BF-4538-B620-AC5FD9F0C9FE][Token Exchange]] | the =act= convention for agents |
+| RLS and permission exceptions register | an entry for the agent exchange entering a tenant |
+| Identity and Access Management | the agent as a kind of actor, beside a person and a service |
+
+* Conclusions
+
+The design's shape fits the architecture: one door, IAM as the only signer,
+Grant Management and Token Exchange as in run grants. Its grant does not: it
+is a session in disguise, and nothing keeps an agent out of administration.
+Both are fixed by doing what run grants already do, a grant bounded by a role,
+plus one rule run grants do not need, because a run's role is fixed by its
+component while an agent's is chosen by a person. The key's departure from the
+pattern is unavoidable and must be stated and bounded.
+
+* Recommendations
+
+Each is a decision for the product owner; the design notes and the pages above
+change once they are made, and the code task resumes after.
+
+1. *An agent grant names a role,* as a run grant does. Its token carries the
+   role's permissions intersected with the person's current permissions, at
+   every exchange. Seed one role made for agents, =AgentReader=, holding
+   explicit read codes; a tenant administrator can define others, such as one
+   that books trades. =scope= goes: a read-only grant is a grant of a read-only
+   role.
+2. *Permissions no agent holds.* IAM removes from every agent token, whatever
+   the role: every =installation::= code, every IAM write (accounts, roles,
+   permissions, password resets, impersonation, run grants, agent grants and
+   keys), every decide permission of the approval queue, and every exchange
+   permission. The list is data, checked by a test, and a role that names one is
+   refused at create. The approval queue and IAM's write handlers also refuse a
+   token that carries an agent's =act=, so the rule holds even if the list is
+   wrong.
+3. *=act= for an agent is =agent:<grant id>=,* which no service role name can
+   take, and =grant_id= carries the same id; the agent's name is read from the
+   grant. ORE's string form of =act= is recorded as a deviation from RFC 8693's
+   object.
+4. *The key is a bounded credential at rest.* Every grant has an expiry, at
+   most ninety days; the key is shown once, stored as a SHA-256 hash of 256
+   random bits, revocable alone or with its grant, and replaced by a second key
+   before the first is revoked. It is never logged: ores.http redacts it from
+   every log line and refusal, and keys its cache by the hash.
+5. *The exchange's entry into a tenant is registered.* An entry in the RLS and
+   permission exceptions register states that IAM enters the tenant a key
+   names, reads only that tenant's grant, key, account and permissions, refuses
+   before any read when the tenant id does not parse, and limits exchanges per
+   tenant and per key.
+6. *The existing pages are updated* as the table above lists, in the same
+   change as the design notes.
+7. *Every rule above has a test*: a role wider than the person, a role naming a
+   forbidden permission, a token without administration, an expired, revoked or
+   lapsed grant, a revoked key, a wrong secret, a key for another tenant, and a
+   key in a log line.
+
+* Decision
+
+The product owner approved the seven recommendations on 2026-11-22, and added
+one: an agent's calls form sessions of their own, shown apart from its
+person's in the sessions window, and ending one revokes the key that opened it
+([[id:4DCD0684-F6AE-4E84-BB9D-2AE2DAFDB667][Sessions of LLM agents]]). The design notes and the existing security pages were updated in one
+change: the agent grant and token notes, the new notes [[id:1679B2CE-05C2-4CFF-9A4B-47EC721CB10A][Withholding of administrative permissions from LLM agents]] and [[id:4DCD0684-F6AE-4E84-BB9D-2AE2DAFDB667][Sessions of LLM agents]], Run
+grants and run tokens, Service-to-Service Auth, Role-Based Access Control,
+Access Token, Token Exchange, the RLS and permission exceptions register (entry
+E9) and Identity and Access Management.
+
+* See also
+
+- [[id:47B179BF-C982-4BB1-AF4F-35E00B9D2750][Delegated Access for LLM Agents]] — the design reviewed.
+- [[id:A7E2942C-66AD-449C-B80B-CA789EBC34FA][Agent grants: delegated consent for LLM agents]] — completes: where recommendations 1, 2 and 4 land.
+- [[id:1162906F-BB72-486E-9A11-30D567C65F3E][Delegation tokens for LLM agents: subject and actor claims]] — completes: where recommendation 3 lands.
+- [[id:381D87BB-4E2D-47BA-8853-6132CF900305][Six-eyes approval of LLM agent writes]] — completes: recommendation 2 is the enforcement its rule lacked.
+- [[id:AF46793A-FF6C-4066-A059-279CE9936420][Identity and Access]] — the cluster the design was reviewed against.

@@ -1,0 +1,66 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+salt
+{
+  <b>REFERENCE DATA COVERAGE</b>  { Coverage | Bundles | Datasets }
+  --
+  {
+    {
+      <b>What this tenant holds, by level</b>
+      --
+      <b>Platform</b>
+      system_core  -  12 datasets  -  published at bring-up
+      --
+      <b>World</b>
+      world  -  41 datasets  -  published at bring-up
+      crypto  -  9 datasets  -  <i>not published</i>
+      --
+      <b>Tenant</b>
+      tenant_defaults  -  3 datasets  -  published when the tenant was created
+      party_essentials  -  2 datasets  -  <b>1 of 2 ready</b>
+      risk_management  -  4 datasets  -  <b>1 member names no subject</b>
+    } | {
+      <b>party_essentials: its members</b>
+      --
+      {#
+        Dataset | Staged | Published | State
+        refdata.conventions | 10,991 | 10,991 | ok
+        refdata.currency_pair_conventions | 88 | 84 | 4 skipped
+        refdata.currency_pair_convention_calendars | 0 | 0 | no artefact rows
+        testdata.business_units | 12 | 0 | <b>nothing published</b>
+      }
+      <i>Staged is a count of the artefact table.</i>
+      <i>Published is a count of rows carrying this dataset's provenance.</i>
+      --
+      <b>Why a member is not ready</b>
+      No dataset row, no artefact type, no target subject, or no staged rows.
+      The screen states which, because each has a different owner.
+      --
+      <b>What the screen cannot show today</b>
+      The history. The run log exists and nothing writes it.
+    }
+  }
+  --
+  { Publish this bundle... | Preview what it would write }
+  --
+  <i>History: no publication has been recorded, because nothing writes the run log.</i>
+}
+
+@enduml

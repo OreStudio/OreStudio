@@ -1,0 +1,57 @@
+The authorisation queue, proved against the gateway and against the BFF's own
+answer.
+
+Commit under test : the branch head, built from this checkout
+Database          : ores_dev_brave_hopper, as the fleet found it
+Gateway           : ores.http.server-brave_hopper, http://localhost:20401
+BFF               : ores.web.service-brave_hopper, http://localhost:20402
+Services running  : the whole fleet, started by compass services start
+Account           : tenant_admin, in Acme Corporation, acting as its party
+
+This is the last route of the port that the BFF answered and ores.http did not.
+
+What the run shows. Both servers answer the same body at the same address: the
+same three members, the same counts, and the same Cache-Control of private,
+no-store, because the queue states what this person may decide now. The page a
+read does not take is refused by both with the same 400 and the same words.
+
+What this database cannot show is a queue with a row in it: it holds no
+authorisation request at all, and the inbox answers none for this account, since
+a request is raised by booking a trade live and the environment holds no live
+booking. The row's members and the verdict on a deal that moved are therefore
+proved by the workflow suite and not by the live run.
+
+One difference the run shows and the port keeps on purpose: a query parameter
+the read does not take, such as search, is refused with a 400 where the BFF
+ignored it. Every read this port has answered refuses a parameter it does not
+take, which tells a person their query did nothing rather than dropping it. The
+queue screen sends the offset and the limit and nothing else.
+
+--- 8< ---
+
+=== signing in to the gateway
+  choose party: 200
+=== signing in to the BFF
+  choose party: 200
+
+=== GET /api/queue/authorisations
+gateway: HTTP 200  the BFF: HTTP 200
+cache-control: private, no-store
+gateway members: ['answered', 'items', 'total']
+the BFF's members: ['answered', 'items', 'total']
+identical: True
+  items: 0  answered: 0  total: 0
+
+=== GET /api/queue/authorisations?limit=5
+gateway: HTTP 200  the BFF: HTTP 200
+cache-control: private, no-store
+gateway members: ['answered', 'items', 'total']
+the BFF's members: ['answered', 'items', 'total']
+identical: True
+  items: 0  answered: 0  total: 0
+
+=== the page both servers refuse
+?limit=0       gateway HTTP 400  BFF HTTP 400  {"code":"invalid-request","message":"A page names an offset and a limit of 1 to 100."}
+?limit=101     gateway HTTP 400  BFF HTTP 400  {"code":"invalid-request","message":"A page names an offset and a limit of 1 to 100."}
+?offset=-1     gateway HTTP 400  BFF HTTP 400  {"code":"invalid-request","message":"A page names an offset and a limit of 1 to 100."}
+?search=x      gateway HTTP 400  BFF HTTP 200  {"code":"invalid-request","message":"This read cannot take search."}

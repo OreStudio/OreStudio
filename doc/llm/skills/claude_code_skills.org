@@ -69,7 +69,7 @@ Recipes, knowledge, manual, memory, diagrams, search.
 
 | Name | Title | Description |
 |------+-------+-------------|
-| [[id:D3767A34-DC32-4366-ADAB-534D6FC4C607][compass-doc-add]] | Doc Add | Create a document of any type — story, task, capture, knowledge, recipe, memory and the rest. Scaffold it,... |
+| [[id:D3767A34-DC32-4366-ADAB-534D6FC4C607][compass-doc-add]] | Doc Add | Create a document of any type — story, task, capture, knowledge (a Zettelkasten page), recipe, memory and t... |
 | [[id:E8629813-4F4A-4165-85AA-27BE7F38E32C][compass-doc-add-chart]] | Doc Add Chart | / |
 | [[id:D6D86317-4961-6754-A6DB-9C12B5FAC997][compass-doc-add-class-diagram]] | Doc Add Class Diagram | Author or update a PlantUML class diagram for an ORE Studio component, or the system-level architecture dia... |
 | [[id:B0B99088-D88E-4980-A4EE-7D6A9A8E96A5][compass-doc-add-component-model]] | Doc Add Component Model | Create or update component_overview.org and the PlantUML class diagram for an ORE Studio component. |
@@ -78,7 +78,7 @@ Recipes, knowledge, manual, memory, diagrams, search.
 | [[id:7357C672-A49F-4974-9399-A166F761D222][compass-doc-add-memory]] | Doc Add Memory | When the user gives feedback worth remembering, or asks "remember this", write or update a memory under doc... |
 | [[id:28AAF9A6-B1E4-402A-83BB-289090990FB8][compass-doc-add-recipe]] | Doc Add Recipe | Add new how-do-I recipes to ORE Studio under doc/recipes/<topic>/. Pick the right topic, scaffold via the c... |
 | [[id:D4B099D0-FF9B-4029-96ED-6EE77439DF41][compass-doc-find]] | Doc Find | Search every document in the repository: full-text search and structured filters over the org-roam graph. |
-| [[id:180D0EB5-C08A-4C96-B266-3DF593E8F5E3][compass-doc-review-academic]] | Review and write academic prose | Layered review of argumentative documentation: claim, spine, paragraph, sentence, term, evidence, honesty. |
+| [[id:180D0EB5-C08A-4C96-B266-3DF593E8F5E3][compass-doc-review-academic]] | Review and write academic prose | Write or review knowledge documentation (Zettelkasten pages) in academic style, in layers: title, claim, sp... |
 | [[id:ADDFBA8F-EAE3-47DD-9FFA-A171DA47ABA3][compass-doc-review-ste100]] | Review and rewrite agent output using ASD-STE100 Simplified Technical English | Rewrites ambiguous English into ASD-STE100 style — one meaning per word, active voice, simple tense, short... |
 | [[id:9CCEF67E-1BCF-440B-8112-093B40085A7C][compass-doc-run-manual-screenshots]] | Doc Run Manual Screenshots | Turn a manual chapter's [SCREENSHOT NEEDED] placeholders into real, cropped screenshots -- confirm a build... |
 | [[id:0F8DE59C-9CD1-463A-9148-0B452A985C23][compass-doc-show]] | Doc Show | Show the current state of anything — a document, the sprint, the fleet, the journal, services, CI checks, a... |

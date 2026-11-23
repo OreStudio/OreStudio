@@ -47,7 +47,7 @@ on the thread, the order the streams were made in or how many exist. A stream
 reads its draws in order; the block function =philox4x32_10= is a free function,
 so a caller that needs a draw at an index computes that block directly. The
 keyed Brownian path does this
-([[id:14C79EA2-4E36-4EF2-A0DB-0EB932655029][A keyed Brownian path is a pure function of seed and time]]).
+([[id:14C79EA2-4E36-4EF2-A0DB-0EB932655029][Keyed Brownian paths from counter-based draws]]).
 
 ** Other implementations
 
@@ -67,6 +67,6 @@ package for R, which carries his header (MIT licence, 2014-2015) with the
 
 * See also
 
-- [[id:14C79EA2-4E36-4EF2-A0DB-0EB932655029][A keyed Brownian path is a pure function of seed and time]] -- the use that needs addressed draws.
+- [[id:14C79EA2-4E36-4EF2-A0DB-0EB932655029][Keyed Brownian paths from counter-based draws]] -- the use that needs addressed draws.
 - [[id:F135B9AF-902F-46C5-847C-0820D8C92D28][One scheduler draws every feed's gaps from its arrival law]] -- the use that needs independent streams.
 - [[id:25C467BE-07A3-432C-8CB8-6B194E748570][Shared Brownian factors give every synthetic series a signed correlation]] -- why the factors must not depend on who asks.

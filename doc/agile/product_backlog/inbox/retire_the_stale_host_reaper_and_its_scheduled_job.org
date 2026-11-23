@@ -21,7 +21,7 @@ The lease reaper now returns the jobs of lost nodes to the queue, with an attemp
 
 * References
 
-- [[id:7D4D8598-555D-4E86-8006-3BC79E926382][How the compute grid queues and claims work]]
+- [[id:7D4D8598-555D-4E86-8006-3BC79E926382][Queueing and claiming in the compute grid]]
 
 * See also
 

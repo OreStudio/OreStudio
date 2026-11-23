@@ -39,15 +39,6 @@
 #include "ores.reporting.api/domain/engine_settings_group_codec.hpp"
 #include "ores.reporting.api/domain/engine_settings_group_setting_codec.hpp"
 #include "ores.reporting.api/domain/file_type_codec.hpp"
-#include "ores.reporting.api/domain/ore_file_category_codec.hpp"
-#include "ores.reporting.api/domain/ore_file_codec.hpp"
-#include "ores.reporting.api/domain/ore_file_version_codec.hpp"
-#include "ores.reporting.api/domain/ore_parameter_codec.hpp"
-#include "ores.reporting.api/domain/ore_parameter_setting_value_set_codec.hpp"
-#include "ores.reporting.api/domain/ore_parameter_value_domain_codec.hpp"
-#include "ores.reporting.api/domain/ore_parameter_value_set_catalogue_codec.hpp"
-#include "ores.reporting.api/domain/ore_parameter_value_set_codec.hpp"
-#include "ores.reporting.api/domain/ore_parameter_value_set_value_codec.hpp"
 #include "ores.reporting.api/domain/report_cashflow_codec.hpp"
 #include "ores.reporting.api/domain/report_configuration_codec.hpp"
 #include "ores.reporting.api/domain/report_definition_codec.hpp"
@@ -85,15 +76,6 @@
 #include "ores.reporting.api/generators/engine_settings_group_generator.hpp"
 #include "ores.reporting.api/generators/engine_settings_group_setting_generator.hpp"
 #include "ores.reporting.api/generators/file_type_generator.hpp"
-#include "ores.reporting.api/generators/ore_file_category_generator.hpp"
-#include "ores.reporting.api/generators/ore_file_generator.hpp"
-#include "ores.reporting.api/generators/ore_file_version_generator.hpp"
-#include "ores.reporting.api/generators/ore_parameter_generator.hpp"
-#include "ores.reporting.api/generators/ore_parameter_setting_value_set_generator.hpp"
-#include "ores.reporting.api/generators/ore_parameter_value_domain_generator.hpp"
-#include "ores.reporting.api/generators/ore_parameter_value_set_catalogue_generator.hpp"
-#include "ores.reporting.api/generators/ore_parameter_value_set_generator.hpp"
-#include "ores.reporting.api/generators/ore_parameter_value_set_value_generator.hpp"
 #include "ores.reporting.api/generators/report_cashflow_generator.hpp"
 #include "ores.reporting.api/generators/report_configuration_generator.hpp"
 #include "ores.reporting.api/generators/report_definition_generator.hpp"
@@ -177,19 +159,6 @@ TEST_CASE("every reporting domain type has its wire form", codec_tags) {
     survives_the_wire(
         ores::reporting::generators::generate_synthetic_engine_settings_group_setting(ctx));
     survives_the_wire(ores::reporting::generators::generate_synthetic_file_type(ctx));
-    survives_the_wire(ores::reporting::generators::generate_synthetic_ore_file(ctx));
-    survives_the_wire(ores::reporting::generators::generate_synthetic_ore_file_version(ctx));
-    survives_the_wire(ores::reporting::generators::generate_synthetic_ore_file_category(ctx));
-    survives_the_wire(ores::reporting::generators::generate_synthetic_ore_parameter(ctx));
-    survives_the_wire(
-        ores::reporting::generators::generate_synthetic_ore_parameter_setting_value_set(ctx));
-    survives_the_wire(
-        ores::reporting::generators::generate_synthetic_ore_parameter_value_domain(ctx));
-    survives_the_wire(ores::reporting::generators::generate_synthetic_ore_parameter_value_set(ctx));
-    survives_the_wire(
-        ores::reporting::generators::generate_synthetic_ore_parameter_value_set_catalogue(ctx));
-    survives_the_wire(
-        ores::reporting::generators::generate_synthetic_ore_parameter_value_set_value(ctx));
     survives_the_wire(ores::reporting::generators::generate_synthetic_report_cashflow(ctx));
     survives_the_wire(ores::reporting::generators::generate_synthetic_report_configuration(ctx));
     survives_the_wire(ores::reporting::generators::generate_synthetic_report_definition(ctx));
@@ -231,8 +200,6 @@ TEST_CASE("every reporting operation message's default has its wire form", codec
                                      publish_report_definitions_from_dq_request,
                                      publish_risk_report_configs_from_dq_request,
                                      publish_engine_settings_from_dq_request,
-                                     publish_ore_parameter_value_domains_from_dq_request,
-                                     publish_ore_parameters_from_dq_request,
                                      gather_trades_request,
                                      gather_trades_result,
                                      gather_market_data_request,

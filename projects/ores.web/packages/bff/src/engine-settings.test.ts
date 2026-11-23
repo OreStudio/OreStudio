@@ -59,10 +59,10 @@ const ok = { outcome: 'ok', code: '', message: '' };
  * setting's rule states the set it belongs to.
  */
 const NO_VALUE_SETS: Replies = {
-    'reporting.v1.ore_parameter_value_sets.list': { result: ok, sets: [] },
-    'reporting.v1.ore_parameter_value_set_values.list': { result: ok, values: [] },
-    'reporting.v1.ore_parameter_value_set_catalogues.list': { result: ok, catalogues: [] },
-    'reporting.v1.ore_parameter_setting_value_sets.list': { result: ok, setting_value_sets: [] },
+    'ore.v1.ore_parameter_value_sets.list': { result: ok, sets: [] },
+    'ore.v1.ore_parameter_value_set_values.list': { result: ok, values: [] },
+    'ore.v1.ore_parameter_value_set_catalogues.list': { result: ok, catalogues: [] },
+    'ore.v1.ore_parameter_setting_value_sets.list': { result: ok, setting_value_sets: [] },
 };
 
 /** One value set, as a test states it, with the ORE names that take it. */
@@ -85,7 +85,7 @@ function valueSetsOf(
     links: Readonly<Record<string, string>>,
 ): Replies {
     return {
-        'reporting.v1.ore_parameter_value_sets.list': {
+        'ore.v1.ore_parameter_value_sets.list': {
             result: ok,
             sets: sets.map((set) => ({
                 code: set.code,
@@ -99,7 +99,7 @@ function valueSetsOf(
                 is_ordered: false,
             })),
         },
-        'reporting.v1.ore_parameter_value_set_values.list': {
+        'ore.v1.ore_parameter_value_set_values.list': {
             result: ok,
             values: sets.flatMap((set) => [
                 ...(set.values ?? []).map((value, display_order) => ({
@@ -122,8 +122,8 @@ function valueSetsOf(
                 })),
             ]),
         },
-        'reporting.v1.ore_parameter_value_set_catalogues.list': { result: ok, catalogues: [] },
-        'reporting.v1.ore_parameter_setting_value_sets.list': {
+        'ore.v1.ore_parameter_value_set_catalogues.list': { result: ok, catalogues: [] },
+        'ore.v1.ore_parameter_setting_value_sets.list': {
             result: ok,
             setting_value_sets: Object.entries(links).map(([ore, value_set_code]) => ({
                 scope: 'Setup',
@@ -515,7 +515,7 @@ describe('engine settings routes', () => {
     it('takes the wording of each setting from its ore parameter and marks one with none', async () => {
         const { server, sessionId } = buildTestServer({
             ...reads,
-            'reporting.v1.ore_parameters.list': {
+            'ore.v1.ore_parameters.list': {
                 result: ok,
                 parameters: [
                     {
@@ -624,7 +624,7 @@ describe('engine settings routes', () => {
                     ]),
                 ],
             },
-            'reporting.v1.ore_parameters.list': { result: ok, parameters: [] },
+            'ore.v1.ore_parameters.list': { result: ok, parameters: [] },
         });
         const response = await send(
             server,
@@ -704,7 +704,7 @@ describe('engine settings routes', () => {
                     },
                 ]),
             },
-            'reporting.v1.ore_parameters.list': { result: ok, parameters: [] },
+            'ore.v1.ore_parameters.list': { result: ok, parameters: [] },
         });
         const response = await send(
             server,

@@ -76,7 +76,7 @@ into its generated file after the profile's baseline.
 - [[id:E75568D2-588A-4FE2-9ED1-6826B60C0E10][ores.refdata.service]] — the NATS service the client helpers talk to.
 - [[id:C2B3D4E5-F6A7-8901-BCDE-F12345678901][ores.refdata Messaging Reference]] — full NATS subject and message
   catalogue.
-- [[id:723B0112-4DDC-4C03-924E-2C90C2F19B5C][Where should an entity-mirror cache live?]] — the placement rules for
+- [[id:723B0112-4DDC-4C03-924E-2C90C2F19B5C][Placement of entity-mirror caches]] — the placement rules for
   this cache and its registrar.
 
 * Test dependencies

@@ -24,10 +24,13 @@
 #include "ores.logging/logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.ore.api/domain/ore_parameter.hpp"
 #include "ores.reporting.core/export.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
+#include <functional>
 #include <optional>
 #include <string_view>
+#include <vector>
 
 namespace ores::reporting::messaging {
 
@@ -42,9 +45,19 @@ namespace ores::reporting::messaging {
  */
 class ORES_REPORTING_CORE_EXPORT run_document_handler {
 public:
+    /**
+     * @brief Supplies the ore parameters of the analytics, which are ores.ore's.
+     *
+     * The service reads them from its cache of ores.ore's parameters; a test
+     * reads them from the store it seeded.
+     */
+    using analytic_parameters_source =
+        std::function<std::vector<ores::ore::domain::ore_parameter>()>;
+
     run_document_handler(ores::nats::service::client& nats,
                          const ores::database::context& ctx,
-                         std::optional<ores::security::jwt::jwt_authenticator> verifier);
+                         std::optional<ores::security::jwt::jwt_authenticator> verifier,
+                         analytic_parameters_source analytic_parameters);
 
     void save_run_document(ores::nats::message msg);
     void bind_configuration(ores::nats::message msg);
@@ -63,6 +76,14 @@ private:
     ores::nats::service::client& nats_;
     ores::database::context ctx_;
     std::optional<ores::security::jwt::jwt_authenticator> verifier_;
+    /**
+     * @brief The analytics' parameters, refused when none have reached the service.
+     *
+     * Only a save and a read map parameters; a bind and a delete take none.
+     */
+    std::vector<ores::ore::domain::ore_parameter> analytic_parameters() const;
+
+    analytic_parameters_source analytic_parameters_;
 };
 
 }

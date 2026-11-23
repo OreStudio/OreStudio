@@ -157,7 +157,9 @@ struct service_report_run_grant_fixture {
     // document states one before the risk configuration is bound.
     void bind_configurations(const boost::uuids::uuid& definition_id) {
         ores::reporting::messaging::run_document_handler binds(
-            nats, db.context(), std::optional(keys.verifier()));
+            nats, db.context(), std::optional(keys.verifier()), [this]() {
+                return ores::testing::system_analytic_parameters(db.context(), db.db_user());
+            });
         subs.push_back(
             nats.queue_subscribe(bind_subject(), "ores.test", [&binds](ores::nats::message m) {
                 binds.bind_configuration(std::move(m));

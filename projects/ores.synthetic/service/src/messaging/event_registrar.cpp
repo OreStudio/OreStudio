@@ -37,6 +37,7 @@
 #include "ores.synthetic.service/messaging/ir_curve_template_entry_event_registrar.hpp"
 #include "ores.synthetic.service/messaging/market_data_generation_config_event_registrar.hpp"
 #include "ores.synthetic.service/messaging/market_data_provider_event_registrar.hpp"
+#include "ores.synthetic.service/messaging/stopped_simulated_source_event_registrar.hpp"
 #include "ores.synthetic.service/messaging/trade_generation_book_event_registrar.hpp"
 #include "ores.synthetic.service/messaging/trade_generation_config_event_registrar.hpp"
 #include "ores.synthetic.service/messaging/trade_generation_counterparty_event_registrar.hpp"
@@ -72,6 +73,7 @@ std::vector<ores::eventing::service::subscription> event_registrar::register_eve
     subs.push_back(
         register_variance_calibration_input_point_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_fx_vol_contributor_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_stopped_simulated_source_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_fx_vol_surface_feed_event_mapping(event_source, event_bus, nats));
     subs.push_back(
         register_fx_vol_surface_feed_expiry_event_mapping(event_source, event_bus, nats));

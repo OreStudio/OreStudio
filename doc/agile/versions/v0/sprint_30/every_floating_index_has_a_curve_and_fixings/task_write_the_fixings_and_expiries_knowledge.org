@@ -1,0 +1,110 @@
+:PROPERTIES:
+:ID: A15F8260-DF18-4A7F-9E98-91D901C21705
+:END:
+#+title: Task: Write the fixings and expiries knowledge
+#+description: The knowledge clusters on fixings and expiries, the fixing design they imply, and the house style every knowledge page follows.
+#+type: task
+#+level: s1
+#+filetags: :every_floating_index_has_a_curve_and_fixings:sprint_30:v0:
+#+owner: marco
+#+branch: feature/fixings-and-expiries-knowledge
+#+pr: 5014
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0F936789-FEBE-4330-97B9-DFE0837E4466][Every index a generated trade floats on has a curve and fixings]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Bring the subject of fixings and expiries into the knowledge corpus from the trading literature and the market data design, so that the fixing tasks of this story build on one agreed model: fixing observations and party fixings, the supported fixing sources by option cut, and the synthetic generation of fixings. Set the house style for knowledge pages where every writer loads it, so a page written on request needs no manual review of its form.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:0F936789-FEBE-4330-97B9-DFE0837E4466][Every index a generated trade floats on has a curve and fixings]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-22                               |
+
+* Acceptance
+
+- The fixings and expiries clusters exist, with structure notes, diagrams where a lifecycle or an interaction is described, and cited sources.
+- The Zettelkasten page states how to create a knowledge page and the house style; CLAUDE.md, the doc-add and academic review skills, the knowledge contract and the scaffold point to it.
+- No knowledge page under doc/knowledge carries a sentence or a question as its title.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5014][#5014]] | [doc] Add the fixings and expiries knowledge and the house style |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | A build script reads a renamed page by its old path | =build/scripts/generate_ore_trade_requirements.py= | Accept | =DOCUMENT= names =ore_trade_requirements_by_trade_type.org=; a search of the whole tree for every old file name with its extension found no other live path. |
+| 2 | Comments name the old calibration sources page | =marketdata_overnight_rates_catalogue_populate.sql=, =generate_official_catalogue.py= | Accept | Both name the renamed page; the SQL file is hand-written, not generated. |
+| 3 | Backlog and task files name old pages | the SWESTR inbox item, =task_bind-a-report-to-the-published-curve.org= | Accept in part | The inbox item and the task's pointer to its decision are updated; review tables in closed sprint tasks keep the names they recorded. |
+| 4 | Split the retitle from the new content | PR | Decline | The retitling applies the house style the same PR states, and both are documentation; splitting now adds a cycle for no change in content. |
+| 5 | Confirm the gate before merge | PR | Accept | Posted on the PR when the gate completes. |
+| 6 | An over-long line in CLAUDE.md | =CLAUDE.md= | Accept | The paragraph is rewrapped to 76 columns. |
+
+* Result
+
+The fixings cluster and the expiries cluster are in the corpus, each with a
+structure note, and both are listed in the knowledge index. The fixings cluster
+separates the system-level fixing observation from the party-level fixing, lists
+the supported fixing sources by option cut, and draws the fixing process as a
+state and a sequence diagram; the synthetic generation of fixings has a note of
+its own in the synthetic generation section of Market Data Architecture, and the
+general pages only link to it. The intraday valuation of options expiring today
+is recorded with its open questions.
+
+The Zettelkasten page states how to create a knowledge page and the house style:
+academic prose, citations with academic papers preferred, titles that read like
+academic paper titles, UML diagrams, and data-source neutrality. CLAUDE.md, the
+doc-add and academic review skills, the knowledge contract and the knowledge
+scaffold point to it. Sixty-nine existing pages with sentence or question titles
+are retitled and their links repaired; the content work they still need is
+recorded in the retitling capture. A compass lint for titles is being built in
+compass v0.0.13.

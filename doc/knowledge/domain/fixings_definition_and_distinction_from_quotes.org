@@ -1,0 +1,83 @@
+:PROPERTIES:
+:ID: 86DA6985-C92E-40F6-AE43-71C4BBF126CB
+:END:
+#+title: Fixings: definition and distinction from quotes
+#+description: A fixing is a rate observed at an agreed time from an agreed source; contracts settle or decide on it.
+#+type: knowledge
+#+audience: user
+#+level: cross
+#+filetags: :domain:fixing:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+
+* Summary
+
+A *fixing* is the value of a market rate observed at an agreed time from an
+agreed source, which a contract uses to settle an amount or to decide what
+happens next. A floating coupon of an interest rate swap settles on an
+interest rate fixing; a non-deliverable forward settles on an FX fixing; a
+European digital option pays or not according to a spot fixing at expiry. A
+fixing differs from a quote: a quote is a source's continuous price of an
+instrument, while a fixing is one authoritative value of an index for one
+fixing date.
+
+* Detail
+
+** The vocabulary
+
+| Term | Meaning |
+|------+---------|
+| Fixing source | The source of the observation, agreed between the counterparties when the trade is done. See [[id:6E566C97-F2A4-4AE8-B509-BDE23568A0B8][Identity and lifecycle of fixing sources]]. |
+| Fixing rate | The value the source gives: an interest rate, an FX rate or another observable. |
+| Fixing date | The date and time at which the observation is made. |
+| Fixing schedule | The set of fixing dates of a trade or a leg. |
+| Fix | The act of applying an observation to a trade. |
+| Unfix | The reversal of a fix that was applied in error. |
+| Reset | In rates markets, a synonym for a fixing: a floating rate /resets/ on its fixing date. |
+
+The terms follow the market's definitions: the 2006 ISDA Definitions define
+the floating rate options of rates trades, and Annex A to the 1998 FX and
+Currency Option Definitions defines the settlement rate options of FX trades.
+
+** Kinds of observable
+
+Three kinds of observable are fixed in practice:
+
+- *rates*, such as a three-month Ibor or an overnight risk-free rate. The two
+  families and their difference are in [[id:5170B17B-188B-45CA-A1B6-1F27A97E1CF8][Interest Rate Benchmark Types: IBOR vs. RFR]];
+- *spot FX rates*, such as the WM/Reuters 4pm London rate of a pair. See
+  [[id:7B09CA1B-606D-493F-A784-676BAE701FC8][The WM/Reuters 4pm fix as the dominant FX benchmark]];
+- *realised statistics*, such as the realised volatility of a volatility swap.
+  These are not observations of a source but calculations over a series of
+  spot fixings, so they are called fixings only by extension.
+
+** Official and unofficial
+
+Official and unofficial are states of a party's fixing, not of the
+observation. The observation is the value the source publishes, the same for
+every party. A party's fixing is /official/ when that party's operations have
+authorised it and it has been applied to the party's trades; until then it is
+/unofficial/, and another party may hold the same observation as official. The
+two levels are set out in [[id:FA5C96A3-1F8E-4F9B-8973-40D92055D7DD][System-level fixing observations and party-level fixings]].
+
+** A fixing is not a quote
+
+ORE Studio keeps the two apart. A quote is a tick of a source's stream; a
+fixing is a value of an index for a date, stored durably in the fixing series
+of the index. [[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][Market series and observations]]
+describes the quote side, and [[id:F4BBEF34-D84C-4AE6-A3AA-DC47C3EE06EE][Public publishers publish daily fixings through a supplier session]]
+describes the fixing side, including why the publisher is part of an FX
+fixing's identity. The oresmd URI names a fixing with =type=fixing=; see
+[[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio Market Data URI]].
+
+* See also
+
+- [[id:784D9D97-721A-42EC-BA91-A85764979CD0][Fixings]] — the structure note.
+- [[id:0CBDBE85-17DF-4A77-A231-FFB2101FC0CC][Fixing-determined and holder-determined exercise]] — contrasts: the manual counterpart.
+- [[id:1BA05AA4-1B24-48B4-83F9-366624D0A88E][Fixing requirements by product]] — exemplifies: what each fixing settles.
+
+* Sources
+
+- ISDA (2006). /2006 ISDA Definitions/. International Swaps and Derivatives Association. [[https://www.isda.org/book/2006-isda-definitions/][isda.org]]
+- ISDA and EMTA (2019). /Annex A to the 1998 FX and Currency Option Definitions/, amended and restated 19 November 2017, amended 3 January 2019. [[https://www.isda.org/book/annex-a-to-the-1998-fx-and-currency-option-definitions/][isda.org]]
+- IOSCO (2013). /Principles for Financial Benchmarks: Final Report/, July 2013. [[https://www.iosco.org/library/pubdocs/pdf/IOSCOPD415.pdf][iosco.org]]

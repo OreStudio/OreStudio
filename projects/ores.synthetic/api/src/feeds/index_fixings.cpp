@@ -92,15 +92,6 @@ curve_fixing_uri(const domain::ir_curve_generation_config& curve) {
     return index_fixing_uri(curve.currency_code, curve.index_family, curve.tenor);
 }
 
-std::set<std::string>
-served_fixing_uris(const std::vector<domain::ir_curve_generation_config>& curves) {
-    std::set<std::string> out;
-    for (const auto& curve : curves)
-        if (auto uri = curve_fixing_uri(curve))
-            out.insert(std::move(*uri));
-    return out;
-}
-
 std::expected<std::vector<index_fixing>, std::string>
 derive_fixing_history(double level,
                       std::chrono::year_month_day as_of,

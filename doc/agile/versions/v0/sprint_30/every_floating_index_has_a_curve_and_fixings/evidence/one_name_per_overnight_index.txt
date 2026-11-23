@@ -1,0 +1,57 @@
+The overnight fixing series (an ibor address with no tenor) on a fresh acme_demo
+provision, by currency and name, with the series count and the fixings each holds.
+The query is overnight_series.sql, reproduced at the end.
+
+Environment clever_dijkstra, branch feature/name-each-fixing-index-once, 2026-11-22:
+full build with the codec mapping, a fresh database (compass db recreate), the
+services started, and Acme provisioned with
+how_do_i_provision_the_system_with_acme_corporation_holding_group.ores
+(all 17 steps completed; 4 with warnings).
+
+ currency |  name   | series | fixings
+----------+---------+--------+---------
+ AUD      | AONIA   |      2 |    3048
+ BRL      | CDI     |      2 |    3027
+ CAD      | CORRA   |      2 |    3010
+ CHF      | SARON   |      1 |     520
+ CLP      | CAMARA  |      2 |    2530
+ CNH      | HIBOR   |      1 |     520
+ CNY      | SHIBOR  |      1 |     520
+ COP      | IBR     |      1 |     520
+ CZK      | CZEONIA |      2 |    2885
+ DKK      | DESTR   |      1 |     520
+ EUR      | ESTR    |      2 |    2349
+ GBP      | SONIA   |      2 |    3042
+ HKD      | HONIA   |      1 |     520
+ HUF      | HUFONIA |      1 |     520
+ ILS      | SHIR    |      1 |     520
+ INR      | MIBOR   |      1 |     520
+ JPY      | TONA    |      2 |    2958
+ KRW      | KOFR    |      1 |     520
+ MXN      | FTIIE   |      2 |    3032
+ NOK      | NOWA    |      2 |    3033
+ NZD      | NZONIA  |      1 |     520
+ PLN      | POLONIA |      1 |     520
+ SEK      | SWESTR  |      2 |    1834
+ SGD      | SORA    |      2 |    3027
+ TRY      | TLREF   |      1 |     520
+ TWD      | TAIBOR  |      1 |     520
+ USD      | SOFR    |      2 |    2677
+ ZAR      | ZARONIA |      1 |     520
+
+Series at an ORE spelling (name=ESTER, name=TONAR, overnight name=TIIE): 0.
+
+Each currency has one overnight name. A count of 2 is one address held by two
+providers, a public publisher and the simulated history, for example:
+
+ name  | provider_code
+-------+---------------
+ ESTR  | derived
+ ESTR  | ecb
+ TONA  | boj
+ TONA  | derived
+ FTIIE | banxico
+ FTIIE | derived
+
+That a fixing address has one producer is the subject of the task Generate
+simulated fixings through the simulator adapter.

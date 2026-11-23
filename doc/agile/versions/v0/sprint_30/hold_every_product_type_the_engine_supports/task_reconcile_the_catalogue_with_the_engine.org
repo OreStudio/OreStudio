@@ -123,7 +123,7 @@ and the class it builds; =mine_trade_types.py= adds the data element read in
 ORE's source, whether the XSD declares it, and the library scripts that carry
 the same product, graded by comparing their code with the class's own. The
 result is =external/ore/catalogue/trade_types.tsv= at ORE =3d75a6908=, and
-[[id:CC7CC29C-9413-4DF3-BC32-D1C8A978D295][Which trade types ORE carries and ORE Studio holds]] renders it with the table that holds each type, whether the generator
+[[id:CC7CC29C-9413-4DF3-BC32-D1C8A978D295][Coverage of ORE trade types in ORE Studio]] renders it with the table that holds each type, whether the generator
 books it, and the task that closes each gap. A =trade-type-coverage= check in
 the local gate fails when the page drifts from its sources.
 

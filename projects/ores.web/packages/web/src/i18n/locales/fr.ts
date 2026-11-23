@@ -62,6 +62,9 @@ const fr: SourceCatalogue = {
     },
 
     shell: {
+        api: {
+            lead: 'Toutes les routes de ce serveur, décrites à partir des routes elles-mêmes.',
+        },
         theme: {
             toLight: 'Passer à la palette claire',
             toDark: 'Passer à la palette sombre',
@@ -81,6 +84,7 @@ const fr: SourceCatalogue = {
             operations: 'Opérations',
             reporting: 'Rapports',
             development: 'Développement',
+            api: 'API',
             parties: 'Parties',
             rescue: "Récupération d'accès",
             audit: 'Connexions',
@@ -565,6 +569,26 @@ const fr: SourceCatalogue = {
         },
     },
 
+    agents: {
+        title: 'Agents LLM',
+        lead: 'Un agent que vous nommez agit pour vous sous un rôle, jusqu’à l’expiration de l’autorisation ou jusqu’à ce que vous la révoquiez. Ses appels sont les vôtres et sont enregistrés comme ceux de l’agent.',
+        empty: 'Vous n’avez aucune autorisation d’agent active.',
+        keyOnce:
+            'Copiez cette clé dans l’agent maintenant. Elle n’est affichée qu’une fois et ne peut pas être relue.',
+        until: 'jusqu’au {at}',
+        newKey: 'Nouvelle clé',
+        revokeGrant: 'Révoquer l’autorisation',
+        revokeGrantConfirm:
+            'Révoquer l’autorisation révoque toutes ses clés et termine les sessions de l’agent. Continuer ?',
+        key: 'Clé {id}, créée le {at}',
+        revokeKey: 'Révoquer la clé',
+        name: 'Nom de l’agent',
+        role: 'Rôle',
+        days: 'Jours de validité (1–90)',
+        create: 'Créer l’autorisation',
+        readFailed: 'Vos autorisations d’agent n’ont pas pu être lues.',
+        actFailed: 'La modification a été refusée.',
+    },
     auditSignIns: {
         title: 'Connexions',
         description: 'Qui est connecté, ce que chacun fait, et qui échoue à se connecter.',
@@ -598,6 +622,7 @@ const fr: SourceCatalogue = {
             client: 'Client',
             address: 'Adresse',
             country: 'Pays',
+            agent: 'Agent',
             account: 'Compte',
             traffic: 'Envoyé / reçu',
             authorisation: 'Autorisation',
@@ -618,6 +643,14 @@ const fr: SourceCatalogue = {
             end: 'Terminer la session',
             ending: 'Fin en cours…',
             ended: 'Session terminée. Les sessions ouvertes ont été relues.',
+            endAgent:
+                'Terminer la session d’un agent révoque aussi la clé qui l’a ouverte. Le prochain appel de l’agent est refusé aussitôt, ou au plus tard dans cinq minutes ; il lui faut une nouvelle clé pour reprendre. Continuer ?',
+            holder: 'Afficher',
+            holders: {
+                all: 'Personnes et agents',
+                people: 'Personnes',
+                agents: 'Agents',
+            },
             endFailed: 'La session n’a pas pu être terminée.',
             notAllowed: 'Vous ne pouvez pas lire les sessions du locataire.',
             note: 'Toutes les sessions ouvertes du locataire sont lues ; en terminer une écrit son heure de fin et relit ce panneau.',
@@ -800,6 +833,9 @@ const fr: SourceCatalogue = {
         sessionEnded:
             'Votre session a pris fin et vous avez été déconnecté. Connectez-vous de nouveau pour continuer.',
         partyCategory: 'Catégorie',
+        server: 'Serveur',
+        serverCpp: 'serveur C++',
+        serverBff: 'BFF',
     },
 
     signUp: {
@@ -4539,6 +4575,10 @@ const fr: SourceCatalogue = {
                 runs: 'Runs',
                 cuts: 'Coupures',
                 entries: 'Entrées',
+                surface: 'Surface',
+                expiries: 'Échéances',
+                contributors: 'Contributeurs',
+                surfaces: 'Surfaces',
             },
         },
         fields: {
@@ -4653,6 +4693,36 @@ const fr: SourceCatalogue = {
             tenor_convention_code: 'Convention de tenor',
             split_tenor_code: 'Tenor de scission',
             curve_role_code: 'Rôle de courbe',
+            start_skew: 'Asymétrie initiale (ρ)',
+            start_curvature: 'Courbure initiale (η)',
+            spot_oresmd_uri: 'URI du spot',
+            spot_provider_code: 'Fournisseur du spot',
+            skew_reversion: "Retour de l'asymétrie",
+            skew_volatility: "Volatilité de l'asymétrie",
+            curvature_reversion: 'Retour de la courbure',
+            curvature_volatility: 'Volatilité de la courbure',
+            spot_variance_correlation: 'Corrélation du spot et de la variance',
+            spot_skew_correlation: "Corrélation du spot et de l'asymétrie",
+            segment_correlation: 'Corrélation des segments',
+            atm_vol: 'Volatilité ATM',
+            variance_reversion: 'Retour de la variance',
+            variance_volatility: 'Volatilité de la variance',
+            contributor_id: 'Contributeur',
+            provider_code: 'Fournisseur',
+            noise: 'Bruit',
+            wing_widening: 'Élargissement des ailes',
+            expiry_widening: 'Élargissement par échéance',
+            quote_step: 'Pas de cotation',
+            missing_probability: "Probabilité d'absence",
+            stale_probability: 'Probabilité de cotation figée',
+            outlier_probability: 'Probabilité de valeur aberrante',
+            outlier_size: "Taille d'une valeur aberrante",
+            bias: 'Biais',
+            feed_id: 'Flux',
+            arrival_mode: 'Arrivée',
+            branching_ratio: 'Taux de ramification',
+            decay: 'Décroissance',
+            sensitivity: 'Sensibilité',
         },
         choices: {
             requirement: {
@@ -6923,8 +6993,8 @@ const fr: SourceCatalogue = {
                 interest_rates: "Taux d'intérêt",
             },
             runs: {
-                start: 'Démarrer',
-                stop: 'Arrêter',
+                start: 'Démarrer les flux',
+                stop: 'Arrêter les flux',
                 startTitle: 'Démarrer {name} ?',
                 stopTitle: 'Arrêter {name} ?',
                 startBody:
@@ -6934,6 +7004,20 @@ const fr: SourceCatalogue = {
                 startReport:
                     '{started} démarrés pour {name}. {already} tournaient déjà, {skipped} ignorés.',
                 stopReport: '{stopped} arrêtés pour {name}.',
+            },
+            source: {
+                title: 'Source simulée',
+                start: 'Démarrer la source',
+                stop: 'Arrêter la source',
+                holds: '{feeds} flux servis · {surfaces} surfaces de volatilité tenues',
+                stopTitle: 'Arrêter {source} ?',
+                effect: {
+                    feeds: "Les {count} flux qu'elle sert pour le magasin s'arrêtent.",
+                    surfaces:
+                        "Elle libère les {count} surfaces de volatilité qu'elle tient : {stop} s'arrêtent avec elle, et {runOn} continuent pour d'autres sources.",
+                    byHand: 'Les flux démarrés à la main continuent.',
+                    stays: "Elle reste arrêtée, même après un redémarrage du service, jusqu'à ce que quelqu'un la démarre.",
+                },
             },
             provider: {
                 provider: 'Fournisseur',
@@ -7156,6 +7240,86 @@ const fr: SourceCatalogue = {
             add: 'Ajouter une entrée de durée',
             one: 'Entrée de durée',
             remove: "Supprimer l'entrée de durée",
+        },
+        volFeeds: {
+            add: 'Nouvelle surface de volatilité',
+            addTitle: 'Nouvelle surface de volatilité',
+            engine: 'SSVI',
+            held: "Tourne tant qu'une source simulée d'un fournisseur la tient.",
+            upstreams: {
+                title: 'Ce que lit la surface',
+                intro: "À chaque tick, la surface lit son spot et les courbes d'actualisation de ses deux devises. La page de chaque flux montre son départ et sa calibration.",
+                notRunning:
+                    "La surface ne tourne pas. Elle lit ces valeurs tant que la source d'un fournisseur la tient.",
+                spot: 'Spot',
+                baseCurve: "Courbe d'actualisation {currency}",
+                quoteCurve: "Courbe d'actualisation {currency}",
+                missing: 'Aucun flux ne correspond : {wants}',
+            },
+            samePair: 'Les devises de base et de cotation doivent être différentes.',
+            removeWarning:
+                "Le flux s'arrête s'il tourne. Ses échéances et ses liens vers les contributeurs sont supprimés d'abord, puis le flux. L'historique de chacun reste.",
+            help: {
+                spot_provider_code:
+                    "Le fournisseur dont cette surface lit le spot et avec lequel elle se corrèle. Une URI nomme ce qui est observé, pas qui l'observe : le fournisseur choisit un seul flux spot.",
+                spot_oresmd_uri:
+                    "L'URI oresmd du spot que lit cette surface. Laissée vide, c'est le cours spot de la paire.",
+                ticks_per_hour:
+                    'Combien de surfaces le flux produit en une heure. 12 en fait une toutes les cinq minutes.',
+                arrival_mode:
+                    'Comment les ticks arrivent : à intervalle fixe, au hasard ou par grappes.',
+                branching_ratio:
+                    "Seule une arrivée par grappes l'utilise : combien de ticks un tick en entraîne, en dessous de un.",
+                decay: "Seule une arrivée par grappes l'utilise : la vitesse à laquelle une rafale s'éteint, en un par seconde.",
+                sensitivity:
+                    'La force avec laquelle un régime de marché fait bouger cette surface, un étant la moyenne.',
+                start_skew:
+                    'Le rho SSVI de départ de la surface, vers lequel elle revient, entre -1 et 1. Le change cote souvent une asymétrie négative.',
+                start_curvature:
+                    "L'eta SSVI de départ de la surface, vers lequel elle revient, au-dessus de 0 et en dessous de la racine carrée de 2 (1,4142). Il fixe la hauteur des ailes au-dessus de l'ATM.",
+                skew_reversion: "La vitesse à laquelle l'asymétrie revient à son départ, par an.",
+                skew_volatility:
+                    "L'ampleur des mouvements de l'asymétrie, par racine carrée d'année.",
+                curvature_reversion:
+                    'La vitesse à laquelle la courbure revient à son départ, par an.',
+                curvature_volatility:
+                    "L'ampleur des mouvements de la courbure, par racine carrée d'année.",
+                spot_variance_correlation:
+                    'Comment les variances à terme bougent avec le spot, entre -1 et 1.',
+                spot_skew_correlation: "Comment l'asymétrie bouge avec le spot, entre -1 et 1.",
+                segment_correlation:
+                    'À quel point des variances à terme voisines bougent ensemble, de 0 à juste en dessous de 1.',
+                enabled: "Un flux qui n'est pas activé ne peut pas démarrer.",
+                auto_start: 'Le flux démarre quand le service synthétique démarre.',
+            },
+            surface: {
+                lead: 'La surface SSVI que le flux fait évoluer : son départ, les mouvements de son asymétrie et de sa courbure, et leur corrélation avec le spot.',
+                running: "Le flux tourne. Une modification s'applique à son prochain démarrage.",
+                start: 'Départ',
+                dynamics: 'Dynamique',
+                correlations: 'Corrélations',
+                editTitle: '{part} : {pair}',
+                gamma: 'Gamma (γ)',
+                gammaWhy:
+                    "Le générateur maintient gamma à un demi. À cette valeur, la surface est libre d'arbitrage papillon tant que la courbure reste sous la racine carrée de 2, et le générateur l'y maintient. Un autre gamma rend les conditions de non-arbitrage dépendantes de chaque échéance et de l'asymétrie : vous ne pouvez donc pas le modifier ici.",
+            },
+            expiries: {
+                lead: "Les échéances auxquelles la surface est cotée, chacune avec sa volatilité ATM et le mouvement de sa variance à terme. La variance totale ATM doit croître d'une échéance à la suivante. Sinon, le flux ne démarre pas.",
+                add: 'Ajouter une échéance',
+                one: 'Échéance',
+                remove: "Supprimer l'échéance",
+            },
+            contributors: {
+                title: 'Contributeurs de volatilité',
+                surfacesLead:
+                    "Les surfaces que ce contributeur cote. Son profil de bruit s'applique à chacune d'elles.",
+                noSurfaces: 'Il ne cote aucune surface.',
+                lead: "Les fournisseurs qui cotent la surface. Chaque fournisseur ajoute son propre bruit aux cotations, et toutes les surfaces qu'il cote partagent ce profil de bruit.",
+                add: 'Ajouter un contributeur',
+                one: 'Contributeur',
+                remove: 'Retirer le contributeur',
+                noise: 'Profil de bruit : {provider}',
+            },
         },
         runs: {
             status: 'État',

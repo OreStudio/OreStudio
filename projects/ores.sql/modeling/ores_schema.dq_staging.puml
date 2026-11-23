@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: dq_staging
-Tables: 187
+Tables: 186
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -75,7 +75,7 @@ package "dq_staging" #F3E5F5 {
         * password_hash : text
         * account_type : text
           business_unit_code : text
-          role : text
+          roles : text
           job_title : text
           reports_to_username : text
           photo_key : text
@@ -2173,7 +2173,7 @@ package "dq_staging" #F3E5F5 {
     }
 
     note right of ores_dq_fx_vol_surface_pillar_sources_artefact_tbl
-    One contributor's quote of a pillar: the market series it is read from, and the weight the contributor carries in the calibration. A pillar reads one series per contributor, so a broker's quotes and the derived source's quotes of the same point are two sources of one pillar, and a missing observation from one of them is not a refusal by itself. See [[id:7AE57098-08D4-4D4A-83D6-918FE520B68E][A pillar names the market series it reads]]. market_series_id is a soft reference to an fx_option quote series in ores.marketdata, named by the caller from the series the party holds. contributor_code names the provider whose series it is, as the series' own provider_code does, so a reader sees the contributor without a cross-component read. - Artefact Table
+    One contributor's quote of a pillar: the market series it is read from, and the weight the contributor carries in the calibration. A pillar reads one series per contributor, so a broker's quotes and the derived source's quotes of the same point are two sources of one pillar, and a missing observation from one of them is not a refusal by itself. See [[id:7AE57098-08D4-4D4A-83D6-918FE520B68E][Market series identity in curve pillars]]. market_series_id is a soft reference to an fx_option quote series in ores.marketdata, named by the caller from the series the party holds. contributor_code names the provider whose series it is, as the series' own provider_code does, so a reader sees the contributor without a cross-component read. - Artefact Table
     end note
 
     entity ores_dq_fx_vol_surface_pillars_artefact_tbl  #F7E5FF {
@@ -2516,20 +2516,6 @@ package "dq_staging" #F3E5F5 {
 
     note right of ores_dq_ir_curve_template_entries_artefact_tbl
     One row of the raw instrument grid (the "Curve Template") an ir_curve_generation_config publishes: which tenor period, priced as which instrument type (deposit-equivalent, FRA-equivalent, swap-equivalent -- see ores.refdata.instrument_code), in what order. Every entry is modelled as a genuine [start, end) period rather than a single maturity label: start_tenor_code/end_tenor_code are both ordinary tenor references resolved through the same ores::refdata::domain::resolve_end_date machinery (see ores.refdata.api/domain/tenor_resolution.hpp). Point instruments (deposits, swaps) set start_tenor_code to 'SPOT' (a genuine zero-duration PERIOD/DAY tenor already in the catalog, resolving directly to the horizon's spot date -- not a null/sentinel hack); interval instruments (FRAs) set it to the period's own front tenor (e.g. '3M' for a 3x6 FRA whose end_tenor_code is '6M'). This symmetric shape is what lets the tenor-collision validator (validate_curve_template in ores.synthetic.api) detect genuine period overlaps via plain windows_overlap(), without a special case for point vs. interval instruments. Entries belong to a parent config via ir_curve_config_id, the same one-config-many-children shape fx_spot_generation_config's gmm_component rows use. Every entry's published rate is derived from the parent config's short-rate process's discount_factor() at the tenor's maturity -- never an independently-noised value -- so the published tick batch is, by construction, a slice of one internally consistent curve. Party- and tenant-scoped. - Artefact Table
-    end note
-
-    entity ores_dq_knowledge_pages_artefact_tbl  #F7E5FF {
-        --
-        * dataset_id : uuid <<FK>>
-        * tenant_id : uuid <<FK>>
-        * id : text
-        * version : integer
-        * path : text
-        * org : text
-    }
-
-    note right of ores_dq_knowledge_pages_artefact_tbl
-    A page of ORE's knowledge base, exactly as it was loaded: a user-facing org file, its org id, where it lives in the repository, and its text, unchanged. A page is user-facing when its frontmatter says #+audience: user. The pages are installation data: they are published from DQ into the system tenant at bring-up, and every tenant reads them there. Nothing here is parsed; the indexing step reads the text and writes the sections the search reads. - Artefact Table
     end note
 
     entity ores_dq_legal_entities_artefact_tbl  #F7E5FF {

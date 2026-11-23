@@ -1,0 +1,80 @@
+:PROPERTIES:
+:ID: 784D9D97-721A-42EC-BA91-A85764979CD0
+:END:
+#+title: Fixings
+#+description: Structure note for fixings: the agreed observations that settle contracts, their sources, process, controls and effects.
+#+type: knowledge
+#+audience: user
+#+level: cross
+#+filetags: :domain:structure_note:fixing:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+
+* Summary
+
+A *fixing* is the value of a market rate observed at an agreed time from an
+agreed source, on which a contract settles or decides. This structure note
+gathers the notes on fixings: what a fixing is, where it comes from, which
+products need it, how it is taken through a controlled process, how it is
+stored and shown, and what it does to value and P&L. It ends with the data
+model the notes imply and how far ORE Studio holds it.
+
+* Detail
+
+Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
+
+** Reading order
+
+1. [[id:86DA6985-C92E-40F6-AE43-71C4BBF126CB][Fixings: definition and distinction from quotes]] —
+   the definition, the vocabulary, and why a fixing is not a quote.
+2. [[id:FA5C96A3-1F8E-4F9B-8973-40D92055D7DD][System-level fixing observations and party-level fixings]] —
+   the observation a source publishes, against a party's adoption of it.
+3. [[id:0CBDBE85-17DF-4A77-A231-FFB2101FC0CC][Fixing-determined and holder-determined exercise]] —
+   fixing-determined and holder-determined exercise.
+4. [[id:6E566C97-F2A4-4AE8-B509-BDE23568A0B8][Identity and lifecycle of fixing sources]] —
+   administrators, ISDA codes, benchmarks, and sources that cease.
+5. [[id:6A625509-CD9A-4D13-8E16-37B75A4AED83][Derived and composite fixing sources]] —
+   crosses and composites.
+6. [[id:7B09CA1B-606D-493F-A784-676BAE701FC8][The WM/Reuters 4pm fix as the dominant FX benchmark]] —
+   the leading FX source and the research on it.
+7. [[id:1BA05AA4-1B24-48B4-83F9-366624D0A88E][Fixing requirements by product]] —
+   swaps, non-deliverable trades, digitals, barriers, averages, volatility swaps.
+8. [[id:53DB3AF1-6FA4-4B53-9D8E-A65F739F6F4D][Fixing dates and holiday calendars]] —
+   fixing holidays and the dates of non-deliverable forwards.
+9. [[id:CA61B445-B6DC-41D3-ACF9-D3FB32D0D342][The fixing process: observation, authorisation, application and reversal]] —
+   the controlled process.
+10. [[id:C6A619F3-B2B6-42D5-9C41-5269A84BC96C][Storage of fixing observations apart from trades]] —
+   the storage principle and its invariants.
+11. [[id:B5CA0D8F-D9C5-4F09-ABD7-7ED6F0FEF1A5][Fixing management and its controls]] —
+    the operational view and the control reports.
+12. [[id:D4CA27E5-8194-470B-A422-B77C53545560][Effects of fixings on valuation, risk and P&L]] —
+    valuation, risk jumps and attribution.
+13. [[id:2400E0FE-AEF0-4F9A-8392-F7D2E0E2A1E2][A data model for fixings]] —
+    the entities, and what ORE Studio holds today.
+14. [[id:5AF9CEEF-A878-443A-8C32-C6E9F6C26FC9][Fixing sources for option cuts and non-deliverable currencies]] —
+    the standard sources and the cut each serves.
+15. [[id:F24FA489-790A-4065-B8E1-DCC141595356][Synthetic generation of fixings]] —
+    the synthetic data generation of fixings.
+
+** Neighbouring notes
+
+The fixings cluster leans on notes that already cover parts of the subject:
+
+- how public fixings reach the store, and why the publisher is part of an FX
+  fixing's identity: [[id:F4BBEF34-D84C-4AE6-A3AA-DC47C3EE06EE][Public publishers publish daily fixings through a supplier session]];
+- how a fixing is named: [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio Market Data URI]];
+- how a quote, the other kind of datum, is stored: [[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][Market series and observations]];
+- non-deliverable trades: [[id:CD3E82C6-AE56-4D06-B949-0B3A5CE7A5FC][Deliverability and non-deliverable instruments]] and
+  [[id:B60031AD-CE57-5F9D-885C-1DAF504E6004][An NDF pays a cash difference on its settlement date]];
+- calendars and schedules: [[id:A960FE8E-56FA-4655-AA51-54C14882179B][Calendars, Holidays and Events]];
+- the two families of interest rate benchmark: [[id:5170B17B-188B-45CA-A1B6-1F27A97E1CF8][Interest Rate Benchmark Types: IBOR vs. RFR]];
+- crosses: [[id:48F6FD8D-56C7-4FF7-A369-CD13D08A6057][Cross-Rates Matrix]];
+- attribution: [[id:B50355E0-F016-4CA1-9932-404DAF83EA7A][P&L Attribution]];
+- the body of data a valuation freezes: [[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]].
+
+* Sources
+
+- IOSCO (2013). /Principles for Financial Benchmarks: Final Report/, July 2013. [[https://www.iosco.org/library/pubdocs/pdf/IOSCOPD415.pdf][iosco.org]]
+- Financial Stability Board (2014). /Foreign Exchange Benchmarks: Final Report/, 30 September 2014. [[https://www.fsb.org/uploads/r_140930.pdf][fsb.org]]
+- ISDA and EMTA (2019). /Annex A to the 1998 FX and Currency Option Definitions/, amended and restated 19 November 2017, amended 3 January 2019. [[https://www.isda.org/book/annex-a-to-the-1998-fx-and-currency-option-definitions/][isda.org]]
+- ISDA (2006). /2006 ISDA Definitions/. International Swaps and Derivatives Association. [[https://www.isda.org/book/2006-isda-definitions/][isda.org]]

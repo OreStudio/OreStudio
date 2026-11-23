@@ -60,12 +60,11 @@ def test_no_stale_controller_entry(services):
     assert "ores.controller.service" not in services
 
 
-def test_twenty_two_fleet_processes(services):
+def test_twenty_one_fleet_processes(services):
     # ores.workspace.service went with the ores.workspace component, and the
-    # official rates adapter, ores.marketdata.official, and the knowledge base's
-    # ores.orgmode.service joined the fleet, so the registry names twenty-two
-    # fleet processes.
-    assert len(services) == 22
+    # official rates adapter, ores.marketdata.official, joined the fleet, so
+    # the registry names twenty-one fleet processes.
+    assert len(services) == 21
 
 
 def test_storage_service_shares_the_http_server_storage_root(services):

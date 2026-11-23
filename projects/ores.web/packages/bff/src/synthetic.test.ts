@@ -399,6 +399,39 @@ describe('synthetic resource routes', () => {
         expect(calls[1]?.body).toMatchObject({ filter: { id_one_of: [COLLECTION_ID] } });
     });
 
+    it('reads a vol surface feed whose id the DQ publish derived, as a feed', async () => {
+        const derived = 'de1e72b7-bae2-c70f-99a0-5185e7dc1c12';
+        const { server, sessionId } = buildTestServer({
+            'synthetic.v1.fx_vol_surface_feeds.list': {
+                result: ok,
+                fx_vol_surface_feeds: [
+                    {
+                        id: derived,
+                        config_id: COLLECTION_ID,
+                        source_name: 'synthetic.bloomberg.vol.audusd',
+                    },
+                ],
+            },
+            'synthetic.v1.market_data_generation_configs.list': {
+                result: ok,
+                market_data_generation_configs: [{ id: COLLECTION_ID, provider_code: 'bloomberg' }],
+            },
+            'synthetic.v1.feed_configs.list': { success: true, running_feeds: [] },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            `/api/synthetic/fx-vol-surface-feeds/key/${derived}`,
+        );
+        expect(response.statusCode).toBe(200);
+        expect(response.json().row).toMatchObject({
+            id: derived,
+            provider_code: 'bloomberg',
+            running: false,
+        });
+    });
+
     it('names the fixing a feed run started from, with the provider and the times', async () => {
         const start = {
             from_fixing: true,
@@ -1473,6 +1506,124 @@ describe('synthetic writes', () => {
         });
     });
 
+    const VOL_FEED = {
+        id: ID,
+        config_id: OTHER,
+        base_currency_code: 'EUR',
+        quote_currency_code: 'USD',
+        source_name: 'synthetic.bloomberg.vol.eurusd',
+        ticks_per_hour: 12,
+        enabled: true,
+        auto_start: true,
+        folder_id: null,
+        asset_class_code: 'fx',
+        arrival_mode: 'periodic',
+        branching_ratio: 0,
+        decay: 1,
+        sensitivity: 1,
+        skew_reversion: 2,
+        skew_volatility: 0.3,
+        curvature_reversion: 2,
+        curvature_volatility: 0.3,
+        spot_variance_correlation: -0.3,
+        spot_skew_correlation: -0.5,
+        segment_correlation: 0.9,
+        start_skew: -0.1,
+        start_curvature: 0.8,
+        spot_oresmd_uri: 'oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD',
+        spot_provider_code: 'bloomberg',
+    };
+
+    it('saves a vol surface feed from a system session', async () => {
+        const { server, sessionId, calls } = buildTestServer(
+            {
+                'synthetic.v1.fx_vol_surface_feeds.put_many': {
+                    result: ok,
+                    fx_vol_surface_feeds: [{ ...VOL_FEED, version: 4 }],
+                },
+            },
+            SYSTEM_TENANT,
+        );
+        const response = await send(
+            server,
+            sessionId,
+            'PUT',
+            '/api/synthetic/fx-vol-surface-feeds',
+            {
+                intent: INTENT,
+                changes: [{ write: { ...VOL_FEED, start_skew: -0.2 }, version: 3 }],
+            },
+        );
+        expect(response.statusCode).toBe(200);
+        expect(calls[0]?.body).toMatchObject({
+            changes: [
+                {
+                    write: {
+                        start_skew: -0.2,
+                        start_curvature: 0.8,
+                        spot_oresmd_uri:
+                            'oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD',
+                        spot_provider_code: 'bloomberg',
+                    },
+                    precondition: { kind: 'must_match_version', version: 3 },
+                },
+            ],
+        });
+    });
+
+    it('refuses a vol surface curvature outside the bound gamma at one half sets', async () => {
+        const { server, sessionId, calls } = buildTestServer({}, SYSTEM_TENANT);
+        const response = await send(
+            server,
+            sessionId,
+            'PUT',
+            '/api/synthetic/fx-vol-surface-feeds',
+            {
+                intent: INTENT,
+                changes: [{ write: { ...VOL_FEED, start_curvature: 1.5 }, version: 3 }],
+            },
+        );
+        expect(response.statusCode).toBe(400);
+        expect(calls).toHaveLength(0);
+    });
+
+    it('refuses a vol surface whose spot is not an FX spot URI', async () => {
+        const { server, sessionId, calls } = buildTestServer({}, SYSTEM_TENANT);
+        const response = await send(
+            server,
+            sessionId,
+            'PUT',
+            '/api/synthetic/fx-vol-surface-feeds',
+            {
+                intent: INTENT,
+                changes: [
+                    {
+                        write: { ...VOL_FEED, spot_oresmd_uri: 'synthetic.bloomberg.eurusd' },
+                        version: 3,
+                    },
+                ],
+            },
+        );
+        expect(response.statusCode).toBe(400);
+        expect(calls).toHaveLength(0);
+    });
+
+    it('refuses a tenant session a write to a vol surface feed', async () => {
+        const { server, sessionId, calls } = buildTestServer({});
+        const response = await send(
+            server,
+            sessionId,
+            'PUT',
+            '/api/synthetic/fx-vol-surface-feeds',
+            {
+                intent: INTENT,
+                changes: [{ write: VOL_FEED, version: 3 }],
+            },
+        );
+        expect(response.statusCode).toBe(403);
+        expect(calls).toHaveLength(0);
+    });
+
     it('removes many rows unconditionally in one call', async () => {
         const { server, sessionId, calls } = buildTestServer({
             'synthetic.v1.gmm_components.delete_many': { result: ok },
@@ -1736,6 +1887,84 @@ describe('synthetic operations', () => {
         const response = await send(server, sessionId, 'POST', `/api/synthetic/feeds/${ID}/stop`);
         expect(response.statusCode).toBe(200);
         expect(calls[0]?.body).toEqual({ config_id: ID, source_name: '' });
+    });
+
+    it('lists the simulated sources with what each runs and holds', async () => {
+        const { server, sessionId } = buildTestServer({
+            'synthetic.v1.simulated_sources.list': {
+                success: true,
+                message: '',
+                sources: [
+                    {
+                        source_name: 'bloomberg-a',
+                        provider_code: 'bloomberg',
+                        stopped: false,
+                        served_feeds: 26,
+                        held_surfaces: 14,
+                        surfaces_only_held_here: 3,
+                    },
+                ],
+            },
+        });
+        const response = await send(server, sessionId, 'GET', '/api/synthetic/simulated-sources');
+        expect(response.statusCode).toBe(200);
+        expect(response.json().sources[0]).toMatchObject({
+            source_name: 'bloomberg-a',
+            held_surfaces: 14,
+            surfaces_only_held_here: 3,
+        });
+    });
+
+    it('stops a simulated source with the reason the person gave', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'synthetic.v1.ops.stop_simulated_source': {
+                success: true,
+                message: 'Stopped bloomberg-a',
+            },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'POST',
+            '/api/synthetic/simulated-sources/bloomberg-a/stop',
+            { reason_code: 'common.other', commentary: 'Quiet the vendor for a demo.' },
+        );
+        expect(response.statusCode).toBe(200);
+        expect(calls[0]?.body).toEqual({
+            source_name: 'bloomberg-a',
+            reason_code: 'common.other',
+            commentary: 'Quiet the vendor for a demo.',
+        });
+    });
+
+    it('refuses a stop that gives no reason, before it reaches the service', async () => {
+        const { server, sessionId, calls } = buildTestServer({});
+        const response = await send(
+            server,
+            sessionId,
+            'POST',
+            '/api/synthetic/simulated-sources/bloomberg-a/stop',
+            {},
+        );
+        expect(response.statusCode).toBe(400);
+        expect(calls).toHaveLength(0);
+    });
+
+    it('starts a stopped simulated source', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'synthetic.v1.ops.start_simulated_source': {
+                success: true,
+                message: 'Started bloomberg-a',
+            },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'POST',
+            '/api/synthetic/simulated-sources/bloomberg-a/start',
+        );
+        expect(response.statusCode).toBe(200);
+        expect(calls[0]?.body).toEqual({ source_name: 'bloomberg-a' });
     });
 
     it('starts a folder and reports the counts by kind', async () => {

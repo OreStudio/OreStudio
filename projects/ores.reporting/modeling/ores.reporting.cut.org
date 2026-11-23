@@ -888,7 +888,7 @@ cut_repository::read_latest_by_request(const context& ctx, const std::string& re
 
 * See also
 
-- [[id:F6362451-D569-4609-97A3-F1C785AAAF02][The cut is the body a run prices from]] — the facts, the derived states and the retention.
+- [[id:F6362451-D569-4609-97A3-F1C785AAAF02][The cut model: recorded facts, derived states and authorisation]] — the facts, the derived states and the retention.
 - [[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]] — the definition and the body the cut holds.
 - [[id:1B2C3D4E-5F60-4718-9A2B-3C4D5E6F7A80][ores.reporting.cut_kind]] — the kind the cut was taken under.
 - [[id:F1B83A47-E029-4D78-9A56-31B7CFE49265][ores.reporting]] — component group overview.

@@ -55,6 +55,11 @@ knowledge / meta contract:
 
 If all three rules hold, the page is acting as an index. If none do,
 it is a normal knowledge document — no extra obligations.
+- Style :: academic prose, cited sources with academic papers preferred, and
+  a title that reads like the title of an academic paper. The procedure and
+  the rules are in /Creating a knowledge document/ and /The house style/ of
+  [[id:E3B70401-5142-4ACC-A61F-1BBF19F8470F][Zettelkasten]], and [[id:180D0EB5-C08A-4C96-B266-3DF593E8F5E3][Review and write academic prose]] is the review.
+- File name :: the title in snake case; a structure note's ends in =_hub=.
 - Required sections ::
   - /Blurb/ — the 3-5 sentence overview, between the frontmatter and
     the first =*= heading. Knowledge docs do /not/ carry a separate

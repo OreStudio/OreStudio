@@ -84,7 +84,7 @@ their components allocate its cost. See [[id:41D84AD1-0058-4135-9B9D-BDE08BE8169
 The system pays the bill of a =live= source. The bill of a =simulated= source is a
 shadow bill. It has the same lines and the same allocation. Nobody pays it. The
 card is the only part that differs, and it is data. See
-[[id:F64DB34E-084D-4437-B536-392AA26D8B77][No code path may behave differently because a source is simulated]].
+[[id:F64DB34E-084D-4437-B536-392AA26D8B77][Simulated sources as data rather than code paths]].
 
 ** One simplification
 
@@ -95,6 +95,6 @@ contract holder changes who owns the card and not the model.
 * See also
 
 - [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
-- [[id:3E51B0BD-D22B-4790-821F-E2FED44D152C][Usage is recorded as events and priced later]] — completes: the events that rating reads.
-- [[id:B746D4F2-F1B5-4563-A6E4-D36BDF8E6BBE][Display, non-display and derived rights are modelled on the subscription]] — completes: the rights that some components charge for.
+- [[id:3E51B0BD-D22B-4790-821F-E2FED44D152C][Event-based metering of market data usage]] — completes: the events that rating reads.
+- [[id:B746D4F2-F1B5-4563-A6E4-D36BDF8E6BBE][Display, non-display and derived market data rights]] — completes: the rights that some components charge for.
 - [[id:5ABE694A-7F87-46A9-943E-B6734B3B6EF9][A live and a simulated source differ only inside the adapter]] — exemplifies: the rate card is a difference that remains.

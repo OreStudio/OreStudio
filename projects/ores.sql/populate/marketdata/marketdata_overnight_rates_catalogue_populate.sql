@@ -25,7 +25,7 @@
  * publisher, in its own notation, mapped to the fixing item of its index. The
  * item is the oresmd address that the index's built-in convention states, so a
  * public fixing and a synthetic feed of one index name the same item. The terms
- * of each publisher are in doc/knowledge/domain/synthetic_calibration_sources.org.
+ * of each publisher are in doc/knowledge/domain/free_public_sources_for_synthetic_price_calibration.org.
  * The ECB and the Bank of Canada are seeded by the official rates catalogue.
  *
  * Each publisher's adapter reads its series through a session and a feed, and the
@@ -116,10 +116,10 @@ create temporary table t_overnight_inventory (
 
 insert into t_overnight_inventory (provider_code, id_scheme, external_id, field, oresmd_uri) values
     ('nyfed', 'nyfed_rate_type', 'SOFR', 'percentRate', 'oresmd://ir/USD?type=fixing&index=ibor&name=SOFR'),
-    ('ecb', 'ecb_sdmx', 'EST.B.EU000A2X2A25.WT', 'OBS_VALUE', 'oresmd://ir/EUR?type=fixing&index=ibor&name=ESTER'),
+    ('ecb', 'ecb_sdmx', 'EST.B.EU000A2X2A25.WT', 'OBS_VALUE', 'oresmd://ir/EUR?type=fixing&index=ibor&name=ESTR'),
     ('boe', 'boe_iadb', 'IUDSOIA', 'value', 'oresmd://ir/GBP?type=fixing&index=ibor&name=SONIA'),
     ('boc', 'boc_valet', 'AVG.INTWO', 'v', 'oresmd://ir/CAD?type=fixing&index=ibor&name=CORRA'),
-    ('boj', 'boj_stat', 'FM01.STRDCLUCON', 'VALUES', 'oresmd://ir/JPY?type=fixing&index=ibor&name=TONAR'),
+    ('boj', 'boj_stat', 'FM01.STRDCLUCON', 'VALUES', 'oresmd://ir/JPY?type=fixing&index=ibor&name=TONA'),
     ('norgesbank', 'nb_sdmx', 'SHORT_RATES.B.NOWA.ON.R', 'OBS_VALUE', 'oresmd://ir/NOK?type=fixing&index=ibor&name=NOWA'),
     ('riksbank', 'riksbank_swestr', 'SWESTR', 'rate', 'oresmd://ir/SEK?type=fixing&index=ibor&name=SWESTR'),
     ('rba', 'rba_table', 'f1.FIRMMCRID', 'value', 'oresmd://ir/AUD?type=fixing&index=ibor&name=AONIA'),

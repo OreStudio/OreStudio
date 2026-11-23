@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: B97D00BB-0957-42DB-8E88-BDB900B1AF65
+:END:
+#+title: Reset system cannot purge a tenant it is reading
+#+description: compass db reset-system fails inside ores_iam_purge_tenant_fn because the purge disables a rule on ores_iam_tenants_tbl while that table is still being read by an active query in the same session, so a half-provisioned system can only be re-armed by recreating the database.
+#+type: capture
+#+level: cross
+#+filetags: :provisioning:iam:database:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+`compass db reset-system` fails and leaves the system as it was:
+
+#+begin_src text
+psql: ERROR:  cannot ALTER TABLE "ores_iam_tenants_tbl" because it is being
+used by active queries in this session
+CONTEXT:  SQL statement "alter table ores_iam_tenants_tbl disable rule
+ores_iam_tenants_delete_rule"
+PL/pgSQL function ores_iam_purge_tenant_fn(uuid) line 80 at EXECUTE
+SQL statement "SELECT ores_iam_purge_tenant_fn(v_tenant.id)"
+PL/pgSQL function ores_iam_reset_system_fn() line 32 at PERFORM
+#+end_src
+
+The purge reads `ores_iam_tenants_tbl` to walk the tenants, and then disables
+a rewrite rule on the same table inside the same session. PostgreSQL refuses
+to alter a table that a query in that session still holds open.
+
+The consequence is that the two commands meant to re-arm a half-provisioned
+system cannot be used: `reset-tenant` succeeds, but it does not restore
+bootstrap mode, and `reset-system` is the one that would. The only way back is
+a full `compass db recreate -y -k`, which costs about four minutes and throws
+away every tenant in the environment.
+
+This was found while re-running the Acme provisioning after it failed at its
+first step; every retry therefore begins with a recreate.
+
+* Why
+
+A provisioning attempt that fails at step one leaves the system out of
+bootstrap mode, which is exactly the state a person wants to retry from. The
+command that would clear it is the one that breaks, so the retry path is
+"recreate the whole database", and a failure that should cost seconds costs
+minutes and every other tenant's data.
+
+The fix is inside the purge: read the tenant ids into a local array or a
+cursor before the loop, and let the loop act on that rather than on a live
+query over the table it is altering. The pgTAP test of the purge should state
+that a reset after a failed provision leaves the system in bootstrap mode.
+
+* References
+
+- =ores_iam_reset_system_fn= and =ores_iam_purge_tenant_fn= — the functions
+  the trace names.
+- [[id:45B89A49-B2B8-4C1C-9BB7-09EB27E4D50C][How do I provision the system with Acme Corporation (holding group)?]]
+  — the recipe whose retry hits this.
+
+* See also
+
+-

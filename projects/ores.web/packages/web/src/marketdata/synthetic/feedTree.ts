@@ -53,7 +53,13 @@ export function folderChain(rows: readonly FolderRow[], id: string): readonly Fo
     return chain;
 }
 
+/** The page of each kind of feed; a spot feed's is the one a kind not named here takes. */
+const PAGE_OF_KIND: Readonly<Record<string, string>> = {
+    ir_curve: PATHS.irFeed,
+    fx_vol_surface: PATHS.volFeed,
+};
+
 /** The address of a feed's own page. */
 export function feedPageOf(feed: Pick<FolderFeed, 'kind' | 'id'>): string {
-    return `${feed.kind === 'ir_curve' ? PATHS.irFeed : PATHS.fxFeed}/${encodeURIComponent(feed.id)}`;
+    return `${PAGE_OF_KIND[feed.kind] ?? PATHS.fxFeed}/${encodeURIComponent(feed.id)}`;
 }

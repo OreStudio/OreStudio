@@ -180,7 +180,7 @@ Bootstrapping Architecture]].
 
 * See also
 
-- [[id:2BF0E688-D053-5FC4-B4A3-10A5B685789D][Short-date swap points run between their own two value dates]] — completes: two labellings of the short end.
+- [[id:2BF0E688-D053-5FC4-B4A3-10A5B685789D][Short-date swap points and their value dates]] — completes: two labellings of the short end.
 - [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Term Structures and Tenors]] — the hub.
 - [[id:D5FAFA10-333D-44BC-B993-4B5C4C4D803F][Pillar]] — the subset of tenors actually quoted as live inputs to a given curve.
 - [[id:3A6CF3BC-3378-4F84-B0B6-F5D6F488AC33][Term Structure]] — the ordered series a tenor is one point of.

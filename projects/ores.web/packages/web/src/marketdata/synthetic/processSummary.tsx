@@ -27,6 +27,7 @@ import { feedPageOf } from './feedTree.js';
 import { engineName } from './IrProcessPanel.js';
 import { PARAMETER_VALUES } from './irFeeds.js';
 import { COMPONENTS } from './MixturePanel.js';
+import { SSVI_GAMMA, VOL_FEEDS } from './volFeeds.js';
 import { clean } from './market/numbers.js';
 import { SummaryLines, SummaryTag, type SummaryLine } from './SummaryTag.js';
 
@@ -42,8 +43,11 @@ export function processName(
     t: (key: string) => string,
     feed: Pick<ProcessFeed, 'kind' | 'engine'>,
 ): string {
-    return feed.kind === 'ir_curve'
-        ? engineName(t, feed.engine)
+    if (feed.kind === 'ir_curve') {
+        return engineName(t, feed.engine);
+    }
+    return feed.kind === 'fx_vol_surface'
+        ? t('marketdata.volFeeds.engine')
         : t(`refdata.choices.process_type.${feed.engine}`);
 }
 
@@ -54,6 +58,9 @@ export function processKey(feed: Pick<ProcessFeed, 'kind' | 'engine'>): string {
 
 /** The tab of a feed's page that edits its process. */
 export function processTab(kind: string): string {
+    if (kind === 'fx_vol_surface') {
+        return 'surface';
+    }
     return kind === 'ir_curve' ? 'process' : 'behaviour';
 }
 
@@ -93,15 +100,41 @@ export function curveLines(
 }
 
 /** The parameters of one feed's process, read when this is drawn. */
+/** A surface's SSVI start: its skew and curvature, and the gamma the generator holds. */
+export function surfaceLines(
+    feed: RecordRow | undefined,
+    t: (key: string) => string,
+): readonly SummaryLine[] {
+    if (feed === undefined) {
+        return [];
+    }
+    return [
+        { name: 'ρ', value: clean(numberOf(feed, 'start_skew'), 4) },
+        { name: 'η', value: clean(numberOf(feed, 'start_curvature'), 4) },
+        { name: 'γ', value: String(SSVI_GAMMA) },
+    ];
+}
+
 function ProcessParameters({ feed }: { readonly feed: ProcessFeed }): ReactNode {
     const { t } = useTranslation();
     const curve = feed.kind === 'ir_curve';
-    const parts = useRecords(curve ? PARAMETER_VALUES : COMPONENTS, feed.id);
+    const surface = feed.kind === 'fx_vol_surface';
+    const parts = useRecords(
+        curve ? PARAMETER_VALUES : surface ? VOL_FEEDS : COMPONENTS,
+        surface ? undefined : feed.id,
+    );
     const definitions = useRecords('parameter-definitions');
     if (parts.data === undefined || (curve && definitions.data === undefined)) {
         return <p className="text-xs text-ink-faint">{t('common.loading')}</p>;
     }
-    const lines = curve ? curveLines(parts.data, definitions.data ?? []) : mixtureLines(parts.data);
+    const lines = curve
+        ? curveLines(parts.data, definitions.data ?? [])
+        : surface
+          ? surfaceLines(
+                parts.data.find((row) => show(row['id']) === feed.id),
+                t,
+            )
+          : mixtureLines(parts.data);
     if (lines.length === 0) {
         return <p className="text-xs text-ink-faint">{t('marketdata.processSummary.none')}</p>;
     }

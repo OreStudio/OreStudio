@@ -1,0 +1,117 @@
+:PROPERTIES:
+:ID: 46546EEB-580D-4C37-9398-422D3A18D692
+:END:
+#+title: Task: Design the synthetic feed graph: nodes, edges, states and diagnostics
+#+description: A design note for the feed graph: how its nodes and edges are stored, how a node's state and reason are kept and propagated, and where each node's messages live, settled with the owner before any of it is built.
+#+type: task
+#+level: s1
+#+filetags: :synthetic:architecture:design:model_the_synthetic_feed_dependency_graph:sprint_30:v0:
+#+owner: marco
+#+branch: feature/design-the-synthetic-feed-graph
+#+pr: 5036
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8DE041AE-95E6-40CE-9B62-2CE3BA77838A][Model the synthetic feeds as a dependency graph: upstreams, latent surfaces and vendor views]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The feed graph the story describes gets one design, signed off before it is built: what a node is, how the edges between nodes are stored, how each node's state and its reason are held and passed down the edges, how a node is stopped and started, where each node's diagnostics are kept, and how the screens read the whole graph. Each choice states the options and a recommendation.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:8DE041AE-95E6-40CE-9B62-2CE3BA77838A][Model the synthetic feeds as a dependency graph: upstreams, latent surfaces and vendor views]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-22                               |
+
+* Acceptance
+
+- A knowledge page states the graph's node kinds, its edges, its states and the propagation rule, using the signed-off names.
+- Each open choice (edge storage, stop storage, state keeping, the message log, the graph read) lists its options with a recommendation.
+- The approach and components pages link the design.
+- The owner signs the design off, recorded on the task.
+
+* Plan
+
+1. Read how the dependencies work today: the board members the surface reads,
+   the spot pair, the rule that finds the curves, the contributor links, and
+   the source stop.
+2. Read where messages could live: the telemetry service's log entries, and
+   the rules for JetStream streams.
+3. Write the design as a knowledge page,
+   [[id:2376A086-4C3C-4D61-92E5-29B122DB6A41][Synthetic feed graph]]: the node kinds, the edges with what stores
+   each today, the four states and the propagation rule, and five choices each
+   with options and a recommendation: edge storage, stop storage, state
+   keeping, the message log, and the graph read.
+4. Get the owner's sign-off on the five choices, record it here, and mark the
+   page as adopted.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+- *Sign-off.* The owner signed the design off on 2026-11-22: "signed off, go with recommendations".
+- *To check when building the log.* That a telemetry log entry carries an attribute a query can filter on, so a node's page reads its log by name.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5036][#5036]] | [doc] Adopt the synthetic feed graph design |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Which state wins when a node is both stopped and starved. | =synthetic_feed_graph.org= | Accept | Precedence stated: stopped, then starved, failing, running; a stopped node keeps its own reason and logs the starve. |
+| 2 | Whether a failing input starves the nodes below. | =synthetic_feed_graph.org= | Accept | Stated: a failing node produces nothing, so it starves the nodes below it. |
+| 3 | The graph is not said to be acyclic. | =synthetic_feed_graph.org= | Accept | Stated, with why: every edge points to a kind that comes before it, so a walk ends. |
+| 4 | The source edges stay rule-based although choice 1 stores edges. | =synthetic_feed_graph.org= | Accept | Stated that they stay derived, as a lookup of the stored provider, and what a collection is. |
+| 5 | The telemetry attribute check is left open on a closed task. | =story.org= | Accept | The story's diagnostics task now owns the check. |
+| 6 | "A few hundred nodes" is an estimate. | =synthetic_feed_graph.org= | Accept | Replaced by the count: 188 feed nodes and 8 sources, from the system tenant. |
+| 7 | Blank lines before the See also links of the approach page. | =synthetic_market_data_generation_approach.org= | Decline | The page's existing layout, before either design PR. |
+
+* Result
+
+The design is written in [[id:2376A086-4C3C-4D61-92E5-29B122DB6A41][Synthetic feed graph]] and adopted. The graph
+has four node kinds (upstream, latent, view, source), named by the signed-off
+scheme, and four states (running, stopped, starved, failing), each with its
+reason; a node runs when it is not stopped and every input runs. The owner
+signed off the five choices on 2026-11-22, each as recommended: edges as typed
+columns on the dependent node, the two curves among them; one stop table for
+any node, keyed by name, which the stopped source table becomes; state derived
+in the service, never stored; each node's messages as telemetry log entries
+tagged with its name; and one read of the whole graph, with a filter by node,
+served by the BFF and ores.http.

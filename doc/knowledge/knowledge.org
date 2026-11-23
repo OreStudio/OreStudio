@@ -43,7 +43,7 @@ one, start there rather than here.
 | [[id:4682A7D5-04FC-494B-BD7C-6816500EB3C9][Message Queue]] | How a subject is addressed, what a message must look like, and where a service binds to the bus |
 | [[id:B4E6F1A2-7C3D-4E5F-8A9B-0C1D2E3F4A5B][NATS service patterns]] | How a service must use the bus: the call each situation requires, its rationale, and the failure without it |
 | [[id:F1BC2C10-B23B-4979-9692-8FA7C29319CB][Data storage]] | Where the durable data lives, which interface reaches each store, and how to choose one |
-| [[id:929A4722-8F06-4DEF-B759-D0800D4AC6D5][A pooler stands where the database is shared]] | A pooler is a host and a port, so an environment chooses one or not: a shared instance takes one, a developer's own database needs none |
+| [[id:929A4722-8F06-4DEF-B759-D0800D4AC6D5][Connection pooling for shared database instances]] | A pooler is a host and a port, so an environment chooses one or not: a shared instance takes one, a developer's own database needs none |
 | [[id:CE41E828-18EB-4E88-BB02-6A4930E7B67C][The data path]] | How a service reaches the database and how ticks reach the store, at one hundred thousand feeds |
 | [[id:8C011F45-3A10-4EF4-BB73-4BDEF38B743E][Data classification]] | How to tell what a data set is before choosing a shape, and how a set that crosses owners travels |
 | [[id:01083101-A83A-4294-81A4-DDF3192CEB14][Report Processing]] | How a report is scheduled, prepared, run on the compute grid, and recorded |
@@ -77,6 +77,8 @@ Finance concepts the codebase relies on.
 | [[id:A8C46639-0639-4587-B07D-B8B006C46618][Stochastic Processes]] | The processes behind the quant generators: Wiener, Ito, and the mean-reverting family |
 | [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] | How a tick becomes a stored observation, how a config becomes a running synthetic feed, the verbs and screens that drive it, and the vendor and stored data side |
 | [[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]] | The label, the timepoint and the object a cut fixes; the kinds of cut; the data a cut must freeze, reference data included; the market data, deal and expiry components |
+| [[id:784D9D97-721A-42EC-BA91-A85764979CD0][Fixings]] | The agreed observations contracts settle on: sources and their administrators, the products that need them, the fixing process and its controls, storage, valuation and P&L effects, and the data model they imply |
+| [[id:C9887852-42C9-48BE-8E8C-BB66FCC48E83][Expiries]] | How an option ends at its cut: outcomes and exercise styles, pin risk, defaults and structures, the cut-by-cut process, undo and states, controls and valuation |
 
 ** Topics with no hub yet
 
@@ -106,13 +108,14 @@ How the codebase is put together.
 | [[id:4F95A407-AD43-4CBD-952E-1CCACAA90080][Workflows]] | The engine, the step protocol, the run and step states, and how a component describes the steps of a run |
 | [[id:DFC57D4F-9AB2-4428-BDEC-BF44D106A75D][Scheduler]] | The cron expression, the loop that evaluates it, the firing and its record, and the actions a firing performs |
 | [[id:EA249899-6611-407F-A43A-B37019EBD1A7][Service architecture patterns]] | The pattern language of service interaction: the established patterns the platform uses, by group, with their sources, failure handling and pitfalls |
+| [[id:47B179BF-C982-4BB1-AF4F-35E00B9D2750][Delegated Access for LLM Agents]] | Agents acting for a person through ores.http: the one door, the grant and the token that name the agent, MCP and the catalogue, the record of what it did, and six eyes on its writes |
 | [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] | Producers, the marketdata authority, feed configs, source-independent consumers |
 | [[id:7DFE57DE-70C9-4EB6-AF94-DCEC65ADB494][The ORE XML infrastructure]] | How an ORE document becomes rows and comes back, in six notes: the codec that owns the shape, the mapper's conversion, the export's asymmetry, the three leaf maps, the value sets, and the guards that refuse a value |
 | [[id:FDD02CA9-1DAD-4162-95AC-C7C5C611DDDC][Tracking market data identity from fixing to report]] | The target state: identities that distinguish observed, generated, derived and published data, and reports that reference published curves |
 | [[id:446F28DF-155A-47EC-8D66-FDB90A8FBFA7][Bootstrapping a curve: from quotes to a published set]] | The recipe, the quotes it reads, the solve, the checks, the candidate and its publication |
 | [[id:B74CEF18-B533-45A1-B65E-F7DF836988D6][Publishing derived market data]] | The one lifecycle that makes a curve, an FX forward set or a surface authoritative: candidate, raise, decision or stated rule, apply, supersede, withdraw, read |
-| [[id:FB8F701C-E56A-49A9-AA90-1B6BD0B02092][A report binds to a published curve, not to a name]] | The market binding names the publish record and the as-of, refuses a set that is not published, and the export builds the XML from the set |
-| [[id:F6362451-D569-4609-97A3-F1C785AAAF02][The cut is the body a run prices from]] | The cut's facts and derived states, the permissions that take and authorise one, the derived label, and the second binding that lets a run name a body |
+| [[id:FB8F701C-E56A-49A9-AA90-1B6BD0B02092][Binding reports to published curves]] | The market binding names the publish record and the as-of, refuses a set that is not published, and the export builds the XML from the set |
+| [[id:F6362451-D569-4609-97A3-F1C785AAAF02][The cut model: recorded facts, derived states and authorisation]] | The cut's facts and derived states, the permissions that take and authorise one, the derived label, and the second binding that lets a run name a body |
 | [[id:F1BC2C10-B23B-4979-9692-8FA7C29319CB][Data storage]] | The system of record, object storage, the durable stream and the caches, and what each one owns |
 | [[id:CE41E828-18EB-4E88-BB02-6A4930E7B67C][The data path]] | Connections, the transaction API, bounded handlers, the tick store and its writers, and the numbers each reports |
 | [[id:81AB065B-E6EB-4CC2-BB18-F3FD2652EC47][PostgreSQL Architecture]] | Schema layout, roles, session settings, bitemporal design |
@@ -138,7 +141,7 @@ features. Each component's own page carries its script inventory.
 | Component | What it does |
 |-----------+--------------|
 | [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][ores.compass]] | Repository compass: orientation, doc search, agile scaffolding over the graph |
-| [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] | The code generator producing SQL, C++ and org documents from JSON models |
+| [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] | The templates and models the generator renders into SQL, C++ and org documents |
 | [[id:EAE593F5-B549-4705-A598-344405196574][ores.lisp]] | Emacs Lisp tooling: dashboard, database browser, org-roam export |
 | [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ores.sql]] | Schema, migrations, role provisioning, database lifecycle |
 | [[id:BA6F2BF1-E16E-4E80-A3D0-CACC30FA04DB][Developer scripts]] | Inventory of the standalone scripts in [[proj:scripts][=scripts/=]] |

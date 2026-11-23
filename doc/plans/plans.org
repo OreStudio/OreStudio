@@ -82,7 +82,7 @@ Active work lives in the [[id:46DFE47F-967B-4C24-95BF-3E21F97CFD20][agile proces
 | 2026-05-13 | [[id:7BBA5627-F13D-4BFC-9E03-C15B61A11AD5][PostgreSQL Identifier Length Cleanup]]                                             | DONE        |
 | 2026-05-13 | [[id:F2A4C6E8-B1D3-4E5F-A7B9-2C4D6E8F0A1B][Symbol Visibility Migration]]                                                      | DONE        |
 | 2026-05-14 | [[id:05661A18-616C-4C39-8A88-BFBB4C68FD2E][Codegen SQL Debt — Hand-Written Files with Existing Models]]                       | DONE        |
-| 2026-05-14 | [[id:98B3572E-A9F9-45F5-A4C5-3DC23F3CFF70][DQ Publish Pattern — Architecture and Decision]]                                   | DONE        |
+| 2026-05-14 | [[id:98B3572E-A9F9-45F5-A4C5-3DC23F3CFF70][DQ Publish Pattern — Architecture and Decision]]                                   | SUPERSEDED  |
 | 2026-05-14 | [[id:D9143823-DFCD-4208-96BE-8AD647A78C8D][Workflow Engine Hardening]]                                                        | DONE        |
 | 2026-05-15 | [[id:D7F263C4-7A0C-4ABD-85E7-0BD90C0C4D98][Login Dialog Label Filter]]                                                        | DONE        |
 | 2026-05-15 | [[id:E7976556-8EA4-4A54-A414-BE0D11762DEC][ORE Import Error Reporting and Step Warning State]]                                | DONE        |

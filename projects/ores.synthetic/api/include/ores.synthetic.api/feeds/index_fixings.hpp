@@ -52,6 +52,8 @@ struct index_fixing final {
  *
  * The address is written by the codec the market reads, so a series a feed creates
  * and a series a trade requires are one text, and not two spellings of one index.
+ * The pgTAP test synthetic_curve_fixing_addresses_test.sql builds the same address
+ * in SQL to check every curve against the conventions; change both together.
  *
  * @return The address, or why the index has none: an empty currency or family, or
  * an index ORE's own name grammar does not read back.
@@ -71,16 +73,6 @@ ORES_SYNTHETIC_API_EXPORT std::expected<std::string, std::string> index_fixing_u
  */
 ORES_SYNTHETIC_API_EXPORT std::expected<std::string, std::string>
 curve_fixing_uri(const domain::ir_curve_generation_config& curve);
-
-/**
- * @brief The fixing addresses a set of curves serves.
- *
- * One address per curve that states fixings, as =curve_fixing_uri= gives it. A
- * trade that floats on an index outside this set has no fixings, so a generator
- * draws only indices inside it.
- */
-ORES_SYNTHETIC_API_EXPORT std::set<std::string>
-served_fixing_uris(const std::vector<domain::ir_curve_generation_config>& curves);
 
 /**
  * @brief How a history's days move away from the level the curve states.

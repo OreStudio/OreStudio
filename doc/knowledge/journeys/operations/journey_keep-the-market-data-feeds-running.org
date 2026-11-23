@@ -30,7 +30,7 @@ The actor is the system administrator: an account with the =SuperAdmin= role,
 acting from the system tenant in system administration mode, as the
 [[id:5E970C7F-68EA-42BF-B73E-997C4A003762][Operations journeys]] group sets out.
 Reading needs =marketdata::sources:read=. The same screen serves live and
-simulated sources and shows the kind as a badge. See [[id:F64DB34E-084D-4437-B536-392AA26D8B77][No code path may behave differently because a source is simulated]].
+simulated sources and shows the kind as a badge. See [[id:F64DB34E-084D-4437-B536-392AA26D8B77][Simulated sources as data rather than code paths]].
 
 The trigger is a service restart, a source the desk says is silent, a new
 adapter to bring up, or a routine check. The journey starts at *Operations*, then

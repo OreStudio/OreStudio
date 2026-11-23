@@ -129,11 +129,9 @@ TEST_CASE("the_curves_serve_one_address_each_and_the_meeting_dated_curve_none",
         return c;
     };
 
-    const auto served = served_fixing_uris({curve("GBP", "libor", "3M"),
-                                            curve("USD", "sofr", ""),
-                                            curve("USD", "sofr", "FOMC"),
-                                            curve("", "libor", "6M")});
-
-    CHECK(served ==
-          std::set<std::string>{gbp_libor_3m, "oresmd://ir/USD?type=fixing&index=ibor&name=SOFR"});
+    CHECK(curve_fixing_uri(curve("GBP", "libor", "3M")).value() == gbp_libor_3m);
+    CHECK(curve_fixing_uri(curve("USD", "sofr", "")).value() ==
+          "oresmd://ir/USD?type=fixing&index=ibor&name=SOFR");
+    CHECK_FALSE(curve_fixing_uri(curve("USD", "sofr", "FOMC")).has_value());
+    CHECK_FALSE(curve_fixing_uri(curve("", "libor", "6M")).has_value());
 }

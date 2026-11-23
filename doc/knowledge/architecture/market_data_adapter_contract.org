@@ -47,7 +47,7 @@ apart from the messages alone.
 - It must not publish an oresmd URI. Mapping is the service's job, so the
   mapping is the same for every source of one provider. See [[id:BAE0F052-CCA6-43FB-A139-03518CE2D929][The mapping belongs to the provider and not to the source]].
 - It must not know a tenant or a party. It runs as a system service. See
-  [[id:A7D1927B-CB42-49A9-94EF-DBB40225274C][The identity an adapter runs as]].
+  [[id:A7D1927B-CB42-49A9-94EF-DBB40225274C][Adapter identity]].
 - It must not store anything. The service owns persistence.
 - It must not publish an id it did not announce.
 
@@ -61,7 +61,7 @@ seam only, and not the vendor protocol. See [[id:69287DA4-3558-4EAE-972B-82BC7F9
 * See also
 
 - [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
-- [[id:3183ED5C-D5BB-40C0-ABB1-78439F52779D][One service owns market data between the vendors and the parties]] — completes: the service on the other side of the seam.
+- [[id:3183ED5C-D5BB-40C0-ABB1-78439F52779D][The market data service as the boundary between vendors and parties]] — completes: the service on the other side of the seam.
 - [[id:97208391-AE4B-4032-9744-8F8B228FD567][The adapter subjects]] — completes: the subject grammar and the token rule.
 - [[id:AC0C19EF-158C-4766-8661-A1DCECE3D424][Vendor adapters]] — exemplifies: what a live adapter adds behind the seam.
 - [[id:69287DA4-3558-4EAE-972B-82BC7F9296E9][The simulator stops at the adapter seam]] — answers: why the simulator stops at this seam.

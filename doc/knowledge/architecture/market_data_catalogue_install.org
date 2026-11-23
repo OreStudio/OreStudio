@@ -67,5 +67,5 @@ and routes.
 
 - [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
 - [[id:68CE1E1D-7568-4911-BB71-CCF5A9E07BB7][Every source belongs to a provider in the catalogue]] — completes: the rows the bundle installs.
-- [[id:54C9E31E-26FF-4530-A868-0850FCE1FE30][The simulator is one adapter plus the tools that author its generators]] — completes: the generators and the universe on the simulator side.
+- [[id:54C9E31E-26FF-4530-A868-0850FCE1FE30][The synthetic market data simulator: adapter and authoring tools]] — completes: the generators and the universe on the simulator side.
 - [[id:3EF67CE4-6AF2-45FC-AA9B-D543550EF8C2][Generators belong to the system tenant and the system party]] — completes: why the generators are system-owned.

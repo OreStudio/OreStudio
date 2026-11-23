@@ -52,7 +52,7 @@ How do I rebuild the ORE market datum catalogue?
    #+end_src
 
 4. /Regenerate the trade type coverage page./ =trade_types.tsv= feeds
-   [[id:CC7CC29C-9413-4DF3-BC32-D1C8A978D295][Which trade types ORE carries and ORE Studio holds]]:
+   [[id:CC7CC29C-9413-4DF3-BC32-D1C8A978D295][Coverage of ORE trade types in ORE Studio]]:
 
    #+begin_src sh :results verbatim
    ./compass.sh generate

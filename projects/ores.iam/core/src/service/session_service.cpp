@@ -148,6 +148,7 @@ domain::session session_to_domain(const messaging::session_write& write) {
     v.bytes_received = write.bytes_received;
     v.country_code = write.country_code;
     v.protocol = write.protocol;
+    v.agent_grant_id = write.agent_grant_id;
     return v;
 }
 
@@ -168,6 +169,13 @@ session_service::list_sessions(const messaging::list_sessions_request& request) 
         response.result =
             refuse(outcome_code::filter_too_large,
                    {.field = "account_id_one_of", .limit = std::to_string(max_batch_size)});
+        return response;
+    }
+    if (request.filter && request.filter->agent_grant_id_one_of &&
+        request.filter->agent_grant_id_one_of->size() > max_batch_size) {
+        response.result =
+            refuse(outcome_code::filter_too_large,
+                   {.field = "agent_grant_id_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     response.sessions =

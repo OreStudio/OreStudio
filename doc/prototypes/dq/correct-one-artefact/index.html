@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Correct one artefact — ORE Studio prototype</title>
+<link rel="stylesheet" href="management.css">
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step.
+
+  One staged row corrected: the artefact rows of a dataset, one row as a record,
+  the change with its reason, and the republish that carries it.
+
+    ?row=<key>      the row opened (default AED-EIBOR-6M-SWAP)
+    ?edit=1         the edit form open
+    ?saved=1        the row saved, and the republish offered
+    ?republished=1  the republish receipt
+    ?gaps=0         hide the notes on what the server does not serve
+-->
+
+<div class="proto-note">Prototype · mock data · reads no server</div>
+<div id="app"></div>
+<div class="proto-bar" id="proto-bar"></div>
+
+<script src="management.js"></script>
+<script src="prototype.js"></script>
+</body>
+</html>

@@ -51,6 +51,6 @@ average to a governed waterfall; changes to the methodology require sign-off.
 * See also
 
 - [[id:0AABF2DE-8A65-4EF6-A9AD-FBE4AFDF2B46][FX spot rate blending methods]] — how sources are combined.
-- [[id:936BE1EE-89F0-4F82-9064-9AB53E886299][Why FX spot rates are observable Level 1 inputs]] — why blending stays light.
+- [[id:936BE1EE-89F0-4F82-9064-9AB53E886299][Observability of FX spot rates as Level 1 inputs]] — why blending stays light.
 - [[id:93BF1249-609F-452C-B1EC-FEB493F44273][Spot rate governance]] — the verification, approval and local/global rules the blended rate feeds.
 - [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — where blending sits in ores.marketdata.

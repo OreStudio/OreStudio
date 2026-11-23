@@ -45,6 +45,7 @@ export interface SessionWrite {
     bytes_received: number;
     country_code: string;
     protocol: string;
+    agent_grant_id: string | null;
 }
 
 export interface SessionChange {
@@ -64,7 +65,9 @@ export interface SessionLookup {
 
 export interface SessionsFilter {
     account_id: string | null;
+    agent_grant_id: string | null | null;
     account_id_one_of: string[] | null;
+    agent_grant_id_one_of: string[] | null;
 }
 
 export interface SessionEvent {

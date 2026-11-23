@@ -23,8 +23,8 @@
 #include "ores.http.core/routes/ore_value_set_tables.hpp"
 #include "ores.http.nats/forwarding.hpp"
 #include "ores.http/routes/refdata/catalogue_choices.hpp"
+#include "ores.ore.api/messaging/ore_parameter_protocol.hpp"
 #include "ores.refdata.api/messaging/convention_kind_term_protocol.hpp"
-#include "ores.reporting.api/messaging/ore_parameter_protocol.hpp"
 #include "ores.utility/codec/json_codec.hpp"
 #include <algorithm>
 #include <cstdlib>
@@ -42,12 +42,12 @@ namespace {
 namespace forwarding = ores::http::forwarding;
 namespace json = ores::utility::codec::json;
 namespace refdata_messaging = ores::refdata::messaging;
-namespace reporting_messaging = ores::reporting::messaging;
+namespace ore_messaging = ores::ore::messaging;
 using ores::http::domain::http_request;
 using ores::http::net::shape::member;
 using ores::http::net::shape::object;
 using ores::nats::service::nats_client;
-using ores::reporting::domain::ore_parameter;
+using ores::ore::domain::ore_parameter;
 
 /// The contract entry of one kind: the leaves of one schema, by the path it keys them at.
 using contract = std::map<std::string, const ore_parameter*, std::less<>>;
@@ -125,8 +125,8 @@ std::vector<term_view> read(const http_request& req,
     const auto parameters =
         forwarding::forward_all(req,
                                 session,
-                                reporting_messaging::list_ore_parameters_request{},
-                                &reporting_messaging::list_ore_parameters_response::parameters);
+                                ore_messaging::list_ore_parameters_request{},
+                                &ore_messaging::list_ore_parameters_response::parameters);
     contract entries;
     for (const auto& parameter : parameters)
         entries.emplace(contract_key(parameter.schema_name, parameter.xpath), &parameter);

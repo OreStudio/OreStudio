@@ -22,7 +22,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 The system states where the forward a synthetic volatility surface is struck against comes from, and the answer holds together with the approach note's constraints, with the vendor's ownership of raw quotes only, and with the frameworks the surface is judged against.
 
-The answer this task reaches is [[id:4825DEE0-D3E4-4E38-B46F-0C5EA838F1E0][The forward a synthetic surface is struck against]]: the run shares its own latent curve, and the vendor publishes no curve.
+The answer this task reaches is [[id:4825DEE0-D3E4-4E38-B46F-0C5EA838F1E0][Forwards for synthetic volatility surfaces]]: the run shares its own latent curve, and the vendor publishes no curve.
 
 * Status
 
@@ -90,7 +90,7 @@ via its "Verifies task" field.
 * Result
 
 The investigation is
-[[id:4825DEE0-D3E4-4E38-B46F-0C5EA838F1E0][The forward a synthetic surface is struck against]]. It answers where the
+[[id:4825DEE0-D3E4-4E38-B46F-0C5EA838F1E0][Forwards for synthetic volatility surfaces]]. It answers where the
 forward comes from -- the run's own latent curves, shared through a market board,
 with no curve published -- and it weighs four paths against the approach note's
 constraints 1 and 3 and against the three frameworks the surface is judged by.

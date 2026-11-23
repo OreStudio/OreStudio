@@ -22,7 +22,7 @@ The market also calls it a window forward. A drawdown cannot be earlier than the
 
 - [[id:9FB155A4-54FD-57D5-93A1-1FECB3A05F95][FX forwards]] — the structure note.
 - [[id:47598B8D-0121-4989-9661-79A8E6D1A070][FX Forward]] — completes: the base product.
-- [[id:E8B5DF1F-027E-5B98-89B2-809EDFDBEDF1][Forward points are the difference between the outright and spot]] — completes: the source of the premium.
+- [[id:E8B5DF1F-027E-5B98-89B2-809EDFDBEDF1][FX forward points: definition, premium and discount]] — completes: the source of the premium.
 
 * Sources
 

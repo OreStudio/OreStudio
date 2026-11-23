@@ -36,7 +36,7 @@ overnight rate in the system tenant stays in a plausible range.
 * References
 
 - =ores_marketdata_market_fixings_tbl=, series =oresmd://ir/SEK?type=fixing&index=ibor&name=SWESTR=
-- =doc/knowledge/domain/synthetic_calibration_sources.org=
+- =doc/knowledge/domain/free_public_sources_for_synthetic_price_calibration.org=
 
 * See also
 

@@ -79,7 +79,7 @@ task and name that file in the Command column.
 - Raised on 2026-10-28, when [[id:74F33C8C-AF28-4A6E-812A-A2D443A77E40][Load published quotes from the public sources]] began; moved here when that task was superseded. The user asked that the licences be accepted in the initial system setup rather than only recorded on a documentation page.
 - The journey today is welcome, administrator, ready (=projects/ores.web/packages/web/src/journeys/firstRunSteps.tsx=).
 - The terms columns of the provider, and the adapter's refusal, come from [[id:13EF1C37-CC1A-472C-B14C-EE80A1450294][Give every provider its terms]]. This task adds the screens.
-- The terms still to read are listed in [[id:3F9D6EAE-9FB8-4A0D-9BAF-1EA3EA93AB4F][Synthetic prices are calibrated from free public sources]]: Frankfurter's own licence, each Frankfurter provider, the US Treasury and the Bank of England.
+- The terms still to read are listed in [[id:3F9D6EAE-9FB8-4A0D-9BAF-1EA3EA93AB4F][Free public sources for synthetic price calibration]]: Frankfurter's own licence, each Frankfurter provider, the US Treasury and the Bank of England.
 
 * Test Scenarios
 

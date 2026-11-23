@@ -50,16 +50,16 @@
 \ir ./assets/assets_create.sql
 \ir ./geo/geo_create.sql
 \ir ./scheduler/scheduler_create.sql
+\ir ./ore/ore_create.sql
 \ir ./reporting/reporting_create.sql
 \ir ./mq/mq_create.sql
 \ir ./compute/compute_create.sql
 \ir ./workflow/workflow_create.sql
 \ir ./marketdata/marketdata_create.sql
 \ir ./analytics/analytics_create.sql
-\ir ./reporting/reporting_ore_parameter_value_set_catalogue_views_create.sql
+\ir ./ore/ore_ore_parameter_value_set_catalogue_views_create.sql
 \ir ./synthetic/synthetic_create.sql
 \ir ./inbox/inbox_create.sql
-\ir ./orgmode/orgmode_create.sql
 
 -- Views that read tables of several components, so they come after all of them
 \ir ./trading/trading_trade_summaries_create.sql

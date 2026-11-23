@@ -37,4 +37,4 @@ Structured as a composite component with three sub-components.
 * See also
 
 - [[id:F05B779F-769B-49D5-B369-D2AAC029B36D][DQ Bundle Publication Pipeline]] — end-to-end walkthrough of how bundle
-  data gets published into target services via the Librarian.
+  data gets published into target services, and what a generator owns at each stage.

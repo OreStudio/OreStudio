@@ -148,6 +148,41 @@ std::string fx_vol_surface_feed_web_routes::catalogue_entry(const http_request& 
            R"json(,"search":false,"sortable":[],"readPermission":"synthetic::fx_vol_surface_feeds:read","writePermission":"synthetic::fx_vol_surface_feeds:write","deletePermission":"synthetic::fx_vol_surface_feeds:delete"})json";
 }
 
+/// The order, the search and the filters a query states, on a page request.
+///
+/// A whole read takes the same query a paged one takes: a screen that searches a
+/// list it holds whole reads the rows that match, not the list.
+messaging::list_fx_vol_surface_feeds_request
+fx_vol_surface_feed_web_query(messaging::list_fx_vol_surface_feeds_request msg,
+                              const http_request& req) {
+    const std::string page_sentence = "A page names an offset and a limit of 1 to 1000.";
+    const auto sort = req.get_query_param("sort");
+    if (!sort.empty()) {
+        constexpr std::string_view sortable[] = {""};
+        if (std::find(std::begin(sortable), std::end(sortable) - 1, sort) == std::end(sortable) - 1)
+            rr::invalid("fx-vol-surface-feeds cannot be ordered by " + sort + ".");
+        msg.order.field = sort;
+    }
+    const auto descending = req.get_query_param("descending");
+    if (!descending.empty() && descending != "true" && descending != "false")
+        rr::invalid(page_sentence);
+    msg.order.descending = descending == "true";
+
+    const auto search = req.get_query_param("search");
+    if (!search.empty())
+        rr::invalid("fx-vol-surface-feeds cannot be searched.");
+
+    for (const auto& [name, value] : req.query_params) {
+        if (!name.starts_with("f."))
+            continue;
+        const auto member = name.substr(2);
+        constexpr std::string_view filters[] = {""};
+        if (std::find(std::begin(filters), std::end(filters) - 1, member) == std::end(filters) - 1)
+            rr::invalid("fx-vol-surface-feeds cannot be filtered by " + member + ".");
+    }
+    return msg;
+}
+
 boost::asio::awaitable<http_response>
 fx_vol_surface_feed_web_routes::handle_list(const http_request& req, nats_client& session) {
     try {
@@ -160,7 +195,9 @@ fx_vol_surface_feed_web_routes::handle_list(const http_request& req, nats_client
                 const auto reply = ores::http::forwarding::forward(
                     req,
                     session,
-                    fx_vol_surface_feed_web_page(offset, fx_vol_surface_feed_web_page_size));
+                    fx_vol_surface_feed_web_query(
+                        fx_vol_surface_feed_web_page(offset, fx_vol_surface_feed_web_page_size),
+                        req));
                 rr::require_ok(reply.result);
                 const auto& got = reply.fx_vol_surface_feeds;
                 rows.insert(rows.end(), got.begin(), got.end());
@@ -185,65 +222,14 @@ fx_vol_surface_feed_web_routes::handle_list(const http_request& req, nats_client
         if (limit < 1 || limit > 1000)
             rr::invalid(page_sentence);
 
-        auto msg = fx_vol_surface_feed_web_page(offset, limit);
-        const auto sort = req.get_query_param("sort");
-        if (!sort.empty()) {
-            constexpr std::string_view sortable[] = {""};
-            if (std::find(std::begin(sortable), std::end(sortable) - 1, sort) ==
-                std::end(sortable) - 1)
-                rr::invalid("fx-vol-surface-feeds cannot be ordered by " + sort + ".");
-            msg.order.field = sort;
-        }
-        const auto descending = req.get_query_param("descending");
-        if (!descending.empty() && descending != "true" && descending != "false")
-            rr::invalid(page_sentence);
-        msg.order.descending = descending == "true";
-
-        const auto search = req.get_query_param("search");
-        if (!search.empty())
-            rr::invalid("fx-vol-surface-feeds cannot be searched.");
-
-        for (const auto& [name, value] : req.query_params) {
-            if (!name.starts_with("f."))
-                continue;
-            const auto member = name.substr(2);
-            constexpr std::string_view filters[] = {""};
-            if (std::find(std::begin(filters), std::end(filters) - 1, member) ==
-                std::end(filters) - 1)
-                rr::invalid("fx-vol-surface-feeds cannot be filtered by " + member + ".");
-        }
+        const auto msg =
+            fx_vol_surface_feed_web_query(fx_vol_surface_feed_web_page(offset, limit), req);
 
         const auto reply = ores::http::forwarding::forward(req, session, msg);
         rr::require_ok(reply.result);
         co_return http_response::json(
             "{\"rows\":" + fx_vol_surface_feed_web_rows(reply.fx_vol_surface_feeds) +
             ",\"total\":" + std::to_string(reply.total) + "}");
-    } catch (const rr::refusal& refusal) {
-        co_return rr::answer(refusal);
-    } catch (const std::exception& e) {
-        ORES_LOG_SEV(lg(), error) << e.what();
-        co_return http_response::api_error(
-            http_status::bad_gateway, "internal", std::string(rr::unanswered));
-    }
-}
-
-boost::asio::awaitable<http_response>
-fx_vol_surface_feed_web_routes::handle_key(const http_request& req, nats_client& session) {
-    try {
-        const auto key = rr::code(req.get_path_param("key"),
-                                  "A record is named by a code of 1 to 100 characters.");
-        auto msg = fx_vol_surface_feed_web_page(0, 1);
-        msg.filter = messaging::fx_vol_surface_feeds_filter{};
-        msg.filter->id_one_of =
-            std::vector<boost::uuids::uuid>{rr::read<boost::uuids::uuid>(key, "key")};
-        const auto reply = ores::http::forwarding::forward(req, session, msg);
-        rr::require_ok(reply.result);
-        if (reply.fx_vol_surface_feeds.empty())
-            rr::refuse(http_status::not_found,
-                       "not-found",
-                       "There is no fx-vol-surface-feeds row " + key + ".");
-        co_return http_response::json(
-            "{\"row\":" + fx_vol_surface_feed_web_row(reply.fx_vol_surface_feeds.front()) + "}");
     } catch (const rr::refusal& refusal) {
         co_return rr::answer(refusal);
     } catch (const std::exception& e) {
@@ -359,17 +345,6 @@ void fx_vol_surface_feed_web_routes::register_routes(
     const auto list_built = list_route.build();
     router->add_route(list_built);
     registry->register_route(list_built);
-
-    auto key_route =
-        router->get("/api/synthetic/fx-vol-surface-feeds/key/{key}")
-            .summary("Read one fx-vol-surface-feeds record for a screen")
-            .description("One row, named by its key.")
-            .tags({"synthetic"})
-            .auth_required()
-            .handler([&session](const http_request& req) { return handle_key(req, session); });
-    const auto key_built = key_route.build();
-    router->add_route(key_built);
-    registry->register_route(key_built);
 
     auto put_route =
         router->put("/api/synthetic/fx-vol-surface-feeds")

@@ -1,0 +1,167 @@
+:PROPERTIES:
+:ID: 6E48185B-9F1C-473D-818E-0CF9222D96FB
+:END:
+#+title: Task: List the market data a party expects
+#+description: Each generator kind lists the addresses it publishes, and the party's expected market data is the outputs of the generators it demands an item of, plus what it derives, read from configuration before any tick arrives.
+#+type: task
+#+level: s1
+#+filetags: :every_floating_index_has_a_curve_and_fixings:sprint_30:v0:
+#+owner: marco
+#+branch: feature/list-the-market-data-a-party-expects
+#+pr: 5037
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0F936789-FEBE-4330-97B9-DFE0837E4466][Every index a generated trade floats on has a curve and fixings]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The planner must know what a party is configured to receive, not what has arrived: a vol quote or a bootstrapped curve can take a while to appear. Give each generator kind one function that lists its outputs: an IR curve its pillar quotes and its index fixing, an FX spot its quotes and its pair fixing, a vol surface its quotes. Add a market data request that computes one party's demand from the catalogue, with compute_party_demand, without ticks or adapters. The expected set is the outputs of each generator that publishes an item the party demands, plus the curves of its bootstrap configs whose pillars it expects. It replaces served_fixing_uris, which is global and IR only.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:0F936789-FEBE-4330-97B9-DFE0837E4466][Every index a generated trade floats on has a curve and fixings]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-22                               |
+
+* Acceptance
+
+- One function per generator kind lists its outputs, and the curve feed and the fixing writer use the same function.
+- A market data request returns a party's demand computed from the catalogue, and it answers before any adapter is ready.
+- The trade generation scope holds the party's expected set; served_fixing_uris is removed.
+- A unit test shows that a party routed to one provider does not expect another provider's outputs.
+
+* Plan
+
+A demanded item is a quote address with a term and no dates, such as
+=oresmd://ir/AUD?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D&term=10Y=.
+It is not a series address: =series_of= drops the term. So a generator's
+outputs are quote addresses, and they match a demanded item directly.
+
+1. *Outputs of each generator kind.* A new header
+   =ores.synthetic.api/feeds/generator_outputs.hpp= holds one pure function per
+   kind, from the config and its rows:
+   - IR curve: the address of each template entry's pillar quote, written
+     by =pillar_quote_datum= as the feed writes it, and the fixing address of
+     =curve_fixing_uri=, which the feed hands to the fixing writer. A
+     meeting-dated pillar names a quote only once its dates resolve, so it is
+     left out (=pillar_quote_needs_dates=).
+   - FX spot: the quote, in its canonical spelling. Its fixing items are what the spot
+     reads at its start, not what it publishes, so they are not outputs.
+   - FX vol surface: the quote of each expiry at ATM and at the risk
+     reversal and butterfly of each delta. =fx_vol_surface_feed= names its
+     points with the same =fx_vol_point_uri=, and the registry builds the
+     feed with the same =fx_vol_surface_deltas=.
+2. *A party's demand from the catalogue.* A market data request
+   =get_party_demand_request= carries a party id. Its handler reads the
+   catalogue and calls =compute_party_demand=, and it answers with each
+   route's adapter id, entitlement and demanded items. It needs no tick and
+   no adapter.
+3. *The expected set.* A pure function in =ores.synthetic.api= takes the
+   party's demand and the generators, each with the providers it publishes
+   for and its outputs. A spot or a curve publishes for the provider of its
+   collection, and a surface for the provider of each contributor
+   (=system_generator_offers=). A generator counts when it publishes for the
+   provider of an entitled route of the party and one of its outputs is a
+   demanded item of that route. The expected set is the union of the
+   outputs of the generators that count. =generator_publications= builds the generators from the config
+   rows: an enabled config in an enabled collection.
+4. *The planner.* =trade_generation_scope::expected_market_data= replaces
+   =served_fixing_uris=. The writer fills it from the request and the
+   generator configs, and =drawable= asks it for the swap's fixing address.
+   =served_fixing_uris= and its tests are removed.
+
+Each step ends in a unit test. Step 3 has the test of the acceptance: a party
+routed to one provider does not expect the outputs of a generator of another
+provider.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Interest rate fixing addresses the trades name, fresh provision | 18 | =fixing_gap_by_trade.sql=; =evidence/expected_market_data_fixing_gap.txt= | c20cca31e9 |
+| Of those, addresses with no fixing, fresh provision, no restart | 0 | =fixing_gap_by_trade.sql=; =evidence/expected_market_data_fixing_gap.txt= | c20cca31e9 |
+| Trades booked by the provision | 1235 | =fixing_gap_by_trade.sql=; =evidence/expected_market_data_fixing_gap.txt= | c20cca31e9 |
+
+* Notes
+
+The curves a party bootstraps from the pillars it expects are not in the
+expected set yet. No acceptance criterion needs them: the planner asks the set
+only for fixing addresses.
+
+The writer reads the demand in the synthetic service's session for the party, so
+the =SyntheticService= role now holds =marketdata::routes:read=.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5037][#5037]] | [synthetic] Draw trades on the market data a party expects |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | binary_search relies on sorted items across the wire | expected_market_data.cpp | Accepted | find; test with unsorted items |
+| 2 | A full page silently truncates the generator lists | trading_trade_population_writer.cpp | Accepted | Warn when a list fills a page |
+| 3 | Fail hard on the demand read | trading_trade_population_writer.cpp | No change | Reviewer agrees |
+| 4 | A surface's providers come from its contributors | expected_market_data.cpp | Accepted | Comment, doc and a test of a surface with no contributor |
+| 5 | A bad pillar drops a curve silently | expected_market_data.cpp | Accepted | Warn with the curve and the reason; same for a spot |
+| 6 | Confirm the IAM grant is read-only and reaches live databases | iam_roles_populate.sql | Declined | Read-only; every environment takes its roles from the populate scripts on recreate |
+| 7 | The fixing address has no duplicate check | generator_outputs.cpp | Accepted | find before push |
+| 8 | Confirm the check gate is green | — | Accepted | Result posted on the PR |
+
+* Result
+
+Each generator kind names its outputs as the quote addresses a demand names
+(=generator_outputs=), and a curve adds its index's fixing address from
+=curve_fixing_uri=, the same function that hands the feed's fixings to the
+writer. The market data service answers =get_party_demand= from the catalogue
+alone. The writer builds the party's expected set from that demand and the
+generator configs, and the planner draws a floating leg only on a fixing
+address in the set. =served_fixing_uris= is removed.
+
+Acceptance:
+- One function per kind lists its outputs; the surface feed names its points
+  with the same =fx_vol_point_uri=, and the curve's fixing address comes from
+  =curve_fixing_uri= for both the outputs and the fixing writer. Met.
+- =get_party_demand= returns a party's demand computed from the catalogue,
+  with no adapter involved. Met.
+- =trade_generation_scope::expected_market_data= holds the party's set, and
+  =served_fixing_uris= is removed. Met.
+- The test
+  =a_party_routed_to_one_provider_does_not_expect_another_providers_outputs=
+  shows the provider rule. Met.
+
+On a fresh acme_demo provision with no restart, the trades name 18 interest
+rate fixing addresses and none is empty
+(=evidence/expected_market_data_fixing_gap.txt=). The ACCOUK and ACCOUS rates
+configs, which the provision on c0f6ed8c38 refused, now book 154 trades each.

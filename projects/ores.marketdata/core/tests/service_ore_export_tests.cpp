@@ -737,7 +737,7 @@ chosen_uris(const std::vector<const ores::marketdata::domain::market_series*>& c
 }
 
 const std::string world_sonia = "oresmd://ir/GBP?type=fixing&index=ibor&name=SONIA";
-const std::string world_estr = "oresmd://ir/EUR?type=fixing&index=ibor&name=ESTER";
+const std::string world_estr = "oresmd://ir/EUR?type=fixing&index=ibor&name=ESTR";
 const std::string world_eurusd =
     "oresmd://fx/EUR?type=series&instrument=fx_spot&quote=rate&ccy=USD";
 

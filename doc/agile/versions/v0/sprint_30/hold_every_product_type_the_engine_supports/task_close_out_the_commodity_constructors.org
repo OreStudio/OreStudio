@@ -75,7 +75,7 @@ task and name that file in the Command column.
 
 ORE reads =CommodityWindowBarrierOptionData=, but the vendored XSD declares no
 such element, so a writer that follows the XSD cannot write the type. That is
-the likely reason the generator does not book it. See [[id:CC7CC29C-9413-4DF3-BC32-D1C8A978D295][Which trade types ORE carries and ORE Studio holds]].
+the likely reason the generator does not book it. See [[id:CC7CC29C-9413-4DF3-BC32-D1C8A978D295][Coverage of ORE trade types in ORE Studio]].
 
 
 ** What this run found

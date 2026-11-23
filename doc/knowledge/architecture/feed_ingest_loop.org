@@ -39,15 +39,15 @@ The stages, in order:
 4. *Resolve the parties.* The loop finds every party routed to the tick's
    source for that provider, for delivery. See [[id:37B27CA8-9F44-4A61-9B02-3EAABD8C3818][A party routes to exactly one source for each provider]].
 5. *Deliver and meter.* The loop delivers the tick on each party stream and
-   counts the delivery for each party. See [[id:3E51B0BD-D22B-4790-821F-E2FED44D152C][Usage is recorded as events and priced later]].
+   counts the delivery for each party. See [[id:3E51B0BD-D22B-4790-821F-E2FED44D152C][Event-based metering of market data usage]].
 6. *Compose.* A composite item that uses this series is recomputed. See
    [[id:41D84AD1-0058-4135-9B9D-BDE08BE8169A][A composite attributes its use to the providers of its inputs]].
 7. *Store.* Asynchronously, in its next batch, the tick's lane writes one point in
    the source's stream, however many parties the source serves. A party's series points at the
    stream. The loop writes no observation row for a tick. A client reads the
    ticks with the history call, which checks the party's entitlement. See
-   [[id:D71F9446-C62E-48A6-A87B-136EF598A59E][A source tick is stored once and entitled when it is read]],
-   [[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][A quote series is keyed by item, provider and party]] and
+   [[id:D71F9446-C62E-48A6-A87B-136EF598A59E][Storage and entitlement of stored ticks]],
+   [[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][Market series and observations]] and
    [[id:E1A582A6-9E12-4074-877E-91ACD7E64301][The history call returns every tick of a range in one reply, or refuses the range]].
 
 ** How the loop keeps the newest value
@@ -108,7 +108,7 @@ class. See [[id:6F3F1A80-5B4C-4F33-ADF0-F42CDE8FF8C2][The tick ingest pipeline]]
 * See also
 
 - [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
-- [[id:3183ED5C-D5BB-40C0-ABB1-78439F52779D][One service owns market data between the vendors and the parties]] — completes: the service around the loop.
+- [[id:3183ED5C-D5BB-40C0-ABB1-78439F52779D][The market data service as the boundary between vendors and parties]] — completes: the service around the loop.
 - [[id:1F609D0D-5C72-4A21-B988-6957F18D426F][The market tick]] — completes: the per-party tick this loop delivers.
 - [[id:E1A582A6-9E12-4074-877E-91ACD7E64301][The history call returns every tick of a range in one reply, or refuses the range]] — completes: how a client reads the ticks this loop stores.
 - [[id:6F3F1A80-5B4C-4F33-ADF0-F42CDE8FF8C2][The tick ingest pipeline: freshness first]] — completes: the lanes, the ring and the age gate in full.

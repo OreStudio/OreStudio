@@ -121,7 +121,7 @@ standard EOD reporting).
 
 * See also
 
-- [[id:D7D5F73A-CBFC-58DD-B37C-43C358BAD79F][A forward carries net fair value on balance sheet and its notional off it]] — completes: how a forward reaches the balance sheet.
+- [[id:D7D5F73A-CBFC-58DD-B37C-43C358BAD79F][Ledger treatment of FX forwards]] — completes: how a forward reaches the balance sheet.
 - [[id:130A3261-E788-4222-9BD7-371AD92982FB][Book]] — hub note.
 - [[id:07CEDE6A-21B7-4F87-9745-708FDCA8C362][Book lifecycle]] — the ledger setup a book opening requires, and the
   flat-balance requirement for closure.

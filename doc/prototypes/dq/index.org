@@ -1,0 +1,65 @@
+:PROPERTIES:
+:ID: DE01B3AE-9884-4241-95F8-1BF54EDB62FF
+:END:
+#+title: DQ prototypes
+#+description: The prototypes that answer to the DQ journeys: what each argues, and the review where one exists.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:index:ui:dq:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+
+* Summary
+
+Staged reference data and the act of publishing it: whether the installation
+holds what its valuations read, and what a publish does to the tables that carry
+it. Five prototypes answer to this group, one per journey. The first draws the
+coverage screen, a roster by level beside the members of one bundle and the
+reason a member is not ready. The second draws a bundle publish as five steps,
+with the preview that makes a run readable before it happens. The other three
+draw the narrower doors: one dataset on its own, one staged row corrected and
+republished, and a published value traced back to its dataset.
+
+The five were signed off on 2026-11-22, on the pages as they stand; each design
+note records it and the questions it hands to the build.
+
+Each one is a static page under =doc/prototypes/=, opens with no build and no
+session, and reads mock data only. The table below opens each one and says what it
+argues. Neither carries a review yet, so the review column says =none= for both.
+
+[[file:../index.org][Prototypes]] is the top page and the only inventory.
+
+* The prototypes
+
+#+ATTR_HTML: :class hug-leading
+| Prototype              | What it argues | Open it | Review |
+|------------------------+----------------+---------+--------|
+| [[file:reference-data-coverage.org][Reference data coverage]] | That completeness is one screen, and that the level is the first thing it reads: a tenant holding a platform or world bundle would hold a second copy of a fact. The member table says what is staged, what is published, and which of four reasons keeps a member from being ready — because each reason has a different owner. The published figure is a count and not a tick, so a run that wrote nothing stays visible. | [[file:reference-data-coverage/][prototype]] | none |
+| [[file:publish-a-dataset.org][Publish a dataset]] | That one catalogue is a smaller screen than a set, and that its interesting fact is the destination: the staging table, the target table and the subject come from the artefact type, and the tenant from the level the dataset's bundle carries. None of the three is a control. The page also states the half the model cannot enforce: the dataset verb names no level, so nothing refuses a tenant that publishes a world dataset into itself. | [[file:publish-a-dataset/][prototype]] | none |
+| [[file:publish-a-bundle.org][Publish a bundle]] | That a bundle publish is a run a person reads before it happens: the members in the closure's order, the optional ones that publish only when asked, the mode, and the insert, update and skip counts per member. The target tenant is read from the bundle's level and never chosen, and the receipt says what a run leaves — which is not a history row, because nothing writes one. | [[file:publish-a-bundle/][prototype]] | none |
+
+| [[file:correct-one-artefact.org][Correct one artefact]] | That a correction is two acts: the staged row is saved, then the dataset is republished to carry it, because a publish takes a dataset and never a row. The page states the reach of each act, and the receipt's skipped count is what proves the other 10,990 rows were left alone. Its first card cannot be built today, because nothing reads an artefact table over the bus. | [[file:correct-one-artefact/][prototype]] | none |
+| [[file:trace-a-published-value.org][Trace a published value]] | That half the trace question is answerable: the provenance on a row walks back to the dataset that published it. The forward question — which trades reference the value — has no path, because a trade names a convention by a text column and no subject searches it. The page states the gap instead of drawing an empty list, which would read as "no trade uses this". | [[file:trace-a-published-value/][prototype]] | none |
+
+* Adding a prototype
+
+Create =doc/prototypes/dq/<name>/= with an =index.html= and a =prototype.js=, and
+copy =management.css= and =management.js= beside them from the conventions
+prototypes: that pair is the shell every prototype in the project draws on — the
+header, the breadcrumb, the rail, the table, the badges and the server-gap note —
+and each folder carries an identical copy of it. The copies must stay identical:
+a change to the shell is a change to all five at once, which is the cost of a
+prototype that opens on its own. Open the page with the links
+table every prototype carries, and leave its review row at =none=. Add a row to
+the table above, with the design note beside the prototype. Stop there: the site
+build finds every prototype under this tree, so no build file names it.
+
+A review goes at =doc/prototypes/dq/<name>/review/=, with an =index.html= that
+lists its screens. The row names it.
+[[file:../index.org][Prototypes]] states the whole method and the rules that
+hold for every group.
+
+* See also
+
+- [[file:../index.org][Prototypes]] — the top page: the groups, and the one way to add a prototype.
+- [[file:../../knowledge/journeys/dq/dq.org][DQ journeys]] — the journeys these prototypes answer.

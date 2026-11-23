@@ -316,8 +316,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
         ores::service::messaging::step_routes routes;
         routes.on(publish_script_library_from_dq_request::nats_subject,
                   [pdq](ores::nats::delivery delivery) { pdq->handle(std::move(delivery)); });
-        subs.push_back(
-            ores::service::messaging::serve_step_commands(nats, queue_group, routes));
+        subs.push_back(ores::service::messaging::serve_step_commands(nats, queue_group, routes));
     }
     append(register_trade_authorisation_request_handlers(nats, ctx, verifier));
     append(register_trade_booking_handlers(nats, ctx, verifier));

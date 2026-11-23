@@ -97,6 +97,12 @@ draws from =std::random_device= and logs the result. Two curve feeds started
 with the same config and the same parameter rows therefore produce the same
 sequence of states.
 
+A curve also states the fixing history of its own index. When the feed is
+built it plans a history of the index rate, and the synthetic service writes it
+straight to the store under the system party. This is the one place the
+simulator writes to the store, and it is being replaced by a fixing generator
+that publishes through the adapter; see [[id:F24FA489-790A-4065-B8E1-DCC141595356][Synthetic generation of fixings]].
+
 =publish_count()= counts batches, not ticks. One unit of the counter is one
 pass of the loop and therefore one tick per resolved entry. The info-level
 log line says so, spelling the counter as "batch" and printing the number of

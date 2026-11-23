@@ -60,6 +60,7 @@ namespace ores::iam::domain {
         utility::codec::field{"bytes_received", &session::bytes_received},
         utility::codec::field{"country_code", &session::country_code},
         utility::codec::field{"protocol", &session::protocol},
+        utility::codec::field{"agent_grant_id", &session::agent_grant_id},
     };
 }
 

@@ -10,7 +10,7 @@ GBP,sonia,DEPO,SPOT,1D,GBP SONIA DEPO SPOT 1D Curncy|PX_LAST,GBPSONIA.DEPO.SPOT.
 JPY,tona,IRS,SPOT,30Y,JPY TONA IRS SPOT 30Y Curncy|PX_LAST,JPYTONA.IRS.SPOT.30Y=|BID,JPY/tona/IRS/SPOT/30Y|value
 CHF,saron,FRA,6M,12M,CHF SARON FRA 6M 12M Curncy|PX_LAST,CHFSARON.FRA.6M.12M=|BID,CHF/saron/FRA/6M/12M|value
 NZD,nzonia,IRS,SPOT,5Y,NZD NZONIA IRS SPOT 5Y Curncy|PX_LAST,NZDNZONIA.IRS.SPOT.5Y=|BID,NZD/nzonia/IRS/SPOT/5Y|value
-MXN,tiie,DEPO,SPOT,1M,MXN TIIE DEPO SPOT 1M Curncy|PX_LAST,MXNTIIE.DEPO.SPOT.1M=|BID,MXN/tiie/DEPO/SPOT/1M|value
+MXN,ftiie,DEPO,SPOT,1M,MXN FTIIE DEPO SPOT 1M Curncy|PX_LAST,MXNFTIIE.DEPO.SPOT.1M=|BID,MXN/ftiie/DEPO/SPOT/1M|value
 # A pillar the catalogue spells in upper case, an instrument the catalogue spells in lower case,
 # a pillar that starts and ends in one tenor, one that ends at spot, and a broken currency.
 USD,SOFR,DEPO,SPOT,3M,error:not_representable,error:not_representable,error:not_representable

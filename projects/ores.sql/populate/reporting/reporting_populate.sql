@@ -33,14 +33,18 @@
 \ir ./reporting_configuration_types_populate.sql
 \ir ./reporting_report_type_configuration_types_populate.sql
 \ir ./reporting_analytic_types_populate.sql
-\ir ./reporting_ore_file_categories_populate.sql
-\ir ./reporting_ore_files_populate.sql
-\ir ./reporting_ore_file_versions_populate.sql
+-- The ORE files are ores.ore's. They sit here because an ORE file names a
+-- configuration type, populated above, and a file type names an ORE file.
+\ir ../ore/ore_ore_file_categories_populate.sql
+\ir ../ore/ore_ore_files_populate.sql
+\ir ../ore/ore_ore_file_versions_populate.sql
 \ir ./reporting_file_types_populate.sql
-\ir ./reporting_ore_parameters_artefact_populate.sql
-\ir ./reporting_ore_parameter_value_sets_populate.sql
-\ir ./reporting_ore_element_map_columns_populate.sql
-\ir ./reporting_ore_parameter_vocabularies_populate.sql
+-- The parameters of ORE's documents are ores.ore's. They are populated here,
+-- where reporting populated them, so the order of the bring-up is unchanged.
+\ir ../ore/ore_ore_parameters_artefact_populate.sql
+\ir ../ore/ore_ore_parameter_value_sets_populate.sql
+\ir ../ore/ore_ore_element_map_columns_populate.sql
+\ir ../ore/ore_ore_parameter_vocabularies_populate.sql
 \ir ./reporting_engine_settings_groups_populate.sql
 \ir ./reporting_concurrency_policies_populate.sql
 \ir ./reporting_report_error_scopes_populate.sql

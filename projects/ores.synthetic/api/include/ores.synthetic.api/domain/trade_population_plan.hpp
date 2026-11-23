@@ -113,6 +113,7 @@ struct trade_population_trader final {
     std::string username;
 };
 
+// compass:except(wide_types/over_ceiling) expires=2026-12-04 approver=marco reason=the scope names every filter a generation run takes, and #5027 added to it
 struct trade_generation_scope final {
     boost::uuids::uuid config_id;
     boost::uuids::uuid party_id;
@@ -199,15 +200,16 @@ struct trade_generation_scope final {
     /// The LEIs the credit family draws its reference entities from.
     std::vector<std::string> credit_reference_entities;
     /**
-     * @brief The fixing addresses the market serves, one per curve that
-     * states fixings.
+     * @brief The market data the party is configured to receive, as oresmd
+     * series addresses, before any of it arrives.
      *
-     * A floating leg is drawn only on an index in this set, because a trade on
-     * an index no curve serves has no fixings and cannot be valued. The
-     * conventions name indices of every currency ORE's examples know, many
-     * with no curve, so the set is what keeps a draw to the market there is.
+     * A floating leg is drawn only on an index whose fixings are in this set,
+     * because a trade on an index the party receives no fixings for cannot be
+     * valued. The conventions name indices of every currency ORE's examples
+     * know, many with no curve, so the set is what keeps a draw to the market
+     * the party has.
      */
-    std::set<std::string> served_fixing_uris;
+    std::set<std::string> expected_market_data;
     /**
      * @brief The tenant's conventions, which a trade builder reads the terms
      * it does not draw from.

@@ -162,5 +162,5 @@ Evidence: =evidence/synthetic_feeds_ingest_diagnosis.txt=,
 A tick is still stored once for each party that routes to its source, so the
 same quote reaches the store as one series for each party. The story decides one
 tick for each source, owned by the system tenant, in
-[[id:D71F9446-C62E-48A6-A87B-136EF598A59E][A source tick is stored once and entitled when it is read]]; the build task for
+[[id:D71F9446-C62E-48A6-A87B-136EF598A59E][Storage and entitlement of stored ticks]]; the build task for
 that decision is still open, and this task did not take it.

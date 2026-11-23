@@ -294,7 +294,7 @@ page says so.
 #+ATTR_HTML: :class hug-leading
 | Entity | What it contributes | Model |
 |--------+---------------------+-------|
-| the cut | The label, the kind, the timepoint, the scope, the parts, the gaps, and the acts it records beside them. No model exists: the record this journey draws is the one the decision note describes | [[id:F6362451-D569-4609-97A3-F1C785AAAF02][The cut is the body a run prices from]] |
+| the cut | The label, the kind, the timepoint, the scope, the parts, the gaps, and the acts it records beside them. No model exists: the record this journey draws is the one the decision note describes | [[id:F6362451-D569-4609-97A3-F1C785AAAF02][The cut model: recorded facts, derived states and authorisation]] |
 | =curve_publish= | The publish record and the as-of of each set the market data half fixes, and the state a set holds | [[id:9BC6FEDE-01E5-43B8-8A04-ACF0A5AB12B6][ores.marketdata.curve_publish]] |
 | =trade= | The deal population at the instant, by identity and version | [[id:4304A441-E532-45FB-837A-378F13693CAE][ores.trading.trade]] |
 | =book= | The books the scope holds, and the classification that decides whether they revalue together | [[id:5A63B4D1-0F55-468B-B734-A5DC37B26DC4][ores.refdata.book]] |
@@ -420,7 +420,7 @@ record, the rules and the queue, so neither reimplements the other.
 
 * Related knowledge
 
-- [[id:F6362451-D569-4609-97A3-F1C785AAAF02][The cut is the body a run prices from]] — the decision this journey draws.
+- [[id:F6362451-D569-4609-97A3-F1C785AAAF02][The cut model: recorded facts, derived states and authorisation]] — the decision this journey draws.
 - [[id:B5214F3A-A72E-421E-82BC-79338B2E95CB][Cuts]] — the definition, the purpose and the body.
 - [[id:33E879B7-496A-406D-B3F2-72637379AD02][Kinds of cut]] — the kinds, what each fixes, and the two that need no authorisation of their own.
 - [[id:DD59B04C-DAD2-458C-B35E-3F6B0B3D6DC6][Market data cut]] — the half of the body this journey assembles from published sets.

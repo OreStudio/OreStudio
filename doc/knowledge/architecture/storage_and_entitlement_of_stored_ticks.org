@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: D71F9446-C62E-48A6-A87B-136EF598A59E
+:END:
+#+title: Storage and entitlement of stored ticks
+#+description: A tick belongs to a stream. The store holds each stream's points once, owned by the installation and with no row-level security, and a party's subscription, or its ownership of a derived stream, is checked when it reads.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:ticks:storage:entitlement:
+#+created: 2026-10-25
+#+updated: 2026-10-26
+
+* Summary
+
+A tick belongs to a stream. A vendor's or a simulator's source stream is shared
+by every party that subscribes to it; a derived or blended stream belongs to the
+party that makes it. The store holds the points of each stream once: rows of
+stream, time, coordinate and value, owned by the installation, with no tenant
+column and no row-level security. A party's quote series stays the party's own
+row, under row-level security, and points at its stream. Entitlement is checked
+where a party reads: the history read and the republish check the party's
+subscription, or its ownership of a derived stream, before they return or send a
+point.
+
+* Detail
+
+** What the store holds
+
+| Table | Owner | Holds |
+|-------+-------+-------|
+| Streams | The installation | One row for each source series and each derived series: its source, its datum, and the party that owns it when it is derived |
+| Points | The installation | One row for each tick of a stream: stream, time, coordinate, value |
+| Quote series | The party | The party's view of a stream: its classification, its asset classes, its stream |
+
+A point holds no tenant's data. It is an observation of a source, so it carries
+no tenant column, and one tick of a source is one row however many parties
+subscribe to it.
+
+** Who can read a point
+
+Only the marketdata service's roles hold grants on the streams and the points; a
+tenant's session holds none. The service reads a point for a party after it has
+checked, in the party's tenant and under row-level security, that the party's
+quote series names the stream and that the party holds a subscription with the
+right to read it, or owns the derived stream. The check is one indexed lookup
+for each read, not one for each point.
+
+** Who receives a tick
+
+Today the live path republishes a tick to each party subscribed to its stream, on
+the party's subject. The delivery meter counts each delivery for the party
+([[id:3E51B0BD-D22B-4790-821F-E2FED44D152C][Event-based metering of market data usage]]), so billing counts deliveries, not stored rows.
+
+The target applies the rule of this page to the live path: the ingest publishes
+each tick once, on its feed's subject, and the route and the subscription are
+checked where a watch starts. The meter keeps its counts for each route. See
+[[id:4DB1ED0C-4BEA-4164-9129-5731AE559AE9][Publication and entitlement of live ticks]].
+
+** What it saves
+
+At one hundred thousand feeds the store takes about 29,000 rows a second, one for
+each source tick, whatever the number of parties. The points carry no
+row-level security, so closed chunks compress ([[id:A79C25FA-9F70-453B-A52E-780B4402ABAA][Bounded retention in the tick store]]).
+
+* See also
+
+- [[id:CE41E828-18EB-4E88-BB02-6A4930E7B67C][The data path]] — the structure note that orders this cluster, and where to read this page in it.
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note for market data, which reads this page for the shape of the store.
+- [[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][Market series and observations]] — completes: the party's own row that points at a stream.
+- [[id:5A5D6490-AF64-4AAF-8B3D-48EF3EDAF3D2][Tenant ownership and the information flow]] — completes: the points are the installation's, the series are the party's.
+- [[id:BCD7D253-8B1E-4887-B476-EDD3EDE01BE6][Ticks reach the store through sharded binary COPY in bounded batches]] — how the points are written.
+- [[id:00D63182-C7FF-4AC9-8A83-9A5D984B2876][The ingest loop and the one pipeline]] — the loop that stores the point and delivers the tick.

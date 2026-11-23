@@ -1,0 +1,46 @@
+:PROPERTIES:
+:ID: E018113F-F2C6-4723-8376-08F09E0C4BF0
+:END:
+#+title: TIIE term indices without conventions of their own
+#+description: The TIIE term indices resolve only through ORE's overnight alias MXN-TIIE, which blocks naming the funding rate FTIIE.
+#+type: capture
+#+level: cross
+#+filetags: :conventions:ore:mxn:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Give the TIIE term indices of Banco de México, =MXN-TIIE-28D=, =MXN-TIIE-91D=,
+=MXN-TIIE-182D= and =MXN-TIIE-3M=, conventions of their own in the conventions
+dataset. Then map ORE's overnight alias =MXN-TIIE= to the market name =FTIIE=
+in the ORE index codec, as =EUR-ESTER= and =JPY-TONAR= are mapped.
+
+* Why
+
+ORE Studio names market data by its market name. The overnight =MXN-TIIE= is
+an alias that ORE's Python notebook conventions define for the funding rate,
+TIIE de Fondeo. Today it reads as =name=TIIE= with no tenor, which is a second
+name for =FTIIE=.
+
+The codec cannot map it yet. The conventions coverage check of compass-ng
+resolves every TIIE term index through this alias, because no Ibor index
+convention defines them. When the alias reads as =FTIIE=, the check reports
+twelve swap and cross-currency conventions that name an undefined index.
+
+An Ibor index convention for a TIIE term rate changes how ORE builds that index.
+ORE builds it with the generic Ibor index, not its own class
+=QuantExt::MXNTiie=. So the change needs a check that the two give the same
+terms.
+
+* References
+
+- The task [[id:C1D1DAED-D5A6-436B-B43D-612D0571E0B2][Name each fixing index once]] found the gap.
+- =external/ore/catalogue/index_builtins.jsonl= holds ORE's built-in =MXN-TIIE=
+  term index.
+
+* See also
+
+- [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio Market Data URI]]

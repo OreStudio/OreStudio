@@ -33,7 +33,7 @@ Elektron wire formats or vendor authentication.
   translation code of a live adapter.
 - Vendor protocols are large and they change. A copy would be a project of its
   own.
-- The rule in [[id:F64DB34E-084D-4437-B536-392AA26D8B77][No code path may behave differently because a source is simulated]] holds at the seam.
+- The rule in [[id:F64DB34E-084D-4437-B536-392AA26D8B77][Simulated sources as data rather than code paths]] holds at the seam.
 
 ** Fault injection
 
@@ -53,5 +53,5 @@ live adapter, and it needs no change in the service.
 
 - [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
 - [[id:5DFA094B-4F9F-4190-8251-8D4D0B77A5C7][An adapter and the service meet at four messages]] — completes: the seam where the simulator stops.
-- [[id:54C9E31E-26FF-4530-A868-0850FCE1FE30][The simulator is one adapter plus the tools that author its generators]] — completes: what the simulator builds up to that limit.
+- [[id:54C9E31E-26FF-4530-A868-0850FCE1FE30][The synthetic market data simulator: adapter and authoring tools]] — completes: what the simulator builds up to that limit.
 - [[id:5ABE694A-7F87-46A9-943E-B6734B3B6EF9][A live and a simulated source differ only inside the adapter]] — completes: the differences that remain.

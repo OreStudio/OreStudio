@@ -109,6 +109,35 @@ class TestStopOne:
         assert seen == []
 
 
+class TestStopKeepingInfrastructure:
+    def test_stops_every_service_and_leaves_the_pooler_and_nats(self, ctx,
+                                                                 monkeypatch):
+        seen = []
+
+        def fake_systemctl(args, **_kwargs):
+            seen.append(args)
+            return subprocess.CompletedProcess(args, 0, "", "")
+
+        monkeypatch.setattr(compass_services, "_systemctl", fake_systemctl)
+        monkeypatch.setattr(compass_services.systemd_generate,
+                            "load_service_registry", lambda root: [])
+        monkeypatch.setattr(
+            compass_services.systemd_generate, "fetch_service_definitions",
+            lambda services: [
+                {"service_name": "ores.iam.service", "enabled": True,
+                 "desired_replicas": 1},
+                {"service_name": "ores.compute.wrapper", "enabled": True,
+                 "desired_replicas": 2}])
+        ctx.target_name = "ores-eager_maxwell.target"
+
+        assert compass_services.cmd_stop(
+            ctx, SimpleNamespace(service=None, keep_infra=True)) == 0
+        assert seen == [["stop",
+                         "ores.iam.service-eager_maxwell.service",
+                         "ores.compute.wrapper-eager_maxwell-1.service",
+                         "ores.compute.wrapper-eager_maxwell-2.service"]]
+
+
 class TestStartOne:
     def test_starts_only_the_named_unit(self, ctx, monkeypatch, capsys):
         seen = []

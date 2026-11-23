@@ -73,7 +73,7 @@ Decisions agreed with the user on 2026-11-03:
   are derived. A real vendor, such as LSEG, is another provider of the same
   items, so replacing the derived source is a change of route or rank and
   nothing else, as in
-  [[id:FA280E9B-7E00-4747-8D29-42B3D4258873][A source switch changes one route and nothing else]].
+  [[id:FA280E9B-7E00-4747-8D29-42B3D4258873][Switching the source of a market data provider]].
 - Agreed on 2026-11-03: the surface is SSVI (or eSSVI). The state
   processes are its parameters (ATM total variance per tenor, skew, curvature),
   each held inside the no-arbitrage region, so every surface is free of static

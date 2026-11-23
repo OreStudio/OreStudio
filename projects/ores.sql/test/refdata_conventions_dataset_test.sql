@@ -95,8 +95,8 @@ select results_eq(
       where a.id in ('DKK-DESTR', 'ZAR-ZARONIA', 'EUR-ESTR', 'EUR-ESTER', 'USD-SOFR')
       order by 1$$,
     $$values ('DKK-DESTR ACT/360 oresmd://ir/DKK?type=fixing&index=ibor&name=DESTR'),
-             ('EUR-ESTER ACT/360 oresmd://ir/EUR?type=fixing&index=ibor&name=ESTER'),
-             ('EUR-ESTR ACT/360 oresmd://ir/EUR?type=fixing&index=ibor&name=ESTER'),
+             ('EUR-ESTER ACT/360 oresmd://ir/EUR?type=fixing&index=ibor&name=ESTR'),
+             ('EUR-ESTR ACT/360 oresmd://ir/EUR?type=fixing&index=ibor&name=ESTR'),
              ('USD-SOFR ACT/360 oresmd://ir/USD?type=fixing&index=ibor&name=SOFR'),
              ('ZAR-ZARONIA ACT/365.FIXED oresmd://ir/ZAR?type=fixing&index=ibor&name=ZARONIA')$$,
     'the overnight conventions take the terms the methodology states, and an OreStudio id its own address'

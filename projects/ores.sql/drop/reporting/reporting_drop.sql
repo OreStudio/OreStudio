@@ -92,12 +92,6 @@
 
 \ir ./reporting_file_types_notify_trigger_drop.sql
 \ir ./reporting_file_types_drop.sql
-\ir ./reporting_ore_file_versions_notify_trigger_drop.sql
-\ir ./reporting_ore_file_versions_drop.sql
-\ir ./reporting_ore_files_notify_trigger_drop.sql
-\ir ./reporting_ore_files_drop.sql
-\ir ./reporting_ore_file_categories_notify_trigger_drop.sql
-\ir ./reporting_ore_file_categories_drop.sql
 \ir ./reporting_analytic_types_notify_trigger_drop.sql
 \ir ./reporting_analytic_types_drop.sql
 
@@ -110,23 +104,7 @@
 \ir ./reporting_configuration_parameters_notify_trigger_drop.sql
 \ir ./reporting_configuration_parameters_drop.sql
 
-\ir ./reporting_ore_parameters_notify_trigger_drop.sql
-\ir ./reporting_ore_parameters_drop.sql
 
-\ir ./reporting_ore_parameter_value_domains_notify_trigger_drop.sql
-\ir ./reporting_ore_parameter_value_domains_drop.sql
-\ir ./reporting_ore_parameter_setting_value_sets_notify_trigger_drop.sql
-\ir ./reporting_ore_parameter_setting_value_sets_drop.sql
-\ir ./reporting_ore_parameter_value_set_values_notify_trigger_drop.sql
-\ir ./reporting_ore_parameter_value_set_values_drop.sql
-\ir ./reporting_ore_parameter_value_sets_notify_trigger_drop.sql
-\ir ./reporting_ore_parameter_value_sets_drop.sql
-\ir ./reporting_ore_parameter_value_set_catalogues_notify_trigger_drop.sql
-\ir ./reporting_ore_parameter_value_set_catalogues_drop.sql
-\ir ./reporting_ore_element_map_columns_notify_trigger_drop.sql
-\ir ./reporting_ore_element_map_columns_drop.sql
-\ir ./reporting_ore_parameter_vocabularies_notify_trigger_drop.sql
-\ir ./reporting_ore_parameter_vocabularies_drop.sql
 
 \ir ./reporting_engine_settings_group_settings_notify_trigger_drop.sql
 \ir ./reporting_engine_settings_group_settings_drop.sql

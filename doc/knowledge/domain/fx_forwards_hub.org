@@ -26,33 +26,33 @@ Read the cluster from the definition outward. Covered interest parity fixes a fo
 
 ** Quotation
 
-4. [[id:E8B5DF1F-027E-5B98-89B2-809EDFDBEDF1][Forward points are the difference between the outright and spot]] states what is quoted, and [[id:F40E2871-BF6C-4552-B936-09427688EBE8][Pip, tick size, and pip factor]] states the unit.
-5. [[id:73A422C1-C74E-52CF-9A0C-78EE1AE23430][Forward points follow from two money market rates]] shows how two rates give the points.
-6. [[id:2BF0E688-D053-5FC4-B4A3-10A5B685789D][Short-date swap points run between their own two value dates]] explains the short dates.
+4. [[id:E8B5DF1F-027E-5B98-89B2-809EDFDBEDF1][FX forward points: definition, premium and discount]] states what is quoted, and [[id:F40E2871-BF6C-4552-B936-09427688EBE8][Pip, tick size, and pip factor]] states the unit.
+5. [[id:73A422C1-C74E-52CF-9A0C-78EE1AE23430][Derivation of forward points from money market rates]] shows how two rates give the points.
+6. [[id:2BF0E688-D053-5FC4-B4A3-10A5B685789D][Short-date swap points and their value dates]] explains the short dates.
 7. [[id:85526DCE-31B2-4D46-BA3F-564876397BE2][Valuation spot date and overnight]] gives outrights before spot.
 8. [[id:CD0ADD45-4182-534B-B2DF-F014CDF33FCF][A client's forward rate folds the sales margin into the all-in rate]] separates the market points from the margin.
 
 ** Curves
 
-9. [[id:47E963BF-2299-5565-BAE7-4F8C9BBA421C][The US dollar is the natural hub for FX forward curves]] says why the dollar is the hub.
-10. [[id:5498FC33-2DDA-5E17-99E0-F524BFACA460][An FX-implied curve is backed out from a discount curve and forward points]] runs parity in reverse.
+9. [[id:47E963BF-2299-5565-BAE7-4F8C9BBA421C][The US dollar as the anchor of FX forward curves]] says why the dollar is the hub.
+10. [[id:5498FC33-2DDA-5E17-99E0-F524BFACA460][Backing out FX-implied curves from forward points]] runs parity in reverse.
 11. [[id:9CDD445B-964A-5C7E-8E65-DB9967E99F55][FX forward calculations run on discount factors and not quoted rates]] says what the calculation uses.
-12. [[id:F1F326CE-5384-559E-AF4A-88DBBC4EC557][Swap points and interest rate differentials are two views of one number]] links points and rates.
-13. [[id:AB7A0BE5-7EB8-5B44-B98D-05E0CD58E51D][ORE Studio publishes FX forwards derived from published curves]] says what ORE Studio does.
+12. [[id:F1F326CE-5384-559E-AF4A-88DBBC4EC557][Equivalence of swap points and interest rate differentials]] links points and rates.
+13. [[id:AB7A0BE5-7EB8-5B44-B98D-05E0CD58E51D][Derivation of FX forwards from published curves]] says what ORE Studio does.
 
 ** Display
 
 14. [[id:CE15D83D-6400-4596-8878-3A78D8298A85][Forward Ladder]] defines the surface.
-15. [[id:3CDBAF1A-452C-5B0A-AFF2-BFF18FBD5D4E][A forward ladder can start from today, tomorrow or spot]] sets where a ladder starts.
-16. [[id:68F2B84F-1A50-502B-A5AE-92786949A724][A forward ladder shows each pair's tenors as outrights and points]] lists what it shows.
+15. [[id:3CDBAF1A-452C-5B0A-AFF2-BFF18FBD5D4E][Start dates of FX forward ladders]] sets where a ladder starts.
+16. [[id:68F2B84F-1A50-502B-A5AE-92786949A724][The FX forward ladder]] lists what it shows.
 
 ** Hedging, accounting and control
 
-17. [[id:DA0C1F28-2F5A-54B5-BFD0-583362415D34][A spot position is rolled forward with a tom-next swap]] carries a spot position.
+17. [[id:DA0C1F28-2F5A-54B5-BFD0-583362415D34][Rolling spot positions with tom-next swaps]] carries a spot position.
 18. [[id:95E97C86-4C9A-52BD-8E2B-CD54D2A975DD][A dealer hedges an outright forward with a spot trade and an FX swap]] hedges an outright.
-19. [[id:D7D5F73A-CBFC-58DD-B37C-43C358BAD79F][A forward carries net fair value on balance sheet and its notional off it]] states the accounting.
+19. [[id:D7D5F73A-CBFC-58DD-B37C-43C358BAD79F][Ledger treatment of FX forwards]] states the accounting.
 20. [[id:1EB3B50C-36D4-5FE4-A44C-153EA48280E9][The regulatory treatment of an FX forward turns on settlement and purpose]] states the regulatory position.
-21. [[id:75B40B64-FF31-5381-922B-0EB1F521BC38][An end-of-day FX rate set must be complete and independently verified]] closes the day.
+21. [[id:75B40B64-FF31-5381-922B-0EB1F521BC38][Closure and independent verification of end-of-day FX rates]] closes the day.
 
 ** Variants
 

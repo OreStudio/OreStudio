@@ -105,16 +105,15 @@ target_link_libraries(${lib_target_name}
         ores.shell.compute.lib
         ores.shell.analytics.lib
         ores.shell.workflow.lib
+        ores.shell.ore.lib
         ores.shell.reporting.lib
         ores.shell.variability.lib
         ores.shell.storage.lib
         ores.shell.inbox.lib
-        ores.shell.orgmode.lib
         ores.trading.api.lib
         ores.workflow.api.lib
         ores.logging.lib
         ores.nats.lib
-        ores.orgmode.parser.lib
         ores.service.lib
         cli::cli)
 #+end_src

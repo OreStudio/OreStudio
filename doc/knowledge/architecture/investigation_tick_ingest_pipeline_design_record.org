@@ -113,7 +113,7 @@ Hedgr repository, shows how a real consumer reads the pipeline.
   that watch a source.
 - *Hedgr seeds a chart with one history call.* On open, on reconnect and on a manual
   refresh it asks for a span of time and merges the reply with its live ticks. See
-  [[id:10E479D2-990E-4627-95A2-1DA0FA5D68D5][A chart reads a series with one history call and one live subscription]].
+  [[id:10E479D2-990E-4627-95A2-1DA0FA5D68D5][Charting a series from its history and its live stream]].
 - *One difference needs a decision.* The ring of Hedgr drops the newest bucket when
   it is full. Its source comment gives the reason: a tick is worth less than the
   progress of the dispatch thread, and the chart shows the points it did receive.
@@ -615,7 +615,7 @@ a burst of ticks at a chosen rate and times the drain.
 - Should the session functions of the policies change for every table? The section on tenant
   and party isolation shows a seven-fold cost on an indexed read.
 - The deployment runs TimescaleDB under the Timescale licence, which compresses chunks and
-  schedules the retention and compression policies. See [[id:A79C25FA-9F70-453B-A52E-780B4402ABAA][The tick store is bounded]].
+  schedules the retention and compression policies. See [[id:A79C25FA-9F70-453B-A52E-780B4402ABAA][Bounded retention in the tick store]].
 - How many lanes does one server need, and how many connections can the database
   give them?
 

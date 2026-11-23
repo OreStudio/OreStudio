@@ -35,6 +35,8 @@ export interface Tile {
     readonly title: string;
     readonly body: string;
     readonly to?: string;
+    /** The address of a page that is not a screen of this application, when it is one. */
+    readonly href?: string;
     /**
      * The glyph the place is known by, from the icon reference. A tile without
      * one is a tile nobody has given a face yet, which is a gap and not a
@@ -83,16 +85,43 @@ function Mark({
 }
 
 /**
+ * The element a tile is: a route of this application, a page of the server, or a
+ * place that has no address yet and is drawn as a card that leads nowhere.
+ */
+function TileShell({
+    tile,
+    className,
+    children,
+}: {
+    readonly tile: Tile;
+    readonly className: string;
+    readonly children: ReactNode;
+}): ReactNode {
+    if (tile.href !== undefined) {
+        return (
+            <a href={tile.href} target="_blank" rel="noreferrer" className={className}>
+                {children}
+            </a>
+        );
+    }
+    if (tile.to !== undefined) {
+        return (
+            <Link to={tile.to} className={className}>
+                {children}
+            </Link>
+        );
+    }
+    return <div className={className}>{children}</div>;
+}
+
+/**
  * A dense tile: the glyph beside the name and one line, so an area page of a
  * dozen cards fits on a screen. The line is cut at two rows.
  */
 function DenseTile({ tile, to }: { readonly tile: Tile; readonly to: string }): ReactNode {
     const workflow = tile.workflow !== undefined;
-    return (
-        <Link
-            to={to}
-            className={`card group flex items-start gap-3 p-3 transition-[border-color,box-shadow] focus-visible:outline-accent ${workflow ? 'border-flow-line hover:border-flow' : 'hover:border-accent-line hover:shadow-glow'}`}
-        >
+    const body = (
+        <>
             {tile.icon !== undefined && (
                 <Mark name={tile.icon} tone={workflow ? 'workflow' : 'live'} small />
             )}
@@ -111,7 +140,15 @@ function DenseTile({ tile, to }: { readonly tile: Tile; readonly to: string }): 
                 </span>
                 <span className="mt-0.5 line-clamp-2 text-xs text-ink-muted">{tile.body}</span>
             </span>
-        </Link>
+        </>
+    );
+    return (
+        <TileShell
+            tile={tile.href === undefined ? { ...tile, to } : tile}
+            className={`card group flex items-start gap-3 p-3 transition-[border-color,box-shadow] focus-visible:outline-accent ${workflow ? 'border-flow-line hover:border-flow' : 'hover:border-accent-line hover:shadow-glow'}`}
+        >
+            {body}
+        </TileShell>
     );
 }
 
@@ -128,8 +165,8 @@ export function Tiles({
         return (
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {tiles.map((tile) =>
-                    tile.to === undefined ? null : (
-                        <DenseTile key={tile.title} tile={tile} to={tile.to} />
+                    tile.to === undefined && tile.href === undefined ? null : (
+                        <DenseTile key={tile.title} tile={tile} to={tile.to ?? ''} />
                     ),
                 )}
             </div>
@@ -138,7 +175,7 @@ export function Tiles({
     return (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {tiles.map((tile) =>
-                tile.to === undefined ? (
+                tile.to === undefined && tile.href === undefined ? (
                     <div key={tile.title} className="card flex flex-col p-4">
                         <div className="flex items-start">
                             {tile.icon !== undefined && <Mark name={tile.icon} tone="future" />}
@@ -154,9 +191,9 @@ export function Tiles({
                         )}
                     </div>
                 ) : (
-                    <Link
+                    <TileShell
                         key={tile.title}
-                        to={tile.to}
+                        tile={tile}
                         className={
                             tile.workflow === undefined
                                 ? 'card group flex flex-col p-4 transition-[border-color,box-shadow] hover:border-accent-line hover:shadow-glow focus-visible:outline-accent'
@@ -186,7 +223,7 @@ export function Tiles({
                             {tile.title}
                         </span>
                         <span className="mt-1 text-sm text-ink-muted">{tile.body}</span>
-                    </Link>
+                    </TileShell>
                 ),
             )}
         </div>

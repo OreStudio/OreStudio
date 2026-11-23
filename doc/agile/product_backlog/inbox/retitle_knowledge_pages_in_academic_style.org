@@ -70,6 +70,22 @@ prose and says nothing about its title, and no lint checks titles. Each such pag
 then serves as precedent for the next, which is how the scripted trade pages came
 to copy them.
 
+The rule is now written down: /Titles/ in [[id:E3B70401-5142-4ACC-A61F-1BBF19F8470F][Zettelkasten]] states it, the
+knowledge document contract and the academic prose review point at it, and
+=CLAUDE.md= names it. The retitling is done: sixty-three
+knowledge pages that the scan found now carry titles in the form of academic
+paper titles, with their files renamed to match. The scan's other matches are
+noun phrases it misread ("Wash books and risk routing", "The workflow instance
+and step states") and the journey-named pages under =doc/prototypes=, which are
+left for a decision on their scope. The lint remains; compass-85 has scoped it as
+a =knowledge_titles= codec for compass v0.0.13.
+
+The retitled pages meet the title rule but not yet the rest of the house style.
+Fifty-seven of them have no =* Sources= section, and thirteen narrate their own
+history ("no longer", "previously", "the old ...") where the house style
+asks for the current or the target state. Bringing their content to the house
+style is the remaining work of this capture.
+
 The fix should leave a structure behind, not only renamed pages: a rule on titles
 in the academic review skill and in the knowledge document contract, and a
 compass-ng lint that flags a knowledge title written as a finite clause, so a new

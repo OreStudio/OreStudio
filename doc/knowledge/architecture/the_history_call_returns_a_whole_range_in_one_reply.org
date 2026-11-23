@@ -15,7 +15,7 @@
 every tick of the span in one reply, with no pages and no cursor. A span that holds more
 ticks than the ceiling is refused, and the refusal names the ceiling. The service never
 returns part of a span as if it were the whole. The client that calls it is described in
-[[id:10E479D2-990E-4627-95A2-1DA0FA5D68D5][A chart reads a series with one history call and one live subscription]].
+[[id:10E479D2-990E-4627-95A2-1DA0FA5D68D5][Charting a series from its history and its live stream]].
 
 The shell command =marketdata ticks= calls it. The command names the series with
 =--asset=, =--scope=, =--instrument=, =--quote=, =--fields=, =--party= and =--provider=,
@@ -123,7 +123,7 @@ empty reply would look complete. The as-of reads face the same case. See [[id:4E
 The read checks entitlement first, in the party's tenant and under row-level security:
 the party's series must name the stream, and the party must hold a subscription that
 allows the read, or own the derived stream. It then reads the stream's points with the
-service's own role. See [[id:D71F9446-C62E-48A6-A87B-136EF598A59E][A source tick is stored once and entitled when it is read]].
+service's own role. See [[id:D71F9446-C62E-48A6-A87B-136EF598A59E][Storage and entitlement of stored ticks]].
 
 ** Two tiers behind one reply
 
@@ -153,6 +153,6 @@ neither the reply nor the buffer.
 * See also
 
 - [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
-- [[id:10E479D2-990E-4627-95A2-1DA0FA5D68D5][A chart reads a series with one history call and one live subscription]] — completes: the client that makes this call and merges its reply.
+- [[id:10E479D2-990E-4627-95A2-1DA0FA5D68D5][Charting a series from its history and its live stream]] — completes: the client that makes this call and merges its reply.
 - [[id:4EE26B23-003B-4DF1-AA83-1196CC6810C3][Snapshots and cuts]] — contrasts: the reads that value a series at a date, and the ceiling rule this call follows.
 - [[id:3A3752D7-9322-45F0-9932-762B727642E1][Throttling]] — exemplifies, from another cluster: a limit on what one caller may ask for.

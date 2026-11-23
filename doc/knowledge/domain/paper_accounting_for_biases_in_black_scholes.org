@@ -110,7 +110,7 @@ The skewness and kurtosis of an $n$-day return of independent daily returns are
 $\gamma_1/\sqrt{n}$ and $\gamma_2/n$, so the risk reversal falls as
 $1/\sqrt{t}$ and the butterfly as $1/t$. How the synthetic calibration uses
 this, including the risk premium the third limitation leaves out, is in
-[[id:3F9D6EAE-9FB8-4A0D-9BAF-1EA3EA93AB4F][Synthetic prices are calibrated from free public sources]].
+[[id:3F9D6EAE-9FB8-4A0D-9BAF-1EA3EA93AB4F][Free public sources for synthetic price calibration]].
 
 * Open questions
 
@@ -128,7 +128,7 @@ this, including the risk premium the third limitation leaves out, is in
 - [[id:576D0E28-E783-44D4-9C0F-C7ADD307539E][Volatility]] — the structure note for this cluster; this page sits alongside its sequence rather than in it.
 - [[id:5B513D53-5DF7-4540-99C0-60D909678873][FX Volatility Surface]] — completes: the ATM, risk reversal and butterfly pillars this smile is read at.
 - [[id:0CD30407-D67D-499C-B9AB-F268D05F40E4][Volatility]] — contradicts: the concept note keeps realised and implied volatility apart, and this paper's use here builds an implied smile from realised moments, with the premium between them left to an authored multiplier.
-- [[id:3F9D6EAE-9FB8-4A0D-9BAF-1EA3EA93AB4F][Synthetic prices are calibrated from free public sources]] — exemplifies: the starting surface computed from a pair's returns.
+- [[id:3F9D6EAE-9FB8-4A0D-9BAF-1EA3EA93AB4F][Free public sources for synthetic price calibration]] — exemplifies: the starting surface computed from a pair's returns.
 - [[id:351CB816-28F5-428A-A289-414B6F4B9F36][Volatility clustering and GARCH models]] — answers the open question: the model whose term structure of kurtosis replaces the independent-day scaling.
 
 ** Further reading

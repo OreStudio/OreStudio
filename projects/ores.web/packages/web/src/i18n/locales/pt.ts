@@ -67,6 +67,9 @@ const pt: SourceCatalogue = {
     },
 
     shell: {
+        api: {
+            lead: 'Todas as rotas deste servidor, descritas a partir das próprias rotas.',
+        },
         theme: {
             toLight: 'Mudar para a paleta clara',
             toDark: 'Mudar para a paleta escura',
@@ -86,6 +89,7 @@ const pt: SourceCatalogue = {
             operations: 'Operações',
             reporting: 'Relatórios',
             development: 'Desenvolvimento',
+            api: 'API',
             parties: 'Partes',
             rescue: 'Recuperação de acesso',
             audit: 'Entradas',
@@ -565,6 +569,26 @@ const pt: SourceCatalogue = {
         },
     },
 
+    agents: {
+        title: 'Agentes LLM',
+        lead: 'Um agente que nomeia age por si sob uma função, até a autorização expirar ou até a revogar. As suas chamadas são suas e ficam registadas como do agente.',
+        empty: 'Não tem nenhuma autorização de agente ativa.',
+        keyOnce:
+            'Copie esta chave para o agente agora. É mostrada uma vez e não pode ser lida de novo.',
+        until: 'até {at}',
+        newKey: 'Nova chave',
+        revokeGrant: 'Revogar autorização',
+        revokeGrantConfirm:
+            'Revogar a autorização revoga todas as chaves e termina as sessões do agente. Continuar?',
+        key: 'Chave {id}, criada em {at}',
+        revokeKey: 'Revogar chave',
+        name: 'Nome do agente',
+        role: 'Função',
+        days: 'Dias de validade (1–90)',
+        create: 'Criar autorização',
+        readFailed: 'Não foi possível ler as suas autorizações de agente.',
+        actFailed: 'A alteração foi recusada.',
+    },
     auditSignIns: {
         title: 'Inícios de sessão',
         description: 'Quem tem sessão iniciada, o que cada um faz, e quem falha ao entrar.',
@@ -598,6 +622,7 @@ const pt: SourceCatalogue = {
             client: 'Cliente',
             address: 'Endereço',
             country: 'País',
+            agent: 'Agente',
             account: 'Conta',
             traffic: 'Enviado / recebido',
             authorisation: 'Autorização',
@@ -618,6 +643,14 @@ const pt: SourceCatalogue = {
             end: 'Terminar sessão',
             ending: 'A terminar…',
             ended: 'Sessão terminada. As sessões abertas foram lidas de novo.',
+            endAgent:
+                'Terminar a sessão de um agente revoga também a chave que a abriu. A próxima chamada do agente é recusada de imediato, ou no máximo em cinco minutos; precisa de uma nova chave para retomar. Continuar?',
+            holder: 'Mostrar',
+            holders: {
+                all: 'Pessoas e agentes',
+                people: 'Pessoas',
+                agents: 'Agentes',
+            },
             endFailed: 'Não foi possível terminar a sessão.',
             notAllowed: 'Não pode ler as sessões do inquilino.',
             note: 'São lidas todas as sessões abertas do inquilino; terminar uma escreve a sua hora de fim e relê este painel.',
@@ -800,6 +833,9 @@ const pt: SourceCatalogue = {
         sessionEnded:
             'A sua sessão terminou e foi desligado. Inicie a sessão novamente para continuar.',
         partyCategory: 'Categoria',
+        server: 'Servidor',
+        serverCpp: 'servidor C++',
+        serverBff: 'BFF',
     },
 
     signUp: {
@@ -4505,6 +4541,10 @@ const pt: SourceCatalogue = {
                 runs: 'Execuções',
                 cuts: 'Cortes',
                 entries: 'Entradas',
+                surface: 'Superfície',
+                expiries: 'Vencimentos',
+                contributors: 'Contribuidores',
+                surfaces: 'Superfícies',
             },
         },
         fields: {
@@ -4619,6 +4659,36 @@ const pt: SourceCatalogue = {
             tenor_convention_code: 'Convenção de tenor',
             split_tenor_code: 'Tenor de divisão',
             curve_role_code: 'Papel da curva',
+            start_skew: 'Assimetria inicial (ρ)',
+            start_curvature: 'Curvatura inicial (η)',
+            spot_oresmd_uri: 'URI do spot',
+            spot_provider_code: 'Fornecedor do spot',
+            skew_reversion: 'Reversão da assimetria',
+            skew_volatility: 'Volatilidade da assimetria',
+            curvature_reversion: 'Reversão da curvatura',
+            curvature_volatility: 'Volatilidade da curvatura',
+            spot_variance_correlation: 'Correlação entre spot e variância',
+            spot_skew_correlation: 'Correlação entre spot e assimetria',
+            segment_correlation: 'Correlação entre segmentos',
+            atm_vol: 'Volatilidade ATM',
+            variance_reversion: 'Reversão da variância',
+            variance_volatility: 'Volatilidade da variância',
+            contributor_id: 'Contribuidor',
+            provider_code: 'Fornecedor',
+            noise: 'Ruído',
+            wing_widening: 'Alargamento das asas',
+            expiry_widening: 'Alargamento por vencimento',
+            quote_step: 'Passo de cotação',
+            missing_probability: 'Probabilidade de ausência',
+            stale_probability: 'Probabilidade de cotação parada',
+            outlier_probability: 'Probabilidade de valor atípico',
+            outlier_size: 'Tamanho de um valor atípico',
+            bias: 'Viés',
+            feed_id: 'Feed',
+            arrival_mode: 'Chegada',
+            branching_ratio: 'Taxa de ramificação',
+            decay: 'Decaimento',
+            sensitivity: 'Sensibilidade',
         },
         choices: {
             requirement: {
@@ -6869,8 +6939,8 @@ const pt: SourceCatalogue = {
                 interest_rates: 'Taxa de juro',
             },
             runs: {
-                start: 'Iniciar',
-                stop: 'Parar',
+                start: 'Iniciar feeds',
+                stop: 'Parar feeds',
                 startTitle: 'Iniciar {name}?',
                 stopTitle: 'Parar {name}?',
                 startBody:
@@ -6880,6 +6950,20 @@ const pt: SourceCatalogue = {
                 startReport:
                     '{started} iniciados em {name}. {already} já corriam, {skipped} ignorados.',
                 stopReport: '{stopped} parados em {name}.',
+            },
+            source: {
+                title: 'Fonte simulada',
+                start: 'Iniciar fonte',
+                stop: 'Parar fonte',
+                holds: '{feeds} feeds servidos · {surfaces} superfícies de volatilidade mantidas',
+                stopTitle: 'Parar {source}?',
+                effect: {
+                    feeds: 'Os {count} feeds que serve para o armazém param.',
+                    surfaces:
+                        'Liberta as {count} superfícies de volatilidade que mantém: {stop} param com ela, e {runOn} continuam para outras fontes.',
+                    byHand: 'Os feeds iniciados à mão continuam a correr.',
+                    stays: 'Fica parada, mesmo depois de reiniciar o serviço, até alguém a iniciar.',
+                },
             },
             provider: {
                 provider: 'Fornecedor',
@@ -7100,6 +7184,82 @@ const pt: SourceCatalogue = {
             add: 'Adicionar uma entrada de prazo',
             one: 'Entrada de prazo',
             remove: 'Apagar a entrada de prazo',
+        },
+        volFeeds: {
+            add: 'Nova superfície de volatilidade',
+            addTitle: 'Nova superfície de volatilidade',
+            engine: 'SSVI',
+            held: 'Corre enquanto uma fonte simulada de um fornecedor a mantém.',
+            upstreams: {
+                title: 'O que a superfície lê',
+                intro: 'Em cada tick, a superfície lê o seu spot e as curvas de desconto das suas duas moedas. A página de cada feed mostra como começa e como foi calibrado.',
+                notRunning:
+                    'A superfície não está a correr. Lê estes valores enquanto a fonte de um fornecedor a mantém.',
+                spot: 'Spot',
+                baseCurve: 'Curva de desconto {currency}',
+                quoteCurve: 'Curva de desconto {currency}',
+                missing: 'Nenhum feed corresponde: {wants}',
+            },
+            samePair: 'As moedas base e de cotação têm de ser diferentes.',
+            removeWarning:
+                'O feed para se estiver a correr. Os seus vencimentos e ligações a contribuidores são apagados primeiro, depois o feed. O histórico de cada um fica.',
+            help: {
+                spot_provider_code:
+                    'O fornecedor cujo spot esta superfície lê e com o qual se correlaciona. Um URI nomeia o que é observado, não quem o observa, por isso o fornecedor escolhe um único feed spot.',
+                spot_oresmd_uri:
+                    'O URI oresmd do spot que esta superfície lê. Em branco, é a taxa spot do par.',
+                ticks_per_hour:
+                    'Quantas superfícies o feed produz numa hora. 12 é uma a cada cinco minutos.',
+                arrival_mode: 'Como chegam os ticks: a intervalo fixo, ao acaso ou em grupos.',
+                branching_ratio:
+                    'Só uma chegada em grupos o usa: quantos ticks um tick provoca, abaixo de um.',
+                decay: 'Só uma chegada em grupos o usa: a rapidez com que uma rajada se desvanece, em um por segundo.',
+                sensitivity:
+                    'A força com que um regime de mercado move esta superfície, sendo um a média.',
+                start_skew:
+                    'O rho SSVI em que a superfície começa e para o qual reverte, entre -1 e 1. O câmbio cota geralmente uma assimetria negativa.',
+                start_curvature:
+                    'O eta SSVI em que a superfície começa e para o qual reverte, acima de 0 e abaixo da raiz quadrada de 2 (1,4142). Define quanto as asas sobem acima do ATM.',
+                skew_reversion: 'A rapidez com que a assimetria volta ao início, por ano.',
+                skew_volatility: 'Quanto a assimetria se move, por raiz quadrada de um ano.',
+                curvature_reversion: 'A rapidez com que a curvatura volta ao início, por ano.',
+                curvature_volatility: 'Quanto a curvatura se move, por raiz quadrada de um ano.',
+                spot_variance_correlation:
+                    'Como as variâncias a prazo se movem com o spot, entre -1 e 1.',
+                spot_skew_correlation: 'Como a assimetria se move com o spot, entre -1 e 1.',
+                segment_correlation:
+                    'Quão juntas se movem variâncias a prazo vizinhas, de 0 até pouco abaixo de 1.',
+                enabled: 'Um feed que não está ativo não pode arrancar.',
+                auto_start: 'O feed arranca quando o serviço sintético arranca.',
+            },
+            surface: {
+                lead: 'A superfície SSVI que o feed faz evoluir: onde começa, como se movem a assimetria e a curvatura, e como os movimentos se correlacionam com o spot.',
+                running: 'O feed está a correr. Uma alteração aplica-se quando arrancar de novo.',
+                start: 'Início',
+                dynamics: 'Dinâmica',
+                correlations: 'Correlações',
+                editTitle: '{part}: {pair}',
+                gamma: 'Gama (γ)',
+                gammaWhy:
+                    'O gerador mantém gama em meio. Com esse valor, a superfície está livre de arbitragem borboleta enquanto a curvatura ficar abaixo da raiz quadrada de 2, e o gerador mantém-na aí. Outro gama faz as condições de não arbitragem dependerem de cada vencimento e da assimetria, por isso não o pode alterar aqui.',
+            },
+            expiries: {
+                lead: 'Os vencimentos em que a superfície é cotada, cada um com a sua volatilidade ATM e o movimento da sua variância a prazo. A variância total ATM tem de subir de um vencimento para o seguinte. Se não subir, o feed não arranca.',
+                add: 'Adicionar um vencimento',
+                one: 'Vencimento',
+                remove: 'Apagar o vencimento',
+            },
+            contributors: {
+                title: 'Contribuidores de volatilidade',
+                surfacesLead:
+                    'As superfícies que este contribuidor cota. O seu perfil de ruído aplica-se a cada uma delas.',
+                noSurfaces: 'Não cota nenhuma superfície.',
+                lead: 'Os fornecedores que cotam a superfície. Cada fornecedor acrescenta o seu próprio ruído às cotações, e todas as superfícies que cota partilham esse perfil de ruído.',
+                add: 'Adicionar um contribuidor',
+                one: 'Contribuidor',
+                remove: 'Retirar o contribuidor',
+                noise: 'Perfil de ruído: {provider}',
+            },
         },
         runs: {
             status: 'Estado',

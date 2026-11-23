@@ -1,0 +1,65 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title Observing a fixing at system level, applying it at party level
+
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+
+box "System level" #F4F4F8
+participant "Fixing source" as source
+database "Fixing observations" as store
+actor "Super administrator" as admin
+end box
+
+box "Party level: one party that holds trades" #FFFFFF
+actor "Party operations" as ops
+participant "Fixings manager" as fm
+participant "Product services" as products
+database "Party trades" as trades
+end box
+
+== Observe (system level) ==
+source -> store : publish the observation
+store -> store : store it once for every party
+admin -> store : view every observation across every source
+
+== Subscribe (party level) ==
+products -> fm : a booked trade names its fixing schedule
+fm -> store : read the observations the party's trades require
+fm -> fm : the party fixing is unofficial
+
+== Authorise ==
+ops -> fm : compare with the front-office rate
+ops -> fm : authorise, or overkey and authorise
+fm -> fm : the party fixing is official;\nthe observation is unchanged
+
+== Apply ==
+fm -> products : fix event (party fixing, version)
+products -> trades : find the party's trades whose schedule names it
+products -> trades : book coupons, fixing trades and cash,\nlabelled with the event
+products --> fm : progress; excluded books reported
+
+== Undo ==
+ops -> fm : undo for all the party's trades, a time,\na book, a currency or a trade
+fm -> products : undo event (scope)
+products -> trades : reverse every action labelled\nwith the fix event
+fm -> fm : the party fixing is unofficial
+
+@enduml

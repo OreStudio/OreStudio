@@ -742,7 +742,7 @@ def generate_accounts_populate(company, accounts):
             f"{sql_str(a['email'])}, {sql_str(a['password_hash'])}, "
             f"{sql_str(a['account_type'])}, "
             f"{sql_str(a.get('business_unit_code'))}, "
-            f"{sql_str(a.get('role'))}, "
+            f"{sql_str(a.get('roles'))}, "
             f"{sql_str(a.get('job_title'))}, "
             f"{sql_str(a.get('reports_to_username'))}, "
             f"{sql_str(a.get('photo_key'))})"
@@ -782,7 +782,7 @@ begin
 
     insert into ores_dq_accounts_artefact_tbl (
         dataset_id, tenant_id, id, version, username, full_name,
-        email, password_hash, account_type, business_unit_code, role,
+        email, password_hash, account_type, business_unit_code, roles,
         job_title, reports_to_username, photo_key
     )
     values

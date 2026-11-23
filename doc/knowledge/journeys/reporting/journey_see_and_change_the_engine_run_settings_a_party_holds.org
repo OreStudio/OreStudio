@@ -198,7 +198,7 @@ A write to any section bumps the central row's version in the same transaction.
 | Step | Operation | Subject | Status |
 |------+-----------+---------+--------|
 | 1 | List the configurations of the party | =reporting.v1.engine_settings.list= | exists |
-| 2 | Read the documentation of every setting | =reporting.v1.ore_parameters.list= | exists |
+| 2 | Read the documentation of every setting | =ore.v1.ore_parameters.list= | exists |
 | 2 | Read one configuration with its three sections | =reporting.v1.engine_settings.get= | exists |
 | 9 | Write one section against its version | =reporting.v1.engine_settings_<section>.put= | exists |
 | 10 | Read the reports that bind a configuration | =reporting.v1.report_configurations.list_by_configuration_id= | exists |

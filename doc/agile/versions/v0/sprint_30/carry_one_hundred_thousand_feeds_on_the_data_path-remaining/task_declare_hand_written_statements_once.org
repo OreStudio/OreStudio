@@ -61,7 +61,7 @@ task and name that file in the Command column.
 
 * Notes
 
-- Target state: [[id:E8369409-2A7B-4258-9D3C-6D37A46F4603][A hand-written statement is declared once, typed both ways and prepared once]].
+- Target state: [[id:E8369409-2A7B-4258-9D3C-6D37A46F4603][Declaration, typing and preparation of hand-written SQL statements]].
 
 * Test Scenarios
 

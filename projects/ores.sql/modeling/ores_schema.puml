@@ -25,7 +25,7 @@ hide circle
 skinparam linetype ortho
 
 note as IndexNote
-816 tables in 22 groups.
+818 tables in 22 groups.
 Each group is drawn in its own file, named under its heading.
 Table naming: <component>_<entity>_tbl
 end note
@@ -38,6 +38,9 @@ entity "iam" as iam {
   ores_iam_account_statuses_tbl
   ores_iam_account_types_tbl
   ores_iam_accounts_tbl
+  ores_iam_agent_grants_tbl
+  ores_iam_agent_keys_tbl
+  ores_iam_agent_token_issues_tbl
   ores_iam_auth_events_tbl
   ores_iam_login_info_tbl
   ores_iam_permissions_tbl
@@ -59,7 +62,7 @@ entity "iam" as iam {
 }
 note bottom of iam
 Identity & Access Management
-25 tables — ores_schema.iam.puml
+28 tables — ores_schema.iam.puml
 end note
 
 entity "assets" as assets {
@@ -426,7 +429,6 @@ entity "dq_staging" as dq_staging {
   ores_dq_ip2country_artefact_tbl
   ores_dq_ir_curve_generation_configs_artefact_tbl
   ores_dq_ir_curve_template_entries_artefact_tbl
-  ores_dq_knowledge_pages_artefact_tbl
   ores_dq_legal_entities_artefact_tbl
   ores_dq_lei_bic_artefact_tbl
   ores_dq_lei_entities_artefact_tbl
@@ -488,7 +490,7 @@ entity "dq_staging" as dq_staging {
 }
 note bottom of dq_staging
 Data Staging
-187 tables — ores_schema.dq_staging.puml
+186 tables — ores_schema.dq_staging.puml
 end note
 
 entity "dq_datasets" as dq_datasets {
@@ -779,17 +781,6 @@ entity "reporting" as reporting {
   ores_reporting_engine_settings_groups_tbl
   ores_reporting_engine_settings_tbl
   ores_reporting_file_types_tbl
-  ores_reporting_ore_element_map_columns_tbl
-  ores_reporting_ore_file_categories_tbl
-  ores_reporting_ore_file_versions_tbl
-  ores_reporting_ore_files_tbl
-  ores_reporting_ore_parameter_setting_value_sets_tbl
-  ores_reporting_ore_parameter_value_domains_tbl
-  ores_reporting_ore_parameter_value_set_catalogues_tbl
-  ores_reporting_ore_parameter_value_set_values_tbl
-  ores_reporting_ore_parameter_value_sets_tbl
-  ores_reporting_ore_parameter_vocabularies_tbl
-  ores_reporting_ore_parameters_tbl
   ores_reporting_report_cashflows_tbl
   ores_reporting_report_configurations_tbl
   ores_reporting_report_definitions_tbl
@@ -810,7 +801,7 @@ entity "reporting" as reporting {
 }
 note bottom of reporting
 Reporting & Analytics
-50 tables — ores_schema.reporting.puml
+39 tables — ores_schema.reporting.puml
 end note
 
 entity "compute" as compute {
@@ -900,6 +891,24 @@ Market Data (Quotes, Fixings, Series)
 38 tables — ores_schema.marketdata.puml
 end note
 
+entity "ore" as ore {
+  ores_ore_element_map_columns_tbl
+  ores_ore_file_categories_tbl
+  ores_ore_file_versions_tbl
+  ores_ore_files_tbl
+  ores_ore_parameter_setting_value_sets_tbl
+  ores_ore_parameter_value_domains_tbl
+  ores_ore_parameter_value_set_catalogues_tbl
+  ores_ore_parameter_value_set_values_tbl
+  ores_ore_parameter_value_sets_tbl
+  ores_ore_parameter_vocabularies_tbl
+  ores_ore_parameters_tbl
+}
+note bottom of ore
+ORE Engine Integration
+11 tables — ores_schema.ore.puml
+end note
+
 entity "analytics" as analytics {
   ores_analytics_credit_simulation_configs_tbl
   ores_analytics_credit_simulation_entities_tbl
@@ -953,6 +962,7 @@ entity "synthetic" as synthetic {
   ores_synthetic_market_data_generation_configs_tbl
   ores_synthetic_market_data_providers_tbl
   ores_synthetic_process_parameter_definitions_tbl
+  ores_synthetic_stopped_simulated_sources_tbl
   ores_synthetic_trade_generation_books_tbl
   ores_synthetic_trade_generation_configs_tbl
   ores_synthetic_trade_generation_counterparties_tbl
@@ -964,7 +974,7 @@ entity "synthetic" as synthetic {
 }
 note bottom of synthetic
 Synthetic Data Generation
-26 tables — ores_schema.synthetic.puml
+27 tables — ores_schema.synthetic.puml
 end note
 
 entity "inbox" as inbox {
@@ -990,14 +1000,6 @@ entity "inbox" as inbox {
 note bottom of inbox
 Inbox — Approval Requests and Notifications
 18 tables — ores_schema.inbox.puml
-end note
-
-entity "orgmode" as orgmode {
-  ores_orgmode_knowledge_pages_tbl
-}
-note bottom of orgmode
-Knowledge Base (Org Pages)
-1 tables — ores_schema.orgmode.puml
 end note
 
 

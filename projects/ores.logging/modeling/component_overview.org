@@ -56,6 +56,9 @@ trace correlation.
 
 * See also
 
+- [[id:B09EFEF3-9DCE-4703-A5E3-9D9ED52FD314][How a component declares its logger]] — where a
+  class or a file declares its logger, its channel name, and why it survives
+  a unity build.
 - [[id:7F3A2E81-B5C9-4D6A-8E12-9C4B3F5A7D0E][ores.platform]] — the
   cross-platform abstraction the component consumes.
 - [[id:C5F35442-A2C3-415A-80F2-C09CAA0842FF][System Model: Foundation

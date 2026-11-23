@@ -18,11 +18,33 @@
  *
  */
 #include "ores.ore.service/messaging/registrar.hpp"
+#include "ores.history.core/messaging/registrar.hpp"
+#include "ores.history.core/service/dispatch_registry.hpp"
 #include "ores.logging/logger.hpp"
 #include "ores.ore.api/messaging/currency_config_protocol.hpp"
 #include "ores.ore.api/messaging/ore_import_protocol.hpp"
 #include "ores.ore.api/messaging/pricing_engines_protocol.hpp"
+#include "ores.ore.api/messaging/publish_operation_protocol.hpp"
 #include "ores.ore.api/messaging/run_configuration_protocol.hpp"
+#include "ores.ore.core/messaging/ore_file_category_history_provider_registrar.hpp"
+#include "ores.ore.core/messaging/ore_file_category_registrar.hpp"
+#include "ores.ore.core/messaging/ore_file_history_provider_registrar.hpp"
+#include "ores.ore.core/messaging/ore_file_registrar.hpp"
+#include "ores.ore.core/messaging/ore_file_version_history_provider_registrar.hpp"
+#include "ores.ore.core/messaging/ore_file_version_registrar.hpp"
+#include "ores.ore.core/messaging/ore_parameter_history_provider_registrar.hpp"
+#include "ores.ore.core/messaging/ore_parameter_registrar.hpp"
+#include "ores.ore.core/messaging/ore_parameter_setting_value_set_history_provider_registrar.hpp"
+#include "ores.ore.core/messaging/ore_parameter_setting_value_set_registrar.hpp"
+#include "ores.ore.core/messaging/ore_parameter_value_domain_history_provider_registrar.hpp"
+#include "ores.ore.core/messaging/ore_parameter_value_domain_registrar.hpp"
+#include "ores.ore.core/messaging/ore_parameter_value_set_catalogue_history_provider_registrar.hpp"
+#include "ores.ore.core/messaging/ore_parameter_value_set_catalogue_registrar.hpp"
+#include "ores.ore.core/messaging/ore_parameter_value_set_history_provider_registrar.hpp"
+#include "ores.ore.core/messaging/ore_parameter_value_set_registrar.hpp"
+#include "ores.ore.core/messaging/ore_parameter_value_set_value_history_provider_registrar.hpp"
+#include "ores.ore.core/messaging/ore_parameter_value_set_value_registrar.hpp"
+#include "ores.ore.core/messaging/publish_from_dq_handler.hpp"
 #include "ores.ore.service/messaging/currency_config_handler.hpp"
 #include "ores.ore.service/messaging/ore_import_execute_handler.hpp"
 #include "ores.ore.service/messaging/ore_import_handler.hpp"
@@ -41,6 +63,13 @@ using namespace ores::logging;
 inline static std::string_view logger_name = "ores.ore.service.messaging.registrar";
 static auto& lg() {
     static auto instance = make_logger(logger_name);
+    return instance;
+}
+
+// The history providers live for the whole process, as the subscription that
+// serves them holds the registry by reference.
+ores::history::service::dispatch_registry& history_registry() {
+    static ores::history::service::dispatch_registry instance;
     return instance;
 }
 
@@ -95,6 +124,49 @@ registrar::register_handlers(ores::nats::service::client& nats,
         qg,
         [peh](ores::nats::message msg) { peh->import_pricing_engines(std::move(msg)); }));
 
+    // ----------------------------------------------------------------
+    // The description of ORE (generated CRUD handlers): the files of an ORE
+    // run, their categories and their contents per release, the parameters of
+    // ORE's documents with their value domains and value sets, and their
+    // history.
+    // ----------------------------------------------------------------
+    for (auto& sub : ore::messaging::register_ore_file_category_handlers(nats, ctx, signer))
+        subs.push_back(std::move(sub));
+    for (auto& sub : ore::messaging::register_ore_file_handlers(nats, ctx, signer))
+        subs.push_back(std::move(sub));
+    for (auto& sub : ore::messaging::register_ore_file_version_handlers(nats, ctx, signer))
+        subs.push_back(std::move(sub));
+    for (auto& sub : ore::messaging::register_ore_parameter_handlers(nats, ctx, signer))
+        subs.push_back(std::move(sub));
+    for (auto& sub :
+         ore::messaging::register_ore_parameter_value_domain_handlers(nats, ctx, signer))
+        subs.push_back(std::move(sub));
+    for (auto& sub : ore::messaging::register_ore_parameter_value_set_handlers(nats, ctx, signer))
+        subs.push_back(std::move(sub));
+    for (auto& sub :
+         ore::messaging::register_ore_parameter_value_set_value_handlers(nats, ctx, signer))
+        subs.push_back(std::move(sub));
+    for (auto& sub :
+         ore::messaging::register_ore_parameter_value_set_catalogue_handlers(nats, ctx, signer))
+        subs.push_back(std::move(sub));
+    for (auto& sub :
+         ore::messaging::register_ore_parameter_setting_value_set_handlers(nats, ctx, signer))
+        subs.push_back(std::move(sub));
+    {
+        auto& hist_registry = history_registry();
+        ore::messaging::register_ore_file_category_history_provider(hist_registry);
+        ore::messaging::register_ore_file_history_provider(hist_registry);
+        ore::messaging::register_ore_file_version_history_provider(hist_registry);
+        ore::messaging::register_ore_parameter_history_provider(hist_registry);
+        ore::messaging::register_ore_parameter_value_domain_history_provider(hist_registry);
+        ore::messaging::register_ore_parameter_value_set_history_provider(hist_registry);
+        ore::messaging::register_ore_parameter_value_set_value_history_provider(hist_registry);
+        ore::messaging::register_ore_parameter_value_set_catalogue_history_provider(hist_registry);
+        ore::messaging::register_ore_parameter_setting_value_set_history_provider(hist_registry);
+        subs.push_back(ores::history::messaging::register_history_handlers(
+            nats, hist_registry, "ore", qg, ctx, signer));
+    }
+
     auto rch =
         std::make_shared<run_configuration_handler>(nats, ctx, std::move(signer), outbound_nats);
     subs.push_back(nats.queue_subscribe(
@@ -122,10 +194,19 @@ registrar::register_handlers(ores::nats::service::client& nats,
         http_base_url,
         std::move(work_dir));
 
-    // One durable consumer carries all five, and each handler answers its own
-    // delivery.
+    // The publish-from-DQ steps of the description of ORE. One handler serves
+    // both subjects and derives the SQL function from the subject, so a new
+    // dataset needs a subject here and a row in ores_dq_artefact_types_tbl.
+    auto pdq = std::make_shared<ore::messaging::publish_from_dq_handler>(nats, ctx);
+
+    // One durable consumer carries all seven, as a service serves one family of
+    // step commands per stream, and each handler answers its own delivery.
     ores::service::messaging::step_routes routes;
     routes
+        .on(ores::ore::messaging::publish_ore_parameter_value_domains_from_dq_request::nats_subject,
+            [pdq](ores::nats::delivery delivery) { pdq->handle(std::move(delivery)); })
+        .on(ores::ore::messaging::publish_ore_parameters_from_dq_request::nats_subject,
+            [pdq](ores::nats::delivery delivery) { pdq->handle(std::move(delivery)); })
         .on(ores::ore::messaging::run_configuration_import_execute_request::nats_subject,
             [rci](ores::nats::delivery delivery) { rci->execute(std::move(delivery)); })
         .on(ores::ore::messaging::run_configuration_import_rollback_request::nats_subject,

@@ -29,7 +29,6 @@
 #include "ores.reporting.core/repository/engine_settings_fixings_repository.hpp"
 #include "ores.reporting.core/repository/engine_settings_repository.hpp"
 #include "ores.reporting.core/repository/file_type_repository.hpp"
-#include "ores.reporting.core/repository/ore_parameter_repository.hpp"
 #include "ores.reporting.core/repository/report_configuration_repository.hpp"
 #include "ores.reporting.core/repository/report_definition_repository.hpp"
 #include "ores.reporting.core/repository/risk_report_config_repository.hpp"
@@ -66,21 +65,32 @@ constexpr const char* run_settings_type = "risk_report_config";
 // The slot a named set of engine settings fills in a definition.
 constexpr const char* engine_settings_type = "engine_settings";
 
-// The ore parameters of the analytics, by id.
-std::map<boost::uuids::uuid, std::string>
-analytic_parameter_names(const ores::database::context& ctx) {
-    std::map<boost::uuids::uuid, std::string> names;
-    for (const auto& d : read_where(system_scope(ctx),
-                                    ore_parameter_repository(),
-                                    [](const auto& d) { return d.scope == "analytic"; }))
-        names[d.id] = d.name;
-    return names;
+// The analytic parameter with an id, or none.
+const ores::ore::domain::ore_parameter*
+parameter_by_id(const std::vector<ores::ore::domain::ore_parameter>& parameters,
+                const boost::uuids::uuid& id) {
+    const auto found = std::ranges::find(parameters, id, &ores::ore::domain::ore_parameter::id);
+    return found == parameters.end() ? nullptr : &*found;
+}
+
+// The id of the parameter an analytic of a type names, or none.
+std::optional<boost::uuids::uuid>
+parameter_id(const std::vector<ores::ore::domain::ore_parameter>& parameters,
+             const std::string& analytic_type,
+             const std::string& name) {
+    const auto found = std::ranges::find_if(
+        parameters, [&](const auto& p) { return p.subtype == analytic_type && p.name == name; });
+    if (found == parameters.end())
+        return std::nullopt;
+    return found->id;
 }
 
 // The analytics of a configuration with their parameters, in the order the run
 // document writes them.
-std::vector<messaging::run_analytic> analytics_of(const ores::database::context& ctx,
-                                                  const boost::uuids::uuid& configuration_id) {
+std::vector<messaging::run_analytic>
+analytics_of(const ores::database::context& ctx,
+             const std::vector<ores::ore::domain::ore_parameter>& analytic_parameters,
+             const boost::uuids::uuid& configuration_id) {
     auto analytics = read_where(ctx, configuration_analytic_repository(), [&](const auto& a) {
         return a.configuration_id == configuration_id;
     });
@@ -90,7 +100,6 @@ std::vector<messaging::run_analytic> analytics_of(const ores::database::context&
     for (const auto& a : analytics)
         analytic_ids.insert(a.id);
 
-    const auto names = analytic_parameter_names(ctx);
     auto parameters =
         read_where(ctx, configuration_analytic_parameter_repository(), [&](const auto& p) {
             return analytic_ids.contains(p.configuration_analytic_id);
@@ -104,14 +113,14 @@ std::vector<messaging::run_analytic> analytics_of(const ores::database::context&
         for (const auto& p : parameters) {
             if (p.configuration_analytic_id != a.id)
                 continue;
-            const auto name = names.find(p.ore_parameter_id);
-            if (name == names.end())
+            const auto* definition = parameter_by_id(analytic_parameters, p.ore_parameter_id);
+            if (definition == nullptr)
                 throw std::runtime_error(std::format(
                     "The {} analytic holds a parameter whose definition {} is not an analytic "
                     "ore parameter.",
                     a.analytic_type_code,
                     boost::uuids::to_string(p.ore_parameter_id)));
-            ra.parameters.push_back({name->second, p.value, p.position});
+            ra.parameters.push_back({definition->name, p.value, p.position});
         }
         out.push_back(std::move(ra));
     }
@@ -241,8 +250,10 @@ void write_binding(const ores::database::context& ctx,
 
 }
 
-run_document_service::run_document_service(const context& ctx)
-    : ctx_(ctx) {}
+run_document_service::run_document_service(
+    const context& ctx, std::vector<ores::ore::domain::ore_parameter> analytic_parameters)
+    : ctx_(ctx)
+    , analytic_parameters_(std::move(analytic_parameters)) {}
 
 void run_document_service::save(const boost::uuids::uuid& report_definition_id,
                                 messaging::run_document v) {
@@ -256,14 +267,12 @@ void run_document_service::save(const boost::uuids::uuid& report_definition_id,
     if (std::ranges::none_of(v.analytics, [](const auto& a) { return a.analytic.active == "Y"; }))
         throw std::invalid_argument("The run document switches no analytic on.");
 
-    std::map<std::pair<std::string, std::string>, boost::uuids::uuid> definition_ids;
-    for (const auto& d : read_where(system_scope(ctx_),
-                                    ore_parameter_repository(),
-                                    [](const auto& d) { return d.scope == "analytic"; }))
-        definition_ids[{d.subtype, d.name}] = d.id;
+    const auto definition_id_of = [&](const std::string& analytic_type, const std::string& name) {
+        return parameter_id(analytic_parameters_, analytic_type, name);
+    };
     for (const auto& a : v.analytics)
         for (const auto& p : a.parameters)
-            if (!definition_ids.contains({a.analytic.analytic_type_code, p.name}))
+            if (!definition_id_of(a.analytic.analytic_type_code, p.name))
                 throw std::invalid_argument(
                     std::format("The {} analytic sets {}, which no ore parameter describes.",
                                 a.analytic.analytic_type_code,
@@ -302,7 +311,7 @@ void run_document_service::save(const boost::uuids::uuid& report_definition_id,
             domain::configuration_analytic_parameter row;
             row.id = next_id();
             row.configuration_analytic_id = a.analytic.id;
-            row.ore_parameter_id = definition_ids.at({a.analytic.analytic_type_code, p.name});
+            row.ore_parameter_id = *definition_id_of(a.analytic.analytic_type_code, p.name);
             row.value = p.value;
             row.position = p.position;
             parameters.push_back(std::move(row));
@@ -342,7 +351,7 @@ run_document_service::get(const boost::uuids::uuid& report_definition_id) {
     in.risk = risk.front();
     in.run_date = std::format(
         "{:%F}", std::chrono::floor<std::chrono::days>(std::chrono::system_clock::now()));
-    in.analytics = analytics_of(ctx_, configuration_id);
+    in.analytics = analytics_of(ctx_, analytic_parameters_, configuration_id);
     if (const auto engine = bindings_of_type(report_definition_id, engine_settings_type);
         !engine.empty())
         in.engine = engine_settings_of(ctx_, engine.front().configuration_id);

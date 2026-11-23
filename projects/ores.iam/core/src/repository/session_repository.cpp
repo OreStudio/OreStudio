@@ -100,11 +100,22 @@ session_filter_condition(const std::optional<messaging::sessions_filter>& filter
     if (filter->account_id)
         r.push_back(
             query_builder::equals("account_id", query_builder::filter_value(*filter->account_id)));
+    if (filter->agent_grant_id)
+        r.push_back(*filter->agent_grant_id ? query_builder::equals("agent_grant_id",
+                                                                    query_builder::filter_value(
+                                                                        **filter->agent_grant_id)) :
+                                              query_builder::is_null("agent_grant_id"));
     if (filter->account_id_one_of) {
         std::vector<query_builder::value> values;
         for (const auto& v : *filter->account_id_one_of)
             values.push_back(query_builder::filter_value(v));
         r.push_back(query_builder::one_of("account_id", std::move(values)));
+    }
+    if (filter->agent_grant_id_one_of) {
+        std::vector<query_builder::value> values;
+        for (const auto& v : *filter->agent_grant_id_one_of)
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("agent_grant_id", std::move(values)));
     }
     return query_builder::all_of(std::move(r));
 }

@@ -74,6 +74,7 @@ create table if not exists "ores_iam_sessions_tbl" (
     "bytes_received" bigint not null default 0,
     "country_code" text not null default '',
     "protocol" text not null default 'binary',
+    "agent_grant_id" uuid null,
     primary key (id, start_time)
 );
 

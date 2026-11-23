@@ -936,6 +936,18 @@ export interface CalibrationPolicyInput {
  * it sits under, whether its generator runs and where the run started. The feed's
  * own record names no provider, no run and no start.
  */
+/** One simulated source the synthetic service serves, and what it runs and holds. */
+export const simulatedSourceSchema = z.object({
+    source_name: z.string(),
+    provider_code: z.string(),
+    stopped: z.boolean().default(false),
+    served_feeds: z.int().default(0),
+    held_surfaces: z.int().default(0),
+    surfaces_only_held_here: z.int().default(0),
+});
+
+export type SimulatedSource = z.infer<typeof simulatedSourceSchema>;
+
 export const feedRecordSchema = z.looseObject({
     version: z.int().nonnegative(),
     provider_code: z.string(),
@@ -2736,6 +2748,34 @@ export const api = {
         });
     },
 
+    /** The simulated sources the synthetic service serves, with what each runs and holds. */
+    async simulatedSources(): Promise<readonly SimulatedSource[]> {
+        return z
+            .object({ sources: z.array(simulatedSourceSchema) })
+            .parse(await request('/api/synthetic/simulated-sources', { method: 'GET' })).sources;
+    },
+
+    /** Stops a simulated source until someone starts it, with the person's reason. */
+    async stopSimulatedSource(
+        name: string,
+        intent: { readonly reason_code: string; readonly commentary: string },
+    ): Promise<void> {
+        await request(`/api/synthetic/simulated-sources/${encodeURIComponent(name)}/stop`, {
+            method: 'POST',
+            headers: JSON_HEADERS,
+            body: JSON.stringify(intent),
+        });
+    },
+
+    /** Starts a stopped simulated source again. */
+    async startSimulatedSource(name: string): Promise<void> {
+        await request(`/api/synthetic/simulated-sources/${encodeURIComponent(name)}/start`, {
+            method: 'POST',
+            headers: JSON_HEADERS,
+            body: '{}',
+        });
+    },
+
     /**
      * The state of every adapter the market data service tracks: which provider
      * each serves, whether it serves, and how many ids it was demanded.
@@ -4289,10 +4329,12 @@ export const api = {
 
     /** The runs of one report, newest first. */
     async reportRuns(id: string): Promise<readonly ReportRunRowView[]> {
-        const reply = (await request(`/api/reporting/reports/${id}/runs`, {
-            method: 'GET',
-        })) as { runs?: readonly unknown[] };
-        return (reply.runs ?? []).map((one) => reportRunRowViewSchema.parse(one));
+        // A run list is a stated member, not an array: an answer that leaves it
+        // out is a fault and not an empty list, so it is parsed and not defaulted.
+        const reply = z
+            .object({ runs: z.array(z.unknown()) })
+            .parse(await request(`/api/reporting/reports/${id}/runs`, { method: 'GET' }));
+        return reply.runs.map((one) => reportRunRowViewSchema.parse(one));
     },
 
     /** One report run: the state it reached, its batch, and where its output is. */

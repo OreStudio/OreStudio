@@ -411,9 +411,9 @@ CATALOGUE: tuple[Check, ...] = (
         paths=(
             "projects/ores.sql/populate/reporting/reporting_file_types_populate.sql",
             "projects/ores.sql/utility/generate_file_types_populate.py",
-            "projects/ores.sql/populate/reporting/reporting_ore_file_categories_populate.sql",
-            "projects/ores.sql/populate/reporting/reporting_ore_files_populate.sql",
-            "projects/ores.sql/populate/reporting/reporting_ore_file_versions_populate.sql",
+            "projects/ores.sql/populate/ore/ore_ore_file_categories_populate.sql",
+            "projects/ores.sql/populate/ore/ore_ore_files_populate.sql",
+            "projects/ores.sql/populate/ore/ore_ore_file_versions_populate.sql",
             "external/ore/xsd/*",
             "projects/ores.sql/utility/ore_files.py",
             "projects/ores.sql/utility/ore_file_descriptions.py",
@@ -428,7 +428,7 @@ CATALOGUE: tuple[Check, ...] = (
         argv=("python3", "projects/ores.sql/utility/generate_ore_parameters_dataset.py", "--check"),
         classes=("sql",),
         paths=(
-            "projects/ores.sql/populate/reporting/reporting_ore_parameters_artefact_populate.sql",
+            "projects/ores.sql/populate/ore/ore_ore_parameters_artefact_populate.sql",
             "projects/ores.sql/utility/generate_ore_parameters_dataset.py",
             "projects/ores.sql/utility/ore_parameter_seed.py",
             "projects/ores.sql/utility/setup_parameter_rows.py",
@@ -561,11 +561,14 @@ CATALOGUE: tuple[Check, ...] = (
         # The rebuild terminates every connection and then counts what is left,
         # so a fleet that is still up reconnects inside the half second it waits
         # and the count refuses the rebuild. Stopping the fleet is what makes
-        # the check a statement about the schema rather than about timing.
+        # the check a statement about the schema rather than about timing. The
+        # pooler and nats-server stay up: the suites after this connect through
+        # them, and the recreate terminates the pooler's server connections.
         argv=(
             "bash",
             "-c",
-            "./compass.sh services stop || true; ./compass.sh db recreate -y -k",
+            "./compass.sh services stop --keep-infra || true;"
+            " ./compass.sh db recreate -y -k",
         ),
         classes=("cpp", "services", "sql"),
         phase=HEAVY,

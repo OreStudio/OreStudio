@@ -27,11 +27,11 @@ import { subjects as calendarNameSubjects } from '@ores/wire-protocol/generated/
 import { subjects as conventionSubjects } from '@ores/wire-protocol/generated/refdata/protocol/convention_protocol';
 import { subjects as conventionKindSubjects } from '@ores/wire-protocol/generated/refdata/protocol/convention_kind_protocol';
 import { subjects as conventionKindTermSubjects } from '@ores/wire-protocol/generated/refdata/protocol/convention_kind_term_protocol';
-import { subjects as parameterSubjects } from '@ores/wire-protocol/generated/reporting/protocol/ore_parameter_protocol';
-import { subjects as valueSetSubjects } from '@ores/wire-protocol/generated/reporting/protocol/ore_parameter_value_set_protocol';
-import { subjects as valueSetValueSubjects } from '@ores/wire-protocol/generated/reporting/protocol/ore_parameter_value_set_value_protocol';
-import { subjects as valueSetCatalogueSubjects } from '@ores/wire-protocol/generated/reporting/protocol/ore_parameter_value_set_catalogue_protocol';
-import { subjects as settingValueSetSubjects } from '@ores/wire-protocol/generated/reporting/protocol/ore_parameter_setting_value_set_protocol';
+import { subjects as parameterSubjects } from '@ores/wire-protocol/generated/ore/protocol/ore_parameter_protocol';
+import { subjects as valueSetSubjects } from '@ores/wire-protocol/generated/ore/protocol/ore_parameter_value_set_protocol';
+import { subjects as valueSetValueSubjects } from '@ores/wire-protocol/generated/ore/protocol/ore_parameter_value_set_value_protocol';
+import { subjects as valueSetCatalogueSubjects } from '@ores/wire-protocol/generated/ore/protocol/ore_parameter_value_set_catalogue_protocol';
+import { subjects as settingValueSetSubjects } from '@ores/wire-protocol/generated/ore/protocol/ore_parameter_setting_value_set_protocol';
 import { subjects as commodityFutureConventionSubjects } from '@ores/wire-protocol/generated/refdata/protocol/commodity_future_convention_protocol';
 import { subjects as crossCurrencyBasisConventionSubjects } from '@ores/wire-protocol/generated/refdata/protocol/cross_currency_basis_convention_protocol';
 import { subjects as crossCurrencyFixFloatConventionSubjects } from '@ores/wire-protocol/generated/refdata/protocol/cross_currency_fix_float_convention_protocol';

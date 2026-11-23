@@ -89,7 +89,7 @@ TEST_CASE("a run document reads back as it was saved", "[reporting][run_document
     ores::testing::scoped_database_helper h;
     const auto ctx = party_context(h);
     const auto definition = run_document_service_make_definition(h, ctx);
-    run_document_service runs(ctx);
+    run_document_service runs(ctx, ores::testing::system_analytic_parameters(ctx, h.db_user()));
     runs.save(definition, run_document_service_npv_run());
 
     const auto back = runs.get(definition);
@@ -123,7 +123,7 @@ TEST_CASE("a definition binds one risk report configuration",
     ores::testing::scoped_database_helper h;
     const auto ctx = party_context(h);
     const auto definition = run_document_service_make_definition(h, ctx);
-    run_document_service runs(ctx);
+    run_document_service runs(ctx, ores::testing::system_analytic_parameters(ctx, h.db_user()));
     runs.save(definition, run_document_service_npv_run());
     CHECK_THROWS_AS(runs.save(definition, run_document_service_npv_run()), std::invalid_argument);
 }
@@ -135,7 +135,7 @@ TEST_CASE("a parameter no definition describes is refused before anything is wri
     const auto definition = run_document_service_make_definition(h, ctx);
     auto doc = run_document_service_npv_run();
     doc.analytics[0].parameters.push_back({"noSuchParameter", "x", 2});
-    run_document_service runs(ctx);
+    run_document_service runs(ctx, ores::testing::system_analytic_parameters(ctx, h.db_user()));
     CHECK_THROWS_AS(runs.save(definition, doc), std::invalid_argument);
     CHECK_FALSE(runs.get(definition).has_value());
 }
@@ -145,7 +145,7 @@ TEST_CASE("a binding takes its owning component from the configuration type",
     ores::testing::scoped_database_helper h;
     const auto ctx = party_context(h);
     const auto definition = run_document_service_make_definition(h, ctx);
-    run_document_service runs(ctx);
+    run_document_service runs(ctx, ores::testing::system_analytic_parameters(ctx, h.db_user()));
     const auto c = runs.bind(definition, "curve_configuration", "test/curveconfig.xml");
     CHECK(c.owning_component == "ores.refdata");
 

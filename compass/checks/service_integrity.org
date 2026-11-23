@@ -30,8 +30,8 @@ more of the registry's services as a literal: the registry is their one source.
 A service is more than its code. The registry drives its systemd unit, its
 container image, its database role and grants, its IAM account and role, its
 expected-services row and its NATS certificate, and a service missing any of them
-builds, passes its tests and then fails in the fleet. =ores.orgmode.service= was
-added without a registry entry, without =src/CMakeLists.txt=, with the
+builds, passes its tests and then fails in the fleet. =ores.orgmode.service=,
+since removed, was added without a registry entry, without =src/CMakeLists.txt=, with the
 scaffold's application that never becomes ready, and without a certificate,
 because =nats_certs.py= kept its own list of the services. No single gate saw
 the service whole; this one does.

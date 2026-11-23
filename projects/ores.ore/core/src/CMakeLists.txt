@@ -65,11 +65,20 @@ target_link_libraries(${lib_target_name}
         ores.refdata.api.lib
         ores.reporting.api.lib
         ores.trading.api.lib
+        ores.database.lib
+        ores.nats.lib
+        ores.service.lib
     PRIVATE
+        ores.diff.lib
         ores.dq.api.lib
+        # compass:except(core_link_edges/forbidden_edge) expires=2027-05-18 approver=marco reason=accepted until the edge is removed
+        ores.history.core.lib
         ores.logging.lib
         ores.platform.lib
+        ores.security.lib
         ores.utility.lib
+        faker-cxx::faker-cxx
+        libfort::fort
         pugixml::pugixml
         Boost::boost)
 

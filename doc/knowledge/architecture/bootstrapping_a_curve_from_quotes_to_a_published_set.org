@@ -66,7 +66,7 @@ In the target state a pillar names the market series its quote comes from. The
 series is an observed quote series, an oresmd URI such as
 =oresmd://ir/USD?...instrument=ir_swap&quote=rate...=, and the pillar holds a soft
 reference to it. The decision is
-[[id:7AE57098-08D4-4D4A-83D6-918FE520B68E][A pillar names the market series it reads]]; the migration is
+[[id:7AE57098-08D4-4D4A-83D6-918FE520B68E][Market series identity in curve pillars]]; the migration is
 [[id:EAD9F02F-3B4B-495E-B37D-71BF766F7970][Name a curve pillar's market series]]. The identity of the
 input is deliberately not the identity of the output: the quote is observed and
 the curve point is inferred, and the two must remain distinguishable.
@@ -156,10 +156,10 @@ state is what makes a set authoritative, and the next section is that act.
 * The hand-off to publication
 
 The candidate becomes authoritative through the lifecycle every derived market
-object shares ([[id:186B44DD-51EA-45AA-971E-0C2D4D21A6DD][A derived market object is published through one lifecycle]]). The maker raises a publish naming the subject, the as-of and
+object shares ([[id:186B44DD-51EA-45AA-971E-0C2D4D21A6DD][The publication lifecycle of derived market objects]]). The maker raises a publish naming the subject, the as-of and
 the candidate's version; a second person decides under the kind's maker and
 checker permissions and the record's four-eyes rule, or a stated rule closes the
-request ([[id:71146F3F-B884-4E61-BA8B-A8A0731703C6][A request closes without a person only under a stated rule]]); the trader applies the approved request once, which stamps the
+request ([[id:71146F3F-B884-4E61-BA8B-A8A0731703C6][Rules for the automatic approval of requests]]); the trader applies the approved request once, which stamps the
 publisher and the instant, ends the set it replaces and sends the notice ([[id:86D8986F-5247-4138-85C7-F8899C029F24][The trader applies an approved publish, which supersedes the live set and tells its readers]]).
 The record is the publish record, and the set's state is published, superseded
 or withdrawn.
@@ -181,7 +181,7 @@ The first is the named series. The pillar names the market series it reads, the
 reader reads that series rather than composing its identity, and the synthetic
 feed publishes into series it names the same way. This is
 [[id:EAD9F02F-3B4B-495E-B37D-71BF766F7970][Name a curve pillar's market series]] and the decision in
-[[id:7AE57098-08D4-4D4A-83D6-918FE520B68E][A pillar names the market series it reads]].
+[[id:7AE57098-08D4-4D4A-83D6-918FE520B68E][Market series identity in curve pillars]].
 
 The second is the validation operation. The six checks move from the screen to a
 service operation, and the result is held against the blueprint's version, so a
@@ -224,7 +224,7 @@ object the rest of the system consumes.
 - [[id:CE99CD2A-B31F-4306-865F-CBC519FBC1B8][The oresmd datum identity]]
 - [[id:73A5FAA1-377C-45A6-999E-4AD4DE406F78][IR Curve Bootstrap Config]]
 - [[id:5DC8A225-A2FD-4ECC-8284-C1D333F0EB3A][IR Curve Bootstrap Pillar]]
-- [[id:7AE57098-08D4-4D4A-83D6-918FE520B68E][A pillar names the market series it reads]]
+- [[id:7AE57098-08D4-4D4A-83D6-918FE520B68E][Market series identity in curve pillars]]
 - [[id:EAD9F02F-3B4B-495E-B37D-71BF766F7970][Name a curve pillar's market series]]
 - [[id:FBD32402-C71F-4730-A3D2-70BA1D5F3868][Maintain the curve blueprints]]
 - [[id:62728AF9-01AD-4FBF-B022-83DCD64204A9][Check that a curve blueprint builds]]
@@ -246,4 +246,4 @@ object the rest of the system consumes.
 * See also
 
 - [[id:B74CEF18-B533-45A1-B65E-F7DF836988D6][Publishing derived market data]] — completes: the lifecycle that makes the candidate authoritative.
-- [[id:AB7A0BE5-7EB8-5B44-B98D-05E0CD58E51D][ORE Studio publishes FX forwards derived from published curves]] — completes: a consumer of the published set.
+- [[id:AB7A0BE5-7EB8-5B44-B98D-05E0CD58E51D][Derivation of FX forwards from published curves]] — completes: a consumer of the published set.

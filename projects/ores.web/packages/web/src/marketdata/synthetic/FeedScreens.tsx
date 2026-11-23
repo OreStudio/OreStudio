@@ -153,7 +153,10 @@ function FeedBody({
                 own={
                     <>
                         <FeedStatus running={running} />
-                        {mayRun && (
+                        {kind.heldByProvider === true && (
+                            <span className="text-sm text-ink-muted">{t(`${words}.held`)}</span>
+                        )}
+                        {mayRun && kind.heldByProvider !== true && (
                             <span className="flex gap-2">
                                 <Button
                                     size="sm"
@@ -186,7 +189,17 @@ function FeedBody({
                 </Notice>
             )}
             {bar}
-            {tab === 'calibration' && <FeedRunTab feed={feed} start={feed.start} />}
+            {tab === 'calibration' &&
+                (kind.calibration === undefined ? (
+                    <FeedRunTab feed={feed} start={feed.start} running={running} />
+                ) : (
+                    kind.calibration({
+                        feed,
+                        running,
+                        mayWrite: may.write,
+                        parts: parts.map((part) => part.rows),
+                    })
+                ))}
             {tab === 'details' && (
                 <RecordDetails specs={kind.fields} row={feed} extra={kind.extraDetails(feed, t)} />
             )}

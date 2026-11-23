@@ -1,0 +1,76 @@
+ORES Studio — ores.http and the BFF, asked the same questions
+=============================================================
+
+Date    2026-11-22
+Gateway http://localhost:20401, built from 633dd1617b
+BFF     http://localhost:20402, the same tree
+
+Both were asked the same requests, one after the other, with no session.
+
+1. HEAD /api/health
+   gateway  404
+   BFF      200
+
+2. HEAD /api/me/access (no session)
+   gateway  404
+   BFF      401
+
+3. GET /api/health
+   gateway  200  {"status":"ok"}
+   BFF      200  {"status":"ok"}
+
+4. GET /api/me/access (no session), headers
+   gateway  401
+            content-type: application/json
+            x-request-id: 6eeda1ef
+            no cache-control
+   BFF      401
+            content-type: application/json; charset=utf-8
+            x-request-id: 410200c9-7bef-4806-9cef-1f0972fe5d51
+            cache-control: private, no-store
+
+5. GET /api/me/access (a session, headers)
+   gateway  200
+            x-request-id: 190f022e
+            no cache-control
+   BFF      the same route, its own answer, cache-control: private, no-store
+
+6. GET /api/nope
+   gateway  404  {"error":"api/nope"}
+   BFF      404  {"code":"not-found","message":"Route GET:/api/nope not found"}
+
+7. DELETE /api/health
+   gateway  404  {"error":"Endpoint not found"}
+   BFF      404  {"code":"not-found","message":"Route DELETE:/api/health not found"}
+
+8. OPTIONS /api/session, Origin http://localhost:20401
+   gateway  204  Access-Control-Allow-Origin: http://localhost:20401
+                 Access-Control-Allow-Credentials: true
+                 Access-Control-Allow-Headers: Content-Type, Authorization, X-Ores-Request
+                 Access-Control-Allow-Methods: GET, POST, PUT, PATCH, DELETE, OPTIONS
+                 Access-Control-Expose-Headers: X-Request-Id, Content-Disposition
+                 Access-Control-Max-Age: 86400
+   BFF      the same shape
+
+9. OPTIONS /api/session, Origin http://evil.example
+   gateway  204, no Access-Control header at all
+   BFF      no Access-Control header either
+
+10. GET / after the bundle was rebuilt under the running gateway
+    gateway  200, index naming assets/index-nra1mBrk.js, that file 404
+    BFF      not asked; the BFF was restarted with its bundle
+
+11. Empty query on the message bus read, GET /api/operations/bus?
+    gateway  400 {"code":"invalid-request","message":"The message bus read takes a range of 15m, 1h or 6h."}
+    The sentence is the route's own, so the empty key no longer reaches the
+    unknown-member check. The capture that reported this is spent.
+
+12. Calendar year read, GET /api/refdata/calendars/HongKong/days?year=2026
+    gateway  200, 365 days, 2026-01-01 to 2026-12-31
+    The year is read whole, so the capture that reported a read stopping at the
+    first day the year passes is spent.
+
+13. Sign-in, POST /api/session
+    gateway  200, outcome active, a session cookie
+    The session door holds a verifier, so the capture that reported
+    "Authentication is not configured" is spent.

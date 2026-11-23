@@ -141,3 +141,10 @@ local gate's format check passes, and the full synthetic suite needs the
 environment's broker and is left to CI.
 
 *Shipped as* PR #4996, merge commit `348017898e`.
+
+The second deliverable, the check that refuses a config before provision, is
+not built here. Tracing the market data flow showed that the served set is the
+wrong base: it covers IR fixings only and every curve in the system, whatever
+the party subscribes to. The check moves to [[id:3A2A66B0-C8C1-4EB7-99ED-A3503D79DD66][Plan trades on the expected market data and report them]],
+which plans on the market data the party expects and reports each trade type in
+the provisioning report instead of refusing.

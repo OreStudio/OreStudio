@@ -111,6 +111,16 @@ export interface FeedKind {
     readonly tabs: readonly FeedTab[];
     /** The tab a new feed opens on, where the person goes on. */
     readonly afterAdd: string;
+    /**
+     * The feed runs while a simulated source of its provider holds it, so the page shows its
+     * state and offers no Start or Stop.
+     */
+    readonly heldByProvider?: boolean;
+    /**
+     * The Calibration tab, when the kind's calibration is another feed's: a surface reads its spot
+     * and its curves, and their own pages show how they start and what they were calibrated as.
+     */
+    readonly calibration?: (context: FeedTabContext) => ReactNode;
 }
 
 /** The feed's page, for the kind. */

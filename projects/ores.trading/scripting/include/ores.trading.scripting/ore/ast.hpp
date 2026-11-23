@@ -62,7 +62,7 @@ struct LocationInfo {
 std::string to_string(const LocationInfo& l);
 
 struct ASTNode {
-    ASTNode() {};
+    ASTNode(){};
     virtual ~ASTNode() {}
     ASTNode(const std::vector<ASTNodePtr>& args,
             const Size minArgs,
@@ -324,55 +324,55 @@ struct SequenceNode : public ASTNode {
 
 struct ConditionEqNode : public ASTNode {
     ConditionEqNode(const std::vector<ASTNodePtr>& args)
-        : ASTNode(args, 2, 2) {};
+        : ASTNode(args, 2, 2){};
     void accept(StAstVisitor&) override;
 };
 
 struct ConditionNeqNode : public ASTNode {
     ConditionNeqNode(const std::vector<ASTNodePtr>& args)
-        : ASTNode(args, 2, 2) {};
+        : ASTNode(args, 2, 2){};
     void accept(StAstVisitor&) override;
 };
 
 struct ConditionLtNode : public ASTNode {
     ConditionLtNode(const std::vector<ASTNodePtr>& args)
-        : ASTNode(args, 2, 2) {};
+        : ASTNode(args, 2, 2){};
     void accept(StAstVisitor&) override;
 };
 
 struct ConditionLeqNode : public ASTNode {
     ConditionLeqNode(const std::vector<ASTNodePtr>& args)
-        : ASTNode(args, 2, 2) {};
+        : ASTNode(args, 2, 2){};
     void accept(StAstVisitor&) override;
 };
 
 struct ConditionGtNode : public ASTNode {
     ConditionGtNode(const std::vector<ASTNodePtr>& args)
-        : ASTNode(args, 2, 2) {};
+        : ASTNode(args, 2, 2){};
     void accept(StAstVisitor&) override;
 };
 
 struct ConditionGeqNode : public ASTNode {
     ConditionGeqNode(const std::vector<ASTNodePtr>& args)
-        : ASTNode(args, 2, 2) {};
+        : ASTNode(args, 2, 2){};
     void accept(StAstVisitor&) override;
 };
 
 struct ConditionNotNode : public ASTNode {
     ConditionNotNode(const std::vector<ASTNodePtr>& args)
-        : ASTNode(args, 1, 1) {};
+        : ASTNode(args, 1, 1){};
     void accept(StAstVisitor&) override;
 };
 
 struct ConditionAndNode : public ASTNode {
     ConditionAndNode(const std::vector<ASTNodePtr>& args)
-        : ASTNode(args, 2, 2) {};
+        : ASTNode(args, 2, 2){};
     void accept(StAstVisitor&) override;
 };
 
 struct ConditionOrNode : public ASTNode {
     ConditionOrNode(const std::vector<ASTNodePtr>& args)
-        : ASTNode(args, 2, 2) {};
+        : ASTNode(args, 2, 2){};
     void accept(StAstVisitor&) override;
 };
 

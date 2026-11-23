@@ -37,6 +37,7 @@
 #include "ores.http/routes/analytics/analytics_routes.hpp"
 #include "ores.http/routes/assets/assets_routes.hpp"
 #include "ores.http/routes/compute/compute_routes.hpp"
+#include "ores.http/routes/iam/agent_key_exchange.hpp"
 #include "ores.http/routes/iam/auth_session_routes.hpp"
 #include "ores.http/routes/iam/bootstrap_screen_routes.hpp"
 #include "ores.http/routes/iam/browser_session_routes.hpp"
@@ -236,6 +237,12 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
     // A browser session outlives its first token: the gateway renews it before it expires.
     server.set_token_renewer(http::routes::iam::session_renewal::renewer(
         service_nats, [&server] { return server.verifier(); }));
+    // An LLM agent sends its key as a bearer value; the gateway exchanges it
+    // with IAM for a token naming the person and the agent, and keeps the token
+    // until a grant or key change clears it.
+    auto agent_keys = std::make_shared<http::routes::iam::agent_key_cache>();
+    server.set_bearer_exchanger(
+        http::routes::iam::agent_key_exchange::exchanger(service_nats, agent_keys));
 
     /*
      * The door finds the verifier when a sign-in needs it. The runner installs the
@@ -285,8 +292,8 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
      */
     if (!cfg.web_dir.empty()) {
         if (std::filesystem::is_directory(cfg.web_dir)) {
-            routes::web_bundle_routes bundle(cfg.web_dir);
-            bundle.register_routes(router, registry);
+            routes::web_bundle_routes::register_routes(
+                std::make_shared<routes::web_bundle_routes>(cfg.web_dir), router, registry);
         } else {
             ORES_LOG_SEV(lg(), warn)
                 << "No browser bundle at " << cfg.web_dir << "; the server serves no application";
@@ -304,7 +311,7 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
         io_ctx,
         nats,
         service_name,
-        [&http_base_url, &server, feed](auto& n, auto verifier) {
+        [&http_base_url, &server, feed, agent_keys](auto& n, auto verifier) {
             if (!verifier)
                 throw std::runtime_error(
                     "JWT verifier is required to register HTTP server handlers.");
@@ -312,8 +319,16 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
             // because the callers hold the RS256 session tokens IAM signs.
             server.set_verifier(
                 std::make_shared<ores::security::jwt::jwt_authenticator>(*verifier));
-            return ores::http::server::messaging::registrar::register_handlers(
+            auto subs = ores::http::server::messaging::registrar::register_handlers(
                 n, std::move(*verifier), http_base_url, feed);
+            // A revoked grant or key must stop its agent at the next call, so
+            // every change to either clears the agent token cache.
+            for (const auto* subject :
+                 {"iam.v1.events.agent_grants.>", "iam.v1.events.agent_keys.>"})
+                subs.push_back(n.subscribe(std::string(subject), [agent_keys](ores::nats::message) {
+                    agent_keys->clear();
+                }));
+            return subs;
         },
         [&, ticker](asio::io_context& ioc) {
             auto hb = std::make_shared<ores::service::service::heartbeat_publisher>(

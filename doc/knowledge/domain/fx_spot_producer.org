@@ -97,6 +97,10 @@ seed a running feed used.
 
 =publish_count()= counts ticks published.
 
+A spot feed publishes quotes and no fixings. The fixings of its pair at each
+supported cut are produced by a fixing generator that reads the run's spot at
+the cut's instant; see [[id:F24FA489-790A-4065-B8E1-DCC141595356][Synthetic generation of fixings]].
+
 * See also
 
 

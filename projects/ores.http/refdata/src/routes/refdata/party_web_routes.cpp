@@ -125,6 +125,48 @@ std::string party_web_routes::catalogue_entry(const http_request& req) {
            R"json(,"search":true,"sortable":["short_code","full_name","party_category","party_type","business_center_code","status"],"events":{"component":"refdata","entity":"parties"},"writePermission":"refdata::parties:write","deletePermission":"refdata::parties:delete"})json";
 }
 
+/// The order, the search and the filters a query states, on a page request.
+///
+/// A whole read takes the same query a paged one takes: a screen that searches a
+/// list it holds whole reads the rows that match, not the list.
+messaging::list_parties_request party_web_query(messaging::list_parties_request msg,
+                                                const http_request& req) {
+    const std::string page_sentence = "A page names an offset and a limit of 1 to 1000.";
+    const auto sort = req.get_query_param("sort");
+    if (!sort.empty()) {
+        constexpr std::string_view sortable[] = {"short_code",
+                                                 "full_name",
+                                                 "party_category",
+                                                 "party_type",
+                                                 "business_center_code",
+                                                 "status",
+                                                 ""};
+        if (std::find(std::begin(sortable), std::end(sortable) - 1, sort) == std::end(sortable) - 1)
+            rr::invalid("parties cannot be ordered by " + sort + ".");
+        msg.order.field = sort;
+    }
+    const auto descending = req.get_query_param("descending");
+    if (!descending.empty() && descending != "true" && descending != "false")
+        rr::invalid(page_sentence);
+    msg.order.descending = descending == "true";
+
+    const auto search = req.get_query_param("search");
+    if (!search.empty()) {
+        msg.filter = messaging::parties_filter{};
+        msg.filter->search = search;
+    }
+
+    for (const auto& [name, value] : req.query_params) {
+        if (!name.starts_with("f."))
+            continue;
+        const auto member = name.substr(2);
+        constexpr std::string_view filters[] = {""};
+        if (std::find(std::begin(filters), std::end(filters) - 1, member) == std::end(filters) - 1)
+            rr::invalid("parties cannot be filtered by " + member + ".");
+    }
+    return msg;
+}
+
 boost::asio::awaitable<http_response> party_web_routes::handle_list(const http_request& req,
                                                                     nats_client& session) {
     try {
@@ -135,7 +177,9 @@ boost::asio::awaitable<http_response> party_web_routes::handle_list(const http_r
             // a short one once it holds the total.
             for (std::uint32_t offset = 0;;) {
                 const auto reply = ores::http::forwarding::forward(
-                    req, session, party_web_page(offset, party_web_page_size));
+                    req,
+                    session,
+                    party_web_query(party_web_page(offset, party_web_page_size), req));
                 rr::require_ok(reply.result);
                 const auto& got = reply.parties;
                 rows.insert(rows.end(), got.begin(), got.end());
@@ -159,41 +203,7 @@ boost::asio::awaitable<http_response> party_web_routes::handle_list(const http_r
         if (limit < 1 || limit > 1000)
             rr::invalid(page_sentence);
 
-        auto msg = party_web_page(offset, limit);
-        const auto sort = req.get_query_param("sort");
-        if (!sort.empty()) {
-            constexpr std::string_view sortable[] = {"short_code",
-                                                     "full_name",
-                                                     "party_category",
-                                                     "party_type",
-                                                     "business_center_code",
-                                                     "status",
-                                                     ""};
-            if (std::find(std::begin(sortable), std::end(sortable) - 1, sort) ==
-                std::end(sortable) - 1)
-                rr::invalid("parties cannot be ordered by " + sort + ".");
-            msg.order.field = sort;
-        }
-        const auto descending = req.get_query_param("descending");
-        if (!descending.empty() && descending != "true" && descending != "false")
-            rr::invalid(page_sentence);
-        msg.order.descending = descending == "true";
-
-        const auto search = req.get_query_param("search");
-        if (!search.empty()) {
-            msg.filter = messaging::parties_filter{};
-            msg.filter->search = search;
-        }
-
-        for (const auto& [name, value] : req.query_params) {
-            if (!name.starts_with("f."))
-                continue;
-            const auto member = name.substr(2);
-            constexpr std::string_view filters[] = {""};
-            if (std::find(std::begin(filters), std::end(filters) - 1, member) ==
-                std::end(filters) - 1)
-                rr::invalid("parties cannot be filtered by " + member + ".");
-        }
+        const auto msg = party_web_query(party_web_page(offset, limit), req);
 
         const auto reply = ores::http::forwarding::forward(req, session, msg);
         rr::require_ok(reply.result);

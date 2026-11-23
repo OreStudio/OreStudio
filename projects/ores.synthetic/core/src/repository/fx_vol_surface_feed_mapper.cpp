@@ -68,6 +68,8 @@ domain::fx_vol_surface_feed fx_vol_surface_feed_mapper::map(const fx_vol_surface
     r.segment_correlation = v.segment_correlation;
     r.start_skew = v.start_skew;
     r.start_curvature = v.start_curvature;
+    r.spot_oresmd_uri = v.spot_oresmd_uri;
+    r.spot_provider_code = v.spot_provider_code;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -108,6 +110,8 @@ fx_vol_surface_feed_entity fx_vol_surface_feed_mapper::map(const domain::fx_vol_
     r.segment_correlation = v.segment_correlation;
     r.start_skew = v.start_skew;
     r.start_curvature = v.start_curvature;
+    r.spot_oresmd_uri = v.spot_oresmd_uri;
+    r.spot_provider_code = v.spot_provider_code;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

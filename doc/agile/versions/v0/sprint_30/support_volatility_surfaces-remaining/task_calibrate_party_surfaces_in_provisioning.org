@@ -50,7 +50,7 @@ A step kind =publish_party_surfaces=, after =publish_party_forwards= and =give_p
 - Otherwise the step calibrates at the present instant. A calibration the service refuses fails the step, named with its party.
 - A surface with arbitrage, a fit that did not converge or a pillar beyond the tolerance is held back and named. A decider would weigh it, and provisioning has none.
 - Otherwise the step raises the publish. Under the tenant's auto-approval it closes and publishes at once. A raise that is not published fails the step.
-- The surface publish service refuses to raise a calibration with arbitrage under any rule, as [[id:24950B8E-7FC4-4F0A-8AA4-9603B344F970][A candidate is computed and stored before a publish is raised]] states. Until now a raise a rule closed would have published it.
+- The surface publish service refuses to raise a calibration with arbitrage under any rule, as [[id:24950B8E-7FC4-4F0A-8AA4-9603B344F970][Candidate computation and storage before publication]] states. Until now a raise a rule closed would have published it.
 
 * Measurements
 

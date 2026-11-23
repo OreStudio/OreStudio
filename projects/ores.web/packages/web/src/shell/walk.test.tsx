@@ -170,7 +170,9 @@ describe('walking every screen', () => {
         });
     }
 
-    for (const entry of MENU.filter((item) => item.to !== '/' && item.to !== '/tenants')) {
+    for (const entry of MENU.filter(
+        (item) => item.to !== '/' && item.to !== '/tenants' && item.external !== true,
+    )) {
         it(`gives the page of ${entry.to} the trail Home, ${en(entry.nameKey)}`, () => {
             expect(trailAt(entry.to)).toBe(trail(en(entry.nameKey)));
         });

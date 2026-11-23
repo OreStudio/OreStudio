@@ -191,6 +191,20 @@ struct fx_vol_surface_feed final {
     double start_curvature{};
 
     /**
+     * @brief The oresmd quote URI of the spot this surface reads and correlates with, such as
+     * "oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD". A URI names what is
+     * observed and not who observes it, so it names one spot only with spot_provider_code: the pair
+     * is the key a market series has, and two providers that quote one spot keep two series.
+     */
+    std::string spot_oresmd_uri;
+
+    /**
+     * @brief The provider of the spot this surface reads, with spot_oresmd_uri: the spot feed whose
+     * collection is this provider's and whose URI is that one.
+     */
+    std::string spot_provider_code;
+
+    /**
      * @brief Username of the person who last modified this FX volatility surface feed.
      */
     std::string modified_by;

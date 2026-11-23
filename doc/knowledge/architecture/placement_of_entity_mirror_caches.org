@@ -1,0 +1,106 @@
+:PROPERTIES:
+:ID: 723B0112-4DDC-4C03-924E-2C90C2F19B5C
+:END:
+#+title: Placement of entity-mirror caches
+#+description: Placement rule for the nats-event-cache facet's cached_by target: the entity's own component when there is exactly one consumer, a shared thin *.client component when multiple UI layers need the same cached entity.
+#+type: knowledge
+#+level: cross
+#+filetags: :architecture:caching:nats:codegen:
+#+created: 2026-07-15
+#+updated: 2026-07-15
+
+* Summary
+
+An entity-mirror cache (=partitioned_cache<PartitionKey,Key,Value>=
++ the =nats-event-cache= codegen facet, see
+[[id:AA4A5326-FA02-42D7-ACE2-9B27B20B19C7][the story that introduced
+them]]) is declared with =cached_by: <consumer>= on the *entity's
+own* model, never on a competing model authored inside the consumer
+-- the single source of truth for "who caches this entity" stays
+with the entity, like every other fact about it. Where =<consumer>=
+should point depends on how many things actually need the cached
+data: the entity's own producer component never needs to cache
+itself (it has direct DB access), a single specific consumer gets
+the cache in its own component (e.g. =party_cache= lives in
+=ores.iam.core=, because IAM's authorization logic is party's only
+consumer), and when *multiple* UI-layer components need the same
+cached entity, the cache belongs in a shared thin, DB-free
+=<domain>.client= component (mirroring =ores.marketdata.client='s
+role) rather than being duplicated per UI or arbitrarily parked in
+whichever UI happened to need it first.
+
+* Detail
+
+** The three placement cases
+
+1. *Producer caching itself* -- never. =ores.refdata= (or whichever
+   component owns the entity) has direct DB access; a NATS-fed
+   in-process mirror of its own data buys it nothing.
+2. *Single specific consumer* -- the consumer's own component.
+   =party_cache= lives in =ores.iam.core=, not in =ores.refdata=,
+   because party data is consumed specifically for IAM's own
+   authorization/visibility logic -- a concern that belongs to IAM,
+   not to refdata or to any UI layer.
+3. *Multiple UI-layer consumers* -- a shared thin =<domain>.client=
+   component, created if one doesn't already exist. If a cache were
+   placed inside e.g. =ores.shell= because that's the first UI that
+   needed it, a second UI (=ores.web=, ...) needing the
+   same cached entity would either duplicate the cache class and its
+   NATS wiring, or awkwardly depend on the first UI's component for
+   unrelated code. =ores.marketdata.client= already exists for this
+   exact reason on the CRM side (NATS-only, DB-free, shared by every
+   UI that talks to =ores.marketdata=); the refdata equivalent
+   (=ores.refdata.client=) follows the same shape. This isn't a new
+   naming convention invented for caching specifically -- =client= is
+   already a documented specialist sub-component role in
+   =projects/modeling/component_architecture.org='s sub-component
+   catalogue ("provides the consumer-facing API without coupling
+   consumers to core internals"), previously only instantiated as
+   =ores.iam.client=; a cache is one concrete shape that role can
+   take, not a reason to invent a separate =.cache= suffix.
+
+** Reading a partition: inside its own tenant
+
+A partition is one tenant's copy of the producer's rows, so the cache reads
+it inside that tenant. Row-level security then returns exactly the rows that
+tenant may see, and the cache files every row it reads without a tenant check.
+The consumer's own identity sees no tenant data, by the rule in
+[[id:4B5B6195-F542-4A88-B5B3-9A4561554406][Client Credentials]], so a cache must
+never load with it, and no policy may be widened to let it.
+
+The generated cache takes a =partition_token_provider=: a callable from the
+partition's tenant id to a token that acts inside that tenant. The provider is
+a =partition_token_cache=, which is
+[[id:9FBA60F9-F0D4-425D-9BED-A34601CBACD6][Cache-Aside]] over a
+[[id:96460BBE-D7BF-4538-B620-AC5FD9F0C9FE][Token Exchange]] minter: one token per
+tenant, reused until shortly before it expires. A reply whose =X-Error= is
+=token_expired= gets one renewed token and one retry.
+
+=party_cache= in IAM is the first use. IAM is the issuer, so its minter is
+in-process: =tenant_session_service::read_inside= issues a token for the
+tenant, its system party and the parties that party sees, with IAM's service
+account as the subject, =acting_from_tenant_id= naming the system tenant, only
+=refdata::parties:read=, and a lifetime of five minutes. These are the claims a
+system administrator gets on entering a tenant, narrowed to the read. A consumer
+outside IAM needs an exchange that IAM serves on the bus; none exists yet.
+
+** Targeting a non-=.core= subcomponent: =cached_by='s dotted form
+
+The facet's generated output path is
+=projects/ores.{cache_component}/{cache_subcomponent}/include/ores.{cache_component}.{cache_subcomponent}/service/cache/{entity}_cache.hpp=
+(see the [[id:D30C3CD0-FFF0-48D8-A7B1-2CBA35207884][ores.cpp.nats-event-cache facet]]). =cache_subcomponent= defaults to =core= (case 2 above:
+=cached_by: iam= → =ores.iam.core=, every consumer's shape until
+=ores.refdata.client= existed) but is derived from =cached_by= itself
+whenever it carries a dot -- =cached_by: refdata.client= splits into
+=cache_component: refdata=, =cache_subcomponent: client=, the same
+="component.subcomponent"= convention =component_include= already
+uses elsewhere. No separate model flag: both are purely derived, like
+every other =_upper=/=_dir= variable the facet exposes.
+
+* See also
+
+- [[id:F1BC2C10-B23B-4979-9692-8FA7C29319CB][Data storage]] — the structure note that orders this cluster, and where to read this page in it.
+- [[id:4682A7D5-04FC-494B-BD7C-6816500EB3C9][Message Queue]] — the structure note that orders this cluster, and where to read this page in it.
+- [[id:AA4A5326-FA02-42D7-ACE2-9B27B20B19C7][Generic entity-mirror cache + codegen facet]] -- the story that
+  built =partitioned_cache= and the =nats-event-cache= facet, with
+  =party_cache= as the worked single-consumer exemplar.

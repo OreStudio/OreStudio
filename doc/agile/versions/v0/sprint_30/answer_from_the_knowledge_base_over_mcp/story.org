@@ -20,7 +20,7 @@ finds ORE's own pages on volatility, answers from them, and gives a link to each
 page it used, which opens as a page of ores.web.
 
 This joins two stories and starts when both are done:
-[[id:05FE6068-3CBD-4B93-B6AE-47A5689F1FCB][Search the knowledge base from ores.web]] and
+[[id:7764434E-173B-4006-8A44-8AC453AAC14B][Read the documents from compass]] and
 [[id:008127D7-B897-4CF7-854B-6DDFB89AC7F4][Serve ORE's API to LLM agents over MCP]]. The analysis is in
 [[id:3237D7CF-8EBA-4B9B-9B54-7135A4A7AA4A][How the assistant answers from the knowledge base]].
 
@@ -31,7 +31,7 @@ This joins two stories and starts when both are done:
 | State         | BACKLOG                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
 | Now           | Not yet started.                       |
-| Waiting on    | The knowledge search and MCP stories. |
+| Waiting on    | Read the documents from compass, and the MCP story. |
 | Next          | Write its tasks when the two stories it joins are done. |
 | Last touched  | 2026-11-21                               |
 

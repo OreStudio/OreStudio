@@ -31,6 +31,11 @@
 #include "ores.http/routes/reporting/ore_value_set_rows.hpp"
 #include "ores.http/routes/reporting/reporting_configuration_rows.hpp"
 #include "ores.logging/logger.hpp"
+#include "ores.ore.api/messaging/ore_parameter_protocol.hpp"
+#include "ores.ore.api/messaging/ore_parameter_setting_value_set_protocol.hpp"
+#include "ores.ore.api/messaging/ore_parameter_value_set_catalogue_protocol.hpp"
+#include "ores.ore.api/messaging/ore_parameter_value_set_protocol.hpp"
+#include "ores.ore.api/messaging/ore_parameter_value_set_value_protocol.hpp"
 #include "ores.refdata.api/messaging/currency_protocol.hpp"
 #include "ores.refdata.api/messaging/tenor_protocol.hpp"
 #include "ores.reporting.api/messaging/engine_settings_building_protocol.hpp"
@@ -38,11 +43,6 @@
 #include "ores.reporting.api/messaging/engine_settings_fixings_protocol.hpp"
 #include "ores.reporting.api/messaging/engine_settings_proposal_operations_protocol.hpp"
 #include "ores.reporting.api/messaging/engine_settings_protocol.hpp"
-#include "ores.reporting.api/messaging/ore_parameter_protocol.hpp"
-#include "ores.reporting.api/messaging/ore_parameter_setting_value_set_protocol.hpp"
-#include "ores.reporting.api/messaging/ore_parameter_value_set_catalogue_protocol.hpp"
-#include "ores.reporting.api/messaging/ore_parameter_value_set_protocol.hpp"
-#include "ores.reporting.api/messaging/ore_parameter_value_set_value_protocol.hpp"
 #include "ores.utility/codec/json_codec.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/random_generator.hpp>
@@ -64,6 +64,7 @@ namespace json = ores::utility::codec::json;
 namespace rr = ores::http::net::record_routes;
 namespace forwarding = ores::http::forwarding;
 namespace reporting_messaging = ores::reporting::messaging;
+namespace ore_messaging = ores::ore::messaging;
 namespace refdata_messaging = ores::refdata::messaging;
 namespace analytics_messaging = ores::analytics::messaging;
 
@@ -94,11 +95,10 @@ constexpr std::string_view setup_scope_code = "Setup";
 /// One setting with what it means and which values it accepts.
 std::string setting_json_of(const engine_setting_row& setting,
                             const value_fields& fields,
-                            const ores::reporting::domain::ore_parameter* documented) {
-    const auto of_parameter =
-        [documented](std::string ores::reporting::domain::ore_parameter::*field) {
-            return documented == nullptr ? std::string() : documented->*field;
-        };
+                            const ores::ore::domain::ore_parameter* documented) {
+    const auto of_parameter = [documented](std::string ores::ore::domain::ore_parameter::* field) {
+        return documented == nullptr ? std::string() : documented->*field;
+    };
     auto members = std::vector<std::string>{
         member("column", json::write(setting.column)),
         member("ore", json::write(setting.ore)),
@@ -107,25 +107,22 @@ std::string setting_json_of(const engine_setting_row& setting,
     members.insert(members.end(), values.begin(), values.end());
     members.push_back(member("documented", documented != nullptr ? "true" : "false"));
     members.push_back(
-        member("label", json::write(of_parameter(&ores::reporting::domain::ore_parameter::label))));
+        member("label", json::write(of_parameter(&ores::ore::domain::ore_parameter::label))));
     members.push_back(
-        member("help", json::write(of_parameter(&ores::reporting::domain::ore_parameter::help))));
-    members.push_back(
-        member("description",
-               json::write(of_parameter(&ores::reporting::domain::ore_parameter::description))));
-    members.push_back(
-        member("defaultText",
-               json::write(of_parameter(&ores::reporting::domain::ore_parameter::default_text))));
+        member("help", json::write(of_parameter(&ores::ore::domain::ore_parameter::help))));
     members.push_back(member(
-        "format", json::write(of_parameter(&ores::reporting::domain::ore_parameter::format))));
+        "description", json::write(of_parameter(&ores::ore::domain::ore_parameter::description))));
+    members.push_back(member(
+        "defaultText", json::write(of_parameter(&ores::ore::domain::ore_parameter::default_text))));
+    members.push_back(
+        member("format", json::write(of_parameter(&ores::ore::domain::ore_parameter::format))));
     members.push_back(
         member("introducedIn",
-               json::write(of_parameter(&ores::reporting::domain::ore_parameter::introduced_in))));
+               json::write(of_parameter(&ores::ore::domain::ore_parameter::introduced_in))));
+    members.push_back(member(
+        "removedIn", json::write(of_parameter(&ores::ore::domain::ore_parameter::removed_in))));
     members.push_back(
-        member("removedIn",
-               json::write(of_parameter(&ores::reporting::domain::ore_parameter::removed_in))));
-    members.push_back(
-        member("xpath", json::write(of_parameter(&ores::reporting::domain::ore_parameter::xpath))));
+        member("xpath", json::write(of_parameter(&ores::ore::domain::ore_parameter::xpath))));
     return object(members);
 }
 
@@ -135,9 +132,9 @@ std::string documentation_of(const http_request& req, nats_client& session) {
     const auto parameters =
         forwarding::forward_all(req,
                                 session,
-                                reporting_messaging::list_ore_parameters_request{},
-                                &reporting_messaging::list_ore_parameters_response::parameters);
-    std::map<std::string, const ores::reporting::domain::ore_parameter*> documented;
+                                ore_messaging::list_ore_parameters_request{},
+                                &ore_messaging::list_ore_parameters_response::parameters);
+    std::map<std::string, const ores::ore::domain::ore_parameter*> documented;
     for (const auto& parameter : parameters) {
         if (parameter.schema_name == ore_schema_code && parameter.scope == setup_scope_code)
             documented.emplace(parameter.name, &parameter);
@@ -357,7 +354,7 @@ void engine_settings_routes::register_documentation_route(
             .tags({"reporting"})
             .auth_required()
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
-                co_return guarded<reporting_messaging::list_ore_parameters_request>([&] {
+                co_return guarded<ore_messaging::list_ore_parameters_request>([&] {
                     rr::refuse_unknown_params(req, {});
                     try {
                         return http_response::json(documentation_of(req, session));

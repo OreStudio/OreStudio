@@ -24,8 +24,8 @@
 #include "ores.http.api/net/record_routes.hpp"
 #include "ores.http.nats/forwarding.hpp"
 #include "ores.logging/logger.hpp"
-#include "ores.reporting.api/messaging/ore_file_protocol.hpp"
-#include "ores.reporting.api/messaging/ore_file_version_protocol.hpp"
+#include "ores.ore.api/messaging/ore_file_protocol.hpp"
+#include "ores.ore.api/messaging/ore_file_version_protocol.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -45,6 +45,7 @@ namespace {
 namespace forwarding = ores::http::forwarding;
 namespace rr = ores::http::net::record_routes;
 namespace reporting_messaging = ores::reporting::messaging;
+namespace ore_messaging = ores::ore::messaging;
 
 using ores::http::domain::http_request;
 using ores::http::domain::http_response;
@@ -120,12 +121,12 @@ std::map<std::string, std::string> contents_of(const http_request& req,
                                                nats_client& session,
                                                const std::string& version,
                                                const std::map<std::string, std::string>& name_of) {
-    reporting_messaging::list_ore_file_versions_request ask;
+    ore_messaging::list_ore_file_versions_request ask;
     ask.filter.emplace();
     ask.filter->engine_version = version;
     std::map<std::string, std::string> contents;
     for (const auto& row : forwarding::forward_all(
-             req, session, ask, &reporting_messaging::list_ore_file_versions_response::versions)) {
+             req, session, ask, &ore_messaging::list_ore_file_versions_response::versions)) {
         const auto name = name_of.find(row.ore_file_code);
         if (name != name_of.end())
             contents[name->second] = row.content;
@@ -212,7 +213,7 @@ void ore_schema_zip::register_routes(
                          "a document.")
             .query_param("version", "string", "", true, "The engine version whose copies to read")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
-                co_return guarded<reporting_messaging::list_ore_files_request>([&] {
+                co_return guarded<ore_messaging::list_ore_files_request>([&] {
                     rr::refuse_unknown_params(req, {"version"});
                     const auto code = req.get_path_param("code");
                     const auto version = req.get_query_param("version");
@@ -222,10 +223,10 @@ void ore_schema_zip::register_routes(
                     const auto catalogue = forwarding::forward_all(
                         req,
                         session,
-                        reporting_messaging::list_ore_files_request{},
-                        &reporting_messaging::list_ore_files_response::files);
+                        ore_messaging::list_ore_files_request{},
+                        &ore_messaging::list_ore_files_response::files);
                     std::map<std::string, std::string> name_of;
-                    const ores::reporting::domain::ore_file* schema = nullptr;
+                    const ores::ore::domain::ore_file* schema = nullptr;
                     for (const auto& file : catalogue) {
                         name_of[file.code] = file.typical_filename;
                         if (file.code == code && file.format == "xsd")

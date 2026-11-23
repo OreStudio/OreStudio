@@ -20,10 +20,10 @@
 #include "ores.http.core/routes/ore_value_set_tables.hpp"
 #include "ores.http.api/net/record_routes.hpp"
 #include "ores.http.nats/forwarding.hpp"
-#include "ores.reporting.api/messaging/ore_parameter_setting_value_set_protocol.hpp"
-#include "ores.reporting.api/messaging/ore_parameter_value_set_catalogue_protocol.hpp"
-#include "ores.reporting.api/messaging/ore_parameter_value_set_protocol.hpp"
-#include "ores.reporting.api/messaging/ore_parameter_value_set_value_protocol.hpp"
+#include "ores.ore.api/messaging/ore_parameter_setting_value_set_protocol.hpp"
+#include "ores.ore.api/messaging/ore_parameter_value_set_catalogue_protocol.hpp"
+#include "ores.ore.api/messaging/ore_parameter_value_set_protocol.hpp"
+#include "ores.ore.api/messaging/ore_parameter_value_set_value_protocol.hpp"
 #include "ores.utility/codec/json_codec.hpp"
 #include <string>
 #include <vector>
@@ -33,7 +33,7 @@ namespace ores::http::routes {
 namespace {
 
 namespace forwarding = ores::http::forwarding;
-namespace reporting_messaging = ores::reporting::messaging;
+namespace ore_messaging = ores::ore::messaging;
 namespace json = ores::utility::codec::json;
 
 using ores::http::domain::http_request;
@@ -43,18 +43,18 @@ using ores::nats::service::nats_client;
 
 value_set_tables read_value_set_tables(const http_request& req, nats_client& session) {
     value_set_tables tables;
-    for (const auto& set : forwarding::forward_all(
-             req,
-             session,
-             reporting_messaging::list_ore_parameter_value_sets_request{},
-             &reporting_messaging::list_ore_parameter_value_sets_response::sets))
+    for (const auto& set :
+         forwarding::forward_all(req,
+                                 session,
+                                 ore_messaging::list_ore_parameter_value_sets_request{},
+                                 &ore_messaging::list_ore_parameter_value_sets_response::sets))
         tables.sets.push_back(
             {set.code, set.source_kind, set.catalogue_code, set.minimum, set.maximum, set.pattern});
     for (const auto& value : forwarding::forward_all(
              req,
              session,
-             reporting_messaging::list_ore_parameter_value_set_values_request{},
-             &reporting_messaging::list_ore_parameter_value_set_values_response::values))
+             ore_messaging::list_ore_parameter_value_set_values_request{},
+             &ore_messaging::list_ore_parameter_value_set_values_response::values))
         tables.values.push_back({value.value_set_code,
                                  value.value,
                                  value.label,
@@ -63,15 +63,14 @@ value_set_tables read_value_set_tables(const http_request& req, nats_client& ses
     for (const auto& catalogue : forwarding::forward_all(
              req,
              session,
-             reporting_messaging::list_ore_parameter_value_set_catalogues_request{},
-             &reporting_messaging::list_ore_parameter_value_set_catalogues_response::catalogues))
+             ore_messaging::list_ore_parameter_value_set_catalogues_request{},
+             &ore_messaging::list_ore_parameter_value_set_catalogues_response::catalogues))
         tables.catalogues.push_back({catalogue.code, catalogue.relation});
     for (const auto& link : forwarding::forward_all(
              req,
              session,
-             reporting_messaging::list_ore_parameter_setting_value_sets_request{},
-             &reporting_messaging::list_ore_parameter_setting_value_sets_response::
-                 setting_value_sets))
+             ore_messaging::list_ore_parameter_setting_value_sets_request{},
+             &ore_messaging::list_ore_parameter_setting_value_sets_response::setting_value_sets))
         tables.links.push_back({link.scope, link.name, link.value_set_code});
     return tables;
 }

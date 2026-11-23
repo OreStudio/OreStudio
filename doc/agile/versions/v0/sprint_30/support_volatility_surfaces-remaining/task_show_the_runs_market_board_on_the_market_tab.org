@@ -22,7 +22,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 A person can see what the run's market holds while it runs. For each currency the board carries, its spot date and its dated discount factors; for each pair, its spot, and when each was last published. That curve is the one every synthetic quote is priced off and every surface is struck against, and no screen shows it -- by design it is not published market data, so the board is the only place it exists.
 
-The board is [[id:DDF8585F-75EE-4190-B20B-8A913DC1F883][built in its own task]]; the design it serves is [[id:675E89FC-B5AA-4250-8B86-78062F0F22BC][The forward a synthetic surface is struck against]].
+The board is [[id:DDF8585F-75EE-4190-B20B-8A913DC1F883][built in its own task]]; the design it serves is [[id:675E89FC-B5AA-4250-8B86-78062F0F22BC][Forwards for synthetic volatility surfaces]].
 
 * Status
 

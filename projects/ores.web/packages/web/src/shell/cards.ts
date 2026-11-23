@@ -591,6 +591,8 @@ export interface FolderDef {
     readonly to: string;
     readonly bodyKey: string;
     readonly icon: IconName;
+    /** Whether the card opens a page of the server rather than a screen of this one. */
+    readonly external?: boolean;
 }
 
 export const FOLDERS: readonly FolderDef[] = [
@@ -602,6 +604,7 @@ export const FOLDERS: readonly FolderDef[] = [
     { to: PATHS.operations, bodyKey: 'operations.hub.description', icon: 'server' },
     { to: PATHS.reporting, bodyKey: 'reporting.area.lead', icon: 'chart' },
     { to: '/development', bodyKey: 'development.lead', icon: 'apps' },
+    { to: '/swagger', bodyKey: 'shell.api.lead', icon: 'server', external: true },
     { to: '/tenants', bodyKey: 'home.system.tenantsLead', icon: 'party' },
 ];
 

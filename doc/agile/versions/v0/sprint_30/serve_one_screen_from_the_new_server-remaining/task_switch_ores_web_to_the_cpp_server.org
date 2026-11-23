@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/switch-ores-web-to-the-cpp-server
+#+pr: 5027
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
 #+updated: 2026-11-09
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ Move the one switch that sends the requests of ores.web to the C++ server, and t
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-09                               |
+| Now          | Nothing. |
+| Waiting on   | Nothing. The fleet starts, and the full build is green. |
+| Next         | Nothing. |
+| Last touched | 2026-11-22                               |
 
 * Acceptance
 
@@ -45,9 +45,38 @@ Move the one switch that sends the requests of ores.web to the C++ server, and t
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The switch already exists and is one variable. =baseForScreen= in
+=projects/ores.web/packages/web/src/api/servers.ts= sends a screen's requests to
+the prefix =/cpp= when the screen is named in =VITE_ORE_CPP_SCREENS=, and the
+proxy in front of a deployment sends =/cpp= to =ores.http= and =/api= to the BFF.
+So this task is: name every screen in that variable, and prove the browser works
+against the gateway.
+
+What stood in the way was the inventory's own count. Of the BFF's 334 routes, 322
+are now paired with a route =ores.http= answers and 12 are not:
+
+| The gap | Routes | What this task does |
+|---------+--------+---------------------|
+| the agile and QA file-backed routes | 12 | [[id:F8172A06-6927-4085-9901-B5F62A58A6EC][Serve the doc-backed agile and QA routes]]: the earlier decision to leave them out was wrong, because a QA run writes its outcomes and screenshots into the scenario docs |
+| the classifications | 6 | done: ores.http answers one generated route per list at the address the screen calls, so the pairing names a family of 28 routes, and the order it lists the rows in is the screen's |
+| the market screens | 4 | done: curve analytics, the FX montage, instruments and the rate ladder are paired and proved on a live gateway |
+| the quotes screens | 4 | done: the list, its feeds, its history and the vols-by-delta fit are paired and proved on a live gateway |
+| the identity shape fields | 2 | done: the joined read the oresmd editor marks a URL's fields from is paired |
+| the authorisation queue | 1 | done: the requests a decider may act on with each deal as it stands now, paired and proved on a live gateway |
+
+A screen moves only when every route it calls is answered, so the flag cannot be
+set for a screen whose routes are missing: the browser would answer 404 where it
+answered a page, which is worse than the two-server deployment it has today.
+Every route but the twelve doc-backed ones is now served. Those wait for the org
+pages to be read from the database, which the knowledge base story builds, so
+the QA and the agile screens stay on the BFF: the flag names every other screen,
+and the BFF is retired after [[id:F8172A06-6927-4085-9901-B5F62A58A6EC][Serve the doc-backed agile and QA routes]].
+
+The end-to-end test is the second half and is the point of the task: build the
+web bundle with the flag set, bring up the fleet, and drive the screens a person
+uses against the gateway — sign in, choose a party, read each screen's list and
+open one record. A screen that breaks is moved back to the BFF, the fault is
+fixed, and the flag is tried again. Nothing in this task retires the BFF.
 
 * Measurements
 
@@ -61,9 +90,39 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The BFF routes paired with a C++ route | 322 of 334 | the coverage table of =doc/knowledge/architecture/http_route_inventory.org= | edbe2c6aa4 |
+| The BFF routes not paired, by gap | 12: the file-backed routes the design decided out | the same table | edbe2c6aa4 |
+| The routes left to serve before the flag | 0 | the same table, less the 12 decided out | edbe2c6aa4 |
+| The authorisation queue, proved live | the same body as the BFF, the same refusals, and an empty queue on both | =evidence/authorisation_queue_live_run.txt= | edbe2c6aa4 |
+| The classifications, proved live | the same rows in the same order, the same 28 counted lists, the same refusals, and a row written and removed | =evidence/classifications_live_run.txt= | d7157cfa25 |
+| The two identity shape views, proved live | 43 rules and 29 fields, identical as sets to the BFF's answer | =evidence/shape_fields_live_run.txt= | d0013b80e8 |
+| The four desk reads, proved live | the same answer as the BFF at all four addresses; two payloads and two refusals shown | =evidence/market_reads_live_run.txt= | c6745e30f3 |
+| The market data suite | 862 assertions in 91 cases | =compass test run -- -R ores.http.marketdata= | c6745e30f3 |
 
 * Notes
+
+- The interface now runs on the gateway's own port: the build publishes the
+  bundle and the site configuration beside the binaries, and a screen calls the
+  gateway's routes with no flag and no proxy. The harness signs in against it and
+  the ported screens answer as they do on the BFF. See
+  =evidence/web_on_the_gateway_live_run.txt=.
+- The twelve doc-backed routes are not served by this task. The decision that
+  left them out was reversed, but not by porting the BFF's file reading: the org
+  pages move into the database, so [[id:F8172A06-6927-4085-9901-B5F62A58A6EC][Serve the doc-backed agile and QA routes]]
+  serves them over that read once it exists, and the BFF waits for it.
+- The authorisation queue is proved by its empty answer and its refusals: this
+  database holds no authorisation request, because one is raised by booking a
+  trade live and it holds no live booking. The row's members are proved by the
+  workflow suite instead. See =evidence/authorisation_queue_live_run.txt=.
+- A read this port answers refuses a query parameter it does not take, where the
+  BFF ignored one. That is the port's convention, and it tells a person their
+  query did nothing: the screens send only the parameters the routes declare.
+- The two desk reads that answer a table this environment does not seed are
+  proved by their refusal alone: the database holds no rate quote at any
+  currency, instrument type or instant tried, and no curve bootstrap
+  configuration. The catalogue and the FX montage came back whole, and the
+  gateway's answer was identical to the BFF's in all four cases. See
+  =evidence/market_reads_live_run.txt=.
 
 * Test Scenarios
 
@@ -80,7 +139,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5027][#5027]] | [http] Serve the web app from the C++ server |
 
 * Review
 
@@ -89,3 +148,38 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The browser talks to the C++ server. At the addresses, member names and status codes
+the BFF answered, ores.http now serves the quotes view's four routes, the four
+market-data desk reads, the identity shape views, the classification lists, the
+authorisation queue, the reporting runs and the curve analytics, and it serves the
+bundle those screens came from, so a screen and its endpoint share one origin.
+
+`ORES_WEB_PORT` states the address a person opens and is now the HTTP server's; the
+BFF keeps its own port, `ORES_BFF_PORT`, on the offset it always had, so no listener
+moved and no screen lost its fallback. The sign-in card and the header offer the
+other server while both are live, and the harness, the notification links and the
+verify-first-run script follow the app's address.
+
+The gateway answers CORS from an origin list: a wildcard deployment stays anonymous,
+a deployment that names its origins allows credentials only to those, and the headers
+ride every answer, a missing route included. A page on one deployment may write to
+another, and only an origin the list names may.
+
+The document the gateway publishes describes the API a client may generate from:
+851 paths, 1132 operations, 25 areas each described and ordered in the document,
+both credentials a caller may present, and 883 models named once and referenced
+instead of expanded into every operation.
+
+What the report covers: `ores.http.api.tests` 190 cases and 6774 assertions, the
+browser suite 2633 tests in 211 files, and the local gate 15 of 16 checks. The
+sixteenth, `compass-tests`, fails on `test_a_role_in_hong_kong_returns_only_hong_kong_staff`
+with `KeyError: 'role'`, which fails identically at the merge base `3e723042bc`, so it
+is not this task's; it is captured in the inbox.
+
+What is not done here, and why: the fleet runs the build from before the last
+rebases, so the gateway must be rebuilt and restarted before these routes are what a
+person reads; the database was recreated and holds the system administrator but no
+ACME tenant, so the screens that need a party's records were checked against the
+gateway's answers rather than with data. The BFF stays deployed as the fallback the
+task asked for, and it retires in its own task once no screen needs it.

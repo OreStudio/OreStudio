@@ -1,0 +1,161 @@
+:PROPERTIES:
+:ores.cpp.shell-command.enabled: nil
+:ID: C02EFC63-5660-4701-9EBA-933AB133C1DE
+:ores.cpp.wire-codec.enabled: true
+:END:
+#+title: ores.marketdata.party_demand_operations
+#+description: Codegen operation model for reading what one party demands of each route, computed from the catalogue before any tick arrives.
+#+type: ores.codegen.operation
+#+component: marketdata
+#+subcomponent: api
+#+entity_singular: party_demand_operations
+#+namespace: ores::marketdata::messaging
+#+brief: Reading the demand of one party.
+#+filetags: :model:operation:marketdata:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+
+A planner decides what a party can trade from the market data the party is
+configured to receive, not from what has arrived: a vol quote or a curve can take a
+while to appear. The demand of a party follows from the catalogue alone: its routes,
+its subscriptions, the providers' terms, the feeds' scopes and the mappings. So the
+request needs no adapter to be ready, and it answers the same before the first tick
+as after it.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include "ores.utility/domain/protocol.hpp"
+#include <string>
+#include <vector>
+#+end_src
+
+* Messages
+
+** demanded_route
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief What one route of the party demands of its provider.
+ */
+#+end_src
+
+*** provider_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The provider the route is fed by.
+ */
+#+end_src
+
+*** adapter_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The name of the route's source, which is the id of its adapter.
+ */
+#+end_src
+
+*** entitled
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Whether the party may receive the provider's data.
+ */
+#+end_src
+
+*** refusal
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Why the route is not entitled, such as not_entitled or terms_not_accepted.
+ * Empty when it is.
+ */
+#+end_src
+
+*** items
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The items the route demands, as oresmd URIs, sorted. Empty when the
+ * route is not entitled.
+ */
+#+end_src
+
+** get_party_demand_request
+:PROPERTIES:
+:subject:  marketdata.v1.ops.get_party_demand
+:response: get_party_demand_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Reads what one party of the caller's tenant demands of each of its routes.
+ */
+#+end_src
+
+*** party_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The party whose routes are read.
+ */
+#+end_src
+
+** get_party_demand_response
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The demand of each route of the party.
+ */
+#+end_src
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Whether the catalogue was read.
+ */
+#+end_src
+
+*** routes
+:PROPERTIES:
+:cpp_type: std::vector<demanded_route>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief One entry for each route of the party whose source the catalogue holds. A
+ * party with no route has none.
+ */
+#+end_src
+
+* See also
+
+- [[id:F2FA516C-1F86-43EF-80D4-E92F640B6CFD][ores.marketdata]] — component group overview.

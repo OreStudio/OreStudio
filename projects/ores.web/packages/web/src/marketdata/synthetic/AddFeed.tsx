@@ -27,14 +27,16 @@ import { Button, Dialog } from '../../ui/Primitives.js';
 import { feedPath, type FeedKind } from './feedKind.js';
 import { FX_FEED_KIND } from './fxFeeds.js';
 import { IR_FEED_KIND } from './irFeeds.js';
+import { VOL_FEED_KIND } from './volFeeds.js';
 
-const KINDS: readonly FeedKind[] = [FX_FEED_KIND, IR_FEED_KIND];
+const KINDS: readonly FeedKind[] = [FX_FEED_KIND, IR_FEED_KIND, VOL_FEED_KIND];
 
 /** Whether the person may write a feed of some kind, so Add feed is offered at all. */
 export function useMayAddFeed(): boolean {
     const fx = useRecordPermissions(FX_FEED_KIND.resource);
     const ir = useRecordPermissions(IR_FEED_KIND.resource);
-    return fx.write || ir.write;
+    const vol = useRecordPermissions(VOL_FEED_KIND.resource);
+    return fx.write || ir.write || vol.write;
 }
 
 /** The form of one kind of feed; the feed's own page opens when it is saved. */

@@ -28,7 +28,7 @@ import {
     type QueryClient,
     type QueryKey,
 } from '@tanstack/react-query';
-import { Fragment, useState, type ReactNode } from 'react';
+import { Fragment, useState, type KeyboardEvent, type MouseEvent, type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router';
 import type { HistoryVersion } from '@ores/wire-protocol/browser';
 import { api, type RecordRow } from '../api/client.js';
@@ -78,7 +78,14 @@ const UNLINK_REASON = 'common.rectification';
 export type FieldKind =
     | { readonly kind: 'text'; readonly max?: number }
     | { readonly kind: 'int'; readonly min?: number; readonly max?: number }
-    | { readonly kind: 'decimal'; readonly positive?: boolean; readonly below?: number }
+    | {
+          readonly kind: 'decimal';
+          readonly positive?: boolean;
+          readonly below?: number;
+          readonly above?: number;
+          readonly min?: number;
+          readonly max?: number;
+      }
     | { readonly kind: 'bool' }
     | { readonly kind: 'image' }
     | { readonly kind: 'date' }
@@ -162,7 +169,7 @@ function asked(spec: FieldSpec, values: FieldValues): boolean {
 export type FieldValues = Readonly<Record<string, string>>;
 
 /** The label of a field: the one the screen names for it, else the common one. */
-function labelOf(t: (key: string) => string, spec: FieldSpec): string {
+export function labelOf(t: (key: string) => string, spec: FieldSpec): string {
     return t(spec.labelKey ?? `refdata.fields.${spec.field}`);
 }
 
@@ -578,7 +585,10 @@ export function invalidFields(specs: readonly FieldSpec[], values: FieldValues):
                 return (
                     !Number.isFinite(number) ||
                     (spec.kind.positive === true && number <= 0) ||
-                    (spec.kind.below !== undefined && number >= spec.kind.below)
+                    (spec.kind.below !== undefined && number >= spec.kind.below) ||
+                    (spec.kind.above !== undefined && number <= spec.kind.above) ||
+                    (spec.kind.min !== undefined && number < spec.kind.min) ||
+                    (spec.kind.max !== undefined && number > spec.kind.max)
                 );
             }
             return false;
@@ -1698,6 +1708,7 @@ export function PartsPanel({
     initial,
     lead,
     titles,
+    pathOf,
     nameOf,
     loadedAt,
 }: {
@@ -1733,8 +1744,20 @@ export function PartsPanel({
     readonly lead?: string;
     /** How the dialogs name one part: adding it, opening it, and deleting it. */
     readonly titles: { readonly add: string; readonly one: string; readonly remove: string };
+    /** The page a row opens on a click or Enter, as a list's rows open theirs. */
+    readonly pathOf?: (row: RecordRow) => string | undefined;
 }): ReactNode {
     const { t } = useTranslation();
+    const navigate = useNavigate();
+    const openRow = (row: RecordRow, event: MouseEvent | KeyboardEvent): void => {
+        const page = pathOf?.(row);
+        const fromControl =
+            event.target instanceof Element &&
+            event.target.closest('a, button, input, select') !== null;
+        if (page !== undefined && !fromControl) {
+            void navigate(page);
+        }
+    };
     const may = useRecordPermissions(resource);
     const [open, setOpen] = useState<{
         readonly row: RecordRow | undefined;
@@ -1783,7 +1806,19 @@ export function PartsPanel({
                         {sorted.map((row) => (
                             <tr
                                 key={show(row['id'])}
-                                className="border-b border-line-subtle last:border-b-0"
+                                {...(pathOf === undefined
+                                    ? { className: 'border-b border-line-subtle last:border-b-0' }
+                                    : {
+                                          tabIndex: 0,
+                                          className:
+                                              'cursor-pointer border-b border-line-subtle last:border-b-0 hover:bg-surface-hover focus:bg-surface-hover focus:outline-none',
+                                          onClick: (event: MouseEvent) => openRow(row, event),
+                                          onKeyDown: (event: KeyboardEvent) => {
+                                              if (event.key === 'Enter') {
+                                                  openRow(row, event);
+                                              }
+                                          },
+                                      })}
                             >
                                 {columns.map((column) => (
                                     <td

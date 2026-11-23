@@ -1,0 +1,137 @@
+:PROPERTIES:
+:ID: 1162906F-BB72-486E-9A11-30D567C65F3E
+:END:
+#+title: Delegation tokens for LLM agents: subject and actor claims
+#+description: An agent's token names the person as subject and the agent as actor, so every call is the person's, made by that agent.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:agents:security:jwt:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+
+This page states the target design. It does not describe what is built.
+
+* Summary
+
+The token an agent's call carries names the person as its subject and the
+agent as its actor, using the =act= claim of OAuth 2.0 Token Exchange (Jones
+et al., 2020). The claim of this page is that the pair is what makes an
+agent's call both the person's and distinguishable from the person's: every
+permission is decided on the subject, and every record and every hold is
+decided on the actor. ORE already carries the =act= claim, which run tokens set
+to the step service that acts ([[id:78B82824-0BBB-4442-A9FA-E1F265DF57BD][Run grants and run tokens]]).
+
+* Detail
+
+** The exchange
+
+An agent presents its key as a bearer token (Jones and Hardt, 2012). =ores.http=
+asks IAM to exchange it, with its own token and the permission
+=iam::agent_keys:exchange=, which no agent can hold. IAM enters the tenant the
+key names, refusing before any read when the tenant id does not parse or names
+no tenant, finds the key by its id, compares the hash of its secret in constant
+time, and checks that the key and its grant are active, that the grant is inside its expiry, and that the person
+is active. It computes the permissions: the grant's role intersected with the
+person's current permissions, less the permissions no agent ever holds
+([[id:1679B2CE-05C2-4CFF-9A4B-47EC721CB10A][Withholding of administrative permissions from LLM agents]]). It opens or reuses the key's session ([[id:4DCD0684-F6AE-4E84-BB9D-2AE2DAFDB667][Sessions of LLM agents]]), appends a row to the
+issue log, and issues a JSON Web Token (Jones, Bradley and Sakimura, 2015)
+that lasts five minutes.
+
+An unknown tenant, an unknown key id and a wrong secret are answered alike,
+=invalid key=, so a caller cannot learn which tenants or keys exist. Failures
+are limited in two places. ores.http limits failed credentials per source
+address, as it limits every failed credential, so bad keys from one address
+stop there. IAM limits exchanges per key and source address, and allocates that
+budget only for a key id that exists in a tenant that exists, so an unknown
+tenant or key costs no memory, a caller who names a victim's tenant cannot
+exhaust that tenant's agents, and a caller who knows a key's id, which is not a
+secret, cannot exhaust the budget of the agent that holds it. IAM limits
+successful exchanges per tenant as well, as load, and a refusal is logged with
+its reason and never with the key.
+
+An exchange that cannot be made, because IAM does not answer or is shedding a
+tenant's load, is answered with 503 and a =Retry-After=, not with =invalid
+key=, and is not counted as a failed credential: the key may be good, and an
+agent told otherwise would discard it.
+
+=ores.http= keeps the token in memory, keyed by the hash of the key, while it
+has more than 20% of its life left, as a run token is kept ([[id:78B82824-0BBB-4442-A9FA-E1F265DF57BD][Run grants and run tokens]]); it never
+keeps one past its expiry, and never writes one anywhere. So most calls need no
+exchange.
+
+#+caption: A person makes a key in ores.web; on each call ores.http uses a cached token or exchanges the key with IAM for a five-minute token naming the person and the agent.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/agents/agent_key_exchange.png]]
+
+Source: [[./agent_key_exchange.puml][=agent_key_exchange.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/agents/agent_key_exchange.puml=.
+
+** The claims
+
+| Claim | Holds | Decides |
+|-------+-------+---------|
+| =sub= | the person's account | every permission, and row-level security |
+| =username= | the person's username | the audit columns name a person |
+| =act= | =agent:= and the grant's id | the record of the call, and whether a write is held |
+| =grant_id= | the agent grant | the agent's name and the grant, read from IAM |
+| =tenant_id=, =party_id=, =visible_party_ids= | the grant's tenant and party, and that party only | where the call acts |
+| =roles= | the role's permissions held by the person, less the withheld | what the call may do |
+| =session_id= | the key's session | the row the sessions window shows |
+| =aud= | =HttpService= | the service that exchanged |
+| =exp= | five minutes after issue | |
+
+The permissions are recomputed at every exchange, so they follow the person's
+and the role's as they stand then.
+
+** The actor claim
+
+A run token sets =act= to the role name of the step service that acts, such as
+=ReportingService=. An agent's token sets it to =agent:= followed by the grant's
+id. No service role name contains a colon, so an agent can never be read as a
+service, and a handler tells them apart by the prefix. The agent's name is read
+from the grant, not from the token, so a name cannot be forged into a token.
+RFC 8693 defines =act= as a JSON object whose =sub= names the actor (Jones et
+al., 2020); ORE carries it as a string. This is a deliberate deviation, and a
+token that left ORE would need the object form.
+
+** How soon a change reaches the agent
+
+Everything the exchange checks takes effect at the next exchange: a revoked
+or expired grant, a revoked key, a person disabled or removed, and a role the
+person loses. The agent never holds a token: it holds only its key, and the
+token stays in ores.http's cache. When IAM revokes a key or a grant it
+publishes the change, and ores.http evicts the cache entries of that key or
+grant, so the agent's next call is exchanged again and refused at once. If the
+event is missed, the bound is the token's lifetime: because a token lasts five
+minutes and the cache never keeps one past its expiry, an agent keeps at most
+five minutes of the access it had. A request already in flight completes. This
+is the one bound; the pages that need it link here.
+
+** What it is not
+
+It is not impersonation: [[id:AAC60D20-8696-4455-9292-E8FAE1389CBC][Internal actor impersonation]] mints a token as a user with no actor, so
+the call is indistinguishable from the user's own, which is right for an
+orchestrator replaying users' acts and wrong for an agent. It is not a service
+identity either ([[id:3E20C1A0-7BA1-4F31-8C34-1E5F13558890][Service-to-Service Auth]]): the agent acts for a person and holds nothing
+the person does not.
+
+* Patterns used
+
+- [[id:4E0D934A-21D4-4609-8B7C-29F6D9A6A52D][Access Token]] — the agent's token is an access token whose =act= names the agent.
+- [[id:96460BBE-D7BF-4538-B620-AC5FD9F0C9FE][Token Exchange]] — the key is exchanged for a token that carries the person as
+  subject and the agent as actor.
+
+* See also
+- [[id:1679B2CE-05C2-4CFF-9A4B-47EC721CB10A][Withholding of administrative permissions from LLM agents]] — completes: the permissions the exchange removes.
+- [[id:4DCD0684-F6AE-4E84-BB9D-2AE2DAFDB667][Sessions of LLM agents]] — completes: the session the token names.
+
+- [[id:47B179BF-C982-4BB1-AF4F-35E00B9D2750][Delegated Access for LLM Agents]] — the structure note that orders this cluster.
+- [[id:A7E2942C-66AD-449C-B80B-CA789EBC34FA][Agent grants: delegated consent for LLM agents]] — answers: what the exchange checks.
+- [[id:AAC60D20-8696-4455-9292-E8FAE1389CBC][Internal actor impersonation]] — contradicts: impersonation hides the actor that this token exists to show.
+- [[id:2D36D474-2CF9-4498-AF49-818CEF080B98][Auditing of LLM agent actions]] — completes: where the actor is written down.
+
+* Sources
+
+- Jones, M., Nadalin, A., Campbell, B., Bradley, J. and Mortimore, C. (2020). /OAuth 2.0 Token Exchange/. RFC 8693, IETF. https://www.rfc-editor.org/rfc/rfc8693
+- Jones, M. and Hardt, D. (2012). /The OAuth 2.0 Authorization Framework: Bearer Token Usage/. RFC 6750, IETF. https://www.rfc-editor.org/rfc/rfc6750
+- Jones, M., Bradley, J. and Sakimura, N. (2015). /JSON Web Token (JWT)/. RFC 7519, IETF. https://www.rfc-editor.org/rfc/rfc7519

@@ -841,6 +841,36 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'iam.v1.agent_grants.list': {
+        asOf: true,
+        filter: ['grantor_account_id', 'id_one_of', 'grantor_account_id_one_of'],
+        rows: ['grants'],
+    },
+    'iam.v1.agent_grants.list_by_grantor_account_id': {
+        asOf: false,
+        filter: ['grantor_account_id', 'id_one_of', 'grantor_account_id_one_of'],
+        rows: ['grants'],
+    },
+    'iam.v1.agent_grants_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'iam.v1.agent_keys.list': {
+        asOf: true,
+        filter: ['grant_id', 'id_one_of', 'grant_id_one_of'],
+        rows: ['keys'],
+    },
+    'iam.v1.agent_keys.list_by_grant_id': {
+        asOf: false,
+        filter: ['grant_id', 'id_one_of', 'grant_id_one_of'],
+        rows: ['keys'],
+    },
+    'iam.v1.agent_keys_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
     'iam.v1.auth_events.list': {
         asOf: false,
         filter: [],
@@ -860,6 +890,11 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         asOf: false,
         filter: [],
         rows: [],
+    },
+    'iam.v1.ops.list_own_agent_grants': {
+        asOf: false,
+        filter: [],
+        rows: ['grants', 'keys'],
     },
     'iam.v1.ops.list_role_holders': {
         asOf: false,
@@ -1003,7 +1038,7 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
     },
     'iam.v1.sessions.list': {
         asOf: false,
-        filter: ['account_id', 'account_id_one_of'],
+        filter: ['account_id', 'agent_grant_id', 'account_id_one_of', 'agent_grant_id_one_of'],
         rows: ['sessions'],
     },
     'iam.v1.tenant_statuses.list': {
@@ -1809,12 +1844,169 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
-    'orgmode.v1.knowledge_pages.list': {
+    'ore.v1.ore_file_categories.list': {
         asOf: true,
-        filter: ['id_one_of'],
-        rows: ['pages'],
+        filter: ['code_one_of'],
+        rows: ['categories'],
     },
-    'orgmode.v1.knowledge_pages_versions.list': {
+    'ore.v1.ore_file_categories_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'ore.v1.ore_file_versions.list': {
+        asOf: true,
+        filter: [
+            'ore_file_code',
+            'engine_version',
+            'id_one_of',
+            'ore_file_code_one_of',
+            'engine_version_one_of',
+        ],
+        rows: ['versions'],
+    },
+    'ore.v1.ore_file_versions.list_by_ore_file_code': {
+        asOf: false,
+        filter: [
+            'ore_file_code',
+            'engine_version',
+            'id_one_of',
+            'ore_file_code_one_of',
+            'engine_version_one_of',
+        ],
+        rows: ['versions'],
+    },
+    'ore.v1.ore_file_versions_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'ore.v1.ore_files.list': {
+        asOf: true,
+        filter: [
+            'category_code',
+            'configuration_type_code',
+            'schema_ore_file_code',
+            'code_one_of',
+            'category_code_one_of',
+            'configuration_type_code_one_of',
+            'schema_ore_file_code_one_of',
+        ],
+        rows: ['files'],
+    },
+    'ore.v1.ore_files.list_by_category_code': {
+        asOf: false,
+        filter: [
+            'category_code',
+            'configuration_type_code',
+            'schema_ore_file_code',
+            'code_one_of',
+            'category_code_one_of',
+            'configuration_type_code_one_of',
+            'schema_ore_file_code_one_of',
+        ],
+        rows: ['files'],
+    },
+    'ore.v1.ore_files.list_by_configuration_type_code': {
+        asOf: false,
+        filter: [
+            'category_code',
+            'configuration_type_code',
+            'schema_ore_file_code',
+            'code_one_of',
+            'category_code_one_of',
+            'configuration_type_code_one_of',
+            'schema_ore_file_code_one_of',
+        ],
+        rows: ['files'],
+    },
+    'ore.v1.ore_files.list_by_schema_ore_file_code': {
+        asOf: false,
+        filter: [
+            'category_code',
+            'configuration_type_code',
+            'schema_ore_file_code',
+            'code_one_of',
+            'category_code_one_of',
+            'configuration_type_code_one_of',
+            'schema_ore_file_code_one_of',
+        ],
+        rows: ['files'],
+    },
+    'ore.v1.ore_files_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'ore.v1.ore_parameter_setting_value_sets.list': {
+        asOf: true,
+        filter: ['code_one_of'],
+        rows: ['setting_value_sets'],
+    },
+    'ore.v1.ore_parameter_setting_value_sets_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'ore.v1.ore_parameter_value_domains.list': {
+        asOf: true,
+        filter: ['code_one_of'],
+        rows: ['domains'],
+    },
+    'ore.v1.ore_parameter_value_domains_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'ore.v1.ore_parameter_value_set_catalogues.list': {
+        asOf: true,
+        filter: ['code_one_of'],
+        rows: ['catalogues'],
+    },
+    'ore.v1.ore_parameter_value_set_catalogues_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'ore.v1.ore_parameter_value_set_values.list': {
+        asOf: true,
+        filter: ['code_one_of'],
+        rows: ['values'],
+    },
+    'ore.v1.ore_parameter_value_set_values_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'ore.v1.ore_parameter_value_sets.list': {
+        asOf: true,
+        filter: ['code_one_of'],
+        rows: ['sets'],
+    },
+    'ore.v1.ore_parameter_value_sets_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'ore.v1.ore_parameters.list': {
+        asOf: true,
+        filter: [
+            'ore_parameter_value_domain_code',
+            'id_one_of',
+            'ore_parameter_value_domain_code_one_of',
+        ],
+        rows: ['parameters'],
+    },
+    'ore.v1.ore_parameters.list_by_ore_parameter_value_domain_code': {
+        asOf: false,
+        filter: [
+            'ore_parameter_value_domain_code',
+            'id_one_of',
+            'ore_parameter_value_domain_code_one_of',
+        ],
+        rows: ['parameters'],
+    },
+    'ore.v1.ore_parameters_versions.list': {
         asOf: false,
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
@@ -4799,173 +4991,6 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: [],
         rows: ['rows'],
     },
-    'reporting.v1.ore_file_categories.list': {
-        asOf: true,
-        filter: ['code_one_of'],
-        rows: ['categories'],
-    },
-    'reporting.v1.ore_file_categories_versions.list': {
-        asOf: false,
-        filter: ['version', 'from_version', 'to_version'],
-        rows: ['versions'],
-    },
-    'reporting.v1.ore_file_versions.list': {
-        asOf: true,
-        filter: [
-            'ore_file_code',
-            'engine_version',
-            'id_one_of',
-            'ore_file_code_one_of',
-            'engine_version_one_of',
-        ],
-        rows: ['versions'],
-    },
-    'reporting.v1.ore_file_versions.list_by_ore_file_code': {
-        asOf: false,
-        filter: [
-            'ore_file_code',
-            'engine_version',
-            'id_one_of',
-            'ore_file_code_one_of',
-            'engine_version_one_of',
-        ],
-        rows: ['versions'],
-    },
-    'reporting.v1.ore_file_versions_versions.list': {
-        asOf: false,
-        filter: ['version', 'from_version', 'to_version'],
-        rows: ['versions'],
-    },
-    'reporting.v1.ore_files.list': {
-        asOf: true,
-        filter: [
-            'category_code',
-            'configuration_type_code',
-            'schema_ore_file_code',
-            'code_one_of',
-            'category_code_one_of',
-            'configuration_type_code_one_of',
-            'schema_ore_file_code_one_of',
-        ],
-        rows: ['files'],
-    },
-    'reporting.v1.ore_files.list_by_category_code': {
-        asOf: false,
-        filter: [
-            'category_code',
-            'configuration_type_code',
-            'schema_ore_file_code',
-            'code_one_of',
-            'category_code_one_of',
-            'configuration_type_code_one_of',
-            'schema_ore_file_code_one_of',
-        ],
-        rows: ['files'],
-    },
-    'reporting.v1.ore_files.list_by_configuration_type_code': {
-        asOf: false,
-        filter: [
-            'category_code',
-            'configuration_type_code',
-            'schema_ore_file_code',
-            'code_one_of',
-            'category_code_one_of',
-            'configuration_type_code_one_of',
-            'schema_ore_file_code_one_of',
-        ],
-        rows: ['files'],
-    },
-    'reporting.v1.ore_files.list_by_schema_ore_file_code': {
-        asOf: false,
-        filter: [
-            'category_code',
-            'configuration_type_code',
-            'schema_ore_file_code',
-            'code_one_of',
-            'category_code_one_of',
-            'configuration_type_code_one_of',
-            'schema_ore_file_code_one_of',
-        ],
-        rows: ['files'],
-    },
-    'reporting.v1.ore_files_versions.list': {
-        asOf: false,
-        filter: ['version', 'from_version', 'to_version'],
-        rows: ['versions'],
-    },
-    'reporting.v1.ore_parameter_setting_value_sets.list': {
-        asOf: true,
-        filter: ['code_one_of'],
-        rows: ['setting_value_sets'],
-    },
-    'reporting.v1.ore_parameter_setting_value_sets_versions.list': {
-        asOf: false,
-        filter: ['version', 'from_version', 'to_version'],
-        rows: ['versions'],
-    },
-    'reporting.v1.ore_parameter_value_domains.list': {
-        asOf: true,
-        filter: ['code_one_of'],
-        rows: ['domains'],
-    },
-    'reporting.v1.ore_parameter_value_domains_versions.list': {
-        asOf: false,
-        filter: ['version', 'from_version', 'to_version'],
-        rows: ['versions'],
-    },
-    'reporting.v1.ore_parameter_value_set_catalogues.list': {
-        asOf: true,
-        filter: ['code_one_of'],
-        rows: ['catalogues'],
-    },
-    'reporting.v1.ore_parameter_value_set_catalogues_versions.list': {
-        asOf: false,
-        filter: ['version', 'from_version', 'to_version'],
-        rows: ['versions'],
-    },
-    'reporting.v1.ore_parameter_value_set_values.list': {
-        asOf: true,
-        filter: ['code_one_of'],
-        rows: ['values'],
-    },
-    'reporting.v1.ore_parameter_value_set_values_versions.list': {
-        asOf: false,
-        filter: ['version', 'from_version', 'to_version'],
-        rows: ['versions'],
-    },
-    'reporting.v1.ore_parameter_value_sets.list': {
-        asOf: true,
-        filter: ['code_one_of'],
-        rows: ['sets'],
-    },
-    'reporting.v1.ore_parameter_value_sets_versions.list': {
-        asOf: false,
-        filter: ['version', 'from_version', 'to_version'],
-        rows: ['versions'],
-    },
-    'reporting.v1.ore_parameters.list': {
-        asOf: true,
-        filter: [
-            'ore_parameter_value_domain_code',
-            'id_one_of',
-            'ore_parameter_value_domain_code_one_of',
-        ],
-        rows: ['parameters'],
-    },
-    'reporting.v1.ore_parameters.list_by_ore_parameter_value_domain_code': {
-        asOf: false,
-        filter: [
-            'ore_parameter_value_domain_code',
-            'id_one_of',
-            'ore_parameter_value_domain_code_one_of',
-        ],
-        rows: ['parameters'],
-    },
-    'reporting.v1.ore_parameters_versions.list': {
-        asOf: false,
-        filter: ['version', 'from_version', 'to_version'],
-        rows: ['versions'],
-    },
     'reporting.v1.report_cashflows.list': {
         asOf: true,
         filter: [
@@ -5418,6 +5443,21 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         asOf: false,
         filter: [],
         rows: ['feeds'],
+    },
+    'synthetic.v1.simulated_sources.list': {
+        asOf: false,
+        filter: [],
+        rows: ['sources'],
+    },
+    'synthetic.v1.stopped_simulated_sources.list': {
+        asOf: true,
+        filter: ['source_name_one_of'],
+        rows: ['stopped_sources'],
+    },
+    'synthetic.v1.stopped_simulated_sources_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
     },
     'synthetic.v1.trade_generation_books.list': {
         asOf: true,

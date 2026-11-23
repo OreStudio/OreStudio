@@ -165,7 +165,7 @@ EUR-CMS-9Y	oresmd://ir/EUR?type=fixing&index=swap&tenor=9Y
 EUR-CMS-ESTER-1Y	oresmd://ir/EUR?type=fixing&index=swap&tag=ESTER&tenor=1Y
 EUR-CMS-ESTER-30Y	oresmd://ir/EUR?type=fixing&index=swap&tag=ESTER&tenor=30Y
 EUR-EONIA	oresmd://ir/EUR?type=fixing&index=ibor&name=EONIA
-EUR-ESTER	oresmd://ir/EUR?type=fixing&index=ibor&name=ESTER
+EUR-ESTER	oresmd://ir/EUR?type=fixing&index=ibor&name=ESTR
 EUR-EURIBOR	oresmd://ir/EUR?type=fixing&index=ibor&name=EURIBOR
 EUR-EURIBOR-12M	oresmd://ir/EUR?type=fixing&index=ibor&name=EURIBOR&tenor=12M
 EUR-EURIBOR-1M	oresmd://ir/EUR?type=fixing&index=ibor&name=EURIBOR&tenor=1M
@@ -326,8 +326,8 @@ JPY-LIBOR-6M	oresmd://ir/JPY?type=fixing&index=ibor&name=LIBOR&tenor=6M
 JPY-TIBOR	oresmd://ir/JPY?type=fixing&index=ibor&name=TIBOR
 JPY-TIBOR-3M	oresmd://ir/JPY?type=fixing&index=ibor&name=TIBOR&tenor=3M
 JPY-TIBOR-6M	oresmd://ir/JPY?type=fixing&index=ibor&name=TIBOR&tenor=6M
-JPY-TONAR	oresmd://ir/JPY?type=fixing&index=ibor&name=TONAR
-JPY-TONAR-3M	oresmd://ir/JPY?type=fixing&index=ibor&name=TONAR&tenor=3M
+JPY-TONAR	oresmd://ir/JPY?type=fixing&index=ibor&name=TONA
+JPY-TONAR-3M	oresmd://ir/JPY?type=fixing&index=ibor&name=TONA&tenor=3M
 KES-CMS-1Y	oresmd://ir/KES?type=fixing&index=swap&tenor=1Y
 KES-CMS-30Y	oresmd://ir/KES?type=fixing&index=swap&tenor=30Y
 KES-GENERIC	oresmd://ir/KES?type=fixing&index=ibor&name=GENERIC

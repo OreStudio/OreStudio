@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: 3A2A66B0-C8C1-4EB7-99ED-A3503D79DD66
+:END:
+#+title: Task: Plan trades on the expected market data and report them
+#+description: Every draw of the planner filters by the address it would name against the party's expected set, a trade type with no candidate leaves the cycle, and the provisioning report states the trades of each type and why a type has none.
+#+type: task
+#+level: s1
+#+filetags: :every_floating_index_has_a_curve_and_fixings:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0F936789-FEBE-4330-97B9-DFE0837E4466][Every index a generated trade floats on has a curve and fixings]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every draw goes through one predicate: an index, a pair, an equity, a commodity, a credit entity, an inflation index or a security is drawn only when the party expects the address it would name. A trade type with no candidate leaves the cycle, and its slots go to the remaining types, so a book keeps its size. The planner returns one entry per trade type: the trades planned, and the reason when there are none. The generate_trades step plans every config first, then writes, and adds an info entry to the step log for each config, such as: EquitySwap 0, no generator the party is routed to publishes an equity fixing.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:0F936789-FEBE-4330-97B9-DFE0837E4466][Every index a generated trade floats on has a curve and fixings]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-22                               |
+
+* Acceptance
+
+- No draw names an address outside the party's expected set, including the FX worst-of fallback.
+- A trade type with no candidate is left out and its slots go to the other types.
+- The provisioning report has an info entry per config with the trades by type and the reason for each type with none.
+- On a fresh acme_demo provision, every fixing address a trade names, IR and FX, has a series with values.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

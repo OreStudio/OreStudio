@@ -36,12 +36,6 @@
 \ir ./reporting_report_type_configuration_type_create.sql
 \ir ./reporting_analytic_types_create.sql
 \ir ./reporting_analytic_types_notify_trigger_create.sql
-\ir ./reporting_ore_file_categories_create.sql
-\ir ./reporting_ore_file_categories_notify_trigger_create.sql
-\ir ./reporting_ore_files_create.sql
-\ir ./reporting_ore_files_notify_trigger_create.sql
-\ir ./reporting_ore_file_versions_create.sql
-\ir ./reporting_ore_file_versions_notify_trigger_create.sql
 \ir ./reporting_file_types_create.sql
 \ir ./reporting_file_types_notify_trigger_create.sql
 \ir ./reporting_configuration_analytics_create.sql
@@ -71,24 +65,6 @@
 -- decision has not reached the cut yet.
 \ir ./reporting_cut_authorisation_functions_create.sql
 
-\ir ./reporting_ore_parameter_value_domains_create.sql
-\ir ./reporting_ore_parameter_value_domains_notify_trigger_create.sql
-\ir ./reporting_ore_parameters_create.sql
-\ir ./reporting_ore_parameters_notify_trigger_create.sql
-\ir ./reporting_ore_parameter_value_set_catalogues_create.sql
-\ir ./reporting_ore_parameter_value_set_catalogues_notify_trigger_create.sql
-\ir ./reporting_ore_element_map_columns_create.sql
-\ir ./reporting_ore_element_map_columns_notify_trigger_create.sql
-\ir ./reporting_ore_parameter_vocabularies_create.sql
-\ir ./reporting_ore_parameter_vocabularies_notify_trigger_create.sql
-\ir ./reporting_ore_parameter_value_validate_fn_create.sql
-\ir ./reporting_ore_parameter_value_sets_create.sql
-\ir ./reporting_ore_parameter_value_sets_notify_trigger_create.sql
-\ir ./reporting_ore_parameter_value_set_values_create.sql
-\ir ./reporting_ore_parameter_value_set_values_notify_trigger_create.sql
-\ir ./reporting_ore_parameter_setting_value_sets_create.sql
-\ir ./reporting_ore_parameter_setting_value_sets_notify_trigger_create.sql
-\ir ./reporting_ore_parameter_canonical_value_fn_create.sql
 \ir ./reporting_engine_settings_groups_create.sql
 \ir ./reporting_engine_settings_groups_notify_trigger_create.sql
 \ir ./reporting_engine_settings_group_settings_create.sql
@@ -154,4 +130,3 @@
 \ir ./reporting_publish_from_dq_create.sql
 
 -- The parameter settings view reads every value set table, so it comes last.
-\ir ./reporting_ore_parameter_settings_view_create.sql

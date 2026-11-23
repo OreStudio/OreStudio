@@ -1,0 +1,95 @@
+:PROPERTIES:
+:ID: 4DCD0684-F6AE-4E84-BB9D-2AE2DAFDB667
+:END:
+#+title: Sessions of LLM agents
+#+description: An LLM agent's calls form sessions of their own, opened by IAM's exchange and shown apart from its person's in the sessions window.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:agents:security:sessions:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+
+* Summary
+
+An LLM agent's calls form sessions of their own: IAM opens one at a key's first
+exchange, keeps it open while the agent keeps calling, and closes it when the
+agent falls silent or its key or grant is revoked. Each is an ordinary row of
+the sessions table that names the person as its account and the agent's grant
+beside it. The claim of this page is that an agent must be visible where a
+person's sessions are visible, and separately from them, because a person or
+an administrator looking at who is signed in must see that an agent is acting
+and for whom, not mistake its calls for the person's own.
+
+* Detail
+
+** The row
+
+An agent's session is a row of the sessions table, with four values set as
+follows.
+
+| Column | Value |
+|--------+-------|
+| =account_id= | the person the agent acts for |
+| =agent_grant_id= | the grant the key redeems; a new column, empty for every session a person opens |
+| =client_identifier= | the agent's name, from the grant |
+| =protocol= | =mcp= |
+
+The client address is the agent's, as ores.http sees it, and the byte counts
+and samples are recorded as for any session. A token made from the key carries
+the session's id in =session_id= ([[id:1162906F-BB72-486E-9A11-30D567C65F3E][Delegation tokens for LLM agents: subject and actor claims]]); a run token, by contrast, opens no
+session, because it serves a process and not an actor ([[id:78B82824-0BBB-4442-A9FA-E1F265DF57BD][Run grants and run tokens]]).
+
+** Its lifecycle
+
+IAM opens the session at the first exchange of a key that has no open session,
+and every later exchange of that key reuses it. The session closes when no
+exchange has happened for its idle limit, thirty minutes, when its key or its
+grant is revoked, or when it is ended from the sessions window. The idle clock
+counts exchanges, not calls: a call answered from ores.http's cache makes no
+exchange, but a key in steady use is exchanged again about every four minutes,
+when its token has less than a fifth of its life left, so it stays open. A key
+therefore has at most one open session, and an agent that works through a day
+without a pause of thirty minutes is one session.
+
+** In the sessions window
+
+The window shows an agent's session as a row of its own, with the agent's name
+in an Agent column and its person as the account, so a person's sessions and
+their agents' sessions are never one row. A filter shows people, agents, or
+both. From an agent's session the window links to its grant and to what the
+agent did in it ([[id:2D36D474-2CF9-4498-AF49-818CEF080B98][Auditing of LLM agent actions]]).
+
+** Ending an agent's session
+
+Ending an agent's session from the window also revokes the key that opened it,
+and the window says so before it acts. Ending the session alone would not stop
+the agent: its next exchange would open a new session within five minutes.
+Revoking the key does: ores.http evicts its cached token, so the agent's next
+call is refused at once, and at most five minutes later if the eviction is
+missed ([[id:1162906F-BB72-486E-9A11-30D567C65F3E][Delegation tokens for LLM agents: subject and actor claims]], /How soon a change reaches the agent/). The window's warning
+says both. A key is cheap to replace with another for the same
+grant ([[id:A7E2942C-66AD-449C-B80B-CA789EBC34FA][Agent grants: delegated consent for LLM agents]]). Revoking the grant stops every key at once.
+
+A person ends their own agents' sessions under =iam::agent_grants:create=, which
+lets them revoke their own keys; ending another person's agent's session needs
+=iam::agent_grants:revoke=. Neither needs =iam::sessions:end=, which ends a
+person's sessions and is withheld from every agent.
+
+** What an agent's session is not
+
+It has no mode in the sense of [[id:37D5E28C-A83F-4EDC-891B-4F6F23B2BB42][Session modes and capabilities]]: the mode decides which shell a person
+sees, and an agent sees no shell. An agent's session never carries a cookie,
+because an agent sends its key as a bearer token on every request.
+
+* See also
+
+- [[id:47B179BF-C982-4BB1-AF4F-35E00B9D2750][Delegated Access for LLM Agents]] — the structure note that orders this cluster.
+- [[id:1162906F-BB72-486E-9A11-30D567C65F3E][Delegation tokens for LLM agents: subject and actor claims]] — completes: the token carries the session's id.
+- [[id:A7E2942C-66AD-449C-B80B-CA789EBC34FA][Agent grants: delegated consent for LLM agents]] — completes: ending a session revokes one of the grant's keys.
+- [[id:2D36D474-2CF9-4498-AF49-818CEF080B98][Auditing of LLM agent actions]] — completes: what an agent did in each session.
+- [[id:78B82824-0BBB-4442-A9FA-E1F265DF57BD][Run grants and run tokens]] — contradicts the run token's choice of no session: a run is a process, an agent an actor.
+- [[id:37D5E28C-A83F-4EDC-891B-4F6F23B2BB42][Session modes and capabilities]] — the sessions of people, whose modes an agent's session does not have.
+
+* Sources
+
+(None beyond the pages linked above.)

@@ -33,14 +33,14 @@ Read these three to be able to say, for any value on an Acme screen, which
 provider produced it, which source delivered it, and which row tied the party to
 that source.
 
-1. [[id:AC31B4F2-B1D7-4CE6-BE84-9A548ACE6754][Each Acme party takes one provider, and a simulated source serves it]].
+1. [[id:AC31B4F2-B1D7-4CE6-BE84-9A548ACE6754][Acme market data providers and sources]].
    Seven providers, six sources, and which of them each of the four entities
    takes. After this you can say why London reads =demo= and New York =lseg=.
 2. [[id:F6094D03-3914-4046-8E57-3FF4AA14764B][The Acme catalogue is installed by the bundle, and the feeds generate the
    series]]. The 447 instruments, 447 mappings and 24 rate card components the
    system bundle installs, the feed collections that then run, and the 341 series
    they produce. After this you can say what a tenant may and may not write.
-3. [[id:9E8D00D3-5ADD-48E0-85AB-CC19693DEFFF][A subscription names the provider and the route names the source]]. The two
+3. [[id:9E8D00D3-5ADD-48E0-85AB-CC19693DEFFF][Acme market data subscriptions and routes]]. The two
    rows, the rights on them, the flow a demand follows to a tick, and who may
    change them. This page carries the demand and subscription diagram. After this
    you can trace a run's market data end to end.

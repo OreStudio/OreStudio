@@ -22,8 +22,8 @@
 
 #include "ores.http.core/routes/ore_value_sets.hpp"
 #include "ores.http/routes/refdata/curve_document_cells.hpp"
+#include "ores.ore.api/domain/ore_parameter.hpp"
 #include "ores.refdata.api/domain/curve_section.hpp"
-#include "ores.reporting.api/domain/ore_parameter.hpp"
 #include <map>
 #include <string>
 #include <string_view>
@@ -35,7 +35,7 @@ namespace ores::http::routes::refdata::curve_view {
  * @brief The ORE parameter contract: the leaves of one schema, by the path the
  * wiring names.
  */
-using contract = std::map<std::string, const ores::reporting::domain::ore_parameter*, std::less<>>;
+using contract = std::map<std::string, const ores::ore::domain::ore_parameter*, std::less<>>;
 
 /**
  * @brief What a document is drawn against, besides its own rows.

@@ -58,7 +58,7 @@ begin
 
     insert into ores_dq_accounts_artefact_tbl (
         dataset_id, tenant_id, id, version, username, full_name,
-        email, password_hash, account_type, business_unit_code, role,
+        email, password_hash, account_type, business_unit_code, roles,
         job_title, reports_to_username, photo_key
     )
     values

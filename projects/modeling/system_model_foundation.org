@@ -129,17 +129,6 @@ Used by ores.iam for credential handling.
 |---------------+-----------------------------------------+--------------|
 | [[id:D7BCB9B1-43C9-4DEF-8B1D-BABD23494DC2][ores.security]] | Cryptographic primitives and validators | [[id:00E33570-F7BE-7F94-FD83-2FDC9CB04463][ores.utility]] |
 
-** ores.orgmode
-
-Parses the subset of org-mode this project's docs use — frontmatter keywords,
-property drawers, headings, paragraphs, lists, tables, and =id:= links — into a
-C++ document structure, and resolves those links against the org-roam SQLite
-index that =compass= builds. A pure C++ library, consumed by =ores.shell=.
-
-| Sub-component | Role                                      | Dependencies |
-|---------------+-------------------------------------------+--------------|
-| [[id:647EA42E-3E11-4898-97BA-8DD2B9949897][ores.orgmode]] | Org-mode parsing and org-roam link resolution | —            |
-
 ** ores.codegen
 
 Code generation utility for domain types and documentation — driven by

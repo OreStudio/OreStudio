@@ -14,7 +14,7 @@
 #+begin_export markdown
 ---
 name: compass-doc-add
-description: Create a document of any type — story, task, capture, knowledge, recipe, memory and the rest. Scaffold it, fill its sections, wire its parent index, commit. One verb over every document type.
+description: Create a document of any type — story, task, capture, knowledge (a Zettelkasten page), recipe, memory and the rest. Scaffold it, fill its sections, wire its parent index, commit. A knowledge page follows the house style of the Zettelkasten page — academic prose, cited sources, titles that read like academic paper titles.
 license: Complete terms in LICENSE.txt
 ---
 #+end_export
@@ -34,6 +34,13 @@ This verb creates the artefact and nothing else. Picking up a unit of work is
    the placement procedure in
    [[id:7D779BB3-BBEF-40D2-B6AC-E02BCA72AB85][Skill naming conventions]].
    Then find its row in the table below.
+
+   /A knowledge document/ — anything asked for as a knowledge page, a
+   Zettelkasten page or a note in =doc/knowledge= — is written to the house
+   style. Read /Creating a knowledge document/ and /The house style/ in
+   [[id:E3B70401-5142-4ACC-A61F-1BBF19F8470F][Zettelkasten]] before writing, and follow them: they fix the title, the
+   file name, the prose, the citations and the checks. The title reads like
+   the title of an academic paper, a noun phrase with no finite verb.
 
 2. /Scaffold it/ with the row's command. Compass fills the frontmatter and
    generates the =:ID:=, so never hand-write either.
@@ -79,7 +86,7 @@ One row per document type. The scaffold command, where it lands, and the section
 | =field_group= | =compass add field_group= | =projects/ores.<component>/modeling/= | =Includes=, =Fields= |
 | =investigation= | =compass add investigation= | =--parent-dir= | =Context=, =Methodology=, =Paths taken=, =Conclusions=, =Recommendations=, =See also= |
 | =junction= | =compass add junction= | =--parent-dir= | =Left=, =Right=, =Columns=, =SQL=, =Repository=, =C++=, =See also= |
-| =knowledge= | =compass add knowledge= | =--parent-dir= | =Summary=, =Detail=, =Patterns used=, =See also= |
+| =knowledge= | =compass add knowledge= | =--parent-dir= | =Summary=, =Detail=, =Patterns used=, =See also=, =Sources= |
 | =lookup_entity= | =compass add lookup_entity= | =--parent-dir= | =Primary key=, =Columns=, =Artefact indexes=, =See also= |
 | =manual= | =compass add manual= | =doc/manual/user_guide= | — |
 | =memory= | =compass add memory= | =doc/llm/memory= | — |

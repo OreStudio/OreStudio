@@ -32,7 +32,7 @@ CPU are budgets the environments share.
 | Rate | Tens to hundreds of transactions a second | About 29,000 source ticks a second at 100,000 feeds, about 116,000 in an active market |
 | Shape | Bitemporal rows, audit columns, small transactions | Append-only points, idempotent, bulk |
 | Isolation | Row-level security on tenant and party | Entitlement checked when a party reads |
-| Path | [[id:37D08E01-F99C-4D2D-8ACA-E19E252BBE3D][A repository works inside an open transaction and never holds credentials]] and [[id:E8369409-2A7B-4258-9D3C-6D37A46F4603][A hand-written statement is declared once, typed both ways and prepared once]] | [[id:BCD7D253-8B1E-4887-B476-EDD3EDE01BE6][Ticks reach the store through sharded binary COPY in bounded batches]] into [[id:D71F9446-C62E-48A6-A87B-136EF598A59E][A source tick is stored once and entitled when it is read]] |
+| Path | [[id:37D08E01-F99C-4D2D-8ACA-E19E252BBE3D][Repositories within the unit of work]] and [[id:E8369409-2A7B-4258-9D3C-6D37A46F4603][Declaration, typing and preparation of hand-written SQL statements]] | [[id:BCD7D253-8B1E-4887-B476-EDD3EDE01BE6][Ticks reach the store through sharded binary COPY in bounded batches]] into [[id:D71F9446-C62E-48A6-A87B-136EF598A59E][Storage and entitlement of stored ticks]] |
 | What matters most | Correctness, isolation, auditability | Throughput, bounded latency, bounded memory and storage |
 
 ** The budget

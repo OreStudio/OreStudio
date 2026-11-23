@@ -43,7 +43,7 @@ namespace {
 
 namespace refdata_domain = ores::refdata::domain;
 namespace refdata_messaging = ores::refdata::messaging;
-namespace reporting_domain = ores::reporting::domain;
+namespace ore_domain = ores::ore::domain;
 
 const auto view_definition_id =
     boost::uuids::string_generator()("00000000-0000-0000-0000-00000000000a");
@@ -97,8 +97,8 @@ refdata_messaging::curve_configuration_document yield_curve_document(bool with_s
 }
 
 /// The contract entries one drawn section is checked against.
-std::vector<reporting_domain::ore_parameter> contract_rows() {
-    reporting_domain::ore_parameter currency;
+std::vector<ore_domain::ore_parameter> contract_rows() {
+    ore_domain::ore_parameter currency;
     currency.schema_name = "curveconfig.xsd";
     currency.xpath = "/CurveConfiguration/YieldCurves/YieldCurve/Currency";
     currency.scope = "GlobalParameters";
@@ -106,7 +106,7 @@ std::vector<reporting_domain::ore_parameter> contract_rows() {
     currency.label = "Currency";
     currency.is_required = true;
 
-    reporting_domain::ore_parameter curve_id;
+    ore_domain::ore_parameter curve_id;
     curve_id.schema_name = "curveconfig.xsd";
     curve_id.xpath = "/CurveConfiguration/YieldCurves/YieldCurve/CurveId";
     curve_id.scope = "GlobalParameters";

@@ -392,8 +392,8 @@ function repliesFor(overrides: Replies = {}): Replies {
                 { code: 'Zero', segment_kind: 'Direct', description: 'Discount factors.' },
             ],
         },
-        'reporting.v1.ore_parameters.list': { result: ok, parameters: PARAMETERS },
-        'reporting.v1.ore_parameter_value_sets.list': {
+        'ore.v1.ore_parameters.list': { result: ok, parameters: PARAMETERS },
+        'ore.v1.ore_parameter_value_sets.list': {
             result: ok,
             sets: [
                 {
@@ -418,7 +418,7 @@ function repliesFor(overrides: Replies = {}): Replies {
                 { iso_code: 'USD', name: 'US Dollar' },
             ],
         },
-        'reporting.v1.ore_parameter_value_set_values.list': {
+        'ore.v1.ore_parameter_value_set_values.list': {
             result: ok,
             values: [
                 {
@@ -435,13 +435,13 @@ function repliesFor(overrides: Replies = {}): Replies {
                 },
             ],
         },
-        'reporting.v1.ore_parameter_value_set_catalogues.list': {
+        'ore.v1.ore_parameter_value_set_catalogues.list': {
             result: ok,
             catalogues: [
                 { code: 'refdata.currency', relation: 'ores_refdata_currency_catalogue_v' },
             ],
         },
-        'reporting.v1.ore_parameter_setting_value_sets.list': {
+        'ore.v1.ore_parameter_setting_value_sets.list': {
             result: ok,
             setting_value_sets: LINKS,
         },

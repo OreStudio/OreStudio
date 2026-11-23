@@ -76,7 +76,7 @@ std::string words_json(const std::string& text) {
         if (c == ',') {
             const auto trimmed = rr::trimmed(word);
             if (!trimmed.empty())
-                words.push_back(trimmed);
+                words.push_back(json::write(trimmed));
             word.clear();
             continue;
         }
@@ -84,7 +84,7 @@ std::string words_json(const std::string& text) {
     }
     const auto last = rr::trimmed(word);
     if (!last.empty())
-        words.push_back(last);
+        words.push_back(json::write(last));
     return rr::array_of(words);
 }
 

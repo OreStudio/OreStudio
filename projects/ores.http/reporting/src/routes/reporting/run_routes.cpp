@@ -312,7 +312,10 @@ std::string run_error_json(const reporting_domain::report_error_event& event) {
            ",\"subject\":" + json::write(event.subject) +
            ",\"subject_id\":" + json::write(event.subject_id) +
            ",\"cause\":" + json::write(event.cause) + ",\"time\":" + json::write(event.event_time) +
-           "}";
+           ",\"location\":" +
+           (event.location.empty() ? std::string("null") : json::write(event.location)) +
+           ",\"filename\":" +
+           (event.filename.empty() ? std::string("null") : json::write(event.filename)) + "}";
 }
 
 }
@@ -374,8 +377,11 @@ void run_routes::register_routes(std::shared_ptr<ores::http::net::router> router
                     if (!rr::is_uuid(raw))
                         rr::invalid("The address names an id that is not a uuid.");
                     rr::refuse_unknown_params(req, {});
-                    return http_response::json(runs_json(
-                        runs_of_definition(req, session, boost::uuids::string_generator()(raw))));
+                    return http_response::json(
+                        "{\"runs\":" +
+                        runs_json(runs_of_definition(
+                            req, session, boost::uuids::string_generator()(raw))) +
+                        "}");
                 });
             }));
 

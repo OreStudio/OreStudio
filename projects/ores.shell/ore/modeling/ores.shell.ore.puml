@@ -1,0 +1,31 @@
+@startuml
+
+title ores.shell.ore Component
+
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    namespace shell #F2F2F2 {
+        namespace app #F2F2F2 {
+            namespace commands #F2F2F2 {
+                namespace ore #F2F2F2 {
+                    class ore_file_category_commands {
+                        {static} +register_commands(root_menu : cli::Menu&, session : nats_client&)
+                    }
+                    class ore_file_commands {
+                        {static} +register_commands(root_menu : cli::Menu&, session : nats_client&)
+                    }
+                    class ore_file_version_commands {
+                        {static} +register_commands(root_menu : cli::Menu&, session : nats_client&)
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+ores.shell.api ..> ores.shell.ore : request helpers
+ores.ore.api ..> ores.shell.ore : domain, messaging
+
+@enduml

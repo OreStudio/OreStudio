@@ -18,12 +18,15 @@
  *
  */
 #include "ores.http.api/net/http_session.hpp"
+#include "ores.http.api/net/cors.hpp"
 #include <boost/asio/use_awaitable.hpp>
 #include <boost/beast/http/read.hpp>
 #include <boost/beast/http/write.hpp>
 #include <boost/none.hpp>
 #include <boost/url/parse.hpp>
 #include <boost/url/url_view.hpp>
+#include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <stdexcept>
 #include <string_view>
@@ -47,6 +50,18 @@ std::string lowercase(std::string text) {
         return static_cast<char>(std::tolower(c));
     });
     return text;
+}
+
+/**
+ * The id this session quotes for one request, in the header the web client reads.
+ *
+ * A person whose screen refused a call quotes the id from the answer, and the same id
+ * is on this session's lines for the request, so a failure on screen leads to its log.
+ * It is stated the way the BFF states it, so a screen reads it alike on either server.
+ */
+std::string next_request_id() {
+    const auto one = boost::uuids::to_string(boost::uuids::random_generator{}());
+    return one.substr(0, one.find('-'));
 }
 
 /// Give the request the token its session keeps: a route forwards the caller's
@@ -130,6 +145,17 @@ struct run_token_renewal final {
     }
 };
 
+/// A bearer exchange, as the worker pool runs it: it may block on IAM.
+struct run_bearer_exchange final {
+    const domain::bearer_exchanger& exchange;
+    const std::string& bearer;
+    const std::string& client_address;
+
+    asio::awaitable<std::optional<domain::bearer_exchange>> operator()() const {
+        co_return exchange(bearer, client_address);
+    }
+};
+
 /// The route handler, as the worker pool runs it.
 struct run_route_handler final {
     const domain::request_handler& handler;
@@ -164,18 +190,19 @@ http_session::http_session(asio::ip::tcp::socket socket,
                            std::shared_ptr<domain::session_store> sessions,
                            domain::cookie_settings cookie,
                            std::shared_ptr<rate_limiting> limits,
-                           domain::token_renewer renewer)
+                           domain::credential_exchange credentials)
     : stream_(std::move(socket))
     , router_(std::move(router))
     , verifier_(std::move(verifier))
     , workers_(std::move(workers))
     , options_(options)
+    , cors_(make_cors_policy(options_))
     , bytes_callback_(std::move(bytes_callback))
     , counters_(counters)
     , sessions_(std::move(sessions))
     , cookie_(std::move(cookie))
     , limits_(std::move(limits))
-    , renewer_(std::move(renewer)) {
+    , credentials_(std::move(credentials)) {
 
     auto endpoint = stream_.socket().remote_endpoint();
     peer_ = endpoint.address();
@@ -371,6 +398,9 @@ asio::awaitable<void> http_session::refuse(unsigned version,
                                            std::string_view reason,
                                            std::string_view note) {
     ORES_LOG_SEV(lg(), warn) << "Refusing " << subject << ": " << note;
+    // The request that would earn them was never read, so no origin is stated.
+    cors_headers_.clear();
+    request_id_.clear();
     auto response = domain::http_response::error(status, std::string(reason));
     co_await write_response(response, version, false, true);
 }
@@ -395,7 +425,7 @@ asio::awaitable<void> http_session::refuse_rate_limited(unsigned version,
 
 asio::awaitable<bool> http_session::renew_if_due(const std::string& identifier,
                                                  domain::session_record& record) {
-    if (!renewer_)
+    if (!credentials_.renew)
         co_return true;
     /*
      * A token is renewed once three quarters of its life have passed, so the
@@ -414,8 +444,9 @@ asio::awaitable<bool> http_session::renew_if_due(const std::string& identifier,
     const auto token = record.token;
     domain::token_renewal renewal;
     try {
-        renewal = workers_ != nullptr ? co_await workers_->run(run_token_renewal{renewer_, token}) :
-                                        renewer_(token);
+        renewal = workers_ != nullptr ?
+                      co_await workers_->run(run_token_renewal{credentials_.renew, token}) :
+                      credentials_.renew(token);
     } catch (const std::exception& e) {
         ORES_LOG_SEV(lg(), warn) << "A session's token was not renewed: " << e.what();
     }
@@ -548,18 +579,21 @@ asio::awaitable<void> http_session::handle_request(domain::http_request domain_r
     const auto version =
         static_cast<unsigned>(domain_req.http_version_major * 10 + domain_req.http_version_minor);
 
+    // Worked out once, so every answer this request produces carries them.
+    cors_headers_ = cors_headers(cors_, domain_req.get_header("Origin"));
+    request_id_ = next_request_id();
+
     ORES_LOG_SEV(lg(), trace) << "Processing request path: " << path
-                              << " method: " << static_cast<int>(domain_req.method);
+                              << " method: " << static_cast<int>(domain_req.method)
+                              << " request: " << request_id_;
 
     // Handle CORS preflight
     if (options_.enable_cors && domain_req.method == domain::http_method::options) {
         domain::http_response cors_resp;
         cors_resp.status = domain::http_status::no_content;
-        cors_resp.set_header("Access-Control-Allow-Origin", options_.cors_allowed_origins);
-        cors_resp.set_header("Access-Control-Allow-Methods",
-                             "GET, POST, PUT, PATCH, DELETE, OPTIONS");
-        cors_resp.set_header("Access-Control-Allow-Headers", "Content-Type, Authorization");
-        cors_resp.set_header("Access-Control-Max-Age", "86400");
+        for (const auto& [name, value] :
+             cors_preflight_headers(cors_, domain_req.get_header("Origin")))
+            cors_resp.set_header(name, value);
 
         co_await write_response(cors_resp, version, keep_alive, true);
         co_return;
@@ -610,7 +644,53 @@ asio::awaitable<void> http_session::handle_request(domain::http_request domain_r
                 co_return;
             }
 
-            auto claims_result = effective->validate(*token);
+            /*
+             * A bearer value that is not a token, such as an LLM agent's key, is
+             * exchanged first, and the token IAM issues for it is verified and
+             * relayed like any other. A refusal is a failed credential. The value
+             * is never logged.
+             */
+            auto bearer = *token;
+            if (credentials_.exchange) {
+                std::optional<domain::bearer_exchange> exchanged;
+                try {
+                    exchanged = workers_ != nullptr ?
+                                    co_await workers_->run(run_bearer_exchange{
+                                        credentials_.exchange, bearer, remote_address_}) :
+                                    credentials_.exchange(bearer, remote_address_);
+                } catch (const std::exception& e) {
+                    ORES_LOG_SEV(lg(), warn) << "A bearer exchange failed for " << matched->pattern
+                                             << " from " << remote_address_ << ": " << e.what();
+                    exchanged = domain::bearer_exchange{
+                        .result = domain::bearer_exchange::outcome::unavailable};
+                }
+                if (exchanged) {
+                    if (exchanged->result == domain::bearer_exchange::outcome::unavailable) {
+                        ORES_LOG_SEV(lg(), warn) << "A bearer exchange could not be made for "
+                                                 << matched->pattern << " from " << remote_address_;
+                        auto unavailable = domain::http_response::error(
+                            domain::http_status::service_unavailable,
+                            "The credential could not be checked now; retry shortly.");
+                        unavailable.set_header("Retry-After", "5");
+                        co_await write_response(unavailable, version, keep_alive, true);
+                        co_return;
+                    }
+                    if (exchanged->result == domain::bearer_exchange::outcome::refused) {
+                        ORES_LOG_SEV(lg(), warn) << "Refused a bearer exchange for "
+                                                 << matched->pattern << " from " << remote_address_;
+                        if (co_await refused_failed_credential(
+                                version, matched->pattern, keep_alive))
+                            co_return;
+                        auto unauthorized = domain::http_response::unauthorized("invalid key");
+                        co_await write_response(unauthorized, version, keep_alive, true);
+                        co_return;
+                    }
+                    bearer = exchanged->token;
+                    carry_session_token(domain_req, bearer);
+                }
+            }
+
+            auto claims_result = effective->validate(bearer);
             if (!claims_result) {
                 ORES_LOG_SEV(lg(), warn)
                     << "Invalid token for " << matched->pattern << " from " << remote_address_
@@ -759,11 +839,6 @@ asio::awaitable<void> http_session::handle_request(domain::http_request domain_r
         }
     }
 
-    // Add CORS headers if enabled
-    if (options_.enable_cors) {
-        response.set_header("Access-Control-Allow-Origin", options_.cors_allowed_origins);
-    }
-
     // Add server header
     response.set_header("Server", options_.server_identifier);
 
@@ -832,6 +907,14 @@ http::response<http::string_body> http_session::convert_response(const domain::h
         result.set(name, value);
     }
 
+    // What a browser needs to read this answer, added whatever the status is.
+    for (const auto& [name, value] : cors_headers_) {
+        result.set(name, value);
+    }
+    if (!request_id_.empty()) {
+        result.set("x-request-id", request_id_);
+    }
+
     return result;
 }
 
@@ -850,10 +933,20 @@ std::optional<std::string> http_session::csrf_refusal(const domain::http_request
 
     const auto expected =
         std::string(cookie_.secure ? "https://" : "http://") + lowercase(req.get_header("host"));
-    if (lowercase(origin) != expected)
-        return "The Origin does not match this deployment";
+    if (lowercase(origin) == expected)
+        return std::nullopt;
 
-    return std::nullopt;
+    /*
+     * The same bundle is served by more than one deployment while the port is in
+     * progress, and a page on one of them writes to another. Such a page states its own
+     * origin, not the host it is calling, so the list of deployments we trust is the
+     * other place a write may come from. A wildcard states no such list, and answers
+     * only reads, so a wildcard deployment refuses this as it always did.
+     */
+    if (cors_.names(origin))
+        return std::nullopt;
+
+    return "The Origin does not match this deployment";
 }
 
 asio::awaitable<void> http_session::write_response(const domain::http_response& resp,
@@ -889,6 +982,10 @@ asio::awaitable<void> http_session::write_response(const domain::http_response& 
     head.keep_alive(keep_alive);
     for (const auto& [name, value] : resp.headers)
         head.set(name, value);
+    for (const auto& [name, value] : cors_headers_)
+        head.set(name, value);
+    if (!request_id_.empty())
+        head.set("x-request-id", request_id_);
 
     const auto declared =
         resp.body_stream != nullptr ? resp.body_stream->size() : resp.body_awaitable->size();
@@ -965,6 +1062,11 @@ void http_session::parse_query_params(const std::string& target, domain::http_re
     }
 
     for (const auto& param : result->params()) {
+        // A query that names nothing — a bare "?" or a doubled "&" — states no
+        // parameter, so it is not one a read can be refused for. A screen that
+        // builds its address from an empty set of parameters writes one.
+        if (param.key.empty())
+            continue;
         req.query_params.emplace(std::string(param.key), std::string(param.value));
     }
 }

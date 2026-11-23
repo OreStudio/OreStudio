@@ -90,6 +90,11 @@ struct feed_kind_candidate final {
     /** The currency pair of an FX feed, base then quote. Other kinds leave it empty. */
     std::optional<std::pair<std::string, std::string>> fx_pair;
     /**
+     * The source name of the spot feed a surface reads and correlates with: the one its config
+     * names by URI and provider. Empty for other kinds, and for a surface whose pair names none.
+     */
+    std::string spot_source_name;
+    /**
      * @brief The pillars of a curve feed, in the notation's own words.
      *
      * A feed that quotes one instrument leaves the list empty. A curve quotes one id for each of
@@ -204,6 +209,12 @@ struct feed_kind final {
     std::function<std::vector<feed_kind_candidate>(const ores::database::context&,
                                                    const std::string& feed_config_id)>
         candidates;
+
+    /**
+     * The kind runs only while a provider's simulated source holds it, so no operator starts it
+     * by hand: a run of its own would be a second market beside the one the vendors quote.
+     */
+    bool held_by_adapters = false;
 
     /** This kind's simulate subject. */
     std::string simulate_subject;

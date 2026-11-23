@@ -1019,7 +1019,7 @@ begin
                 arrival_mode, branching_ratio, decay, sensitivity,
                 skew_reversion, skew_volatility, curvature_reversion, curvature_volatility,
                 spot_variance_correlation, spot_skew_correlation, segment_correlation,
-                start_skew, start_curvature,
+                start_skew, start_curvature, spot_oresmd_uri, spot_provider_code,
                 modified_by, performed_by, change_reason_code, change_commentary
             )
             select
@@ -1033,14 +1033,29 @@ begin
                 r.arrival_mode, r.branching_ratio, r.decay, r.sensitivity,
                 r.skew_reversion, r.skew_volatility, r.curvature_reversion, r.curvature_volatility,
                 r.spot_variance_correlation, r.spot_skew_correlation, r.segment_correlation,
-                r.start_skew, r.start_curvature,
+                r.start_skew, r.start_curvature, spot.oresmd_uri, collection.provider_code,
                 coalesce(ores_iam_current_service_fn(), current_user), current_user,
                 'system.external_data_import', 'Published from DQ dataset: ' || v_dataset_name
             from (select 1) as _feed
+            -- The surface reads the spot its own collection quotes: the spot feed this
+            -- publish wrote for the pair, under the collection's provider. A URI names
+            -- what is observed, so the provider is what makes it one feed.
+            join ores_synthetic_market_data_generation_configs_tbl collection
+                on collection.tenant_id = p_target_tenant_id and collection.id = v_config_id
+               and collection.valid_to = ores_utility_infinity_timestamp_fn()
+            join ores_synthetic_fx_spot_generation_configs_tbl spot
+                on spot.tenant_id = p_target_tenant_id and spot.config_id = v_config_id
+               and spot.base_currency_code = r.base_currency_code
+               and spot.quote_currency_code = r.quote_currency_code
+               and spot.valid_to = ores_utility_infinity_timestamp_fn()
             left join ores_synthetic_fx_vol_surface_feeds_tbl existing
                 on existing.tenant_id = p_target_tenant_id and existing.id = r.id
                and existing.valid_to = ores_utility_infinity_timestamp_fn()
             returning version into v_new_version;
+            if not found then
+                raise exception 'The surface %/% of dataset % has no spot feed of its pair in its collection.',
+                    r.base_currency_code, r.quote_currency_code, v_dataset_name;
+            end if;
             if v_new_version = 1 then
                 v_inserted := v_inserted + 1;
             else

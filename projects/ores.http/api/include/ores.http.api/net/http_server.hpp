@@ -69,11 +69,20 @@ public:
      * path knows no service, so the application gives it this.
      */
     void set_token_renewer(domain::token_renewer renewer) {
-        renewer_ = std::move(renewer);
+        credentials_.renew = std::move(renewer);
+    }
+
+    /**
+     * @brief Sets what exchanges a bearer value that is not a token, such as an
+     * LLM agent's key, for a token IAM issues.
+     */
+    void set_bearer_exchanger(domain::bearer_exchanger exchanger) {
+        credentials_.exchange = std::move(exchanger);
     }
 
     /// How this deployment names and protects the cookie a session rides in.
     void set_cookie_settings(domain::cookie_settings settings) {
+        registry_->set_session_cookie_name(settings.name);
         cookie_ = std::move(settings);
     }
 
@@ -193,7 +202,7 @@ private:
     // buckets every session counts against. Null when the options turn limiting off.
     std::shared_ptr<rate_limiting> limits_;
     std::unique_ptr<boost::asio::steady_timer> sweep_timer_;
-    domain::token_renewer renewer_;
+    domain::credential_exchange credentials_;
 };
 
 }

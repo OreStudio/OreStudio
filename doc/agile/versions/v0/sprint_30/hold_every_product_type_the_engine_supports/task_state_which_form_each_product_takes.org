@@ -96,7 +96,7 @@ restored afterwards.
 
 ORE's trade factory reads 39 types through a =ScriptedTrade= class, and the
 catalogue states 5 of them as scripted: 34 registered types state a form ORE
-does not read them as. [[id:CC7CC29C-9413-4DF3-BC32-D1C8A978D295][Which trade types ORE carries and ORE Studio holds]] lists each, from
+does not read them as. [[id:CC7CC29C-9413-4DF3-BC32-D1C8A978D295][Coverage of ORE trade types in ORE Studio]] lists each, from
 =external/ore/catalogue/trade_types.tsv=.
 
 

@@ -46,7 +46,7 @@ package "ores.reporting" {
     database "run document and\nengine settings part tables" as pdb
 }
 
-component "ores_reporting_value_in_set_fn\none verdict for every family" as verdict
+component "ores_ore_value_in_set_fn\none verdict for every family" as verdict
 database "the value set tables\nand the two link tables" as sets
 
 package "Readers" {

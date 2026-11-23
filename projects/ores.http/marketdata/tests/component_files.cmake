@@ -26,6 +26,7 @@ set(files
     "curve_routes_tests.cpp"
     "fixing_series_routes_tests.cpp"
     "main.cpp"
+    "market_reads_routes_tests.cpp"
     "oresmd_routes_tests.cpp"
     "public_rate_routes_tests.cpp"
     "public_rates_views_tests.cpp"
@@ -35,5 +36,6 @@ set(files
     "series_identity_shape_routes_tests.cpp"
     "series_identity_shape_web_routes_tests.cpp"
     "series_routes_tests.cpp"
+    "shape_fields_routes_tests.cpp"
     "subscription_routes_tests.cpp"
 )

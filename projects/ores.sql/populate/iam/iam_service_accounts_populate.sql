@@ -55,7 +55,6 @@
 \set ore_service_pw    `echo "$ORES_ORE_SERVICE_DB_PASSWORD"`
 \set marketdata_service_pw    `echo "$ORES_MARKETDATA_SERVICE_DB_PASSWORD"`
 \set analytics_service_pw    `echo "$ORES_ANALYTICS_SERVICE_DB_PASSWORD"`
-\set orgmode_service_pw    `echo "$ORES_ORGMODE_SERVICE_DB_PASSWORD"`
 \set storage_service_pw    `echo "$ORES_STORAGE_SERVICE_DB_PASSWORD"`
 \set inbox_service_pw    `echo "$ORES_INBOX_SERVICE_DB_PASSWORD"`
 
@@ -233,15 +232,6 @@ select ores_iam_service_accounts_upsert_fn(
     :'analytics_service_pw',
     p_full_name => 'Analytics Service',
     p_picture_code => 'ores_analytics_service'
-);
-
-select ores_iam_service_accounts_upsert_fn(
-    :'orgmode_service_user',
-    'orgmode_service@system.ores',
-    'System service account for Org-mode NATS domain service',
-    :'orgmode_service_pw',
-    p_full_name => 'Org-mode Service',
-    p_picture_code => 'ores_orgmode_service'
 );
 
 select ores_iam_service_accounts_upsert_fn(

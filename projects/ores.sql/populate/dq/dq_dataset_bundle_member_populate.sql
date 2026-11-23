@@ -83,10 +83,6 @@ BEGIN
     -- Provisioning copies every one of them to each party.
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'refdata.fx_vol_surface_blueprints', 22);
 
-    -- The knowledge base: ORE Studio's user-facing org pages. Installation data
-    -- like the providers, so the system tenant owns them and every tenant reads them.
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'orgmode.knowledge_pages', 23);
-
     -- =============================================================================
     -- World Bundle Members
     -- =============================================================================

@@ -21,7 +21,7 @@ To measure a margin, compare the all-in rate with the market outright at the sam
 * See also
 
 - [[id:9FB155A4-54FD-57D5-93A1-1FECB3A05F95][FX forwards]] — the structure note.
-- [[id:E8B5DF1F-027E-5B98-89B2-809EDFDBEDF1][Forward points are the difference between the outright and spot]] — completes: the market part of the rate.
+- [[id:E8B5DF1F-027E-5B98-89B2-809EDFDBEDF1][FX forward points: definition, premium and discount]] — completes: the market part of the rate.
 
 * Sources
 

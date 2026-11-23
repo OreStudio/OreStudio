@@ -28,7 +28,6 @@
 -- =============================================================================
 -- Views that read tables of several components go before those tables
 \ir ./trading/trading_trade_summaries_drop.sql
-\ir ./orgmode/orgmode_drop.sql
 \ir ./inbox/inbox_drop.sql
 \ir ./synthetic/synthetic_drop.sql
 \ir ./analytics/drop_analytics.sql
@@ -37,6 +36,7 @@
 \ir ./compute/drop_compute.sql
 \ir ./mq/mq_drop.sql
 \ir ./reporting/reporting_drop.sql
+\ir ./ore/ore_drop.sql
 \ir ./scheduler/scheduler_drop.sql
 \ir ./geo/geo_drop.sql
 \ir ./assets/assets_drop.sql

@@ -65,9 +65,9 @@ The story closes on the tasks it finished:
   paths ([[id:662D0C1B-319C-4F85-A118-42D830661B40][The data path serves a control plane and a data plane]]).
 - *Tick points belong to the installation.* They carry no tenant and no
   row-level security, entitlement is checked when a party reads, and so closed
-  chunks compress ([[id:D71F9446-C62E-48A6-A87B-136EF598A59E][A source tick is stored once and entitled when it is read]]).
+  chunks compress ([[id:D71F9446-C62E-48A6-A87B-136EF598A59E][Storage and entitlement of stored ticks]]).
 - *TimescaleDB runs under the Timescale licence,* which the compression and the
-  policy jobs need ([[id:A79C25FA-9F70-453B-A52E-780B4402ABAA][The tick store is bounded]]).
+  policy jobs need ([[id:A79C25FA-9F70-453B-A52E-780B4402ABAA][Bounded retention in the tick store]]).
 - Closed on 2026-11-08 at sprint 29 close with its done tasks. The open tasks and the original acceptance moved to [[id:4AD7DD1A-3E8C-4B97-BC38-149A66F59250][Carry one hundred thousand feeds on the data path — the remaining work]].
 
 * Out of scope

@@ -371,8 +371,17 @@ function FilterBar({
  * read takes no time bound. Each open row offers the one write the screen has:
  * ending that session, which re-reads the panel.
  */
+/** Which sessions the panel shows: people's own, their agents', or both. */
+const SESSION_HOLDERS = ['all', 'people', 'agents'] as const;
+type SessionHolder = (typeof SESSION_HOLDERS)[number];
+
+function holdsSession(row: Session, holder: SessionHolder): boolean {
+    if (holder === 'all') return true;
+    return (row.agentGrantId !== null) === (holder === 'agents');
+}
+
 function SessionsPanel({
-    sessions,
+    sessions: everySession,
     accountNames,
     pending,
     error,
@@ -391,13 +400,30 @@ function SessionsPanel({
     readonly onEnd: (session: Session) => void;
 }): ReactNode {
     const { t } = useTranslation();
+    const [holder, setHolder] = useState<SessionHolder>('all');
+    const sessions = everySession.filter((row) => holdsSession(row, holder));
     return (
         <section className="card space-y-4 p-6">
             <header className="flex flex-wrap items-baseline justify-between gap-2">
                 <h2 className="text-lg font-medium">{t('auditSignIns.sessions.title')}</h2>
-                <span className="text-xs text-ink-faint">
-                    {t('auditSignIns.sessions.count', { count: sessions.length })}
-                </span>
+                <div className="flex items-center gap-3">
+                    <label className="flex items-center gap-2 text-xs text-ink-muted">
+                        {t('auditSignIns.sessions.holder')}
+                        <Select
+                            value={holder}
+                            onChange={(event) => setHolder(event.target.value as SessionHolder)}
+                        >
+                            {SESSION_HOLDERS.map((option) => (
+                                <option key={option} value={option}>
+                                    {t(`auditSignIns.sessions.holders.${option}`)}
+                                </option>
+                            ))}
+                        </Select>
+                    </label>
+                    <span className="text-xs text-ink-faint">
+                        {t('auditSignIns.sessions.count', { count: sessions.length })}
+                    </span>
+                </div>
             </header>
             {pending ? (
                 <p className="text-sm text-ink-muted">{t('common.loading')}</p>
@@ -431,6 +457,9 @@ function SessionsPanel({
                                             {t('auditSignIns.column.country')}
                                         </th>
                                         <th className="py-1 font-normal">
+                                            {t('auditSignIns.column.agent')}
+                                        </th>
+                                        <th className="py-1 font-normal">
                                             {t('auditSignIns.column.account')}
                                         </th>
                                         <th className="py-1 font-normal">
@@ -446,15 +475,24 @@ function SessionsPanel({
                                                 {row.startTime}
                                             </td>
                                             <td className="py-2 font-mono text-xs">
-                                                {row.clientIdentifier === ''
-                                                    ? '—'
-                                                    : row.clientIdentifier}
+                                                {row.agentGrantId !== null
+                                                    ? row.protocol
+                                                    : row.clientIdentifier === ''
+                                                      ? '—'
+                                                      : row.clientIdentifier}
                                             </td>
                                             <td className="py-2 font-mono text-xs">
                                                 {row.clientIp === '' ? '—' : row.clientIp}
                                             </td>
                                             <td className="py-2 text-ink-muted">
                                                 {row.countryCode === '' ? '—' : row.countryCode}
+                                            </td>
+                                            <td className="py-2">
+                                                {row.agentGrantId !== null ? (
+                                                    <Tag>{row.clientIdentifier}</Tag>
+                                                ) : (
+                                                    <span className="text-ink-faint">—</span>
+                                                )}
                                             </td>
                                             <td className="py-2">
                                                 <AccountCell
@@ -943,6 +981,12 @@ export function AuditPage(): ReactNode {
     };
 
     const end = async (session: Session): Promise<void> => {
+        /*
+         * Ending an agent's session revokes the key that opened it, or the
+         * agent's next call would open another; the person is told first.
+         */
+        if (session.agentGrantId !== null && !window.confirm(t('auditSignIns.sessions.endAgent')))
+            return;
         setEndingId(session.id);
         setEndedId('');
         setEndError('');

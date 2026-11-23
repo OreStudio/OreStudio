@@ -144,6 +144,38 @@ std::expected<market_index, std::string> read_power(std::string_view rest) {
     return make(f::power, t[0], std::move(fs));
 }
 
+/*
+ * The rate indices ORE spells otherwise than their market. ORE Studio names an
+ * index by its market name and keeps ORE's spelling to this boundary: reading
+ * an ORE name gives the market name, and writing gives ORE's name back.
+ */
+struct ore_rate_spelling final {
+    std::string_view currency;
+    std::string_view ore;
+    std::string_view market;
+};
+
+constexpr std::array<ore_rate_spelling, 2> ore_rate_spellings{{
+    {"EUR", "ESTER", "ESTR"},
+    {"JPY", "TONAR", "TONA"},
+}};
+
+std::string_view market_rate_name(std::string_view currency, std::string_view name) {
+    for (const auto& s : ore_rate_spellings) {
+        if (s.currency == currency && s.ore == name)
+            return s.market;
+    }
+    return name;
+}
+
+std::string_view ore_rate_name(std::string_view currency, std::string_view name) {
+    for (const auto& s : ore_rate_spellings) {
+        if (s.currency == currency && s.market == name)
+            return s.ore;
+    }
+    return name;
+}
+
 // CCY-NAME[-TENOR] (:258) or CCY-CMS[-TAG]-TENOR (:519).
 std::expected<market_index, std::string> read_rate(std::string_view name) {
     const auto t = split_on_dash(name);
@@ -164,9 +196,11 @@ std::expected<market_index, std::string> read_rate(std::string_view name) {
         return refuse_index("an IBOR index is CCY-NAME[-TENOR]");
     if (t.size() == 3 && !is_period_term(t[2]))
         return refuse_index("an IBOR index's tenor is a period");
-    return make(f::ibor,
-                t[0],
-                with_optional({{"name", std::string(t[1])}}, "tenor", t.size() == 3 ? t[2] : ""));
+    const auto market_name = market_rate_name(t[0], t[1]);
+    return make(
+        f::ibor,
+        t[0],
+        with_optional({{"name", std::string(market_name)}}, "tenor", t.size() == 3 ? t[2] : ""));
 }
 
 // ORE's own inflation indices and their spaced aliases (:622); a convention may
@@ -241,7 +275,8 @@ std::string ore_index_codec::write(const market_index& index) {
     const auto& subject = index.subject();
     switch (index.family()) {
         case f::ibor:
-            return subject + "-" + *index.get("name") + opt("tenor");
+            return subject + "-" + std::string(ore_rate_name(subject, *index.get("name"))) +
+                   opt("tenor");
         case f::swap:
             return subject + "-CMS" + opt("tag") + "-" + *index.get("tenor");
         case f::inflation:

@@ -169,7 +169,7 @@ void validate(const ores::database::context& ctx,
      * than an empty answer.
      */
     const std::string sql = "select found::text, value_set_code, source_kind, is_in_set::text"
-                            " from ores_reporting_setting_value_verdict_fn($1, $2)";
+                            " from ores_ore_setting_value_verdict_fn($1, $2)";
 
     const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx,

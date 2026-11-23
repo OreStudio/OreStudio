@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: B36F92CC-E83F-4C2C-A9AC-371B8AD01AC5
+:END:
+#+title: Change the BFF and ores.http together
+#+description: Every change to the BFF's routes or their answers is also made in ores.http, because the web app runs against either.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+
+Every change to a BFF route, or to what a BFF route answers, is also made in ores.http in the same change. The web app runs against either backend, so a change made in one leaves the screen broken on the other.
+
+*Why:* The vol surface feed's key read (running, provider_code, start) was added to the BFF's FEED_KEYS but not to ores.http's feed_key_routes.cpp, so a vol feed page under ores.http had no run state. The owner asked for the rule on 2026-11-22.
+
+*How to apply:* Before raising a PR that touches projects/ores.web/packages/bff, find the matching route under projects/ores.http, in the component's src/routes, and change it too. A generated ores.http route follows its entity model: a hand-written composed key read is switched on with the keyword web_key_read set to hand-written. Check each new field or route on both backends live.

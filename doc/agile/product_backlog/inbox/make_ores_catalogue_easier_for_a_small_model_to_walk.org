@@ -1,0 +1,43 @@
+:PROPERTIES:
+:ID: 75C3EE23-A43D-4621-80F6-36B25C9D2CDE
+:END:
+#+title: Make ORE's catalogue easier for a small model to walk
+#+description: A 1.7B model reached 8 to 10 of 20 operations browsing and 13 to 16 searching; screen routes split entities and duplicate reads, two area purposes mislead, and the model stops after list_areas.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-11-23
+#+updated: 2026-11-23
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Change what the catalogue shows a small model so it reaches the operation it
+needs more often, each change measured with the request set:
+
+- Name a screen route's entity as its REST route names it, so =session= and
+  =sessions=, or the four =series_identity_shape= entities, are one entity.
+- Hide, or mark, a =web_= read that duplicates a generated read, as
+  =web_get_seed_profiles= duplicates =list_seed_profiles=.
+- Reword the area purposes that misled: curve bootstrap configurations and
+  index families were looked for in market-data.
+- Make =list_areas= say that the next step is =list_entities=: in four requests the
+  model answered after it instead of walking on.
+- Have =find_operations= keep every word asked for: "tenant" ranked
+  =list_tenants= above =list_tenant_types=.
+
+* Why
+
+LFM3-1.7B reached 8 to 10 of 20 operations by browsing over four runs, in 4.5
+to 4.9 steps when it did, and 13 to 16 by search, in about two. In the first
+run, three misses chose a duplicate read that also answers the request; the
+rest trace to the causes above.
+
+* References
+
+- [[id:529DBF0E-9AE6-448A-AD46-AA836FF33572][Measure how a small model reaches ORE's operations]]
+
+* See also
+
+-

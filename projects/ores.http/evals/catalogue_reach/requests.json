@@ -1,0 +1,25 @@
+{
+  "description": "Requests a person gives an LLM agent, each with the one operation that answers it. Every operation reads, so a read-only agent grant reaches it.",
+  "requests": [
+    {"request": "Which currencies do we have?", "expected": "list_currencies"},
+    {"request": "Show me the list of countries.", "expected": "list_countries"},
+    {"request": "What business units are set up?", "expected": "list_business_units"},
+    {"request": "List our counterparties.", "expected": "list_counterparties"},
+    {"request": "What currency groups exist?", "expected": "list_currency_groups"},
+    {"request": "Who am I signed in as?", "expected": "get_auth_sessions_me"},
+    {"request": "Show the recent sign-in and sign-out events.", "expected": "list_auth_events"},
+    {"request": "What permissions exist in the system?", "expected": "list_permissions"},
+    {"request": "Which tenants are there?", "expected": "list_tenants"},
+    {"request": "What kinds of tenant can there be?", "expected": "list_tenant_types"},
+    {"request": "List the images we store.", "expected": "list_images"},
+    {"request": "Which tags are attached to images?", "expected": "list_image_tags"},
+    {"request": "Show the system settings.", "expected": "get_system_settings"},
+    {"request": "How many sessions have there been, and how long do they last?", "expected": "get_session_statistics"},
+    {"request": "List the configurations used to bootstrap interest rate curves.", "expected": "list_ir_curve_bootstrap_configs"},
+    {"request": "Which yield curve process types can a simulation use?", "expected": "list_yield_curve_process_types"},
+    {"request": "List the families of interest rate curve indices.", "expected": "list_ir_curve_index_families"},
+    {"request": "What series identity shapes does market data define?", "expected": "list_series_identity_shapes"},
+    {"request": "Which seed profiles can a new tenant be created from?", "expected": "list_seed_profiles"},
+    {"request": "What types of business unit are there?", "expected": "list_business_unit_types"}
+  ]
+}

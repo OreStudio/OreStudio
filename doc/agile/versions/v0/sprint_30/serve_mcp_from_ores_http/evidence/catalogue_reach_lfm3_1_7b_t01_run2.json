@@ -1,0 +1,1394 @@
+{
+  "model": "lfm3-1.7b",
+  "temperature": 0.1,
+  "summary": {
+    "browse": {
+      "reached": 8,
+      "of": 20,
+      "mean_steps_when_reached": 4.5
+    },
+    "search": {
+      "reached": 13,
+      "of": 20,
+      "mean_steps_when_reached": 2.0
+    }
+  },
+  "results": [
+    {
+      "reached": "list_currencies",
+      "steps": 4,
+      "trail": [
+        {
+          "tool": "list_areas",
+          "arguments": {},
+          "server_failed": false
+        },
+        {
+          "tool": "list_entities",
+          "arguments": {
+            "area": "reference-data"
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "list_operations",
+          "arguments": {
+            "area": "reference-data",
+            "entity": "currencies"
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "call_operation",
+          "arguments": {
+            "name": "list_currencies",
+            "arguments": {
+              "area": "reference-data",
+              "entity": "currencies"
+            }
+          }
+        }
+      ],
+      "ended": "called",
+      "mode": "browse",
+      "request": "Which currencies do we have?",
+      "expected": "list_currencies",
+      "seconds": 4.6,
+      "hit": true
+    },
+    {
+      "reached": "list_countries",
+      "steps": 4,
+      "trail": [
+        {
+          "tool": "list_areas",
+          "arguments": {},
+          "server_failed": false
+        },
+        {
+          "tool": "list_entities",
+          "arguments": {
+            "area": "reference-data"
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "list_operations",
+          "arguments": {
+            "area": "reference-data",
+            "entity": "countries"
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "call_operation",
+          "arguments": {
+            "name": "list_countries"
+          }
+        }
+      ],
+      "ended": "called",
+      "mode": "browse",
+      "request": "Show me the list of countries.",
+      "expected": "list_countries",
+      "seconds": 3.5,
+      "hit": true
+    },
+    {
+      "reached": null,
+      "steps": 1,
+      "trail": [
+        {
+          "tool": "list_areas",
+          "arguments": {},
+          "server_failed": false
+        }
+      ],
+      "ended": "answered without a call",
+      "mode": "browse",
+      "request": "What business units are set up?",
+      "expected": "list_business_units",
+      "seconds": 4.5,
+      "hit": false
+    },
+    {
+      "reached": "list_counterparties",
+      "steps": 5,
+      "trail": [
+        {
+          "tool": "list_areas",
+          "arguments": {},
+          "server_failed": false
+        },
+        {
+          "tool": "list_entities",
+          "arguments": {
+            "area": "trading"
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "list_entities",
+          "arguments": {
+            "area": "reference-data"
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "list_operations",
+          "arguments": {
+            "area": "reference-data",
+            "entity": "counterparties"
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "call_operation",
+          "arguments": {
+            "name": "list_counterparties"
+          }
+        }
+      ],
+      "ended": "called",
+      "mode": "browse",
+      "request": "List our counterparties.",
+      "expected": "list_counterparties",
+      "seconds": 8.5,
+      "hit": true
+    },
+    {
+      "reached": "list_currency_groups",
+      "steps": 5,
+      "trail": [
+        {
+          "tool": "list_areas",
+          "arguments": {},
+          "server_failed": false
+        },
+        {
+          "tool": "list_entities",
+          "arguments": {
+            "area": "reference-data"
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "list_operations",
+          "arguments": {
+            "area": "reference-data",
+            "entity": "currency_group"
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "list_operations",
+          "arguments": {
+            "area": "reference-data",
+            "entity": "currency_groups"
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "call_operation",
+          "arguments": {
+            "name": "list_currency_groups"
+          }
+        }
+      ],
+      "ended": "called",
+      "mode": "browse",
+      "request": "What currency groups exist?",
+      "expected": "list_currency_groups",
+      "seconds": 10.5,
+      "hit": true
+    },
+    {
+      "reached": null,
+      "steps": 0,
+      "trail": [],
+      "ended": "answered without a call",
+      "mode": "browse",
+      "request": "Who am I signed in as?",
+      "expected": "get_auth_sessions_me",
+      "seconds": 2.9,
+      "hit": false
+    },
+    {
+      "reached": "web_get_auth_events",
+      "steps": 7,
+      "trail": [
+        {
+          "tool": "list_areas",
+          "arguments": {},
+          "server_failed": false
+        },
+        {
+          "tool": "list_entities",
+          "arguments": {
+            "area": "auth"
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "list_operations",
+          "arguments": {
+            "area": "auth",
+            "entity": "sessions"
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "list_operations",
+          "arguments": {
+            "area": "auth",
+            "entity": "auth_events"
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "list_operations",
+          "arguments": {
+            "area": "auth",
+            "entity": "login_info"
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "list_operations",
+          "arguments": {
+            "area": "auth",
+            "entity": "session"
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "call_operation",
+          "arguments": {
+            "name": "web_get_auth_events"
+          }
+        }
+      ],
+      "ended": "called",
+      "mode": "browse",
+      "request": "Show the recent sign-in and sign-out events.",
+      "expected": "list_auth_events",
+      "seconds": 9.6,
+      "hit": false
+    },
+    {
+      "reached": null,
+      "steps": 3,
+      "trail": [
+        {
+          "tool": "list_areas",
+          "arguments": {},
+          "server_failed": false
+        },
+        {
+          "tool": "list_entities",
+          "arguments": {
+            "area": "access"
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "list_operations",
+          "arguments": {
+            "area": "access",
+            "entity": "permissions"
+          },
+          "server_failed": false
+        }
+      ],
+      "ended": "answered without a call",
+      "mode": "browse",
+      "request": "What permissions exist in the system?",
+      "expected": "list_permissions",
+      "seconds": 11.3,
+      "hit": false
+    },
+    {
+      "reached": "list_tenants",
+      "steps": 5,
+      "trail": [
+        {
+          "tool": "list_areas",
+          "arguments": {},
+          "server_failed": false
+        },
+        {
+          "tool": "list_entities",
+          "arguments": {
+            "area": "tenancy"
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "list_operations",
+          "arguments": {
+            "area": "tenancy",
+            "entity": "tenants"
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "list_operations",
+          "arguments": {
+            "area": "tenancy",
+            "entity": "tenants"
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "call_operation",
+          "arguments": {
+            "name": "list_tenants",
+            "arguments": {
+              "area": "tenancy",
+              "entity": "tenants"
+            }
+          }
+        }
+      ],
+      "ended": "called",
+      "mode": "browse",
+      "request": "Which tenants are there?",
+      "expected": "list_tenants",
+      "seconds": 6.2,
+      "hit": true
+    },
+    {
+      "reached": "list_tenant_types",
+      "steps": 4,
+      "trail": [
+        {
+          "tool": "list_areas",
+          "arguments": {},
+          "server_failed": false
+        },
+        {
+          "tool": "list_entities",
+          "arguments": {
+            "area": "tenancy"
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "list_operations",
+          "arguments": {
+            "area": "tenancy",
+            "entity": "tenant_types"
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "call_operation",
+          "arguments": {
+            "name": "list_tenant_types"
+          }
+        }
+      ],
+      "ended": "called",
+      "mode": "browse",
+      "request": "What kinds of tenant can there be?",
+      "expected": "list_tenant_types",
+      "seconds": 4.3,
+      "hit": true
+    },
+    {
+      "reached": "list_images",
+      "steps": 4,
+      "trail": [
+        {
+          "tool": "list_areas",
+          "arguments": {},
+          "server_failed": false
+        },
+        {
+          "tool": "list_entities",
+          "arguments": {
+            "area": "assets"
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "list_operations",
+          "arguments": {
+            "area": "assets",
+            "entity": "images"
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "call_operation",
+          "arguments": {
+            "name": "list_images"
+          }
+        }
+      ],
+      "ended": "called",
+      "mode": "browse",
+      "request": "List the images we store.",
+      "expected": "list_images",
+      "seconds": 8.1,
+      "hit": true
+    },
+    {
+      "reached": null,
+      "steps": 5,
+      "trail": [
+        {
+          "tool": "list_areas",
+          "arguments": {},
+          "server_failed": false
+        },
+        {
+          "tool": "list_entities",
+          "arguments": {
+            "area": "assets"
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "list_operations",
+          "arguments": {
+            "area": "assets",
+            "entity": "image_tags"
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "list_operations",
+          "arguments": {
+            "area": "assets",
+            "entity": "images"
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "list_operations",
+          "arguments": {
+            "area": "assets",
+            "entity": "tags"
+          },
+          "server_failed": false
+        }
+      ],
+      "ended": "answered without a call",
+      "mode": "browse",
+      "request": "Which tags are attached to images?",
+      "expected": "list_image_tags",
+      "seconds": 13.0,
+      "hit": false
+    },
+    {
+      "reached": null,
+      "steps": 1,
+      "trail": [
+        {
+          "tool": "list_areas",
+          "arguments": {},
+          "server_failed": false
+        }
+      ],
+      "ended": "answered without a call",
+      "mode": "browse",
+      "request": "Show the system settings.",
+      "expected": "get_system_settings",
+      "seconds": 3.3,
+      "hit": false
+    },
+    {
+      "reached": "get_auth_sessions_me",
+      "steps": 5,
+      "trail": [
+        {
+          "tool": "list_areas",
+          "arguments": {},
+          "server_failed": false
+        },
+        {
+          "tool": "list_entities",
+          "arguments": {
+            "area": "auth"
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "list_operations",
+          "arguments": {
+            "area": "auth",
+            "entity": "sessions"
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "list_operations",
+          "arguments": {
+            "area": "auth",
+            "entity": "session_statistics"
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "call_operation",
+          "arguments": {
+            "name": "get_auth_sessions_me"
+          }
+        }
+      ],
+      "ended": "called",
+      "mode": "browse",
+      "request": "How many sessions have there been, and how long do they last?",
+      "expected": "get_session_statistics",
+      "seconds": 7.5,
+      "hit": false
+    },
+    {
+      "reached": null,
+      "steps": 8,
+      "trail": [
+        {
+          "tool": "list_areas",
+          "arguments": {},
+          "server_failed": false
+        },
+        {
+          "tool": "list_entities",
+          "arguments": {
+            "area": "market-data"
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "list_operations",
+          "arguments": {
+            "area": "market-data",
+            "entity": "fixings"
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "list_operations",
+          "arguments": {
+            "area": "market-data",
+            "entity": "public_rates"
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "list_entities",
+          "arguments": {
+            "area": "market-data",
+            "page": 1
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "list_entities",
+          "arguments": {
+            "area": "market-data",
+            "page": 2
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "list_operations",
+          "arguments": {
+            "area": "market-data",
+            "entity": "quotes"
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "list_operations",
+          "arguments": {
+            "area": "market-data",
+            "entity": "fixings_csv"
+          },
+          "server_failed": false
+        }
+      ],
+      "ended": "ran out of steps",
+      "mode": "browse",
+      "request": "List the configurations used to bootstrap interest rate curves.",
+      "expected": "list_ir_curve_bootstrap_configs",
+      "seconds": 18.3,
+      "hit": false
+    },
+    {
+      "reached": "get_yield_curve_process_types",
+      "steps": 5,
+      "trail": [
+        {
+          "tool": "list_areas",
+          "arguments": {},
+          "server_failed": false
+        },
+        {
+          "tool": "list_entities",
+          "arguments": {
+            "area": "simulation",
+            "page": 1
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "list_operations",
+          "arguments": {
+            "area": "simulation",
+            "entity": "yield_curve_process_type"
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "list_operations",
+          "arguments": {
+            "area": "simulation",
+            "entity": "yield_curve_process_types"
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "call_operation",
+          "arguments": {
+            "name": "get_yield_curve_process_types"
+          }
+        }
+      ],
+      "ended": "called",
+      "mode": "browse",
+      "request": "Which yield curve process types can a simulation use?",
+      "expected": "list_yield_curve_process_types",
+      "seconds": 6.7,
+      "hit": false
+    },
+    {
+      "reached": null,
+      "steps": 8,
+      "trail": [
+        {
+          "tool": "list_areas",
+          "arguments": {},
+          "server_failed": false
+        },
+        {
+          "tool": "list_entities",
+          "arguments": {
+            "area": "market-data"
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "list_operations",
+          "arguments": {
+            "area": "market-data",
+            "entity": "public_rates"
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "list_entities",
+          "arguments": {
+            "area": "market-data",
+            "page": 2
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "list_operations",
+          "arguments": {
+            "area": "market-data",
+            "entity": "fixings"
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "list_operations",
+          "arguments": {
+            "area": "market-data",
+            "entity": "quotes"
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "list_operations",
+          "arguments": {
+            "area": "market-data",
+            "entity": "curves"
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "list_entities",
+          "arguments": {
+            "area": "reference-data"
+          },
+          "server_failed": false
+        }
+      ],
+      "ended": "ran out of steps",
+      "mode": "browse",
+      "request": "List the families of interest rate curve indices.",
+      "expected": "list_ir_curve_index_families",
+      "seconds": 31.1,
+      "hit": false
+    },
+    {
+      "reached": null,
+      "steps": 6,
+      "trail": [
+        {
+          "tool": "list_areas",
+          "arguments": {},
+          "server_failed": false
+        },
+        {
+          "tool": "list_entities",
+          "arguments": {
+            "area": "market-data"
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "list_operations",
+          "arguments": {
+            "area": "market-data",
+            "entity": "series_identity_shape"
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "list_operations",
+          "arguments": {
+            "area": "market-data",
+            "entity": "series_identity_shape_fields"
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "list_operations",
+          "arguments": {
+            "area": "market-data",
+            "entity": "series_identity_shapes"
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "list_operations",
+          "arguments": {
+            "area": "market-data",
+            "entity": "series_identity_shape_entry"
+          },
+          "server_failed": false
+        }
+      ],
+      "ended": "answered without a call",
+      "mode": "browse",
+      "request": "What series identity shapes does market data define?",
+      "expected": "list_series_identity_shapes",
+      "seconds": 17.4,
+      "hit": false
+    },
+    {
+      "reached": "list_seed_profiles",
+      "steps": 5,
+      "trail": [
+        {
+          "tool": "list_areas",
+          "arguments": {},
+          "server_failed": false
+        },
+        {
+          "tool": "list_entities",
+          "arguments": {
+            "area": "tenancy"
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "list_operations",
+          "arguments": {
+            "area": "tenancy",
+            "entity": "seed_profiles"
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "list_operations",
+          "arguments": {
+            "area": "tenancy",
+            "entity": "seed_profiles"
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "call_operation",
+          "arguments": {
+            "name": "list_seed_profiles"
+          }
+        }
+      ],
+      "ended": "called",
+      "mode": "browse",
+      "request": "Which seed profiles can a new tenant be created from?",
+      "expected": "list_seed_profiles",
+      "seconds": 11.6,
+      "hit": true
+    },
+    {
+      "reached": null,
+      "steps": 1,
+      "trail": [
+        {
+          "tool": "list_areas",
+          "arguments": {},
+          "server_failed": false
+        }
+      ],
+      "ended": "answered without a call",
+      "mode": "browse",
+      "request": "What types of business unit are there?",
+      "expected": "list_business_unit_types",
+      "seconds": 1.9,
+      "hit": false
+    },
+    {
+      "reached": "list_currencies",
+      "steps": 2,
+      "trail": [
+        {
+          "tool": "find_operations",
+          "arguments": {
+            "words": "list currencies"
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "call_operation",
+          "arguments": {
+            "name": "list_currencies"
+          }
+        }
+      ],
+      "ended": "called",
+      "mode": "search",
+      "request": "Which currencies do we have?",
+      "expected": "list_currencies",
+      "seconds": 1.1,
+      "hit": true
+    },
+    {
+      "reached": "list_countries",
+      "steps": 2,
+      "trail": [
+        {
+          "tool": "find_operations",
+          "arguments": {
+            "words": "list countries"
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "call_operation",
+          "arguments": {
+            "name": "list_countries"
+          }
+        }
+      ],
+      "ended": "called",
+      "mode": "search",
+      "request": "Show me the list of countries.",
+      "expected": "list_countries",
+      "seconds": 1.0,
+      "hit": true
+    },
+    {
+      "reached": "list_business_units",
+      "steps": 2,
+      "trail": [
+        {
+          "tool": "find_operations",
+          "arguments": {
+            "words": "business units"
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "call_operation",
+          "arguments": {
+            "name": "list_business_units"
+          }
+        }
+      ],
+      "ended": "called",
+      "mode": "search",
+      "request": "What business units are set up?",
+      "expected": "list_business_units",
+      "seconds": 1.3,
+      "hit": true
+    },
+    {
+      "reached": "list_counterparties",
+      "steps": 2,
+      "trail": [
+        {
+          "tool": "find_operations",
+          "arguments": {
+            "words": "counterparties"
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "call_operation",
+          "arguments": {
+            "name": "list_counterparties"
+          }
+        }
+      ],
+      "ended": "called",
+      "mode": "search",
+      "request": "List our counterparties.",
+      "expected": "list_counterparties",
+      "seconds": 1.1,
+      "hit": true
+    },
+    {
+      "reached": "list_currency_groups",
+      "steps": 2,
+      "trail": [
+        {
+          "tool": "find_operations",
+          "arguments": {
+            "words": "currency groups"
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "call_operation",
+          "arguments": {
+            "name": "list_currency_groups"
+          }
+        }
+      ],
+      "ended": "called",
+      "mode": "search",
+      "request": "What currency groups exist?",
+      "expected": "list_currency_groups",
+      "seconds": 1.8,
+      "hit": true
+    },
+    {
+      "reached": "web_get_accounts_username_sign_ins",
+      "steps": 2,
+      "trail": [
+        {
+          "tool": "find_operations",
+          "arguments": {
+            "words": "sign in"
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "call_operation",
+          "arguments": {
+            "name": "web_get_accounts_username_sign_ins"
+          }
+        }
+      ],
+      "ended": "called",
+      "mode": "search",
+      "request": "Who am I signed in as?",
+      "expected": "get_auth_sessions_me",
+      "seconds": 3.7,
+      "hit": false
+    },
+    {
+      "reached": "web_get_auth_events",
+      "steps": 2,
+      "trail": [
+        {
+          "tool": "find_operations",
+          "arguments": {
+            "words": "sign-in sign-out"
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "call_operation",
+          "arguments": {
+            "name": "web_get_auth_events"
+          }
+        }
+      ],
+      "ended": "called",
+      "mode": "search",
+      "request": "Show the recent sign-in and sign-out events.",
+      "expected": "list_auth_events",
+      "seconds": 3.0,
+      "hit": false
+    },
+    {
+      "reached": null,
+      "steps": 1,
+      "trail": [
+        {
+          "tool": "find_operations",
+          "arguments": {
+            "words": "permissions"
+          },
+          "server_failed": false
+        }
+      ],
+      "ended": "answered without a call",
+      "mode": "search",
+      "request": "What permissions exist in the system?",
+      "expected": "list_permissions",
+      "seconds": 3.2,
+      "hit": false
+    },
+    {
+      "reached": "list_tenants",
+      "steps": 2,
+      "trail": [
+        {
+          "tool": "find_operations",
+          "arguments": {
+            "words": "tenants"
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "call_operation",
+          "arguments": {
+            "name": "list_tenants"
+          }
+        }
+      ],
+      "ended": "called",
+      "mode": "search",
+      "request": "Which tenants are there?",
+      "expected": "list_tenants",
+      "seconds": 1.7,
+      "hit": true
+    },
+    {
+      "reached": "list_tenants",
+      "steps": 2,
+      "trail": [
+        {
+          "tool": "find_operations",
+          "arguments": {
+            "words": "tenant"
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "call_operation",
+          "arguments": {
+            "name": "list_tenants"
+          }
+        }
+      ],
+      "ended": "called",
+      "mode": "search",
+      "request": "What kinds of tenant can there be?",
+      "expected": "list_tenant_types",
+      "seconds": 3.8,
+      "hit": false
+    },
+    {
+      "reached": "list_images",
+      "steps": 2,
+      "trail": [
+        {
+          "tool": "find_operations",
+          "arguments": {
+            "words": "list images store"
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "call_operation",
+          "arguments": {
+            "name": "list_images"
+          }
+        }
+      ],
+      "ended": "called",
+      "mode": "search",
+      "request": "List the images we store.",
+      "expected": "list_images",
+      "seconds": 1.6,
+      "hit": true
+    },
+    {
+      "reached": "list_image_tags",
+      "steps": 2,
+      "trail": [
+        {
+          "tool": "find_operations",
+          "arguments": {
+            "words": "tags image"
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "call_operation",
+          "arguments": {
+            "name": "list_image_tags"
+          }
+        }
+      ],
+      "ended": "called",
+      "mode": "search",
+      "request": "Which tags are attached to images?",
+      "expected": "list_image_tags",
+      "seconds": 6.6,
+      "hit": true
+    },
+    {
+      "reached": "get_system_settings",
+      "steps": 2,
+      "trail": [
+        {
+          "tool": "find_operations",
+          "arguments": {
+            "words": "system settings"
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "call_operation",
+          "arguments": {
+            "name": "get_system_settings"
+          }
+        }
+      ],
+      "ended": "called",
+      "mode": "search",
+      "request": "Show the system settings.",
+      "expected": "get_system_settings",
+      "seconds": 1.5,
+      "hit": true
+    },
+    {
+      "reached": "list_sessions",
+      "steps": 2,
+      "trail": [
+        {
+          "tool": "find_operations",
+          "arguments": {
+            "words": "session"
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "call_operation",
+          "arguments": {
+            "name": "list_sessions"
+          }
+        }
+      ],
+      "ended": "called",
+      "mode": "search",
+      "request": "How many sessions have there been, and how long do they last?",
+      "expected": "get_session_statistics",
+      "seconds": 3.2,
+      "hit": false
+    },
+    {
+      "reached": "list_ir_curve_bootstrap_configs",
+      "steps": 2,
+      "trail": [
+        {
+          "tool": "find_operations",
+          "arguments": {
+            "words": "bootstrap interest rate curves"
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "call_operation",
+          "arguments": {
+            "name": "list_ir_curve_bootstrap_configs"
+          }
+        }
+      ],
+      "ended": "called",
+      "mode": "search",
+      "request": "List the configurations used to bootstrap interest rate curves.",
+      "expected": "list_ir_curve_bootstrap_configs",
+      "seconds": 1.2,
+      "hit": true
+    },
+    {
+      "reached": "list_yield_curve_process_types",
+      "steps": 2,
+      "trail": [
+        {
+          "tool": "find_operations",
+          "arguments": {
+            "words": "yield curve process"
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "call_operation",
+          "arguments": {
+            "name": "list_yield_curve_process_types"
+          }
+        }
+      ],
+      "ended": "called",
+      "mode": "search",
+      "request": "Which yield curve process types can a simulation use?",
+      "expected": "list_yield_curve_process_types",
+      "seconds": 2.6,
+      "hit": true
+    },
+    {
+      "reached": "list_ir_curve_index_families",
+      "steps": 2,
+      "trail": [
+        {
+          "tool": "find_operations",
+          "arguments": {
+            "words": "families of interest rate curve indices"
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "call_operation",
+          "arguments": {
+            "name": "list_ir_curve_index_families"
+          }
+        }
+      ],
+      "ended": "called",
+      "mode": "search",
+      "request": "List the families of interest rate curve indices.",
+      "expected": "list_ir_curve_index_families",
+      "seconds": 2.4,
+      "hit": true
+    },
+    {
+      "reached": "list_series_identity_shapes",
+      "steps": 2,
+      "trail": [
+        {
+          "tool": "find_operations",
+          "arguments": {
+            "words": "series identity shapes market data"
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "call_operation",
+          "arguments": {
+            "name": "list_series_identity_shapes"
+          }
+        }
+      ],
+      "ended": "called",
+      "mode": "search",
+      "request": "What series identity shapes does market data define?",
+      "expected": "list_series_identity_shapes",
+      "seconds": 3.2,
+      "hit": true
+    },
+    {
+      "reached": null,
+      "steps": 8,
+      "trail": [
+        {
+          "tool": "find_operations",
+          "arguments": {
+            "words": "seed profile tenant"
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "find_operations",
+          "arguments": {
+            "words": "create new tenant seed profiles"
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "find_operations",
+          "arguments": {
+            "words": "create new tenant"
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "find_operations",
+          "arguments": {
+            "words": "new tenant provision seed profiles"
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "find_operations",
+          "arguments": {
+            "words": "provision tenant"
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "find_operations",
+          "arguments": {
+            "words": "create tenant"
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "find_operations",
+          "arguments": {
+            "words": "tenancy"
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "find_operations",
+          "arguments": {
+            "words": "new tenant seed profile start"
+          },
+          "server_failed": false
+        }
+      ],
+      "ended": "ran out of steps",
+      "mode": "search",
+      "request": "Which seed profiles can a new tenant be created from?",
+      "expected": "list_seed_profiles",
+      "seconds": 10.0,
+      "hit": false
+    },
+    {
+      "reached": "list_business_units",
+      "steps": 2,
+      "trail": [
+        {
+          "tool": "find_operations",
+          "arguments": {
+            "words": "business unit"
+          },
+          "server_failed": false
+        },
+        {
+          "tool": "call_operation",
+          "arguments": {
+            "name": "list_business_units"
+          }
+        }
+      ],
+      "ended": "called",
+      "mode": "search",
+      "request": "What types of business unit are there?",
+      "expected": "list_business_unit_types",
+      "seconds": 3.0,
+      "hit": false
+    }
+  ]
+}

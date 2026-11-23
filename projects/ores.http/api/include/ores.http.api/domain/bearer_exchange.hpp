@@ -20,7 +20,11 @@
 #ifndef ORES_HTTP_API_DOMAIN_BEARER_EXCHANGE_HPP
 #define ORES_HTTP_API_DOMAIN_BEARER_EXCHANGE_HPP
 
+#include "ores.http.api/domain/http_request.hpp"
+#include "ores.http.api/domain/http_response.hpp"
 #include "ores.http.api/domain/session_store.hpp"
+#include "ores.security/jwt/jwt_claims.hpp"
+#include <chrono>
 #include <functional>
 #include <optional>
 #include <string>
@@ -55,12 +59,47 @@ using bearer_exchanger = std::function<std::optional<bearer_exchange>(
     const std::string& bearer, const std::string& client_address)>;
 
 /**
+ * @brief A call made with an exchanged bearer value, once it is answered.
+ *
+ * Only the route's pattern is kept, never the address with its values, and
+ * never the request or the answer.
+ */
+struct exchanged_call final {
+    ores::security::jwt::jwt_claims claims;
+    std::string method;
+    std::string route;
+    int status = 0;
+    std::chrono::milliseconds duration{0};
+};
+
+/**
+ * @brief Records a call made with an exchanged bearer value, such as an LLM
+ * agent's. It may write to a store, so the gateway runs it on its worker pool.
+ */
+using exchanged_call_recorder = std::function<void(const exchanged_call& call)>;
+
+/**
+ * @brief Holds a write made with an exchanged bearer value, such as an LLM
+ * agent's, instead of running it.
+ *
+ * Answers the response the caller gets when the write is held, or refused
+ * because it could not be; answers nothing when the write is exempt and runs as
+ * any other. The route is the matched pattern. It may call other services, so
+ * the gateway runs it on its worker pool.
+ */
+using exchanged_write_holder =
+    std::function<std::optional<http_response>(const http_request& req, const std::string& route)>;
+
+/**
  * @brief The gateway's calls to IAM on the credential path: renewing a
- * browser session's token, and exchanging a bearer value that is not a token.
+ * browser session's token, exchanging a bearer value that is not a token,
+ * holding a write made with one, and recording what such a call did.
  */
 struct credential_exchange final {
     token_renewer renew;
     bearer_exchanger exchange;
+    exchanged_write_holder hold;
+    exchanged_call_recorder record;
 };
 
 }

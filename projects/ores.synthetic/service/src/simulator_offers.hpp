@@ -42,6 +42,12 @@
 namespace ores::synthetic::service {
 
 /**
+ * @brief Whether the feed node of this name is halted: an operator stopped it, or a stop starves
+ * it.
+ */
+using node_halted_fn = std::function<bool(const std::string&)>;
+
+/**
  * @brief The generators the simulator offers an adapter, from the system collections it can see.
  *
  * An offer is a startable config of a kind that has a vendor id in the notation of the provider,
@@ -55,6 +61,10 @@ namespace ores::synthetic::service {
  * holds, so it is one offer for each of its pillars, all of them naming the curve as their group,
  * and each of them builds the same generator: the curve, with the adapter target of every pillar.
  *
+ * A halted node offers nothing: a stopped or starved upstream offers none of its ids, a latent
+ * surface none of its views, and a vendor view none of its points, so its vendor stops quoting
+ * that surface while the surface and the other vendors run on.
+ *
  * @param ctx A context of the system tenant, which sees the system collections.
  */
 inline std::vector<generator_offer>
@@ -64,7 +74,8 @@ system_generator_offers(const feed_kind_registry& registry,
                         const std::string& adapter_id,
                         const std::string& provider_code,
                         std::shared_ptr<const feed::fault_state> faults = {},
-                        shared_surfaces* surfaces = nullptr) {
+                        shared_surfaces* surfaces = nullptr,
+                        const node_halted_fn& node_halted = {}) {
     namespace vendor = ores::marketdata::vendor;
     namespace msg = ores::marketdata::messaging;
     using namespace ores::synthetic::feed;
@@ -87,6 +98,8 @@ system_generator_offers(const feed_kind_registry& registry,
         const auto& candidate = target.row.candidate;
         if (!target.startable() || !target.container_is_system)
             continue;
+        if (node_halted && node_halted(candidate.source_name))
+            continue;
         const auto* notation = vendor::notation_of(provider_code);
         if (!notation)
             continue;
@@ -100,6 +113,10 @@ system_generator_offers(const feed_kind_registry& registry,
             for (const auto& [contributor, contributor_provider] :
                  candidate.contributor_providers) {
                 if (contributor_provider != provider_code)
+                    continue;
+                if (node_halted &&
+                    node_halted(fx_option_view_name(
+                        provider_code, candidate.fx_pair->first, candidate.fx_pair->second)))
                     continue;
                 fx_vol_surface_feed::point_targets point_targets;
                 std::vector<msg::vendor_id> ids;
@@ -130,14 +147,16 @@ system_generator_offers(const feed_kind_registry& registry,
                             registry.factory().make(target.row.kind->kind, build, *outcome.input));
                     };
                     return std::shared_ptr<ores::marketdata::domain::i_feed>(
-                        std::make_shared<shared_surface_hold>(*surfaces,
-                                                              feed_id,
-                                                              adapter_id,
-                                                              contributor,
-                                                              target.row.candidate.source_name +
-                                                                  "." + provider_code,
-                                                              point_targets,
-                                                              make_surface));
+                        std::make_shared<shared_surface_hold>(
+                            *surfaces,
+                            feed_id,
+                            adapter_id,
+                            contributor,
+                            fx_option_view_name(provider_code,
+                                                target.row.candidate.fx_pair->first,
+                                                target.row.candidate.fx_pair->second),
+                            point_targets,
+                            make_surface));
                 };
                 for (const auto& id : ids)
                     out.push_back(

@@ -81,6 +81,31 @@ public:
             std::move(msg), [](auto& svc, const auto& req) { return svc.revoke_agent_key(req); });
     }
 
+    void issue_replay_token(ores::nats::message msg) {
+        handle<issue_agent_replay_token_request>(
+            std::move(msg),
+            [](auto& svc, const auto& req) { return svc.issue_agent_replay_token(req); },
+            verifier_);
+    }
+
+    void get_held_write(ores::nats::message msg) {
+        handle<get_agent_held_write_request>(std::move(msg), [](auto& svc, const auto& req) {
+            return svc.get_agent_held_write(req);
+        });
+    }
+
+    void list_activity(ores::nats::message msg) {
+        handle<list_own_agent_activity_request>(std::move(msg), [](auto& svc, const auto& req) {
+            return svc.list_own_agent_activity(req);
+        });
+    }
+
+    void list_every(ores::nats::message msg) {
+        handle<list_every_agent_grant_request>(std::move(msg), [](auto& svc, const auto& req) {
+            return svc.list_every_agent_grant(req);
+        });
+    }
+
     void list_own(ores::nats::message msg) {
         handle<list_own_agent_grants_request>(std::move(msg), [](auto& svc, const auto& req) {
             return svc.list_own_agent_grants(req);

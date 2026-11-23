@@ -18,16 +18,13 @@
  *
  */
 #include "ores.iam.core/service/agent_permissions.hpp"
+#include "ores.security/authorization/agent_withholding.hpp"
 #include "ores.security/authorization/grants.hpp"
 #include <array>
 
 namespace ores::iam::service {
 
 namespace {
-
-bool contains(std::string_view text, std::string_view part) {
-    return text.find(part) != std::string_view::npos;
-}
 
 bool is_wildcard(std::string_view code) {
     return code == "*" || code.ends_with("::*");
@@ -36,37 +33,11 @@ bool is_wildcard(std::string_view code) {
 }
 
 bool is_read_permission(std::string_view code) {
-    return code.ends_with(":read") || code.ends_with(":lookup");
+    return security::authorization::is_read_permission(code);
 }
 
 bool is_withheld_from_agents(std::string_view code) {
-    if (code.starts_with("installation::"))
-        return true;
-    if (code == "iam::agent_grants:read" || code == "iam::agent_keys:read")
-        return true;
-    if (is_read_permission(code))
-        return false;
-    // Identity and access, the approval queue, and the system's own
-    // configuration are administered by people.
-    if (code.starts_with("iam::") || code.starts_with("inbox::") ||
-        code.starts_with("variability::"))
-        return true;
-    static constexpr std::array<std::string_view, 6> decisions = {
-        "approval", "authorisation", "authorization", "decision", ":decide", "authorise"};
-    for (const auto word : decisions)
-        if (contains(code, word))
-            return true;
-    static constexpr std::array<std::string_view, 5> identities = {
-        ":exchange", ":mint", ":impersonate", ":enter_as_service", ":provision"};
-    for (const auto verb : identities)
-        if (code.ends_with(verb))
-            return true;
-    // A checker's review, a person's acceptance of terms, and a write made as
-    // a service are never an agent's.
-    if (code.ends_with(":review") || code.ends_with(":accept_terms") ||
-        code.ends_with("_service_origin"))
-        return true;
-    return false;
+    return security::authorization::is_withheld_from_agents(code);
 }
 
 std::vector<std::string> agent_permissions(std::span<const std::string> catalogue,

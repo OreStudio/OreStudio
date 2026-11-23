@@ -71,7 +71,10 @@ std::string(faker::company::companyName())
 :nullable: false
 :END:
 
-What sort of provider it is: =data_vendor=, =exchange=, =broker= or =reference=.
+What sort of provider it is: =data_vendor=, =exchange=, =broker=, =reference= or
+=system=. A =system= provider is the installation's own, such as =latent=, the
+source of the synthetic markets no vendor publishes: no tenant reads it and no
+tenant row may name it.
 
 #+begin_src cpp :name generator
 std::string("data_vendor")
@@ -226,6 +229,7 @@ When the terms were accepted. Empty when they never were.
 :tablename: ores_marketdata_providers_tbl
 :rls_tenant_isolation: true
 :rls_own_or_system_tenant_rows: true
+:rls_shared_read_condition: kind <> 'system'
 :END:
 
 ** Checks
@@ -233,7 +237,7 @@ When the terms were accepted. Empty when they never were.
 | expression                                                          |
 |---------------------------------------------------------------------|
 | "code" ~ '^[a-z][a-z0-9_-]*$'                                        |
-| "kind" in ('data_vendor', 'exchange', 'broker', 'reference')         |
+| "kind" in ('data_vendor', 'exchange', 'broker', 'reference', 'system') |
 | "name" <> ''                                                        |
 | "terms_accepted_digest" = '' or (coalesce("terms_accepted_by", '') <> '' and "terms_accepted_at" is not null) |
 
@@ -346,7 +350,7 @@ policy still decides which system rows a tenant sees and who may write them.
 |---------------+---------------+-----------------+-----------+--------+-------------+---------------------------|
 | code          | Code          | codeEdit        | line_edit | true   | true        | Enter provider code       |
 | name          | Name          | nameEdit        | line_edit |        | true        | Enter name                |
-| kind          | Kind          | kindEdit        | line_edit |        | true        | data_vendor, exchange, broker or reference |
+| kind          | Kind          | kindEdit        | line_edit |        | true        | data_vendor, exchange, broker, reference or system |
 | description   | Description   | descriptionEdit | text_edit |        | true        | Enter a description       |
 | display_order | Display Order | displayOrderEdit | spin_box |        | true        |                           |
 | terms_url     | Terms page    | termsUrlEdit    | line_edit |        |             | https://...               |

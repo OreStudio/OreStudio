@@ -56,6 +56,7 @@ package "synthetic" #F9FBE7 {
         * display_order : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -91,6 +92,7 @@ package "synthetic" #F9FBE7 {
         * fallback_code : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -122,6 +124,7 @@ package "synthetic" #F9FBE7 {
         * rank : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -149,6 +152,7 @@ package "synthetic" #F9FBE7 {
         * parameter_value : double
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -194,6 +198,7 @@ package "synthetic" #F9FBE7 {
           collection_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -236,6 +241,7 @@ package "synthetic" #F9FBE7 {
         * window_days : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -283,6 +289,7 @@ package "synthetic" #F9FBE7 {
           variance_calibration_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -319,6 +326,7 @@ package "synthetic" #F9FBE7 {
         * bias : double
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -349,6 +357,7 @@ package "synthetic" #F9FBE7 {
         * contributor_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -378,6 +387,7 @@ package "synthetic" #F9FBE7 {
         * variance_volatility : double
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -425,8 +435,11 @@ package "synthetic" #F9FBE7 {
         * start_curvature : double
         * spot_oresmd_uri : text
         * spot_provider_code : text
+        * base_curve_name : text
+        * quote_curve_name : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -465,6 +478,7 @@ package "synthetic" #F9FBE7 {
         * weight : double
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -509,6 +523,7 @@ package "synthetic" #F9FBE7 {
         * sensitivity : double
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -547,6 +562,7 @@ package "synthetic" #F9FBE7 {
         * display_order : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -585,6 +601,7 @@ package "synthetic" #F9FBE7 {
         * instrument_code : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -636,6 +653,7 @@ package "synthetic" #F9FBE7 {
         * provider_code : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -667,6 +685,7 @@ package "synthetic" #F9FBE7 {
         * display_order : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -711,6 +730,7 @@ package "synthetic" #F9FBE7 {
         * display_order : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -746,39 +766,51 @@ package "synthetic" #F9FBE7 {
     edit definitions, only the values of their own configs.
     end note
 
-    entity ores_synthetic_stopped_simulated_sources_tbl <<temporal>> #C6F0D8 {
+    entity ores_synthetic_stopped_feed_nodes_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
-        * source_name : text <<PK>>
+        * node_name : text <<PK>>
         --
         * version : integer
+        * kind : text
         * provider_code : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
         * valid_to : timestamptz
     }
 
-    note right of ores_synthetic_stopped_simulated_sources_tbl
+    note right of ores_synthetic_stopped_feed_nodes_tbl
     AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
     Template: sql_schema_domain_entity_create.mustache
     To modify, update the template and regenerate.
-    Stopped Simulated Source Table
-    A simulated source of the market data catalogue that an operator stopped. The
-    synthetic service serves each simulated source with an adapter, which runs the
-    feeds the store demands of it and holds the vol surfaces its provider quotes. A
-    row here keeps that adapter stopped, a restart of the service included, until
-    someone starts the source again and the row is removed. The row's history is
-    the record of who stopped and started the source, when, and why.
-    The catalogue owns the sources and has no flag for this, and a collection's own
-    enabled flag gates the hand starts of its feeds too, so the stop is held here.
-    An operator stops and starts a source through the simulated source verbs, which
-    take the feeds run permission, write this row and stop or start the adapter
-    together. The generated write and delete of this entity take their own
-    permissions, in the system tenant only, and change the row alone: the adapter
-    follows the row at the next start of the service. They are for the record, not
-    for operating a source.
+    Stopped Feed Node Table
+    A node of the synthetic feed graph that an operator stopped, named by the
+    naming scheme. Every kind of node is stopped here:
+    - a /source/, a simulated source of the market data catalogue such as
+    bloomberg-a, served by an adapter that runs the feeds the store demands of
+    it and holds the vol surfaces its provider quotes; its stop stops the
+    adapter;
+    - an /upstream/, a vendor's spot or curve feed, such as
+    synthetic.bloomberg.fx.fx_spot.audusd, and a /latent/ surface, such as
+    synthetic.latent.fx.fx_vol_surface.audusd; its stop withholds its offers,
+    so the nodes below it starve;
+    - a /view/, one vendor's quotes of a latent vol surface, such as
+    synthetic.ice.fx.fx_option.audusd; its stop withholds that vendor's points
+    of that surface, and the surface and the other vendors run on.
+    A row keeps the node stopped, a restart of the service included, until someone
+    starts it again and the row is removed. The row's history is the record of who
+    stopped and started the node, when, and why. One table holds every kind, so a
+    node is stopped and started by one pair of verbs, by its name; see
+    [[id:2376A086-4C3C-4D61-92E5-29B122DB6A41][Synthetic feed graph]].
+    An operator stops and starts a node through the feed node verbs, which take
+    the feeds run permission, write this row and stop or start the node together.
+    The generated write and delete of this entity take their own permissions, in
+    the system tenant only, and change the row alone: the node follows the row at
+    the next start of the service. They are for the record, not for operating a
+    node.
     end note
 
     entity ores_synthetic_trade_generation_books_tbl <<temporal>> #C6F0D8 {
@@ -791,6 +823,7 @@ package "synthetic" #F9FBE7 {
         * book_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -837,6 +870,7 @@ package "synthetic" #F9FBE7 {
           reference_curve_id : text <<FK>>
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -882,6 +916,7 @@ package "synthetic" #F9FBE7 {
         * counterparty_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -916,6 +951,7 @@ package "synthetic" #F9FBE7 {
         * trade_type_code : text <<FK>>
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -953,6 +989,7 @@ package "synthetic" #F9FBE7 {
         * exclusion_reason : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -993,6 +1030,7 @@ package "synthetic" #F9FBE7 {
         * used_count : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1043,6 +1081,7 @@ package "synthetic" #F9FBE7 {
         * state_reason : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1089,6 +1128,7 @@ package "synthetic" #F9FBE7 {
         * display_order : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz

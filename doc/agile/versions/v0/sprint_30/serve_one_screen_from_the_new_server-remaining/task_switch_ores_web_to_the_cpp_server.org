@@ -149,8 +149,6 @@ via its "Verifies task" field.
 
 * Result
 
-* Result
-
 The browser talks to the C++ server. At the addresses, member names and status codes
 the BFF answered, ores.http now serves the quotes view's four routes, the four
 market-data desk reads, the identity shape views, the classification lists, the

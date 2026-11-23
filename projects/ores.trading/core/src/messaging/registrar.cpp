@@ -123,6 +123,7 @@
 #include "ores.trading.core/messaging/script_calibration_strike_registrar.hpp"
 #include "ores.trading.core/messaging/script_coarsening_registrar.hpp"
 #include "ores.trading.core/messaging/script_input_registrar.hpp"
+#include "ores.trading.core/messaging/script_input_code_registrar.hpp"
 #include "ores.trading.core/messaging/script_registrar.hpp"
 #include "ores.trading.core/messaging/script_result_registrar.hpp"
 #include "ores.trading.core/messaging/script_twin_input_registrar.hpp"
@@ -163,6 +164,12 @@
 #include "ores.trading.core/messaging/trade_link_registrar.hpp"
 #include "ores.trading.core/messaging/trade_link_type_registrar.hpp"
 #include "ores.trading.core/messaging/trade_operations_handler.hpp"
+#include "ores.trading.core/messaging/product_schema_handler.hpp"
+#include <atomic>
+#include <stdexcept>
+#include "ores.utility/uuid/tenant_id.hpp"
+#include "ores.ore.client/service/cache/ore_parameter_cache.hpp"
+#include "ores.ore.client/service/cache/ore_parameter_cache_registrar.hpp"
 #include "ores.trading.core/messaging/trade_party_role_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/trade_party_role_registrar.hpp"
 #include "ores.trading.core/messaging/trade_portfolio_history_provider_registrar.hpp"
@@ -194,7 +201,8 @@ std::vector<ores::nats::service::subscription>
 registrar::register_handlers(ores::nats::service::client& nats,
                              const ores::database::context& ctx,
                              std::optional<ores::security::jwt::jwt_authenticator> verifier,
-                             std::string http_base_url) {
+                             std::string http_base_url,
+                             ores::nats::service::nats_client& svc_nats) {
 
     auto subs = detail::register_trade_handlers(nats, ctx, verifier);
     // Capacity for the ~250 subscriptions the masters below return.
@@ -235,6 +243,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_script_calibration_strike_handlers(nats, ctx, verifier));
     append(register_script_coarsening_handlers(nats, ctx, verifier));
     append(register_script_input_handlers(nats, ctx, verifier));
+    append(register_script_input_code_handlers(nats, ctx, verifier));
     append(register_script_twin_input_handlers(nats, ctx, verifier));
     append(register_party_role_type_handlers(nats, ctx, verifier));
     append(register_payoff_type_handlers(nats, ctx, verifier));
@@ -291,6 +300,40 @@ registrar::register_handlers(ores::nats::service::client& nats,
         subs.push_back(nats.queue_subscribe(
             publish_script_request::nats_subject, queue_group, [toh](ores::nats::message msg) {
                 toh->publish_script(std::move(msg));
+            }));
+    }
+    {
+        // A product's description (hand-written handler, not codegen). The
+        // instrument fields are ores.ore's, so the service mirrors them in a
+        // cache fed by their events, read with the service's own token, rather
+        // than reading ores.ore's table. The cache is loaded on first use, so
+        // the service starts whether or not the ore service is up.
+        auto ore_parameters = std::make_shared<ores::ore::service::cache::ore_parameter_cache>(nats);
+        ore_parameters->set_token_provider(
+            [&svc_nats](const std::string&, bool) { return svc_nats.bearer_token(); });
+        for (auto& sub : ores::ore::service::cache::warm_and_subscribe_ore_parameter_cache(
+                 nats, ore_parameters, {}))
+            subs.push_back(std::move(sub));
+        auto loaded = std::make_shared<std::atomic<bool>>(false);
+        auto psh = std::make_shared<product_schema_handler>(
+            nats, ctx, verifier, [ore_parameters, loaded]() {
+                const auto system = utility::uuid::tenant_id::system().to_string();
+                if (!*loaded) {
+                    if (const auto error = ore_parameters->load(system); !error.empty())
+                        throw std::runtime_error(
+                            "The instrument fields could not be read from the ore service "
+                            "into the trading service's cache: " + error);
+                    *loaded = true;
+                }
+                return ore_parameters->instrument_fields(system);
+            });
+        subs.push_back(nats.queue_subscribe(
+            describe_product_request::nats_subject, queue_group, [psh](ores::nats::message msg) {
+                psh->describe_product(std::move(msg));
+            }));
+        subs.push_back(nats.queue_subscribe(
+            list_products_request::nats_subject, queue_group, [psh](ores::nats::message msg) {
+                psh->list_products(std::move(msg));
             }));
     }
     {

@@ -1,0 +1,222 @@
+/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+/**
+ * Synthetic Feeds Dataset: Latent
+ *
+ * The latent FX volatility surfaces, in a dataset of their own, under the
+ * latent provider: a system provider no tenant sees, because a latent surface
+ * is no vendor's market. Each vendor quotes it with noise of its own. Nothing
+ * here lists a pair or an expiry: the surfaces are the pairs the published FX
+ * volatility surface blueprints calibrate and that the Bloomberg dataset's spot
+ * feeds quote, at the expiries those blueprints' pillars name. A cross the
+ * Bloomberg dataset quotes no spot for has no spot to strike a surface against,
+ * so it is left for the task that quotes crosses consistently with their legs.
+ *
+ * A surface reads the Bloomberg spot of its pair, and the Bloomberg
+ * discounting curves of its two currencies: each currency's curve with no
+ * tenor. The publish stores these edges by name, so the surface reads the feeds
+ * named here and no rule searches for them.
+ *
+ * Each surface starts at its pair's spot volatility: the primary component of
+ * the pair's spot mixture has a per-tick stdev of the annual vol over the square
+ * root of the ticks in a year, read from the spot feed's own ticks per hour, so
+ * every expiry's starting ATM vol is that stdev times that root, and the surface
+ * and the spot it is struck against start from one level.
+ *
+ * The blueprints are read across datasets, because they live in the refdata
+ * dataset; there is one blueprint per pair, so a pair's expiries are its one
+ * blueprint's pillars. The dynamics are the models' documented defaults.
+ *
+ * Four contributors observe each surface. Bloomberg, ICE and Tradeweb are the
+ * vendors the curves are quoted by, each with noise of its own, so a party's
+ * adapters receive three views of one market. The clean contributor is demo:
+ * it has no noise, and the demo notation writes no id for a volatility point,
+ * so no adapter is offered its points and no tenant subscribes to it. It
+ * records the latent surface itself, as market ticks, for the tests to
+ * compare against.
+ *
+ * Ids are derived from names, so the publish writes new versions of the same
+ * rows on a second run. This runs after the refdata layer, which stages the
+ * blueprints, and after the Bloomberg dataset. This script is idempotent.
+ */
+
+DO $$
+BEGIN
+    PERFORM ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'synthetic.feeds.latent',
+        'Synthetic Market Data',
+        'Trading',
+        'Reference Data',
+        'NONE',
+        'Primary',
+        'Synthetic',
+        'Raw',
+        'OreStudio Code Generation Methodology',
+        'Synthetic Feeds: Latent',
+        'The latent FX volatility surfaces that the vendors quote with noise of their own: no vendor''s market, so the system provider latent publishes them.',
+        'ORESTUDIO',
+        'Latent feeds for the Synthetic data collections bundle',
+        current_date,
+        'Internal Use Only',
+        'synthetic_feeds'
+    );
+END $$;
+
+do $$
+declare
+    v_dataset_id uuid;
+    v_spot_dataset_id uuid;
+    v_tenant_id uuid := ores_utility_system_tenant_id_fn();
+begin
+    select id into v_dataset_id
+    from ores_dq_datasets_tbl
+    where tenant_id = v_tenant_id
+      and code = 'synthetic.feeds.latent'
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    select id into v_spot_dataset_id
+    from ores_dq_datasets_tbl
+    where tenant_id = v_tenant_id
+      and code = 'synthetic.feeds.bloomberg'
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    if v_spot_dataset_id is null then
+        raise exception 'Dataset not found: synthetic.feeds.bloomberg';
+    end if;
+
+    if exists (
+        select 1 from ores_dq_fx_vol_surface_feeds_artefact_tbl where dataset_id = v_dataset_id
+    ) then
+        raise debug 'Latent volatility surfaces already populated for dataset %', v_dataset_id;
+        return;
+    end if;
+
+    create temporary table t_vol_pairs (
+        base text, quote text, feed_id uuid, atm_vol double precision,
+        base_curve_name text, quote_curve_name text
+    ) on commit drop;
+
+    insert into t_vol_pairs (base, quote, feed_id, atm_vol, base_curve_name, quote_curve_name)
+    select distinct b.base_currency_code, b.quote_currency_code,
+           md5('synthetic.feeds.latent|fx_vol_surface_feed|' || b.base_currency_code || b.quote_currency_code)::uuid,
+           g.stdev * sqrt(f.ticks_per_hour * 24.0 * 365.0),
+           ores_synthetic_yield_curve_name_fn(bc.provider_code, bc.index_family, bc.currency_code, bc.tenor),
+           ores_synthetic_yield_curve_name_fn(qc.provider_code, qc.index_family, qc.currency_code, qc.tenor)
+    from ores_dq_fx_vol_surface_blueprints_artefact_tbl b
+    join ores_dq_fx_spot_generation_configs_artefact_tbl f
+      on f.dataset_id = v_spot_dataset_id
+     and f.base_currency_code = b.base_currency_code
+     and f.quote_currency_code = b.quote_currency_code
+    join ores_dq_gmm_components_artefact_tbl g
+      on g.dataset_id = v_spot_dataset_id
+     and g.base_currency_code = b.base_currency_code
+     and g.quote_currency_code = b.quote_currency_code
+     and g.component_index = 0
+    join ores_dq_ir_curve_generation_configs_artefact_tbl bc
+      on bc.dataset_id = v_spot_dataset_id
+     and bc.currency_code = b.base_currency_code
+     and bc.tenor = ''
+    join ores_dq_ir_curve_generation_configs_artefact_tbl qc
+      on qc.dataset_id = v_spot_dataset_id
+     and qc.currency_code = b.quote_currency_code
+     and qc.tenor = '';
+
+    if not exists (select 1 from t_vol_pairs) then
+        raise exception 'No blueprint pair has a Bloomberg spot feed and curves: the blueprints must be staged first.';
+    end if;
+
+    if (select count(*) from t_vol_pairs) <> (select count(distinct (base, quote)) from t_vol_pairs) then
+        raise exception 'A currency has more than one Bloomberg curve with no tenor, so a surface has no single discounting curve.';
+    end if;
+
+    create temporary table t_vol_contributors (
+        provider_code text, contributor_id uuid, noise double precision,
+        wing_widening double precision, expiry_widening double precision,
+        quote_step double precision, missing_probability double precision,
+        stale_probability double precision, outlier_probability double precision,
+        outlier_size double precision, bias double precision
+    ) on commit drop;
+
+    insert into t_vol_contributors
+    select c.provider_code,
+           md5('synthetic.feeds.latent|fx_vol_contributor|' || c.provider_code)::uuid,
+           c.noise, c.wing_widening, c.expiry_widening, c.quote_step,
+           c.missing_probability, c.stale_probability, c.outlier_probability,
+           c.outlier_size, c.bias
+    from (values
+        ('bloomberg', 0.002,  1.0, 0.5, 0.0005, 0.02, 0.05, 0.001, 0.01,  0.0),
+        ('ice',       0.0025, 1.2, 0.6, 0.0005, 0.03, 0.06, 0.001, 0.01,  0.0005),
+        ('tradeweb',  0.003,  1.1, 0.4, 0.001,  0.03, 0.04, 0.002, 0.01, -0.0005),
+        ('demo',      0.0,    0.0, 0.0, 0.0,    0.0,  0.0,  0.0,   0.0,   0.0)
+    ) as c(provider_code, noise, wing_widening, expiry_widening, quote_step,
+           missing_probability, stale_probability, outlier_probability, outlier_size, bias);
+
+    insert into ores_dq_fx_vol_contributors_artefact_tbl (
+        dataset_id, tenant_id, id, version, provider_code, noise, wing_widening,
+        expiry_widening, quote_step, missing_probability, stale_probability,
+        outlier_probability, outlier_size, bias
+    )
+    select v_dataset_id, v_tenant_id, c.contributor_id, 0, c.provider_code,
+           c.noise, c.wing_widening, c.expiry_widening, c.quote_step,
+           c.missing_probability, c.stale_probability, c.outlier_probability,
+           c.outlier_size, c.bias
+    from t_vol_contributors c;
+
+    insert into ores_dq_fx_vol_surface_feeds_artefact_tbl (
+        dataset_id, tenant_id, id, version, base_currency_code, quote_currency_code,
+        provider_code, ticks_per_hour, enabled, auto_start, arrival_mode, branching_ratio,
+        decay, sensitivity, skew_reversion, skew_volatility, curvature_reversion,
+        curvature_volatility, spot_variance_correlation, spot_skew_correlation,
+        segment_correlation, start_skew, start_curvature,
+        spot_oresmd_uri, spot_provider_code, base_curve_name, quote_curve_name
+    )
+    select v_dataset_id, v_tenant_id, p.feed_id, 0, p.base, p.quote,
+           'latent', 12, true, true, 'periodic', 0.0,
+           1.0, 1.0, 3.0, 0.6, 3.0,
+           0.4, 0.3, -0.4,
+           0.9, -0.1, 0.8,
+           'oresmd://fx/' || p.base || '?type=quote&instrument=fx_spot&quote=rate&ccy=' || p.quote,
+           'bloomberg', p.base_curve_name, p.quote_curve_name
+    from t_vol_pairs p;
+
+    insert into ores_dq_fx_vol_surface_feed_expiries_artefact_tbl (
+        dataset_id, tenant_id, id, version, feed_id, tenor, atm_vol,
+        variance_reversion, variance_volatility
+    )
+    select distinct v_dataset_id, v_tenant_id,
+           md5('synthetic.feeds.latent|fx_vol_surface_feed_expiry|' || p.base || p.quote
+               || '|' || x.expiry_code)::uuid,
+           0, p.feed_id, x.expiry_code, p.atm_vol, 2.0, 0.08
+    from t_vol_pairs p
+    join ores_dq_fx_vol_surface_blueprints_artefact_tbl b
+      on b.base_currency_code = p.base and b.quote_currency_code = p.quote
+    join ores_dq_fx_vol_surface_pillars_artefact_tbl x
+      on x.dataset_id = b.dataset_id and x.blueprint_id = b.id;
+
+    insert into ores_dq_fx_vol_surface_feed_contributors_artefact_tbl (
+        dataset_id, tenant_id, id, version, feed_id, contributor_id
+    )
+    select v_dataset_id, v_tenant_id,
+           md5('synthetic.feeds.latent|fx_vol_surface_feed_contributor|' || p.base || p.quote
+               || '|' || c.provider_code)::uuid,
+           0, p.feed_id, c.contributor_id
+    from t_vol_pairs p
+    cross join t_vol_contributors c;
+end $$;

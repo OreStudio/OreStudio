@@ -1511,7 +1511,7 @@ describe('synthetic writes', () => {
         config_id: OTHER,
         base_currency_code: 'EUR',
         quote_currency_code: 'USD',
-        source_name: 'synthetic.bloomberg.vol.eurusd',
+        source_name: 'synthetic.latent.fx.fx_vol_surface.eurusd',
         ticks_per_hour: 12,
         enabled: true,
         auto_start: true,
@@ -1532,6 +1532,8 @@ describe('synthetic writes', () => {
         start_curvature: 0.8,
         spot_oresmd_uri: 'oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD',
         spot_provider_code: 'bloomberg',
+        base_curve_name: 'synthetic.bloomberg.ir.yield_curve.estr.eur',
+        quote_curve_name: 'synthetic.bloomberg.ir.yield_curve.sofr.usd',
     };
 
     it('saves a vol surface feed from a system session', async () => {
@@ -1917,7 +1919,7 @@ describe('synthetic operations', () => {
 
     it('stops a simulated source with the reason the person gave', async () => {
         const { server, sessionId, calls } = buildTestServer({
-            'synthetic.v1.ops.stop_simulated_source': {
+            'synthetic.v1.ops.stop_feed_node': {
                 success: true,
                 message: 'Stopped bloomberg-a',
             },
@@ -1926,12 +1928,12 @@ describe('synthetic operations', () => {
             server,
             sessionId,
             'POST',
-            '/api/synthetic/simulated-sources/bloomberg-a/stop',
+            '/api/synthetic/feed-nodes/bloomberg-a/stop',
             { reason_code: 'common.other', commentary: 'Quiet the vendor for a demo.' },
         );
         expect(response.statusCode).toBe(200);
         expect(calls[0]?.body).toEqual({
-            source_name: 'bloomberg-a',
+            node_name: 'bloomberg-a',
             reason_code: 'common.other',
             commentary: 'Quiet the vendor for a demo.',
         });
@@ -1943,16 +1945,70 @@ describe('synthetic operations', () => {
             server,
             sessionId,
             'POST',
-            '/api/synthetic/simulated-sources/bloomberg-a/stop',
+            '/api/synthetic/feed-nodes/bloomberg-a/stop',
             {},
         );
         expect(response.statusCode).toBe(400);
         expect(calls).toHaveLength(0);
     });
 
+    it('reads the feed graph around one node', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'synthetic.v1.feed_graph.get': {
+                success: true,
+                nodes: [
+                    {
+                        name: 'synthetic.ice.fx.fx_option.audusd',
+                        kind: 'view',
+                        provider_code: 'ice',
+                        state: 'starved',
+                        reason: 'synthetic.latent.fx.fx_vol_surface.audusd is stopped',
+                        cause: 'synthetic.latent.fx.fx_vol_surface.audusd',
+                    },
+                ],
+                edges: [
+                    {
+                        node: 'synthetic.ice.fx.fx_option.audusd',
+                        input: 'synthetic.latent.fx.fx_vol_surface.audusd',
+                        role: 'surface',
+                    },
+                ],
+            },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/synthetic/feed-graph?node=synthetic.ice.fx.fx_option.audusd',
+        );
+        expect(response.statusCode).toBe(200);
+        expect(calls[0]?.body).toEqual({ node_name: 'synthetic.ice.fx.fx_option.audusd' });
+        const body = response.json() as { nodes: { state: string; cause: string }[] };
+        expect(body.nodes[0]?.state).toBe('starved');
+        expect(body.nodes[0]?.cause).toBe('synthetic.latent.fx.fx_vol_surface.audusd');
+    });
+
+    it('stops a vendor view by its name', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'synthetic.v1.ops.stop_feed_node': {
+                success: true,
+                message: 'Stopped synthetic.ice.fx.fx_option.audusd',
+            },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'POST',
+            '/api/synthetic/feed-nodes/synthetic.ice.fx.fx_option.audusd/stop',
+            { reason_code: 'common.other', commentary: 'Quiet one vendor.' },
+        );
+        expect(response.statusCode).toBe(200);
+        expect(calls[0]?.body).toMatchObject({ node_name: 'synthetic.ice.fx.fx_option.audusd' });
+    });
+
     it('starts a stopped simulated source', async () => {
         const { server, sessionId, calls } = buildTestServer({
-            'synthetic.v1.ops.start_simulated_source': {
+            'synthetic.v1.ops.start_feed_node': {
                 success: true,
                 message: 'Started bloomberg-a',
             },
@@ -1961,10 +2017,10 @@ describe('synthetic operations', () => {
             server,
             sessionId,
             'POST',
-            '/api/synthetic/simulated-sources/bloomberg-a/start',
+            '/api/synthetic/feed-nodes/bloomberg-a/start',
         );
         expect(response.statusCode).toBe(200);
-        expect(calls[0]?.body).toEqual({ source_name: 'bloomberg-a' });
+        expect(calls[0]?.body).toEqual({ node_name: 'bloomberg-a' });
     });
 
     it('starts a folder and reports the counts by kind', async () => {

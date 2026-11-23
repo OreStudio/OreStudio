@@ -318,6 +318,32 @@ TEST_CASE("the runner stops a generator that the next demand drops",
     CHECK(counters->stopped == 2);
 }
 
+TEST_CASE("re-applying the last demand stops a withheld offer and starts it again",
+          "[simulator_adapter][runner]") {
+    // A stopped vendor view withdraws its offers; the demand stays the same, so the runner
+    // re-applies it rather than waiting for the next demand.
+    auto counters = std::make_shared<generator_counters>();
+    bool withheld = false;
+    generator_runner runner([&] {
+        std::vector<generator_offer> offers{idle_offer("GBP/USD", counters)};
+        if (!withheld)
+            offers.push_back(idle_offer("EUR/USD", counters));
+        return offers;
+    });
+    runner.apply({bbg_id("EUR/USD"), bbg_id("GBP/USD")});
+    REQUIRE(runner.running_count() == 2);
+
+    withheld = true;
+    const auto stopped = runner.reapply();
+    CHECK(stopped.stopped == 1);
+    CHECK(runner.running_count() == 1);
+
+    withheld = false;
+    const auto resumed = runner.reapply();
+    CHECK(resumed.started == 1);
+    CHECK(runner.running_count() == 2);
+}
+
 TEST_CASE("one generator serves every id of a curve, whichever of them is demanded",
           "[simulator_adapter][runner][curve]") {
     auto counters = std::make_shared<generator_counters>();
@@ -485,9 +511,8 @@ TEST_CASE("the runner rejects an id whose generator cannot be built",
 
 TEST_CASE("the runner survives a generator whose start throws", "[simulator_adapter][runner]") {
     generator_runner runner([] {
-        return std::vector{generator_offer{.id = bbg_id("EUR/USD"), .make = [] {
-                                               return std::make_shared<failing_generator>();
-                                           }}};
+        return std::vector{generator_offer{
+            .id = bbg_id("EUR/USD"), .make = [] { return std::make_shared<failing_generator>(); }}};
     });
 
     const auto out = runner.apply({bbg_id("EUR/USD")});
@@ -720,10 +745,7 @@ TEST_CASE("the offers are the startable system configs of the provider that have
             [](const auto&, const auto&) {
                 return std::optional<ores::synthetic::domain::market_data_generation_config>{};
             },
-        .containers =
-            [containers](const auto&) {
-                return containers();
-            }});
+        .containers = [containers](const auto&) { return containers(); }});
 
     svc::feed_kind kind;
     kind.kind = std::string(ores::synthetic::feed::fx_spot_feed_kind);

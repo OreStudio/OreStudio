@@ -267,6 +267,20 @@ const fr: SourceCatalogue = {
         outsideView: 'Une personne hors de votre périmètre',
     },
     inbox: {
+        agentWrite: {
+            lead: '{agent}, un agent LLM qui agit pour vous, demande à faire cette écriture. L’approuver la fait en votre nom ; elle demande ensuite l’approbation qu’exigerait votre propre écriture.',
+            agent: 'Agent',
+            call: 'Appel',
+            state: 'État',
+            outcome: 'Ce que l’écriture a répondu',
+            approve: 'Approuver et faire l’écriture',
+            states: {
+                held: 'En attente de vous',
+                applying: 'En cours',
+                applied: 'Faite',
+                failed: 'N’a pas pu être faite',
+            },
+        },
         autoApproval: {
             tenant: "le locataire n'impose pas les approbations",
             noticeTenant:
@@ -290,6 +304,7 @@ const fr: SourceCatalogue = {
         },
         kind: {
             'iam.role_grant': 'Demande de rôle',
+            'iam.write_by_agent': 'Écriture d’un agent LLM',
             'refdata.book_change': 'Modification de livre',
             'marketdata.curve_publish': 'Publication de courbe',
             'reporting.engine_settings_change': "Modification des réglages d'exécution du moteur",
@@ -569,7 +584,50 @@ const fr: SourceCatalogue = {
         },
     },
 
+    agentGrantsAdmin: {
+        card: 'Autorisations d’agents',
+        cardBody: 'Chaque agent LLM qui agit pour une personne, et ses clés.',
+        title: 'Autorisations d’agents',
+        description:
+            'Chaque autorisation d’agent LLM de vos entités : qui l’a donnée, à quel agent, sous quel rôle et jusqu’à quand.',
+        person: 'Personne',
+        everyone: 'Tout le monde',
+        state: 'État',
+        empty: 'Aucune autorisation d’agent ne correspond.',
+        ended: 'terminée',
+        revokeKey: 'Révoquer la clé',
+        revokeGrant: 'Révoquer l’autorisation',
+        sessions: 'Sessions',
+        revokeConfirm:
+            'La révocation arrête l’agent aussitôt : son prochain appel est refusé, ou au plus tard dans cinq minutes. Continuer ?',
+        revokeFailed: 'La révocation a été refusée.',
+        states: {
+            active: 'Actives',
+            ended: 'Terminées',
+            all: 'Toutes',
+        },
+        column: {
+            person: 'Personne',
+            agent: 'Agent',
+            role: 'Rôle',
+            until: 'Jusqu’au',
+            keys: 'Clés',
+        },
+    },
     agents: {
+        activity: {
+            title: 'Ce que vos agents ont fait',
+            agent: 'Agent',
+            every: 'Tous les agents',
+            empty: 'Vos agents n’ont fait aucun appel.',
+            when: 'Quand',
+            call: 'Appel',
+            answer: 'Réponse',
+            took: 'Durée',
+            ms: '{ms} ms',
+            link: 'Activité',
+            more: 'Afficher les appels plus anciens',
+        },
         title: 'Agents LLM',
         lead: 'Un agent que vous nommez agit pour vous sous un rôle, jusqu’à l’expiration de l’autorisation ou jusqu’à ce que vous la révoquiez. Ses appels sont les vôtres et sont enregistrés comme ceux de l’agent.',
         empty: 'Vous n’avez aucune autorisation d’agent active.',
@@ -643,6 +701,8 @@ const fr: SourceCatalogue = {
             end: 'Terminer la session',
             ending: 'Fin en cours…',
             ended: 'Session terminée. Les sessions ouvertes ont été relues.',
+            grantFilter: 'Seules les sessions de l’autorisation d’agent {grant} sont affichées.',
+            grantFilterClear: 'Afficher toutes les sessions',
             endAgent:
                 'Terminer la session d’un agent révoque aussi la clé qui l’a ouverte. Le prochain appel de l’agent est refusé aussitôt, ou au plus tard dans cinq minutes ; il lui faut une nouvelle clé pour reprendre. Continuer ?',
             holder: 'Afficher',
@@ -2874,6 +2934,7 @@ const fr: SourceCatalogue = {
         searchedSoFar: 'Recherche sur les {shown} premiers sur {total}',
     },
     history: {
+        byAgent: 'faite par un agent LLM',
         description: 'Toutes les versions de cet enregistrement, la plus récente en premier.',
         newer: 'Plus récente',
         older: 'Plus ancienne',
@@ -4579,6 +4640,8 @@ const fr: SourceCatalogue = {
                 expiries: 'Échéances',
                 contributors: 'Contributeurs',
                 surfaces: 'Surfaces',
+                graph: 'Graphe',
+                messages: 'Messages',
             },
         },
         fields: {
@@ -7241,6 +7304,42 @@ const fr: SourceCatalogue = {
             one: 'Entrée de durée',
             remove: "Supprimer l'entrée de durée",
         },
+        feedGraph: {
+            lead: 'La place de ce flux dans le graphe des flux synthétiques : son état, ce qu’il lit et ce qui le lit.',
+            state: {
+                running: 'En cours',
+                stopped: 'Arrêté',
+                starved: 'Privé d’entrée',
+                failing: 'En échec',
+            },
+            kind: {
+                source: 'Source',
+                upstream: 'Amont',
+                latent: 'Surface latente',
+                view: 'Vue du fournisseur',
+            },
+            role: {
+                source: 'Source',
+                spot: 'Spot',
+                base_curve: 'Courbe de base',
+                quote_curve: 'Courbe de cotation',
+                surface: 'Surface',
+            },
+            causedBy: 'Causé par',
+            reads: 'Lit',
+            readBy: 'Lu par',
+            nothing: 'Rien.',
+            stop: 'Arrêter le nœud',
+            start: 'Démarrer le nœud',
+            stopTitle: 'Arrêter {node} ?',
+            stopEffect:
+                'Ses offres sont retenues, et chaque nœud en aval s’arrête et dit pourquoi. Il reste arrêté après un redémarrage, jusqu’à ce que quelqu’un le démarre.',
+            unknown: 'Le graphe des flux ne contient aucun nœud de ce nom.',
+            messagesLead:
+                'Les messages de ce nœud sur le dernier jour : ses changements d’état avec leurs raisons, et les diagnostics qu’il lève.',
+            noMessages: 'Aucun message sur le dernier jour.',
+            latestOnly: 'Affichage des {count} messages les plus récents.',
+        },
         volFeeds: {
             add: 'Nouvelle surface de volatilité',
             addTitle: 'Nouvelle surface de volatilité',
@@ -8741,6 +8840,9 @@ const fr: SourceCatalogue = {
     },
 
     permissionWords: {
+        agentGrantsCreate: 'laisser un agent LLM agir pour vous',
+        agentGrantsRead: 'voir chaque autorisation d’agent LLM de vos entités',
+        agentGrantsRevoke: 'révoquer l’autorisation ou la clé d’agent LLM de quiconque',
         reportInstancesWrite: 'Lancer un rapport',
         loginInfoRead: 'voir la dernière connexion des personnes',
         partiesRead: 'voir les parties du locataire',

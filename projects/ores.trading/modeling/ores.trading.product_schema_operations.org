@@ -1,0 +1,459 @@
+:PROPERTIES:
+:ID: 52BA7D42-617E-465F-A809-8DB762F2C8AE
+:ores.cpp.wire-codec.enabled: true
+:END:
+#+title: ores.trading.product_schema_operations
+#+description: Codegen operation model for a product's schema: the fields a screen draws to book a product, and the forms it may be booked in.
+#+type: ores.codegen.operation
+#+component: trading
+#+subcomponent: api
+#+entity_singular: product_schema_operation
+#+namespace: ores::trading::messaging
+#+brief: Describes a product's fields and forms, and lists the products that can be described.
+#+filetags: :model:operation:trading:
+#+created: 2026-11-23
+#+updated: 2026-11-23
+
+A screen that books a product, the shell that prints one and the synthetic
+generator that draws one all need the same description of it: its fields, with
+their kinds, whether each is required and repeats, and their words, and the
+forms the product may be booked in. Trading serves it, because trading owns the
+products, the scripts and their inputs.
+
+A native product's fields are those of its trade type's element, which
+=ores.ore= describes as ore parameters of the scope instrument; trading reads
+them from its cache of =ores.ore='s parameters, not from =ores.ore='s tables. A
+field whose value is another schema type names it through its value domain,
+=record:legData= or =list:legData=, and the description carries the fields of
+every type the product reaches. A script-only product, a library script no
+product type twins, has its script's inputs and their codes as its fields.
+
+Each form names the script it runs, if any, and that script's product tag, the
+tag a pricing configuration assigns an engine to.
+
+The handler stays hand-written beside this model, because an operation model
+generates no service handler.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <vector>
+#include "ores.trading.api/domain/script_input.hpp"
+#include "ores.trading.api/domain/script_input_code.hpp"
+#+end_src
+
+* Messages
+
+** product_field
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief One field of a schema type a product reaches.
+ */
+#+end_src
+
+*** type_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The schema type the field belongs to, or trade for the data element of a trade type.
+ */
+#+end_src
+
+*** name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The field's element or attribute name, as ORE writes it.
+ */
+#+end_src
+
+*** position
+:PROPERTIES:
+:cpp_type: int
+:default:  0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The field's place among the fields of its type.
+ */
+#+end_src
+
+*** label
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The field's label.
+ */
+#+end_src
+
+*** help
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief One sentence of help.
+ */
+#+end_src
+
+*** description
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief What the field means, from the ORE guide where it states it.
+ */
+#+end_src
+
+*** value_domain
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The kind of value: string, boolean, integer, double, date, record:TYPE or list:TYPE.
+ */
+#+end_src
+
+*** is_required
+:PROPERTIES:
+:cpp_type: bool
+:default:  false
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Whether a trade must give the field.
+ */
+#+end_src
+
+*** default_text
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The default, or a sentence saying there is none.
+ */
+#+end_src
+
+*** format
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How a value is written, with the values an enumeration allows.
+ */
+#+end_src
+
+*** xpath
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The field's path relative to its type.
+ */
+#+end_src
+
+** product_form
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief One form a product may be booked in.
+ */
+#+end_src
+
+*** kind
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief native, for the product's own element, or scripted, for a ScriptedTrade over a library script.
+ */
+#+end_src
+
+*** script_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The library script a scripted form runs; empty for the native form.
+ */
+#+end_src
+
+*** product_tag
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The product tag of that script, which a pricing configuration assigns an engine to; empty for the native form.
+ */
+#+end_src
+
+** product_summary
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief One product that can be described.
+ */
+#+end_src
+
+*** code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The product's code: a product type's code, or a library script's name for a script-only product.
+ */
+#+end_src
+
+*** name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The product's name.
+ */
+#+end_src
+
+*** construction
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How ORE builds the product: native, scripted, script or container; script for a script-only product.
+ */
+#+end_src
+
+** describe_product_request
+:PROPERTIES:
+:subject:  trading.v1.ops.describe_product
+:response: describe_product_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Describes one product: its fields and its forms.
+ */
+#+end_src
+
+*** code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The product's code: a product type's code or a library script's name.
+ */
+#+end_src
+
+** describe_product_response
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The description of a product.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default:  false
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Whether the product was described.
+ */
+#+end_src
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Why it was not, when it was not.
+ */
+#+end_src
+
+*** refusal_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Why the product was not described, when it was refused: not_found for a code no product type or script has, not_describable for a product that has no fields to describe. Empty when the service failed rather than refused, so a caller tells a refusal from a fault.
+ */
+#+end_src
+
+*** product
+:PROPERTIES:
+:cpp_type: product_summary
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The product described.
+ */
+#+end_src
+
+*** element
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The element a trade of the product is read under; empty for a script-only product.
+ */
+#+end_src
+
+*** fields
+:PROPERTIES:
+:cpp_type: std::vector<product_field>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The fields of the trade's data element and of every type its fields reach, the element's own row first.
+ */
+#+end_src
+
+*** inputs
+:PROPERTIES:
+:cpp_type: std::vector<ores::trading::domain::script_input>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The inputs of each script a form runs.
+ */
+#+end_src
+
+*** codes
+:PROPERTIES:
+:cpp_type: std::vector<ores::trading::domain::script_input_code>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The codes of the coded inputs among them.
+ */
+#+end_src
+
+*** forms
+:PROPERTIES:
+:cpp_type: std::vector<product_form>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The forms the product may be booked in.
+ */
+#+end_src
+
+** list_products_request
+:PROPERTIES:
+:subject:  trading.v1.ops.list_products
+:response: list_products_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Lists the products that can be described.
+ */
+#+end_src
+
+** list_products_response
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The products that can be described.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default:  false
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Whether the list was read.
+ */
+#+end_src
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Why it was not, when it was not.
+ */
+#+end_src
+
+*** products
+:PROPERTIES:
+:cpp_type: std::vector<product_summary>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Every product type, then every library script no product type twins, each by its code.
+ */
+#+end_src
+
+* See also
+
+- [[id:290A1069-A1EE-4DD1-8D23-1C60F76F8949][Product Schemas for Native and Scripted Products]] — the design this serves.
+- [[id:EA0C6361-CE23-43D3-99AA-8D2F10AB2151][ores.trading.script_library_operations]] — the script library's operations.

@@ -165,6 +165,19 @@ public:
                                                     "No such kind of request: " + req->kind_code)});
                 return;
             }
+            // An agent's write is raised by the gateway with the agent's own
+            // token and nobody else, so a person cannot raise one and then
+            // approve it as the agent's person.
+            if (req->kind_code == "iam.write_by_agent" && !ctx->acts_for_agent()) {
+                reply(
+                    nats_,
+                    msg,
+                    raise_approval_request_response{
+                        .result = approval_result(outcome::denied,
+                                                  "not_an_agent",
+                                                  "Only an LLM agent's write raises this kind.")});
+                return;
+            }
             // The raise is the maker's half of the pair. The kind names the
             // code, so a tenant that moves the maker moves the gate with it and
             // no screen changes.
@@ -297,6 +310,16 @@ public:
         auto ctx = context_for(msg);
         if (!ctx)
             return;
+        // An LLM agent never decides, its own request or another's, whatever
+        // its token carries: a model checking its own work is a weak check.
+        if (ctx->acts_for_agent()) {
+            reply(nats_,
+                  msg,
+                  decide_approval_request_response{
+                      .result = approval_result(
+                          outcome::invalid, "agent", "An LLM agent cannot decide a request.")});
+            return;
+        }
         auto req = decode<decide_approval_request_request>(msg);
         if (!req) {
             reply(nats_,

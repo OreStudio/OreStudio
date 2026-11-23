@@ -72,7 +72,9 @@ struct provider final {
     std::string name;
 
     /**
-     * @brief What sort of provider it is: data_vendor, exchange, broker or reference.
+     * @brief What sort of provider it is: data_vendor, exchange, broker, reference or system. A
+     * system provider is the installation's own, such as latent, the source of the synthetic
+     * markets no vendor publishes: no tenant reads it and no tenant row may name it.
      */
     std::string kind;
 

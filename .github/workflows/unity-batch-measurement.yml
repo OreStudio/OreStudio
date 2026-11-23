@@ -122,7 +122,7 @@ jobs:
           arch: x64
 
       - name: Install sccache
-        uses: hendrikmuhs/ccache-action@v1.2.25
+        uses: hendrikmuhs/ccache-action@v1.2.26
         with:
           variant: sccache
           # A key no earlier run saved, so the cold build starts empty.
@@ -134,7 +134,7 @@ jobs:
         run: ./projects/ores.compass/compass.sh env install-packages
 
       - name: get-cmake
-        uses: lukka/get-cmake@v4.4.5
+        uses: lukka/get-cmake@v4.5.0
 
       - name: Restore vcpkg binary packages
         uses: actions/cache/restore@v6

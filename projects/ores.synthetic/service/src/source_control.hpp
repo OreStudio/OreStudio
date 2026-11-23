@@ -20,14 +20,29 @@
 #ifndef ORES_SYNTHETIC_SERVICE_SOURCE_CONTROL_HPP
 #define ORES_SYNTHETIC_SERVICE_SOURCE_CONTROL_HPP
 
+#include "feed_graph.hpp"
 #include "ores.synthetic.api/messaging/feed_config_protocol.hpp"
+#include <optional>
 #include <string>
 #include <vector>
 
 namespace ores::synthetic::service {
 
 /**
- * @brief The simulated sources the service serves, each stopped or started by name.
+ * @brief A feed node an operator stops by name that is not a source: an upstream spot or curve,
+ * a latent surface, or one vendor's view of a surface.
+ */
+struct feed_node final {
+    std::string name;
+    std::string kind;
+    std::string provider_code;
+    bool stopped = false;
+};
+
+/**
+ * @brief The nodes of the feed graph an operator stops and starts by name: the simulated sources
+ * the service serves, and the upstreams, latent surfaces and vendor views of the system
+ * collections.
  *
  * The adapters belong to the service's start up, which builds one for each simulated source of
  * the catalogue; the handler that answers an operator reaches them through this, so it needs
@@ -46,6 +61,18 @@ public:
 
     /** Starts the source's adapter again; false when the service serves no source of that name. */
     virtual bool start(const std::string& source_name) = 0;
+
+    /** The node of that name that is not a source, when the graph holds one. */
+    [[nodiscard]] virtual std::optional<feed_node> node(const std::string& name) const = 0;
+
+    /** Withholds the node's offers; false when the graph holds no such node. */
+    virtual bool stop_node(const std::string& name) = 0;
+
+    /** Offers the node again; false when the graph holds no such node. */
+    virtual bool start_node(const std::string& name) = 0;
+
+    /** The feed graph, every node with its state, or the part of it around one node. */
+    [[nodiscard]] virtual feed_graph graph(const std::string& around_node) const = 0;
 };
 
 }

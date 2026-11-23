@@ -45,7 +45,7 @@ where c.table_name in (
         'ores_reporting_engine_settings_execution_tbl')
   and c.column_name not in (
         'id', 'tenant_id', 'party_id', 'engine_settings_id', 'version',
-        'modified_by', 'performed_by', 'change_reason_code', 'change_commentary',
+        'modified_by', 'performed_by', 'acting_agent', 'change_reason_code', 'change_commentary',
         'valid_from', 'valid_to');
 
 create temporary table t_definitions on commit drop as

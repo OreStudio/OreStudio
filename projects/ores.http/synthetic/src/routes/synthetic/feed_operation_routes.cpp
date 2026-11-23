@@ -191,10 +191,10 @@ std::string id_of(const http_request& req) {
     return id;
 }
 
-/// The simulated source the address names, by its catalogue name.
-std::string source_name_of(const http_request& req) {
+/// The node the address names: a simulated source's catalogue name or a vendor view's name.
+std::string node_name_of(const http_request& req) {
     return rr::code(req.get_path_param("name"),
-                    "A simulated source is named by a code of 1 to 100 characters.");
+                    "A feed node is named by a code of 1 to 100 characters.");
 }
 
 /// A start or stop the service refused, which conflicts with the feed's state.
@@ -286,10 +286,30 @@ void feed_operation_routes::register_routes(
                 });
             }));
 
-    add(router->post("/api/synthetic/simulated-sources/{name}/stop")
-            .summary("Stop a simulated source until someone starts it")
+    add(router->get("/api/synthetic/feed-graph")
+            .summary("Read the synthetic feed graph, or the part around one node, with its states; "
+                     "an unknown node answers an empty graph")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
-                co_return guarded<synthetic_messaging::stop_simulated_source_request>([&] {
+                co_return guarded<synthetic_messaging::get_feed_graph_request>([&] {
+                    synthetic_messaging::get_feed_graph_request msg;
+                    msg.node_name = rr::trimmed(req.get_query_param("node"));
+                    if (rr::characters_of(msg.node_name) > 100)
+                        rr::invalid("A feed node is named by a code of up to 100 characters.");
+                    const auto reply = forwarding::forward(req, session, msg);
+                    if (!reply.success)
+                        rr::refuse(http_status::bad_gateway,
+                                   "upstream-unavailable",
+                                   std::string(rr::unanswered));
+                    return http_response::json("{\"nodes\":" + json::write(reply.nodes) +
+                                               ",\"edges\":" + json::write(reply.edges) + "}");
+                });
+            }));
+
+    add(router->post("/api/synthetic/feed-nodes/{name}/stop")
+            .summary(
+                "Stop a feed node, a simulated source or a vendor view, until someone starts it")
+            .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
+                co_return guarded<synthetic_messaging::stop_feed_node_request>([&] {
                     const auto body = rr::read_body<feed_operation::stop_body>(req.body);
                     const auto reason = body ? rr::trimmed(body->reason_code.value_or("")) : "";
                     const auto commentary = body ? body->commentary.value_or("") : "";
@@ -297,8 +317,8 @@ void feed_operation_routes::register_routes(
                         rr::characters_of(commentary) > 2000)
                         rr::invalid("A stop states a reason code of 1 to 200 characters and a "
                                     "commentary of up to 2000.");
-                    synthetic_messaging::stop_simulated_source_request msg;
-                    msg.source_name = source_name_of(req);
+                    synthetic_messaging::stop_feed_node_request msg;
+                    msg.node_name = node_name_of(req);
                     msg.reason_code = reason;
                     msg.commentary = commentary;
                     const auto reply = forwarding::forward(req, session, msg);
@@ -307,12 +327,12 @@ void feed_operation_routes::register_routes(
                 });
             }));
 
-    add(router->post("/api/synthetic/simulated-sources/{name}/start")
-            .summary("Start a stopped simulated source again")
+    add(router->post("/api/synthetic/feed-nodes/{name}/start")
+            .summary("Start a stopped feed node again")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
-                co_return guarded<synthetic_messaging::start_simulated_source_request>([&] {
-                    synthetic_messaging::start_simulated_source_request msg;
-                    msg.source_name = source_name_of(req);
+                co_return guarded<synthetic_messaging::start_feed_node_request>([&] {
+                    synthetic_messaging::start_feed_node_request msg;
+                    msg.node_name = node_name_of(req);
                     const auto reply = forwarding::forward(req, session, msg);
                     require_done(reply.success, reply.message);
                     return message_answer(reply.message);

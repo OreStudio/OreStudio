@@ -1,0 +1,233 @@
+:PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
+:ID: 52E27C32-7F44-4103-81B0-870A83436BC8
+:END:
+#+title: ores.trading.script_input_code
+#+description: One code a coded input of a library script accepts, with its label.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+brief: One code a coded script input accepts: the number the script reads and the name it stands for.
+#+entity_singular: script_input_code
+#+entity_plural: script_input_codes
+#+entity_title: Script Input Code
+#+created: 2026-11-23
+#+updated: 2026-11-23
+
+One code a coded input of a library script accepts. A script reads some choices
+as numbers, BarrierType as 1 for DownIn up to 4 for UpOut and PutCall as 1 for a
+call and -1 for a put, and states what each number means only in the comment of
+the input. The codes are those statements as data, so a form offers the names
+and books the numbers. They are derived from the library comments by the script
+library generator, with a correction where a comment is wrong, as the
+=ore.script_library= dataset's methodology states.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        trading
+:has_tenant_id:    true
+:END:
+
+* Columns
+
+** script_name
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:nullable:    false
+:economic: false
+:END:
+
+The library name of the script, as a scripted trade names it.
+
+#+begin_src cpp :name generator
+std::string("CMSCapFloorBarrier")
+#+end_src
+
+** sequence_number
+:PROPERTIES:
+:type:        integer
+:cpp_type:    int
+:primary_key: true
+:nullable:    false
+:economic: false
+:END:
+
+Ordinal of the row within its script, in the library's order of inputs and the
+comment's order of codes.
+
+#+begin_src cpp :name generator
+1
+#+end_src
+
+** input_name
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:economic: true
+:END:
+
+The coded input, as the script's inputs name it.
+
+#+begin_src cpp :name generator
+std::string("BarrierType")
+#+end_src
+
+** code
+:PROPERTIES:
+:type:        integer
+:cpp_type:    int
+:nullable:    false
+:economic: true
+:END:
+
+The number the script reads for this choice.
+
+#+begin_src cpp :name generator
+1
+#+end_src
+
+** label
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:economic: true
+:END:
+
+The name the library comment gives the choice, for example DownIn or call.
+
+#+begin_src cpp :name generator
+std::string("DownIn")
+#+end_src
+
+** script_version
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:economic: false
+:END:
+
+The version of the script row this row belongs to. The publish function
+writes it, as it does for the script's inputs.
+
+#+begin_src cpp :name generator
+1
+#+end_src
+
+* Artefact columns
+
+The staging table holds every column but =script_version=, which the
+publish function writes from the script row it has just written, so a
+dataset has none to stage.
+
+** script_name
+:PROPERTIES:
+:type: text
+:END:
+
+** sequence_number
+:PROPERTIES:
+:type: integer
+:END:
+
+** version
+:PROPERTIES:
+:type: integer
+:END:
+
+** input_name
+:PROPERTIES:
+:type: text
+:END:
+
+** code
+:PROPERTIES:
+:type: integer
+:END:
+
+** label
+:PROPERTIES:
+:type: text
+:END:
+
+* Foreign keys
+
+** script_name
+:PROPERTIES:
+:table:         ores_trading_scripts_tbl
+:target_column: name
+:nullable:      false
+:error_message: Invalid script_name: %. No active script found with this name.
+:END:
+
+The script the row belongs to.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_script_input_codes_tbl
+:rls_tenant_isolation: true
+:rls_own_or_system_tenant_rows: true
+:END:
+
+** Checks
+
+| expression |
+|------------|
+| "label" <> '' |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:           api
+:generator_facet_name: generators
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: code
+:entity_plural_short:   codes
+:entity_singular_words: script input code
+:entity_plural_words:   script input codes
+:system_tenant_visible: true
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: sic
+:END:
+
+** Table display
+
+| column | header |
+|--------+--------|
+| script_name | Script |
+| input_name | Input |
+| code | Code |
+| label | Label |
+| modified_by | Modified By |
+| version | Version |
+
+** Custom repository methods
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.
+- [[id:F08D458F-B694-4B2F-A945-E22544A9222F][ores.trading.script_input]] — the inputs the codes belong to.
+- [[id:290A1069-A1EE-4DD1-8D23-1C60F76F8949][Product Schemas for Native and Scripted Products]] — the annotations a product's schema holds as data.

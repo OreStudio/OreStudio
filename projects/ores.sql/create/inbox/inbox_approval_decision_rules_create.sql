@@ -40,8 +40,10 @@ returns trigger as $$
 declare
     v_requested_by uuid;
     v_auto_approval_code text;
+    v_kind_code text;
 begin
-    select requested_by, auto_approval_code into v_requested_by, v_auto_approval_code
+    select requested_by, auto_approval_code, kind_code
+    into v_requested_by, v_auto_approval_code, v_kind_code
     from ores_inbox_approval_requests_tbl
     where tenant_id = NEW.tenant_id
       and id = NEW.request_id
@@ -55,6 +57,15 @@ begin
     if NEW.decision_code = 'withdraw' then
         if NEW.decided_by <> v_requested_by then
             raise exception 'Only the person who asked can withdraw request %.', NEW.request_id
+                using errcode = '23514';
+        end if;
+    elsif v_kind_code = 'iam.write_by_agent' then
+        -- An LLM agent's write is its person's to decide: they check what
+        -- their agent did, and nobody else may answer for them. The approval
+        -- a person's own write needs beyond that is the replayed write's own,
+        -- a request of its own kind decided by others under the rule below.
+        if NEW.decided_by <> v_requested_by then
+            raise exception 'Only the person an agent acts for can decide request %.', NEW.request_id
                 using errcode = '23514';
         end if;
     elsif NEW.decided_by = v_requested_by

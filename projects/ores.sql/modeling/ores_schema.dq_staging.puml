@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: dq_staging
-Tables: 186
+Tables: 187
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -2154,6 +2154,10 @@ package "dq_staging" #F3E5F5 {
         * segment_correlation : double
         * start_skew : double
         * start_curvature : double
+        * spot_oresmd_uri : text
+        * spot_provider_code : text
+        * base_curve_name : text
+        * quote_curve_name : text
     }
 
     note right of ores_dq_fx_vol_surface_feeds_artefact_tbl
@@ -3119,6 +3123,22 @@ package "dq_staging" #F3E5F5 {
 
     note right of ores_dq_script_coarsenings_artefact_tbl
     One schedule a library script variant names as eligible for coarsening, which lets the engine price a long schedule on fewer dates. - Artefact Table
+    end note
+
+    entity ores_dq_script_input_codes_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * script_name : text
+        * sequence_number : integer
+        * version : integer
+        * input_name : text
+        * code : integer
+        * label : text
+    }
+
+    note right of ores_dq_script_input_codes_artefact_tbl
+    One code a coded input of a library script accepts. A script reads some choices as numbers, BarrierType as 1 for DownIn up to 4 for UpOut and PutCall as 1 for a call and -1 for a put, and states what each number means only in the comment of the input. The codes are those statements as data, so a form offers the names and books the numbers. They are derived from the library comments by the script library generator, with a correction where a comment is wrong, as the ore.script_library dataset's methodology states. - Artefact Table
     end note
 
     entity ores_dq_script_inputs_artefact_tbl  #F7E5FF {

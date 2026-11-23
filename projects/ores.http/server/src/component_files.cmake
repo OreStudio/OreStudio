@@ -20,6 +20,7 @@
 # Template: cmake_component_files_src.mustache
 # To modify, update the template and regenerate.
 set(files
+    "app/agent_writes.cpp"
     "app/application.cpp"
     "app/host.cpp"
     "config/options.cpp"
@@ -30,6 +31,8 @@ set(files
 
 # The headers are listed for the install and IDE targets.
 set(HEADERS
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.server/app/agent_write_rules.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.server/app/agent_writes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.server/app/application.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.server/app/host.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.server/config/options.hpp"

@@ -5422,7 +5422,7 @@ begin
         where c.table_schema = 'public'
           and c.table_name = v_target
           and c.column_name not in ('tenant_id', 'version', 'party_id',
-              'modified_by', 'performed_by', 'change_reason_code',
+              'modified_by', 'performed_by', 'acting_agent', 'change_reason_code',
               'change_commentary', 'valid_from', 'valid_to');
 
         if v_has_party then

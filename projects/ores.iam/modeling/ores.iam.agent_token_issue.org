@@ -48,7 +48,7 @@ The reads stay hand-written in =agent_token_issue_log=.
 :END:
 
 The row's id, a uuid in its text form. It sits in the primary key beside the
-paatition column.
+partition column.
 
 ** issued_at
 :PROPERTIES:
@@ -58,7 +58,7 @@ paatition column.
 :nullable:    false
 :END:
 
-When the exchange reached the log. The paatition column.
+When the exchange reached the log. The partition column.
 
 ** tenant_id
 :PROPERTIES:

@@ -27,8 +27,15 @@ export interface ProviderEntry {
     readonly collections: readonly FeedFolder[];
 }
 
-/** The providers of the given collections, in the order of their codes. */
-export function providersOf(collections: readonly FeedFolder[]): readonly ProviderEntry[] {
+/**
+ * The providers of the given collections, in the order of their codes. Once the catalogue is
+ * read, a provider the session cannot read is left out: a system provider such as latent is
+ * the installation's own, and only the system tenant reads it.
+ */
+export function providersOf(
+    collections: readonly FeedFolder[],
+    catalogue: ReadonlyMap<string, ProviderFacts> = new Map(),
+): readonly ProviderEntry[] {
     const byCode = new Map<string, FeedFolder[]>();
     for (const collection of collections) {
         byCode.set(collection.provider_code, [
@@ -37,6 +44,7 @@ export function providersOf(collections: readonly FeedFolder[]): readonly Provid
         ]);
     }
     return [...byCode.entries()]
+        .filter(([code]) => catalogue.size === 0 || code === '' || catalogue.has(code))
         .sort(([a], [b]) => a.localeCompare(b))
         .map(([code, held]) => ({ code, collections: held }));
 }

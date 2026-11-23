@@ -71,6 +71,7 @@ package "refdata" #FFF3E0 {
         * display_order : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -104,6 +105,7 @@ package "refdata" #FFF3E0 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -130,6 +132,7 @@ package "refdata" #FFF3E0 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -165,6 +168,7 @@ package "refdata" #FFF3E0 {
           oresmd_uri : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -207,6 +211,7 @@ package "refdata" #FFF3E0 {
           use_assumed_recovery : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -236,6 +241,7 @@ package "refdata" #FFF3E0 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -272,6 +278,7 @@ package "refdata" #FFF3E0 {
           oresmd_uri : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -311,6 +318,7 @@ package "refdata" #FFF3E0 {
         * has_volatility_config : boolean
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -346,6 +354,7 @@ package "refdata" #FFF3E0 {
           oresmd_uri : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -396,6 +405,7 @@ package "refdata" #FFF3E0 {
           sandbox_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -419,6 +429,7 @@ package "refdata" #FFF3E0 {
         * version : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
           closed_by : text
@@ -459,6 +470,7 @@ package "refdata" #FFF3E0 {
         * display_order : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -493,6 +505,7 @@ package "refdata" #FFF3E0 {
         * display_order : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -533,6 +546,7 @@ package "refdata" #FFF3E0 {
           sandbox_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -562,6 +576,7 @@ package "refdata" #FFF3E0 {
           checksum : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -594,6 +609,7 @@ package "refdata" #FFF3E0 {
         * expires_at : timestamptz
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -629,6 +645,7 @@ package "refdata" #FFF3E0 {
         * coding_scheme_code : text <<FK>>
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -659,6 +676,7 @@ package "refdata" #FFF3E0 {
         * display_order : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -689,6 +707,7 @@ package "refdata" #FFF3E0 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -717,6 +736,7 @@ package "refdata" #FFF3E0 {
         * description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -749,6 +769,7 @@ package "refdata" #FFF3E0 {
         * status : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -775,6 +796,7 @@ package "refdata" #FFF3E0 {
         * source : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
           closed_by : text
@@ -812,6 +834,7 @@ package "refdata" #FFF3E0 {
           source : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -857,6 +880,7 @@ package "refdata" #FFF3E0 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -892,6 +916,7 @@ package "refdata" #FFF3E0 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -934,6 +959,7 @@ package "refdata" #FFF3E0 {
           effective_to : int
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -969,6 +995,7 @@ package "refdata" #FFF3E0 {
         * display_order : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1003,6 +1030,7 @@ package "refdata" #FFF3E0 {
           coding_scheme_code : text <<FK>>
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1045,6 +1073,7 @@ package "refdata" #FFF3E0 {
           scaling_factor : double
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1122,6 +1151,7 @@ package "refdata" #FFF3E0 {
           use_effective_volatility : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1156,6 +1186,7 @@ package "refdata" #FFF3E0 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1191,6 +1222,7 @@ package "refdata" #FFF3E0 {
           oresmd_uri : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1222,6 +1254,7 @@ package "refdata" #FFF3E0 {
           strike_factor : double
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1255,6 +1288,7 @@ package "refdata" #FFF3E0 {
         * position : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1287,6 +1321,7 @@ package "refdata" #FFF3E0 {
           oresmd_uri : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1322,6 +1357,7 @@ package "refdata" #FFF3E0 {
         * display_order : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1367,6 +1403,7 @@ package "refdata" #FFF3E0 {
           basis_price_as_historical_fixing : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1399,6 +1436,7 @@ package "refdata" #FFF3E0 {
           extrapolation : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1441,6 +1479,7 @@ package "refdata" #FFF3E0 {
           yield_curve : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1471,6 +1510,7 @@ package "refdata" #FFF3E0 {
         * has_quotes : boolean
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1500,6 +1540,7 @@ package "refdata" #FFF3E0 {
           interpolation_method : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1536,6 +1577,7 @@ package "refdata" #FFF3E0 {
           oresmd_uri : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1574,6 +1616,7 @@ package "refdata" #FFF3E0 {
           averaging_daily_expiry_offset : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1622,6 +1665,7 @@ package "refdata" #FFF3E0 {
           future_continuation_mappings : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1661,6 +1705,7 @@ package "refdata" #FFF3E0 {
           anchor_weekly_day_of_the_week : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1693,6 +1738,7 @@ package "refdata" #FFF3E0 {
         * peak_calendar : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1734,6 +1780,7 @@ package "refdata" #FFF3E0 {
           option_continuation_mappings : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1772,6 +1819,7 @@ package "refdata" #FFF3E0 {
         * position : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1811,6 +1859,7 @@ package "refdata" #FFF3E0 {
         * has_volatility_config : boolean
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1842,6 +1891,7 @@ package "refdata" #FFF3E0 {
         * display_order : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1872,6 +1922,7 @@ package "refdata" #FFF3E0 {
         * position : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1906,6 +1957,7 @@ package "refdata" #FFF3E0 {
         * display_order : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1939,6 +1991,7 @@ package "refdata" #FFF3E0 {
           oresmd_uri : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1977,6 +2030,7 @@ package "refdata" #FFF3E0 {
           image_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -2001,6 +2055,7 @@ package "refdata" #FFF3E0 {
         * version : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
           closed_by : text
@@ -2041,6 +2096,7 @@ package "refdata" #FFF3E0 {
           image_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -2074,6 +2130,7 @@ package "refdata" #FFF3E0 {
           web_page : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -2107,6 +2164,7 @@ package "refdata" #FFF3E0 {
         * is_authoritative : boolean
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -2134,6 +2192,7 @@ package "refdata" #FFF3E0 {
         * is_authoritative : boolean
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -2163,6 +2222,7 @@ package "refdata" #FFF3E0 {
           coding_scheme_code : text <<FK>>
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -2190,6 +2250,7 @@ package "refdata" #FFF3E0 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -2226,6 +2287,7 @@ package "refdata" #FFF3E0 {
         * enabled : boolean
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -2257,6 +2319,7 @@ package "refdata" #FFF3E0 {
         * enabled : boolean
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -2287,6 +2350,7 @@ package "refdata" #FFF3E0 {
         * enabled : boolean
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -2330,6 +2394,7 @@ package "refdata" #FFF3E0 {
           flat_observation_shift : boolean
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -2370,6 +2435,7 @@ package "refdata" #FFF3E0 {
           spread_observation_shift : boolean
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -2404,6 +2470,7 @@ package "refdata" #FFF3E0 {
           is_resettable : boolean
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -2437,6 +2504,7 @@ package "refdata" #FFF3E0 {
         * fixed_day_count_fraction : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -2472,6 +2540,7 @@ package "refdata" #FFF3E0 {
           observation_shift : boolean
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -2505,6 +2574,7 @@ package "refdata" #FFF3E0 {
           is_resettable : boolean
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -2535,6 +2605,7 @@ package "refdata" #FFF3E0 {
         * position : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -2580,6 +2651,7 @@ package "refdata" #FFF3E0 {
           non_exempt_im_regulations : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -2625,6 +2697,7 @@ package "refdata" #FFF3E0 {
           coding_scheme_code : text <<FK>>
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -2649,6 +2722,7 @@ package "refdata" #FFF3E0 {
         * version : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
           closed_by : text
@@ -2677,6 +2751,7 @@ package "refdata" #FFF3E0 {
         * version : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
           closed_by : text
@@ -2705,6 +2780,7 @@ package "refdata" #FFF3E0 {
         * version : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
           closed_by : text
@@ -2735,6 +2811,7 @@ package "refdata" #FFF3E0 {
         * display_order : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -2765,6 +2842,7 @@ package "refdata" #FFF3E0 {
         * display_order : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -2790,6 +2868,7 @@ package "refdata" #FFF3E0 {
         * display_order : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -2816,6 +2895,7 @@ package "refdata" #FFF3E0 {
         * version : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
           closed_by : text
@@ -2856,6 +2936,7 @@ package "refdata" #FFF3E0 {
           oresmd_uri : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -2889,6 +2970,7 @@ package "refdata" #FFF3E0 {
           default_cut_code : text <<FK>>
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -2929,6 +3011,7 @@ package "refdata" #FFF3E0 {
           smoothness_lambda : double
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -2958,6 +3041,7 @@ package "refdata" #FFF3E0 {
         * xpath : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -2987,6 +3071,7 @@ package "refdata" #FFF3E0 {
         * section_code : text <<FK>>
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -3017,6 +3102,7 @@ package "refdata" #FFF3E0 {
           configuration_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -3058,6 +3144,7 @@ package "refdata" #FFF3E0 {
           option_tenors : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -3087,6 +3174,7 @@ package "refdata" #FFF3E0 {
         * position : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -3136,6 +3224,7 @@ package "refdata" #FFF3E0 {
         * position : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -3172,6 +3261,7 @@ package "refdata" #FFF3E0 {
         * position : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -3200,6 +3290,7 @@ package "refdata" #FFF3E0 {
           residual_correction_dimension : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -3236,6 +3327,7 @@ package "refdata" #FFF3E0 {
         * position : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -3278,6 +3370,7 @@ package "refdata" #FFF3E0 {
           continuation_expiry : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -3306,6 +3399,7 @@ package "refdata" #FFF3E0 {
         * display_order : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -3339,6 +3433,7 @@ package "refdata" #FFF3E0 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -3377,6 +3472,7 @@ package "refdata" #FFF3E0 {
           conversion_factor : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -3404,6 +3500,7 @@ package "refdata" #FFF3E0 {
         * conventions : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -3437,6 +3534,7 @@ package "refdata" #FFF3E0 {
           projection_curve_foreign : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -3471,6 +3569,7 @@ package "refdata" #FFF3E0 {
         * position : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -3504,6 +3603,7 @@ package "refdata" #FFF3E0 {
         * denominator_curve_currency : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -3534,6 +3634,7 @@ package "refdata" #FFF3E0 {
         * extrapolate_flat : boolean
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -3566,6 +3667,7 @@ package "refdata" #FFF3E0 {
           spread : numeric(38, 12)
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -3597,6 +3699,7 @@ package "refdata" #FFF3E0 {
           min_distance : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -3628,6 +3731,7 @@ package "refdata" #FFF3E0 {
         * projection_curve : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -3657,6 +3761,7 @@ package "refdata" #FFF3E0 {
         * reference_curve : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -3689,6 +3794,7 @@ package "refdata" #FFF3E0 {
           projection_curve_short : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -3718,6 +3824,7 @@ package "refdata" #FFF3E0 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -3752,6 +3859,7 @@ package "refdata" #FFF3E0 {
         * weight_2 : double
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -3782,6 +3890,7 @@ package "refdata" #FFF3E0 {
         * position : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -3821,6 +3930,7 @@ package "refdata" #FFF3E0 {
         * is_wrapped : boolean
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -3853,6 +3963,7 @@ package "refdata" #FFF3E0 {
         * quote : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -3882,6 +3993,7 @@ package "refdata" #FFF3E0 {
           enforce_monotone_variance : boolean
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -3923,6 +4035,7 @@ package "refdata" #FFF3E0 {
           future_price_correction : boolean
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -3963,6 +4076,7 @@ package "refdata" #FFF3E0 {
           calendar : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -4013,6 +4127,7 @@ package "refdata" #FFF3E0 {
           future_price_correction : boolean
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -4045,6 +4160,7 @@ package "refdata" #FFF3E0 {
           cds_volatility_curve : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -4076,6 +4192,7 @@ package "refdata" #FFF3E0 {
         * calibration : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -4107,6 +4224,7 @@ package "refdata" #FFF3E0 {
           residual_correction_dimension : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -4146,6 +4264,7 @@ package "refdata" #FFF3E0 {
         * strike_extrapolation : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -4206,6 +4325,7 @@ package "refdata" #FFF3E0 {
         * display_order : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -4233,6 +4353,7 @@ package "refdata" #FFF3E0 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -4271,6 +4392,7 @@ package "refdata" #FFF3E0 {
           calendar : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -4303,6 +4425,7 @@ package "refdata" #FFF3E0 {
           price_is_upfront : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -4333,6 +4456,7 @@ package "refdata" #FFF3E0 {
         * currency : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -4367,6 +4491,7 @@ package "refdata" #FFF3E0 {
         * position : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -4411,6 +4536,7 @@ package "refdata" #FFF3E0 {
         * has_quotes : boolean
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -4443,6 +4569,7 @@ package "refdata" #FFF3E0 {
           states : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -4472,6 +4599,7 @@ package "refdata" #FFF3E0 {
           reinterpreted_yield_curve : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -4506,6 +4634,7 @@ package "refdata" #FFF3E0 {
           oresmd_uri : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -4534,6 +4663,7 @@ package "refdata" #FFF3E0 {
         * display_order : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -4572,6 +4702,7 @@ package "refdata" #FFF3E0 {
         * display_order : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -4604,6 +4735,7 @@ package "refdata" #FFF3E0 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -4642,6 +4774,7 @@ package "refdata" #FFF3E0 {
           extrapolation : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -4677,6 +4810,7 @@ package "refdata" #FFF3E0 {
         * display_order : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -4737,6 +4871,7 @@ package "refdata" #FFF3E0 {
         * has_volatility_config : boolean
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -4861,6 +4996,7 @@ package "refdata" #FFF3E0 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -4891,6 +5027,7 @@ package "refdata" #FFF3E0 {
           oresmd_uri : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -4921,6 +5058,7 @@ package "refdata" #FFF3E0 {
           oresmd_uri : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -4954,6 +5092,7 @@ package "refdata" #FFF3E0 {
           oresmd_uri : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -4988,6 +5127,7 @@ package "refdata" #FFF3E0 {
         * output_strikes : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -5033,6 +5173,7 @@ package "refdata" #FFF3E0 {
         * weight : double
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -5068,6 +5209,7 @@ package "refdata" #FFF3E0 {
         * strike_label : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -5110,6 +5252,7 @@ package "refdata" #FFF3E0 {
           base_volatility_2 : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -5149,6 +5292,7 @@ package "refdata" #FFF3E0 {
           butterfly_error_tolerance : double
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -5185,6 +5329,7 @@ package "refdata" #FFF3E0 {
           oresmd_uri : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -5226,6 +5371,7 @@ package "refdata" #FFF3E0 {
           conventions : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -5261,6 +5407,7 @@ package "refdata" #FFF3E0 {
         * strikes : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -5305,6 +5452,7 @@ package "refdata" #FFF3E0 {
           interpolation_method : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -5338,6 +5486,7 @@ package "refdata" #FFF3E0 {
         * frequency : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -5372,6 +5521,7 @@ package "refdata" #FFF3E0 {
         * position : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -5412,6 +5562,7 @@ package "refdata" #FFF3E0 {
           oresmd_uri : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -5451,6 +5602,7 @@ package "refdata" #FFF3E0 {
         * curve_role : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -5502,6 +5654,7 @@ package "refdata" #FFF3E0 {
           convention : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -5530,6 +5683,7 @@ package "refdata" #FFF3E0 {
           oresmd_uri : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -5571,6 +5725,7 @@ package "refdata" #FFF3E0 {
         * split_tenor_code : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -5652,6 +5807,7 @@ package "refdata" #FFF3E0 {
         * market_series_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -5696,6 +5852,7 @@ package "refdata" #FFF3E0 {
         * display_order : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -5729,6 +5886,7 @@ package "refdata" #FFF3E0 {
           index_family : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -5762,6 +5920,7 @@ package "refdata" #FFF3E0 {
         * display_order : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -5799,6 +5958,7 @@ package "refdata" #FFF3E0 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -5825,6 +5985,7 @@ package "refdata" #FFF3E0 {
         * display_order : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -5853,6 +6014,7 @@ package "refdata" #FFF3E0 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -5891,6 +6053,7 @@ package "refdata" #FFF3E0 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -5925,6 +6088,7 @@ package "refdata" #FFF3E0 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -5982,6 +6146,7 @@ package "refdata" #FFF3E0 {
           oresmd_uri : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -6009,6 +6174,7 @@ package "refdata" #FFF3E0 {
           oresmd_uri : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -6043,6 +6209,7 @@ package "refdata" #FFF3E0 {
         * is_registration_default : boolean
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -6070,6 +6237,7 @@ package "refdata" #FFF3E0 {
         * display_order : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -6095,6 +6263,7 @@ package "refdata" #FFF3E0 {
         * is_primary : boolean
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -6110,18 +6279,19 @@ package "refdata" #FFF3E0 {
     Settlement, Billing). Each party can have one contact record per type.
     end note
 
-    entity ores_refdata_party_counterparties_tbl <<junction>> #ECECEC {
+    entity ores_refdata_party_counterparties_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * party_id : uuid <<PK, FK>>
         * counterparty_id : uuid <<PK, FK>>
-        * valid_from : timestamptz <<PK>>
         --
         * version : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
           closed_by : text
+        * valid_from : timestamptz
         * valid_to : timestamptz
     }
 
@@ -6149,6 +6319,7 @@ package "refdata" #FFF3E0 {
         * counterparty_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -6172,6 +6343,7 @@ package "refdata" #FFF3E0 {
         * version : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
           closed_by : text
@@ -6197,6 +6369,7 @@ package "refdata" #FFF3E0 {
         * version : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
           closed_by : text
@@ -6226,6 +6399,7 @@ package "refdata" #FFF3E0 {
           max_cardinality : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -6254,6 +6428,7 @@ package "refdata" #FFF3E0 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -6280,6 +6455,7 @@ package "refdata" #FFF3E0 {
         * deal_class : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -6310,6 +6486,7 @@ package "refdata" #FFF3E0 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -6336,6 +6513,7 @@ package "refdata" #FFF3E0 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -6362,6 +6540,7 @@ package "refdata" #FFF3E0 {
         * display_order : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -6389,6 +6568,7 @@ package "refdata" #FFF3E0 {
         * display_order : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -6418,6 +6598,7 @@ package "refdata" #FFF3E0 {
         * display_order : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -6467,6 +6648,7 @@ package "refdata" #FFF3E0 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -6493,6 +6675,7 @@ package "refdata" #FFF3E0 {
         * right_code : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -6534,6 +6717,7 @@ package "refdata" #FFF3E0 {
         * status : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -6560,6 +6744,7 @@ package "refdata" #FFF3E0 {
         * display_order : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -6596,6 +6781,7 @@ package "refdata" #FFF3E0 {
         * display_order : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -6627,6 +6813,7 @@ package "refdata" #FFF3E0 {
         * display_order : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -6654,6 +6841,7 @@ package "refdata" #FFF3E0 {
         * display_order : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -6682,6 +6870,7 @@ package "refdata" #FFF3E0 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -6708,6 +6897,7 @@ package "refdata" #FFF3E0 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -6734,6 +6924,7 @@ package "refdata" #FFF3E0 {
         * display_order : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -6760,6 +6951,7 @@ package "refdata" #FFF3E0 {
         * account_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -6790,6 +6982,7 @@ package "refdata" #FFF3E0 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -6833,6 +7026,7 @@ package "refdata" #FFF3E0 {
         * display_order : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -6870,6 +7064,7 @@ package "refdata" #FFF3E0 {
         * display_order : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -6901,6 +7096,7 @@ package "refdata" #FFF3E0 {
         * display_order : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -6934,6 +7130,7 @@ package "refdata" #FFF3E0 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -6966,6 +7163,7 @@ package "refdata" #FFF3E0 {
           oresmd_uri : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -6993,6 +7191,7 @@ package "refdata" #FFF3E0 {
           oresmd_uri : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -7024,6 +7223,7 @@ package "refdata" #FFF3E0 {
           target_swap_index_base : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -7085,6 +7285,7 @@ package "refdata" #FFF3E0 {
           quote_tag : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -7120,6 +7321,7 @@ package "refdata" #FFF3E0 {
           smile_spreads : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -7154,6 +7356,7 @@ package "refdata" #FFF3E0 {
         * display_order : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -7190,6 +7393,7 @@ package "refdata" #FFF3E0 {
           sub_periods_coupon_type : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -7228,6 +7432,7 @@ package "refdata" #FFF3E0 {
           rec_is_averaged : boolean
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -7265,6 +7470,7 @@ package "refdata" #FFF3E0 {
           oresmd_uri : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -7296,6 +7502,7 @@ package "refdata" #FFF3E0 {
           schedule_step_count : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
           closed_by : text
@@ -7351,6 +7558,7 @@ package "refdata" #FFF3E0 {
           oresmd_uri : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -7393,6 +7601,7 @@ package "refdata" #FFF3E0 {
         * display_order : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -7421,6 +7630,7 @@ package "refdata" #FFF3E0 {
         * display_order : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -7453,6 +7663,7 @@ package "refdata" #FFF3E0 {
           diary_entry_type : text <<FK>>
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -7490,6 +7701,7 @@ package "refdata" #FFF3E0 {
         * display_order : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -7522,6 +7734,7 @@ package "refdata" #FFF3E0 {
           multiplier : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -7556,6 +7769,7 @@ package "refdata" #FFF3E0 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -7593,6 +7807,7 @@ package "refdata" #FFF3E0 {
           report_pillar_dates : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -7633,6 +7848,7 @@ package "refdata" #FFF3E0 {
         * bond_tenors : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -7667,6 +7883,7 @@ package "refdata" #FFF3E0 {
           oresmd_uri : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -7698,6 +7915,7 @@ package "refdata" #FFF3E0 {
           oresmd_uri : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz

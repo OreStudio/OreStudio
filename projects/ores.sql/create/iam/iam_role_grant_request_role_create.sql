@@ -38,6 +38,7 @@ create table if not exists "ores_iam_role_grant_request_roles_tbl" (
     "applied_at" timestamp with time zone null,
     "modified_by" text not null,
     "performed_by" text not null,
+    "acting_agent" text not null default '',
     "change_reason_code" text not null,
     "change_commentary" text not null,
     "valid_from" timestamp with time zone not null,
@@ -136,6 +137,7 @@ begin
     new.valid_to = ores_utility_infinity_timestamp_fn();
 
     new.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
+    new.acting_agent = coalesce(ores_iam_current_agent_fn(), '');
 
     new.change_reason_code := ores_dq_validate_change_reason_fn(new.tenant_id, new.change_reason_code);
 

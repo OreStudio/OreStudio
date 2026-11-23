@@ -74,6 +74,9 @@ from (
     union all select 'inputs', script_name, script_version, tenant_id
     from ores_trading_script_inputs_tbl
     where valid_to = ores_utility_infinity_timestamp_fn()
+    union all select 'codes', script_name, script_version, tenant_id
+    from ores_trading_script_input_codes_tbl
+    where valid_to = ores_utility_infinity_timestamp_fn()
 ) k
 join ores_trading_scripts_tbl s
   on s.tenant_id = k.tenant_id and s.name = k.script_name
@@ -149,7 +152,8 @@ select is(
         ores_utility_system_tenant_id_fn(), 'Accumulator01', 999999),
     jsonb_build_object('script', null, 'variants', '[]'::jsonb, 'results', '[]'::jsonb,
                        'calibrations', '[]'::jsonb, 'strikes', '[]'::jsonb,
-                       'coarsenings', '[]'::jsonb, 'inputs', '[]'::jsonb),
+                       'coarsenings', '[]'::jsonb, 'inputs', '[]'::jsonb,
+                       'codes', '[]'::jsonb),
     'a version the script never had reads back as no script');
 
 select * from finish();

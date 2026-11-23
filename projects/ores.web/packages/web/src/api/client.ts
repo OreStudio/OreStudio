@@ -458,6 +458,25 @@ export interface LogsQuery {
     readonly limit: number;
 }
 
+/** One node of the synthetic feed graph, with the state the service derives for it. */
+export const feedGraphNodeSchema = z.object({
+    name: z.string(),
+    kind: z.string(),
+    provider_code: z.string().default(''),
+    feed_config_id: z.string().default(''),
+    state: z.string(),
+    reason: z.string().default(''),
+    cause: z.string().default(''),
+});
+export type FeedGraphNode = z.infer<typeof feedGraphNodeSchema>;
+
+/** The synthetic feed graph, or the part of it around one node. */
+export const feedGraphSchema = z.object({
+    nodes: z.array(feedGraphNodeSchema).default([]),
+    edges: z.array(z.object({ node: z.string(), input: z.string(), role: z.string() })).default([]),
+});
+export type FeedGraph = z.infer<typeof feedGraphSchema>;
+
 /** Which page of a person's permissions is asked for. An empty area is the first they hold. */
 export interface PermissionPageQuery {
     readonly area: string;
@@ -2755,21 +2774,37 @@ export const api = {
             .parse(await request('/api/synthetic/simulated-sources', { method: 'GET' })).sources;
     },
 
-    /** Stops a simulated source until someone starts it, with the person's reason. */
-    async stopSimulatedSource(
+    /**
+     * The synthetic feed graph around one node: the node, every node it reads and every node that
+     * reads it, each with its state, and the edges among them. Empty when the graph holds no node
+     * of that name.
+     */
+    async feedGraph(node: string): Promise<FeedGraph> {
+        return feedGraphSchema.parse(
+            await request(`/api/synthetic/feed-graph?node=${encodeURIComponent(node)}`, {
+                method: 'GET',
+            }),
+        );
+    },
+
+    /**
+     * Stops a feed node, a simulated source or a vendor view, until someone starts it, with the
+     * person's reason.
+     */
+    async stopFeedNode(
         name: string,
         intent: { readonly reason_code: string; readonly commentary: string },
     ): Promise<void> {
-        await request(`/api/synthetic/simulated-sources/${encodeURIComponent(name)}/stop`, {
+        await request(`/api/synthetic/feed-nodes/${encodeURIComponent(name)}/stop`, {
             method: 'POST',
             headers: JSON_HEADERS,
             body: JSON.stringify(intent),
         });
     },
 
-    /** Starts a stopped simulated source again. */
-    async startSimulatedSource(name: string): Promise<void> {
-        await request(`/api/synthetic/simulated-sources/${encodeURIComponent(name)}/start`, {
+    /** Starts a stopped feed node again. */
+    async startFeedNode(name: string): Promise<void> {
+        await request(`/api/synthetic/feed-nodes/${encodeURIComponent(name)}/start`, {
             method: 'POST',
             headers: JSON_HEADERS,
             body: '{}',

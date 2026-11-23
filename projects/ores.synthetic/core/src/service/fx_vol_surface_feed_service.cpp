@@ -169,6 +169,8 @@ fx_vol_surface_feed_to_domain(const messaging::fx_vol_surface_feed_write& write)
     v.start_curvature = write.start_curvature;
     v.spot_oresmd_uri = write.spot_oresmd_uri;
     v.spot_provider_code = write.spot_provider_code;
+    v.base_curve_name = write.base_curve_name;
+    v.quote_curve_name = write.quote_curve_name;
     return v;
 }
 

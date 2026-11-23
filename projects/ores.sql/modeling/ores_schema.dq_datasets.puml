@@ -51,6 +51,7 @@ package "dq_datasets" #E3F2FD {
         * optional : boolean
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
           closed_by : text
@@ -82,6 +83,7 @@ package "dq_datasets" #E3F2FD {
         * description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -203,6 +205,7 @@ package "dq_datasets" #E3F2FD {
         * artefact_type : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz

@@ -29,6 +29,7 @@
 #include "ores.synthetic.api/feeds/generator_outputs.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
+#include <cctype>
 #include <chrono>
 #include <format>
 #include <map>
@@ -179,8 +180,19 @@ std::string spot_member_code(std::string_view spot_source_name) {
     return std::string(spot_source_name);
 }
 
-std::string curve_member_code(const boost::uuids::uuid& collection, std::string_view currency) {
-    return boost::uuids::to_string(collection) + "/" + std::string(currency);
+std::string curve_member_code(std::string_view curve_source_name) {
+    return std::string(curve_source_name);
+}
+
+std::string
+fx_option_view_name(std::string_view provider_code, std::string_view base, std::string_view quote) {
+    auto lower = [](std::string_view s) {
+        std::string out(s);
+        std::ranges::transform(
+            out, out.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+        return out;
+    };
+    return "synthetic." + lower(provider_code) + ".fx.fx_option." + lower(base) + lower(quote);
 }
 
 std::expected<fx_vol_market_inputs, std::string>
@@ -250,15 +262,15 @@ fx_vol_surface_feed::fx_vol_surface_feed(
 
     const auto& base = input.config.base_currency_code;
     const auto& quote = input.config.quote_currency_code;
-    // The three values this surface reads, resolved once, off the loop. The spot is the feed the
+    // The three values this surface reads, resolved once, off the loop. Each is the feed the
     // config names, under the one function that feed publishes it by, so the two agree.
     {
         auto& values = market_.values();
         using ores::analytics::quant::domain::market_member_kind;
         board_ = {.base_curve = values.member_of(market_member_kind::curve,
-                                                 curve_member_code(input.config.config_id, base)),
+                                                 curve_member_code(input.config.base_curve_name)),
                   .quote_curve = values.member_of(market_member_kind::curve,
-                                                  curve_member_code(input.config.config_id, quote)),
+                                                  curve_member_code(input.config.quote_curve_name)),
                   .spot = values.member_of(market_member_kind::spot,
                                            spot_member_code(input.spot_source_name))};
     }
@@ -308,6 +320,9 @@ std::string fx_vol_surface_feed::refuse(std::string reason) {
         ORES_LOG_SEV(fx_vol_surface_feed_lg(), ores::logging::warn)
             << "Synthetic surface '" << source_name_ << "' publishes nothing: " << reason;
         refusal_ = reason;
+        cleared_after_refusal_ = true;
+        if (diagnostics_)
+            diagnostics_->raise(source_name_, "no market: " + reason);
     }
     return "no market: " + reason;
 }
@@ -333,6 +348,13 @@ std::string fx_vol_surface_feed::tick(const tick_context& context) {
         ORES_LOG_SEV(fx_vol_surface_feed_lg(), ores::logging::info)
             << "Synthetic surface '" << source_name_ << "' publishes again";
         refusal_.clear();
+    }
+    // The first tick that publishes clears too: a surface built again after a halt starts with no
+    // refusal of its own, and the diagnostic an earlier build raised would otherwise stay.
+    if (diagnostics_ && (!published_once_ || cleared_after_refusal_)) {
+        diagnostics_->clear(source_name_);
+        published_once_ = true;
+        cleared_after_refusal_ = false;
     }
     const auto points = emitter_.step(context.drivers, markets_);
     const auto& codec = ores::nats::default_wire_codec();

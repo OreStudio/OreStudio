@@ -121,7 +121,7 @@ jobs:
       # an external cache backend (see the sccache_external_cache_backend
       # backlog capture) that isn't quota-shared.
       - name: Ccache for gh actions
-        uses: hendrikmuhs/ccache-action@v1.2.25
+        uses: hendrikmuhs/ccache-action@v1.2.26
         with:
           variant: sccache
           key: ${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
@@ -212,7 +212,7 @@ jobs:
           ./projects/ores.compass/compass.sh db recreate -y -D ores_ci
 
       - name: get-cmake
-        uses: lukka/get-cmake@v4.4.5
+        uses: lukka/get-cmake@v4.5.0
 
       - name: Cache vcpkg binary packages
         uses: actions/cache@v6

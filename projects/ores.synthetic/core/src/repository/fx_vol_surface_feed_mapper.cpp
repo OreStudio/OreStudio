@@ -70,6 +70,8 @@ domain::fx_vol_surface_feed fx_vol_surface_feed_mapper::map(const fx_vol_surface
     r.start_curvature = v.start_curvature;
     r.spot_oresmd_uri = v.spot_oresmd_uri;
     r.spot_provider_code = v.spot_provider_code;
+    r.base_curve_name = v.base_curve_name;
+    r.quote_curve_name = v.quote_curve_name;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -112,6 +114,8 @@ fx_vol_surface_feed_entity fx_vol_surface_feed_mapper::map(const domain::fx_vol_
     r.start_curvature = v.start_curvature;
     r.spot_oresmd_uri = v.spot_oresmd_uri;
     r.spot_provider_code = v.spot_provider_code;
+    r.base_curve_name = v.base_curve_name;
+    r.quote_curve_name = v.quote_curve_name;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

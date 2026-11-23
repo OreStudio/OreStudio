@@ -31,6 +31,7 @@
 #include <chrono>
 #include <cmath>
 #include <cstddef>
+#include <memory>
 #include <string>
 #include <thread>
 #include <vector>
@@ -58,6 +59,8 @@ ores::synthetic::domain::fx_vol_surface_feed feed_row() {
     row.source_name = "synthetic.fx_vol.eurusd";
     row.base_currency_code = "EUR";
     row.quote_currency_code = "USD";
+    row.base_curve_name = "synthetic.test.ir.yield_curve.ois.eur";
+    row.quote_curve_name = "synthetic.test.ir.yield_curve.ois.usd";
     row.ticks_per_hour = 12;
     row.arrival_mode = "periodic";
     row.sensitivity = 1.0;
@@ -249,6 +252,18 @@ TEST_CASE("each contributor of a surface is its own stream", "[fx_vol_surface_fe
     CHECK(moved);
 }
 
+// The diagnostics a surface raises and clears, as said.
+struct recorded_diagnostics final : ores::synthetic::feed::node_diagnostics {
+    void raise(const std::string& node, const std::string& message) override {
+        raised.push_back(node + "|" + message);
+    }
+    void clear(const std::string& node) override {
+        cleared.push_back(node);
+    }
+    std::vector<std::string> raised;
+    std::vector<std::string> cleared;
+};
+
 TEST_CASE("a tick whose run has not published what the surface reads says which and sends nothing",
           "[fx_vol_surface_feed]") {
     // The gates are the sentences an operator greps for, so they are asserted through the tick
@@ -271,9 +286,18 @@ TEST_CASE("a tick whose run has not published what the surface reads says which 
     const auto tick = [&] {
         return feed.tick({.elapsed_seconds = 1.0, .observed_at = at, .drivers = drivers});
     };
+    const auto said = std::make_shared<recorded_diagnostics>();
+    feed.set_diagnostics(said);
 
-    CHECK(tick() == "no market: curve:" + curve_member_code({}, "EUR"));
+    CHECK(tick() ==
+          "no market: curve:" + curve_member_code("synthetic.test.ir.yield_curve.ois.eur"));
+    CHECK(tick() ==
+          "no market: curve:" + curve_member_code("synthetic.test.ir.yield_curve.ois.eur"));
     CHECK(feed.publish_count() == 0);
+    // A reason that does not change is raised once, under the surface's name.
+    REQUIRE(said->raised.size() == 1);
+    CHECK(said->raised.front() == "synthetic.fx_vol.eurusd|no market: curve:" +
+                                      curve_member_code("synthetic.test.ir.yield_curve.ois.eur"));
 
     // The gate refuses before it reads a curve, so two stated points are all these need.
     const auto flat = [](double factor) {
@@ -281,17 +305,22 @@ TEST_CASE("a tick whose run has not published what the surface reads says which 
             {.date = std::chrono::year_month_day{}, .discount_factor = 1.0},
             {.date = std::chrono::year_month_day{}, .discount_factor = factor}};
     };
-    const auto eur = market.values().member_of(
-        ores::analytics::quant::domain::market_member_kind::curve, curve_member_code({}, "EUR"));
+    const auto eur =
+        market.values().member_of(ores::analytics::quant::domain::market_member_kind::curve,
+                                  curve_member_code("synthetic.test.ir.yield_curve.ois.eur"));
     market.values().publish_curve(eur, std::chrono::year_month_day{}, flat(0.97), at);
-    CHECK(tick() == "no market: curve:" + curve_member_code({}, "USD"));
+    CHECK(tick() ==
+          "no market: curve:" + curve_member_code("synthetic.test.ir.yield_curve.ois.usd"));
     CHECK(feed.publish_count() == 0);
 
-    const auto usd_id = market.values().member_of(
-        ores::analytics::quant::domain::market_member_kind::curve, curve_member_code({}, "USD"));
+    const auto usd_id =
+        market.values().member_of(ores::analytics::quant::domain::market_member_kind::curve,
+                                  curve_member_code("synthetic.test.ir.yield_curve.ois.usd"));
     market.values().publish_curve(usd_id, std::chrono::year_month_day{}, flat(0.99), at);
     CHECK(tick() == "no market: spot:synthetic.test.spot.eurusd");
     CHECK(feed.publish_count() == 0);
+    CHECK(said->raised.size() == 3);
+    CHECK(said->cleared.empty());
 
     // With all three published the gate stops refusing, so the next thing a tick would do is
     // send; the board read is what a test can follow without a broker, and the round trip does.
@@ -356,19 +385,25 @@ TEST_CASE("a contributor no adapter serves records its points while the vendors 
              .discount_factor = std::exp(-rate)}};
     };
     const auto at = system_clock::now();
-    const auto eur =
-        market.values().member_of(market_member_kind::curve, curve_member_code({}, "EUR"));
-    const auto usd =
-        market.values().member_of(market_member_kind::curve, curve_member_code({}, "USD"));
+    const auto eur = market.values().member_of(
+        market_member_kind::curve, curve_member_code("synthetic.test.ir.yield_curve.ois.eur"));
+    const auto usd = market.values().member_of(
+        market_member_kind::curve, curve_member_code("synthetic.test.ir.yield_curve.ois.usd"));
     const auto spot =
         market.values().member_of(market_member_kind::spot, "synthetic.test.spot.eurusd");
     market.values().publish_curve(eur, spot_date, flat(0.03), at);
     market.values().publish_curve(usd, spot_date, flat(0.01), at);
     market.values().publish_spot(spot, 1.0842, at);
 
+    // A surface built after a halt holds no refusal of its own, so its first tick that publishes
+    // clears the diagnostic an earlier build of it raised.
+    const auto said = std::make_shared<recorded_diagnostics>();
+    feed.set_diagnostics(said);
+
     const std::vector<double> drivers(5, 0.0);
     CHECK(feed.tick({.elapsed_seconds = 1.0, .observed_at = at, .drivers = drivers}) ==
           "30 point(s)");
+    CHECK(said->cleared == std::vector<std::string>{"synthetic.fx_vol.eurusd"});
 
     for (int i = 0; i < 50 && (market_ticks.size() < per_contributor ||
                                adapter_ticks.size() < per_contributor);
@@ -395,4 +430,10 @@ TEST_CASE("a contributor no adapter serves records its points while the vendors 
         REQUIRE(tick);
         CHECK(tick->id_scheme == "test_ticker");
     }
+}
+
+TEST_CASE("a vendor view of a surface is named in the vendor's namespace",
+          "[feeds][fx_vol_surface]") {
+    CHECK(ores::synthetic::feed::fx_option_view_name("bloomberg", "AUD", "USD") ==
+          "synthetic.bloomberg.fx.fx_option.audusd");
 }

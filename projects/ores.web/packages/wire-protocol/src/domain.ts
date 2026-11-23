@@ -771,6 +771,8 @@ export const historyChangeSchema = z.object({
 export const historyVersionSchema = z.object({
     version: z.int().nonnegative(),
     modifiedBy: z.string(),
+    /** The LLM agent that wrote the version for its person, or empty. */
+    actingAgent: z.string().optional(),
     recordedAt: wireTimestampSchema,
     fields: z.array(historyFieldSchema),
     changes: z.array(historyChangeSchema),

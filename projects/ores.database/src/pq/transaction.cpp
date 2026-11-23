@@ -28,13 +28,20 @@ namespace ores::database::pq {
 
 namespace {
 
-const statement<std::tuple<>, std::string, std::string, std::string, std::string, std::string>
+const statement<std::tuple<>,
+                std::string,
+                std::string,
+                std::string,
+                std::string,
+                std::string,
+                std::string>
     set_context{"ores_pq_set_context",
                 "select set_config('app.current_tenant_id', $1, true),"
                 " set_config('app.current_party_id', $2, true),"
                 " set_config('app.visible_party_ids', $3, true),"
                 " set_config('app.current_actor', $4, true),"
                 " set_config('app.current_service', $5, true),"
+                " set_config('app.current_agent', $6, true),"
                 " set_config('TimeZone', 'UTC', true)"};
 
 std::string visible_text(const std::vector<boost::uuids::uuid>& ids) {
@@ -63,13 +70,14 @@ struct sent_command {
  * They go out once, with the first statement of the transaction, so the
  * encoding happens here rather than on every round trip.
  */
-std::array<param, 5> encode_context(const session_context& context) {
+std::array<param, 6> encode_context(const session_context& context) {
     return set_context.encode(context.tenant.to_string(),
                               context.party ? boost::uuids::to_string(*context.party) :
                                               std::string(),
                               visible_text(context.visible_parties),
                               context.actor,
-                              context.service);
+                              context.service,
+                              context.agent);
 }
 
 [[noreturn]] void lost(const connection& c, std::string_view what) {

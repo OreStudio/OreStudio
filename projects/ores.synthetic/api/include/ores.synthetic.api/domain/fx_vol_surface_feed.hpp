@@ -205,6 +205,19 @@ struct fx_vol_surface_feed final {
     std::string spot_provider_code;
 
     /**
+     * @brief The source name of the discounting curve of the base currency, the foreign side of the
+     * pair's forward: an edge of the feed graph, stored so the surface reads the curve it names
+     * rather than one a rule finds.
+     */
+    std::string base_curve_name;
+
+    /**
+     * @brief The source name of the discounting curve of the quote currency, the domestic side of
+     * the pair's forward.
+     */
+    std::string quote_curve_name;
+
+    /**
      * @brief Username of the person who last modified this FX volatility surface feed.
      */
     std::string modified_by;

@@ -191,7 +191,7 @@ begin
         where c.table_schema = 'public'
           and c.table_name = v_live
           and c.column_name not in ('tenant_id', 'version', 'party_id', 'modified_by',
-              'performed_by', 'change_reason_code', 'change_commentary',
+              'performed_by', 'acting_agent', 'change_reason_code', 'change_commentary',
               'valid_from', 'valid_to');
 
         if v_cols is null then

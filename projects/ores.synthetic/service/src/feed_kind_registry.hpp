@@ -72,6 +72,19 @@ struct feed_latent_block final {
 /**
  * @brief One config row of one kind, in the shape every shared verb reads.
  */
+/** @brief The feeds a vol surface reads: its spot and its two discounting curves. */
+struct surface_inputs final {
+    /**
+     * The spot feed the surface reads and correlates with: the one its config names by URI and
+     * provider. Empty when its pair names none.
+     */
+    std::string spot;
+    /** The discounting curve of the base currency, as the config names it. */
+    std::string base_curve;
+    /** The discounting curve of the quote currency, as the config names it. */
+    std::string quote_curve;
+};
+
 struct feed_kind_candidate final {
     /** The row's own id (fx_spot_generation_config::id, ir_curve_generation_config::id, ...). */
     std::string feed_config_id;
@@ -89,11 +102,8 @@ struct feed_kind_candidate final {
     std::optional<feed_latent_block> block;
     /** The currency pair of an FX feed, base then quote. Other kinds leave it empty. */
     std::optional<std::pair<std::string, std::string>> fx_pair;
-    /**
-     * The source name of the spot feed a surface reads and correlates with: the one its config
-     * names by URI and provider. Empty for other kinds, and for a surface whose pair names none.
-     */
-    std::string spot_source_name;
+    /** The feeds a surface reads, by their source names. Empty for other kinds. */
+    surface_inputs inputs;
     /**
      * @brief The pillars of a curve feed, in the notation's own words.
      *

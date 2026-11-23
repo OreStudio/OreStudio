@@ -75,6 +75,8 @@ struct fx_vol_surface_feed_write {
     double start_curvature{};
     std::string spot_oresmd_uri;
     std::string spot_provider_code;
+    std::string base_curve_name;
+    std::string quote_curve_name;
 
     friend bool operator==(const fx_vol_surface_feed_write&,
                            const fx_vol_surface_feed_write&) = default;
@@ -439,6 +441,8 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.fx_vol_surface_
         utility::codec::field{"start_curvature", &fx_vol_surface_feed_write::start_curvature},
         utility::codec::field{"spot_oresmd_uri", &fx_vol_surface_feed_write::spot_oresmd_uri},
         utility::codec::field{"spot_provider_code", &fx_vol_surface_feed_write::spot_provider_code},
+        utility::codec::field{"base_curve_name", &fx_vol_surface_feed_write::base_curve_name},
+        utility::codec::field{"quote_curve_name", &fx_vol_surface_feed_write::quote_curve_name},
     };
 }
 

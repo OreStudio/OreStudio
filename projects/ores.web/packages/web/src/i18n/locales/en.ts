@@ -269,6 +269,20 @@ export const en: SourceCatalogue = {
         outsideView: 'Someone outside your view',
     },
     inbox: {
+        agentWrite: {
+            lead: '{agent}, an LLM agent acting for you, asks to make this write. Approving it makes the write as you; it then needs whatever approval your own write would.',
+            agent: 'Agent',
+            call: 'Call',
+            state: 'State',
+            outcome: 'What the write answered',
+            approve: 'Approve and make the write',
+            states: {
+                held: 'Waiting for you',
+                applying: 'Being made',
+                applied: 'Made',
+                failed: 'Could not be made',
+            },
+        },
         autoApproval: {
             tenant: 'the tenant does not enforce approvals',
             noticeTenant:
@@ -292,6 +306,7 @@ export const en: SourceCatalogue = {
         },
         kind: {
             'iam.role_grant': 'Role request',
+            'iam.write_by_agent': 'Write by an LLM agent',
             'refdata.book_change': 'Book change',
             'marketdata.curve_publish': 'Curve publish',
             'reporting.engine_settings_change': 'Engine run settings change',
@@ -571,7 +586,50 @@ export const en: SourceCatalogue = {
         },
     },
 
+    agentGrantsAdmin: {
+        card: 'Agent grants',
+        cardBody: 'Every LLM agent acting for a person, and its keys.',
+        title: 'Agent grants',
+        description:
+            'Every LLM agent grant in your parties: who granted it, to which agent, under which role and until when.',
+        person: 'Person',
+        everyone: 'Everyone',
+        state: 'State',
+        empty: 'No agent grant matches.',
+        ended: 'ended',
+        revokeKey: 'Revoke key',
+        revokeGrant: 'Revoke grant',
+        sessions: 'Sessions',
+        revokeConfirm:
+            'Revoking stops the agent at once: its next call is refused, or within five minutes at most. Continue?',
+        revokeFailed: 'The revocation was refused.',
+        states: {
+            active: 'Active',
+            ended: 'Ended',
+            all: 'All',
+        },
+        column: {
+            person: 'Person',
+            agent: 'Agent',
+            role: 'Role',
+            until: 'Until',
+            keys: 'Keys',
+        },
+    },
     agents: {
+        activity: {
+            title: 'What your agents did',
+            agent: 'Agent',
+            every: 'Every agent',
+            empty: 'Your agents have made no call.',
+            when: 'When',
+            call: 'Call',
+            answer: 'Answer',
+            took: 'Took',
+            ms: '{ms} ms',
+            link: 'Activity',
+            more: 'Show older calls',
+        },
         title: 'LLM agents',
         lead: 'An agent you name acts for you under one role, until the grant’s expiry or until you revoke it. Its calls are yours and are recorded as the agent’s.',
         empty: 'You have no active agent grant.',
@@ -644,6 +702,8 @@ export const en: SourceCatalogue = {
             end: 'End session',
             ending: 'Ending…',
             ended: 'Session ended. The open sessions were read again.',
+            grantFilter: 'Showing the sessions of agent grant {grant} only.',
+            grantFilterClear: 'Show every session',
             endAgent:
                 'Ending an agent’s session also revokes the key that opened it. The agent’s next call is refused at once, or within five minutes at most; it needs a new key to resume. Continue?',
             holder: 'Show',
@@ -2840,6 +2900,7 @@ export const en: SourceCatalogue = {
         searchedSoFar: 'Searched the first {shown} of {total}',
     },
     history: {
+        byAgent: 'made by an LLM agent',
         description: 'Every version of this record, newest first.',
         newer: 'Newer',
         older: 'Older',
@@ -4515,6 +4576,8 @@ export const en: SourceCatalogue = {
                 expiries: 'Expiries',
                 contributors: 'Contributors',
                 surfaces: 'Surfaces',
+                graph: 'Graph',
+                messages: 'Messages',
             },
         },
         fields: {
@@ -7132,6 +7195,42 @@ export const en: SourceCatalogue = {
             one: 'Tenor entry',
             remove: 'Delete the tenor entry',
         },
+        feedGraph: {
+            lead: 'Where this feed sits in the synthetic feed graph: its state, what it reads and what reads it.',
+            state: {
+                running: 'Running',
+                stopped: 'Stopped',
+                starved: 'Starved',
+                failing: 'Failing',
+            },
+            kind: {
+                source: 'Source',
+                upstream: 'Upstream',
+                latent: 'Latent surface',
+                view: 'Vendor view',
+            },
+            role: {
+                source: 'Source',
+                spot: 'Spot',
+                base_curve: 'Base curve',
+                quote_curve: 'Quote curve',
+                surface: 'Surface',
+            },
+            causedBy: 'Caused by',
+            reads: 'Reads',
+            readBy: 'Read by',
+            nothing: 'Nothing.',
+            stop: 'Stop node',
+            start: 'Start node',
+            stopTitle: 'Stop {node}?',
+            stopEffect:
+                'Its offers are withheld, and every node below it stops and says why. It stays stopped across a restart until someone starts it.',
+            unknown: 'The feed graph holds no node of this name.',
+            messagesLead:
+                "This node's messages over the last day: its state changes with their reasons, and the diagnostics it raises.",
+            noMessages: 'No messages over the last day.',
+            latestOnly: 'Showing the latest {count} messages.',
+        },
         volFeeds: {
             add: 'New vol surface',
             addTitle: 'New vol surface',
@@ -8609,6 +8708,9 @@ export const en: SourceCatalogue = {
     },
 
     permissionWords: {
+        agentGrantsCreate: 'let an LLM agent act for you',
+        agentGrantsRead: 'see every LLM agent grant in your parties',
+        agentGrantsRevoke: 'revoke anyone’s LLM agent grant or key',
         reportInstancesWrite: 'Run a report',
         loginInfoRead: 'see when people last signed in',
         partiesRead: 'see the parties of the tenant',

@@ -67,25 +67,31 @@ describe('the fields a curve derives', () => {
     };
 
     it('derives a source name', () => {
-        expect(completeIrFeed(base)['source_name']).toBe('synthetic.usdsofr');
+        expect(completeIrFeed(base, 'bloomberg')['source_name']).toBe(
+            'synthetic.bloomberg.ir.yield_curve.sofr.usd',
+        );
     });
 
     it('keeps a source name that is given', () => {
-        expect(completeIrFeed({ ...base, source_name: 'mine' })['source_name']).toBe('mine');
+        expect(completeIrFeed({ ...base, source_name: 'mine' }, 'bloomberg')['source_name']).toBe(
+            'mine',
+        );
     });
 
     it('keeps the tenor as typed, for the server to check against the family', () => {
-        expect(completeIrFeed({ ...EURIBOR_6M, price_source: 'fixed' })['tenor']).toBe('6M');
-        expect(completeIrFeed({ ...base, tenor: 'FOMC' })['tenor']).toBe('FOMC');
-        expect(completeIrFeed({ ...base, index_family: 'estr', tenor: '3M' })['tenor']).toBe('3M');
+        expect(completeIrFeed({ ...EURIBOR_6M, price_source: 'fixed' }, 'ice')['tenor']).toBe('6M');
+        expect(completeIrFeed({ ...base, tenor: 'FOMC' }, 'ice')['tenor']).toBe('FOMC');
+        expect(completeIrFeed({ ...base, index_family: 'estr', tenor: '3M' }, 'ice')['tenor']).toBe(
+            '3M',
+        );
     });
 
     it('puts the tenor in a derived source name', () => {
         expect(
-            completeIrFeed({ ...EURIBOR_6M, source_name: '', price_source: 'fixed' })[
+            completeIrFeed({ ...EURIBOR_6M, source_name: '', price_source: 'fixed' }, 'ice')[
                 'source_name'
             ],
-        ).toBe('synthetic.eureuribor6m');
+        ).toBe('synthetic.ice.ir.yield_curve.euribor.eur.6m');
     });
 });
 

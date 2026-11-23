@@ -20,9 +20,12 @@
  */
 
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
+import { Link } from 'react-router';
 import { api } from '../api/client.js';
+import { AgentActivityPanel } from '../access/AgentActivityPanel.js';
 import { AgentGrantsPanel } from '../access/AgentGrantsPanel.js';
 import { useHeld } from '../access/holds.js';
+import { PERMISSION } from '../access/permissions.js';
 import { SignInFacts } from '../access/SignInFacts.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { PageTrail } from '../shell/AreaTrail.js';
@@ -103,7 +106,8 @@ function Loaded({
     return (
         <div className="space-y-6">
             <SessionsPanel sessions={loaded.sessions} onReload={onReload} />
-            {held('iam::agent_grants:create') && <AgentGrantsPanel />}
+            {held(PERMISSION.agentGrantsCreate) && <AgentGrantsPanel />}
+            {held(PERMISSION.agentGrantsCreate) && <AgentActivityPanel />}
             <div className="grid gap-6 lg:grid-cols-2">
                 <PasswordPanel policy={loaded.policy} onChanged={onReload} />
                 <SignInStatePanel session={session} state={loaded.loginInfo} />
@@ -170,6 +174,14 @@ function SessionsPanel({
                                         {row.clientIdentifier === ''
                                             ? t('security.sessions.unknownClient')
                                             : row.clientIdentifier}
+                                        {row.agentGrantId !== null && (
+                                            <Link
+                                                className="ml-2 text-accent"
+                                                to={`?agent=${encodeURIComponent(row.agentGrantId)}#agent-activity`}
+                                            >
+                                                {t('agents.activity.link')}
+                                            </Link>
+                                        )}
                                     </td>
                                     <td className="py-2 pr-4 font-mono text-xs">
                                         {row.clientIp === ''

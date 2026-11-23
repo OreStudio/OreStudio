@@ -22,7 +22,9 @@
  * Template: cpp_protocol_codec_roundtrip_tests.cpp.mustache
  * To modify, update the template and regenerate.
  */
+#include "ores.iam.api/domain/agent_call_codec.hpp"
 #include "ores.iam.api/domain/agent_grant_codec.hpp"
+#include "ores.iam.api/domain/agent_held_write_codec.hpp"
 #include "ores.iam.api/domain/agent_key_codec.hpp"
 #include "ores.iam.api/messaging/agent_grant_operations_protocol.hpp"
 #include "ores.testing/wire_roundtrip.hpp"
@@ -75,4 +77,39 @@ TEST_CASE("ores::iam::messaging::list_own_agent_grants_request", "[codec][roundt
 
 TEST_CASE("ores::iam::messaging::list_own_agent_grants_response", "[codec][roundtrip][protocol]") {
     ores::testing::check_wire_roundtrip<ores::iam::messaging::list_own_agent_grants_response>();
+}
+
+TEST_CASE("ores::iam::messaging::list_every_agent_grant_request", "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::iam::messaging::list_every_agent_grant_request>();
+}
+
+TEST_CASE("ores::iam::messaging::list_every_agent_grant_response", "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::iam::messaging::list_every_agent_grant_response>();
+}
+
+TEST_CASE("ores::iam::messaging::list_own_agent_activity_request", "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::iam::messaging::list_own_agent_activity_request>();
+}
+
+TEST_CASE("ores::iam::messaging::list_own_agent_activity_response",
+          "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::iam::messaging::list_own_agent_activity_response>();
+}
+
+TEST_CASE("ores::iam::messaging::issue_agent_replay_token_request",
+          "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::iam::messaging::issue_agent_replay_token_request>();
+}
+
+TEST_CASE("ores::iam::messaging::issue_agent_replay_token_response",
+          "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::iam::messaging::issue_agent_replay_token_response>();
+}
+
+TEST_CASE("ores::iam::messaging::get_agent_held_write_request", "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::iam::messaging::get_agent_held_write_request>();
+}
+
+TEST_CASE("ores::iam::messaging::get_agent_held_write_response", "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::iam::messaging::get_agent_held_write_response>();
 }

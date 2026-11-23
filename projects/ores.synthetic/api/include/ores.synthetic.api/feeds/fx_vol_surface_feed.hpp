@@ -32,7 +32,7 @@
 #include "ores.synthetic.api/export.hpp"
 #include "ores.synthetic.api/feeds/adapter_target.hpp"
 #include "ores.synthetic.api/feeds/fx_vol_surface_emitter.hpp"
-#include <boost/uuid/uuid.hpp>
+#include "ores.synthetic.api/feeds/node_diagnostics.hpp"
 #include <atomic>
 #include <cstddef>
 #include <cstdint>
@@ -137,15 +137,23 @@ fx_vol_expiry_markets(const fx_vol_market_inputs& inputs,
 spot_member_code(std::string_view spot_source_name);
 
 /**
- * @brief The member code a currency's discounting curve is published under: the collection
- * the curve belongs to, then the currency.
+ * @brief The member code a discounting curve is published under: the source name of its feed.
  *
- * Each collection is a vendor with latent curves of its own, and a surface is struck against
- * its own vendor's curves. A currency code alone would let another collection's curve, such as
- * a demo curve that stops at two years, replace them.
+ * A surface names the two curves it reads, as it names its spot, so the curve a surface is
+ * struck against is an edge it stores and never one a rule finds.
  */
 [[nodiscard]] ORES_SYNTHETIC_API_EXPORT std::string
-curve_member_code(const boost::uuids::uuid& collection, std::string_view currency);
+curve_member_code(std::string_view curve_source_name);
+
+/**
+ * @brief The source name of one vendor's quotes of a latent surface:
+ * synthetic.<provider>.fx.fx_option.<pair>, by the naming scheme.
+ *
+ * The view runs in the vendor's namespace, so stopping a vendor's feeds by name reaches it. The
+ * SQL function ores_synthetic_fx_option_view_name_fn spells the same name.
+ */
+[[nodiscard]] ORES_SYNTHETIC_API_EXPORT std::string
+fx_option_view_name(std::string_view provider_code, std::string_view base, std::string_view quote);
 
 /**
  * @brief The emitter a row describes, at its start.
@@ -215,6 +223,11 @@ public:
      * surface publishes after it.
      */
     std::string tick(const ores::analytics::quant::service::tick_context& context);
+
+    /** Where the surface says why it publishes nothing, and that it publishes again. */
+    void set_diagnostics(std::shared_ptr<node_diagnostics> diagnostics) {
+        diagnostics_ = std::move(diagnostics);
+    }
     void stop() override;
     std::uint64_t publish_count() const override {
         return published_.load(std::memory_order_relaxed);
@@ -268,6 +281,9 @@ private:
     std::atomic<std::uint64_t> published_{0};
     /// Why the last tick published nothing, or empty when it published. Only the tick reads it.
     std::string refusal_;
+    std::shared_ptr<node_diagnostics> diagnostics_;
+    bool published_once_ = false;
+    bool cleared_after_refusal_ = false;
     /// The adapters attached, each with the contributor it serves and that contributor's targets.
     struct sink final {
         std::string contributor;

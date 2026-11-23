@@ -53,6 +53,7 @@ export const PATHS = {
     rescue: '/organisation/rescue',
     operations: '/operations',
     signIns: '/operations/sign-ins',
+    agentGrants: '/operations/agent-grants',
     marketDataFeeds: '/operations/market-data-feeds',
     authorisationQueue: '/operations/authorisation-queue',
     synthetic: '/market-data/synthetic',

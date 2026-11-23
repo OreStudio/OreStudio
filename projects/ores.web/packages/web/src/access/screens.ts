@@ -41,6 +41,8 @@ export const NEEDS = {
     staff: { any: [PERMISSION.accountsRead, PERMISSION.organisationRead] },
     /** The roles of the tenant and who holds them. */
     roles: { all: [PERMISSION.rolesRead] },
+    /** Every LLM agent grant in the reader's parties. */
+    agentGrants: { all: [PERMISSION.agentGrantsRead] },
     /** The reporting hierarchy, read from the organisation. */
     hierarchy: { any: [PERMISSION.accountsRead, PERMISSION.organisationRead] },
     /** Assembling and taking a cut by hand, which also guards the take flow's route. */

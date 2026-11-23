@@ -87,7 +87,7 @@ The edges, each stored as data on the dependent node:
 
 Each node is in one of four states, and the state always carries its reason:
 
-| State | STARTED | Reason it carries |
+| State | Means | Reason it carries |
 |-------+-------+-------------------|
 | running | publishing, or for the latent surface, stepping | |
 | stopped | an operator stopped this node | who, when, and why, stored like a source stop |
@@ -132,12 +132,12 @@ the order, the states and the screens read one structure.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | DONE                                 |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
-| Now           | The naming scheme and the graph design are signed off and documented. |
+| Now           | All six tasks are merged or in review: the scheme, the design, the rename and the latent collection, the node stops, the states and the graph read, the messages, and the screens. |
 | Waiting on    | Nothing.                               |
-| Next          | Build the vendor-neutral latent surface and rename the feeds (task 2). |
-| Last touched  | 2026-11-22                               |
+| Next          | Nothing in this story; the USD/ZAR curve gap is captured in the backlog. |
+| Last touched  | 2026-11-23                               |
 
 * Acceptance
 
@@ -168,6 +168,11 @@ the order, the states and the screens read one structure.
 |------+-------+-------+-----+-------------|
 | [[id:642ED805-A23C-404F-B494-8A74BB8AEB12][Design the synthetic feed naming scheme, based on oresmd, for sign-off]] | DONE | 2026-11-22 | 2026-11-22 | A scheme for the source names of synthetic feeds, built from the oresmd identity of what each feed observes and who produces it, settled with the owner and written into the documentation before any feed is renamed. |
 | [[id:46546EEB-580D-4C37-9398-422D3A18D692][Design the synthetic feed graph: nodes, edges, states and diagnostics]] | DONE | 2026-11-22 | 2026-11-22 | A design note for the feed graph: how its nodes and edges are stored, how a node's state and reason are kept and propagated, and where each node's messages live, settled with the owner before any of it is built. |
+| [[id:B7B370E1-1C20-4474-8C0F-4160ADE6AACD][Rename the synthetic feeds by the scheme and give the latent surfaces their own collection]] | DONE | 2026-11-22 | 2026-11-23 | Every synthetic feed takes its name from the signed-off scheme, the latent vol surfaces move out of the Bloomberg collection into a provider-less latent collection, and a surface's two discounting curves become stored edges. |
+| [[id:86D8F5FF-AF46-4968-86F6-E43F51B17A33][Make each vendor view a node an operator can stop and start]] | DONE | 2026-11-23 | 2026-11-23 | The stop of a simulated source becomes a stop of any feed node, keyed by its scheme name, and a vendor view gains a stored stop and start of its own. |
+| [[id:898F098A-E6D5-49AF-98C7-65F58D5E0AC1][Keep every feed node's state and answer the feed graph in one read]] | DONE | 2026-11-23 | 2026-11-23 | Every node of the feed graph, sources, upstreams, latent surfaces and vendor views, can be stopped by name; the service derives each node's state and reason, propagates starves down the edges, and answers the whole graph, or one node's neighbourhood, in one read served by the BFF and ores.http. |
+| [[id:5BFB956B-47EB-4D03-869E-87AC59DE1441][Log each feed node's messages and mark a node that fails]] | DONE | 2026-11-23 | 2026-11-23 | Each node of the feed graph keeps a message log in telemetry, tagged with its name: its state changes with their reasons, and the diagnostics it raises, such as a latent surface that publishes nothing for want of a curve. A node that runs but cannot produce is failing, and starves the nodes below it. |
+| [[id:8F04AE93-EBE9-4580-88A1-CF11260E64C7][Show the feed graph and each node's messages on every feed page]] | DONE | 2026-11-23 | 2026-11-23 | Every synthetic feed page shows where the feed sits in the graph: its state with its reason and cause, what it reads and what reads it, each a link with its state, and a stop and start of the node, a vendor view's included; and a Messages tab reads the node's log from telemetry. A tenant reads no latent node of the graph. |
 
 * Decisions
 
@@ -226,6 +231,10 @@ signed off.
 6. *The screens.* Links both ways on every node page, the states with their
    reasons, stop and start per node, and the graph read through the BFF and
    =ores.http=.
+   It also settles what a tenant sees of the latent nodes: the =latent=
+   provider is hidden from tenants since PR #5047, but the system =Latent=
+   collection and its surfaces are still readable by tenants, because the
+   service's tenant runs read them.
 
 * See also
 

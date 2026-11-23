@@ -44,6 +44,8 @@ import { FeedStatus, RunOutcomeText, useFeedRuns } from './feedRuns.js';
 import { FeedRunTab } from './feedStart.js';
 import { FeedHistory, type FeedPart } from './FeedHistory.js';
 import type { FeedKind } from './feedKind.js';
+import { FeedGraphTab, FeedMessagesTab } from './feedNode.js';
+import { useSourceOf } from './feedNames.js';
 import { folderChain } from './feedTree.js';
 import { useSyntheticStep } from './syntheticTrail.js';
 
@@ -119,12 +121,22 @@ function FeedBody({
     const may = useRecordPermissions(kind.resource);
     const mayRun = useHeld()(PERMISSION.feedsRun);
     const check = kind.useCheck();
+    const sourceOf = useSourceOf();
+    const complete = (write: Readonly<Record<string, unknown>>): Record<string, unknown> =>
+        kind.complete(write, sourceOf(show(write['config_id'])));
     const parts = useFeedParts(kind, id);
     // The kind of a page never changes, so this hook runs or does not on every render alike.
     const related = kind.useRelated?.(feed) ?? [];
     const { tab, bar } = useRecordTabs({
         label: name,
-        tabs: ['details', 'calibration', ...kind.tabs.map((one) => one.name), 'history'],
+        tabs: [
+            'details',
+            'calibration',
+            'graph',
+            ...kind.tabs.map((one) => one.name),
+            'messages',
+            'history',
+        ],
     });
     const running = feed.running;
     const runs = useFeedRuns();
@@ -200,6 +212,8 @@ function FeedBody({
                         parts: parts.map((part) => part.rows),
                     })
                 ))}
+            {tab === 'graph' && <FeedGraphTab name={show(feed['source_name'])} />}
+            {tab === 'messages' && <FeedMessagesTab name={show(feed['source_name'])} />}
             {tab === 'details' && (
                 <RecordDetails specs={kind.fields} row={feed} extra={kind.extraDetails(feed, t)} />
             )}
@@ -217,7 +231,7 @@ function FeedBody({
                     parts={[...parts, ...related]}
                     feedSpecs={kind.fields}
                     feedResource={kind.resource}
-                    complete={kind.complete}
+                    complete={complete}
                     keep={['id', ...kind.kept]}
                     mayWrite={may.write}
                 />
@@ -235,7 +249,7 @@ function FeedBody({
                             .map((spec) => spec.field),
                         ...kind.kept,
                     ]}
-                    complete={kind.complete}
+                    complete={complete}
                     check={check}
                     onClose={() => setEditing(false)}
                 />

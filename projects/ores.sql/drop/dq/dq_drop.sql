@@ -237,6 +237,7 @@
 
 -- Script library: staging tables
 \ir ./dq_script_inputs_artefact_drop.sql
+\ir ./dq_script_input_codes_artefact_drop.sql
 \ir ./dq_script_coarsenings_artefact_drop.sql
 \ir ./dq_script_calibration_strikes_artefact_drop.sql
 \ir ./dq_script_calibrations_artefact_drop.sql

@@ -69,9 +69,11 @@ target_link_libraries(${lib_target_name}
         ores.nats.lib
         ores.diff.lib
         ores.refdata.api.lib
+        ores.ore.api.lib
         # compass:except(core_link_edges/forbidden_edge) expires=2027-05-18 approver=marco reason=accepted until the edge is removed
         ores.inbox.core.lib
     PRIVATE
+        ores.ore.client.lib
         ores.service.lib
         # compass:except(core_link_edges/forbidden_edge) expires=2027-05-18 approver=marco reason=accepted until the edge is removed
         ores.storage.core.lib

@@ -1,0 +1,30 @@
+{
+  "description": "The element each trade type is read under, where it is not the type's name followed by Data, with the evidence. An element of null states that ORE has no element for the type, and why; such a type has no native fields. A type_of names the element whose schema type an element the vendored schema omits shares, when ORE reads both with one fromXML.",
+  "elements": {
+    "Autocallable_01": {
+      "element": "Autocallable01Data",
+      "evidence": "ORE's example portfolios state Autocallable_01 trades under Autocallable01Data"
+    },
+    "BondPosition": {
+      "element": "BondBasketData",
+      "evidence": "ORE 3d75a6908 OREData/ored/portfolio/bondposition.cpp reads the trade with checkNode(node, \"BondBasketData\")"
+    },
+    "CommodityPairwiseVarianceSwap": {
+      "element": null,
+      "evidence": "ORE has no trade builder for CommodityPairwiseVarianceSwap, as the trade type catalogue's unsupported types record; it is booked as a ScriptedTrade over the PairwiseVarianceSwap script"
+    },
+    "CommodityWindowBarrierOption": {
+      "element": "CommodityWindowBarrierOptionData",
+      "type_of": "EquityWindowBarrierOptionData",
+      "evidence": "ORE 3d75a6908 OREData/ored/portfolio/windowbarrieroption.cpp:219 reads tradeType() + \"Data\" for the commodity, equity and FX forms with one fromXML; the vendored schema declares the equity and FX elements only, so the commodity element takes the equity element's type"
+    },
+    "PerformanceOption_01": {
+      "element": "PerformanceOption01Data",
+      "evidence": "ORE's example portfolios state PerformanceOption_01 trades under PerformanceOption01Data"
+    },
+    "SyntheticCDO": {
+      "element": "CdoData",
+      "evidence": "ORE's example portfolios state SyntheticCDO trades under CdoData"
+    }
+  }
+}

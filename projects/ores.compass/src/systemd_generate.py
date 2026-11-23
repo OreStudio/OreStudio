@@ -61,6 +61,17 @@ HOST_ID_NAMESPACE = uuid.UUID("6ba7b810-9dad-11d1-80b4-00c04fd430c8")
 FLEET_MEMORY_LIMITS = """MemoryMax=8G
 MemorySwapMax=1G"""
 
+# The start job of a unit that waits for readiness, or that runs a port probe
+# before it reports itself started, can outlast systemd's 90 second default on a
+# cold fleet start. A unit killed at that mark fails its own start job and,
+# through Requires=, every dependent's first job with it, which is how the
+# official rates adapter kept ending up inactive while the service it needs came
+# up on its own restart a minute later. A Type=notify unit waits for READY=1; the
+# nats-server and pooler units are Type=simple but their ExecStartPost= and
+# ExecStartPre= probes run inside the start job. The node unit is Type=simple
+# with neither, so it takes systemd's default and states no budget.
+START_TIMEOUT = "TimeoutStartSec=300"
+
 # tenant_id::system().to_string() -- the max UUID sentinel (RFC 9562), always
 # this literal value regardless of environment; see process_supervisor.cpp's
 # own {tenant_id} substitution and its accompanying comment.
@@ -243,6 +254,7 @@ StartLimitBurst=5
 
 [Service]
 Type=notify
+{START_TIMEOUT}
 NotifyAccess=all
 EnvironmentFile={env_file}
 ExecStart=/bin/sh -c '{shell_cmd}'
@@ -364,6 +376,7 @@ StartLimitBurst=5
 
 [Service]
 Type=notify
+{START_TIMEOUT}
 NotifyAccess=all
 EnvironmentFile={env_file}
 ExecStart=/bin/sh -c '{shell_cmd}'
@@ -426,6 +439,7 @@ StartLimitBurst=5
 
 [Service]
 Type=simple
+{START_TIMEOUT}
 EnvironmentFile={checkout_root}/.env
 ExecStart=/usr/sbin/nats-server --config {checkout_root}/build/config/nats-{nats_label}.conf
 ExecStartPost=/bin/sh -c '{port_probe}'
@@ -470,6 +484,7 @@ StartLimitBurst=5
 
 [Service]
 Type=simple
+{START_TIMEOUT}
 EnvironmentFile={checkout_root}/.env
 ExecStartPre={checkout_root}/build/scripts/start_ci_pooler.sh print-config {pooler_port}
 ExecStart=/usr/sbin/pgbouncer {checkout_root}/build/pgbouncer/{label}.ini

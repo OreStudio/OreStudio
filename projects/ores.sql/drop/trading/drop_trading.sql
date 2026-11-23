@@ -82,6 +82,8 @@
 -- Rates instruments (depend on reference data, drop before reference data)
 -- A swap leg's notionals and rates are child rows, so they go before the leg
 -- they belong to.
+\ir ./trading_script_input_codes_notify_trigger_drop.sql
+\ir ./trading_script_input_codes_drop.sql
 \ir ./trading_script_inputs_notify_trigger_drop.sql
 \ir ./trading_script_inputs_drop.sql
 \ir ./trading_script_twin_inputs_notify_trigger_drop.sql

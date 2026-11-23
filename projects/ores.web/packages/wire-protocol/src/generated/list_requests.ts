@@ -886,10 +886,20 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: [],
         rows: [],
     },
+    'iam.v1.ops.list_every_agent_grant': {
+        asOf: false,
+        filter: [],
+        rows: ['grants', 'keys'],
+    },
     'iam.v1.ops.list_my_permissions': {
         asOf: false,
         filter: [],
         rows: [],
+    },
+    'iam.v1.ops.list_own_agent_activity': {
+        asOf: false,
+        filter: [],
+        rows: ['calls'],
     },
     'iam.v1.ops.list_own_agent_grants': {
         asOf: false,
@@ -5489,12 +5499,12 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: [],
         rows: ['sources'],
     },
-    'synthetic.v1.stopped_simulated_sources.list': {
+    'synthetic.v1.stopped_feed_nodes.list': {
         asOf: true,
-        filter: ['source_name_one_of'],
-        rows: ['stopped_sources'],
+        filter: ['node_name_one_of'],
+        rows: ['stopped_nodes'],
     },
-    'synthetic.v1.stopped_simulated_sources_versions.list': {
+    'synthetic.v1.stopped_feed_nodes_versions.list': {
         asOf: false,
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
@@ -6874,6 +6884,11 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'trading.v1.ops.list_products': {
+        asOf: false,
+        filter: [],
+        rows: ['products'],
+    },
     'trading.v1.option_types.list': {
         asOf: true,
         filter: ['code_one_of'],
@@ -7035,6 +7050,16 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         rows: ['coarsenings'],
     },
     'trading.v1.script_coarsenings_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'trading.v1.script_input_codes.list': {
+        asOf: true,
+        filter: [],
+        rows: ['codes'],
+    },
+    'trading.v1.script_input_codes_versions.list': {
         asOf: false,
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],

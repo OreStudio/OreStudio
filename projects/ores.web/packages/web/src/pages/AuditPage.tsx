@@ -21,7 +21,7 @@
 
 import { useState, type ReactNode } from 'react';
 import { useQuery, type UseQueryResult } from '@tanstack/react-query';
-import { Link } from 'react-router';
+import { Link, useSearchParams } from 'react-router';
 import { isWireTimestamp } from '@ores/wire-protocol/browser';
 import type {
     AuthEvent,
@@ -38,7 +38,7 @@ import { Avatar, imageUrl } from '../ui/Images.js';
 import { Timeline, kindTone } from '../timeline/Timeline.js';
 import type { Timeline as TimelineStream } from '@ores/wire-protocol/browser';
 import { AreaTrail } from '../shell/AreaTrail.js';
-import { rescuePath } from '../shell/paths.js';
+import { PATHS, rescuePath } from '../shell/paths.js';
 import { AccountLockBadge } from '../ui/AccountLockBadge.js';
 import { RefreshNow } from '../ui/RefreshButton.js';
 import { Button, LinkButton, Notice, PageHeader, Select, Tag, cx } from '../ui/Primitives.js';
@@ -489,7 +489,11 @@ function SessionsPanel({
                                             </td>
                                             <td className="py-2">
                                                 {row.agentGrantId !== null ? (
-                                                    <Tag>{row.clientIdentifier}</Tag>
+                                                    <Link
+                                                        to={`${PATHS.agentGrants}?grant=${encodeURIComponent(row.agentGrantId)}`}
+                                                    >
+                                                        <Tag>{row.clientIdentifier}</Tag>
+                                                    </Link>
                                                 ) : (
                                                     <span className="text-ink-faint">—</span>
                                                 )}
@@ -1010,8 +1014,16 @@ export function AuditPage(): ReactNode {
             statistics.dataUpdatedAt,
         ),
     );
-    const openSessions = (sessions.data ?? []).filter((row) =>
-        withinPeriod(row.startTime, filter.period),
+    /*
+     * The agent grants screen links here with the grant it names, so the
+     * window opens on that agent's sessions alone.
+     */
+    const [params] = useSearchParams();
+    const grant = params.get('grant') ?? '';
+    const openSessions = (sessions.data ?? []).filter(
+        (row) =>
+            withinPeriod(row.startTime, filter.period) &&
+            (grant === '' || row.agentGrantId === grant),
     );
     const chosenSession = openSessions.find((row) => row.id === chosen) ?? openSessions[0];
 
@@ -1033,6 +1045,14 @@ export function AuditPage(): ReactNode {
                 }
             />
             <FilterBar filter={filter} onChange={setFilter} />
+            {grant !== '' && (
+                <Notice tone="info">
+                    {t('auditSignIns.sessions.grantFilter', { grant })}{' '}
+                    <Link className="text-accent" to={PATHS.signIns}>
+                        {t('auditSignIns.sessions.grantFilterClear')}
+                    </Link>
+                </Notice>
+            )}
             {bar}
             {tab === 'sessions' && (
                 <SessionsPanel

@@ -95,7 +95,7 @@ The XML schema the leaf belongs to, named by the file name of the schema, for ex
 :nullable: false
 :END:
 
-The XPath of the leaf in a document of the schema, for example /ORE/Setup/Parameter[@name='implyTodaysFixings']. The schema name and the XPath together say which leaf this is. For ore.xsd, scope, subtype and name give the same path.
+The XPath of the leaf in a document of the schema, for example /ORE/Setup/Parameter[@name='implyTodaysFixings']. The schema name and the XPath together say which leaf this is. For ore.xsd, scope, subtype and name give the same path. A field of a trade's data is the field of a schema type that many products share, such as legData, so its path starts at the type, for example /legData/Payer, and the data element of a trade type is a field of the trade of that type, for example /Trade[TradeType='Swap']/SwapData.
 
 ** position
 :PROPERTIES:
@@ -248,8 +248,8 @@ std::string("1.9.0.0")
 ** Flags
 :PROPERTIES:
 :subcomponent:    api
-:cached_by:       reporting
-:cache_aux_type:  analytic_parameters
+:cached_by:       ore.client
+:cache_aux_type:  parameter_views
 :END:
 
 Reporting maps the parameters of a run document to their ids and back, so it
@@ -349,21 +349,40 @@ table, which is =ores.ore='s.
 
 ** Cache aux index
 
-Reporting's =ore_parameter_cache= (=nats-event-cache= facet, =cached_by:
-reporting=) keeps the parameters of the analytics as a list beside the plain id →
-parameter map, because a run document names a parameter by its analytic and its
-name and a stored configuration by its id, and reporting maps one to the other
-over the analytics' parameters alone.
+The =ore_parameter_cache= (=nats-event-cache= facet, =cached_by: ore.client=)
+lives in =ores.ore.client=, because more than one service reads it. Beside the
+plain id → parameter map it keeps two views. The parameters of the analytics are
+a list, because a run document names a parameter by its analytic and its name and
+a stored configuration by its id, and the reporting service maps one to the other
+over the analytics' parameters alone. The fields of the instruments are grouped
+by the schema type they belong to, their subtype, because
+the trading service describes a product by walking from its trade type's element
+through the types its fields name.
 
 #+begin_src cpp :name aux_type_decl :implements ADD930C7-EF33-44B4-A0A2-49254FCC7ACD
     using analytic_parameters = std::vector<ores::ore::domain::ore_parameter>;
+    using instrument_types =
+        std::unordered_map<std::string, std::vector<ores::ore::domain::ore_parameter>>;
+    struct parameter_views {
+        std::shared_ptr<const analytic_parameters> analytics =
+            std::make_shared<const analytic_parameters>();
+        std::shared_ptr<const instrument_types> instruments =
+            std::make_shared<const instrument_types>();
+    };
 #+end_src
 
 #+begin_src cpp :name aux_build :implements 60520267-94E5-4369-97E9-7AED54CDEDD2
-            analytic_parameters aux;
-            for (const auto& [id, p] : entries)
+            analytic_parameters analytics;
+            instrument_types instruments;
+            for (const auto& [id, p] : entries) {
                 if (p.scope == "analytic")
-                    aux.push_back(p);
+                    analytics.push_back(p);
+                else if (p.scope == "instrument")
+                    instruments[p.subtype].push_back(p);
+            }
+            parameter_views aux{
+                .analytics = std::make_shared<const analytic_parameters>(std::move(analytics)),
+                .instruments = std::make_shared<const instrument_types>(std::move(instruments))};
 #+end_src
 
 #+begin_src cpp :name aux_methods :implements C0EDFBDF-F38F-4E02-874F-A086FB435FB0
@@ -373,7 +392,19 @@ over the analytics' parameters alone.
      */
     analytic_parameters analytics_parameters(const std::string& tenant_id) const {
         const auto snap = cache_.snapshot(tenant_id);
-        return snap ? snap->aux : analytic_parameters{};
+        return snap ? *snap->aux.analytics : analytic_parameters{};
+    }
+
+    /**
+     * @brief The fields of the instruments the tenant's partition holds, by the
+     * schema type they belong to, in no order (each field states its position),
+     * empty when the partition is not loaded. The data element of each trade type
+     * is a field of the type trade. The map is shared and never changed, so a read
+     * copies a pointer, not the fields.
+     */
+    std::shared_ptr<const instrument_types> instrument_fields(const std::string& tenant_id) const {
+        const auto snap = cache_.snapshot(tenant_id);
+        return snap ? snap->aux.instruments : std::make_shared<const instrument_types>();
     }
 #+end_src
 

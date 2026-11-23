@@ -226,14 +226,72 @@ export interface ListSimulatedSourcesResponse {
 }
 
 /**
- * @brief Request to stop one simulated source, and keep it stopped until it is started.
- *
- * Its adapter stops: the feeds it runs for the store stop, and it releases the vol surfaces
- * it holds, each of which runs on while another source holds it. Feeds started by hand run on.
+ * @brief One node of the synthetic feed graph, with the state the service derives for it.
  */
-export interface StopSimulatedSourceRequest {
-    /** @brief The catalogue name of the source. */
-    source_name: string;
+export interface FeedGraphNode {
+    /** @brief The node's name: a source's catalogue name, or a feed's or a view's scheme name. */
+    name: string;
+    /** @brief What sort of node it is: source, upstream, latent or view. */
+    kind: string;
+    /** @brief The provider whose notation its ticks use, or latent for a latent surface. */
+    provider_code: string;
+    /** @brief The id of the feed row an upstream or a latent surface is; empty for a source or a view. */
+    feed_config_id: string;
+    /** @brief Its state: running, stopped, starved or failing. */
+    state: string;
+    /** @brief Why it is in that state; empty when it runs. */
+    reason: string;
+    /** @brief For a starved node, the name of the input that starved it. */
+    cause: string;
+}
+
+/**
+ * @brief One edge of the synthetic feed graph: a node and one input it reads.
+ */
+export interface FeedGraphEdge {
+    /** @brief The name of the node that reads the input. */
+    node: string;
+    /** @brief The name of the input node. */
+    input: string;
+    /** @brief What the input is to the node: source, spot, base_curve, quote_curve or surface. */
+    role: string;
+}
+
+/**
+ * @brief Request the synthetic feed graph: every node with its state, and every edge.
+ *
+ * A node name narrows the answer to that node, every node upstream of it and every node
+ * downstream of it, and the edges among them.
+ */
+export interface GetFeedGraphRequest {
+    /** @brief The node to centre on; empty for the whole graph. */
+    node_name: string;
+}
+
+/**
+ * @brief The feed graph, and whether the read succeeded.
+ */
+export interface GetFeedGraphResponse {
+    success: boolean;
+    message: string;
+    /** @brief The nodes, in name order. */
+    nodes: FeedGraphNode[];
+    /** @brief The edges, in node then input order. */
+    edges: FeedGraphEdge[];
+}
+
+/**
+ * @brief Request to stop one node of the feed graph, and keep it stopped until it is started.
+ *
+ * A source's adapter stops: the feeds it runs for the store stop, and it releases the vol
+ * surfaces it holds, each of which runs on while another source holds it. Feeds started by hand
+ * run on. An upstream's or a latent surface's offers are withheld, so the nodes below it starve.
+ * A vendor view's points are withheld: its vendor stops quoting that surface, and the surface and
+ * the other vendors run on.
+ */
+export interface StopFeedNodeRequest {
+    /** @brief The node's name: a source's catalogue name, or a feed's or a view's scheme name. */
+    node_name: string;
     /** @brief Why it is stopped, as a change reason code. */
     reason_code: string;
     /** @brief What the person said about why. */
@@ -241,25 +299,25 @@ export interface StopSimulatedSourceRequest {
 }
 
 /**
- * @brief Whether the source stopped, and why not when it did not.
+ * @brief Whether the node stopped, and why not when it did not.
  */
-export interface StopSimulatedSourceResponse {
+export interface StopFeedNodeResponse {
     success: boolean;
     message: string;
 }
 
 /**
- * @brief Request to start a stopped simulated source again.
+ * @brief Request to start a stopped node of the feed graph again.
  */
-export interface StartSimulatedSourceRequest {
-    /** @brief The catalogue name of the source. */
-    source_name: string;
+export interface StartFeedNodeRequest {
+    /** @brief The node's name: a source's catalogue name, or a feed's or a view's scheme name. */
+    node_name: string;
 }
 
 /**
- * @brief Whether the source started, and why not when it did not.
+ * @brief Whether the node started, and why not when it did not.
  */
-export interface StartSimulatedSourceResponse {
+export interface StartFeedNodeResponse {
     success: boolean;
     message: string;
 }
@@ -463,8 +521,9 @@ export const subjects = {
     stop_feed_request: 'synthetic.v1.ops.stop_feed',
     list_feeds_request: 'synthetic.v1.feed_configs.list',
     list_simulated_sources_request: 'synthetic.v1.simulated_sources.list',
-    stop_simulated_source_request: 'synthetic.v1.ops.stop_simulated_source',
-    start_simulated_source_request: 'synthetic.v1.ops.start_simulated_source',
+    get_feed_graph_request: 'synthetic.v1.feed_graph.get',
+    stop_feed_node_request: 'synthetic.v1.ops.stop_feed_node',
+    start_feed_node_request: 'synthetic.v1.ops.start_feed_node',
     calibrate_request: 'synthetic.v1.ops.calibrate_feeds',
     review_variance_calibration_request: 'synthetic.v1.ops.review_variance_calibration',
 } as const;
@@ -478,8 +537,9 @@ export const requiresSession = {
     stop_feed_request: true,
     list_feeds_request: true,
     list_simulated_sources_request: true,
-    stop_simulated_source_request: true,
-    start_simulated_source_request: true,
+    get_feed_graph_request: true,
+    stop_feed_node_request: true,
+    start_feed_node_request: true,
     calibrate_request: true,
     review_variance_calibration_request: true,
 } as const;

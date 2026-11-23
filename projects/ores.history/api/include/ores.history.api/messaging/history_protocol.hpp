@@ -51,6 +51,7 @@ namespace ores::history::messaging {
 struct entity_history_version {
     int version = 0;
     std::string modified_by;
+    std::string acting_agent;
     std::chrono::system_clock::time_point recorded_at;
     std::vector<ores::diff::domain::field_value> fields;
     ores::diff::domain::diff_result changes;
@@ -143,6 +144,7 @@ struct get_entity_history_response {
     return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"version", &entity_history_version::version},
         ::ores::utility::codec::field{"modified_by", &entity_history_version::modified_by},
+        ::ores::utility::codec::field{"acting_agent", &entity_history_version::acting_agent},
         ::ores::utility::codec::field{"recorded_at", &entity_history_version::recorded_at},
         ::ores::utility::codec::field{"fields", &entity_history_version::fields},
         ::ores::utility::codec::field{"changes", &entity_history_version::changes},

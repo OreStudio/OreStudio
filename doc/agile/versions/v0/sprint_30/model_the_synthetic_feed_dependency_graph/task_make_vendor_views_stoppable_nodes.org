@@ -1,0 +1,150 @@
+:PROPERTIES:
+:ID: 86D8F5FF-AF46-4968-86F6-E43F51B17A33
+:END:
+#+title: Task: Make each vendor view a node an operator can stop and start
+#+description: The stop of a simulated source becomes a stop of any feed node, keyed by its scheme name, and a vendor view gains a stored stop and start of its own.
+#+type: task
+#+level: s1
+#+filetags: :model_the_synthetic_feed_dependency_graph:sprint_30:v0:
+#+owner: marco
+#+branch: feature/make-vendor-views-stoppable-nodes
+#+pr: 5053
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-23
+#+updated: 2026-11-23
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8DE041AE-95E6-40CE-9B62-2CE3BA77838A][Model the synthetic feeds as a dependency graph: upstreams, latent surfaces and vendor views]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+An operator stops one vendor's quotes of one latent surface, such as synthetic.ice.fx.fx_option.audusd, and the other vendors and the surface run on. The stop is stored, so a restart keeps it, and starting the view again restores its quotes. Sources and views share one stop table and one pair of verbs, keyed by the node's name.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:8DE041AE-95E6-40CE-9B62-2CE3BA77838A][Model the synthetic feeds as a dependency graph: upstreams, latent surfaces and vendor views]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-23                               |
+
+* Acceptance
+
+- The stopped simulated source table becomes a table of stopped feed nodes, keyed by node name, with the node's kind and provider; its history records who stopped and started what, and why.
+- One pair of verbs stops and starts a node by name; a source stop behaves as before, and a view stop halts that view's quotes only.
+- A stopped view stays stopped across a service restart, and its ids are not offered to the adapter while it is stopped.
+- The BFF, ores.http and the screens use the node verbs; the Provider tab's source strip works as before.
+- Live: stopping one view stops that vendor's quotes for that pair only; starting it restores them.
+
+* Plan
+
+One PR, in slices that each end in a check. It applies choice 2 of the
+[[id:2376A086-4C3C-4D61-92E5-29B122DB6A41][synthetic feed graph]] design: one stop table for any node, keyed by name.
+
+1. *The stop table.* The entity =stopped_simulated_source= becomes
+   =stopped_feed_node=: =node_name= (the key, a source name such as
+   =bloomberg-a= or a view name such as =synthetic.ice.fx.fx_option.audusd=),
+   =kind= (=source= or =view=, checked) and =provider_code=. The generated
+   layers, the permissions and the roles follow the rename. Check: codegen
+   clean, the SQL and codec tests pass.
+2. *The verbs.* =synthetic.v1.ops.stop_simulated_source= and
+   =start_simulated_source= become =stop_feed_node= and =start_feed_node=,
+   taking a =node_name=. The handler resolves the kind: a source the fleet
+   serves, else a view some latent surface's contributor quotes. The source
+   path is unchanged. The source list verb stays. The BFF, =ores.http= and the
+   web source strip move to the new verbs, and the old ones go. Check: the
+   handler tests cover both kinds and the refusals.
+3. *A view stop at run time.* The fleet keeps the stopped views, read from the
+   table at start. The offers leave out a stopped view's points, and the
+   runner re-applies its last demand on a view stop or start, so the view's
+   hold stops at once and resumes at once; the other vendors' views and the
+   surface run on. Check: a runner test that re-applying drops and restores a
+   withheld offer, and an offers test that a stopped view offers no point.
+4. *Proof.* Rebuild, recreate, start the services; stop
+   =synthetic.ice.fx.fx_option.audusd= and see ice-a stop its AUD/USD vol
+   points while bloomberg-a and tradeweb-a go on; restart the service and see
+   it stay stopped; start it and see the points return.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| C++ synthetic suites | 5 of 5 pass, with the handler's view and unknown-name cases and the runner's re-apply case | =compass test run -- -R synthetic= | ddc38f1b36 |
+| SQL tests, synthetic, market data and IAM | 30 files, 250 tests, all pass | =pg_prove test/synthetic_*_test.sql test/marketdata_*_test.sql test/iam_*_test.sql= | ddc38f1b36 |
+| Web and BFF tests | 1851 pass, with the BFF's view stop case | =npx vitest run packages/web/src/marketdata packages/bff= | ddc38f1b36 |
+| Live, a view stop | ice-a holds 13 surfaces, bloomberg-a and tradeweb-a 14; the runner stopped one generator | =POST /api/synthetic/feed-nodes/synthetic.ice.fx.fx_option.audusd/stop= on ores.http, then =GET /api/synthetic/simulated-sources= | ddc38f1b36 |
+| Live, after a service restart | ice-a still holds 13 | =systemctl --user restart= of the synthetic service, then the list | ddc38f1b36 |
+| Live, a view start | ice-a holds 14 at once | =POST .../start=, then the list | ddc38f1b36 |
+| Live, a source stop and start, and an unknown name | lseg-a stopped then running; the unknown name refused with a conflict that names it | the same routes | ddc38f1b36 |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5053][#5053]] | [synthetic] Stop and start a vendor view as a feed node |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Local review: the old source routes go with no alias | feed_operation_routes.cpp, synthetic.ts | Accepted | Every caller in the tree moved to the node routes in this PR; no external client uses them. |
+| 2 | Local review: =reapply= may run beside an =apply= from a demand message | generator_runner.hpp | Accepted | Both take the runner's own lock for the running set, as two demand messages already do; the last demand is kept under its own lock. |
+| 3 | Local review: no unit test of the offers' view filter | simulator_offers.hpp | Declined | Building a surface's offers needs the registry and the database; the live holds count proves it. |
+| 4 | Misspell check over the changed files | - | Clean | =misspell-fixer= exit 0. |
+| 5 | PR review: a source name and a view name could clash | simulated_source_handler.hpp | Accepted | The comment now states the requirement and why it holds: a source is a catalogue name such as bloomberg-a, a view carries the synthetic mark and dotted segments. |
+| 6 | PR review: the row and the live state may disagree on a failure | simulated_source_handler.hpp | Declined | A stop writes the row first and deletes it if the node does not stop; a start resumes first and stops again if the row cannot go, so the two agree whichever step fails. |
+| 7 | PR review: reapply may race an apply | generator_runner.hpp | Accepted | apply holds the runner's lock for the running set; the last demand is now recorded under that lock too, so the demand kept is the last one applied. |
+| 8 | PR review: reapply before any demand | generator_runner.hpp | Declined | Manual runs survive any demand, and before a demand no demanded generator exists, so an empty re-apply changes nothing. |
+| 9 | PR review: view() reads the registry each call | application.cpp | Declined | A stop or start is a rare operator act; a cache would need invalidating on every feed edit. |
+| 10 | PR review: no unit test of the offers' view filter | simulator_offers.hpp | Declined | As row 3; proven live. |
+| 11 | PR review: removed routes may have callers | - | Accepted | A search of the tree finds no caller of the old routes or verbs outside this task's own page. |
+| 12 | PR review: no migration of stopped rows | create scripts | Declined | The project recreates its databases from the create scripts. |
+
+* Result
+
+An operator stops one vendor's quotes of one latent surface by the view's
+name, and the surface and the other vendors run on. The stop of a simulated
+source became a stop of any feed node: the table =stopped_feed_nodes=, keyed
+by the node's name, with its kind, =source= or =view=, and its provider, and
+one pair of verbs, =stop_feed_node= and =start_feed_node=. A source stop
+behaves as before. A view stop withholds the view's points from its vendor's
+adapters, and each adapter's runner re-applies its last demand, so the view's
+hold stops at once and resumes at once on a start; a stopped view stays
+stopped across a restart. The BFF, =ores.http= and the web source strip use
+the node routes, =/api/synthetic/feed-nodes/{name}/stop= and =/start=, and the
+old source routes are gone.
+
+No test builds a vol surface's offers, because that needs the full registry
+and database; the offers' filter of a stopped view is proven live instead, by
+the holds count above. The screens to stop a view from its page belong to the
+story's screens task.
+
+main did not build under the clang preset when this task began: an unused
+=this= capture in the trading product schema handler. It was fixed in its own
+PR, #5051, and carried here.

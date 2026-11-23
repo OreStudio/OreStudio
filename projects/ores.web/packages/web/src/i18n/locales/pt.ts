@@ -269,6 +269,20 @@ const pt: SourceCatalogue = {
         outsideView: 'Alguém fora da sua vista',
     },
     inbox: {
+        agentWrite: {
+            lead: '{agent}, um agente LLM que age por si, pede para fazer esta escrita. Aprová-la faz a escrita em seu nome; depois precisa da aprovação que a sua própria escrita exigiria.',
+            agent: 'Agente',
+            call: 'Chamada',
+            state: 'Estado',
+            outcome: 'O que a escrita respondeu',
+            approve: 'Aprovar e fazer a escrita',
+            states: {
+                held: 'À sua espera',
+                applying: 'A ser feita',
+                applied: 'Feita',
+                failed: 'Não pôde ser feita',
+            },
+        },
         autoApproval: {
             tenant: 'o inquilino não exige aprovações',
             noticeTenant:
@@ -292,6 +306,7 @@ const pt: SourceCatalogue = {
         },
         kind: {
             'iam.role_grant': 'Pedido de papel',
+            'iam.write_by_agent': 'Escrita de um agente LLM',
             'refdata.book_change': 'Alteração de livro',
             'marketdata.curve_publish': 'Publicação de curva',
             'reporting.engine_settings_change': 'Alteração das definições de execução do motor',
@@ -569,7 +584,50 @@ const pt: SourceCatalogue = {
         },
     },
 
+    agentGrantsAdmin: {
+        card: 'Autorizações de agentes',
+        cardBody: 'Cada agente LLM que age por uma pessoa, e as suas chaves.',
+        title: 'Autorizações de agentes',
+        description:
+            'Cada autorização de agente LLM das suas entidades: quem a deu, a que agente, sob que função e até quando.',
+        person: 'Pessoa',
+        everyone: 'Todos',
+        state: 'Estado',
+        empty: 'Nenhuma autorização de agente corresponde.',
+        ended: 'terminada',
+        revokeKey: 'Revogar chave',
+        revokeGrant: 'Revogar autorização',
+        sessions: 'Sessões',
+        revokeConfirm:
+            'Revogar para o agente de imediato: a próxima chamada é recusada, ou no máximo em cinco minutos. Continuar?',
+        revokeFailed: 'A revogação foi recusada.',
+        states: {
+            active: 'Ativas',
+            ended: 'Terminadas',
+            all: 'Todas',
+        },
+        column: {
+            person: 'Pessoa',
+            agent: 'Agente',
+            role: 'Função',
+            until: 'Até',
+            keys: 'Chaves',
+        },
+    },
     agents: {
+        activity: {
+            title: 'O que os seus agentes fizeram',
+            agent: 'Agente',
+            every: 'Todos os agentes',
+            empty: 'Os seus agentes não fizeram nenhuma chamada.',
+            when: 'Quando',
+            call: 'Chamada',
+            answer: 'Resposta',
+            took: 'Duração',
+            ms: '{ms} ms',
+            link: 'Atividade',
+            more: 'Mostrar chamadas mais antigas',
+        },
         title: 'Agentes LLM',
         lead: 'Um agente que nomeia age por si sob uma função, até a autorização expirar ou até a revogar. As suas chamadas são suas e ficam registadas como do agente.',
         empty: 'Não tem nenhuma autorização de agente ativa.',
@@ -643,6 +701,8 @@ const pt: SourceCatalogue = {
             end: 'Terminar sessão',
             ending: 'A terminar…',
             ended: 'Sessão terminada. As sessões abertas foram lidas de novo.',
+            grantFilter: 'A mostrar apenas as sessões da autorização de agente {grant}.',
+            grantFilterClear: 'Mostrar todas as sessões',
             endAgent:
                 'Terminar a sessão de um agente revoga também a chave que a abriu. A próxima chamada do agente é recusada de imediato, ou no máximo em cinco minutos; precisa de uma nova chave para retomar. Continuar?',
             holder: 'Mostrar',
@@ -2864,6 +2924,7 @@ const pt: SourceCatalogue = {
         searchedSoFar: 'Pesquisados os primeiros {shown} de {total}',
     },
     history: {
+        byAgent: 'feita por um agente LLM',
         description: 'Todas as versões deste registo, da mais recente para a mais antiga.',
         newer: 'Mais recente',
         older: 'Mais antiga',
@@ -4545,6 +4606,8 @@ const pt: SourceCatalogue = {
                 expiries: 'Vencimentos',
                 contributors: 'Contribuidores',
                 surfaces: 'Superfícies',
+                graph: 'Grafo',
+                messages: 'Mensagens',
             },
         },
         fields: {
@@ -7185,6 +7248,42 @@ const pt: SourceCatalogue = {
             one: 'Entrada de prazo',
             remove: 'Apagar a entrada de prazo',
         },
+        feedGraph: {
+            lead: 'Onde este feed se situa no grafo de feeds sintéticos: o seu estado, o que lê e o que o lê.',
+            state: {
+                running: 'Em execução',
+                stopped: 'Parado',
+                starved: 'Sem entradas',
+                failing: 'Em falha',
+            },
+            kind: {
+                source: 'Fonte',
+                upstream: 'A montante',
+                latent: 'Superfície latente',
+                view: 'Vista do fornecedor',
+            },
+            role: {
+                source: 'Fonte',
+                spot: 'Spot',
+                base_curve: 'Curva base',
+                quote_curve: 'Curva de cotação',
+                surface: 'Superfície',
+            },
+            causedBy: 'Causado por',
+            reads: 'Lê',
+            readBy: 'Lido por',
+            nothing: 'Nada.',
+            stop: 'Parar o nó',
+            start: 'Iniciar o nó',
+            stopTitle: 'Parar {node}?',
+            stopEffect:
+                'As suas ofertas são retidas, e cada nó abaixo dele para e diz porquê. Fica parado após um reinício até alguém o iniciar.',
+            unknown: 'O grafo de feeds não tem nenhum nó com este nome.',
+            messagesLead:
+                'As mensagens deste nó no último dia: as mudanças de estado com as suas razões, e os diagnósticos que levanta.',
+            noMessages: 'Nenhuma mensagem no último dia.',
+            latestOnly: 'A mostrar as {count} mensagens mais recentes.',
+        },
         volFeeds: {
             add: 'Nova superfície de volatilidade',
             addTitle: 'Nova superfície de volatilidade',
@@ -8670,6 +8769,9 @@ const pt: SourceCatalogue = {
     },
 
     permissionWords: {
+        agentGrantsCreate: 'deixar um agente LLM agir por si',
+        agentGrantsRead: 'ver cada autorização de agente LLM das suas entidades',
+        agentGrantsRevoke: 'revogar a autorização ou a chave de agente LLM de qualquer pessoa',
         reportInstancesWrite: 'Executar um relatório',
         loginInfoRead: 'ver o último início de sessão das pessoas',
         partiesRead: 'ver as partes do inquilino',

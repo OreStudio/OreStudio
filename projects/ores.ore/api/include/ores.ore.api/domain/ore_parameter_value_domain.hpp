@@ -69,8 +69,10 @@ struct ore_parameter_value_domain final {
     std::string name;
 
     /**
-     * @brief How a value in this domain is stored: text, numeric, integer, boolean, date, uuid or
-     * list.
+     * @brief How a value in this domain is stored: text, numeric, integer, boolean, date, uuid,
+     * list or record. A record is an element whose fields are those of the schema type that
+     * referenced_entity names; a list repeats the type or the value domain that referenced_entity
+     * names.
      */
     std::string storage_kind;
 

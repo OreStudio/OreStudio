@@ -22,6 +22,7 @@
 set(files
     "routes/trading/book_routes.cpp"
     "routes/trading/booking_routes.cpp"
+    "routes/trading/product_routes.cpp"
     "routes/trading/structure_routes.cpp"
     "routes/trading/trade_read_routes.cpp"
     "routes/trading/trading_routes.cpp"
@@ -33,6 +34,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/ores.http.trading.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/trading/book_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/trading/booking_routes.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/trading/product_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/trading/structure_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/trading/trade_read_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/trading/trading_routes.hpp"

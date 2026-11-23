@@ -2281,10 +2281,6 @@ tangled into the runnable script library
 
 - [[id:BF13BB64-6E43-521F-8E2A-48A727208482][How do I run the ir_curve_index_families commands from the shell?]]
 
-* Stopped Simulated Sources
-
-- [[id:9ED1FC4B-FF18-56FB-B221-9CD649D1FE71][How do I run the stopped_simulated_sources commands from the shell?]]
-
 * Agent Grants
 
 - [[id:A11B3E10-AF11-50B5-AE31-966AEB4CC9B1][How do I run the agent_grants commands from the shell?]]
@@ -2308,3 +2304,7 @@ tangled into the runnable script library
 * Fixing Sources
 
 - [[id:36C1696E-6A1C-5C5E-B109-F07FCFA3F065][How do I run the fixing_sources commands from the shell?]]
+
+* Stopped Feed Nodes
+
+- [[id:0FC4AB32-3FB2-56D4-A88D-451A9F5D5BA2][How do I run the stopped_feed_nodes commands from the shell?]]

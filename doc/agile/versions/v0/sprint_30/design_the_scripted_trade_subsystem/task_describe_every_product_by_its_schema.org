@@ -8,7 +8,7 @@
 #+filetags: :design_the_scripted_trade_subsystem:sprint_30:v0:
 #+owner: marco
 #+branch: feature/describe-every-product-by-its-schema
-#+pr:
+#+pr: 5050
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-21
@@ -59,7 +59,11 @@ Revised with the user on 2026-11-22, after the analysis in the notes below.
   =--check= fails when the committed seed differs.
 - The metamodel moves to =ores.ore= first, in [[id:0FD7D2A8-7A4A-4052-A4D5-6C8A01CAAA41][Move the ORE metamodel into ores.ore]], which blocks
   this task.
-- =product_type= states the element each type is read under.
+- The element each trade type is read under is a fact of ORE's schema, so =ores.ore=
+  states it: the trade's data element is a field of the trade of its type,
+  =/Trade[TradeType='Swap']/SwapData=. =product_type= needs no element column;
+  its seed is written by compass's catalogue loader, which a new column would
+  have had to change (decided in PR 1).
 - Each form states its product tag (scripted) or ORE pricing engine type
   (native); =describe_product= takes an optional pricing configuration and, when
   given one, states the model and engine it assigns. Cost is left to a later task.
@@ -70,7 +74,7 @@ Revised with the user on 2026-11-22, after the analysis in the notes below.
 
 PRs, each ending in a check, once the move is merged:
 
-1. The element of each product type, and the =instruments.xsd= leaves of every
+1. The element of each trade type, and the =instruments.xsd= leaves of every
    native product in the =ore.parameters= dataset, by the extraction method; a
    test fails when a native product of the catalogue has no leaf.
 2. A script-only product's fields from its script's inputs, and the annotations
@@ -93,9 +97,40 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Products of the catalogue given an element of the vendored schema | 119; 2 have none (CommodityPairwiseVarianceSwap, CommodityWindowBarrierOption) | =python3 projects/ores.sql/utility/extract_instrument_terms.py= | PR 1 |
+| Schema types and fields reachable from those elements | 441 types, 2929 fields; 330 fields described by the guide | =python3 projects/ores.sql/utility/extract_instrument_terms.py= | PR 1 |
+| Rows of the =ore.parameters= seed | 5602, from 2559 | =python3 projects/ores.sql/utility/generate_ore_parameters_dataset.py= | PR 1 |
+| Leaf rows if every product's paths were expanded instead | 11626 | a walk of =instrument_terms.json= from each product's element, before the substitution groups were read | PR 1 |
+| Script inputs with codes; codes staged | 63 inputs, 22 distinct sets; 148 codes | =python3 external/ore/tools/generate_script_library.py= | PR 2 |
 
 * Notes
+
+** PR 1: the fields of the native products
+
+The structure comes from the vendored schemas under =external/ore/xsd=, not from
+the trade classes' =fromXML=. The schemas are the release that =ore_file_version=
+records (1.8.17.0), they state a field's type, whether it must be present and
+whether it repeats, and they are parsed by a standard library; a regex over
+=fromXML= would state less and break more often. The guide gives the words, as it
+does for the conventions and the curves.
+
+A row is a field of a schema type, not a leaf of a document. Expanding every
+product's paths gives 11626 leaf rows, because a type such as =legData= is read
+under many products; describing each type once gives 2929. The trade's data
+elements are fields of the trade of their type, so a product is read from
+=/Trade[TradeType='Swap']/SwapData= down.
+A field whose value is a type names it through a value domain, =record:legData=
+or =list:legData=, whose storage kind is =record= or =list= and whose referenced
+entity is the type; those columns already existed and needed no change.
+
+A field the guide does not describe is still written, because a form needs every
+field; its text says the guide does not describe it, and the generator prints
+the count. The XSD reads three constructs that a naive walk misses: a choice
+(=swaptionData= offers two orders of the same fields, and a field is required
+only when every alternative requires it), an abstract element and its
+substitution group (=legDataType= stands for =FixedLegData= and the other legs),
+and a reference to a global element.
+
 
 ** What exists, and how it fits
 
@@ -123,6 +158,77 @@ the rows, =measure_ore_parameter_releases.py= the first release, and
 =generate_ore_parameters_dataset.py= writes the seed, with =--check=. The value
 sets, the element map and its columns are written by compass's =ore_value_sets=
 codec from the value set curation.
+
+** PR 2: the annotations of script-only products
+
+A script-only product's fields are its script's inputs, which trading already
+holds: name, type, array or scalar, the value rule from its REQUIRE statements,
+and the description from the library comment (679 of the 750 inputs have one).
+Of the annotations the design names, only the codes are missing as data: 63 inputs
+read a choice as a number and state its meaning in prose, "1 for DownIn, 2 for
+UpIn". They are now the entity =script_input_code=, a row per code with its
+label, versioned with its script and staged and published with it through the
+=ore.script_library= dataset. A label of a field is its name humanised, so no
+label is stored; the library states no default for any input, so none is stored.
+
+The codes are read by =external/ore/tools/script_input_codes.py=; three inputs
+have a correction, in =script_input_code_corrections.json=: two comments spell
+DownIn as DonwIn, and one states a payoff as a formula. A tenant's own scripts
+get no codes yet: their publish derives inputs from the code, not from a comment
+the library generator reads.
+
+** PR 3a: the parameter cache moves to ores.ore.client
+
+Trading is the second service to cache =ores.ore='s parameters, and a model
+names one consumer in =cached_by=. The placement rule for entity-mirror caches
+puts a cache with more than one consumer in the producer's =client= component,
+so =ores.ore.client= now holds =ore_parameter_cache=, and reporting links it.
+Reporting's core loses its =ores.eventing.core= link and the exception that
+allowed it, because the client carries that link.
+
+The accepted values of an instrument field's enumeration are only in its format
+text today. Value sets attach to a parameter through a junction keyed by scope
+and name, which is not unique for instrument fields (=Type= is a field of many
+types), so they wait for their own unit of this task.
+
+** PR 3b: describe_product and list_products
+
+Trading serves both from a pure service over data, =product_schema_service=,
+which takes trading's rows and the instrument fields and returns the
+description, so it is tested without a database or a bus. The handler reads the
+rows in the caller's context and the fields from =ores.ore.client='s cache,
+loaded on first use with the service's own token; the trading service now holds
+a service token client for that, as reporting does.
+
+A product type's fields are its element's row and the fields of every type it
+reaches, each type once, breadth first; a twin recipe gives it a scripted form
+with its script's inputs and codes; a code that names a library script and no
+product type describes a script-only product. The response carries its own
+=product_field= rather than =ore_parameter=, because no operation model carries
+another component's domain type.
+
+Every product the seeded catalogue lists is described but one:
+=CommodityPairwiseVarianceSwap=, which ORE cannot build and the catalogue routes
+to no table, is refused with that reason. =CommodityWindowBarrierOption= was
+refused at first, because the vendored schema omits its element; ORE reads it
+with the same =fromXML= as the equity and FX window barriers, so
+=instrument_elements.json= now gives it the equity element's type, with that
+evidence. The engine a pricing configuration assigns a form's product tag is
+not in the response yet: the configuration is analytics' data, and reading it
+needs its own cache.
+
+** PR 4: the routes
+
+=ores.http= and the BFF serve =GET /api/trading/products= and
+=GET /api/trading/products/{code}=, each naming every field it answers, so a screen
+reads one shape from either server; a product the service cannot describe is a
+404 with the service's reason. Against the running fleet the two servers'
+answers are equal byte for byte: the list of 159 products, Swap's 400 fields over
+88 schema types, and Accumulator01's 15 inputs, 6 codes and scripted form.
+
+The live check found that the trading service's role could not list =ores.ore='s
+parameters: =TradingService= now holds =ore::ore_parameters:read=, as
+=ReportingService= does. The route inventory classifies and pairs the two routes.
 
 ** Which component serves describe_product
 
@@ -196,12 +302,52 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5050][#5050]] | [http] Serve a product's description and the product list over HTTP |
+| [[https://github.com/OreStudio/OreStudio/pull/5048][#5048]] | [trading] Describe a product and list the products that can be described |
+| [[https://github.com/OreStudio/OreStudio/pull/5046][#5046]] | [ore] Serve the ore parameter cache from ores.ore.client |
+| [[https://github.com/OreStudio/OreStudio/pull/5044][#5044]] | [trading] Hold the codes of coded script inputs as data |
+| [[https://github.com/OreStudio/OreStudio/pull/5040][#5040]] | [ore] Describe the fields of every native product in the ore parameters |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 5040.1 | guide text of a shared type came from the alphabetically first node | extract_instrument_terms.py | accept | the type's own node wins, guide_node records the node used, and the 14 fields two nodes describe differently are printed |
+| 5040.2 | the help of 89% of the rows was the undocumented filler | instrument_parameter_rows.py | accept | an undocumented field's help is its format sentence; its description still says the guide does not describe it |
+| 5040.3 | introduced_in is "1.8.17.0 or earlier" | none | no change | the curve parameters state the same convention, "1.8.0.7 or earlier" |
+| 5040.4 | an inline type named like a named type would drop fields silently | extract_instrument_terms.py | accept | the extractor refuses the clash |
+| 5040.5 | the catalogue is parsed by column position; the convention extractor is not in the check | extract_instrument_terms.py, local_checks.py | accept | the header row is checked; extract_convention_terms.py joins the check's paths |
+| 5040.6 | post the synthetic rebuild's result | none | no change | rebuilt; the service starts and runs, so the bad_alloc was the stale binary |
+| 5044.1 | sequence_number runs across the script, so a new code renumbers later ones | none | no change | a changed script is written whole at its new version, every row anew, so renumbering adds no rows or churn |
+| 5044.2 | a correction key with a typo is ignored silently | generate_script_library.py | accept | the generator fails on a correction naming no script's input |
+| 5044.3 | the docstring has an unwrapped line | script_input_codes.py | accept | rewrapped |
+| 5044.4 | a code stated twice with two labels is dropped silently | script_input_codes.py, generate_script_library.py | accept | the generator warns; KikoType, the one case, has a correction saying the second statement is advice |
+| 5044.5 | track the codes of tenant scripts | doc/agile/product_backlog/inbox | accept | captured as Codes for a tenant's published scripts |
+| 5044.6 | no unit test of the heuristic reader | build/scripts/tests/test_script_input_codes.py | accept | 9 cases, run by the build-script-tests check |
+| 5048.1 | exception text is sent to the caller | product_schema_handler.hpp | accept | the handler logs it and answers that it could not, naming the subject |
+| 5048.2 | list_products reads the inputs and codes it never uses | product_schema_handler.hpp | accept | the list reads product types, scripts and twins only |
+| 5048.3 | the instrument fields are copied on every call | ores.ore.ore_parameter.org, product_schema_handler.hpp | accept | the cache's views are shared and immutable, so a read copies a pointer; the snapshot copied the aux before, too. Two first calls may both load, which replaces the partition twice and is harmless |
+| 5048.4 | a type no cache entry describes is dropped silently | product_schema_service.cpp | accept | the product is refused, naming the type; the check caught list:string being taken for a type, which is fixed |
+| 5048.5 | the element row is assumed to be the first match | product_schema_service.cpp | accept | commented: the seed writes one trade row per trade type |
+| 5048.6 | comment the tenant preference; pin the unbuildable refusal | product_schema_service.cpp, service_product_schema_tests.cpp | accept | commented, and a test pins the text |
+| 5050.1 | the list maps a failure to 500 on ores.http and unexpectedReply on the BFF | none | no change | unexpectedReply is a 502; both answer a fault with a 5xx |
+| 5050.2 | every describe failure is a 404, so a fault reads as an unknown product | product_schema_operations, product_routes.cpp, products.ts | accept | the response states a refusal_code: not_found is a 404, not_describable a 422, and a fault, which states none, a 5xx; live, both servers answer 200, 422 and 404 alike |
+| 5050.3 | the servers fill defaults differently | none | no change | the live comparison of the answers is equal byte for byte |
+| 5050.4 | a free-form code | none | no change | trimmed and 1 to 128 characters; it only travels in a NATS message |
+| 5050.5 | the two field lists could drift | none | no change | each server's test pins its shape; a shared contract test is wider than this route |
+| 5050.6 | the role grant on existing databases | none | no change | ores_iam_role_permissions_assign_fn is an upsert, and the grant was applied to the running database with it |
 
 * Result
+
+In progress: PR 1 is in. Every native product of the catalogue has its fields
+in the =ore.parameters= dataset, read from the vendored ORE schemas with the
+guide's words: one row for each field of each schema type, 2929 in all, and
+the data element of each trade type as a field of its trade,
+=/Trade[TradeType='Swap']/SwapData=. PR 2 is in: the codes of the library's
+coded script inputs are data, the entity =script_input_code=, published with their
+script. PR 3 is in: trading serves =describe_product= and =list_products= from its
+own rows and =ores.ore.client='s cache, which now holds the parameters for both
+services. PR 4 is in: =ores.http= and the BFF serve =GET /api/trading/products= and
+=GET /api/trading/products/{code}=, and give the same answers byte for byte. What
+remains is the engine of each form: the engine a pricing configuration assigns
+the form's product tag, which is analytics' data.

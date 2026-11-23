@@ -32,6 +32,7 @@ const answer = { success: z.boolean(), message: z.string() };
 
 const grantSchema = z.looseObject({
     id: z.string(),
+    grantor_account_id: z.string(),
     agent_name: z.string(),
     role_id: z.string(),
     not_after: z.string(),
@@ -45,6 +46,29 @@ const keySchema = z.looseObject({
     recorded_at: z.string(),
 });
 
+const callSchema = z.looseObject({
+    id: z.string(),
+    called_at: z.string(),
+    grant_id: z.string(),
+    method: z.string(),
+    route: z.string(),
+    status: z.number(),
+    duration_ms: z.number(),
+});
+
+export type AgentCall = z.infer<typeof callSchema>;
+
+const heldWriteSchema = z.looseObject({
+    method: z.string(),
+    route: z.string(),
+    target: z.string(),
+    body: z.string(),
+    state: z.string(),
+    status: z.number(),
+    outcome: z.string(),
+});
+
+export type AgentHeldWrite = z.infer<typeof heldWriteSchema>;
 export type AgentGrant = z.infer<typeof grantSchema>;
 export type AgentKey = z.infer<typeof keySchema>;
 
@@ -69,6 +93,31 @@ export const agentGrants = {
     async listOwn(): Promise<{ grants: AgentGrant[]; keys: AgentKey[] }> {
         return post(
             '/api/v1/iam/ops/list_own_agent_grants',
+            {},
+            z.object({ ...answer, grants: z.array(grantSchema), keys: z.array(keySchema) }),
+        );
+    },
+    /** What the reader's own agents did, newest first: calls, never their content. */
+    async listActivity(grantId: string, offset: number, limit: number): Promise<AgentCall[]> {
+        const reply = await post(
+            '/api/v1/iam/ops/list_own_agent_activity',
+            { grant_id: grantId, offset, limit },
+            z.object({ ...answer, calls: z.array(callSchema) }),
+        );
+        return reply.calls;
+    },
+    /** The call an agent made that an approval request holds, and the agent's name. */
+    async heldWrite(requestId: string): Promise<{ write: AgentHeldWrite; agent_name: string }> {
+        return post(
+            '/api/v1/iam/ops/get_agent_held_write',
+            { request_id: requestId },
+            z.object({ ...answer, write: heldWriteSchema, agent_name: z.string() }),
+        );
+    },
+    /** Every grant and key in the reader's parties; needs iam::agent_grants:read. */
+    async listAll(): Promise<{ grants: AgentGrant[]; keys: AgentKey[] }> {
+        return post(
+            '/api/v1/iam/ops/list_every_agent_grant',
             {},
             z.object({ ...answer, grants: z.array(grantSchema), keys: z.array(keySchema) }),
         );

@@ -556,6 +556,8 @@ const SYNTHETIC_RECORDS: readonly SyntheticResource[] = [
             start_curvature: z.number().positive().lt(Math.SQRT2),
             spot_oresmd_uri: z.string().trim().startsWith('oresmd://fx/').max(500),
             spot_provider_code: code,
+            base_curve_name: z.string().trim().startsWith('synthetic.').max(255),
+            quote_curve_name: z.string().trim().startsWith('synthetic.').max(255),
         }) satisfies z.ZodType<FxVolSurfaceFeedWrite>,
     },
     {
@@ -888,8 +890,26 @@ const simulatedSourceSchema = z.object({
     surfaces_only_held_here: z.int().default(0),
 });
 
-/** A simulated source's catalogue name, as the route names it. */
-function sourceName(request: FastifyRequest): string {
+/** One node of the feed graph, with the state the service derives for it. */
+const feedGraphNodeSchema = z.object({
+    name: z.string(),
+    kind: z.string(),
+    provider_code: z.string().default(''),
+    feed_config_id: z.string().default(''),
+    state: z.string(),
+    reason: z.string().default(''),
+    cause: z.string().default(''),
+});
+
+/** One edge of the feed graph: a node and one input it reads. */
+const feedGraphEdgeSchema = z.object({
+    node: z.string(),
+    input: z.string(),
+    role: z.string(),
+});
+
+/** The node an address names: a simulated source's catalogue name, or a feed's or a view's name. */
+function nodeName(request: FastifyRequest): string {
     return input(code, (request.params as { name: string }).name);
 }
 
@@ -1664,28 +1684,52 @@ export function registerSyntheticRoutes(
     });
 
     /**
-     * Stops a simulated source until someone starts it, a restart of the service included. Its
-     * feeds stop and it releases its vol surfaces; feeds started by hand run on. The system
-     * tenant alone stops a source, with the run permission, and says why.
+     * The synthetic feed graph: every node with its state, reason and cause, and every edge with
+     * its role. A node name narrows it to that node, its upstreams and its downstreams; a name
+     * the graph does not hold answers an empty graph, not a graph of stopped nodes.
      */
-    server.post('/api/synthetic/simulated-sources/:name/stop', async (request) => {
+    server.get('/api/synthetic/feed-graph', async (request) => {
+        const session = requireSession(request);
+        const query = input(
+            z.object({ node: z.string().trim().max(100).default('') }).strict(),
+            request.query,
+        );
+        const reply = await session.client.callAuthenticated(
+            feedSubjects.get_feed_graph_request,
+            { node_name: query.node },
+            operationReplySchema.extend({
+                nodes: z.array(feedGraphNodeSchema).default([]),
+                edges: z.array(feedGraphEdgeSchema).default([]),
+            }),
+        );
+        refuseUnless(reply, upstreamFailure);
+        return { nodes: reply.nodes, edges: reply.edges };
+    });
+
+    /**
+     * Stops a node of the feed graph until someone starts it, a restart of the service included.
+     * A simulated source's feeds stop and it releases its vol surfaces; feeds started by hand run
+     * on. A vendor view's points are withheld, and the surface and the other vendors run on. The
+     * system tenant alone stops a node, with the run permission, and says why.
+     */
+    server.post('/api/synthetic/feed-nodes/:name/stop', async (request) => {
         const session = requireSession(request);
         const intent = input(intentSchema, request.body);
         const reply = await session.client.callAuthenticated(
-            feedSubjects.stop_simulated_source_request,
-            { source_name: sourceName(request), ...intent },
+            feedSubjects.stop_feed_node_request,
+            { node_name: nodeName(request), ...intent },
             operationReplySchema,
         );
         refuseUnless(reply, conflict);
         return { message: reply.message };
     });
 
-    /** Starts a stopped simulated source again. */
-    server.post('/api/synthetic/simulated-sources/:name/start', async (request) => {
+    /** Starts a stopped node of the feed graph again. */
+    server.post('/api/synthetic/feed-nodes/:name/start', async (request) => {
         const session = requireSession(request);
         const reply = await session.client.callAuthenticated(
-            feedSubjects.start_simulated_source_request,
-            { source_name: sourceName(request) },
+            feedSubjects.start_feed_node_request,
+            { node_name: nodeName(request) },
             operationReplySchema,
         );
         refuseUnless(reply, conflict);

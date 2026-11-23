@@ -86,6 +86,27 @@ std::string forwarded_for_of(const boost::beast::http::fields& fields) {
     return out;
 }
 
+/// The method as a recorded call names it.
+std::string_view recorded_method_name(domain::http_method method) {
+    switch (method) {
+        case domain::http_method::get:
+            return "GET";
+        case domain::http_method::post:
+            return "POST";
+        case domain::http_method::put:
+            return "PUT";
+        case domain::http_method::patch:
+            return "PATCH";
+        case domain::http_method::delete_:
+            return "DELETE";
+        case domain::http_method::head:
+            return "HEAD";
+        case domain::http_method::options:
+            return "OPTIONS";
+    }
+    return "UNKNOWN";
+}
+
 /// Methods that change something, and so need proof of intent.
 bool changes_something(domain::http_method method) {
     switch (method) {
@@ -153,6 +174,28 @@ struct run_bearer_exchange final {
 
     asio::awaitable<std::optional<domain::bearer_exchange>> operator()() const {
         co_return exchange(bearer, client_address);
+    }
+};
+
+/// A call's record, as the worker pool runs it: it may write to a store.
+struct run_call_record final {
+    const domain::exchanged_call_recorder& record;
+    const domain::exchanged_call& call;
+
+    asio::awaitable<bool> operator()() const {
+        record(call);
+        co_return true;
+    }
+};
+
+/// A write's hold, as the worker pool runs it: it calls other services.
+struct run_write_hold final {
+    const domain::exchanged_write_holder& hold;
+    const domain::http_request& req;
+    const std::string& route;
+
+    asio::awaitable<std::optional<domain::http_response>> operator()() const {
+        co_return hold(req, route);
     }
 };
 
@@ -575,6 +618,8 @@ asio::awaitable<void> http_session::handle_request(domain::http_request domain_r
                                                    bool keep_alive,
                                                    std::optional<rate_note> note) {
 
+    const auto started = std::chrono::steady_clock::now();
+    auto bearer_was_exchanged = false;
     const auto path = route_path(domain_req.target);
     const auto version =
         static_cast<unsigned>(domain_req.http_version_major * 10 + domain_req.http_version_minor);
@@ -686,6 +731,7 @@ asio::awaitable<void> http_session::handle_request(domain::http_request domain_r
                         co_return;
                     }
                     bearer = exchanged->token;
+                    bearer_was_exchanged = true;
                     carry_session_token(domain_req, bearer);
                 }
             }
@@ -823,8 +869,19 @@ asio::awaitable<void> http_session::handle_request(domain::http_request domain_r
                                                 "The server is saturated. Try again shortly.");
     } else {
         try {
+            /*
+             * A write made with an exchanged value, such as an LLM agent's key,
+             * is held for its person instead of running, unless it is exempt.
+             */
+            std::optional<domain::http_response> held;
+            if (bearer_was_exchanged && credentials_.hold && changes_something(domain_req.method))
+                held = workers_ != nullptr ? co_await workers_->run(run_write_hold{
+                                                 credentials_.hold, domain_req, matched->pattern}) :
+                                             credentials_.hold(domain_req, matched->pattern);
             ORES_LOG_SEV(lg(), trace) << "Executing handler for: " << matched->pattern;
-            if (workers_ != nullptr) {
+            if (held) {
+                response = std::move(*held);
+            } else if (workers_ != nullptr) {
                 const auto handler = matched->handler;
                 response = co_await workers_->run(run_route_handler{handler, domain_req});
             } else {
@@ -847,6 +904,27 @@ asio::awaitable<void> http_session::handle_request(domain::http_request domain_r
 
     co_await write_response(
         response, version, keep_alive, domain_req.method != domain::http_method::head);
+
+    // A call made with an exchanged value, such as an LLM agent's key, is
+    // recorded once it is answered, reads as well as writes.
+    if (bearer_was_exchanged && credentials_.record && domain_req.authenticated_user) {
+        const domain::exchanged_call call{
+            .claims = *domain_req.authenticated_user,
+            .method = std::string(recorded_method_name(domain_req.method)),
+            .route = matched->pattern,
+            .status = static_cast<int>(response.status),
+            .duration = std::chrono::duration_cast<std::chrono::milliseconds>(
+                std::chrono::steady_clock::now() - started)};
+        try {
+            if (workers_ != nullptr)
+                co_await workers_->run(run_call_record{credentials_.record, call});
+            else
+                credentials_.record(call);
+        } catch (const std::exception& e) {
+            ORES_LOG_SEV(lg(), error) << "A call made with an exchanged credential was not "
+                                      << "recorded for " << matched->pattern << ": " << e.what();
+        }
+    }
 
     // Update session bytes if we have an authenticated user with session info
     if (bytes_callback_ && domain_req.authenticated_user &&

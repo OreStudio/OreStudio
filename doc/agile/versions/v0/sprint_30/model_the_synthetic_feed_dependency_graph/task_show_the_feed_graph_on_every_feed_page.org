@@ -1,0 +1,129 @@
+:PROPERTIES:
+:ID: 8F04AE93-EBE9-4580-88A1-CF11260E64C7
+:END:
+#+title: Task: Show the feed graph and each node's messages on every feed page
+#+description: Every synthetic feed page shows where the feed sits in the graph: its state with its reason and cause, what it reads and what reads it, each a link with its state, and a stop and start of the node, a vendor view's included; and a Messages tab reads the node's log from telemetry. A tenant reads no latent node of the graph.
+#+type: task
+#+level: s1
+#+filetags: :model_the_synthetic_feed_dependency_graph:sprint_30:v0:
+#+owner: marco
+#+branch: feature/show-the-feed-graph-on-every-feed-page
+#+pr: 5058
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-23
+#+updated: 2026-11-23
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8DE041AE-95E6-40CE-9B62-2CE3BA77838A][Model the synthetic feeds as a dependency graph: upstreams, latent surfaces and vendor views]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A person on any feed page sees whether the feed runs and, when it does not, why and because of which node, and walks the graph up and down from it. They stop or start the node, or one vendor's view of a surface, with a reason, and read the node's own messages without opening a service log.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:8DE041AE-95E6-40CE-9B62-2CE3BA77838A][Model the synthetic feeds as a dependency graph: upstreams, latent surfaces and vendor views]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-23                               |
+
+* Acceptance
+
+- Every feed page has a Graph tab: the node's state with its reason and, for a starved node, a link to its cause; its upstreams and downstreams, each a link with its state; and a Stop or Start of the node with a reason.
+- A latent surface's Graph tab lists its vendor views, each with its state and its own Stop or Start.
+- Every feed page has a Messages tab: the node's telemetry log over the last day, read by its name.
+- The graph read leaves out the latent provider's nodes for any caller but the system tenant.
+- Live: from the AUD/USD surface's page, stopping the ICE view shows it stopped and the other views running, and its Messages tab shows the stop.
+
+* Plan
+
+One PR. It applies the screens part of the
+[[id:2376A086-4C3C-4D61-92E5-29B122DB6A41][synthetic feed graph]] design.
+
+1. *Graph tab.* On every feed page, the spot, curve and surface pages alike:
+   the node's state with its reason and a link to its cause, its upstreams and
+   downstreams with their states, and a Stop or Start of the node with a
+   reason; a latent surface's downstreams are its vendor views, each stopped
+   and started there.
+2. *Messages tab.* The node's telemetry log over the last day, read by its
+   name through the existing log route.
+3. *Tenants.* The graph read leaves out the latent provider's nodes for any
+   caller but the system tenant.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| C++ synthetic suites | 5 of 5 pass, with 15 feed graph cases | =compass test run -- -R synthetic= | this branch, after the tenant filter commit |
+| Web tests | 512 pass in market data, with the Graph tab and node page cases | =npx vitest run packages/web/src/marketdata= | this branch, after the tenant filter commit |
+| Live, a view stop from the surface's graph | the AUD/USD surface's graph: the ICE view stopped, the other three views and the surface running; the view's messages: "Now stopped: Stopped by super_admin (common.other): ..." | the routes the Graph and Messages tabs call, on ores.http | this branch, after the tenant filter commit |
+| Live, a failing surface | the USD/ZAR surface failing with "no market: curve:...zaronia.zar", its four views starved on it | =GET /api/synthetic/feed-graph= | this branch, after the tenant filter commit |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5058][#5058]] | [web] Show the feed graph and each node's messages on every feed page |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Local review: the Graph tab polls the graph every five seconds | feedNode.tsx | Accepted | As the source strip polls the sources; the read is the part around one node. |
+| 2 | Local review: a source and a vendor view have no page to link | feedNode.tsx | Accepted | They show as names; a view is stopped and started from its surface's page. |
+| 3 | Local review: the story's node-state table header read STARTED for Means | story.org | Accepted | Restored. |
+| 4 | PR review: the Messages tab reads every log for a feed with no name | feedNode.tsx | Accepted | The read waits for a name and the tab says the graph holds no such node; a test renders it. |
+| 5 | PR review: a tenant sees a hidden node's name in a cause | feed_graph.hpp | Accepted | A vendor view is starved by its latent surface, so the filter clears such a cause and says the reason without the name; a graph case checks it. The provider code is a named constant. |
+| 6 | PR review: no handler-level test of the tenant filter | simulated_source_handler.hpp | Declined | The handler answers on a reply subject, and these tests read effects, not replies; the filter's function has its own cases. |
+| 7 | PR review: a curve's page is chosen from its name | feedNode.tsx | Declined | The instrument segment is the signed-off naming scheme's contract. |
+| 8 | PR review: error lines look like info lines | feedNode.tsx | Accepted | error and fatal take the down tone. |
+| 9 | PR review: the 100-line cap is silent | feedNode.tsx | Accepted | The tab says when it shows only the latest messages. |
+| 10 | PR review: a stop or start refreshes only the graph | feedNode.tsx | Accepted | It refreshes the messages too. |
+| 11 | PR review: controls only on views in the tables | feedNode.tsx | Accepted | A comment says why: a node with a page is stopped there. |
+| 12 | PR review: the stop dialog reuses the amend reason domain | feedNode.tsx | Declined | The source stop uses the same domain. |
+
+* Result
+
+Every synthetic feed page has a Graph tab and a Messages tab. The Graph tab
+shows the node's state with its reason, links the node that starved it, lists
+what it reads and what reads it, each a link with its state, and stops or
+starts the node with a reason; on a latent surface's page its readers are its
+vendor views, each stopped and started on its own. The Messages tab reads the
+node's telemetry log over the last day by its name. The graph read leaves out
+the latent provider's nodes for any caller but the system tenant.
+
+A tenant's live read was not exercised: the tenant sessions this environment
+gives are refused by every synthetic route of =ores.http=, not by this one
+alone; the filter is one call in the handler, and its function has its own
+test.
+
+The live graph showed the USD/ZAR surface failing for want of its ZAR curve on
+the board; that is captured in the backlog as
+[[id:3506D7BB-B130-4ACC-A1FA-720ED0BB0E1A][The USD/ZAR latent surface fails for want of its ZAR curve on the board]].

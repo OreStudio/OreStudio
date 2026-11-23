@@ -126,6 +126,10 @@ via its "Verifies task" field.
 | 1 | Local review: the journal reads the market time under the scheduler's lock, and a surface raises from inside its tick; could that deadlock? | =service/src/app/application.cpp= | No change | =tick_scheduler::fire= releases its lock before it runs a tick, so the read takes a free lock. |
 | 2 | Local review: the journal captures the run market by reference; does the market outlive it? | =service/src/app/application.cpp= | No change | The journal and every holder of it are created after the market in the same scope, so they end first. |
 | 3 | Local review: misspell check | the changed trees | No change | =misspell-fixer= found nothing. |
+| 4 | PR review: the view branch of =feeds_query= joins with no tenant match | =api/src/feeds/feed_filter.cpp= | Decline | It follows the existing branches; row security on the views table scopes it, and a tenant join would hide the system tenant's shared rows. |
+| 5 | PR review: the view branch hard-codes ='noise'= and =''= | =api/src/feeds/feed_filter.cpp= | Decline | ='noise'= is the view's engine label, named by its column alias; no reason the code cannot show needs a comment. |
+| 6 | PR review: note the table rename in the release notes | the views table | Decline | Databases are recreated; no long-lived environment holds the old table. |
+| 7 | PR review: test the publish of a view whose vendor has no collection | =synthetic_publish_from_dq_create.sql= | Decline | The bundle publishes the latent dataset after every vendor (position 17), so the raise guards a misordered bundle; a test needs a hand-built staged dataset for a case the ordering rules out. |
 
 * Result
 

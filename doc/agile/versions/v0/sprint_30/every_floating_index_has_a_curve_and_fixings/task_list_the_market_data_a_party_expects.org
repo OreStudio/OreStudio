@@ -130,7 +130,14 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | binary_search relies on sorted items across the wire | expected_market_data.cpp | Accepted | find; test with unsorted items |
+| 2 | A full page silently truncates the generator lists | trading_trade_population_writer.cpp | Accepted | Warn when a list fills a page |
+| 3 | Fail hard on the demand read | trading_trade_population_writer.cpp | No change | Reviewer agrees |
+| 4 | A surface's providers come from its contributors | expected_market_data.cpp | Accepted | Comment, doc and a test of a surface with no contributor |
+| 5 | A bad pillar drops a curve silently | expected_market_data.cpp | Accepted | Warn with the curve and the reason; same for a spot |
+| 6 | Confirm the IAM grant is read-only and reaches live databases | iam_roles_populate.sql | Declined | Read-only; every environment takes its roles from the populate scripts on recreate |
+| 7 | The fixing address has no duplicate check | generator_outputs.cpp | Accepted | find before push |
+| 8 | Confirm the check gate is green | — | Accepted | Result posted on the PR |
 
 * Result
 

@@ -66,6 +66,7 @@
 #include <optional>
 #include <set>
 #include <string>
+#include <string_view>
 #include <type_traits>
 #include <variant>
 #include <vector>
@@ -364,46 +365,62 @@ trading_trade_population_writer::resolve_scope(const boost::uuids::uuid& config_
     if (demand.result.outcome != ores::utility::domain::outcome::ok)
         throw trade_population_write_error(
             std::format("The demand of the party could not be read: {}", demand.result.message));
+    /*
+     * A page that comes back full may hold only part of the rows, and a
+     * generator left out would shrink the expected set without an error, so
+     * a full page is reported.
+     */
+    const auto whole = [](auto rows, std::string_view what) {
+        if (rows.size() >= page)
+            ORES_LOG_SEV(lg(), ores::logging::warn)
+                << "The " << what << " filled a page of " << page
+                << " rows, so the market data the party expects may be incomplete.";
+        return rows;
+    };
     feed::generator_catalogue generators;
     {
         synthetic::list_market_data_generation_configs_request req;
         req.limit = page;
-        generators.collections = read(req).market_data_generation_configs;
+        generators.collections =
+            whole(read(req).market_data_generation_configs, "generator collections");
     }
     {
         synthetic::list_ir_curve_generation_configs_request req;
         req.limit = page;
-        generators.curves = read(req).ir_curve_generation_configs;
+        generators.curves = whole(read(req).ir_curve_generation_configs, "curve configs");
     }
     {
         synthetic::list_ir_curve_template_entries_request req;
         req.limit = page;
-        generators.curve_entries = read(req).ir_curve_template_entries;
+        generators.curve_entries =
+            whole(read(req).ir_curve_template_entries, "curve template entries");
     }
     {
         synthetic::list_fx_spot_generation_configs_request req;
         req.limit = page;
-        generators.spots = read(req).fx_spot_generation_configs;
+        generators.spots = whole(read(req).fx_spot_generation_configs, "spot configs");
     }
     {
         synthetic::list_fx_vol_surface_feeds_request req;
         req.limit = page;
-        generators.surfaces = read(req).fx_vol_surface_feeds;
+        generators.surfaces = whole(read(req).fx_vol_surface_feeds, "surface feeds");
     }
     {
         synthetic::list_fx_vol_surface_feed_expiries_request req;
         req.limit = page;
-        generators.surface_expiries = read(req).fx_vol_surface_feed_expiries;
+        generators.surface_expiries =
+            whole(read(req).fx_vol_surface_feed_expiries, "surface expiries");
     }
     {
         synthetic::list_fx_vol_contributors_request req;
         req.limit = page;
-        generators.contributors = read(req).fx_vol_contributors;
+        generators.contributors = whole(read(req).fx_vol_contributors, "surface contributors");
     }
     {
         synthetic::list_fx_vol_surface_feed_contributors_request req;
         req.limit = page;
-        generators.surface_contributors = read(req).fx_vol_surface_feed_contributors;
+        generators.surface_contributors =
+            whole(read(req).fx_vol_surface_feed_contributors, "surface contributor links");
     }
     scope.expected_market_data =
         feed::expected_market_data(demand.routes, feed::generator_publications(generators));

@@ -18,6 +18,7 @@
  *
  */
 #include "ores.synthetic.api/feeds/expected_market_data.hpp"
+#include <boost/uuid/random_generator.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <set>
 #include <string>
@@ -72,4 +73,38 @@ TEST_CASE("a_route_that_is_not_entitled_expects_nothing", expected_market_data_t
 
 TEST_CASE("a_generator_no_route_demands_an_item_of_is_not_expected", expected_market_data_tags) {
     CHECK(expected_market_data({route("SIM_B", {})}, two_providers).empty());
+}
+
+TEST_CASE("a_route_whose_items_are_not_sorted_still_matches", expected_market_data_tags) {
+    const auto expected = expected_market_data(
+        {route("SIM_A", {usd_quote, gbp_quote, "oresmd://ir/AAA"})}, two_providers);
+
+    CHECK(expected == std::set<std::string>{gbp_quote, gbp_fixing});
+}
+
+TEST_CASE("a_surface_with_no_contributor_publishes_for_no_provider", expected_market_data_tags) {
+    namespace domain = ores::synthetic::domain;
+    generator_catalogue catalogue;
+    domain::market_data_generation_config collection;
+    collection.id = boost::uuids::random_generator()();
+    collection.enabled = true;
+    collection.provider_code = "SIM_A";
+    catalogue.collections = {collection};
+    domain::fx_vol_surface_feed surface;
+    surface.id = boost::uuids::random_generator()();
+    surface.config_id = collection.id;
+    surface.enabled = true;
+    surface.base_currency_code = "EUR";
+    surface.quote_currency_code = "USD";
+    catalogue.surfaces = {surface};
+    domain::fx_vol_surface_feed_expiry expiry;
+    expiry.feed_id = surface.id;
+    expiry.tenor = "1M";
+    catalogue.surface_expiries = {expiry};
+
+    const auto generators = generator_publications(catalogue);
+
+    REQUIRE(generators.size() == 1);
+    CHECK(generators.front().providers.empty());
+    CHECK(expected_market_data({route("SIM_A", generators.front().outputs)}, generators).empty());
 }

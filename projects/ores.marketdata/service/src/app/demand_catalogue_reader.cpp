@@ -18,6 +18,7 @@
  *
  */
 #include "ores.marketdata.service/app/demand_catalogue_reader.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.marketdata.core/repository/feed_repository.hpp"
 #include "ores.marketdata.core/repository/feed_scope_repository.hpp"

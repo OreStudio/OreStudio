@@ -18,11 +18,21 @@
  *
  */
 #include "ores.synthetic.api/feeds/expected_market_data.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.synthetic.api/feeds/generator_outputs.hpp"
 #include <algorithm>
 #include <map>
 
 namespace ores::synthetic::feed {
+
+namespace {
+
+auto& expected_market_data_lg() {
+    static auto instance = ores::logging::make_logger("ores.synthetic.api.expected_market_data");
+    return instance;
+}
+
+}
 
 std::vector<generator_publication> generator_publications(const generator_catalogue& catalogue) {
     std::map<boost::uuids::uuid, std::string> providers;
@@ -40,16 +50,27 @@ std::vector<generator_publication> generator_publications(const generator_catalo
         if (!curve.enabled)
             continue;
         auto outputs = ir_curve_outputs(curve, catalogue.curve_entries);
-        if (outputs && !outputs->empty())
+        if (!outputs) {
+            ORES_LOG_SEV(expected_market_data_lg(), ores::logging::warn)
+                << "The curve " << curve.source_name
+                << " publishes nothing a party can expect: " << outputs.error();
+            continue;
+        }
+        if (!outputs->empty())
             out.push_back(
                 {.providers = provider_of(curve.config_id), .outputs = std::move(*outputs)});
     }
     for (const auto& spot : catalogue.spots) {
         if (!spot.enabled)
             continue;
-        if (auto quote = fx_spot_quote_uri(spot.oresmd_uri))
-            out.push_back(
-                {.providers = provider_of(spot.config_id), .outputs = {std::move(*quote)}});
+        auto quote = fx_spot_quote_uri(spot.oresmd_uri);
+        if (!quote) {
+            ORES_LOG_SEV(expected_market_data_lg(), ores::logging::warn)
+                << "The spot " << spot.source_name
+                << " publishes nothing a party can expect: " << quote.error();
+            continue;
+        }
+        out.push_back({.providers = provider_of(spot.config_id), .outputs = {std::move(*quote)}});
     }
 
     std::map<boost::uuids::uuid, std::string> contributor_providers;
@@ -58,6 +79,9 @@ std::vector<generator_publication> generator_publications(const generator_catalo
     for (const auto& surface : catalogue.surfaces) {
         if (!surface.enabled || !providers.contains(surface.config_id))
             continue;
+        // A surface publishes for each contributor's provider, whatever provider its
+        // collection names, as the simulator offers it; a surface with no contributor
+        // publishes for no provider, so no party expects it.
         generator_publication one;
         for (const auto& link : catalogue.surface_contributors)
             if (link.feed_id == surface.id)
@@ -84,7 +108,7 @@ expected_market_data(const std::vector<ores::marketdata::messaging::demanded_rou
         const bool counts = std::ranges::any_of(routes, [&generator](const auto& route) {
             return route.entitled && generator.providers.contains(route.provider_code) &&
                    std::ranges::any_of(generator.outputs, [&route](const std::string& output) {
-                       return std::ranges::binary_search(route.items, output);
+                       return std::ranges::find(route.items, output) != route.items.end();
                    });
         });
         if (counts)

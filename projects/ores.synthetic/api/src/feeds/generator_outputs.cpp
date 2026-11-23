@@ -63,8 +63,8 @@ ir_curve_outputs(const domain::ir_curve_generation_config& cfg,
         if (std::ranges::find(out, *uri) == out.end())
             out.push_back(std::move(*uri));
     }
-    if (const auto fixing = curve_fixing_uri(cfg))
-        out.push_back(*fixing);
+    if (auto fixing = curve_fixing_uri(cfg); fixing && std::ranges::find(out, *fixing) == out.end())
+        out.push_back(std::move(*fixing));
     return out;
 }
 

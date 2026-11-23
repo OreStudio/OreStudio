@@ -64,8 +64,10 @@ struct generator_catalogue final {
 /**
  * @brief The generators that publish: each enabled config in an enabled collection.
  *
- * A config whose outputs cannot be named, such as a spot whose address is not a spot
- * quote, publishes nothing a demand can name, so it is left out.
+ * A spot or a curve publishes for the provider of its collection. A surface publishes for
+ * the provider of each of its contributors, so a surface with no contributor publishes for
+ * no provider. A config whose outputs cannot be named, such as a spot whose address is not a
+ * spot quote, is left out with a warning.
  */
 ORES_SYNTHETIC_API_EXPORT std::vector<generator_publication>
 generator_publications(const generator_catalogue& catalogue);

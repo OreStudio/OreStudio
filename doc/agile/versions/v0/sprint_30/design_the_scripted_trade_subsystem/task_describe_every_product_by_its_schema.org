@@ -236,6 +236,11 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 5040.1 | guide text of a shared type came from the alphabetically first node | extract_instrument_terms.py | accept | the type's own node wins, guide_node records the node used, and the 14 fields two nodes describe differently are printed |
+| 5040.2 | the help of 89% of the rows was the undocumented filler | instrument_parameter_rows.py | accept | an undocumented field's help is its format sentence; its description still says the guide does not describe it |
+| 5040.3 | introduced_in is "1.8.17.0 or earlier" | none | no change | the curve parameters state the same convention, "1.8.0.7 or earlier" |
+| 5040.4 | an inline type named like a named type would drop fields silently | extract_instrument_terms.py | accept | the extractor refuses the clash |
+| 5040.5 | the catalogue is parsed by column position; the convention extractor is not in the check | extract_instrument_terms.py, local_checks.py | accept | the header row is checked; extract_convention_terms.py joins the check's paths |
+| 5040.6 | post the synthetic rebuild's result | none | no change | rebuilt; the service starts and runs, so the bad_alloc was the stale binary |
 
 * Result

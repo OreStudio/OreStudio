@@ -456,6 +456,7 @@ CATALOGUE: tuple[Check, ...] = (
             "projects/ores.sql/utility/instrument_terms.json",
             "projects/ores.sql/utility/instrument_elements.json",
             "projects/ores.sql/utility/extract_instrument_terms.py",
+            "projects/ores.sql/utility/extract_convention_terms.py",
             "projects/ores.trading/modeling/ores.trading.trade_type_catalogue.org",
         ),
         fix="Run projects/ores.sql/utility/generate_ore_parameters_dataset.py and commit the seed.",

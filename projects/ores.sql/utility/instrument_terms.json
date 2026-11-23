@@ -2385,6 +2385,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "FixedLegData",
           "guide_ref": "Docs/UserGuide/tradecomponents/fixedlegdatarates.tex:26",
           "name": "Rates",
           "record": "FixedLegData.Rates",
@@ -2426,6 +2427,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "FloatingLegData",
           "guide_ref": "Docs/UserGuide/tradecomponents/floatinglegdata.tex:49",
           "kind": "string",
           "name": "Index",
@@ -2436,6 +2438,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "FloatingLegData",
           "guide_ref": "Docs/UserGuide/tradecomponents/floatinglegdata.tex:157",
           "kind": "boolean",
           "name": "IsInArrears",
@@ -2486,6 +2489,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "FloatingLegData",
           "guide_ref": "Docs/UserGuide/tradecomponents/floatinglegdata.tex:55",
           "kind": "boolean",
           "name": "IsAveraged",
@@ -2496,6 +2500,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "FloatingLegData",
           "guide_ref": "Docs/UserGuide/tradecomponents/floatinglegdata.tex:61",
           "kind": "boolean",
           "name": "HasSubPeriods",
@@ -2506,6 +2511,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "FloatingLegData",
           "guide_ref": "Docs/UserGuide/tradecomponents/floatinglegdata.tex:70",
           "kind": "boolean",
           "name": "IncludeSpread",
@@ -2628,6 +2634,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "FloatingLegData",
           "guide_ref": "Docs/UserGuide/tradecomponents/floatinglegdata.tex:367",
           "kind": "integer",
           "name": "RoundingPrecision",
@@ -3021,6 +3028,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "ReferenceInformation",
           "guide_ref": "Docs/UserGuide/tradecomponents/cdsreferenceinformation.tex:24",
           "kind": "string",
           "name": "ReferenceEntityId",
@@ -3031,6 +3039,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "ReferenceInformation",
           "guide_ref": "Docs/UserGuide/tradecomponents/cdsreferenceinformation.tex:27",
           "kind": "string",
           "name": "Tier",
@@ -3049,6 +3058,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "ReferenceInformation",
           "guide_ref": "Docs/UserGuide/tradecomponents/cdsreferenceinformation.tex:30",
           "kind": "string",
           "name": "Currency",
@@ -3252,6 +3262,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "ReferenceInformation",
           "guide_ref": "Docs/UserGuide/tradecomponents/cdsreferenceinformation.tex:33",
           "kind": "string",
           "name": "DocClause",
@@ -4307,6 +4318,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "AsianBasketOptionData",
           "guide_ref": "Docs/UserGuide/tradedata/basketoption.tex:432",
           "name": "Settlement",
           "record": "stFreeStyleEvent",
@@ -4317,6 +4329,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "AsianBasketOptionData",
           "guide_ref": "Docs/UserGuide/tradedata/basketoption.tex:434",
           "name": "ObservationDates",
           "record": "stFreeStyleEventSchedule",
@@ -4343,6 +4356,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "AsianBasketOptionData",
           "guide_ref": "Docs/UserGuide/tradedata/basketoption.tex:425",
           "name": "Notional",
           "record": "stFreeStyleNumber",
@@ -4361,6 +4375,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "AsianBasketOptionData",
           "guide_ref": "Docs/UserGuide/tradedata/basketoption.tex:427",
           "name": "Underlyings",
           "record": "stFreeStyleIndexVector",
@@ -5061,6 +5076,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "AverageStrikeBasketOptionData",
           "guide_ref": "Docs/UserGuide/tradedata/basketoption.tex:614",
           "name": "Settlement",
           "record": "stFreeStyleEvent",
@@ -5071,6 +5087,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "AverageStrikeBasketOptionData",
           "guide_ref": "Docs/UserGuide/tradedata/basketoption.tex:616",
           "name": "ObservationDates",
           "record": "stFreeStyleEventSchedule",
@@ -5097,6 +5114,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "AverageStrikeBasketOptionData",
           "guide_ref": "Docs/UserGuide/tradedata/basketoption.tex:607",
           "name": "Notional",
           "record": "stFreeStyleNumber",
@@ -5107,6 +5125,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "AverageStrikeBasketOptionData",
           "guide_ref": "Docs/UserGuide/tradedata/basketoption.tex:609",
           "name": "Underlyings",
           "record": "stFreeStyleIndexVector",
@@ -5138,6 +5157,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "BarrierData",
           "guide_ref": "Docs/UserGuide/tradedata/knockoutswap.tex:17",
           "kind": "string",
           "name": "Type",
@@ -5160,6 +5180,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "BarrierData",
           "guide_ref": "Docs/UserGuide/tradedata/accumulator.tex:324",
           "kind": "string",
           "name": "StrictComparison",
@@ -5175,6 +5196,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "BarrierData",
           "guide_ref": "Docs/UserGuide/tradecomponents/barrierdata.tex:85",
           "kind": "string",
           "name": "Style",
@@ -5189,6 +5211,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "BarrierData",
           "guide_ref": "Docs/UserGuide/tradedata/knockoutswap.tex:18",
           "name": "Levels",
           "record": "barrierData.Levels",
@@ -5199,6 +5222,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "BarrierData",
           "guide_ref": "Docs/UserGuide/tradecomponents/barrierdata.tex:95",
           "kind": "double",
           "name": "Rebate",
@@ -5851,6 +5875,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityBasketVarianceSwapData",
           "guide_ref": "Docs/UserGuide/tradedata/var_and_vol_derivatives.tex:2786",
           "name": "Underlyings",
           "record": "underlyings",
@@ -6663,6 +6688,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "BestOfAssetOrCashRainbowOptionData",
           "guide_ref": "Docs/UserGuide/tradedata/rainbow_option.tex:239",
           "name": "Settlement",
           "record": "stFreeStyleEvent",
@@ -6681,6 +6707,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "BestOfAssetOrCashRainbowOptionData",
           "guide_ref": "Docs/UserGuide/tradedata/rainbow_option.tex:230",
           "name": "Notional",
           "record": "stFreeStyleNumber",
@@ -6691,6 +6718,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "BestOfAssetOrCashRainbowOptionData",
           "guide_ref": "Docs/UserGuide/tradedata/rainbow_option.tex:232",
           "name": "Strike",
           "record": "stFreeStyleNumber",
@@ -6701,6 +6729,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "BestOfAssetOrCashRainbowOptionData",
           "guide_ref": "Docs/UserGuide/tradedata/rainbow_option.tex:234",
           "name": "Underlyings",
           "record": "stFreeStyleIndexVector",
@@ -6732,6 +6761,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "BalanceGuaranteedSwapData",
           "guide_ref": "Docs/UserGuide/tradedata/balanceguaranteedswap.tex:71",
           "kind": "string",
           "name": "ReferenceSecurity",
@@ -6742,6 +6772,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "BalanceGuaranteedSwapData",
           "guide_ref": "Docs/UserGuide/tradedata/balanceguaranteedswap.tex:75",
           "name": "Tranches",
           "record": "tranches",
@@ -6752,6 +6783,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "BalanceGuaranteedSwapData",
           "guide_ref": "Docs/UserGuide/tradedata/balanceguaranteedswap.tex:82",
           "name": "LegData",
           "record": "legData",
@@ -7009,6 +7041,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "BondFutureOptionData",
           "guide_ref": "Docs/UserGuide/tradedata/bondfutureoption.tex:53",
           "name": "OptionData",
           "record": "optionData",
@@ -7056,6 +7089,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "BondOptionData",
           "guide_ref": "Docs/UserGuide/tradedata/bondoption.tex:57",
           "name": "OptionData",
           "record": "optionData",
@@ -7074,6 +7108,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "BondOptionData",
           "guide_ref": "Docs/UserGuide/tradedata/bondoption.tex:59",
           "name": "StrikeData",
           "record": "StrikeData",
@@ -7084,6 +7119,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "BondOptionData",
           "guide_ref": "Docs/UserGuide/tradedata/bondoption.tex:62",
           "kind": "string",
           "name": "Redemption",
@@ -7094,6 +7130,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "BondOptionData",
           "guide_ref": "Docs/UserGuide/tradedata/bondoption.tex:63",
           "kind": "string",
           "name": "PriceType",
@@ -7104,6 +7141,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "BondOptionData",
           "guide_ref": "Docs/UserGuide/tradedata/bondoption.tex:67",
           "kind": "string",
           "name": "KnocksOut",
@@ -7556,6 +7594,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "CallableSwapData",
           "guide_ref": "Docs/UserGuide/tradedata/callableswap.tex:62",
           "name": "OptionData",
           "record": "optionData",
@@ -7566,6 +7605,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "CallableSwapData",
           "guide_ref": "Docs/UserGuide/tradedata/callableswap.tex:69",
           "name": "LegData",
           "record": "legData",
@@ -7610,6 +7650,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "CapFloorData",
           "guide_ref": "Docs/UserGuide/tradedata/capfloor.tex:102",
           "kind": "string",
           "name": "LongShort",
@@ -7624,6 +7665,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "CapFloorData",
           "guide_ref": "Docs/UserGuide/tradedata/capfloor.tex:104",
           "name": "LegData",
           "record": "legData_capfloor",
@@ -7634,6 +7676,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "CapFloorData",
           "guide_ref": "Docs/UserGuide/tradedata/capfloor.tex:108",
           "name": "Caps",
           "record": "capFloorData.Caps",
@@ -7644,6 +7687,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "CapFloorData",
           "guide_ref": "Docs/UserGuide/tradedata/capfloor.tex:120",
           "name": "Floors",
           "record": "capFloorData.Floors",
@@ -7678,6 +7722,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "CapFloorData",
           "guide_ref": "Docs/UserGuide/tradedata/capfloor.tex:132",
           "name": "Premiums",
           "record": "premiumData",
@@ -7758,6 +7803,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "CashPositionData",
           "guide_ref": "Docs/UserGuide/tradedata/cashposition.tex:24",
           "kind": "string",
           "name": "Currency",
@@ -7768,6 +7814,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "CashPositionData",
           "guide_ref": "Docs/UserGuide/tradedata/cashposition.tex:25",
           "kind": "double",
           "name": "Amount",
@@ -10195,6 +10242,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "SettlementData",
           "guide_ref": "Docs/UserGuide/tradedata/commodityforward.tex:93",
           "kind": "string",
           "name": "PayCurrency",
@@ -10398,6 +10446,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "SettlementData",
           "guide_ref": "Docs/UserGuide/tradedata/commodityforward.tex:95",
           "kind": "string",
           "name": "FXIndex",
@@ -10408,6 +10457,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "SettlementData",
           "guide_ref": "Docs/UserGuide/tradedata/commodityforward.tex:97",
           "kind": "string",
           "name": "FixingDate",
@@ -11532,6 +11582,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "CommodityForwardData",
           "guide_ref": "Docs/UserGuide/tradedata/commodityforward.tex:51",
           "kind": "string",
           "name": "Position",
@@ -11546,6 +11597,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "CommodityForwardData",
           "guide_ref": "Docs/UserGuide/tradedata/commodityforward.tex:54",
           "kind": "string",
           "name": "Maturity",
@@ -11556,6 +11608,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "CommodityForwardData",
           "guide_ref": "Docs/UserGuide/tradedata/commodityforward.tex:57",
           "kind": "string",
           "name": "Name",
@@ -11566,6 +11619,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "CommodityForwardData",
           "guide_ref": "Docs/UserGuide/tradedata/commodityforward.tex:60",
           "kind": "string",
           "name": "Currency",
@@ -11769,6 +11823,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "CommodityForwardData",
           "guide_ref": "Docs/UserGuide/tradedata/commodityforward.tex:63",
           "kind": "double",
           "name": "Strike",
@@ -11779,6 +11834,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "CommodityForwardData",
           "guide_ref": "Docs/UserGuide/tradedata/commodityforward.tex:66",
           "kind": "double",
           "name": "Quantity",
@@ -11789,6 +11845,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "CommodityForwardData",
           "guide_ref": "Docs/UserGuide/tradedata/commodityforward.tex:69",
           "kind": "string",
           "name": "IsFuturePrice",
@@ -11814,6 +11871,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "CommodityForwardData",
           "guide_ref": "Docs/UserGuide/tradedata/commodityforward.tex:72",
           "kind": "string",
           "name": "FutureExpiryDate",
@@ -11824,6 +11882,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "CommodityForwardData",
           "guide_ref": "Docs/UserGuide/tradedata/commodityforward.tex:75",
           "kind": "string",
           "name": "FutureExpiryOffset",
@@ -11834,6 +11893,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "CommodityForwardData",
           "guide_ref": "Docs/UserGuide/tradedata/commodityforward.tex:78",
           "kind": "string",
           "name": "FutureExpiryOffsetCalendar",
@@ -11844,6 +11904,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "CommodityForwardData",
           "guide_ref": "Docs/UserGuide/tradedata/commodityforward.tex:81",
           "kind": "string",
           "name": "PhysicallySettled",
@@ -11869,6 +11930,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "CommodityForwardData",
           "guide_ref": "Docs/UserGuide/tradedata/commodityforward.tex:84",
           "kind": "string",
           "name": "PaymentDate",
@@ -11879,6 +11941,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "CommodityForwardData",
           "guide_ref": "Docs/UserGuide/tradedata/commodityforward.tex:87",
           "name": "SettlementData",
           "record": "commForwardSettlementData",
@@ -15910,6 +15973,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "CompositeTradeData",
           "guide_ref": "Docs/UserGuide/tradedata/compositetrade.tex:45",
           "kind": "string",
           "name": "Currency",
@@ -16113,6 +16177,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "CompositeTradeData",
           "guide_ref": "Docs/UserGuide/tradedata/compositetrade.tex:47",
           "kind": "string",
           "name": "NotionalCalculation",
@@ -17874,6 +17939,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "Envelope",
           "guide_ref": "Docs/UserGuide/tradedata/envelope.tex:39",
           "kind": "string",
           "name": "NettingSetId",
@@ -17892,6 +17958,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "Envelope",
           "guide_ref": "Docs/UserGuide/tradedata/envelope.tex:51",
           "name": "PortfolioIds",
           "record": "envelope.PortfolioIds",
@@ -17902,6 +17969,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "Envelope",
           "guide_ref": "Docs/UserGuide/tradedata/envelope.tex:61",
           "kind": "string",
           "name": "AdditionalFields",
@@ -17930,6 +17998,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityBarrierOptionData",
           "guide_ref": "Docs/UserGuide/tradedata/eq_barrieroption.tex:90",
           "name": "OptionData",
           "record": "optionData",
@@ -17940,6 +18009,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityBarrierOptionData",
           "guide_ref": "Docs/UserGuide/tradedata/eq_barrieroption.tex:92",
           "name": "BarrierData",
           "record": "barrierData",
@@ -17950,6 +18020,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityBarrierOptionData",
           "guide_ref": "Docs/UserGuide/tradedata/eq_barrieroption.tex:96",
           "kind": "string",
           "name": "StartDate",
@@ -17960,6 +18031,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityBarrierOptionData",
           "guide_ref": "Docs/UserGuide/tradedata/eq_barrieroption.tex:100",
           "kind": "string",
           "name": "Calendar",
@@ -17970,6 +18042,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityBarrierOptionData",
           "guide_ref": "Docs/UserGuide/tradedata/eq_barrieroption.tex:104",
           "kind": "string",
           "name": "EQIndex",
@@ -17988,6 +18061,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityBarrierOptionData",
           "guide_ref": "Docs/UserGuide/tradedata/eq_barrieroption.tex:108",
           "name": "Underlying",
           "record": "underlying",
@@ -18006,6 +18080,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityBarrierOptionData",
           "guide_ref": "Docs/UserGuide/tradedata/eq_barrieroption.tex:118",
           "kind": "string",
           "name": "Currency",
@@ -18217,6 +18292,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityBarrierOptionData",
           "guide_ref": "Docs/UserGuide/tradedata/eq_barrieroption.tex:110",
           "name": "StrikeData",
           "record": "StrikeData",
@@ -18227,6 +18303,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityBarrierOptionData",
           "guide_ref": "Docs/UserGuide/tradedata/eq_barrieroption.tex:114",
           "kind": "double",
           "name": "Quantity",
@@ -18242,6 +18319,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityDigitalOptionData",
           "guide_ref": "Docs/UserGuide/tradedata/eq_digitaloption.tex:46",
           "name": "OptionData",
           "record": "optionData",
@@ -18506,6 +18584,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "SettlementData",
           "guide_ref": "Docs/UserGuide/tradedata/commodityforward.tex:95",
           "kind": "string",
           "name": "FXIndex",
@@ -18516,6 +18595,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "SettlementData",
           "guide_ref": "Docs/UserGuide/tradedata/equityforward.tex:68",
           "kind": "string",
           "name": "Date",
@@ -18526,6 +18606,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "SettlementData",
           "guide_ref": "Docs/UserGuide/tradedata/equityforward.tex:71",
           "name": "Rules",
           "record": "eqForwardSettlementData.Rules",
@@ -19295,6 +19376,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityDoubleTouchOptionData",
           "guide_ref": "Docs/UserGuide/tradedata/eq_doubletouchoption.tex:76",
           "name": "OptionData",
           "record": "optionData",
@@ -19575,6 +19657,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityAutoDeltaHedgedOptionData",
           "guide_ref": "Docs/UserGuide/tradedata/equityautodeltahedgedoption.tex:53",
           "kind": "double",
           "name": "Volatility",
@@ -19585,6 +19668,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityAutoDeltaHedgedOptionData",
           "guide_ref": "Docs/UserGuide/tradedata/equityautodeltahedgedoption.tex:59",
           "kind": "double",
           "name": "DriftRate",
@@ -19595,6 +19679,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityAutoDeltaHedgedOptionData",
           "guide_ref": "Docs/UserGuide/tradedata/equityautodeltahedgedoption.tex:65",
           "name": "Underlyings",
           "record": "equityAutoDeltaHedgedOptionData.Underlyings",
@@ -19639,6 +19724,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "Underlying",
           "guide_ref": "Docs/UserGuide/tradedata/equityoptionposition.tex:21",
           "name": "OptionData",
           "record": "optionData",
@@ -19649,6 +19735,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "Underlying",
           "guide_ref": "Docs/UserGuide/tradecomponents/underlying.tex:180",
           "kind": "string",
           "name": "Name",
@@ -19691,6 +19778,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "Underlying",
           "guide_ref": "Docs/UserGuide/tradedata/commodityposition.tex:14",
           "kind": "double",
           "name": "Quantity",
@@ -19706,6 +19794,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityForwardData",
           "guide_ref": "Docs/UserGuide/tradedata/equityforward.tex:36",
           "kind": "string",
           "name": "LongShort",
@@ -19720,6 +19809,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityForwardData",
           "guide_ref": "Docs/UserGuide/tradedata/equityforward.tex:38",
           "kind": "string",
           "name": "Maturity",
@@ -19730,6 +19820,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityForwardData",
           "guide_ref": "Docs/UserGuide/tradedata/equityforward.tex:40",
           "kind": "string",
           "name": "Name",
@@ -19740,6 +19831,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityForwardData",
           "guide_ref": "Docs/UserGuide/tradedata/equityforward.tex:42",
           "name": "Underlying",
           "record": "underlying",
@@ -19758,6 +19850,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityForwardData",
           "guide_ref": "Docs/UserGuide/tradedata/equityforward.tex:44",
           "kind": "string",
           "name": "Currency",
@@ -19768,6 +19861,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityForwardData",
           "guide_ref": "Docs/UserGuide/tradedata/equityforward.tex:47",
           "kind": "double",
           "name": "Strike",
@@ -19778,6 +19872,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityForwardData",
           "guide_ref": "Docs/UserGuide/tradedata/equityforward.tex:49",
           "kind": "string",
           "name": "StrikeCurrency",
@@ -19788,6 +19883,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityForwardData",
           "guide_ref": "Docs/UserGuide/tradedata/equityforward.tex:53",
           "kind": "double",
           "name": "Quantity",
@@ -19798,6 +19894,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityForwardData",
           "guide_ref": "Docs/UserGuide/tradedata/equityforward.tex:55",
           "name": "SettlementData",
           "record": "eqForwardSettlementData",
@@ -19813,6 +19910,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityFutureOptionData",
           "guide_ref": "Docs/UserGuide/tradedata/equityfuturesoption.tex:43",
           "name": "OptionData",
           "record": "optionData",
@@ -20077,6 +20175,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityOptionData",
           "guide_ref": "Docs/UserGuide/tradedata/equityoption.tex:77",
           "name": "OptionData",
           "record": "optionData",
@@ -20177,6 +20276,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "Underlying",
           "guide_ref": "Docs/UserGuide/tradedata/commodityposition.tex:16",
           "name": "Underlying",
           "record": "underlying",
@@ -20187,6 +20287,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "Underlying",
           "guide_ref": "Docs/UserGuide/tradedata/equityoptionposition.tex:21",
           "name": "OptionData",
           "record": "optionData",
@@ -20231,6 +20332,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EuropeanOptionBarrierData",
           "guide_ref": "Docs/UserGuide/tradedata/europeanoptioncontingentonabarrier.tex:87",
           "kind": "double",
           "name": "Quantity",
@@ -20241,6 +20343,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EuropeanOptionBarrierData",
           "guide_ref": "Docs/UserGuide/tradedata/europeanoptioncontingentonabarrier.tex:89",
           "kind": "string",
           "name": "PutCall",
@@ -20251,6 +20354,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EuropeanOptionBarrierData",
           "guide_ref": "Docs/UserGuide/tradedata/europeanoptioncontingentonabarrier.tex:91",
           "kind": "string",
           "name": "LongShort",
@@ -20265,6 +20369,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EuropeanOptionBarrierData",
           "guide_ref": "Docs/UserGuide/tradedata/europeanoptioncontingentonabarrier.tex:93",
           "kind": "double",
           "name": "Strike",
@@ -20275,6 +20380,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EuropeanOptionBarrierData",
           "guide_ref": "Docs/UserGuide/tradedata/europeanoptioncontingentonabarrier.tex:95",
           "kind": "double",
           "name": "PremiumAmount",
@@ -20285,6 +20391,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EuropeanOptionBarrierData",
           "guide_ref": "Docs/UserGuide/tradedata/europeanoptioncontingentonabarrier.tex:97",
           "kind": "string",
           "name": "PremiumCurrency",
@@ -20488,6 +20595,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EuropeanOptionBarrierData",
           "guide_ref": "Docs/UserGuide/tradedata/europeanoptioncontingentonabarrier.tex:99",
           "kind": "string",
           "name": "PremiumDate",
@@ -20506,6 +20614,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EuropeanOptionBarrierData",
           "guide_ref": "Docs/UserGuide/tradedata/europeanoptioncontingentonabarrier.tex:101",
           "kind": "string",
           "name": "OptionExpiry",
@@ -20516,6 +20625,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EuropeanOptionBarrierData",
           "guide_ref": "Docs/UserGuide/tradedata/europeanoptioncontingentonabarrier.tex:103",
           "name": "OptionUnderlying",
           "record": "underlying",
@@ -20526,6 +20636,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EuropeanOptionBarrierData",
           "guide_ref": "Docs/UserGuide/tradedata/europeanoptioncontingentonabarrier.tex:106",
           "name": "BarrierUnderlying",
           "record": "underlying",
@@ -20536,6 +20647,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EuropeanOptionBarrierData",
           "guide_ref": "Docs/UserGuide/tradedata/europeanoptioncontingentonabarrier.tex:110",
           "kind": "double",
           "name": "BarrierLevel",
@@ -20546,6 +20658,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EuropeanOptionBarrierData",
           "guide_ref": "Docs/UserGuide/tradedata/europeanoptioncontingentonabarrier.tex:112",
           "kind": "string",
           "name": "BarrierType",
@@ -20556,6 +20669,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EuropeanOptionBarrierData",
           "guide_ref": "Docs/UserGuide/tradedata/europeanoptioncontingentonabarrier.tex:114",
           "kind": "string",
           "name": "BarrierStyle",
@@ -20566,6 +20680,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EuropeanOptionBarrierData",
           "guide_ref": "Docs/UserGuide/tradedata/europeanoptioncontingentonabarrier.tex:116",
           "name": "BarrierSchedule",
           "record": "scheduleData",
@@ -20576,6 +20691,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EuropeanOptionBarrierData",
           "guide_ref": "Docs/UserGuide/tradedata/europeanoptioncontingentonabarrier.tex:119",
           "kind": "string",
           "name": "SettlementDate",
@@ -20586,6 +20702,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EuropeanOptionBarrierData",
           "guide_ref": "Docs/UserGuide/tradedata/europeanoptioncontingentonabarrier.tex:121",
           "kind": "string",
           "name": "PayCcy",
@@ -21205,6 +21322,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "FlexiSwapData",
           "guide_ref": "Docs/UserGuide/tradedata/flexiswap.tex:55",
           "kind": "string",
           "name": "OptionLongShort",
@@ -21219,6 +21337,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "FlexiSwapData",
           "guide_ref": "Docs/UserGuide/tradedata/flexiswap.tex:62",
           "name": "LegData",
           "record": "legData",
@@ -22030,6 +22149,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "CommodityForwardVolatilityAgreementData",
           "guide_ref": "Docs/UserGuide/tradedata/forwardvolatilityagreement.tex:87",
           "kind": "string",
           "name": "FvaDate",
@@ -22040,6 +22160,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "CommodityForwardVolatilityAgreementData",
           "guide_ref": "Docs/UserGuide/tradedata/forwardvolatilityagreement.tex:92",
           "kind": "string",
           "name": "OptionExpiry",
@@ -22050,6 +22171,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "CommodityForwardVolatilityAgreementData",
           "guide_ref": "Docs/UserGuide/tradedata/forwardvolatilityagreement.tex:97",
           "kind": "string",
           "name": "PremiumDate",
@@ -22060,6 +22182,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "CommodityForwardVolatilityAgreementData",
           "guide_ref": "Docs/UserGuide/tradedata/forwardvolatilityagreement.tex:101",
           "name": "Underlying",
           "record": "underlying",
@@ -22070,6 +22193,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "CommodityForwardVolatilityAgreementData",
           "guide_ref": "Docs/UserGuide/tradedata/forwardvolatilityagreement.tex:106",
           "kind": "string",
           "name": "LongShort",
@@ -22084,6 +22208,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "CommodityForwardVolatilityAgreementData",
           "guide_ref": "Docs/UserGuide/tradedata/forwardvolatilityagreement.tex:116",
           "kind": "double",
           "name": "ImpliedVolStrike",
@@ -22094,6 +22219,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "CommodityForwardVolatilityAgreementData",
           "guide_ref": "Docs/UserGuide/tradedata/forwardvolatilityagreement.tex:121",
           "kind": "double",
           "name": "Quantity",
@@ -22104,6 +22230,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "CommodityForwardVolatilityAgreementData",
           "guide_ref": "Docs/UserGuide/tradedata/forwardvolatilityagreement.tex:125",
           "kind": "string",
           "name": "PayCcy",
@@ -22307,6 +22434,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "CommodityForwardVolatilityAgreementData",
           "guide_ref": "Docs/UserGuide/tradedata/forwardvolatilityagreement.tex:129",
           "kind": "string",
           "name": "SettlementDate",
@@ -22317,6 +22445,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "CommodityForwardVolatilityAgreementData",
           "guide_ref": "Docs/UserGuide/tradedata/forwardvolatilityagreement.tex:110",
           "kind": "double",
           "name": "UnderlyingStrike",
@@ -22424,6 +22553,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "CommodityForwardVolatilityAgreementData",
           "guide_ref": "Docs/UserGuide/tradedata/forwardvolatilityagreement.tex:133",
           "kind": "string",
           "name": "PayoffType",
@@ -22452,6 +22582,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "FxAverageForwardData",
           "guide_ref": "Docs/UserGuide/tradedata/fxforward.tex:125",
           "kind": "string",
           "name": "PaymentDate",
@@ -22462,6 +22593,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "FxAverageForwardData",
           "guide_ref": "Docs/UserGuide/tradedata/fxforward.tex:126",
           "name": "ObservationDates",
           "record": "scheduleData",
@@ -22472,6 +22604,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "FxAverageForwardData",
           "guide_ref": "Docs/UserGuide/tradedata/fxforward.tex:127",
           "kind": "string",
           "name": "FixedPayer",
@@ -22497,6 +22630,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "FxAverageForwardData",
           "guide_ref": "Docs/UserGuide/tradedata/fxforward.tex:128",
           "kind": "double",
           "name": "ReferenceNotional",
@@ -22507,6 +22641,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "FxAverageForwardData",
           "guide_ref": "Docs/UserGuide/tradedata/fxforward.tex:129",
           "kind": "string",
           "name": "ReferenceCurrency",
@@ -22710,6 +22845,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "FxAverageForwardData",
           "guide_ref": "Docs/UserGuide/tradedata/fxforward.tex:130",
           "kind": "double",
           "name": "SettlementNotional",
@@ -22720,6 +22856,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "FxAverageForwardData",
           "guide_ref": "Docs/UserGuide/tradedata/fxforward.tex:131",
           "kind": "string",
           "name": "SettlementCurrency",
@@ -22935,6 +23072,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "FxAverageForwardData",
           "guide_ref": "Docs/UserGuide/tradedata/fxforward.tex:132",
           "kind": "string",
           "name": "FXIndex",
@@ -22950,6 +23088,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "FxBarrierOptionData",
           "guide_ref": "Docs/UserGuide/tradedata/fx_barrieroption.tex:95",
           "name": "OptionData",
           "record": "optionData",
@@ -23431,6 +23570,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "FxDigitalBarrierOptionData",
           "guide_ref": "Docs/UserGuide/tradedata/fx_digitalbarrieroption.tex:72",
           "name": "OptionData",
           "record": "optionData",
@@ -24113,6 +24253,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "FxDigitalOptionData",
           "guide_ref": "Docs/UserGuide/tradedata/fx_digitaloption.tex:47",
           "name": "OptionData",
           "record": "optionData",
@@ -24747,6 +24888,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "FxForwardData",
           "guide_ref": "Docs/UserGuide/tradedata/fxforward.tex:36",
           "kind": "string",
           "name": "ValueDate",
@@ -24757,6 +24899,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "FxForwardData",
           "guide_ref": "Docs/UserGuide/tradedata/fxforward.tex:38",
           "kind": "string",
           "name": "BoughtCurrency",
@@ -24960,6 +25103,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "FxForwardData",
           "guide_ref": "Docs/UserGuide/tradedata/fxforward.tex:39",
           "kind": "double",
           "name": "BoughtAmount",
@@ -24970,6 +25114,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "FxForwardData",
           "guide_ref": "Docs/UserGuide/tradedata/fxforward.tex:40",
           "kind": "string",
           "name": "SoldCurrency",
@@ -25173,6 +25318,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "FxForwardData",
           "guide_ref": "Docs/UserGuide/tradedata/fxforward.tex:41",
           "kind": "double",
           "name": "SoldAmount",
@@ -25183,6 +25329,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "FxForwardData",
           "guide_ref": "Docs/UserGuide/tradedata/fxforward.tex:42",
           "kind": "string",
           "name": "Settlement",
@@ -25197,6 +25344,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "FxForwardData",
           "guide_ref": "Docs/UserGuide/tradedata/fxforward.tex:44",
           "name": "SettlementData",
           "record": "fxForwardSettlementData",
@@ -25212,6 +25360,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "SettlementData",
           "guide_ref": "Docs/UserGuide/tradedata/fxforward.tex:50",
           "kind": "string",
           "name": "Currency",
@@ -25415,6 +25564,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "SettlementData",
           "guide_ref": "Docs/UserGuide/tradedata/commodityforward.tex:95",
           "kind": "string",
           "name": "FXIndex",
@@ -25425,6 +25575,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "SettlementData",
           "guide_ref": "Docs/UserGuide/tradedata/equityforward.tex:68",
           "kind": "string",
           "name": "Date",
@@ -25435,6 +25586,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "SettlementData",
           "guide_ref": "Docs/UserGuide/tradedata/equityforward.tex:71",
           "name": "Rules",
           "record": "fxForwardSettlementData.Rules",
@@ -25508,6 +25660,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "FxKIKOBarrierOptionData",
           "guide_ref": "Docs/UserGuide/tradedata/fx_kikobarrieroption.tex:94",
           "name": "OptionData",
           "record": "optionData",
@@ -25986,6 +26139,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "FxOptionData",
           "guide_ref": "Docs/UserGuide/tradedata/fxoption.tex:62",
           "name": "OptionData",
           "record": "optionData",
@@ -26435,6 +26589,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "FxSwapData",
           "guide_ref": "Docs/UserGuide/tradedata/fxswap.tex:39",
           "kind": "string",
           "name": "NearDate",
@@ -26445,6 +26600,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "FxSwapData",
           "guide_ref": "Docs/UserGuide/tradedata/fxswap.tex:40",
           "kind": "string",
           "name": "NearBoughtCurrency",
@@ -26648,6 +26804,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "FxSwapData",
           "guide_ref": "Docs/UserGuide/tradedata/fxswap.tex:41",
           "kind": "double",
           "name": "NearBoughtAmount",
@@ -26658,6 +26815,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "FxSwapData",
           "guide_ref": "Docs/UserGuide/tradedata/fxswap.tex:42",
           "kind": "string",
           "name": "NearSoldCurrency",
@@ -26861,6 +27019,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "FxSwapData",
           "guide_ref": "Docs/UserGuide/tradedata/fxswap.tex:43",
           "kind": "double",
           "name": "NearSoldAmount",
@@ -26871,6 +27030,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "FxSwapData",
           "guide_ref": "Docs/UserGuide/tradedata/fxswap.tex:44",
           "kind": "string",
           "name": "FarDate",
@@ -26881,6 +27041,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "FxSwapData",
           "guide_ref": "Docs/UserGuide/tradedata/fxswap.tex:45",
           "kind": "double",
           "name": "FarBoughtAmount",
@@ -26891,6 +27052,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "FxSwapData",
           "guide_ref": "Docs/UserGuide/tradedata/fxswap.tex:46",
           "kind": "double",
           "name": "FarSoldAmount",
@@ -26901,6 +27063,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "FxSwapData",
           "guide_ref": "Docs/UserGuide/tradedata/fxswap.tex:47",
           "kind": "string",
           "name": "Settlement",
@@ -26957,12 +27120,13 @@
         {
           "attribute": false,
           "default": null,
-          "guide_ref": "Docs/UserGuide/tradedata/fx_doubletouchoption.tex:77",
+          "guide_node": "FxTouchOptionData",
+          "guide_ref": "Docs/UserGuide/tradedata/fx_touchoption.tex:71",
           "name": "OptionData",
           "record": "optionData",
           "repeated": false,
           "required": true,
-          "text": "This is a trade component sub-node outlined in section the guide. The relevant fields in the OptionData node for an FxDoubleTouchOption are as below. Note that the OptionType can be omitted. \\begin{itemize}"
+          "text": "This is a trade component sub-node outlined in section the guide. The OptionType sub-node is not required and is inferred from the BarrierData type (i.e.\\ Call for an Up barrier, and Put for a Down barrier). The relevant fields in the OptionData node for an FxTouchOption are: \\begin{itemize}"
         },
         {
           "attribute": false,
@@ -27631,6 +27795,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "FXReset",
           "guide_ref": "Docs/UserGuide/tradedata/crosscurrencyswap.tex:40",
           "kind": "string",
           "name": "ForeignCurrency",
@@ -27842,6 +28007,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "FXReset",
           "guide_ref": "Docs/UserGuide/tradedata/crosscurrencyswap.tex:44",
           "kind": "double",
           "name": "ForeignAmount",
@@ -27852,6 +28018,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "FXReset",
           "guide_ref": "Docs/UserGuide/tradedata/crosscurrencyswap.tex:48",
           "kind": "string",
           "name": "FXIndex",
@@ -29077,6 +29244,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "IntradayPowerForwardData",
           "guide_ref": "Docs/UserGuide/tradedata/intradaypowerforward.tex:63",
           "kind": "string",
           "name": "Position",
@@ -29091,6 +29259,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "IntradayPowerForwardData",
           "guide_ref": "Docs/UserGuide/tradedata/intradaypowerforward.tex:66",
           "kind": "string",
           "name": "Maturity",
@@ -29101,6 +29270,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "IntradayPowerForwardData",
           "guide_ref": "Docs/UserGuide/tradedata/intradaypowerforward.tex:69",
           "kind": "string",
           "name": "Name",
@@ -29111,6 +29281,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "IntradayPowerForwardData",
           "guide_ref": "Docs/UserGuide/tradedata/intradaypowerforward.tex:72",
           "kind": "string",
           "name": "Currency",
@@ -29314,6 +29485,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "IntradayPowerForwardData",
           "guide_ref": "Docs/UserGuide/tradedata/intradaypowerforward.tex:75",
           "kind": "double",
           "name": "Strike",
@@ -29324,6 +29496,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "IntradayPowerForwardData",
           "guide_ref": "Docs/UserGuide/tradedata/intradaypowerforward.tex:78",
           "kind": "double",
           "name": "Quantity",
@@ -29334,6 +29507,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "IntradayPowerForwardData",
           "guide_ref": "Docs/UserGuide/tradedata/intradaypowerforward.tex:81",
           "kind": "string",
           "name": "DeliveryDate",
@@ -29344,6 +29518,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "IntradayPowerForwardData",
           "guide_ref": "Docs/UserGuide/tradedata/intradaypowerforward.tex:84",
           "kind": "integer",
           "name": "DeliveryStart",
@@ -29354,6 +29529,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "IntradayPowerForwardData",
           "guide_ref": "Docs/UserGuide/tradedata/intradaypowerforward.tex:87",
           "kind": "integer",
           "name": "DeliveryEnd",
@@ -29364,6 +29540,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "IntradayPowerForwardData",
           "guide_ref": "Docs/UserGuide/tradedata/intradaypowerforward.tex:90",
           "kind": "boolean",
           "name": "IsDstHour",
@@ -29374,6 +29551,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "IntradayPowerForwardData",
           "guide_ref": "Docs/UserGuide/tradedata/intradaypowerforward.tex:93",
           "name": "PowerLoadProfileData",
           "record": "powerLoadProfileDataType",
@@ -29384,6 +29562,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "IntradayPowerForwardData",
           "guide_ref": "Docs/UserGuide/tradedata/intradaypowerforward.tex:96",
           "kind": "string",
           "name": "PhysicallySettled",
@@ -29409,6 +29588,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "IntradayPowerForwardData",
           "guide_ref": "Docs/UserGuide/tradedata/intradaypowerforward.tex:99",
           "kind": "string",
           "name": "PaymentDate",
@@ -29419,6 +29599,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "IntradayPowerForwardData",
           "guide_ref": "Docs/UserGuide/tradedata/intradaypowerforward.tex:102",
           "name": "SettlementData",
           "record": "commForwardSettlementData",
@@ -30349,6 +30530,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "LegData",
           "guide_ref": "Docs/UserGuide/tradecomponents/legdatanotionals.tex:46",
           "kind": "boolean",
           "name": "Payer",
@@ -30359,6 +30541,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "LegData",
           "guide_ref": "Docs/UserGuide/tradecomponents/legdatanotionals.tex:41",
           "kind": "string",
           "name": "LegType",
@@ -30390,6 +30573,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "LegData",
           "guide_ref": "Docs/UserGuide/tradecomponents/legdatanotionals.tex:51",
           "kind": "string",
           "name": "Currency",
@@ -30400,6 +30584,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "LegData",
           "guide_ref": "Docs/UserGuide/tradecomponents/legdatanotionals.tex:65",
           "kind": "string",
           "name": "PaymentConvention",
@@ -30439,6 +30624,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "LegData",
           "guide_ref": "Docs/UserGuide/tradecomponents/legdatanotionals.tex:69",
           "kind": "string",
           "name": "PaymentLag",
@@ -30449,6 +30635,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "LegData",
           "guide_ref": "Docs/UserGuide/tradecomponents/legdatanotionals.tex:81",
           "kind": "string",
           "name": "PaymentLagUnit",
@@ -30463,6 +30650,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "LegData",
           "guide_ref": "Docs/UserGuide/tradecomponents/legdatanotionals.tex:94",
           "kind": "string",
           "name": "PaymentLagAnchor",
@@ -30477,6 +30665,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "LegData",
           "guide_ref": "Docs/UserGuide/tradecomponents/legdatanotionals.tex:103",
           "kind": "integer",
           "name": "NotionalPaymentLag",
@@ -30487,6 +30676,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "LegData",
           "guide_ref": "Docs/UserGuide/tradecomponents/legdatanotionals.tex:109",
           "kind": "string",
           "name": "NotionalPaymentLagUnit",
@@ -30501,6 +30691,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "LegData",
           "guide_ref": "Docs/UserGuide/tradecomponents/legdatanotionals.tex:113",
           "kind": "string",
           "name": "NotionalPaymentLagAnchor",
@@ -30515,6 +30706,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "LegData",
           "guide_ref": "Docs/UserGuide/tradecomponents/legdatanotionals.tex:55",
           "kind": "string",
           "name": "PaymentCalendar",
@@ -30525,6 +30717,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "LegData",
           "guide_ref": "Docs/UserGuide/tradecomponents/legdatanotionals.tex:117",
           "kind": "string",
           "name": "DayCounter",
@@ -30616,6 +30809,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "LegData",
           "guide_ref": "Docs/UserGuide/tradecomponents/legdatanotionals.tex:121",
           "name": "Notionals",
           "record": "legData.Notionals",
@@ -30626,6 +30820,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "LegData",
           "guide_ref": "Docs/UserGuide/tradecomponents/legdatanotionals.tex:243",
           "name": "ScheduleData",
           "record": "scheduleData",
@@ -30885,6 +31080,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "LegData",
           "guide_ref": "Docs/UserGuide/tradecomponents/legdatanotionals.tex:239",
           "kind": "boolean",
           "name": "StrictNotionalDates",
@@ -30903,6 +31099,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "LegData",
           "guide_ref": "Docs/UserGuide/tradecomponents/legdatanotionals.tex:245",
           "name": "SettlementData",
           "record": "legData.SettlementData",
@@ -31007,6 +31204,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "SettlementData",
           "guide_ref": "Docs/UserGuide/tradedata/commodityforward.tex:95",
           "kind": "string",
           "name": "FXIndex",
@@ -31017,6 +31215,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "SettlementData",
           "guide_ref": "Docs/UserGuide/tradedata/commodityforward.tex:97",
           "kind": "string",
           "name": "FixingDate",
@@ -31032,6 +31231,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "LegData",
           "guide_ref": "Docs/UserGuide/tradecomponents/legdatanotionals.tex:46",
           "kind": "boolean",
           "name": "Payer",
@@ -31042,6 +31242,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "LegData",
           "guide_ref": "Docs/UserGuide/tradecomponents/legdatanotionals.tex:41",
           "kind": "string",
           "name": "LegType",
@@ -31073,6 +31274,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "LegData",
           "guide_ref": "Docs/UserGuide/tradecomponents/legdatanotionals.tex:51",
           "kind": "string",
           "name": "Currency",
@@ -31276,6 +31478,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "LegData",
           "guide_ref": "Docs/UserGuide/tradecomponents/legdatanotionals.tex:117",
           "kind": "string",
           "name": "DayCounter",
@@ -31359,6 +31562,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "LegData",
           "guide_ref": "Docs/UserGuide/tradecomponents/legdatanotionals.tex:65",
           "kind": "string",
           "name": "PaymentConvention",
@@ -31398,6 +31602,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "LegData",
           "guide_ref": "Docs/UserGuide/tradecomponents/legdatanotionals.tex:69",
           "kind": "string",
           "name": "PaymentLag",
@@ -31408,6 +31613,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "LegData",
           "guide_ref": "Docs/UserGuide/tradecomponents/legdatanotionals.tex:81",
           "kind": "string",
           "name": "PaymentLagUnit",
@@ -31422,6 +31628,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "LegData",
           "guide_ref": "Docs/UserGuide/tradecomponents/legdatanotionals.tex:94",
           "kind": "string",
           "name": "PaymentLagAnchor",
@@ -31436,6 +31643,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "LegData",
           "guide_ref": "Docs/UserGuide/tradecomponents/legdatanotionals.tex:55",
           "kind": "string",
           "name": "PaymentCalendar",
@@ -31446,6 +31654,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "LegData",
           "guide_ref": "Docs/UserGuide/tradecomponents/legdatanotionals.tex:121",
           "name": "Notionals",
           "record": "legData_capfloor.Notionals",
@@ -31456,6 +31665,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "LegData",
           "guide_ref": "Docs/UserGuide/tradecomponents/legdatanotionals.tex:243",
           "name": "ScheduleData",
           "record": "scheduleData",
@@ -31776,6 +31986,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "LookbackCallBasketOptionData",
           "guide_ref": "Docs/UserGuide/tradedata/basketoption.tex:794",
           "name": "Settlement",
           "record": "stFreeStyleEvent",
@@ -31786,6 +31997,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "LookbackCallBasketOptionData",
           "guide_ref": "Docs/UserGuide/tradedata/basketoption.tex:796",
           "name": "ObservationDates",
           "record": "stFreeStyleEventSchedule",
@@ -31804,6 +32016,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "LookbackCallBasketOptionData",
           "guide_ref": "Docs/UserGuide/tradedata/basketoption.tex:787",
           "name": "Notional",
           "record": "stFreeStyleNumber",
@@ -31814,6 +32027,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "LookbackCallBasketOptionData",
           "guide_ref": "Docs/UserGuide/tradedata/basketoption.tex:789",
           "name": "Underlyings",
           "record": "stFreeStyleIndexVector",
@@ -31922,6 +32136,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "MaxRainbowOptionData",
           "guide_ref": "Docs/UserGuide/tradedata/rainbow_option.tex:524",
           "name": "Settlement",
           "record": "stFreeStyleEvent",
@@ -31948,6 +32163,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "MaxRainbowOptionData",
           "guide_ref": "Docs/UserGuide/tradedata/rainbow_option.tex:515",
           "name": "Notional",
           "record": "stFreeStyleNumber",
@@ -31958,6 +32174,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "MaxRainbowOptionData",
           "guide_ref": "Docs/UserGuide/tradedata/rainbow_option.tex:517",
           "name": "Strike",
           "record": "stFreeStyleNumber",
@@ -31968,6 +32185,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "MaxRainbowOptionData",
           "guide_ref": "Docs/UserGuide/tradedata/rainbow_option.tex:519",
           "name": "Underlyings",
           "record": "stFreeStyleIndexVector",
@@ -32273,6 +32491,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "Name",
           "guide_ref": "Docs/UserGuide/tradecomponents/basketdata.tex:37",
           "kind": "string",
           "name": "IssuerId",
@@ -32291,6 +32510,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "Name",
           "guide_ref": "Docs/UserGuide/tradecomponents/basketdata.tex:45",
           "kind": "string",
           "name": "CreditCurveId",
@@ -32301,6 +32521,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "Name",
           "guide_ref": "Docs/UserGuide/tradecomponents/basketdata.tex:49",
           "name": "ReferenceInformation",
           "record": "ReferenceInformation",
@@ -32311,6 +32532,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "Name",
           "guide_ref": "Docs/UserGuide/tradecomponents/basketdata.tex:51",
           "kind": "double",
           "name": "Notional",
@@ -32321,6 +32543,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "Name",
           "guide_ref": "Docs/UserGuide/tradecomponents/basketdata.tex:53",
           "kind": "double",
           "name": "Weight",
@@ -32331,6 +32554,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "Name",
           "guide_ref": "Docs/UserGuide/tradecomponents/basketdata.tex:55",
           "kind": "string",
           "name": "Currency",
@@ -32640,6 +32864,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "OptionData",
           "guide_ref": "Docs/UserGuide/tradedata/swaption.tex:108",
           "kind": "string",
           "name": "LongShort",
@@ -32650,6 +32875,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "OptionData",
           "guide_ref": "Docs/UserGuide/tradedata/swaption.tex:127",
           "kind": "string",
           "name": "OptionType",
@@ -32676,6 +32902,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "OptionData",
           "guide_ref": "Docs/UserGuide/tradedata/swaption.tex:129",
           "kind": "string",
           "name": "Style",
@@ -32686,6 +32913,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "OptionData",
           "guide_ref": "Docs/UserGuide/tradedata/swaption.tex:131",
           "kind": "string",
           "name": "NoticePeriod",
@@ -32696,6 +32924,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "OptionData",
           "guide_ref": "Docs/UserGuide/tradedata/swaption.tex:135",
           "kind": "string",
           "name": "NoticeCalendar",
@@ -32706,6 +32935,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "OptionData",
           "guide_ref": "Docs/UserGuide/tradedata/swaption.tex:138",
           "kind": "string",
           "name": "NoticeConvention",
@@ -32716,6 +32946,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "OptionData",
           "guide_ref": "Docs/UserGuide/tradedata/swaption.tex:150",
           "kind": "string",
           "name": "MidCouponExercise",
@@ -32726,6 +32957,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "OptionData",
           "guide_ref": "Docs/UserGuide/tradedata/swaption.tex:141",
           "kind": "string",
           "name": "Settlement",
@@ -32740,6 +32972,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "OptionData",
           "guide_ref": "Docs/UserGuide/tradedata/swaption.tex:143",
           "kind": "string",
           "name": "SettlementMethod",
@@ -32788,6 +33021,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "OptionData",
           "guide_ref": "Docs/UserGuide/tradedata/swaption.tex:389",
           "name": "Premiums",
           "record": "premiumData",
@@ -32806,6 +33040,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "OptionData",
           "guide_ref": "Docs/UserGuide/tradedata/swaption.tex:158",
           "name": "ExerciseFees",
           "record": "optionData.ExerciseFees",
@@ -32950,6 +33185,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "SettlementData",
           "guide_ref": "Docs/UserGuide/tradedata/commodityforward.tex:93",
           "kind": "string",
           "name": "PayCurrency",
@@ -33153,6 +33389,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "SettlementData",
           "guide_ref": "Docs/UserGuide/tradedata/commodityforward.tex:95",
           "kind": "string",
           "name": "FXIndex",
@@ -33163,6 +33400,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "SettlementData",
           "guide_ref": "Docs/UserGuide/tradedata/commodityforward.tex:97",
           "kind": "string",
           "name": "FixingDate",
@@ -33962,6 +34200,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityPairwiseVarianceSwapData",
           "guide_ref": "Docs/UserGuide/tradedata/var_and_vol_derivatives.tex:1480",
           "name": "LongShort",
           "record": "stFreeStyleLongShort",
@@ -33972,6 +34211,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityPairwiseVarianceSwapData",
           "guide_ref": "Docs/UserGuide/tradedata/var_and_vol_derivatives.tex:1482",
           "name": "Underlyings",
           "record": "stFreeStyleIndexVector",
@@ -33982,6 +34222,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityPairwiseVarianceSwapData",
           "guide_ref": "Docs/UserGuide/tradedata/var_and_vol_derivatives.tex:1485",
           "name": "UnderlyingStrikes",
           "record": "stFreeStyleNumberVector",
@@ -33992,6 +34233,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityPairwiseVarianceSwapData",
           "guide_ref": "Docs/UserGuide/tradedata/var_and_vol_derivatives.tex:1488",
           "name": "UnderlyingNotionals",
           "record": "stFreeStyleNumberVector",
@@ -34431,6 +34673,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "Premium",
           "guide_ref": "Docs/UserGuide/tradecomponents/premiums.tex:32",
           "kind": "double",
           "name": "Amount",
@@ -34441,6 +34684,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "Premium",
           "guide_ref": "Docs/UserGuide/tradecomponents/premiums.tex:34",
           "kind": "string",
           "name": "Currency",
@@ -34451,6 +34695,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "Premium",
           "guide_ref": "Docs/UserGuide/tradecomponents/premiums.tex:36",
           "kind": "string",
           "name": "PayDate",
@@ -34461,6 +34706,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "Premium",
           "guide_ref": "Docs/UserGuide/tradecomponents/premiums.tex:38",
           "name": "SettlementData",
           "record": "premiumData.Premium.SettlementData",
@@ -34476,6 +34722,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "SettlementData",
           "guide_ref": "Docs/UserGuide/tradedata/commodityforward.tex:93",
           "kind": "string",
           "name": "PayCurrency",
@@ -34679,6 +34926,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "SettlementData",
           "guide_ref": "Docs/UserGuide/tradedata/commodityforward.tex:95",
           "kind": "string",
           "name": "FXIndex",
@@ -34689,6 +34937,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "SettlementData",
           "guide_ref": "Docs/UserGuide/tradedata/commodityforward.tex:97",
           "kind": "string",
           "name": "FixingDate",
@@ -35127,6 +35376,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "RangeBound",
           "guide_ref": "Docs/UserGuide/tradecomponents/rangebound.tex:30",
           "kind": "double",
           "name": "RangeFrom",
@@ -35137,6 +35387,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "RangeBound",
           "guide_ref": "Docs/UserGuide/tradecomponents/rangebound.tex:34",
           "kind": "double",
           "name": "RangeTo",
@@ -35147,6 +35398,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "RangeBound",
           "guide_ref": "Docs/UserGuide/tradecomponents/rangebound.tex:38",
           "kind": "double",
           "name": "Leverage",
@@ -35157,6 +35409,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "RangeBound",
           "guide_ref": "Docs/UserGuide/tradecomponents/rangebound.tex:42",
           "kind": "double",
           "name": "Strike",
@@ -35167,6 +35420,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "RangeBound",
           "guide_ref": "Docs/UserGuide/tradecomponents/rangebound.tex:46",
           "kind": "double",
           "name": "StrikeAdjustment",
@@ -35190,6 +35444,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "RateDigitalOptionData",
           "guide_ref": "Docs/UserGuide/tradedata/ratedigitaloption.tex:40",
           "name": "OptionData",
           "record": "optionData",
@@ -35536,6 +35791,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "Underlying",
           "guide_ref": "Docs/UserGuide/tradedata/equityoptionposition.tex:21",
           "name": "OptionData",
           "record": "optionData",
@@ -35625,6 +35881,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "ScheduleData",
           "guide_ref": "Docs/UserGuide/tradecomponents/scheduledata.tex:116",
           "name": "Rules",
           "record": "scheduleData.Rules",
@@ -35635,6 +35892,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "ScheduleData",
           "guide_ref": "Docs/UserGuide/tradecomponents/scheduledata.tex:204",
           "name": "Dates",
           "record": "scheduleData.Dates",
@@ -36697,6 +36955,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "FxAsianOptionData",
           "guide_ref": "Docs/UserGuide/tradedata/fx_asianoption.tex:83",
           "kind": "string",
           "name": "Currency",
@@ -36900,6 +37159,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityAsianOptionData",
           "guide_ref": "Docs/UserGuide/tradedata/eq_asianoption.tex:83",
           "kind": "double",
           "name": "Quantity",
@@ -36910,6 +37170,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "FxAsianOptionData",
           "guide_ref": "Docs/UserGuide/tradedata/fx_asianoption.tex:87",
           "kind": "string",
           "name": "Strike",
@@ -36920,6 +37181,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityAsianOptionData",
           "guide_ref": "Docs/UserGuide/tradedata/eq_asianoption.tex:82",
           "name": "StrikeData",
           "record": "StrikeData",
@@ -36930,6 +37192,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityAsianOptionData",
           "guide_ref": "Docs/UserGuide/tradedata/eq_asianoption.tex:85",
           "name": "Underlying",
           "record": "underlying",
@@ -36940,6 +37203,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityAsianOptionData",
           "guide_ref": "Docs/UserGuide/tradedata/eq_asianoption.tex:87",
           "name": "OptionData",
           "record": "optionData",
@@ -36950,6 +37214,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityAsianOptionData",
           "guide_ref": "Docs/UserGuide/tradedata/eq_asianoption.tex:90",
           "kind": "string",
           "name": "Settlement",
@@ -36960,6 +37225,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityAsianOptionData",
           "guide_ref": "Docs/UserGuide/tradedata/eq_asianoption.tex:92",
           "name": "ObservationDates",
           "record": "scheduleData",
@@ -37461,6 +37727,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "StrikePrice",
           "guide_ref": "Docs/UserGuide/tradecomponents/strikedata.tex:24",
           "kind": "double",
           "name": "Value",
@@ -37915,6 +38182,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "StrikeYield",
           "guide_ref": "Docs/UserGuide/tradecomponents/strikedata.tex:60",
           "kind": "string",
           "name": "Compounding",
@@ -37932,6 +38200,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "StrikeYield",
           "guide_ref": "Docs/UserGuide/tradecomponents/strikedata.tex:56",
           "kind": "double",
           "name": "Yield",
@@ -38004,6 +38273,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "SwapData",
           "guide_ref": "Docs/UserGuide/tradedata/commodityswap.tex:80",
           "kind": "boolean",
           "name": "RoundNettedFloatingLegs",
@@ -38014,6 +38284,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "SwapData",
           "guide_ref": "Docs/UserGuide/tradedata/commodityswap.tex:82",
           "kind": "integer",
           "name": "NettingPrecision",
@@ -38024,6 +38295,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "SwapData",
           "guide_ref": "Docs/UserGuide/tradedata/swap.tex:66",
           "kind": "string",
           "name": "Settlement",
@@ -39762,6 +40034,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "Underlying",
           "guide_ref": "Docs/UserGuide/tradecomponents/underlying.tex:176",
           "kind": "string",
           "name": "Type",
@@ -39772,6 +40045,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "Underlying",
           "guide_ref": "Docs/UserGuide/tradecomponents/underlying.tex:180",
           "kind": "string",
           "name": "Name",
@@ -39782,6 +40056,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "Underlying",
           "guide_ref": "Docs/UserGuide/tradecomponents/underlying.tex:213",
           "kind": "string",
           "name": "IdentifierType",
@@ -39808,6 +40083,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "Underlying",
           "guide_ref": "Docs/UserGuide/tradecomponents/underlying.tex:202",
           "kind": "double",
           "name": "Weight",
@@ -39818,6 +40094,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "Underlying",
           "guide_ref": "Docs/UserGuide/tradecomponents/underlying.tex:227",
           "kind": "string",
           "name": "PriceType",
@@ -39828,6 +40105,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "Underlying",
           "guide_ref": "Docs/UserGuide/tradecomponents/underlying.tex:232",
           "kind": "integer",
           "name": "FutureMonthOffset",
@@ -39838,6 +40116,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "Underlying",
           "guide_ref": "Docs/UserGuide/tradecomponents/underlying.tex:238",
           "kind": "integer",
           "name": "DeliveryRollDays",
@@ -39848,6 +40127,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "Underlying",
           "guide_ref": "Docs/UserGuide/tradecomponents/underlying.tex:244",
           "kind": "string",
           "name": "DeliveryRollCalendar",
@@ -39858,6 +40138,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "Underlying",
           "guide_ref": "Docs/UserGuide/tradecomponents/underlying.tex:252",
           "kind": "string",
           "name": "FutureExpiryDate",
@@ -39868,6 +40149,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "Underlying",
           "guide_ref": "Docs/UserGuide/tradecomponents/underlying.tex:249",
           "kind": "string",
           "name": "FutureContractMonth",
@@ -39878,6 +40160,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "Underlying",
           "guide_ref": "Docs/UserGuide/tradecomponents/underlying.tex:257",
           "kind": "string",
           "name": "Interpolation",
@@ -39888,6 +40171,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "Underlying",
           "guide_ref": "Docs/UserGuide/tradecomponents/underlying.tex:262",
           "kind": "double",
           "name": "BidAskAdjustment",
@@ -39924,6 +40208,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "VanillaBasketOptionData",
           "guide_ref": "Docs/UserGuide/tradedata/basketoption.tex:255",
           "name": "Settlement",
           "record": "stFreeStyleEvent",
@@ -39950,6 +40235,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "VanillaBasketOptionData",
           "guide_ref": "Docs/UserGuide/tradedata/basketoption.tex:246",
           "name": "Notional",
           "record": "stFreeStyleNumber",
@@ -39960,6 +40246,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "VanillaBasketOptionData",
           "guide_ref": "Docs/UserGuide/tradedata/basketoption.tex:248",
           "name": "Strike",
           "record": "stFreeStyleNumber",
@@ -39970,6 +40257,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "VanillaBasketOptionData",
           "guide_ref": "Docs/UserGuide/tradedata/basketoption.tex:250",
           "name": "Underlyings",
           "record": "stFreeStyleIndexVector",
@@ -40259,6 +40547,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityVarianceSwapData",
           "guide_ref": "Docs/UserGuide/tradedata/equityvarianceswap.tex:66",
           "kind": "string",
           "name": "StartDate",
@@ -40269,6 +40558,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityVarianceSwapData",
           "guide_ref": "Docs/UserGuide/tradedata/equityvarianceswap.tex:68",
           "kind": "string",
           "name": "EndDate",
@@ -40279,6 +40569,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityVarianceSwapData",
           "guide_ref": "Docs/UserGuide/tradedata/equityvarianceswap.tex:70",
           "kind": "string",
           "name": "Currency",
@@ -40482,6 +40773,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityVarianceSwapData",
           "guide_ref": "Docs/UserGuide/tradedata/equityvarianceswap.tex:72",
           "kind": "string",
           "name": "Name",
@@ -40492,6 +40784,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityVarianceSwapData",
           "guide_ref": "Docs/UserGuide/tradedata/equityvarianceswap.tex:74",
           "name": "Underlying",
           "record": "underlying",
@@ -40510,6 +40803,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityVarianceSwapData",
           "guide_ref": "Docs/UserGuide/tradedata/equityvarianceswap.tex:75",
           "kind": "string",
           "name": "LongShort",
@@ -40520,6 +40814,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityVarianceSwapData",
           "guide_ref": "Docs/UserGuide/tradedata/equityvarianceswap.tex:77",
           "kind": "double",
           "name": "Strike",
@@ -40530,6 +40825,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityVarianceSwapData",
           "guide_ref": "Docs/UserGuide/tradedata/equityvarianceswap.tex:79",
           "kind": "double",
           "name": "Notional",
@@ -40540,6 +40836,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityVarianceSwapData",
           "guide_ref": "Docs/UserGuide/tradedata/equityvarianceswap.tex:81",
           "kind": "string",
           "name": "Calendar",
@@ -40550,6 +40847,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityVarianceSwapData",
           "guide_ref": "Docs/UserGuide/tradedata/equityvarianceswap.tex:83",
           "kind": "string",
           "name": "MomentType",
@@ -40564,6 +40862,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityVarianceSwapData",
           "guide_ref": "Docs/UserGuide/tradedata/equityvarianceswap.tex:85",
           "kind": "boolean",
           "name": "AddPastDividends",
@@ -41309,6 +41608,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityWorstOfBasketSwapData",
           "guide_ref": "Docs/UserGuide/tradedata/worstofbasketswap.tex:161",
           "kind": "string",
           "name": "LongShort",
@@ -41323,6 +41623,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityWorstOfBasketSwapData",
           "guide_ref": "Docs/UserGuide/tradedata/worstofbasketswap.tex:154",
           "kind": "string",
           "name": "Currency",
@@ -41526,6 +41827,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityWorstOfBasketSwapData",
           "guide_ref": "Docs/UserGuide/tradedata/worstofbasketswap.tex:163",
           "kind": "double",
           "name": "Quantity",
@@ -41536,6 +41838,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityWorstOfBasketSwapData",
           "guide_ref": "Docs/UserGuide/tradedata/worstofbasketswap.tex:165",
           "kind": "double",
           "name": "InitialFixedRate",
@@ -41546,6 +41849,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityWorstOfBasketSwapData",
           "guide_ref": "Docs/UserGuide/tradedata/worstofbasketswap.tex:169",
           "kind": "string",
           "name": "InitialFixedPayDate",
@@ -41556,6 +41860,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityWorstOfBasketSwapData",
           "guide_ref": "Docs/UserGuide/tradedata/worstofbasketswap.tex:173",
           "name": "Underlyings",
           "record": "underlyings",
@@ -41566,6 +41871,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityWorstOfBasketSwapData",
           "guide_ref": "Docs/UserGuide/tradedata/worstofbasketswap.tex:175",
           "name": "InitialPrices",
           "record": "worstOfBasketSwapData2.InitialPrices",
@@ -41576,6 +41882,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityWorstOfBasketSwapData",
           "guide_ref": "Docs/UserGuide/tradedata/worstofbasketswap.tex:240",
           "kind": "string",
           "name": "KnockInPayDate",
@@ -41586,6 +41893,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityWorstOfBasketSwapData",
           "guide_ref": "Docs/UserGuide/tradedata/worstofbasketswap.tex:190",
           "name": "FloatingPeriodSchedule",
           "record": "scheduleData",
@@ -41596,6 +41904,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityWorstOfBasketSwapData",
           "guide_ref": "Docs/UserGuide/tradedata/worstofbasketswap.tex:194",
           "name": "FloatingFixingSchedule",
           "record": "scheduleData",
@@ -41606,6 +41915,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityWorstOfBasketSwapData",
           "guide_ref": "Docs/UserGuide/tradedata/worstofbasketswap.tex:203",
           "name": "FixedDeterminationSchedule",
           "record": "scheduleData",
@@ -41616,6 +41926,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityWorstOfBasketSwapData",
           "guide_ref": "Docs/UserGuide/tradedata/worstofbasketswap.tex:233",
           "name": "FloatingPayDates",
           "record": "scheduleData",
@@ -41626,6 +41937,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityWorstOfBasketSwapData",
           "guide_ref": "Docs/UserGuide/tradedata/worstofbasketswap.tex:236",
           "name": "FixedPayDates",
           "record": "scheduleData",
@@ -41636,6 +41948,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityWorstOfBasketSwapData",
           "guide_ref": "Docs/UserGuide/tradedata/worstofbasketswap.tex:213",
           "name": "KnockOutDeterminationSchedule",
           "record": "scheduleData",
@@ -41646,6 +41959,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityWorstOfBasketSwapData",
           "guide_ref": "Docs/UserGuide/tradedata/worstofbasketswap.tex:225",
           "name": "FixedAccrualSchedule",
           "record": "scheduleData",
@@ -41656,6 +41970,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityWorstOfBasketSwapData",
           "guide_ref": "Docs/UserGuide/tradedata/worstofbasketswap.tex:244",
           "name": "KnockOutLevels",
           "record": "worstOfBasketSwapData2.KnockOutLevels",
@@ -41666,6 +41981,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityWorstOfBasketSwapData",
           "guide_ref": "Docs/UserGuide/tradedata/worstofbasketswap.tex:178",
           "kind": "boolean",
           "name": "BermudanKnockIn",
@@ -41676,6 +41992,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityWorstOfBasketSwapData",
           "guide_ref": "Docs/UserGuide/tradedata/worstofbasketswap.tex:251",
           "name": "FixedTriggerLevels",
           "record": "worstOfBasketSwapData2.FixedTriggerLevels",
@@ -41686,6 +42003,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityWorstOfBasketSwapData",
           "guide_ref": "Docs/UserGuide/tradedata/worstofbasketswap.tex:184",
           "kind": "double",
           "name": "KnockInLevel",
@@ -41696,6 +42014,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityWorstOfBasketSwapData",
           "guide_ref": "Docs/UserGuide/tradedata/worstofbasketswap.tex:220",
           "name": "KnockInDeterminationSchedule",
           "record": "scheduleData",
@@ -41706,6 +42025,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityWorstOfBasketSwapData",
           "guide_ref": "Docs/UserGuide/tradedata/worstofbasketswap.tex:257",
           "kind": "double",
           "name": "FixedRate",
@@ -41716,6 +42036,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityWorstOfBasketSwapData",
           "guide_ref": "Docs/UserGuide/tradedata/worstofbasketswap.tex:259",
           "kind": "boolean",
           "name": "AccumulatingFixedCoupons",
@@ -41726,6 +42047,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityWorstOfBasketSwapData",
           "guide_ref": "Docs/UserGuide/tradedata/worstofbasketswap.tex:263",
           "kind": "boolean",
           "name": "AccruingFixedCoupons",
@@ -41736,6 +42058,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityWorstOfBasketSwapData",
           "guide_ref": "Docs/UserGuide/tradedata/worstofbasketswap.tex:269",
           "kind": "string",
           "name": "FloatingIndex",
@@ -41746,6 +42069,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityWorstOfBasketSwapData",
           "guide_ref": "Docs/UserGuide/tradedata/worstofbasketswap.tex:272",
           "kind": "double",
           "name": "FloatingSpread",
@@ -41756,6 +42080,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityWorstOfBasketSwapData",
           "guide_ref": "Docs/UserGuide/tradedata/worstofbasketswap.tex:283",
           "kind": "string",
           "name": "FloatingLookback",
@@ -41766,6 +42091,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityWorstOfBasketSwapData",
           "guide_ref": "Docs/UserGuide/tradedata/worstofbasketswap.tex:288",
           "kind": "string",
           "name": "FloatingRateCutoff",
@@ -41776,6 +42102,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityWorstOfBasketSwapData",
           "guide_ref": "Docs/UserGuide/tradedata/worstofbasketswap.tex:274",
           "kind": "string",
           "name": "FloatingDayCountFraction",
@@ -41859,6 +42186,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityWorstOfBasketSwapData",
           "guide_ref": "Docs/UserGuide/tradedata/worstofbasketswap.tex:292",
           "kind": "boolean",
           "name": "IsAveraged",
@@ -41869,6 +42197,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityWorstOfBasketSwapData",
           "guide_ref": "Docs/UserGuide/tradedata/worstofbasketswap.tex:299",
           "kind": "boolean",
           "name": "IncludeSpread",
@@ -41879,6 +42208,7 @@
         {
           "attribute": false,
           "default": null,
+          "guide_node": "EquityWorstOfBasketSwapData",
           "guide_ref": "Docs/UserGuide/tradedata/worstofbasketswap.tex:277",
           "kind": "double",
           "name": "Strike",

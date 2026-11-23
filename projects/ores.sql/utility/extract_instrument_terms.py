@@ -200,6 +200,8 @@ def type_fields(schema, node, owner):
             field["record"] = type_name
         elif inline_complex is not None and any(True for _ in schema.members(inline_complex)):
             anonymous = name if schema.elements.get(name) is member else f"{owner}.{name}"
+            if anonymous in schema.types:
+                raise ValueError(f"the inline type of {anonymous} has the name of a named type")
             field["record"] = anonymous
             nested[anonymous] = inline_complex
         else:
@@ -214,6 +216,10 @@ def type_fields(schema, node, owner):
 def catalogue_codes():
     text = open(CATALOGUE, encoding="utf-8").read()
     section = text.split("\n* Trade types\n", 1)[1].split("\n* ", 1)[0]
+    header = next(line for line in section.splitlines() if line.startswith("| code"))
+    columns = [c.strip() for c in header.strip().strip("|").split("|")]
+    if columns[:4] != ["code", "name", "family", "construction"]:
+        raise ValueError(f"the trade types table of {CATALOGUE} has the columns {columns}")
     codes = []
     for line in section.splitlines():
         cells = [c.strip() for c in line.strip().strip("|").split("|")]
@@ -303,19 +309,23 @@ def main():
             pending.append((anonymous, inline))
 
     texts = {node.lower(): items for node, items in guide_texts(args.ore).items()}
-    described = 0
-    total = 0
+    described, total, disputed = 0, 0, []
     for name, entry in types.items():
-        nodes = sorted(declared_by.get(name, set()))
+        own = name.split(".")[-1].lower()
+        nodes = sorted(declared_by.get(name, set()), key=lambda n: (n.lower() != own, n))
         for field in entry["fields"]:
             total += 1
-            for node in nodes:
-                found = texts.get(node.lower(), {}).get(field["name"])
-                if found:
-                    field["text"] = found["text"]
-                    field["guide_ref"] = found["guide_ref"]
-                    described += 1
-                    break
+            found = [(node, texts[node.lower()][field["name"]]) for node in nodes
+                     if field["name"] in texts.get(node.lower(), {})]
+            if not found:
+                continue
+            node, text = found[0]
+            field["text"] = text["text"]
+            field["guide_ref"] = text["guide_ref"]
+            field["guide_node"] = node
+            described += 1
+            if len({t["text"] for _, t in found}) > 1:
+                disputed.append(f"{name}/{field['name']}")
 
     result = {"xsd_manifest": json.load(open(os.path.join(XSD, "manifest.json")))["engine_version"],
               "products": products, "types": types, "unresolved": unresolved,
@@ -325,7 +335,9 @@ def main():
         f.write("\n")
     print(f"{len(products)} products, {len(without_element)} with no element in the schema, "
           f"{len(unresolved)} unresolved ({', '.join(unresolved[:8])}); {len(types)} types, "
-          f"{total} fields, {described} described by the guide.")
+          f"{total} fields, {described} described by the guide; {len(disputed)} described "
+          f"differently by two nodes, the type's own node or else the first winning "
+          f"({', '.join(disputed[:5])}).")
     return 1 if unresolved else 0
 
 

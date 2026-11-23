@@ -168,7 +168,7 @@ def rows():
             "domain": domain_of(field),
             "required": field["required"],
             "label": humanise(field["name"]),
-            "help": first_sentence(text),
+            "help": first_sentence(text) if field.get("text") or owner == TRADE else format_of(field),
             "description": text,
             "default_text": default_of(field),
             "format": format_of(field),

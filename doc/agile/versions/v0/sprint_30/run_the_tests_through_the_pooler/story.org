@@ -8,7 +8,7 @@
 #+filetags: :sprint_30:v0:
 #+created: 2026-11-21
 #+updated: 2026-11-21
-#+environment: clever_dijkstra
+#+environment: festive_dijkstra
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -53,7 +53,7 @@ pooler. The gate and the tests around them do not.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -77,6 +77,7 @@ pooler. The gate and the tests around them do not.
 | [[id:49A91902-32C2-49DB-A761-FC7FD2F2D126][Start the pooler before the tests run]] | BACKLOG | | | The gate's ctest step and compass test run start the pooler and NATS when ORES_DB_POOLER_ENABLED is 1, and the test-run preflight refuses to run without a pooler and names the fix. |
 | [[id:CB04682B-706D-4AEF-BABB-E7F00A0FB63B][Read the options' environment through the provider]] | BACKLOG | | | The parsers read their environment variables through ores.platform's environment provider instead of boost's parse_environment, so a test's fake environment is the only one the parser sees and no test lists variables to strip. |
 | [[id:9F0DCC25-CE62-41A3-9C5A-7BDED6BE5A30][Run pgTAP before ctest]] | BACKLOG | | | The local gate runs the pgtap check before ctest rather than beside it, so the two no longer write to the same database at the same time and iam_tenant_purge_test stops deadlocking. |
+| [[id:6C325B2F-8018-4637-9176-B4709898F89D][Give the environment one database endpoint]] | STARTED | 2026-11-23 | | The environment states one database endpoint, and whether a pooler fronts it is a deployment detail no client reads: with the pooler off clients dial the PostgreSQL port, with it on they dial the pooler's port, and CI exercises both. |
 
 * Decisions
 

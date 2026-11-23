@@ -39,6 +39,7 @@ import {
     type ProviderEntry,
     type ProviderFacts,
 } from './providers.js';
+import { ProviderNodeControl } from './feedNode.js';
 import { useSelectionRuns } from './selectionRuns.js';
 import { useCollections } from './useCollections.js';
 import {
@@ -278,6 +279,12 @@ export function DashboardTab(): ReactNode {
                                             </td>
                                             <td className="px-4 py-2 text-right">
                                                 <span className="flex items-center justify-end gap-2">
+                                                    {source === undefined && (
+                                                        <ProviderNodeControl
+                                                            provider={entry.code}
+                                                            name={providerName(entry.code, facts)}
+                                                        />
+                                                    )}
                                                     {runs.mayRun && source !== undefined && (
                                                         <>
                                                             <Button

@@ -127,17 +127,25 @@ function NodeControl({ node }: { readonly node: FeedGraphNode }): ReactNode {
                 </Button>
             )}
             {start.error !== null && <Notice tone="error">{start.error.message}</Notice>}
-            {stopping && <StopNodeDialog node={node} onClose={() => setStopping(false)} />}
+            {stopping && (
+                <StopNodeDialog
+                    title={t('marketdata.feedGraph.stopTitle', { node: node.name })}
+                    names={[node.name]}
+                    onClose={() => setStopping(false)}
+                />
+            )}
         </>
     );
 }
 
-/** The question a stop asks: what it does, and why the person stops the node. */
+/** The question a stop asks: what it does, and why the person stops the nodes. */
 function StopNodeDialog({
-    node,
+    title,
+    names,
     onClose,
 }: {
-    readonly node: FeedGraphNode;
+    readonly title: string;
+    readonly names: readonly string[];
     readonly onClose: () => void;
 }): ReactNode {
     const { t } = useTranslation();
@@ -147,19 +155,22 @@ function StopNodeDialog({
     const missing = reason.needsCommentary && commentary.trim() === '';
     const stop = useMutation({
         mutationFn: () =>
-            api.stopFeedNode(node.name, {
-                reason_code: reason.code,
-                commentary: commentary.trim(),
-            }),
+            Promise.all(
+                names.map((name) =>
+                    api.stopFeedNode(name, {
+                        reason_code: reason.code,
+                        commentary: commentary.trim(),
+                    }),
+                ),
+            ),
         onSuccess: () => {
-            void queries.invalidateQueries({ queryKey: ['feed-graph'] });
-            void queries.invalidateQueries({ queryKey: ['feed-messages'] });
+            void queries.invalidateQueries();
             onClose();
         },
     });
     return (
         <Dialog
-            title={t('marketdata.feedGraph.stopTitle', { node: node.name })}
+            title={title}
             name="stop-feed-node"
             onClose={onClose}
             footer={
@@ -184,6 +195,57 @@ function StopNodeDialog({
             />
             {stop.error !== null && <Notice tone="error">{stop.error.message}</Notice>}
         </Dialog>
+    );
+}
+
+/**
+ * Stops or starts every feed of a provider that has no source of its own, such as latent, as
+ * nodes of the graph: the vendors' sources hold its feeds, so a hand run cannot start one, and a
+ * node stop is stored, said to the nodes below it, and lifted by a start.
+ */
+export function ProviderNodeControl({
+    provider,
+    name,
+}: {
+    readonly provider: string;
+    readonly name: string;
+}): ReactNode {
+    const { t } = useTranslation();
+    const mayRun = useHeld()(PERMISSION.feedsRun);
+    const queries = useQueryClient();
+    const [stopping, setStopping] = useState(false);
+    const graph = useFeedGraph('');
+    const nodes = (graph.data?.nodes ?? []).filter(
+        (n) => n.provider_code === provider && n.kind !== 'source' && n.kind !== 'view',
+    );
+    const stopped = nodes.filter((n) => n.state === 'stopped').map((n) => n.name);
+    const others = nodes.filter((n) => n.state !== 'stopped').map((n) => n.name);
+    const start = useMutation({
+        mutationFn: () => Promise.all(stopped.map((one) => api.startFeedNode(one))),
+        onSuccess: () => void queries.invalidateQueries(),
+    });
+    if (!mayRun || nodes.length === 0) return null;
+    return (
+        <>
+            <Button
+                size="sm"
+                disabled={stopped.length === 0 || start.isPending}
+                onClick={() => start.mutate()}
+            >
+                {t('marketdata.synthetic.runs.start')}
+            </Button>
+            <Button size="sm" disabled={others.length === 0} onClick={() => setStopping(true)}>
+                {t('marketdata.synthetic.runs.stop')}
+            </Button>
+            {start.error !== null && <Notice tone="error">{start.error.message}</Notice>}
+            {stopping && (
+                <StopNodeDialog
+                    title={t('marketdata.feedGraph.stopTitle', { node: name })}
+                    names={others}
+                    onClose={() => setStopping(false)}
+                />
+            )}
+        </>
     );
 }
 

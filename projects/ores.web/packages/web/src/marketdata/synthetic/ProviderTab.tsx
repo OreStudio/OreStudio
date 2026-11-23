@@ -29,6 +29,7 @@ import { DEFAULT_PAGE_SIZE, Pager, pageBounds } from '../../ui/Pager.js';
 import { Button, Notice, Select, Tag, cx } from '../../ui/Primitives.js';
 import { AddFeed, useMayAddFeed } from './AddFeed.js';
 import { useSources } from './adapterStatus.js';
+import { ProviderNodeControl } from './feedNode.js';
 import { ServingTag, useProviderFacts } from './DashboardTab.js';
 import { SourceStrip } from './sourceStrip.js';
 
@@ -159,7 +160,13 @@ export function ProviderTab(): ReactNode {
                         </span>
                         <span className="ml-auto flex items-center gap-2">
                             {/* A provider with no source of its own, such as latent, is held by the
-                                vendors' sources, so it is not started or stopped as a whole. */}
+                                vendors' sources: its feeds stop and start as nodes of the graph. */}
+                            {source === undefined && (
+                                <ProviderNodeControl
+                                    provider={entry.code}
+                                    name={providerName(entry.code, facts)}
+                                />
+                            )}
                             {runs.mayRun && source !== undefined && (
                                 <>
                                     <Button size="sm" onClick={() => ask('start')}>

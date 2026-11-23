@@ -134,7 +134,7 @@ jobs:
         run: ./projects/ores.compass/compass.sh env install-packages
 
       - name: get-cmake
-        uses: lukka/get-cmake@v4.4.5
+        uses: lukka/get-cmake@v4.5.0
 
       - name: Restore vcpkg binary packages
         uses: actions/cache/restore@v6

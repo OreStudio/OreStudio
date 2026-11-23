@@ -32,6 +32,7 @@
 #include "ores.synthetic.api/export.hpp"
 #include "ores.synthetic.api/feeds/adapter_target.hpp"
 #include "ores.synthetic.api/feeds/fx_vol_surface_emitter.hpp"
+#include "ores.synthetic.api/feeds/node_diagnostics.hpp"
 #include <atomic>
 #include <cstddef>
 #include <cstdint>
@@ -222,6 +223,11 @@ public:
      * surface publishes after it.
      */
     std::string tick(const ores::analytics::quant::service::tick_context& context);
+
+    /** Where the surface says why it publishes nothing, and that it publishes again. */
+    void set_diagnostics(std::shared_ptr<node_diagnostics> diagnostics) {
+        diagnostics_ = std::move(diagnostics);
+    }
     void stop() override;
     std::uint64_t publish_count() const override {
         return published_.load(std::memory_order_relaxed);
@@ -275,6 +281,9 @@ private:
     std::atomic<std::uint64_t> published_{0};
     /// Why the last tick published nothing, or empty when it published. Only the tick reads it.
     std::string refusal_;
+    std::shared_ptr<node_diagnostics> diagnostics_;
+    bool published_once_ = false;
+    bool cleared_after_refusal_ = false;
     /// The adapters attached, each with the contributor it serves and that contributor's targets.
     struct sink final {
         std::string contributor;

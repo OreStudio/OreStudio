@@ -29,6 +29,7 @@
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.synthetic.api/export.hpp"
+#include "ores.synthetic.api/feeds/node_diagnostics.hpp"
 #include <cstdint>
 #include <functional>
 #include <map>
@@ -74,6 +75,8 @@ struct feed_build_context final {
     /// The run's one market: its loop decides when every feed ticks, and its values are
     /// what the feeds publish for each other.
     ores::analytics::quant::service::run_market& market;
+    /// Where a feed says why it produces nothing, and that it produces again; none by default.
+    std::shared_ptr<node_diagnostics> diagnostics = {};
 };
 
 /**
